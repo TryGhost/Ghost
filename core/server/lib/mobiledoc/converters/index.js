@@ -5,5 +5,9 @@ module.exports = {
 
     get markdownConverter() {
         return require('./markdown-converter');
+    },
+
+    get htmlToMobiledocConverter() {
+        return require('@tryghost/html-to-mobiledoc').toMobiledoc;
     }
 };

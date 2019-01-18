@@ -3,6 +3,7 @@ const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:po
 const url = require('./utils/url');
 const utils = require('../../index');
 const labs = require('../../../../../services/labs');
+const converters = require('../../../../../lib/mobiledoc/converters');
 
 function removeMobiledocFormat(frame) {
     if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
@@ -106,6 +107,14 @@ module.exports = {
         if (frame.data.posts[0].hasOwnProperty('author')) {
             frame.data.posts[0].author_id = frame.data.posts[0].author;
             delete frame.data.posts[0].author;
+        }
+
+        if (_.get(frame,'options.source')) {
+            const html = frame.data.posts[0].html;
+
+            if (frame.options.source === 'html' && !_.isEmpty(html)) {
+                frame.data.posts[0].mobiledoc = JSON.stringify(converters.htmlToMobiledocConverter(html));
+            }
         }
 
         frame.data.posts[0] = url.forPost(Object.assign({}, frame.data.posts[0]), frame.options);
