@@ -61,7 +61,7 @@ const authenticateAdminApiKey = function authenticateAdminApiKey(req, res, next)
         }));
     }
 
-    const apiKeyId = decoded.header.kid;
+    const apiKeyId = decoded.payload.kid;
 
     models.ApiKey.findOne({id: apiKeyId}).then((apiKey) => {
         if (!apiKey) {
@@ -79,6 +79,7 @@ const authenticateAdminApiKey = function authenticateAdminApiKey(req, res, next)
         }
 
         const secret = Buffer.from(apiKey.get('secret'), 'hex');
+
         // ensure the token was meant for this endpoint
         const options = Object.assign({
             aud: req.originalUrl
