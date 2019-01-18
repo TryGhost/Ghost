@@ -99,5 +99,21 @@ module.exports = {
 
     doAuth(...args) {
         return testUtils.API.doAuth(`${API_URL}session/`, ...args);
+    },
+
+    getValidAdminKey(endpoint) {
+        const jwt = require('jsonwebtoken');
+        const JWT_OPTIONS = {
+            algorithm: 'HS256'
+        };
+
+        return jwt.sign(
+            {
+                kid: testUtils.DataGenerator.Content.api_keys[0].id
+            },
+            Buffer.from(testUtils.DataGenerator.Content.api_keys[0].secret, 'hex'),
+            JWT_OPTIONS,
+            endpoint
+        );
     }
 };
