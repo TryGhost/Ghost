@@ -1,9 +1,10 @@
-const {authenticateAdminApiKey} = require('../../../../../server/services/auth/api-key/admin');
-const common = require('../../../../../server/lib/common');
 const jwt = require('jsonwebtoken');
-const models = require('../../../../../server/models');
 const should = require('should');
 const sinon = require('sinon');
+const Promise = require('bluebird');
+const {authenticateAdminApiKey} = require('../../../../../server/services/auth/api-key/admin');
+const common = require('../../../../../server/lib/common');
+const models = require('../../../../../server/models');
 const testUtils = require('../../../../utils');
 
 const sandbox = sinon.sandbox.create();
@@ -25,8 +26,8 @@ describe('Admin API Key Auth', function () {
         this.secret = Buffer.from(fakeApiKey.secret, 'hex');
 
         this.apiKeyStub = sandbox.stub(models.ApiKey, 'findOne');
-        this.apiKeyStub.returns(new Promise.resolve());
-        this.apiKeyStub.withArgs({id: fakeApiKey.id}).returns(new Promise.resolve(fakeApiKey));
+        this.apiKeyStub.resolves();
+        this.apiKeyStub.withArgs({id: fakeApiKey.id}).resolves(fakeApiKey);
     });
 
     afterEach(function () {
@@ -34,12 +35,13 @@ describe('Admin API Key Auth', function () {
     });
 
     it('should authenticate known+valid API key', function (done) {
-        const token = jwt.sign({}, this.secret, {
+        const token = jwt.sign({
+            kid: this.fakeApiKey.id
+        }, this.secret, {
             algorithm: 'HS256',
             expiresIn: '5m',
             audience: '/test/',
-            issuer: this.fakeApiKey.id,
-            keyid: this.fakeApiKey.id
+            issuer: this.fakeApiKey.id
         });
 
         const req = {
@@ -50,8 +52,8 @@ describe('Admin API Key Auth', function () {
         };
         const res = {};
 
-        authenticateAdminApiKey(req, res, (arg) => {
-            should.not.exist(arg);
+        authenticateAdminApiKey(req, res, (err) => {
+            should.not.exist(err);
             req.api_key.should.eql(this.fakeApiKey);
             done();
         });
@@ -121,14 +123,14 @@ describe('Admin API Key Auth', function () {
 
     it('shouldn\'t authenticate with JWT signed > 5min ago', function (done) {
         const payload = {
+            kid: this.fakeApiKey.id,
             iat: Math.floor(Date.now() / 1000) - 6 * 60
         };
         const token = jwt.sign(payload, this.secret, {
             algorithm: 'HS256',
             expiresIn: '5m',
             audience: '/test/',
-            issuer: this.fakeApiKey.id,
-            keyid: this.fakeApiKey.id
+            issuer: this.fakeApiKey.id
         });
 
         const req = {
@@ -151,14 +153,14 @@ describe('Admin API Key Auth', function () {
 
     it('shouldn\'t authenticate with JWT with maxAge > 5min', function (done) {
         const payload = {
+            kid: this.fakeApiKey.id,
             iat: Math.floor(Date.now() / 1000) - 6 * 60
         };
         const token = jwt.sign(payload, this.secret, {
             algorithm: 'HS256',
             expiresIn: '10m',
             audience: '/test/',
-            issuer: this.fakeApiKey.id,
-            keyid: this.fakeApiKey.id
+            issuer: this.fakeApiKey.id
         });
 
         const req = {
@@ -180,12 +182,13 @@ describe('Admin API Key Auth', function () {
     });
 
     it('shouldn\'t authenticate with a Content API Key', function (done) {
-        const token = jwt.sign({}, this.secret, {
+        const token = jwt.sign({
+            kid: this.fakeApiKey.id
+        }, this.secret, {
             algorithm: 'HS256',
             expiresIn: '5m',
             audience: '/test/',
-            issuer: this.fakeApiKey.id,
-            keyid: this.fakeApiKey.id
+            issuer: this.fakeApiKey.id
         });
 
         const req = {
