@@ -43,8 +43,6 @@ const authorize = {
         };
     },
 
-    authorizeAdminApi: [session.ensureUser],
-
     authorizeContentApi(req, res, next) {
         const hasApiKey = req.api_key && req.api_key.id;
         const hasMember = req.member;
@@ -59,7 +57,13 @@ const authorize = {
         }));
     },
 
-    requiresAuthorizedUserOrApiKey(req, res, next) {
+    /**
+     * @NOTE:
+     *
+     * We don't support admin api keys yet, but we can already use this authorization helper, because
+     * we have not connected authenticating with admin api keys yet. `req.api_key` will be always null.
+     */
+    authorizeAdminApi(req, res, next) {
         const hasUser = req.user && req.user.id;
         const hasApiKey = req.api_key && req.api_key.id;
 
