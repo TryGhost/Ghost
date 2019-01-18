@@ -53,5 +53,23 @@ module.exports = {
 
                 return {permissions: foundApp.related('permissions').models};
             });
+    },
+
+    apiKey(id) {
+        return models.ApiKey.findOne({id}, {withRelated: ['role', 'role.permissions']})
+            .then((foundApiKey) => {
+                if (!foundApiKey) {
+                    throw new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.models.api_key.apiKeyNotFound')
+                    });
+                }
+
+                // api keys have a belongs_to relationship to a role and no individual permissions
+                // so there's no need for permission deduplication
+                const permissions = foundApiKey.related('role').related('permissions').models;
+                const roles = [foundApiKey.toJSON().role];
+
+                return {permissions, roles};
+            });
     }
 };
