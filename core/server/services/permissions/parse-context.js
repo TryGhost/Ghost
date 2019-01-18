@@ -32,9 +32,11 @@ module.exports = function parseContext(context) {
         parsed.public = false;
     }
 
+    // @TODO: content & admin use `parseContext`, there is no differentiation between them.
+    // e.g. context.admin_api_key and context.content_api_key or context.type = admin | content
     if (context && context.api_key_id) {
         parsed.api_key_id = context.api_key_id;
-        parsed.public = false;
+        // parsed.public = false;
     }
 
     if (context && context.app) {
