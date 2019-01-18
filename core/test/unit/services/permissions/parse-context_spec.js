@@ -59,7 +59,7 @@ describe('Permissions', function () {
                 user: null,
                 api_key_id: 1,
                 app: null,
-                public: false
+                public: true
             });
         });
 
