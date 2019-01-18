@@ -392,7 +392,7 @@ DataGenerator.Content = {
         {
             id: ObjectId.generate(),
             type: 'content',
-            secret: _.repeat('c', 128)
+            secret: _.repeat('c', 26)
             // integration_id: DataGenerator.Content.integrations[0].id
         },
         {

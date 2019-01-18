@@ -82,6 +82,6 @@ module.exports = {
         }
     },
     getValidKey() {
-        return _.repeat('c', 128);
+        return testUtils.DataGenerator.Content.api_keys[1].secret;
     }
 };
