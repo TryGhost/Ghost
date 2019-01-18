@@ -18,8 +18,6 @@ const _extractTokenFromHeader = function extractTokenFromHeader(header) {
     if (/^Ghost$/i.test(scheme)) {
         return token;
     }
-
-    return;
 };
 
 /**
@@ -36,7 +34,7 @@ const _extractTokenFromHeader = function extractTokenFromHeader(header) {
  * - the "Audience" claim should match the requested API path
  *   https://tools.ietf.org/html/rfc7519#section-4.1.3
  */
-const authenticateAdminApiKey = function authenticateAdminApiKey(req, res, next) {
+const authenticate = (req, res, next) => {
     // we don't have an Authorization header so allow fallthrough to other
     // auth middleware or final "ensure authenticated" check
     if (!req.headers || !req.headers.authorization) {
@@ -109,5 +107,5 @@ const authenticateAdminApiKey = function authenticateAdminApiKey(req, res, next)
 };
 
 module.exports = {
-    authenticateAdminApiKey
+    authenticate
 };
