@@ -61,6 +61,13 @@ const authenticate = (req, res, next) => {
 
     const apiKeyId = decoded.payload.kid;
 
+    if (!apiKeyId) {
+        return next(new common.errors.BadRequestError({
+            message: common.i18n.t('errors.middleware.auth.adminApiKeyMissing'),
+            code: 'MISSING_ADMIN_API_KEY'
+        }));
+    }
+
     models.ApiKey.findOne({id: apiKeyId}).then((apiKey) => {
         if (!apiKey) {
             return next(new common.errors.UnauthorizedError({

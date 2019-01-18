@@ -96,12 +96,13 @@ describe('Admin API Key Auth', function () {
     });
 
     it('shouldn\'t authenticate with invalid/unknown key', function (done) {
-        const token = jwt.sign({}, this.secret, {
+        const token = jwt.sign({
+            kid: 'unknown'
+        }, this.secret, {
             algorithm: 'HS256',
             expiresIn: '5m',
             audience: '/test/',
-            issuer: 'unknown',
-            keyid: 'unknown'
+            issuer: 'unknown'
         });
 
         const req = {
