@@ -1,6 +1,4 @@
-const sessionService = require('../../../../../server/services/auth/session');
-const SessionStore = require('../../../../../server/services/auth/session/store');
-const config = require('../../../../../server/config');
+const sessionMiddleware = require('../../../../../server/services/auth/session/middleware');
 const models = require('../../../../../server/models');
 const sinon = require('sinon');
 const should = require('should');
@@ -44,7 +42,7 @@ describe('Session Service', function () {
                 .withArgs('origin').returns('')
                 .withArgs('referrer').returns('');
 
-            sessionService.createSession(req, fakeRes(), function next(err) {
+            sessionMiddleware.createSession(req, fakeRes(), function next(err) {
                 should.equal(err instanceof BadRequestError, true);
                 done();
             });
@@ -68,7 +66,7 @@ describe('Session Service', function () {
                     done();
                 });
 
-            sessionService.createSession(req, res);
+            sessionMiddleware.createSession(req, res);
         });
 
         it('sets req.session.user_id,origin,user_agent,ip and calls sendStatus with 201 if the check succeeds', function (done) {
@@ -92,7 +90,7 @@ describe('Session Service', function () {
                     done();
                 });
 
-            sessionService.createSession(req, res);
+            sessionMiddleware.createSession(req, res);
         });
     });
 
@@ -102,7 +100,7 @@ describe('Session Service', function () {
             const res = fakeRes();
             const destroyStub = sandbox.stub(req.session, 'destroy');
 
-            sessionService.destroySession(req, res);
+            sessionMiddleware.destroySession(req, res);
 
             should.equal(destroyStub.callCount, 1);
         });
@@ -115,7 +113,7 @@ describe('Session Service', function () {
                     fn(new Error('oops'));
                 });
 
-            sessionService.destroySession(req, res, function next(err) {
+            sessionMiddleware.destroySession(req, res, function next(err) {
                 should.equal(err instanceof InternalServerError, true);
                 done();
             });
@@ -134,71 +132,7 @@ describe('Session Service', function () {
                     done();
                 });
 
-            sessionService.destroySession(req, res);
-        });
-    });
-
-    describe('getUser', function () {
-        it('sets req.user to null and calls next if there is no session', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-
-            delete req.session;
-
-            sessionService.getUser(req, res, function next() {
-                should.equal(req.user, null);
-                done();
-            });
-        });
-
-        it('sets req.user to null and calls next if there is no session', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-
-            sessionService.getUser(req, res, function next() {
-                should.equal(req.user, null);
-                done();
-            });
-        });
-
-        it('calls User.findOne with id set to req.session.user_id', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            sandbox.stub(models.User, 'findOne')
-                .callsFake(function (opts) {
-                    should.equal(opts.id, 23);
-                    done();
-                });
-
-            req.session.user_id = 23;
-            sessionService.getUser(req, res);
-        });
-
-        it('sets req.user to null and calls next if the user is not found', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            sandbox.stub(models.User, 'findOne')
-                .rejects();
-
-            req.session.user_id = 23;
-            sessionService.getUser(req, res, function next() {
-                should.equal(req.user, null);
-                done();
-            });
-        });
-
-        it('calls next after settign req.user to the found user', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            const user = models.User.forge({id: 23});
-            sandbox.stub(models.User, 'findOne')
-                .resolves(user);
-
-            req.session.user_id = 23;
-            sessionService.getUser(req, res, function next() {
-                should.equal(req.user, user);
-                done();
-            });
+            sessionMiddleware.destroySession(req, res);
         });
     });
 
@@ -207,10 +141,8 @@ describe('Session Service', function () {
             const req = fakeReq();
             const res = fakeRes();
 
-            sessionService.cookieCsrfProtection(req, res, function next(err) {
-                should.not.exist(err);
-                done();
-            });
+            sessionMiddleware.cookieCsrfProtection(req);
+            done();
         });
 
         it('calls next if req origin matches the session origin', function (done) {
@@ -220,10 +152,8 @@ describe('Session Service', function () {
                 .withArgs('origin').returns('http://host.tld');
             req.session.origin = 'http://host.tld';
 
-            sessionService.cookieCsrfProtection(req, res, function next(err) {
-                should.not.exist(err);
-                done();
-            });
+            sessionMiddleware.cookieCsrfProtection(req);
+            done();
         });
 
         it('calls next with BadRequestError if the origin of req does not match the session', function (done) {
@@ -233,19 +163,12 @@ describe('Session Service', function () {
                 .withArgs('origin').returns('http://host.tld');
             req.session.origin = 'http://different-host.tld';
 
-            sessionService.cookieCsrfProtection(req, res, function next(err) {
+            try {
+                sessionMiddleware.cookieCsrfProtection(req);
+            } catch (err) {
                 should.equal(err instanceof BadRequestError, true);
                 done();
-            });
-        });
-    });
-
-    describe('safeGetSession', function () {
-        it('is an array of getSession and cookieCsrfProtection', function () {
-            should.deepEqual(sessionService.safeGetSession, [
-                sessionService.getSession,
-                sessionService.cookieCsrfProtection
-            ]);
+            }
         });
     });
 });
