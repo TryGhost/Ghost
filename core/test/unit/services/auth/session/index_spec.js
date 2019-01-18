@@ -202,30 +202,6 @@ describe('Session Service', function () {
         });
     });
 
-    describe('ensureUser', function () {
-        it('calls next with no error if req.user.id exists', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            const user = models.User.forge({id: 23});
-            req.user = user;
-
-            sessionService.ensureUser(req, res, function next(err) {
-                should.equal(err, null);
-                done();
-            });
-        });
-
-        it('calls next with UnauthorizedError if req.user.id does not exist', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-
-            sessionService.ensureUser(req, res, function next(err) {
-                should.equal(err instanceof UnauthorizedError, true);
-                done();
-            });
-        });
-    });
-
     describe('CSRF protection', function () {
         it('calls next if the session is uninitialized', function (done) {
             const req = fakeReq();

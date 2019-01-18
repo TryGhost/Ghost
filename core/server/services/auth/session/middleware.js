@@ -91,15 +91,6 @@ const getUser = (req, res, next) => {
         });
 };
 
-const ensureUser = (req, res, next) => {
-    if (req.user && req.user.id) {
-        return next();
-    }
-    next(new common.errors.UnauthorizedError({
-        message: common.i18n.t('errors.middleware.auth.accessDenied')
-    }));
-};
-
 const cookieCsrfProtection = (req, res, next) => {
     // If there is no origin on the session object it means this is a *new*
     // session, that hasn't been initialised yet. So we don't need CSRF protection
@@ -126,6 +117,5 @@ module.exports = exports = {
     safeGetSession: [getSession, cookieCsrfProtection],
     createSession,
     destroySession,
-    getUser,
-    ensureUser
+    getUser
 };
