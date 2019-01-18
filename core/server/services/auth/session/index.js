@@ -1,16 +1,5 @@
 module.exports = {
-    get getSession() {
-        return require('./middleware').getSession;
-    },
-
-    get cookieCsrfProtection() {
-        return require('./middleware').cookieCsrfProtection;
-    },
-
-    get safeGetSession() {
-        return require('./middleware').safeGetSession;
-    },
-
+    // @TODO: expose files/units and not functions of units
     get createSession() {
         return require('./middleware').createSession;
     },
@@ -19,7 +8,7 @@ module.exports = {
         return require('./middleware').destroySession;
     },
 
-    get getUser() {
-        return require('./middleware').getUser;
+    get authenticate() {
+        return require('./middleware').authenticate;
     }
 };
