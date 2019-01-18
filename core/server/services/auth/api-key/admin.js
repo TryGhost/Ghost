@@ -35,9 +35,10 @@ const _extractTokenFromHeader = function extractTokenFromHeader(header) {
  *   https://tools.ietf.org/html/rfc7519#section-4.1.3
  */
 const authenticate = (req, res, next) => {
-    // we don't have an Authorization header so allow fallthrough to other
+    // CASE: we don't have an Authorization header so allow fallthrough to other
     // auth middleware or final "ensure authenticated" check
     if (!req.headers || !req.headers.authorization) {
+        req.api_key = null;
         return next();
     }
 
