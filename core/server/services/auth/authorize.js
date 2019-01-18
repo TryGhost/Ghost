@@ -1,5 +1,4 @@
 const labs = require('../labs');
-const session = require('./session');
 const common = require('../../lib/common');
 
 const authorize = {
