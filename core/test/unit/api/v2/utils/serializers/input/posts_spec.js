@@ -369,5 +369,78 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 postData.authors[0].profile_image.should.eql('https://somestorage.com/blog/content/images/image.jpg');
             });
         });
+
+        describe('Ensure html to mobiledoc conversion', function () {
+            it('no transformation when no html source option provided', function () {
+                const apiConfig = {};
+                const mobiledoc = '{"version":"0.3.1","atoms":[],"cards":[],"sections":[]}';
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                html: '<p>convert me</p>',
+                                mobiledoc: mobiledoc
+                            }
+                        ]
+                    }
+                };
+
+                serializers.input.posts.edit(apiConfig, frame);
+
+                let postData = frame.data.posts[0];
+                postData.mobiledoc.should.equal(mobiledoc);
+            });
+
+            it('no transformation when html data is empty', function () {
+                const apiConfig = {};
+                const mobiledoc = '{"version":"0.3.1","atoms":[],"cards":[],"sections":[]}';
+                const frame = {
+                    options: {
+                        source: 'html'
+                    },
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                html: '',
+                                mobiledoc: mobiledoc
+                            }
+                        ]
+                    }
+                };
+
+                serializers.input.posts.edit(apiConfig, frame);
+
+                let postData = frame.data.posts[0];
+                postData.mobiledoc.should.equal(mobiledoc);
+            });
+
+            it('transforms html when html is present in data and source options', function () {
+                const apiConfig = {};
+                const mobiledoc = '{"version":"0.3.1","atoms":[],"cards":[],"sections":[]}';
+                const frame = {
+                    options: {
+                        source: 'html'
+                    },
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                html: '<p>this is great feature</p>',
+                                mobiledoc: mobiledoc
+                            }
+                        ]
+                    }
+                };
+
+                serializers.input.posts.edit(apiConfig, frame);
+
+                let postData = frame.data.posts[0];
+                postData.mobiledoc.should.not.equal(mobiledoc);
+                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]]]}');
+            });
+        });
     });
 });

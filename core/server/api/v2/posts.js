@@ -83,12 +83,16 @@ module.exports = {
         statusCode: 201,
         headers: {},
         options: [
-            'include'
+            'include',
+            'source'
         ],
         validation: {
             options: {
                 include: {
                     values: allowedIncludes
+                },
+                source: {
+                    values: ['html']
                 }
             }
         },
@@ -113,7 +117,8 @@ module.exports = {
         headers: {},
         options: [
             'include',
-            'id'
+            'id',
+            'source'
         ],
         validation: {
             options: {
@@ -122,6 +127,9 @@ module.exports = {
                 },
                 id: {
                     required: true
+                },
+                source: {
+                    values: ['html']
                 }
             }
         },
