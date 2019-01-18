@@ -25,8 +25,10 @@ module.exports = function MembersApi({
     const {encodeToken, decodeToken, getPublicKeys} = Tokens({privateKey, publicKey});
 
     const users = Users({
+        createMember,
         updateMember,
         getMember,
+        validateMember,
         sendEmail,
         encodeToken,
         decodeToken
@@ -99,7 +101,7 @@ module.exports = function MembersApi({
         const {name, email, password} = req.data;
 
         // @TODO this should attempt to reset password before creating member
-        createMember({name, email, password}).then((member) => {
+        users.create({name, email, password}).then((member) => {
             res.writeHead(200, {
                 'Set-Cookie': setCookie(member)
             });
@@ -111,7 +113,7 @@ module.exports = function MembersApi({
     apiRouter.post('/signin', getData('email', 'password'), ssoOriginCheck, (req, res) => {
         const {email, password} = req.data;
 
-        validateMember({email, password}).then((member) => {
+        users.validate({email, password}).then((member) => {
             res.writeHead(200, {
                 'Set-Cookie': setCookie(member)
             });

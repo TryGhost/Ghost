@@ -1,6 +1,8 @@
 module.exports = function ({
+    createMember,
     updateMember,
     getMember,
+    validateMember,
     sendEmail,
     encodeToken,
     decodeToken
@@ -25,6 +27,9 @@ module.exports = function ({
 
     return {
         requestPasswordReset,
-        resetPassword
+        resetPassword,
+        create: createMember,
+        validate: validateMember,
+        get: getMember
     };
 };
