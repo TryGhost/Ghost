@@ -22,7 +22,7 @@ module.exports = function MembersApi({
     getMember,
     sendEmail
 }) {
-    const {encodeToken, decodeToken, getPublicKeys} = Tokens({privateKey, publicKey});
+    const {encodeToken, decodeToken, getPublicKeys} = Tokens({privateKey, publicKey, issuer});
 
     const users = Users({
         createMember,
@@ -58,8 +58,7 @@ module.exports = function MembersApi({
         validateAudience({audience, origin, id: signedin})
             .then(() => encodeToken({
                 sub: signedin,
-                aud: audience,
-                iss: issuer
+                aud: audience
             }))
             .then(token => res.end(token))
             .catch(handleError(403, res));

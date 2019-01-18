@@ -3,27 +3,28 @@ const jwt = require('jsonwebtoken');
 
 module.exports = function ({
     privateKey,
-    publicKey
+    publicKey,
+    issuer
 }) {
     const keyStore = jose.JWK.createKeyStore();
     const keyStoreReady = keyStore.add(privateKey, 'pem');
 
-    function encodeToken({sub, aud, iss}) {
+    function encodeToken({sub, aud = issuer}) {
         return keyStoreReady.then(jwk => jwt.sign({
             sub,
             kid: jwk.kid
         }, privateKey, {
             algorithm: 'RS512',
             audience: aud,
-            issuer: iss
+            issuer
         }));
     }
 
-    function decodeToken(token, {iss}) {
+    function decodeToken(token) {
         return keyStoreReady.then(jwk => jwt.verify(token, publicKey, {
             algorithm: 'RS512',
             kid: jwk.kid,
-            issuer: iss
+            issuer
         })).then(() => jwt.decode(token));
     }
 
