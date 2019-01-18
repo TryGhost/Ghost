@@ -3,9 +3,9 @@ const body = require('body-parser');
 
 const {getData, handleError} = require('./util');
 
-const cookies = require('./cookies');
-const tokens = require('./tokens');
-const users = require('./users');
+const Cookies = require('./cookies');
+const Tokens = require('./tokens');
+const Users = require('./users');
 
 module.exports = function MembersApi({
     config: {
@@ -22,10 +22,14 @@ module.exports = function MembersApi({
     getMember,
     sendEmail
 }) {
-    const {encodeToken, decodeToken, getPublicKeys} = tokens({privateKey, publicKey});
+    const {encodeToken, decodeToken, getPublicKeys} = Tokens({privateKey, publicKey});
 
-    const {requestPasswordReset, resetPassword} = users({
-        updateMember, getMember, sendEmail, encodeToken, decodeToken
+    const users = Users({
+        updateMember,
+        getMember,
+        sendEmail,
+        encodeToken,
+        decodeToken
     });
 
     const router = Router();
@@ -35,7 +39,7 @@ module.exports = function MembersApi({
     apiRouter.use(body.json());
 
     /* session */
-    const {getCookie, setCookie, removeCookie} = cookies(sessionSecret);
+    const {getCookie, setCookie, removeCookie} = Cookies(sessionSecret);
 
     /* token */
     apiRouter.post('/token', getData('audience'), (req, res) => {
@@ -72,7 +76,7 @@ module.exports = function MembersApi({
     apiRouter.post('/request-password-reset', getData('email'), ssoOriginCheck, (req, res) => {
         const {email} = req.data;
 
-        requestPasswordReset({email}).then(() => {
+        users.requestPasswordReset({email}).then(() => {
             res.writeHead(200);
             res.end();
         }).catch(handleError(500, res));
@@ -82,7 +86,7 @@ module.exports = function MembersApi({
     apiRouter.post('/reset-password', getData('token', 'password'), ssoOriginCheck, (req, res) => {
         const {token, password} = req.data;
 
-        resetPassword({token, password}).then((member) => {
+        users.resetPassword({token, password}).then((member) => {
             res.writeHead(200, {
                 'Set-Cookie': setCookie(member)
             });
