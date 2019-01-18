@@ -21,6 +21,10 @@
                     "type": ["string", "null"],
                     "maxLength": 1000000000
                 },
+                "html": {
+                    "type": ["string", "null"],
+                    "maxLength": 1000000000
+                },
                 "feature_image": {
                     "type": ["string", "null"],
                     "format": "uri-reference",
