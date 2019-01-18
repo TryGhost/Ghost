@@ -50,7 +50,7 @@ Role = ghostBookshelf.Model.extend({
         return options;
     },
 
-    permissible: function permissible(roleModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
+    permissible: function permissible(roleModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, hasApiKeyPermission) {
         // If we passed in an id instead of a model, get the model
         // then check the permissions
         if (_.isNumber(roleModelOrId) || _.isString(roleModelOrId)) {
@@ -95,7 +95,7 @@ Role = ghostBookshelf.Model.extend({
             }
         }
 
-        if (hasUserPermission && hasAppPermission) {
+        if (hasUserPermission && hasAppPermission && hasApiKeyPermission) {
             return Promise.resolve();
         }
 
