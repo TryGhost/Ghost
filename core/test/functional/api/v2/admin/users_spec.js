@@ -7,6 +7,7 @@ const ObjectId = require('bson-objectid');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../../core/server/config');
+const db = require('../../../../../../core/server/data/db');
 const models = require('../../../../../../core/server/models');
 const ghost = testUtils.startGhost;
 let request;
@@ -332,32 +333,49 @@ describe('User API V2', function () {
 
         describe('Destroy', function () {
             it('[success] Destroy active user', function () {
+                const userId = testUtils.existingData.users[1].id;
+
                 return request
-                    .get(localUtils.API.getApiQuery(`posts/?filter=author_id:${testUtils.existingData.users[1].id}`))
+                    .get(localUtils.API.getApiQuery(`posts/?filter=author_id:${userId}`))
                     .set('Origin', config.get('url'))
                     .expect(200)
                     .then((res) => {
                         res.body.posts.length.should.eql(7);
 
                         return request
-                            .delete(localUtils.API.getApiQuery(`users/${testUtils.existingData.users[1].id}`))
+                            .delete(localUtils.API.getApiQuery(`users/${userId}`))
                             .set('Origin', config.get('url'))
                             .expect(204);
                     })
                     .then(() => {
                         return request
-                            .get(localUtils.API.getApiQuery(`users/${testUtils.existingData.users[1].id}/`))
+                            .get(localUtils.API.getApiQuery(`users/${userId}/`))
                             .set('Origin', config.get('url'))
                             .expect(404);
                     })
                     .then(() => {
                         return request
-                            .get(localUtils.API.getApiQuery(`posts/?filter=author_id:${testUtils.existingData.users[1].id}`))
+                            .get(localUtils.API.getApiQuery(`posts/?filter=author_id:${userId}`))
                             .set('Origin', config.get('url'))
                             .expect(200);
                     })
                     .then((res) => {
                         res.body.posts.length.should.eql(0);
+
+                        return db.knex('roles_users')
+                            .where({
+                                user_id: userId
+                            })
+                            .select();
+                    })
+                    .then((models) => {
+                        models.length.should.eql(0);
+
+                        return db.knex('roles_users')
+                            .select();
+                    })
+                    .then((models) => {
+                        models.length.should.greaterThan(0);
                     });
             });
 
