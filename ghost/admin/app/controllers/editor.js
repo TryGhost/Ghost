@@ -474,6 +474,8 @@ export default Controller.extend({
         if (this.get('post.isDraft')) {
             yield this.get('autosave').perform();
         }
+
+        this.send('updateDocumentTitle');
     }),
 
     generateSlug: task(function* () {

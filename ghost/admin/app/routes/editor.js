@@ -17,7 +17,6 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
 
     classNames: ['editor'],
     shortcuts: generalShortcuts,
-    titleToken: 'Editor',
 
     activate() {
         this._super(...arguments);
@@ -80,6 +79,10 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
 
             this.get('controller').willTransition(transition);
         }
+    },
+
+    titleToken() {
+        return this.get('controller.post.title') || 'Editor';
     },
 
     _blurAndScheduleAction(func) {
