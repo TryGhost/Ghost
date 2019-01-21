@@ -14,7 +14,14 @@ describe('{{next_post}} helper', function () {
     var browsePostStub;
 
     beforeEach(function () {
-        locals = {root: {_locals: {apiVersion: 'v0.1'}}};
+        locals = {
+            root: {
+                _locals: {
+                    apiVersion: 'v0.1'
+                },
+                context: ['post']
+            }
+        };
     });
 
     afterEach(function () {
@@ -130,6 +137,15 @@ describe('{{next_post}} helper', function () {
 
     describe('for page', function () {
         beforeEach(function () {
+            locals = {
+                root: {
+                    _locals: {
+                        apiVersion: 'v0.1'
+                    },
+                    context: ['page']
+                }
+            };
+
             browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({posts: [{slug: '/previous/', title: 'post 1'}]});
@@ -165,6 +181,15 @@ describe('{{next_post}} helper', function () {
 
     describe('for unpublished post', function () {
         beforeEach(function () {
+            locals = {
+                root: {
+                    _locals: {
+                        apiVersion: 'v0.1'
+                    },
+                    context: ['preview', 'post']
+                }
+            };
+
             browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({posts: [{slug: '/next/', title: 'post 3'}]});
@@ -406,7 +431,7 @@ describe('{{next_post}} helper', function () {
         it('should show warning for call without any options', function (done) {
             var fn = sinon.spy(),
                 inverse = sinon.spy(),
-                optionsData = {name: 'next_post'};
+                optionsData = {name: 'next_post', data: {root: {}}};
 
             helpers.next_post
                 .call(
