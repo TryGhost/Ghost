@@ -17,15 +17,15 @@ const supportedLocales = ['en'],
     settingsCache = require('../../services/settings/cache'),
     _private = {};
 
-    // currentLocale, dynamically based on overall settings (key = "default_locale") in the settings db table
-    // (during Ghost's initialization, settings available inside i18n functions below; see core/server/index.js)
-    //
-    // E.g.: en = English (default), es = Spanish, en-US = American English, etc.
-    // Standard:
-    // Language tags in HTML and XML
-    // https://www.w3.org/International/articles/language-tags/
-    //
-    // The corresponding translation files should be at content/themes/mytheme/locales/es.json, etc.
+// currentLocale, dynamically based on overall settings (key = "default_locale") in the settings db table
+// (during Ghost's initialization, settings available inside i18n functions below; see core/server/index.js)
+//
+// E.g.: en = English (default), es = Spanish, en-US = American English, etc.
+// Standard:
+// Language tags in HTML and XML
+// https://www.w3.org/International/articles/language-tags/
+//
+// The corresponding translation files should be at content/themes/mytheme/locales/es.json, etc.
 let currentLocale,
     activeTheme,
     coreStrings,
