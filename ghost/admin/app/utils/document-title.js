@@ -18,6 +18,10 @@ export default function () {
         title: null,
 
         actions: {
+            updateDocumentTitle() {
+                this.send('collectTitleTokens', []);
+            },
+
             collectTitleTokens(tokens) {
                 let {titleToken} = this;
                 let finalTitle;
@@ -49,7 +53,7 @@ export default function () {
 
     Router.reopen({
         updateTitle: on('didTransition', function () {
-            this.send('collectTitleTokens', []);
+            this.send('updateDocumentTitle');
         })
     });
 }
