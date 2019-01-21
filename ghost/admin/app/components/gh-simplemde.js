@@ -4,8 +4,11 @@ import config from 'ghost-admin/config/environment';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
 import {isEmpty} from '@ember/utils';
+import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 
 export default TextArea.extend({
+    lazyLoader: service(),
 
     // Public attributes
     autofocus: false,
@@ -60,6 +63,18 @@ export default TextArea.extend({
     // instantiate the editor with the contents of value
     didInsertElement() {
         this._super(...arguments);
+        this.initSimpleMDE.perform();
+    },
+
+    willDestroyElement() {
+        this.onEditorDestroy();
+        this._editor.toTextArea();
+        delete this._editor;
+        this._super(...arguments);
+    },
+
+    initSimpleMDE: task(function* () {
+        yield this.lazyLoader.loadScript('simplemde', 'assets/simplemde/simplemde.js');
 
         let editorOptions = assign(
             {element: document.getElementById(this.elementId)},
@@ -97,12 +112,5 @@ export default TextArea.extend({
         }
 
         this.onEditorInit(this._editor);
-    },
-
-    willDestroyElement() {
-        this.onEditorDestroy();
-        this._editor.toTextArea();
-        delete this._editor;
-        this._super(...arguments);
-    }
+    })
 });
