@@ -1900,7 +1900,7 @@ describe('Integration - Web - Site', function () {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('tag');
 
-                            postSpy.args[0][0].options.filter.should.eql('tags:\'bacon\'+tags.visibility:public+page:false');
+                            postSpy.args[0][0].options.filter.should.eql('(tags:\'bacon\'+tags.visibility:public)+page:false');
                             postSpy.args[0][0].options.page.should.eql(1);
                             postSpy.args[0][0].options.limit.should.eql(2);
                         });

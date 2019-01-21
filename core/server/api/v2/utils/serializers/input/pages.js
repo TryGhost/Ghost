@@ -35,7 +35,7 @@ module.exports = {
          * @TODO: https://github.com/TryGhost/Ghost/issues/10268
          */
         if (frame.options.filter) {
-            frame.options.filter = `${frame.options.filter}+page:true`;
+            frame.options.filter = `(${frame.options.filter})+page:true`;
         } else {
             frame.options.filter = 'page:true';
         }
