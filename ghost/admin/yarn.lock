@@ -3629,10 +3629,10 @@ code-point-at@^1.0.0:
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
 
-codemirror@5.39.0:
-  version "5.39.0"
-  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.39.0.tgz#4654f7d2f7e525e04a62e72d9482348ccb37dce5"
-  integrity sha512-vpJRray/0ZCt9FiS7UcVr1JAm6OBdUt6TA/94Q7MScr8TnutVdQWh/WPr0migzaBPQmYvY7I9UZNvbsaLESIuQ==
+codemirror@5.42.2:
+  version "5.42.2"
+  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.42.2.tgz#801ab715a7a7e1c7ed4162b78e9d8138b98de8f0"
+  integrity sha512-Tkv6im39VuhduFMsDA3MlXcC/kKas3Z0PI1/8N88QvFQbtOeiiwnfFJE4juGyC8/a4sb1BSxQlzsil8XLQdxRw==
 
 coffeescript@~1.10.0:
   version "1.10.0"
@@ -12222,7 +12222,7 @@ simple-swizzle@^0.2.2:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#f41ae1c38827bbc93d337435f8f37bd1bf20d7ac"
+  resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#7afb50dcdd63d3a1f6ccad682b70acbd7bc52eb9"
 
 sinon@^7.1.1:
   version "7.2.2"
