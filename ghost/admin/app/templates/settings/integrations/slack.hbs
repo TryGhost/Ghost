@@ -57,6 +57,30 @@
                     </div>
                 </div>
             </div>
+            <div class="gh-setting">
+                <div class="gh-setting-content gh-setting-content--no-action">
+                    <div class="gh-setting-title">Username</div>
+                    <div class="gh-setting-desc">The username to display messages from (defaults to "Ghost")</div>
+                    <div class="gh-setting-content-extended">
+                        {{#gh-form-group errors=slackSettings.errors hasValidated=slackSettings.hasValidated property="username"}}
+                            {{gh-text-input
+                                placeholder="Ghost"
+                                name="slack[username]"
+                                value=(readonly slackSettings.username)
+                                input=(action "updateUsername" value="target.value")
+                                keyEvents=(hash
+                                    Enter=(action "save")
+                                )
+                                focus-out=(action "triggerDirtyState")
+                                data-test-slack-username-input=true
+                            }}
+                            {{#if slackSettings.errors.username}}
+                                {{gh-error-message errors=slackSettings.errors property="username"}}
+                            {{/if}}
+                        {{/gh-form-group}}
+                    </div>
+                </div>
+            </div>
         </form>
 
         {{gh-task-button "Send test notification" task=sendTestNotification successText="Sent" class="gh-btn gh-btn-green gh-btn-icon" disabled=testNotificationDisabled data-test-send-notification-button=true}}
