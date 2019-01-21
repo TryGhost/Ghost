@@ -7,6 +7,7 @@
 // Returns the URL for the current object scope i.e. If inside a post scope will return image permalink
 // `absolute` flag outputs absolute URL, else URL is relative.
 
+const url = require('url');
 const proxy = require('./proxy');
 const urlService = proxy.urlService;
 const STATIC_IMAGE_URL_PREFIX = `/${urlService.utils.STATIC_IMAGE_URL_PREFIX}`;
@@ -48,8 +49,18 @@ function getImageWithSize(imagePath, requestedSize, imageSizes) {
         return imagePath;
     }
 
-    if (/https?:\/\//.test(imagePath) && !imagePath.startsWith(urlService.utils.getBlogUrl())) {
+    const blogUrl = urlService.utils.getBlogUrl();
+
+    if (/https?:\/\//.test(imagePath) && !imagePath.startsWith(blogUrl)) {
         return imagePath;
+    } else {
+        // CASE: imagePath is a "protocol relative" url e.g. "//www.gravatar.com/ava..."
+        //       by resolving the the imagePath relative to the blog url, we can then
+        //       detect if the imagePath is external, or internal.
+        const resolvedUrl = url.resolve(blogUrl, imagePath);
+        if (!resolvedUrl.startsWith(blogUrl)) {
+            return imagePath;
+        }
     }
 
     if (!imageSizes || !imageSizes[requestedSize]) {
