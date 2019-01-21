@@ -34,6 +34,12 @@ export default Controller.extend({
             this.get('slackSettings.errors').clear();
         },
 
+        updateUsername(value) {
+            value = typeof value === 'string' ? value.trimLeft() : value;
+            this.set('slackSettings.username', value);
+            this.get('slackSettings.errors').clear();
+        },
+
         triggerDirtyState() {
             let slack = this.get('slackSettings');
             let slackArray = this.get('slackArray');

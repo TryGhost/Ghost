@@ -6,6 +6,7 @@ import {isBlank} from '@ember/utils';
 export default EmberObject.extend(ValidationEngine, {
     // values entered here will act as defaults
     url: '',
+    username: '',
 
     validationType: 'slackIntegration',
 
