@@ -7109,7 +7109,27 @@ ghost-ignition@^2.7.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-spirit@0.0.49, ghost-spirit@>=0.0.18:
+ghost-spirit@0.0.50:
+  version "0.0.50"
+  resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.50.tgz#d880226dff7be3feef96905e486eee21ad3bd6c4"
+  integrity sha512-Law87t/V/I8wve28gqrBHcOiT0mB9K0gNqwKKo15HIR9PFWX8Kxyru/NfmWJi5RcjEukpnd7BWLap9iYGc74mg==
+  dependencies:
+    autoprefixer "8.2.0"
+    bluebird "^3.4.6"
+    connect-slashes "^1.3.1"
+    cssnano "^4.0.0-rc.2"
+    express "^4.14.0"
+    express-hbs "^1.0.2"
+    ghost-ignition "^2.7.0"
+    gulp-postcss "7.0.1"
+    lodash "^4.15.0"
+    postcss-color-mod-function "2.4.2"
+    postcss-custom-media "6.0.0"
+    postcss-custom-properties "7.0.0"
+    postcss-easy-import "3.0.0"
+    postcss-prefix-selector "1.6.0"
+
+ghost-spirit@>=0.0.18:
   version "0.0.49"
   resolved "https://registry.yarnpkg.com/ghost-spirit/-/ghost-spirit-0.0.49.tgz#e806f896803b0a31976060ad6f656d333ebeb7dd"
   integrity sha512-gmbPXYenZ1BpeI/2+pw7RJCXOAduUxNu8eXl2b0YA/5oU8mbtJtVoitF93NJ/C4CvrJ3E0Q1z4li30TupmmPgQ==
