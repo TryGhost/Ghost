@@ -65,7 +65,6 @@ const CmEditorComponent = Component.extend({
         let loader = this.get('lazyLoader');
 
         yield RSVP.all([
-            loader.loadStyle('codemirror', 'assets/codemirror/codemirror.css'),
             loader.loadScript('codemirror', 'assets/codemirror/codemirror.js')
         ]);
 
