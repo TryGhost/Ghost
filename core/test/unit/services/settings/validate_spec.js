@@ -4,7 +4,6 @@ const common = require('../../../../server/lib/common');
 const themesService = require('../../../../server/services/themes');
 const validate = require('../../../../server/services/settings/validate');
 
-
 should.equal(true, true);
 
 describe('UNIT: services/settings/validate', function () {

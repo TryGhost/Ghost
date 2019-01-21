@@ -16,7 +16,6 @@ const client = {
     type: 'ua'
 };
 
-
 function registerSuccessfulBearerStrategy() {
     // register fake BearerStrategy which always authenticates
     passport.use(new BearerStrategy(

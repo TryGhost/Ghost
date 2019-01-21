@@ -2,7 +2,6 @@ const should = require('should');
 const sinon = require('sinon');
 const utils = require('../../../../server/api/v2/utils');
 
-
 describe('Unit: v2/utils/index', function () {
     afterEach(function () {
         sinon.restore();

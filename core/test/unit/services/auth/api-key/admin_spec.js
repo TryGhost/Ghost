@@ -7,8 +7,6 @@ const common = require('../../../../../server/lib/common');
 const models = require('../../../../../server/models');
 const testUtils = require('../../../../utils');
 
-
-
 describe('Admin API Key Auth', function () {
     before(models.init);
     before(testUtils.teardown);

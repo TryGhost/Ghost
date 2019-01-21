@@ -11,7 +11,6 @@ const models = require('../../../server/models');
 const common = require('../../../server/lib/common');
 const security = require('../../../server/lib/security');
 
-
 describe('Unit: models/post', function () {
     const mockDb = require('mock-knex');
     let tracker;

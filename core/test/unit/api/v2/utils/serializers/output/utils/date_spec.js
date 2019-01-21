@@ -3,8 +3,6 @@ const sinon = require('sinon');
 const settingsCache = require('../../../../../../../../server/services/settings/cache');
 const dateUtil = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/date');
 
-
-
 describe('Unit: v2/utils/serializers/output/utils/date', () => {
     afterEach(() => {
         sinon.restore();

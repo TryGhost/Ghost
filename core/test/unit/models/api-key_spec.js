@@ -77,7 +77,6 @@ describe('Unit: models/api_key', function () {
 
     describe('refreshSecret', function () {
         it('returns a call to edit passing a new secret', function () {
-
             const editStub = sinon.stub(models.ApiKey, 'edit').resolves();
 
             const fakeData = {

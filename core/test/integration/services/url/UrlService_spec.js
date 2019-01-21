@@ -9,8 +9,6 @@ const common = require('../../../../server/lib/common');
 const themes = require('../../../../server/services/themes');
 const UrlService = rewire('../../../../server/services/url/UrlService');
 
-
-
 describe('Integration: services/url/UrlService', function () {
     let urlService;
 

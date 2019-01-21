@@ -8,7 +8,6 @@ const validate = themes.validate;
 const gscan = require('gscan');
 const common = require('../../../../server/lib/common');
 
-
 describe('Themes', function () {
     let checkZipStub;
     let checkStub;

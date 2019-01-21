@@ -10,8 +10,6 @@ const webhooks = {
     trigger: rewire('../../../server/services/webhooks/trigger')
 };
 
-
-
 describe('Webhooks', function () {
     var eventStub;
 

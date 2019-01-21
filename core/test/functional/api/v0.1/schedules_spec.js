@@ -10,7 +10,6 @@ const models = require('../../../../../core/server/models');
 const config = require('../../../../../core/server/config');
 const ghost = testUtils.startGhost;
 
-
 describe('Schedules API', function () {
     const posts = [];
     let request;

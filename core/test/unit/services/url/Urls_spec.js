@@ -1,4 +1,3 @@
-
 const _ = require('lodash');
 const Promise = require('bluebird');
 const should = require('should');
@@ -6,7 +5,6 @@ const jsonpath = require('jsonpath');
 const sinon = require('sinon');
 const common = require('../../../../server/lib/common');
 const Urls = require('../../../../server/services/url/Urls');
-
 
 describe('Unit: services/url/Urls', function () {
     let urls, eventsToRemember;

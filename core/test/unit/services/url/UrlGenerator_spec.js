@@ -6,7 +6,6 @@ const sinon = require('sinon');
 const urlUtils = require('../../../../server/services/url/utils');
 const UrlGenerator = require('../../../../server/services/url/UrlGenerator');
 
-
 describe('Unit: services/url/UrlGenerator', function () {
     let queue, router, urls, resources, resource, resource2;
 

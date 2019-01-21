@@ -9,7 +9,6 @@ const {
 } = require('../../../../../server/lib/common/errors');
 
 describe('Session Service', function () {
-    
     before(function () {
         models.init();
     });

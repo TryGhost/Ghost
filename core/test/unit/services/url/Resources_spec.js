@@ -6,7 +6,6 @@ const models = require('../../../../server/models');
 const common = require('../../../../server/lib/common');
 const Resources = require('../../../../server/services/url/Resources');
 
-
 describe('Unit: services/url/Resources', function () {
     let onEvents, emitEvents, resources, queue;
 

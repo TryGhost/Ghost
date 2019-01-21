@@ -4,8 +4,6 @@ const testUtils = require('../../../../../../utils');
 const mapper = require('../../../../../../../server/api/v2/utils/serializers/output/utils/mapper');
 const serializers = require('../../../../../../../server/api/v2/utils/serializers');
 
-
-
 describe('Unit: v2/utils/serializers/output/tags', () => {
     let tagModel;
 

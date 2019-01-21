@@ -4,8 +4,6 @@ const testUtils = require('../../../../../../../utils');
 const urlService = require('../../../../../../../../server/services/url');
 const urlUtil = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/url');
 
-
-
 describe('Unit: v2/utils/serializers/output/utils/url', () => {
     beforeEach(() => {
         sinon.stub(urlService, 'getUrlByResourceId').returns('getUrlByResourceId');

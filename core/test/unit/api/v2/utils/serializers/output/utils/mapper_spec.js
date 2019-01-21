@@ -7,8 +7,6 @@ const cleanUtil = require('../../../../../../../../server/api/v2/utils/serialize
 const extraAttrsUtils = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/extra-attrs');
 const mapper = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/mapper');
 
-
-
 describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
     beforeEach(() => {
         sinon.stub(dateUtil, 'forPost').returns({});

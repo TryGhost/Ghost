@@ -10,8 +10,6 @@ const configUtils = require('../utils/configUtils');
 const packageInfo = require('../../../package');
 const api = require('../../server/api').v2;
 
-
-
 let updateCheck = rewire('../../server/update-check');
 let NotificationsAPI = rewire('../../server/api/v2/notifications');
 

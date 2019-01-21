@@ -2,7 +2,6 @@ const should = require('should');
 const sinon = require('sinon');
 const themeEngines = require('../../../../../server/services/themes/engines');
 
-
 describe('Themes: engines', function () {
     afterEach(function () {
         sinon.restore();

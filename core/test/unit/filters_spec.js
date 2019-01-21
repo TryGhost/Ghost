@@ -4,7 +4,7 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    Filters = require('../../server/filters').Filters
+    Filters = require('../../server/filters').Filters;
 
 describe('Filters', function () {
     var filters;

@@ -5,8 +5,6 @@ const models = require('../../../server/models');
 const testUtils = require('../../utils');
 const {knex} = require('../../../server/data/db');
 
-
-
 describe('Unit: models/webhooks', function () {
     before(function () {
         models.init();

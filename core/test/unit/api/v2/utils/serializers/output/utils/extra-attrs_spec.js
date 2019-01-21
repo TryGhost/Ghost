@@ -2,7 +2,6 @@ const should = require('should');
 const sinon = require('sinon');
 const extraAttrsUtil = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/extra-attrs');
 
-
 describe('Unit: v2/utils/serializers/output/utils/extra-attrs', () => {
     const frame = {
         options: {}

@@ -10,7 +10,6 @@ const UrlGenerator = require('../../../../server/services/url/UrlGenerator');
 const Urls = require('../../../../server/services/url/Urls');
 const UrlService = rewire('../../../../server/services/url/UrlService');
 
-
 describe('Unit: services/url/UrlService', function () {
     let QueueStub, ResourcesStub, UrlsStub, UrlGeneratorStub, urlService;
 
