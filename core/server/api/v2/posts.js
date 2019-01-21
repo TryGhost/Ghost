@@ -132,9 +132,9 @@ module.exports = {
             return models.Post.edit(frame.data.posts[0], frame.options)
                 .then((model) => {
                     if (model.get('status') === 'published' ||
-                        model.get('status') === 'draft' && model.updated('status') === 'published') {
+                        model.get('status') === 'draft' && model.previous('status') === 'published') {
                         this.headers.cacheInvalidate = true;
-                    } else if (model.get('status') === 'draft' && model.updated('status') !== 'published') {
+                    } else if (model.get('status') === 'draft' && model.previous('status') !== 'published') {
                         this.headers.cacheInvalidate = {
                             value: urlService.utils.urlFor({
                                 relativeUrl: urlService.utils.urlJoin('/p', model.get('uuid'), '/')

@@ -101,7 +101,7 @@ describe('Models: listeners', function () {
 
                 eventsToRemember['settings.active_timezone.edited']({
                     attributes: {value: scope.newTimezone},
-                    _updatedAttributes: {value: scope.oldTimezone}
+                    _previousAttributes: {value: scope.oldTimezone}
                 });
 
                 (function retry() {
@@ -158,7 +158,7 @@ describe('Models: listeners', function () {
 
                 eventsToRemember['settings.active_timezone.edited']({
                     attributes: {value: scope.newTimezone},
-                    _updatedAttributes: {value: scope.oldTimezone}
+                    _previousAttributes: {value: scope.oldTimezone}
                 });
 
                 (function retry() {
@@ -215,7 +215,7 @@ describe('Models: listeners', function () {
 
                 eventsToRemember['settings.active_timezone.edited']({
                     attributes: {value: scope.newTimezone},
-                    _updatedAttributes: {value: scope.oldTimezone}
+                    _previousAttributes: {value: scope.oldTimezone}
                 });
 
                 (function retry() {
@@ -280,7 +280,7 @@ describe('Models: listeners', function () {
 
                 eventsToRemember['settings.active_timezone.edited']({
                     attributes: {value: scope.newTimezone},
-                    _updatedAttributes: {value: scope.oldTimezone}
+                    _previousAttributes: {value: scope.oldTimezone}
                 });
 
                 models.Post.findAll.calledOnce.should.eql(false);
@@ -315,7 +315,7 @@ describe('Models: listeners', function () {
             it('no scheduled posts', function (done) {
                 eventsToRemember['settings.active_timezone.edited']({
                     attributes: {value: scope.newTimezone},
-                    _updatedAttributes: {value: scope.oldTimezone}
+                    _previousAttributes: {value: scope.oldTimezone}
                 });
 
                 models.Post.findAll({context: {internal: true}})

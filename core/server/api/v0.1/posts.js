@@ -161,7 +161,7 @@ posts = {
                     // If previously was not published and now is (or vice versa), signal the change
                     // @TODO: `statusChanged` get's added for the API headers only. Reconsider this.
                     post.statusChanged = false;
-                    if (model.updated('status') !== model.get('status')) {
+                    if (model.previous('status') !== model.get('status')) {
                         post.statusChanged = true;
                     }
 
