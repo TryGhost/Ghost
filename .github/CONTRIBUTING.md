@@ -10,6 +10,8 @@ If you're a developer looking to contribute, but you're not sure where to begin:
 
 After that, if you're looking for something a little more challenging to sink your teeth into, there's a broader [help wanted](https://github.com/TryGhost/Ghost/labels/help%20wanted) label encompassing issues which need some love.
 
+If you've got an idea for a new feature, please start by suggesting it in the [forum](https://forum.ghost.org), as adding new features to Ghost first requires generating consensus around a design and spec.
+
 
 ## Working on Ghost Core
 
@@ -20,7 +22,7 @@ First you'll need to fork both [Ghost](https://github.com/tryghost/ghost) and [G
 
 ### Branching Guide
 
-`master` on the main repository always contains the latest changes. This means that it is WIP for the next minor version and should NOT be considered stable. Stable versions are tagged using [semantic versioning](http://semver.org/). 
+`master` on the main repository always contains the latest changes. This means that it is WIP for the next minor version and should NOT be considered stable. Stable versions are tagged using [semantic versioning](http://semver.org/).
 
 On your local repository, you should always work on a branch to make keeping up-to-date and submitting pull requests easier, but in most cases you should submit your pull requests to `master`. Where necessary, for example if multiple people are contributing on a large feature, or if a feature requires a database change, we make use of feature branches. If you are working on something which you feel needs to go into a feature branch, let Hannah know and she will create this for you.
 
