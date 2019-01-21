@@ -6,7 +6,7 @@ supportLabel: support
 # Comment to post on issues marked as support requests, `{issue-author}` is an
 # optional placeholder. Set to `false` to disable
 supportComment: |
-  Hey ___  :wave: We ask that you please do not use GitHub for help or support 😄. We use GitHub solely for bug-tracking and on-going feature development.
+  Hey @{issue-author} :wave: We ask that you please do not use GitHub for help or support 😄. We use GitHub solely for bug-tracking and on-going feature development.
 
   Many questions can be answered by reviewing our [documentation](https://docs.ghost.org). If you can't find an answer then our [forum](https://forum.ghost.org) is a great place to get community support, plus it helps create a central location for searching problems/solutions.
 
