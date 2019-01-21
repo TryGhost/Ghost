@@ -331,7 +331,7 @@ describe('User API V2', function () {
             });
         });
 
-        describe.only('Destroy', function () {
+        describe('Destroy', function () {
             it('[success] Destroy active user', function () {
                 const userId = testUtils.existingData.users[1].id;
 
