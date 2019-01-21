@@ -117,7 +117,25 @@ describe('{{image}} helper', function () {
             });
             should.exist(rendered);
             rendered.should.equal('http://localhost:82832/content/images/size/w400/my-coole-img.jpg');
-    });
+        });
+        it('should output the correct url for protocol relative urls', function () {
+            var rendered = helpers.img_url('//website.com/whatever/my-coole-img.jpg', {
+                hash: {
+                    size: 'medium',
+                },
+                data: {
+                    config: {
+                        image_sizes: {
+                            medium: {
+                                width: 400
+                            }
+                        }
+                    }
+                }
+            });
+            should.exist(rendered);
+            rendered.should.equal('//website.com/whatever/my-coole-img.jpg');
+        });
         it('should output the correct url for relative paths', function () {
             var rendered = helpers.img_url('/content/images/my-coole-img.jpg', {
                 hash: {
