@@ -4,8 +4,8 @@ import Component from '@ember/component';
 import RSVP from 'rsvp';
 import {computed} from '@ember/object';
 import {isBlank, isEmpty} from '@ember/utils';
-import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
+import {task, timeout, waitForProperty} from 'ember-concurrency';
 
 export function computedGroup(category) {
     return computed('content', 'currentSearch', function () {
@@ -29,9 +29,8 @@ export default Component.extend({
 
     content: null,
     contentExpiresAt: false,
-    contentExpiry: 10000,
+    contentExpiry: 30000,
     currentSearch: '',
-    isLoading: false,
     selection: null,
 
     posts: computedGroup('Stories'),
@@ -97,33 +96,55 @@ export default Component.extend({
         },
 
         search(term) {
-            return new RSVP.Promise((resolve, reject) => {
-                run.debounce(this, this._performSearch, term, resolve, reject, 200);
-            });
+            return this.performSearch.perform(term);
         }
     },
 
-    refreshContent() {
-        let promises = [];
-        let now = new Date();
-        let contentExpiry = this.get('contentExpiry');
-        let contentExpiresAt = this.get('contentExpiresAt');
-
-        if (this.get('isLoading') || contentExpiresAt > now) {
-            return RSVP.resolve();
+    performSearch: task(function* (term) {
+        if (isBlank(term)) {
+            return [];
         }
 
-        this.set('isLoading', true);
+        // start loading immediately in the background
+        this.refreshContent.perform();
+
+        // debounce searches to 200ms to avoid thrashing CPU
+        yield timeout(200);
+
+        // wait for any on-going refresh to finish
+        if (this.refreshContent.isRunning) {
+            yield waitForProperty(this, 'refreshContent.isIdle');
+        }
+
+        // set dependent CP term and re-calculate CP
+        this.set('currentSearch', term);
+        return this.get('groupedContent');
+    }).restartable(),
+
+    refreshContent: task(function* () {
+        let promises = [];
+        let now = new Date();
+        let contentExpiresAt = this.get('contentExpiresAt');
+
+        if (contentExpiresAt > now) {
+            return true;
+        }
+
         this.set('content', []);
         promises.pushObject(this._loadPosts());
         promises.pushObject(this._loadUsers());
         promises.pushObject(this._loadTags());
 
-        return RSVP.all(promises).then(() => { }).finally(() => {
-            this.set('isLoading', false);
-            this.set('contentExpiresAt', new Date(now.getTime() + contentExpiry));
-        });
-    },
+        try {
+            yield RSVP.all(promises);
+        } catch (error) {
+            // eslint-disable-next-line
+            console.error(error);
+        }
+
+        let contentExpiry = this.get('contentExpiry');
+        this.set('contentExpiresAt', new Date(now.getTime() + contentExpiry));
+    }).drop(),
 
     _loadPosts() {
         let store = this.get('store');
@@ -174,18 +195,6 @@ export default Component.extend({
         }).catch((error) => {
             this.get('notifications').showAPIError(error, {key: 'search.loadTags.error'});
         });
-    },
-
-    _performSearch(term, resolve, reject) {
-        if (isBlank(term)) {
-            return resolve([]);
-        }
-
-        this.refreshContent().then(() => {
-            this.set('currentSearch', term);
-
-            return resolve(this.get('groupedContent'));
-        }).catch(reject);
     },
 
     _setKeymasterScope() {
