@@ -190,7 +190,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
                 common.events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
-                    _updatedAttributes: {value: 'Europe/London'}
+                    _previousAttributes: {value: 'Europe/London'}
                 });
 
                 collectionRouter.emit.called.should.be.false();
@@ -203,7 +203,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
                 common.events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
-                    _updatedAttributes: {value: 'America/Los_Angeles'}
+                    _previousAttributes: {value: 'America/Los_Angeles'}
                 });
 
                 collectionRouter.emit.called.should.be.false();
@@ -218,7 +218,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
                 common.events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
-                    _updatedAttributes: {value: 'Europe/London'}
+                    _previousAttributes: {value: 'Europe/London'}
                 });
 
                 collectionRouter.emit.calledOnce.should.be.true();
@@ -231,7 +231,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
                 common.events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
-                    _updatedAttributes: {value: 'America/Los_Angeles'}
+                    _previousAttributes: {value: 'America/Los_Angeles'}
                 });
 
                 collectionRouter.emit.called.should.be.false();
