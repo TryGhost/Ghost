@@ -2,13 +2,11 @@ var should = require('should'),
     sinon = require('sinon'),
 
     // Thing we are testing
-    redirectAdminUrls = require('../../../../server/web/admin/middleware')[0],
-
-    sandbox = sinon.sandbox.create();
+    redirectAdminUrls = require('../../../../server/web/admin/middleware')[0];
 
 describe('Admin App', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('middleware', function () {
@@ -19,8 +17,8 @@ describe('Admin App', function () {
             beforeEach(function () {
                 req = {};
                 res = {};
-                next = sandbox.stub();
-                res.redirect = sandbox.stub();
+                next = sinon.stub();
+                res.redirect = sinon.stub();
             });
 
             it('should redirect a url which starts with ghost', function () {

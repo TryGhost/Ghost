@@ -2,8 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
     configUtils = require('../../../../utils/configUtils'),
-    cors = rewire('../../../../../server/web/shared/middlewares/api/cors'),
-    sandbox = sinon.sandbox.create();
+    cors = rewire('../../../../../server/web/shared/middlewares/api/cors');
 
 describe('cors', function () {
     var res, req, next;
@@ -27,11 +26,11 @@ describe('cors', function () {
             }
         };
 
-        next = sandbox.spy();
+        next = sinon.spy();
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
         cors = rewire('../../../../../server/web/shared/middlewares/api/cors');
     });

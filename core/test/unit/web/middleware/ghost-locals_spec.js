@@ -2,17 +2,16 @@ const should = require('should');
 const sinon = require('sinon');
 const ghostLocals = require('../../../../server/web/shared/middlewares/ghost-locals');
 const themeService = require('../../../../server/services/themes');
-const sandbox = sinon.sandbox.create();
 
 describe('Theme Handler', function () {
     let req, res, next;
 
     beforeEach(function () {
-        req = sandbox.spy();
-        res = sandbox.spy();
-        next = sandbox.spy();
+        req = sinon.spy();
+        res = sinon.spy();
+        next = sinon.spy();
 
-        sandbox.stub(themeService, 'getActive').callsFake(() => {
+        sinon.stub(themeService, 'getActive').callsFake(() => {
            return {
                engine() {
                    return 'v0.1';
@@ -22,7 +21,7 @@ describe('Theme Handler', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('ghostLocals', function () {

@@ -10,17 +10,15 @@ const webhooks = {
     trigger: rewire('../../../server/services/webhooks/trigger')
 };
 
-const sandbox = sinon.sandbox.create();
-
 describe('Webhooks', function () {
     var eventStub;
 
     beforeEach(function () {
-        eventStub = sandbox.stub(common.events, 'on');
+        eventStub = sinon.stub(common.events, 'on');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('listen() should initialise events correctly', function () {
@@ -36,7 +34,7 @@ describe('Webhooks', function () {
                 }
             },
             webhooksStub = {
-                trigger: sandbox.stub()
+                trigger: sinon.stub()
             },
             resetWebhooks = webhooks.listen.__set__('webhooks', webhooksStub),
             listener = webhooks.listen.__get__('listener'),
@@ -62,7 +60,7 @@ describe('Webhooks', function () {
                 _previousAttributes: testSubscriber
             },
             webhooksStub = {
-                trigger: sandbox.stub()
+                trigger: sinon.stub()
             },
             resetWebhooks = webhooks.listen.__set__('webhooks', webhooksStub),
             listener = webhooks.listen.__get__('listener'),
@@ -84,7 +82,7 @@ describe('Webhooks', function () {
 
     it('listener() with "site.changed" event calls webhooks.trigger ', function () {
         const webhooksStub = {
-            trigger: sandbox.stub()
+            trigger: sinon.stub()
         };
         const resetWebhooks = webhooks.listen.__set__('webhooks', webhooksStub);
         const listener = webhooks.listen.__get__('listener');

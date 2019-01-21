@@ -7,8 +7,7 @@ const should = require('should'),
     settingsCache = require('../../../../server/services/settings/cache'),
     configUtils = require('../../../utils/configUtils'),
     testUtils = require('../../../utils'),
-    config = configUtils.config,
-    sandbox = sinon.sandbox.create();
+    config = configUtils.config;
 
 describe('Url', function () {
     before(function () {
@@ -17,7 +16,7 @@ describe('Url', function () {
 
     afterEach(function () {
         configUtils.restore();
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('absoluteToRelative', function () {
@@ -615,7 +614,7 @@ describe('Url', function () {
         const localSettingsCache = {};
 
         beforeEach(function () {
-            sandbox.stub(settingsCache, 'get').callsFake(function (key) {
+            sinon.stub(settingsCache, 'get').callsFake(function (key) {
                 return localSettingsCache[key];
             });
         });

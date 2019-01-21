@@ -1,22 +1,18 @@
 var should = require('should'),
     sinon = require('sinon'),
-
-// Stuff we are testing
     helpers = require('../../../server/helpers'),
     proxy = require('../../../server/helpers/proxy'),
-    settingsCache = proxy.settingsCache,
-
-    sandbox = sinon.sandbox.create();
+    settingsCache = proxy.settingsCache;
 
 describe('{{ghost_foot}} helper', function () {
     var settingsCacheStub;
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     beforeEach(function () {
-        settingsCacheStub = sandbox.stub(settingsCache, 'get');
+        settingsCacheStub = sinon.stub(settingsCache, 'get');
     });
 
     it('outputs global injected code', function (done) {

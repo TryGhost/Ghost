@@ -1,11 +1,10 @@
 const should = require('should');
 const sinon = require('sinon');
 const utils = require('../../../../server/api/v2/utils');
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: v2/utils/index', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
     describe('isContentAPI', function () {
         it('is truthy when having api key and no user', function () {

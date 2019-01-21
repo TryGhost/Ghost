@@ -1,4 +1,3 @@
-
 const _ = require('lodash');
 const Promise = require('bluebird');
 const should = require('should');
@@ -6,7 +5,6 @@ const jsonpath = require('jsonpath');
 const sinon = require('sinon');
 const common = require('../../../../server/lib/common');
 const Urls = require('../../../../server/services/url/Urls');
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: services/url/Urls', function () {
     let urls, eventsToRemember;
@@ -45,13 +43,13 @@ describe('Unit: services/url/Urls', function () {
         });
 
         eventsToRemember = {};
-        sandbox.stub(common.events, 'emit').callsFake(function (eventName, data) {
+        sinon.stub(common.events, 'emit').callsFake(function (eventName, data) {
             eventsToRemember[eventName] = data;
         });
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('fn: add', function () {

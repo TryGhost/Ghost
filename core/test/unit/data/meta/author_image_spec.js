@@ -1,11 +1,10 @@
 var should = require('should'),
     sinon = require('sinon'),
-    getAuthorImage = require('../../../../server/data/meta/author_image'),
-    sandbox = sinon.sandbox.create();
+    getAuthorImage = require('../../../../server/data/meta/author_image');
 
 describe('getAuthorImage', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should return author image url if post and has url', function () {

@@ -6,8 +6,7 @@ const should = require('should'),
     helpers = require('../../../../server/services/routing/helpers'),
     common = require('../../../../server/lib/common'),
     testUtils = require('../../../utils'),
-    configUtils = require('../../../utils/configUtils'),
-    sandbox = sinon.sandbox.create();
+    configUtils = require('../../../utils/configUtils');
 
 // Helper function to prevent unit tests
 // from failing via timeout when they
@@ -25,14 +24,14 @@ describe('Unit - apps/amp/lib/router', function () {
         rendererStub;
 
     beforeEach(function () {
-        rendererStub = sandbox.stub();
+        rendererStub = sinon.stub();
 
-        sandbox.stub(helpers, 'renderer').get(function () {
+        sinon.stub(helpers, 'renderer').get(function () {
             return rendererStub;
         });
 
         res = {
-            render: sandbox.spy(),
+            render: sinon.spy(),
             locals: {
                 context: ['amp', 'post']
             }
@@ -54,7 +53,7 @@ describe('Unit - apps/amp/lib/router', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('fn: renderer', function () {
@@ -105,17 +104,17 @@ describe('Unit - apps/amp/lib/router', function () {
 
             req = {};
 
-            entryLookupStub = sandbox.stub();
+            entryLookupStub = sinon.stub();
 
-            sandbox.stub(helpers, 'entryLookup').get(function () {
+            sinon.stub(helpers, 'entryLookup').get(function () {
                 return entryLookupStub;
             });
 
-            sandbox.stub(urlService, 'getPermalinkByUrl');
+            sinon.stub(urlService, 'getPermalinkByUrl');
         });
 
         afterEach(function () {
-            sandbox.restore();
+            sinon.restore();
         });
 
         it('should successfully get the post data from slug', function (done) {

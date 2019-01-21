@@ -2,13 +2,10 @@ var should = require('should'),
     _ = require('lodash'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
-
-    // Stuff we are testing
     SettingsModel = require('../../../server/models/settings').Settings,
     db = require('../../../server/data/db'),
     common = require('../../../server/lib/common'),
-    context = testUtils.context.admin,
-    sandbox = sinon.sandbox.create();
+    context = testUtils.context.admin;
 
 describe('Settings Model', function () {
     var eventSpy;
@@ -23,11 +20,11 @@ describe('Settings Model', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     beforeEach(function () {
-        eventSpy = sandbox.spy(common.events, 'emit');
+        eventSpy = sinon.spy(common.events, 'emit');
     });
 
     describe('API', function () {

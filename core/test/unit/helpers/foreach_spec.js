@@ -2,15 +2,13 @@ var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
     helpers = require.main.require('core/server/helpers'),
-    handlebars = require.main.require('core/server/services/themes/engine').handlebars,
-
-    sandbox = sinon.sandbox.create();
+    handlebars = require.main.require('core/server/services/themes/engine').handlebars;
 
 describe('{{#foreach}} helper', function () {
     var options, context, _this, resultData;
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('(function call)', function () {
@@ -24,8 +22,8 @@ describe('{{#foreach}} helper', function () {
             }
 
             options = {
-                fn: sandbox.spy(fn),
-                inverse: sandbox.spy(),
+                fn: sinon.spy(fn),
+                inverse: sinon.spy(),
                 data: {}
             };
         });

@@ -5,7 +5,6 @@ const testUtils = require('../../../utils');
 const models = require('../../../../server/models');
 const common = require('../../../../server/lib/common');
 const Resources = require('../../../../server/services/url/Resources');
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: services/url/Resources', function () {
     let onEvents, emitEvents, resources, queue;
@@ -21,21 +20,21 @@ describe('Unit: services/url/Resources', function () {
         onEvents = {};
         emitEvents = {};
 
-        sandbox.stub(common.events, 'on').callsFake(function (eventName, callback) {
+        sinon.stub(common.events, 'on').callsFake(function (eventName, callback) {
             onEvents[eventName] = callback;
         });
 
-        sandbox.stub(common.events, 'emit').callsFake(function (eventName, data) {
+        sinon.stub(common.events, 'emit').callsFake(function (eventName, data) {
             emitEvents[eventName] = data;
         });
 
         queue = {
-            start: sandbox.stub()
+            start: sinon.stub()
         };
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         resources.reset();
     });
 
@@ -178,7 +177,7 @@ describe('Unit: services/url/Resources', function () {
                 return false;
             });
 
-            sandbox.spy(resourceToUpdate, 'update');
+            sinon.spy(resourceToUpdate, 'update');
 
             queue.start.callsFake(function (options) {
                 options.event.should.eql('added');

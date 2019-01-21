@@ -3,11 +3,10 @@ const Promise = require('bluebird');
 const sinon = require('sinon');
 const common = require('../../../../../server/lib/common');
 const shared = require('../../../../../server/api/shared');
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: api/shared/serializers/handle', function () {
     beforeEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('input', function () {
@@ -28,16 +27,16 @@ describe('Unit: api/shared/serializers/handle', function () {
         });
 
         it('ensure serializers are called with apiConfig and frame', function () {
-            const allStub = sandbox.stub();
-            const addStub = sandbox.stub();
-            sandbox.stub(shared.serializers.input.all, 'all').get(() => allStub);
-            sandbox.stub(shared.serializers.input.all, 'add').get(() => addStub);
+            const allStub = sinon.stub();
+            const addStub = sinon.stub();
+            sinon.stub(shared.serializers.input.all, 'all').get(() => allStub);
+            sinon.stub(shared.serializers.input.all, 'add').get(() => addStub);
 
             const apiSerializers = {
-                all: sandbox.stub().resolves(),
+                all: sinon.stub().resolves(),
                 posts: {
-                    all: sandbox.stub().resolves(),
-                    add: sandbox.stub().resolves()
+                    all: sinon.stub().resolves(),
+                    add: sinon.stub().resolves()
                 }
             };
 
@@ -87,10 +86,10 @@ describe('Unit: api/shared/serializers/handle', function () {
         it('ensure serializers are called', function () {
             const apiSerializers = {
                 posts: {
-                    add: sandbox.stub().resolves()
+                    add: sinon.stub().resolves()
                 },
                 users: {
-                    add: sandbox.stub().resolves()
+                    add: sinon.stub().resolves()
                 }
             };
 

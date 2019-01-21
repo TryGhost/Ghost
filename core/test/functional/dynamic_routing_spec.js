@@ -12,8 +12,7 @@ const should = require('should'),
     config = require('../../server/config'),
     api = require('../../server/api'),
     settingsCache = require('../../server/services/settings/cache'),
-    ghost = testUtils.startGhost,
-    sandbox = sinon.sandbox.create();
+    ghost = testUtils.startGhost;
 
 let request;
 
@@ -38,7 +37,7 @@ describe('Dynamic Routing', function () {
     before(function () {
         // Default is always casper. We use the old compatible 1.4 casper theme for these tests. Available in the test content folder.
         var originalSettingsCacheGetFn = settingsCache.get;
-        sandbox.stub(settingsCache, 'get').callsFake(function (key, options) {
+        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
             if (key === 'active_theme') {
                 return 'casper-1.4';
             }
@@ -54,7 +53,7 @@ describe('Dynamic Routing', function () {
     });
 
     after(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Collection Index', function () {

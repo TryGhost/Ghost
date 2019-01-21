@@ -141,7 +141,7 @@
     "rewire": "3.0.2",
     "should": "13.2.3",
     "should-http": "0.1.1",
-    "sinon": "4.4.6",
+    "sinon": "7.2.3",
     "supertest": "3.4.1",
     "tmp": "0.0.33"
   },
