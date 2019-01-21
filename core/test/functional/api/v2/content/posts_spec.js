@@ -162,7 +162,7 @@ describe('Posts', function () {
     });
 
     it('browse posts with basic page filter should not return pages', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=(page:true,page:false)`))
+        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=page:true,featured:true`))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
@@ -176,7 +176,8 @@ describe('Posts', function () {
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                jsonResponse.posts.should.have.length(11);
+                jsonResponse.posts.should.have.length(2);
+                jsonResponse.posts.filter(p => (p.page === true)).should.have.length(0);
 
                 done();
             });
