@@ -4,9 +4,8 @@ import RSVP from 'rsvp';
 export default ModalComponent.extend({
     actions: {
         confirm() {
-            this.confirm().finally(() => {
-                this.send('closeModal');
-            });
+            this.confirm();
+            this.send('closeModal');
         }
     },
 
