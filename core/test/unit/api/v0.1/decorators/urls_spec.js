@@ -5,15 +5,13 @@ const testUtils = require('../../../../utils');
 const urlService = require('../../../../../server/services/url');
 const urls = require('../../../../../server/api/v0.1/decorators/urls');
 
-const sandbox = sinon.sandbox.create();
-
 describe('Unit: api:v0.1:decorators:urls', function () {
     beforeEach(function () {
-        sandbox.stub(urlService, 'getUrlByResourceId');
+        sinon.stub(urlService, 'getUrlByResourceId');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('urlsForPost', function () {

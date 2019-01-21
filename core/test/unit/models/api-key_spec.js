@@ -77,8 +77,8 @@ describe('Unit: models/api_key', function () {
 
     describe('refreshSecret', function () {
         it('returns a call to edit passing a new secret', function () {
-            const sandbox = sinon.sandbox.create();
-            const editStub = sandbox.stub(models.ApiKey, 'edit').resolves();
+
+            const editStub = sinon.stub(models.ApiKey, 'edit').resolves();
 
             const fakeData = {
                 id: 'TREVOR'
@@ -92,7 +92,7 @@ describe('Unit: models/api_key', function () {
             should.equal(editStub.args[0][0].secret.length, 128);
             should.equal(editStub.args[0][1], fakeOptions);
 
-            sandbox.restore();
+            sinon.restore();
         });
     });
 });

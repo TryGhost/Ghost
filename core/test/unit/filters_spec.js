@@ -4,9 +4,7 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    Filters = require('../../server/filters').Filters,
-
-    sandbox = sinon.sandbox.create();
+    Filters = require('../../server/filters').Filters
 
 describe('Filters', function () {
     var filters;
@@ -17,13 +15,13 @@ describe('Filters', function () {
 
     afterEach(function () {
         filters = null;
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('can register filters with specific priority', function () {
         var filterName = 'test',
             filterPriority = 9,
-            testFilterHandler = sandbox.spy();
+            testFilterHandler = sinon.spy();
 
         filters.registerFilter(filterName, filterPriority, testFilterHandler);
 
@@ -36,7 +34,7 @@ describe('Filters', function () {
     it('can register filters with default priority', function () {
         var filterName = 'test',
             defaultPriority = 5,
-            testFilterHandler = sandbox.spy();
+            testFilterHandler = sinon.spy();
 
         filters.registerFilter(filterName, testFilterHandler);
 
@@ -49,7 +47,7 @@ describe('Filters', function () {
     it('can register filters with priority null with default priority', function () {
         var filterName = 'test',
             defaultPriority = 5,
-            testFilterHandler = sandbox.spy();
+            testFilterHandler = sinon.spy();
 
         filters.registerFilter(filterName, null, testFilterHandler);
 
@@ -61,9 +59,9 @@ describe('Filters', function () {
 
     it('executes filters in priority order', function (done) {
         var filterName = 'testpriority',
-            testFilterHandler1 = sandbox.spy(),
-            testFilterHandler2 = sandbox.spy(),
-            testFilterHandler3 = sandbox.spy();
+            testFilterHandler1 = sinon.spy(),
+            testFilterHandler2 = sinon.spy(),
+            testFilterHandler3 = sinon.spy();
 
         filters.registerFilter(filterName, 0, testFilterHandler1);
         filters.registerFilter(filterName, 2, testFilterHandler2);

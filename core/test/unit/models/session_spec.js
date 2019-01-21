@@ -2,18 +2,13 @@ const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../server/models');
 
-const sandbox = sinon.sandbox.create();
-
 describe('Unit: models/session', function () {
-    let sandbox;
-
     before(function () {
         models.init();
-        sandbox = sinon.sandbox.create();
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('parse', function () {
@@ -65,7 +60,7 @@ describe('Unit: models/session', function () {
     describe('user', function () {
         it('sets up the relation to the "User" model', function () {
             const model = models.Session.forge({});
-            const belongsToSpy = sandbox.spy(model, 'belongsTo');
+            const belongsToSpy = sinon.spy(model, 'belongsTo');
             model.user();
 
             should.equal(belongsToSpy.args[0][0], 'User');
@@ -78,7 +73,7 @@ describe('Unit: models/session', function () {
 
         beforeEach(function () {
             basePermittedOptionsReturnVal = ['super', 'doopa'];
-            basePermittedOptionsStub = sandbox.stub(models.Base.Model, 'permittedOptions')
+            basePermittedOptionsStub = sinon.stub(models.Base.Model, 'permittedOptions')
                 .returns(basePermittedOptionsReturnVal);
         });
 
@@ -112,7 +107,7 @@ describe('Unit: models/session', function () {
     describe('destroy', function () {
         it('calls and returns the Base Model destroy if an id is passed', function () {
             const baseDestroyReturnVal = {};
-            const baseDestroyStub = sandbox.stub(models.Base.Model, 'destroy')
+            const baseDestroyStub = sinon.stub(models.Base.Model, 'destroy')
                 .returns(baseDestroyReturnVal);
 
             const options = {id: 1};
@@ -128,13 +123,13 @@ describe('Unit: models/session', function () {
             const unfilteredOptions = {session_id};
             const filteredOptions = {session_id};
 
-            const filterOptionsStub = sandbox.stub(models.Session, 'filterOptions')
+            const filterOptionsStub = sinon.stub(models.Session, 'filterOptions')
                 .returns(filteredOptions);
-            const forgeStub = sandbox.stub(models.Session, 'forge')
+            const forgeStub = sinon.stub(models.Session, 'forge')
                 .returns(model);
-            const fetchStub = sandbox.stub(model, 'fetch')
+            const fetchStub = sinon.stub(model, 'fetch')
                 .resolves(model);
-            const destroyStub = sandbox.stub(model, 'destroy')
+            const destroyStub = sinon.stub(model, 'destroy')
                 .resolves();
 
             models.Session.destroy(unfilteredOptions).then(() => {
@@ -162,13 +157,13 @@ describe('Unit: models/session', function () {
                 }
             };
 
-            const filterOptionsStub = sandbox.stub(models.Session, 'filterOptions')
+            const filterOptionsStub = sinon.stub(models.Session, 'filterOptions')
                 .returns(filteredOptions);
 
-            const findOneStub = sandbox.stub(models.Session, 'findOne')
+            const findOneStub = sinon.stub(models.Session, 'findOne')
                 .resolves();
 
-            const addStub = sandbox.stub(models.Session, 'add');
+            const addStub = sinon.stub(models.Session, 'add');
 
             models.Session.upsert(data, unfilteredOptions).then(() => {
                 should.equal(filterOptionsStub.args[0][0], unfilteredOptions);
@@ -201,13 +196,13 @@ describe('Unit: models/session', function () {
                 }
             };
 
-            const filterOptionsStub = sandbox.stub(models.Session, 'filterOptions')
+            const filterOptionsStub = sinon.stub(models.Session, 'filterOptions')
                 .returns(filteredOptions);
 
-            const findOneStub = sandbox.stub(models.Session, 'findOne')
+            const findOneStub = sinon.stub(models.Session, 'findOne')
                 .resolves(model);
 
-            const editStub = sandbox.stub(models.Session, 'edit');
+            const editStub = sinon.stub(models.Session, 'edit');
 
             models.Session.upsert(data, unfilteredOptions).then(() => {
                 should.equal(filterOptionsStub.args[0][0], unfilteredOptions);

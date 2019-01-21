@@ -5,7 +5,7 @@ const models = require('../../../server/models');
 const testUtils = require('../../utils');
 const {knex} = require('../../../server/data/db');
 
-const sandbox = sinon.sandbox.create();
+
 
 describe('Unit: models/tag', function () {
     before(function () {
@@ -13,7 +13,7 @@ describe('Unit: models/tag', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('SQL', function () {
@@ -26,7 +26,7 @@ describe('Unit: models/tag', function () {
         });
 
         after(function () {
-            sandbox.restore();
+            sinon.restore();
         });
 
         after(function () {

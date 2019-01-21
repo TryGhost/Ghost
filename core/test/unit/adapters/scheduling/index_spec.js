@@ -3,20 +3,18 @@ var should = require('should'),
     rewire = require('rewire'),
     Promise = require('bluebird'),
     config = require(__dirname + '/../../../../server/config'),
-    postScheduling = require(__dirname + '/../../../../server/adapters/scheduling/post-scheduling'),
-
-    sandbox = sinon.sandbox.create();
+    postScheduling = require(__dirname + '/../../../../server/adapters/scheduling/post-scheduling');
 
 describe('Scheduling', function () {
     var scope = {};
 
     before(function () {
-        sandbox.stub(postScheduling, 'init').returns(Promise.resolve());
+        sinon.stub(postScheduling, 'init').returns(Promise.resolve());
         scope.scheduling = rewire(config.get('paths').corePath + '/server/adapters/scheduling');
     });
 
     after(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('success', function () {

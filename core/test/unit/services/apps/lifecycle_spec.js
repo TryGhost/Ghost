@@ -7,9 +7,7 @@ var should = require('should'),
 
     // Stuff we are testing
     AppLoader = require('../../../../server/services/apps/loader'),
-    AppIndex = require('../../../../server/services/apps'),
-
-    sandbox = sinon.sandbox.create();
+    AppIndex = require('../../../../server/services/apps');
 
 describe('Apps', function () {
     var settingsCacheStub,
@@ -18,18 +16,18 @@ describe('Apps', function () {
         loaderInstallStub;
 
     beforeEach(function () {
-        settingsCacheStub = sandbox.stub(settingsCache, 'get');
-        settingsEditStub = sandbox.stub(api.settings, 'edit');
-        loaderActivateStub = sandbox.stub(AppLoader, 'activateAppByName').callsFake(function (appName) {
+        settingsCacheStub = sinon.stub(settingsCache, 'get');
+        settingsEditStub = sinon.stub(api.settings, 'edit');
+        loaderActivateStub = sinon.stub(AppLoader, 'activateAppByName').callsFake(function (appName) {
             return new Promise.resolve(appName);
         });
-        loaderInstallStub = sandbox.stub(AppLoader, 'installAppByName').callsFake(function (appName) {
+        loaderInstallStub = sinon.stub(AppLoader, 'installAppByName').callsFake(function (appName) {
             return new Promise.resolve(appName);
         });
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('will activate, but not install, internal apps', function (done) {

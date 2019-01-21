@@ -2,9 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
     configUtils = require('../../utils/configUtils'),
     helpers = require('../../../server/helpers'),
-    settingsCache = require('../../../server/services/settings/cache'),
-
-    sandbox = sinon.sandbox.create();
+    settingsCache = require('../../../server/services/settings/cache');
 
 describe('{{asset}} helper', function () {
     var rendered, localSettingsCache = {};
@@ -13,14 +11,14 @@ describe('{{asset}} helper', function () {
         configUtils.set({assetHash: 'abc'});
         configUtils.set({useMinFiles: true});
 
-        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
+        sinon.stub(settingsCache, 'get').callsFake(function (key) {
             return localSettingsCache[key];
         });
     });
 
     after(function () {
         configUtils.restore();
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('no subdirectory', function () {

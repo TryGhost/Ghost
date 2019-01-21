@@ -7,9 +7,7 @@ var should = require('should'),
     authUtils = require('../../../../server/services/auth/utils'),
     spamPrevention = require('../../../../server/web/shared/middlewares/api/spam-prevention'),
     common = require('../../../../server/lib/common'),
-    models = require('../../../../server/models'),
-
-    sandbox = sinon.sandbox.create();
+    models = require('../../../../server/models');
 
 describe('OAuth', function () {
     var next, req, res;
@@ -21,20 +19,20 @@ describe('OAuth', function () {
     beforeEach(function () {
         req = {};
         res = {};
-        next = sandbox.spy();
+        next = sinon.spy();
 
-        sandbox.stub(spamPrevention.userLogin(), 'reset');
+        sinon.stub(spamPrevention.userLogin(), 'reset');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Generate Token from Password', function () {
         beforeEach(function () {
-            sandbox.stub(models.Accesstoken, 'destroyAllExpired')
+            sinon.stub(models.Accesstoken, 'destroyAllExpired')
                 .returns(new Promise.resolve());
-            sandbox.stub(models.Refreshtoken, 'destroyAllExpired')
+            sinon.stub(models.Refreshtoken, 'destroyAllExpired')
                 .returns(new Promise.resolve());
             oAuth.init();
         });
@@ -59,22 +57,22 @@ describe('OAuth', function () {
             res.end = function () {
             };
 
-            sandbox.stub(models.User, 'check')
+            sinon.stub(models.User, 'check')
                 .withArgs({email: 'username', password: 'password'}).returns(Promise.resolve({
                 id: 1
             }));
 
-            sandbox.stub(authUtils, 'createTokens')
+            sinon.stub(authUtils, 'createTokens')
                 .returns(Promise.resolve({
                     access_token: 'AT',
                     refresh_token: 'RT',
                     expires_in: Date.now() + 1000
                 }));
 
-            sandbox.stub(res, 'setHeader').callsFake(function () {
+            sinon.stub(res, 'setHeader').callsFake(function () {
             });
 
-            sandbox.stub(res, 'end').callsFake(function (json) {
+            sinon.stub(res, 'end').callsFake(function (json) {
                 try {
                     should.exist(json);
                     json = JSON.parse(json);
@@ -160,12 +158,12 @@ describe('OAuth', function () {
             res.setHeader = {};
             res.end = {};
 
-            sandbox.stub(models.User, 'check')
+            sinon.stub(models.User, 'check')
                 .withArgs({email: 'username', password: 'password'}).returns(new Promise.resolve({
                 id: 1
             }));
 
-            sandbox.stub(authUtils, 'createTokens')
+            sinon.stub(authUtils, 'createTokens')
                 .returns(new Promise.reject({
                     message: 'DB error'
                 }));
@@ -179,9 +177,9 @@ describe('OAuth', function () {
 
     describe('Generate Token from Refreshtoken', function () {
         beforeEach(function () {
-            sandbox.stub(models.Accesstoken, 'destroyAllExpired')
+            sinon.stub(models.Accesstoken, 'destroyAllExpired')
                 .returns(new Promise.resolve());
-            sandbox.stub(models.Refreshtoken, 'destroyAllExpired')
+            sinon.stub(models.Refreshtoken, 'destroyAllExpired')
                 .returns(new Promise.resolve());
 
             oAuth.init();
@@ -201,7 +199,7 @@ describe('OAuth', function () {
             res.end = function () {
             };
 
-            sandbox.stub(models.Refreshtoken, 'findOne')
+            sinon.stub(models.Refreshtoken, 'findOne')
                 .withArgs({token: 'token'}).returns(new Promise.resolve({
                 toJSON: function () {
                     return {
@@ -210,17 +208,17 @@ describe('OAuth', function () {
                 }
             }));
 
-            sandbox.stub(authUtils, 'createTokens')
+            sinon.stub(authUtils, 'createTokens')
                 .returns(new Promise.resolve({
                     access_token: 'AT',
                     refresh_token: 'RT',
                     expires_in: Date.now() + 1000
                 }));
 
-            sandbox.stub(res, 'setHeader').callsFake(function () {
+            sinon.stub(res, 'setHeader').callsFake(function () {
             });
 
-            sandbox.stub(res, 'end').callsFake(function (json) {
+            sinon.stub(res, 'end').callsFake(function (json) {
                 try {
                     should.exist(json);
                     json = JSON.parse(json);
@@ -249,7 +247,7 @@ describe('OAuth', function () {
             res.setHeader = {};
             res.end = {};
 
-            sandbox.stub(models.Refreshtoken, 'findOne')
+            sinon.stub(models.Refreshtoken, 'findOne')
                 .withArgs({token: 'token'}).returns(new Promise.resolve());
 
             oAuth.generateAccessToken(req, res, function (err) {
@@ -270,7 +268,7 @@ describe('OAuth', function () {
             res.setHeader = {};
             res.end = {};
 
-            sandbox.stub(models.Refreshtoken, 'findOne')
+            sinon.stub(models.Refreshtoken, 'findOne')
                 .withArgs({token: 'token'}).returns(new Promise.resolve({
                 toJSON: function () {
                     return {
@@ -297,7 +295,7 @@ describe('OAuth', function () {
             res.setHeader = {};
             res.end = {};
 
-            sandbox.stub(models.Refreshtoken, 'findOne')
+            sinon.stub(models.Refreshtoken, 'findOne')
                 .withArgs({token: 'token'}).returns(new Promise.resolve({
                 toJSON: function () {
                     return {
@@ -306,7 +304,7 @@ describe('OAuth', function () {
                 }
             }));
 
-            sandbox.stub(authUtils, 'createTokens').callsFake(function () {
+            sinon.stub(authUtils, 'createTokens').callsFake(function () {
                 return Promise.reject(new Error('DB error'));
             });
 
@@ -319,10 +317,10 @@ describe('OAuth', function () {
 
     describe('Generate Token from Authorization Code', function () {
         beforeEach(function () {
-            sandbox.stub(models.Accesstoken, 'destroyAllExpired')
+            sinon.stub(models.Accesstoken, 'destroyAllExpired')
                 .returns(new Promise.resolve());
 
-            sandbox.stub(models.Refreshtoken, 'destroyAllExpired')
+            sinon.stub(models.Refreshtoken, 'destroyAllExpired')
                 .returns(new Promise.resolve());
 
             oAuth.init();
@@ -348,14 +346,14 @@ describe('OAuth', function () {
                 done();
             };
 
-            sandbox.stub(authUtils, 'createTokens')
+            sinon.stub(authUtils, 'createTokens')
                 .returns(new Promise.resolve({
                     access_token: 'access-token',
                     refresh_token: 'refresh-token',
                     expires_in: 10
                 }));
 
-            sandbox.stub(passport, 'authenticate').callsFake(function (name, options, onSuccess) {
+            sinon.stub(passport, 'authenticate').callsFake(function (name, options, onSuccess) {
                 return function () {
                     onSuccess(null, user);
                 };
@@ -376,7 +374,7 @@ describe('OAuth', function () {
             req.body.grant_type = 'authorization_code';
             req.body.authorizationCode = '1234';
 
-            sandbox.stub(passport, 'authenticate').callsFake(function (name, options, onSuccess) {
+            sinon.stub(passport, 'authenticate').callsFake(function (name, options, onSuccess) {
                 return function () {
                     onSuccess(new common.errors.UnauthorizedError());
                 };

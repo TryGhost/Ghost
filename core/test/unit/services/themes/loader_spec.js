@@ -3,16 +3,13 @@ var should = require('should'),
     fs = require('fs-extra'),
     tmp = require('tmp'),
     join = require('path').join,
-
     config = require('../../../../server/config'),
     themes = require('../../../../server/services/themes'),
-    themeList = themes.list,
-
-    sandbox = sinon.sandbox.create();
+    themeList = themes.list;
 
 describe('Themes', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Loader', function () {
@@ -20,7 +17,7 @@ describe('Themes', function () {
 
         beforeEach(function () {
             themePath = tmp.dirSync({unsafeCleanup: true});
-            sandbox.stub(config, 'getContentPath').withArgs('themes').returns(themePath.name);
+            sinon.stub(config, 'getContentPath').withArgs('themes').returns(themePath.name);
         });
 
         afterEach(function () {

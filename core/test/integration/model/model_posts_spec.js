@@ -11,8 +11,7 @@ var should = require('should'),
     common = require('../../../server/lib/common'),
     configUtils = require('../../utils/configUtils'),
     DataGenerator = testUtils.DataGenerator,
-    context = testUtils.context.owner,
-    sandbox = sinon.sandbox.create(),
+    context = testUtils.context.owner(),
     markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc;
 
 /**
@@ -31,11 +30,11 @@ describe('Post Model', function () {
     before(testUtils.setup('users:roles'));
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     beforeEach(function () {
-        sandbox.stub(urlService, 'getUrlByResourceId').withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/html-ipsum/');
+        sinon.stub(urlService, 'getUrlByResourceId').withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/html-ipsum/');
     });
 
     function checkFirstPostData(firstPost, options) {
@@ -401,7 +400,7 @@ describe('Post Model', function () {
             beforeEach(function () {
                 eventsTriggered = {};
 
-                sandbox.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
+                sinon.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }
@@ -1025,7 +1024,7 @@ describe('Post Model', function () {
             beforeEach(function () {
                 eventsTriggered = {};
 
-                sandbox.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
+                sinon.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }
@@ -1462,7 +1461,7 @@ describe('Post Model', function () {
 
             beforeEach(function () {
                 eventsTriggered = {};
-                sandbox.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
+                sinon.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
                         eventsTriggered[eventName] = [];
                     }
@@ -1907,7 +1906,7 @@ describe('Post Model', function () {
                 editOptions = _.extend({}, context, {id: postJSON.id, withRelated: ['tags']});
 
                 // reset the eventSpy here
-                sandbox.restore();
+                sinon.restore();
             });
         });
 

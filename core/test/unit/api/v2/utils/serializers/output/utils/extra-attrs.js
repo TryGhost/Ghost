@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const extraAttrsUtil = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/extra-attrs');
-const sandbox = sinon.sandbox.create();
+
 
 describe('Unit: v2/utils/serializers/output/utils/extra-attrs', () => {
     const frame = {
@@ -11,8 +11,8 @@ describe('Unit: v2/utils/serializers/output/utils/extra-attrs', () => {
     let model;
 
     beforeEach(function () {
-        model = sandbox.stub();
-        model.get = sandbox.stub();
+        model = sinon.stub();
+        model.get = sinon.stub();
         model.get.withArgs('plaintext').returns(new Array(5000).join('A'));
     });
 

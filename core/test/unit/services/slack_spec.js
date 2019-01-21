@@ -1,9 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
-    nock = require('nock'),
     rewire = require('rewire'),
-    url = require('url'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
 
@@ -14,8 +12,6 @@ var should = require('should'),
     schema = require('../../../server/data/schema').checks,
     settingsCache = require('../../../server/services/settings/cache'),
 
-    sandbox = sinon.sandbox.create(),
-
     // Test data
     slackObjNoUrl = [{url: ''}],
     slackObjWithUrl = [{url: 'https://hooks.slack.com/services/a-b-c-d'}];
@@ -24,11 +20,11 @@ describe('Slack', function () {
     var eventStub;
 
     beforeEach(function () {
-        eventStub = sandbox.stub(common.events, 'on');
+        eventStub = sinon.stub(common.events, 'on');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
     });
 
@@ -46,7 +42,7 @@ describe('Slack', function () {
                     return testPost;
                 }
             },
-            pingStub = sandbox.stub(),
+            pingStub = sinon.stub(),
             resetSlack = slack.__set__('ping', pingStub),
             listener = slack.__get__('listener');
 
@@ -66,7 +62,7 @@ describe('Slack', function () {
                     return testPost;
                 }
             },
-            pingStub = sandbox.stub(),
+            pingStub = sinon.stub(),
             resetSlack = slack.__set__('ping', pingStub),
             listener = slack.__get__('listener');
 
@@ -79,7 +75,7 @@ describe('Slack', function () {
     });
 
     it('testPing() calls ping() with default message', function () {
-        var pingStub = sandbox.stub(),
+        var pingStub = sinon.stub(),
             resetSlack = slack.__set__('ping', pingStub),
             testPing = slack.__get__('testPing');
 
@@ -101,13 +97,13 @@ describe('Slack', function () {
             ping = slack.__get__('ping');
 
         beforeEach(function () {
-            isPostStub = sandbox.stub(schema, 'isPost');
-            sandbox.stub(urlService, 'getUrlByResourceId');
+            isPostStub = sinon.stub(schema, 'isPost');
+            sinon.stub(urlService, 'getUrlByResourceId');
 
-            settingsCacheStub = sandbox.stub(settingsCache, 'get');
-            sandbox.spy(common.logging, 'error');
+            settingsCacheStub = sinon.stub(settingsCache, 'get');
+            sinon.spy(common.logging, 'error');
 
-            makeRequestStub = sandbox.stub();
+            makeRequestStub = sinon.stub();
             slackReset = slack.__set__('request', makeRequestStub);
             makeRequestStub.resolves();
 

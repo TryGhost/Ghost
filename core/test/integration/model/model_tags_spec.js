@@ -7,8 +7,7 @@ var should = require('should'),
     db = require('../../../server/data/db'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
-    context = testUtils.context.admin,
-    sandbox = sinon.sandbox.create();
+    context = testUtils.context.admin();
 
 describe('Tag Model', function () {
     var eventSpy;
@@ -19,11 +18,11 @@ describe('Tag Model', function () {
     before(testUtils.setup('users:roles', 'posts'));
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     beforeEach(function () {
-        eventSpy = sandbox.spy(common.events, 'emit');
+        eventSpy = sinon.spy(common.events, 'emit');
     });
 
     describe('findPage', function () {

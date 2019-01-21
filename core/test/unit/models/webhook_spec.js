@@ -5,14 +5,14 @@ const models = require('../../../server/models');
 const testUtils = require('../../utils');
 const {knex} = require('../../../server/data/db');
 
-const sandbox = sinon.sandbox.create();
+
 
 describe('Unit: models/webhooks', function () {
     before(function () {
         models.init();
     });
     after(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     before(testUtils.teardown);

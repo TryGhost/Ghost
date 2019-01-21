@@ -12,7 +12,6 @@ const localUtils = require('./utils');
 
 let ghost = testUtils.startGhost;
 let request;
-let sandbox = sinon.sandbox.create();
 let eventsTriggered;
 
 describe('DB API', () => {
@@ -40,7 +39,7 @@ describe('DB API', () => {
     beforeEach(() => {
         eventsTriggered = {};
 
-        sandbox.stub(common.events, 'emit').callsFake((eventName, eventObj) => {
+        sinon.stub(common.events, 'emit').callsFake((eventName, eventObj) => {
             if (!eventsTriggered[eventName]) {
                 eventsTriggered[eventName] = [];
             }
@@ -50,7 +49,7 @@ describe('DB API', () => {
     });
 
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should export data', () => {
@@ -139,7 +138,7 @@ describe('DB API', () => {
 
     it('export can be triggered by backup client', () => {
         const backupQuery = `?client_id=${backupClient.slug}&client_secret=${backupClient.secret}`;
-        const fsStub = sandbox.stub(fs, 'writeFile').resolves();
+        const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
         return request.post(localUtils.API.getApiQuery(`db/backup${backupQuery}`))
             .expect('Content-Type', /json/)
@@ -153,7 +152,7 @@ describe('DB API', () => {
 
     it('export can be triggered and named by backup client', () => {
         const backupQuery = `?client_id=${backupClient.slug}&client_secret=${backupClient.secret}&filename=test`;
-        const fsStub = sandbox.stub(fs, 'writeFile').resolves();
+        const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
         return request.post(localUtils.API.getApiQuery(`db/backup${backupQuery}`))
             .expect('Content-Type', /json/)
@@ -167,7 +166,7 @@ describe('DB API', () => {
 
     it('export can not be triggered by client other than backup', () => {
         const schedulerQuery = `?client_id=${schedulerClient.slug}&client_secret=${schedulerClient.secret}`;
-        const fsStub = sandbox.stub(fs, 'writeFile').resolves();
+        const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
         return request.post(localUtils.API.getApiQuery(`db/backup${schedulerQuery}`))
             .expect('Content-Type', /json/)
@@ -180,7 +179,7 @@ describe('DB API', () => {
     });
 
     it('export can not be triggered by regular authentication', () => {
-        const fsStub = sandbox.stub(fs, 'writeFile').resolves();
+        const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
         return request.post(localUtils.API.getApiQuery(`db/backup`))
             .set('Origin', config.get('url'))

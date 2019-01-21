@@ -7,25 +7,25 @@ const cleanUtil = require('../../../../../../../../server/api/v2/utils/serialize
 const extraAttrsUtils = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/extra-attrs');
 const mapper = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/mapper');
 
-const sandbox = sinon.sandbox.create();
+
 
 describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
     beforeEach(() => {
-        sandbox.stub(dateUtil, 'forPost').returns({});
+        sinon.stub(dateUtil, 'forPost').returns({});
 
-        sandbox.stub(urlUtil, 'forPost').returns({});
-        sandbox.stub(urlUtil, 'forTag').returns({});
-        sandbox.stub(urlUtil, 'forUser').returns({});
+        sinon.stub(urlUtil, 'forPost').returns({});
+        sinon.stub(urlUtil, 'forTag').returns({});
+        sinon.stub(urlUtil, 'forUser').returns({});
 
-        sandbox.stub(extraAttrsUtils, 'forPost').returns({});
+        sinon.stub(extraAttrsUtils, 'forPost').returns({});
 
-        sandbox.stub(cleanUtil, 'post').returns({});
-        sandbox.stub(cleanUtil, 'tag').returns({});
-        sandbox.stub(cleanUtil, 'author').returns({});
+        sinon.stub(cleanUtil, 'post').returns({});
+        sinon.stub(cleanUtil, 'tag').returns({});
+        sinon.stub(cleanUtil, 'author').returns({});
     });
 
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('mapPost', () => {
@@ -34,7 +34,7 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
         beforeEach(() => {
             postModel = (data) => {
                 return Object.assign(data, {
-                    toJSON: sandbox.stub().returns(data)
+                    toJSON: sinon.stub().returns(data)
                 });
             };
         });
@@ -118,7 +118,7 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
 
         beforeEach(() => {
             userModel = (data) => {
-                return Object.assign(data, {toJSON: sandbox.stub().returns(data)});
+                return Object.assign(data, {toJSON: sinon.stub().returns(data)});
             };
         });
 
@@ -146,7 +146,7 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
 
         beforeEach(() => {
             tagModel = (data) => {
-                return Object.assign(data, {toJSON: sandbox.stub().returns(data)});
+                return Object.assign(data, {toJSON: sinon.stub().returns(data)});
             };
         });
 

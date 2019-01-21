@@ -4,21 +4,21 @@ const testUtils = require('../../../../../../utils');
 const mapper = require('../../../../../../../server/api/v2/utils/serializers/output/utils/mapper');
 const serializers = require('../../../../../../../server/api/v2/utils/serializers');
 
-const sandbox = sinon.sandbox.create();
+
 
 describe('Unit: v2/utils/serializers/output/tags', () => {
     let tagModel;
 
     beforeEach(() => {
         tagModel = (data) => {
-            return Object.assign(data, {toJSON: sandbox.stub().returns(data)});
+            return Object.assign(data, {toJSON: sinon.stub().returns(data)});
         };
 
-        sandbox.stub(mapper, 'mapTag').returns({});
+        sinon.stub(mapper, 'mapTag').returns({});
     });
 
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('calls the mapper when single tag present', () => {

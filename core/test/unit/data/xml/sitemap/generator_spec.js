@@ -8,8 +8,7 @@ const should = require('should'),
     PostGenerator = require('../../../../../server/data/xml/sitemap/post-generator'),
     PageGenerator = require('../../../../../server/data/xml/sitemap/page-generator'),
     TagGenerator = require('../../../../../server/data/xml/sitemap/tag-generator'),
-    UserGenerator = require('../../../../../server/data/xml/sitemap/user-generator'),
-    sandbox = sinon.sandbox.create();
+    UserGenerator = require('../../../../../server/data/xml/sitemap/user-generator');
 
 should.Assertion.add('ValidUrlNode', function (options) {
     // Check urlNode looks correct
@@ -50,7 +49,7 @@ describe('Generators', function () {
     let generator;
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('IndexGenerator', function () {
@@ -96,11 +95,11 @@ describe('Generators', function () {
 
         describe('fn: getXml', function () {
             beforeEach(function () {
-                sandbox.stub(urlService.utils, 'urlFor');
+                sinon.stub(urlService.utils, 'urlFor');
             });
 
             it('get cached xml', function () {
-                sandbox.spy(generator, 'generateXmlFromNodes');
+                sinon.spy(generator, 'generateXmlFromNodes');
                 generator.siteMapContent = 'something';
                 generator.getXml().should.eql('something');
                 generator.siteMapContent = null;

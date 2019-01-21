@@ -9,8 +9,7 @@ var should = require('should'),
     imageLib = require('../../../server/lib/image'),
     UserModel = require('../../../server/models/user').User,
     RoleModel = require('../../../server/models/role').Role,
-    context = testUtils.context.admin,
-    sandbox = sinon.sandbox.create();
+    context = testUtils.context.admin();
 
 describe('User Model', function run() {
     var eventsTriggered = {};
@@ -18,7 +17,7 @@ describe('User Model', function run() {
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     before(function () {
@@ -89,7 +88,7 @@ describe('User Model', function run() {
         it('can find gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4];
 
-            sandbox.stub(imageLib.gravatar, 'lookup').callsFake(function (userData) {
+            sinon.stub(imageLib.gravatar, 'lookup').callsFake(function (userData) {
                 userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
                 return Promise.resolve(userData);
             });
@@ -106,7 +105,7 @@ describe('User Model', function run() {
         it('can handle no gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
 
-            sandbox.stub(imageLib.gravatar, 'lookup').callsFake(function (userData) {
+            sinon.stub(imageLib.gravatar, 'lookup').callsFake(function (userData) {
                 return Promise.resolve(userData);
             });
 
@@ -156,7 +155,7 @@ describe('User Model', function run() {
 
         beforeEach(function () {
             eventsTriggered = {};
-            sandbox.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
+            sinon.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
                 if (!eventsTriggered[eventName]) {
                     eventsTriggered[eventName] = [];
                 }

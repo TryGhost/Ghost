@@ -9,7 +9,7 @@ const common = require('../../../../server/lib/common');
 const themes = require('../../../../server/services/themes');
 const UrlService = rewire('../../../../server/services/url/UrlService');
 
-const sandbox = sinon.sandbox.create();
+
 
 describe('Integration: services/url/UrlService', function () {
     let urlService;
@@ -17,7 +17,7 @@ describe('Integration: services/url/UrlService', function () {
     before(function () {
         models.init();
 
-        sandbox.stub(themes, 'getActive').returns({
+        sinon.stub(themes, 'getActive').returns({
             engine: () => 'v0.1'
         });
     });
@@ -27,7 +27,7 @@ describe('Integration: services/url/UrlService', function () {
     after(testUtils.teardown);
 
     after(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('functional: default routing set', function () {
@@ -37,40 +37,40 @@ describe('Integration: services/url/UrlService', function () {
             urlService = new UrlService();
 
             router1 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'post collection';
                 }
             };
 
             router2 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'authors';
                 }
             };
 
             router3 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'tags';
                 }
             };
 
             router4 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'static pages';
                 }
@@ -221,50 +221,50 @@ describe('Integration: services/url/UrlService', function () {
             urlService = new UrlService();
 
             router1 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'post collection 1';
                 }
             };
 
             router2 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'post collection 2';
                 }
             };
 
             router3 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'authors';
                 }
             };
 
             router4 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'tags';
                 }
             };
 
             router5 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'static pages';
                 }
@@ -417,50 +417,50 @@ describe('Integration: services/url/UrlService', function () {
             urlService = new UrlService();
 
             router1 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'post collection 1';
                 }
             };
 
             router2 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'post collection 2';
                 }
             };
 
             router3 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'authors';
                 }
             };
 
             router4 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'tags';
                 }
             };
 
             router5 = {
-                getFilter: sandbox.stub(),
-                addListener: sandbox.stub(),
-                getResourceType: sandbox.stub(),
-                getPermalinks: sandbox.stub(),
+                getFilter: sinon.stub(),
+                addListener: sinon.stub(),
+                getResourceType: sinon.stub(),
+                getPermalinks: sinon.stub(),
                 toString: function () {
                     return 'static pages';
                 }

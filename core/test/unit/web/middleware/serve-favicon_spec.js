@@ -5,9 +5,7 @@ var should = require('should'),
     settingsCache = require('../../../../server/services/settings/cache'),
     storage = require('../../../../server/adapters/storage'),
     configUtils = require('../../../utils/configUtils'),
-    path = require('path'),
-
-    sandbox = sinon.sandbox.create();
+    path = require('path');
 
 describe('Serve Favicon', function () {
     var req, res, next, blogApp, localSettingsCache = {}, originalStoragePath;
@@ -19,7 +17,7 @@ describe('Serve Favicon', function () {
         blogApp = express();
         req.app = blogApp;
 
-        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
+        sinon.stub(settingsCache, 'get').callsFake(function (key) {
             return localSettingsCache[key];
         });
 
@@ -27,7 +25,7 @@ describe('Serve Favicon', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
         localSettingsCache = {};
         storage.getStorage().storagePath = originalStoragePath;

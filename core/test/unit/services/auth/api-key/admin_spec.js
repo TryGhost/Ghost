@@ -7,7 +7,7 @@ const common = require('../../../../../server/lib/common');
 const models = require('../../../../../server/models');
 const testUtils = require('../../../../utils');
 
-const sandbox = sinon.sandbox.create();
+
 
 describe('Admin API Key Auth', function () {
     before(models.init);
@@ -25,13 +25,13 @@ describe('Admin API Key Auth', function () {
         this.fakeApiKey = fakeApiKey;
         this.secret = Buffer.from(fakeApiKey.secret, 'hex');
 
-        this.apiKeyStub = sandbox.stub(models.ApiKey, 'findOne');
+        this.apiKeyStub = sinon.stub(models.ApiKey, 'findOne');
         this.apiKeyStub.resolves();
         this.apiKeyStub.withArgs({id: fakeApiKey.id}).resolves(fakeApiKey);
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should authenticate known+valid API key', function (done) {
