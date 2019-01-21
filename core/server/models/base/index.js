@@ -224,7 +224,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
     },
 
-    onSaving: function onSaving(newObj) {
+    onSaving: function onSaving() {
         // Remove any properties which don't belong on the model
         this.attributes = this.pick(this.permittedAttributes());
     },
