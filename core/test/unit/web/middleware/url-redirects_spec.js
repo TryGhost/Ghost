@@ -6,8 +6,7 @@ var should = require('should'),
     {adminRedirect} = urlRedirects,
     getAdminRedirectUrl = urlRedirects.__get__('_private.getAdminRedirectUrl'),
     getBlogRedirectUrl = urlRedirects.__get__('_private.getBlogRedirectUrl'),
-    redirect = urlRedirects.__get__('_private.redirect'),
-    sandbox = sinon.sandbox.create();
+    redirect = urlRedirects.__get__('_private.redirect');
 
 describe('UNIT: url redirects', function () {
     var res, req, next, host;
@@ -19,15 +18,15 @@ describe('UNIT: url redirects', function () {
             }
         };
         res = {
-            redirect: sandbox.spy(),
-            set: sandbox.spy()
+            redirect: sinon.spy(),
+            set: sinon.spy()
         };
 
-        next = sandbox.spy();
+        next = sinon.spy();
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
         host = null;
     });
@@ -36,7 +35,7 @@ describe('UNIT: url redirects', function () {
         let redirectSpy;
 
         beforeEach(function () {
-            redirectSpy = sandbox.spy();
+            redirectSpy = sinon.spy();
             urlRedirects.__set__('_private.redirect', redirectSpy);
         });
 
@@ -227,7 +226,7 @@ describe('UNIT: url redirects', function () {
                 res.redirect.calledWith(301, 'https://default.com:2368/ghost/').should.be.true();
                 res.set.called.should.be.true();
 
-                res.redirect.reset();
+                res.redirect.resetHistory();
 
                 req.secure = true;
                 redirect(req, res, next, getAdminRedirectUrl);

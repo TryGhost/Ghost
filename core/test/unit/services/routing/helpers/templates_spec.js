@@ -2,15 +2,14 @@ const should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
     templates = rewire('../../../../../server/services/routing/helpers/templates'),
-    themes = require('../../../../../server/services/themes'),
-    sandbox = sinon.sandbox.create();
+    themes = require('../../../../../server/services/themes');
 
 describe('templates', function () {
     let getActiveThemeStub, hasTemplateStub,
         _private = templates.__get__('_private');
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('[private fn] getEntriesTemplateHierarchy', function () {
@@ -74,9 +73,9 @@ describe('templates', function () {
 
     describe('[private fn] pickTemplate', function () {
         beforeEach(function () {
-            hasTemplateStub = sandbox.stub().returns(false);
+            hasTemplateStub = sinon.stub().returns(false);
 
-            getActiveThemeStub = sandbox.stub(themes, 'getActive').returns({
+            getActiveThemeStub = sinon.stub(themes, 'getActive').returns({
                 hasTemplate: hasTemplateStub
             });
         });
@@ -120,9 +119,9 @@ describe('templates', function () {
 
     describe('[private fn] getTemplateForEntry', function () {
         beforeEach(function () {
-            hasTemplateStub = sandbox.stub().returns(false);
+            hasTemplateStub = sinon.stub().returns(false);
 
-            getActiveThemeStub = sandbox.stub(themes, 'getActive').returns({
+            getActiveThemeStub = sinon.stub(themes, 'getActive').returns({
                 hasTemplate: hasTemplateStub
             });
         });
@@ -256,9 +255,9 @@ describe('templates', function () {
 
     describe('[private fn] getTemplateForEntries', function () {
         beforeEach(function () {
-            hasTemplateStub = sandbox.stub().returns(false);
+            hasTemplateStub = sinon.stub().returns(false);
 
-            getActiveThemeStub = sandbox.stub(themes, 'getActive').returns({
+            getActiveThemeStub = sinon.stub(themes, 'getActive').returns({
                 hasTemplate: hasTemplateStub
             });
         });
@@ -306,9 +305,9 @@ describe('templates', function () {
 
     describe('[private fn] getTemplateForError', function () {
         beforeEach(function () {
-            hasTemplateStub = sandbox.stub().returns(false);
+            hasTemplateStub = sinon.stub().returns(false);
 
-            getActiveThemeStub = sandbox.stub(themes, 'getActive').returns({
+            getActiveThemeStub = sinon.stub(themes, 'getActive').returns({
                 hasTemplate: hasTemplateStub
             });
         });
@@ -393,10 +392,10 @@ describe('templates', function () {
             };
             data = {};
 
-            stubs.pickTemplate = sandbox.stub(_private, 'pickTemplate').returns('testFromPickTemplate');
-            stubs.getTemplateForEntry = sandbox.stub(_private, 'getTemplateForEntry').returns('testFromEntry');
-            stubs.getTemplateForEntries = sandbox.stub(_private, 'getTemplateForEntries').returns('testFromEntries');
-            stubs.getTemplateForError = sandbox.stub(_private, 'getTemplateForError').returns('testFromError');
+            stubs.pickTemplate = sinon.stub(_private, 'pickTemplate').returns('testFromPickTemplate');
+            stubs.getTemplateForEntry = sinon.stub(_private, 'getTemplateForEntry').returns('testFromEntry');
+            stubs.getTemplateForEntries = sinon.stub(_private, 'getTemplateForEntries').returns('testFromEntries');
+            stubs.getTemplateForError = sinon.stub(_private, 'getTemplateForError').returns('testFromError');
         });
 
         it('does nothing if template is already set', function () {

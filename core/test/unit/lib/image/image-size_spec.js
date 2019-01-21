@@ -9,9 +9,7 @@ var should = require('should'),
     storage = require('../../../../server/adapters/storage'),
 
     // Stuff we are testing
-    imageSize = rewire('../../../../server/lib/image/image-size'),
-
-    sandbox = sinon.sandbox.create();
+    imageSize = rewire('../../../../server/lib/image/image-size');
 
 describe('lib/image: image size', function () {
     var sizeOfStub,
@@ -25,7 +23,7 @@ describe('lib/image: image size', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
         imageSize = rewire('../../../../server/lib/image/image-size');
         storage.getStorage().storagePath = originalStoragePath;
@@ -50,7 +48,7 @@ describe('lib/image: image size', function () {
                 .get('/files/f/feedough/x/11/1540353_20925115.jpg')
                 .reply(200);
 
-            sizeOfStub = sandbox.stub();
+            sizeOfStub = sinon.stub();
             sizeOfStub.returns({width: 50, height: 50, type: 'jpg'});
             imageSize.__set__('sizeOf', sizeOfStub);
 
@@ -82,7 +80,7 @@ describe('lib/image: image size', function () {
                     body: '<Buffer 2c be a4 40 f7 87 73 1e 57 2c c1 e4 0d 79 03 95 42 f0 42 2e 41 95 27 c9 5c 35 a7 71 2c 09 5a 57 d3 04 1e 83 03 28 07 96 b0 c8 88 65 07 7a d1 d6 63 50>'
                 });
 
-            sizeOfStub = sandbox.stub();
+            sizeOfStub = sinon.stub();
             sizeOfStub.returns({width: 256, height: 256, type: 'png'});
             imageSize.__set__('sizeOf', sizeOfStub);
 
@@ -117,7 +115,7 @@ describe('lib/image: image size', function () {
                     body: '<Buffer 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52 00 00 00 68 00 00 00 0f 08 02 00 00 00 87 8f 1d 14 00 00 03 33 49 44 41 54 58 c3 ed 97 6b 48 93 51 18>'
                 });
 
-            sizeOfStub = sandbox.stub();
+            sizeOfStub = sinon.stub();
             sizeOfStub.returns({width: 104, height: 15, type: 'png'});
             imageSize.__set__('sizeOf', sizeOfStub);
 
@@ -149,7 +147,7 @@ describe('lib/image: image size', function () {
                     body: '<Buffer 2c be a4 40 f7 87 73 1e 57 2c c1 e4 0d 79 03 95 42 f0 42 2e 41 95 27 c9 5c 35 a7 71 2c 09 5a 57 d3 04 1e 83 03 28 07 96 b0 c8 88 65 07 7a d1 d6 63 50>'
                 });
 
-            sizeOfStub = sandbox.stub();
+            sizeOfStub = sinon.stub();
             sizeOfStub.returns({
                 width: 32,
                 height: 32,
@@ -186,9 +184,9 @@ describe('lib/image: image size', function () {
                         width: 100
                     };
 
-            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             requestMock = nock('http://myblog.com')
@@ -197,7 +195,7 @@ describe('lib/image: image size', function () {
                     body: '<Buffer 2c be a4 40 f7 87 73 1e 57 2c c1 e4 0d 79 03 95 42 f0 42 2e 41 95 27 c9 5c 35 a7 71 2c 09 5a 57 d3 04 1e 83 03 28 07 96 b0 c8 88 65 07 7a d1 d6 63 50>'
                 });
 
-            sizeOfStub = sandbox.stub();
+            sizeOfStub = sinon.stub();
             sizeOfStub.returns({width: 100, height: 100, type: 'svg'});
             imageSize.__set__('sizeOf', sizeOfStub);
 
@@ -229,7 +227,7 @@ describe('lib/image: image size', function () {
                     body: '<Buffer 2c be a4 40 f7 87 73 1e 57 2c c1 e4 0d 79 03 95 42 f0 42 2e 41 95 27 c9 5c 35 a7 71 2c 09 5a 57 d3 04 1e 83 03 28 07 96 b0 c8 88 65 07 7a d1 d6 63 50>'
                 });
 
-            sizeOfStub = sandbox.stub();
+            sizeOfStub = sinon.stub();
             sizeOfStub.returns({width: 250, height: 250, type: 'jpg'});
             imageSize.__set__('sizeOf', sizeOfStub);
 
@@ -299,10 +297,10 @@ describe('lib/image: image size', function () {
                     };
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
-            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/favicon.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             requestMock = nock('http://myblog.com')
@@ -381,7 +379,7 @@ describe('lib/image: image size', function () {
                     body: '<Buffer 2c be a4 40 f7 87 73 1e 57 2c c1 e4 0d 79 03 95 42 f0 42 2e 41 95 27 c9 5c 35 a7 71 2c 09 5a 57 d3 04 1e 83 03 28 07 96 b0 c8 88 65 07 7a d1 d6 63 50>'
                 });
 
-            sizeOfStub = sandbox.stub();
+            sizeOfStub = sinon.stub();
             sizeOfStub.throws({error: 'image-size could not find dimensions'});
             imageSize.__set__('sizeOf', sizeOfStub);
 
@@ -426,10 +424,10 @@ describe('lib/image: image size', function () {
                     };
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
-            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/ghost-logo.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = imageSize.getImageSizeFromStoragePath(url).then(function (res) {
@@ -456,10 +454,10 @@ describe('lib/image: image size', function () {
                     };
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
-            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/blog/content/images/favicon_too_large.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('/blog');
 
             result = imageSize.getImageSizeFromStoragePath(url).then(function (res) {
@@ -486,10 +484,10 @@ describe('lib/image: image size', function () {
                     };
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
-            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/favicon_multi_sizes.ico');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = imageSize.getImageSizeFromStoragePath(url).then(function (res) {
@@ -510,10 +508,10 @@ describe('lib/image: image size', function () {
                 urlGetSubdirStub;
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
-            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/not-existing-image.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = imageSize.getImageSizeFromStoragePath(url)
@@ -529,15 +527,15 @@ describe('lib/image: image size', function () {
                 urlForStub,
                 urlGetSubdirStub;
 
-            sizeOfStub = sandbox.stub();
+            sizeOfStub = sinon.stub();
             sizeOfStub.throws({error: 'image-size could not find dimensions'});
             imageSize.__set__('sizeOf', sizeOfStub);
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
-            urlForStub = sandbox.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlService.utils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/ghost-logo.pngx');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sandbox.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = imageSize.getImageSizeFromStoragePath(url)

@@ -1,11 +1,10 @@
 const should = require('should');
 const sinon = require('sinon');
 const themeEngines = require('../../../../../server/services/themes/engines');
-const sandbox = sinon.sandbox.create();
 
 describe('Themes: engines', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('no engines', function () {

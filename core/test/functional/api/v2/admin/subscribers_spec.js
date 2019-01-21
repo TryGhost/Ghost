@@ -8,16 +8,16 @@ const config = require('../../../../../../core/server/config');
 const labs = require('../../../../../../core/server/services/labs');
 
 const ghost = testUtils.startGhost;
-const sandbox = sinon.sandbox.create();
+
 let request;
 
 describe('Subscribers API', function () {
     before(function () {
-        sandbox.stub(labs, 'isSet').withArgs('subscribers').returns(true);
+        sinon.stub(labs, 'isSet').withArgs('subscribers').returns(true);
     });
 
     after(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     before(function () {

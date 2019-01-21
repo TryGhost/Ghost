@@ -1,17 +1,16 @@
 const should = require('should'),
     sinon = require('sinon'),
-    sandbox = sinon.sandbox.create(),
     testUtils = require('../../utils'),
     urlService = require('../../../server/services/url'),
     helpers = require('../../../server/helpers');
 
 describe('{{author}} helper', function () {
     beforeEach(function () {
-        sandbox.stub(urlService, 'getUrlByResourceId');
+        sinon.stub(urlService, 'getUrlByResourceId');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('Returns the link to the author from the context', function () {

@@ -6,13 +6,11 @@ const sinon = require('sinon');
 const should = require('should');
 
 describe('Auth Service SessionStore', function () {
-    let sandbox;
     before(function () {
         models.init();
-        sandbox = sinon.sandbox.create();
     });
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('inheritance', function () {
@@ -29,7 +27,7 @@ describe('Auth Service SessionStore', function () {
 
     describe('SessionStore#destroy', function () {
         it('calls destroy on the model with the session_id `sid`', function (done) {
-            const destroyStub = sandbox.stub(models.Session, 'destroy')
+            const destroyStub = sinon.stub(models.Session, 'destroy')
                 .resolves();
 
             const store = new SessionStore(models.Session);
@@ -42,7 +40,7 @@ describe('Auth Service SessionStore', function () {
         });
 
         it('calls back with null if destroy resolve', function (done) {
-            sandbox.stub(models.Session, 'destroy')
+            sinon.stub(models.Session, 'destroy')
                 .resolves();
 
             const store = new SessionStore(models.Session);
@@ -55,7 +53,7 @@ describe('Auth Service SessionStore', function () {
 
         it('calls back with the error if destroy errors', function (done) {
             const error = new Error('beam me up scotty');
-            sandbox.stub(models.Session, 'destroy')
+            sinon.stub(models.Session, 'destroy')
                 .rejects(error);
 
             const store = new SessionStore(models.Session);
@@ -69,7 +67,7 @@ describe('Auth Service SessionStore', function () {
 
     describe('SessionStore#get', function () {
         it('calls findOne on the model with the session_id `sid`', function (done) {
-            const findOneStub = sandbox.stub(models.Session, 'findOne')
+            const findOneStub = sinon.stub(models.Session, 'findOne')
                 .resolves();
 
             const store = new SessionStore(models.Session);
@@ -82,7 +80,7 @@ describe('Auth Service SessionStore', function () {
         });
 
         it('callsback with null, null if findOne does not return a model', function (done) {
-            sandbox.stub(models.Session, 'findOne')
+            sinon.stub(models.Session, 'findOne')
                 .resolves(null);
 
             const store = new SessionStore(models.Session);
@@ -100,7 +98,7 @@ describe('Auth Service SessionStore', function () {
                     ice: 'cube'
                 }
             });
-            sandbox.stub(models.Session, 'findOne')
+            sinon.stub(models.Session, 'findOne')
                 .resolves(model);
 
             const store = new SessionStore(models.Session);
@@ -116,7 +114,7 @@ describe('Auth Service SessionStore', function () {
 
         it('callsback with an error if the findOne does error', function (done) {
             const error = new Error('hot damn');
-            sandbox.stub(models.Session, 'findOne')
+            sinon.stub(models.Session, 'findOne')
                 .rejects(error);
 
             const store = new SessionStore(models.Session);
@@ -140,7 +138,7 @@ describe('Auth Service SessionStore', function () {
         });
 
         it('calls upsert on the model with the session_id and the session_data', function (done) {
-            const upsertStub = sandbox.stub(models.Session, 'upsert')
+            const upsertStub = sinon.stub(models.Session, 'upsert')
                 .resolves();
 
             const store = new SessionStore(models.Session);
@@ -156,7 +154,7 @@ describe('Auth Service SessionStore', function () {
 
         it('calls back with an error if upsert errors', function (done) {
             const error = new Error('huuuuuurrr');
-            sandbox.stub(models.Session, 'upsert')
+            sinon.stub(models.Session, 'upsert')
                 .rejects(error);
 
             const store = new SessionStore(models.Session);
@@ -169,7 +167,7 @@ describe('Auth Service SessionStore', function () {
         });
 
         it('calls back with null, null if upsert succeed', function (done) {
-            sandbox.stub(models.Session, 'upsert')
+            sinon.stub(models.Session, 'upsert')
                 .resolves('success');
 
             const store = new SessionStore(models.Session);

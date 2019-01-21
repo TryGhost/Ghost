@@ -1,19 +1,17 @@
 var should        = require('should'),
     getBlogLogo   = require('../../../../server/data/meta/blog_logo'),
     sinon         = require('sinon'),
-    settingsCache = require('../../../../server/services/settings/cache'),
-
-    sandbox       = sinon.sandbox.create();
+    settingsCache = require('../../../../server/services/settings/cache');
 
 describe('getBlogLogo', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should return logo if uploaded', function () {
         var blogLogo;
 
-        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
+        sinon.stub(settingsCache, 'get').callsFake(function (key) {
             return {
                 logo: '/content/images/logo.png',
                 icon: null
@@ -28,7 +26,7 @@ describe('getBlogLogo', function () {
     it('should return custom uploaded png icon if no logo given', function () {
         var blogLogo;
 
-        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
+        sinon.stub(settingsCache, 'get').callsFake(function (key) {
             return {
                 logo: null,
                 icon: '/content/images/favicon.png'

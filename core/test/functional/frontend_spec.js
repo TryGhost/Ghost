@@ -14,9 +14,7 @@ var should = require('should'),
     settingsCache = require('../../server/services/settings/cache'),
     origCache = _.cloneDeep(settingsCache),
     ghost = testUtils.startGhost,
-    request,
-
-    sandbox = sinon.sandbox.create();
+    request;
 
 describe('Frontend Routing', function () {
     function doEnd(done) {
@@ -45,7 +43,7 @@ describe('Frontend Routing', function () {
     }
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     before(function () {
@@ -251,7 +249,7 @@ describe('Frontend Routing', function () {
             });
 
             it('should redirect to regular post when AMP is disabled', function (done) {
-                sandbox.stub(settingsCache, 'get').callsFake(function (key, options) {
+                sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
                     if (key === 'amp' && !options) {
                         return false;
                     }

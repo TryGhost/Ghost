@@ -1,18 +1,17 @@
 const should = require('should'),
     sinon = require('sinon'),
     common = require('../../../../../server/lib/common'),
-    helpers = require('../../../../../server/services/routing/helpers'),
-    sandbox = sinon.sandbox.create();
+    helpers = require('../../../../../server/services/routing/helpers');
 
 describe('handleError', function () {
     let next;
 
     beforeEach(function () {
-        next = sandbox.spy();
+        next = sinon.spy();
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should call next with no args for 404 errors', function () {

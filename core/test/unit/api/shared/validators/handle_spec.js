@@ -3,11 +3,10 @@ const Promise = require('bluebird');
 const sinon = require('sinon');
 const common = require('../../../../../server/lib/common');
 const shared = require('../../../../../server/api/shared');
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: api/shared/validators/handle', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('input', function () {
@@ -28,20 +27,20 @@ describe('Unit: api/shared/validators/handle', function () {
         });
 
         it('ensure validators are called', function () {
-            const getStub = sandbox.stub();
-            const addStub = sandbox.stub();
-            sandbox.stub(shared.validators.input.all, 'all').get(() => {return getStub;});
-            sandbox.stub(shared.validators.input.all, 'add').get(() => {return addStub;});
+            const getStub = sinon.stub();
+            const addStub = sinon.stub();
+            sinon.stub(shared.validators.input.all, 'all').get(() => {return getStub;});
+            sinon.stub(shared.validators.input.all, 'add').get(() => {return addStub;});
 
             const apiValidators = {
                 all: {
-                    add: sandbox.stub().resolves()
+                    add: sinon.stub().resolves()
                 },
                 posts: {
-                    add: sandbox.stub().resolves()
+                    add: sinon.stub().resolves()
                 },
                 users: {
-                    add: sandbox.stub().resolves()
+                    add: sinon.stub().resolves()
                 }
             };
 

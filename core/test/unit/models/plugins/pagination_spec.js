@@ -2,14 +2,13 @@ var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
     rewire = require('rewire'),
-    pagination = rewire('../../../../server/models/plugins/pagination'),
-    sandbox = sinon.sandbox.create();
+    pagination = rewire('../../../../server/models/plugins/pagination');
 
 describe('pagination', function () {
     var paginationUtils;
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('paginationUtils', function () {
@@ -144,7 +143,7 @@ describe('pagination', function () {
             });
 
             beforeEach(function () {
-                collection.query = sandbox.stub().returns(collection);
+                collection.query = sinon.stub().returns(collection);
             });
 
             it('should add query options if limit is set', function () {
@@ -172,15 +171,15 @@ describe('pagination', function () {
 
         beforeEach(function () {
             // Stub paginationUtils
-            paginationUtils.parseOptions = sandbox.stub();
-            paginationUtils.addLimitAndOffset = sandbox.stub();
-            paginationUtils.formatResponse = sandbox.stub().returns({});
+            paginationUtils.parseOptions = sinon.stub();
+            paginationUtils.addLimitAndOffset = sinon.stub();
+            paginationUtils.formatResponse = sinon.stub().returns({});
 
             // Mock out bookshelf model
             mockQuery = {
-                clone: sandbox.stub(),
-                select: sandbox.stub(),
-                toQuery: sandbox.stub()
+                clone: sinon.stub(),
+                select: sinon.stub(),
+                toQuery: sinon.stub()
             };
             mockQuery.clone.returns(mockQuery);
             mockQuery.select.returns(Promise.resolve([{aggregate: 1}]));
@@ -188,11 +187,11 @@ describe('pagination', function () {
             model = function () {
             };
 
-            model.prototype.fetchAll = sandbox.stub().returns(Promise.resolve({}));
-            model.prototype.query = sandbox.stub();
+            model.prototype.fetchAll = sinon.stub().returns(Promise.resolve({}));
+            model.prototype.query = sinon.stub();
             model.prototype.query.returns(mockQuery);
 
-            knex = {raw: sandbox.stub().returns(Promise.resolve())};
+            knex = {raw: sinon.stub().returns(Promise.resolve())};
 
             bookshelf = {Model: model, knex: knex};
 

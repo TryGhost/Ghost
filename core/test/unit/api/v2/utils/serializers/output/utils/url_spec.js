@@ -4,17 +4,15 @@ const testUtils = require('../../../../../../../utils');
 const urlService = require('../../../../../../../../server/services/url');
 const urlUtil = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/url');
 
-const sandbox = sinon.sandbox.create();
-
 describe('Unit: v2/utils/serializers/output/utils/url', () => {
     beforeEach(() => {
-        sandbox.stub(urlService, 'getUrlByResourceId').returns('getUrlByResourceId');
-        sandbox.stub(urlService.utils, 'urlFor').returns('urlFor');
-        sandbox.stub(urlService.utils, 'makeAbsoluteUrls').returns({html: sandbox.stub()});
+        sinon.stub(urlService, 'getUrlByResourceId').returns('getUrlByResourceId');
+        sinon.stub(urlService.utils, 'urlFor').returns('urlFor');
+        sinon.stub(urlService.utils, 'makeAbsoluteUrls').returns({html: sinon.stub()});
     });
 
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Ensure calls url service', () => {
@@ -22,7 +20,7 @@ describe('Unit: v2/utils/serializers/output/utils/url', () => {
 
         beforeEach(() => {
             pageModel = (data) => {
-                return Object.assign(data, {toJSON: sandbox.stub().returns(data)});
+                return Object.assign(data, {toJSON: sinon.stub().returns(data)});
             };
         });
 

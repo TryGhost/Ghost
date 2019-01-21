@@ -3,8 +3,7 @@ const should = require('should'),
     urlService = require('../../../server/services/url'),
     helpers = require('../../../server/helpers'),
     models = require('../../../server/models'),
-    testUtils = require('../../utils'),
-    sandbox = sinon.sandbox.create();
+    testUtils = require('../../utils');
 
 describe('{{authors}} helper', function () {
     before(function () {
@@ -12,11 +11,11 @@ describe('{{authors}} helper', function () {
     });
 
     beforeEach(function () {
-        sandbox.stub(urlService, 'getUrlByResourceId');
+        sinon.stub(urlService, 'getUrlByResourceId');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('can return string with authors', function () {

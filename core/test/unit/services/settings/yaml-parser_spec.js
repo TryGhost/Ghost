@@ -4,19 +4,17 @@ const sinon = require('sinon'),
     yaml = require('js-yaml'),
     path = require('path'),
 
-    yamlParser = require('../../../../server/services/settings/yaml-parser'),
-
-    sandbox = sinon.sandbox.create();
+    yamlParser = require('../../../../server/services/settings/yaml-parser');
 
 describe('UNIT > Settings Service:', function () {
     let yamlSpy;
 
     beforeEach(function () {
-        yamlSpy = sandbox.spy(yaml, 'safeLoad');
+        yamlSpy = sinon.spy(yaml, 'safeLoad');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Yaml Parser', function () {

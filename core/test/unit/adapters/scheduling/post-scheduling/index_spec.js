@@ -9,9 +9,7 @@ var should = require('should'),
     schedulingUtils = require('../../../../../server/adapters/scheduling/utils'),
     SchedulingDefault = require('../../../../../server/adapters/scheduling/SchedulingDefault'),
     postScheduling = require('../../../../../server/adapters/scheduling/post-scheduling'),
-    urlService = require('../../../../../server/services/url'),
-
-    sandbox = sinon.sandbox.create();
+    urlService = require('../../../../../server/services/url');
 
 describe('Scheduling: Post Scheduling', function () {
     var scope = {
@@ -35,28 +33,28 @@ describe('Scheduling: Post Scheduling', function () {
 
         scope.adapter = new SchedulingDefault();
 
-        sandbox.stub(api.schedules, 'getScheduledPosts').callsFake(function () {
+        sinon.stub(api.schedules, 'getScheduledPosts').callsFake(function () {
             return Promise.resolve({posts: scope.scheduledPosts});
         });
 
-        sandbox.stub(common.events, 'onMany').callsFake(function (events, stubDone) {
+        sinon.stub(common.events, 'onMany').callsFake(function (events, stubDone) {
             events.forEach(function (event) {
                 scope.events[event] = stubDone;
             });
         });
 
-        sandbox.stub(schedulingUtils, 'createAdapter').returns(Promise.resolve(scope.adapter));
+        sinon.stub(schedulingUtils, 'createAdapter').returns(Promise.resolve(scope.adapter));
 
-        sandbox.stub(models.Client, 'findOne').callsFake(function () {
+        sinon.stub(models.Client, 'findOne').callsFake(function () {
             return Promise.resolve(scope.client);
         });
 
-        sandbox.spy(scope.adapter, 'schedule');
-        sandbox.spy(scope.adapter, 'reschedule');
+        sinon.spy(scope.adapter, 'schedule');
+        sinon.spy(scope.adapter, 'reschedule');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         return testUtils.teardown();
     });
 

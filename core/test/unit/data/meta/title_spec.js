@@ -1,20 +1,19 @@
 var should = require('should'),
     sinon = require('sinon'),
     getTitle = require('../../../../server/data/meta/title'),
-    settingsCache = require('../../../../server/services/settings/cache'),
-    sandbox = sinon.sandbox.create();
+    settingsCache = require('../../../../server/services/settings/cache');
 
 describe('getTitle', function () {
     var localSettingsCache = {};
 
     beforeEach(function () {
-        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
+        sinon.stub(settingsCache, 'get').callsFake(function (key) {
             return localSettingsCache[key];
         });
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         localSettingsCache = {};
     });
 

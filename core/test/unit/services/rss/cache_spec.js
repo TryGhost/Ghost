@@ -2,23 +2,21 @@ var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
     configUtils = require('../../../utils/configUtils'),
-    rssCache = rewire('../../../../server/services/rss/cache'),
-
-    sandbox = sinon.sandbox.create();
+    rssCache = rewire('../../../../server/services/rss/cache');
 
 describe('RSS: Cache', function () {
     var generateSpy, generateFeedReset;
 
     afterEach(function () {
         configUtils.restore();
-        sandbox.restore();
+        sinon.restore();
         generateFeedReset();
     });
 
     beforeEach(function () {
         configUtils.set({url: 'http://my-ghost-blog.com'});
 
-        generateSpy = sandbox.spy(rssCache.__get__('generateFeed'));
+        generateSpy = sinon.spy(rssCache.__get__('generateFeed'));
         generateFeedReset = rssCache.__set__('generateFeed', generateSpy);
     });
 

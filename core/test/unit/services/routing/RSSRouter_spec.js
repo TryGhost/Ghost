@@ -4,23 +4,22 @@ const should = require('should'),
     common = require('../../../../server/lib/common'),
     controllers = require('../../../../server/services/routing/controllers'),
     RSSRouter = require('../../../../server/services/routing/RSSRouter'),
-    urlService = require('../../../../server/services/url'),
-    sandbox = sinon.sandbox.create();
+    urlService = require('../../../../server/services/url');
 
 describe('UNIT - services/routing/RSSRouter', function () {
     describe('instantiate', function () {
         beforeEach(function () {
-            sandbox.stub(common.events, 'emit');
-            sandbox.stub(common.events, 'on');
+            sinon.stub(common.events, 'emit');
+            sinon.stub(common.events, 'on');
 
-            sandbox.spy(RSSRouter.prototype, 'mountRoute');
-            sandbox.spy(RSSRouter.prototype, 'mountRouter');
+            sinon.spy(RSSRouter.prototype, 'mountRoute');
+            sinon.spy(RSSRouter.prototype, 'mountRouter');
 
-            sandbox.stub(urlService.utils, 'urlJoin');
+            sinon.stub(urlService.utils, 'urlJoin');
         });
 
         afterEach(function () {
-            sandbox.restore();
+            sinon.restore();
             configUtils.restore();
         });
 

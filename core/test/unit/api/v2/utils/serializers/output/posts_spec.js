@@ -4,21 +4,19 @@ const testUtils = require('../../../../../../utils');
 const mapper = require('../../../../../../../server/api/v2/utils/serializers/output/utils/mapper');
 const serializers = require('../../../../../../../server/api/v2/utils/serializers');
 
-const sandbox = sinon.sandbox.create();
-
 describe('Unit: v2/utils/serializers/output/posts', () => {
     let postModel;
 
     beforeEach(() => {
         postModel = (data) => {
-            return Object.assign(data, {toJSON: sandbox.stub().returns(data)});
+            return Object.assign(data, {toJSON: sinon.stub().returns(data)});
         };
 
-        sandbox.stub(mapper, 'mapPost').returns({});
+        sinon.stub(mapper, 'mapPost').returns({});
     });
 
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('calls the mapper', () => {

@@ -1,8 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    uncapitalise = require('../../../../server/web/shared/middlewares/uncapitalise'),
-
-    sandbox = sinon.sandbox.create();
+    uncapitalise = require('../../../../server/web/shared/middlewares/uncapitalise');
 
 // NOTE: all urls will have had trailing slashes added before uncapitalise is called
 
@@ -11,15 +9,15 @@ describe('Middleware: uncapitalise', function () {
 
     beforeEach(function () {
         res = {
-            redirect: sandbox.spy(),
-            set: sandbox.spy()
+            redirect: sinon.spy(),
+            set: sinon.spy()
         };
         req = {};
-        next = sandbox.spy();
+        next = sinon.spy();
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Signup or reset request', function () {

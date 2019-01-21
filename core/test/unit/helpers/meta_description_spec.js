@@ -2,18 +2,16 @@ var should = require('should'),
     sinon = require('sinon'),
     configUtils = require('../../utils/configUtils'),
     helpers = require('../../../server/helpers'),
-    settingsCache = require('../../../server/services/settings/cache'),
-
-    sandbox = sinon.sandbox.create();
+    settingsCache = require('../../../server/services/settings/cache');
 
 describe('{{meta_description}} helper', function () {
     before(function () {
-        sandbox.stub(settingsCache, 'get').returns('The professional publishing platform');
+        sinon.stub(settingsCache, 'get').returns('The professional publishing platform');
     });
 
     after(function () {
         configUtils.restore();
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('returns correct blog description', function () {

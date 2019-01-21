@@ -3,14 +3,13 @@ var should = require('should'),
     testUtils = require('../utils'),
     _ = require('lodash'),
     Promise = require('bluebird'),
-    Models = require('../../server/models'),
-    sandbox = sinon.sandbox.create();
+    Models = require('../../server/models');
 
 describe('Database Migration (special functions)', function () {
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Fixtures', function () {

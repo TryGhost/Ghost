@@ -1,16 +1,15 @@
 const should = require('should'),
     sinon = require('sinon'),
-    sandbox = sinon.sandbox.create(),
     routing = require('../../../../server/services/routing'),
     getRssUrl = require('../../../../server/data/meta/rss_url');
 
 describe('getRssUrl', function () {
     beforeEach(function () {
-        sandbox.stub(routing.registry, 'getRssUrl').returns('/rss/');
+        sinon.stub(routing.registry, 'getRssUrl').returns('/rss/');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should return rss url', function () {

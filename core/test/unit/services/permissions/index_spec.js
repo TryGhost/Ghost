@@ -5,9 +5,7 @@ var should = require('should'),
     _ = require('lodash'),
     models = require('../../../../server/models'),
     actionsMap = require('../../../../server/services/permissions/actions-map-cache'),
-    permissions = require('../../../../server/services/permissions'),
-
-    sandbox = sinon.sandbox.create();
+    permissions = require('../../../../server/services/permissions');
 
 describe('Permissions', function () {
     var fakePermissions = [],
@@ -19,21 +17,21 @@ describe('Permissions', function () {
     });
 
     beforeEach(function () {
-        sandbox.stub(models.Permission, 'findAll').callsFake(function () {
+        sinon.stub(models.Permission, 'findAll').callsFake(function () {
             return Promise.resolve(models.Permissions.forge(fakePermissions));
         });
 
-        findPostSpy = sandbox.stub(models.Post, 'findOne').callsFake(function () {
+        findPostSpy = sinon.stub(models.Post, 'findOne').callsFake(function () {
             return Promise.resolve(models.Post.forge(testUtils.DataGenerator.Content.posts[0]));
         });
 
-        findTagSpy = sandbox.stub(models.Tag, 'findOne').callsFake(function () {
+        findTagSpy = sinon.stub(models.Tag, 'findOne').callsFake(function () {
             return Promise.resolve({});
         });
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     /**
@@ -69,7 +67,7 @@ describe('Permissions', function () {
 
     describe('No init (no action map)', function () {
         it('throws an error without actionMap', function () {
-            sandbox.stub(actionsMap, 'empty').returns(true);
+            sinon.stub(actionsMap, 'empty').returns(true);
 
             permissions.canThis.should.throw(/No actions map found/);
         });

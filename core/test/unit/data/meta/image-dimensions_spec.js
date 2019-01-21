@@ -1,18 +1,17 @@
 var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
-    getImageDimensions = rewire('../../../../server/data/meta/image-dimensions'),
-    sandbox = sinon.sandbox.create();
+    getImageDimensions = rewire('../../../../server/data/meta/image-dimensions');
 
 describe('getImageDimensions', function () {
     var sizeOfStub;
 
     beforeEach(function () {
-        sizeOfStub = sandbox.stub();
+        sizeOfStub = sinon.stub();
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should return dimension for images', function (done) {

@@ -10,8 +10,6 @@ const configUtils = require('../utils/configUtils');
 const packageInfo = require('../../../package');
 const api = require('../../server/api').v2;
 
-const sandbox = sinon.sandbox.create();
-
 let updateCheck = rewire('../../server/update-check');
 let NotificationsAPI = rewire('../../server/api/v2/notifications');
 
@@ -22,7 +20,7 @@ describe('Update Check', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
     });
 
@@ -37,9 +35,9 @@ describe('Update Check', function () {
         beforeEach(testUtils.setup('roles', 'owner'));
 
         beforeEach(function () {
-            updateCheckRequestSpy = sandbox.stub().returns(Promise.resolve());
-            updateCheckResponseSpy = sandbox.stub().returns(Promise.resolve());
-            updateCheckErrorSpy = sandbox.stub();
+            updateCheckRequestSpy = sinon.stub().returns(Promise.resolve());
+            updateCheckResponseSpy = sinon.stub().returns(Promise.resolve());
+            updateCheckErrorSpy = sinon.stub();
 
             updateCheck.__set__('updateCheckRequest', updateCheckRequestSpy);
             updateCheck.__set__('updateCheckResponse', updateCheckResponseSpy);
@@ -48,12 +46,12 @@ describe('Update Check', function () {
         });
 
         it('update check was never executed', function (done) {
-            const readStub = sandbox.stub().resolves({
+            const readStub = sinon.stub().resolves({
                 settings: [{
                     value: null
                 }]
             });
-            sandbox.stub(api, 'settings').get(() => ({
+            sinon.stub(api, 'settings').get(() => ({
                 read: readStub
             }));
 
@@ -68,12 +66,12 @@ describe('Update Check', function () {
         });
 
         it('update check won\'t happen if it\'s too early', function (done) {
-            const readStub = sandbox.stub().resolves({
+            const readStub = sinon.stub().resolves({
                 settings: [{
                     value: moment().add('10', 'minutes').unix()
                 }]
             });
-            sandbox.stub(api, 'settings').get(() => ({
+            sinon.stub(api, 'settings').get(() => ({
                 read: readStub
             }));
 
@@ -88,12 +86,12 @@ describe('Update Check', function () {
         });
 
         it('update check will happen if it\'s time to check', function (done) {
-            const readStub = sandbox.stub().resolves({
+            const readStub = sinon.stub().resolves({
                 settings: [{
                     value: moment().subtract('10', 'minutes').unix()
                 }]
             });
-            sandbox.stub(api, 'settings').get(() => ({
+            sinon.stub(api, 'settings').get(() => ({
                 read: readStub
             }));
 
@@ -330,7 +328,7 @@ describe('Update Check', function () {
 
         it('receives a notifications with messages', function (done) {
             var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
-                createNotificationSpy = sandbox.spy(),
+                createNotificationSpy = sinon.spy(),
                 message = {
                     id: uuid.v4(),
                     version: '^0.11.11',
@@ -351,7 +349,7 @@ describe('Update Check', function () {
 
         it('receives multiple notifications', function (done) {
             var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
-                createNotificationSpy = sandbox.spy(),
+                createNotificationSpy = sinon.spy(),
                 message1 = {
                     id: uuid.v4(),
                     version: '^0.11.11',
@@ -383,7 +381,7 @@ describe('Update Check', function () {
 
         it('ignores some custom notifications which are not marked as group', function (done) {
             var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
-                createNotificationSpy = sandbox.spy(),
+                createNotificationSpy = sinon.spy(),
                 message1 = {
                     id: uuid.v4(),
                     version: '^0.11.11',
@@ -423,7 +421,7 @@ describe('Update Check', function () {
 
         it('group matches', function (done) {
             var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
-                createNotificationSpy = sandbox.spy(),
+                createNotificationSpy = sinon.spy(),
                 message1 = {
                     id: uuid.v4(),
                     version: '^0.11.11',
@@ -465,7 +463,7 @@ describe('Update Check', function () {
 
         it('single custom notification received, group matches', function (done) {
             var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
-                createNotificationSpy = sandbox.spy(),
+                createNotificationSpy = sinon.spy(),
                 message1 = {
                     id: uuid.v4(),
                     version: '^0.11.11',
@@ -491,7 +489,7 @@ describe('Update Check', function () {
 
         it('single custom notification received, group does not match', function (done) {
             var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
-                createNotificationSpy = sandbox.spy(),
+                createNotificationSpy = sinon.spy(),
                 message1 = {
                     id: uuid.v4(),
                     version: '^0.11.11',
@@ -527,7 +525,7 @@ describe('Update Check', function () {
 
         it('[default]', function () {
             var updateCheckRequest = updateCheck.__get__('updateCheckRequest'),
-                updateCheckDataSpy = sandbox.stub(),
+                updateCheckDataSpy = sinon.stub(),
                 hostname,
                 reqObj,
                 data = {
@@ -561,7 +559,7 @@ describe('Update Check', function () {
 
         it('privacy flag is used', function () {
             var updateCheckRequest = updateCheck.__get__('updateCheckRequest'),
-                updateCheckDataSpy = sandbox.stub(),
+                updateCheckDataSpy = sinon.stub(),
                 reqObj,
                 hostname;
 
@@ -604,7 +602,7 @@ describe('Update Check', function () {
 
         it('received 500 from the service', function () {
             var updateCheckRequest = updateCheck.__get__('updateCheckRequest'),
-                updateCheckDataSpy = sandbox.stub(),
+                updateCheckDataSpy = sinon.stub(),
                 reqObj,
                 hostname;
 
@@ -637,7 +635,7 @@ describe('Update Check', function () {
 
         it('received 404 from the service', function () {
             var updateCheckRequest = updateCheck.__get__('updateCheckRequest'),
-                updateCheckDataSpy = sandbox.stub(),
+                updateCheckDataSpy = sinon.stub(),
                 reqObj,
                 hostname;
 
@@ -671,7 +669,7 @@ describe('Update Check', function () {
 
         it('custom url', function () {
             var updateCheckRequest = updateCheck.__get__('updateCheckRequest'),
-                updateCheckDataSpy = sandbox.stub(),
+                updateCheckDataSpy = sinon.stub(),
                 reqObj,
                 hostname;
 

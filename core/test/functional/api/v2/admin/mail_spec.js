@@ -6,7 +6,7 @@ const localUtils = require('./utils');
 const config = require('../../../../../../core/server/config');
 const mailService = require('../../../../../../core/server/services/mail');
 const ghost = testUtils.startGhost;
-const sandbox = sinon.sandbox.create();
+
 let request;
 
 describe('Mail API V2', function () {
@@ -27,11 +27,11 @@ describe('Mail API V2', function () {
     });
 
     beforeEach(function () {
-        sandbox.stub(mailService.GhostMailer.prototype, 'send').resolves({message: 'sent'});
+        sinon.stub(mailService.GhostMailer.prototype, 'send').resolves({message: 'sent'});
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('default', function () {

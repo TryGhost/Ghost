@@ -1,7 +1,6 @@
 const should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
-    sandbox = sinon.sandbox.create(),
     urlService = require('../../../../server/services/url'),
     testUtils = require('../../../utils');
 
@@ -11,17 +10,17 @@ describe('getAmpUrl', function () {
     let getUrlStub;
 
     beforeEach(function () {
-        getUrlStub = sandbox.stub();
+        getUrlStub = sinon.stub();
 
         getAmpUrl = rewire('../../../../server/data/meta/amp_url');
         getAmpUrl.__set__('getUrl', getUrlStub);
 
-        sandbox.stub(urlService.utils, 'urlJoin');
-        sandbox.stub(urlService.utils, 'urlFor').withArgs('home', true).returns('http://localhost:9999');
+        sinon.stub(urlService.utils, 'urlJoin');
+        sinon.stub(urlService.utils, 'urlFor').withArgs('home', true).returns('http://localhost:9999');
     });
 
     afterEach(function () {
-       sandbox.restore();
+       sinon.restore();
     });
 
     it('should return amp url for post', function () {

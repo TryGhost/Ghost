@@ -1,17 +1,16 @@
 const should = require('should'),
     sinon = require('sinon'),
     ObjectId = require('bson-objectid'),
-    sandbox = sinon.sandbox.create(),
     urlService = require('../../../../server/services/url'),
     getAuthorUrl = require('../../../../server/data/meta/author_url');
 
 describe('getAuthorUrl', function () {
     beforeEach(function () {
-        sandbox.stub(urlService, 'getUrlByResourceId');
+        sinon.stub(urlService, 'getUrlByResourceId');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should return author url if context contains primary author', function () {

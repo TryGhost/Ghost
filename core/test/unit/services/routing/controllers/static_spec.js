@@ -4,8 +4,7 @@ const should = require('should'),
     api = require('../../../../../server/api'),
     themeService = require('../../../../../server/services/themes'),
     helpers = require('../../../../../server/services/routing/helpers'),
-    controllers = require('../../../../../server/services/routing/controllers'),
-    sandbox = sinon.sandbox.create();
+    controllers = require('../../../../../server/services/routing/controllers');
 
 function failTest(done) {
     return function (err) {
@@ -24,23 +23,23 @@ describe('Unit - services/routing/controllers/static', function () {
             testUtils.DataGenerator.forKnex.createPost()
         ];
 
-        secureStub = sandbox.stub();
-        renderStub = sandbox.stub();
-        handleErrorStub = sandbox.stub();
-        formatResponseStub = sandbox.stub();
-        formatResponseStub.entries = sandbox.stub();
+        secureStub = sinon.stub();
+        renderStub = sinon.stub();
+        handleErrorStub = sinon.stub();
+        formatResponseStub = sinon.stub();
+        formatResponseStub.entries = sinon.stub();
 
-        sandbox.stub(api.tags, 'read');
+        sinon.stub(api.tags, 'read');
 
-        sandbox.stub(helpers, 'secure').get(function () {
+        sinon.stub(helpers, 'secure').get(function () {
             return secureStub;
         });
 
-        sandbox.stub(helpers, 'handleError').get(function () {
+        sinon.stub(helpers, 'handleError').get(function () {
             return handleErrorStub;
         });
 
-        sandbox.stub(themeService, 'getActive').returns({
+        sinon.stub(themeService, 'getActive').returns({
             config: function (key) {
                 if (key === 'posts_per_page') {
                     return postsPerPage;
@@ -48,11 +47,11 @@ describe('Unit - services/routing/controllers/static', function () {
             }
         });
 
-        sandbox.stub(helpers, 'renderer').get(function () {
+        sinon.stub(helpers, 'renderer').get(function () {
             return renderStub;
         });
 
-        sandbox.stub(helpers, 'formatResponse').get(function () {
+        sinon.stub(helpers, 'formatResponse').get(function () {
             return formatResponseStub;
         });
 
@@ -73,7 +72,7 @@ describe('Unit - services/routing/controllers/static', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('no extra data to fetch', function (done) {

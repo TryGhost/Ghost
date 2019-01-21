@@ -1,15 +1,12 @@
 var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
-
     themes = require('../../../../server/services/themes'),
-    themeList = themes.list,
-
-    sandbox = sinon.sandbox.create();
+    themeList = themes.list;
 
 describe('Themes', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('List', function () {
@@ -63,7 +60,7 @@ describe('Themes', function () {
         });
 
         it('init() calls set for each theme', function () {
-            var setSpy = sandbox.spy(themeList, 'set');
+            var setSpy = sinon.spy(themeList, 'set');
 
             themeList.init({test: {a: 'b'}, casper: {c: 'd'}});
             setSpy.calledTwice.should.be.true();

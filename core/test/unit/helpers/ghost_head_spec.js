@@ -11,8 +11,7 @@ const should = require('should'),
     urlService = require('../../../server/services/url'),
     helpers = require('../../../server/helpers'),
     proxy = require('../../../server/helpers/proxy'),
-    settingsCache = proxy.settingsCache,
-    sandbox = sinon.sandbox.create();
+    settingsCache = proxy.settingsCache;
 
 describe('{{ghost_head}} helper', function () {
     let posts = [], tags = [], authors = [], users = [];
@@ -273,16 +272,16 @@ describe('{{ghost_head}} helper', function () {
     before(function () {
         // @TODO: remove when visibility is refactored out of models
         models.init();
-        sandbox.stub(urlService, 'getUrlByResourceId').returns('https://mysite.com/fakeauthor/');
+        sinon.stub(urlService, 'getUrlByResourceId').returns('https://mysite.com/fakeauthor/');
 
         // @TODO: this is a LOT of mocking :/
-        sandbox.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
-        sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
-        sandbox.stub(themes, 'getActive').returns({
+        sinon.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
+        sinon.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
+        sinon.stub(themes, 'getActive').returns({
             engine: () => 'v0.1'
         });
 
-        sandbox.stub(settingsCache, 'get');
+        sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('title').returns('Ghost');
         settingsCache.get.withArgs('description').returns('blog description');
         settingsCache.get.withArgs('cover_image').returns('/content/images/blog-cover.png');
@@ -292,7 +291,7 @@ describe('{{ghost_head}} helper', function () {
     });
 
     after(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
     });
 

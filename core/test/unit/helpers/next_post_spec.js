@@ -5,9 +5,7 @@ var should = require('should'),
 
     helpers = require('../../../server/helpers'),
     api = require('../../../server/api'),
-    common = require('../../../server/lib/common'),
-
-    sandbox = sinon.sandbox.create();
+    common = require('../../../server/lib/common');
 
 describe('{{next_post}} helper', function () {
     let locals;
@@ -25,12 +23,12 @@ describe('{{next_post}} helper', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('with valid post data - ', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({
                         posts: [{slug: '/next/', title: 'post 3'}]
@@ -72,7 +70,7 @@ describe('{{next_post}} helper', function () {
 
     describe('for valid post with no next post', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({posts: []});
                 }
@@ -110,7 +108,7 @@ describe('{{next_post}} helper', function () {
 
     describe('for invalid post data', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({});
                 }
@@ -146,7 +144,7 @@ describe('{{next_post}} helper', function () {
                 }
             };
 
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({posts: [{slug: '/previous/', title: 'post 1'}]});
                 }
@@ -190,7 +188,7 @@ describe('{{next_post}} helper', function () {
                 }
             };
 
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({posts: [{slug: '/next/', title: 'post 3'}]});
                 }
@@ -224,7 +222,7 @@ describe('{{next_post}} helper', function () {
 
     describe('with "in" option', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({
                         posts: [{slug: '/next/', title: 'post 1'}]
@@ -395,7 +393,7 @@ describe('{{next_post}} helper', function () {
 
     describe('general error handling', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function () {
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function () {
                 return Promise.reject(new common.errors.NotFoundError({message: 'Something wasn\'t found'}));
             });
         });

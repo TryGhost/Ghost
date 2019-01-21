@@ -9,9 +9,7 @@ var should = require('should'),
     config = configUtils.config,
 
     // stuff we are testing
-    blogIcon = rewire('../../../../server/lib/image/blog-icon'),
-
-    sandbox = sinon.sandbox.create();
+    blogIcon = rewire('../../../../server/lib/image/blog-icon');
 
 describe('lib/image: blog icon', function () {
     before(function () {
@@ -20,18 +18,18 @@ describe('lib/image: blog icon', function () {
 
     afterEach(function () {
         configUtils.restore();
-        sandbox.restore();
+        sinon.restore();
         rewire('../../../../server/lib/image/blog-icon');
     });
 
     describe('getIconUrl', function () {
         it('custom uploaded ico blog icon', function () {
-            sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.ico');
+            sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.ico');
             blogIcon.getIconUrl().should.eql('/favicon.ico');
         });
 
         it('custom uploaded png blog icon', function () {
-            sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
+            sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
             blogIcon.getIconUrl().should.eql('/favicon.png');
         });
 
@@ -41,13 +39,13 @@ describe('lib/image: blog icon', function () {
         describe('absolute URL', function () {
             it('custom uploaded ico blog icon', function () {
                 configUtils.set({url: 'http://my-ghost-blog.com/'});
-                sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.ico');
+                sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.ico');
                 blogIcon.getIconUrl(true).should.eql('http://my-ghost-blog.com/favicon.ico');
             });
 
             it('custom uploaded png blog icon', function () {
                 configUtils.set({url: 'http://my-ghost-blog.com/'});
-                sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
+                sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
                 blogIcon.getIconUrl(true).should.eql('http://my-ghost-blog.com/favicon.png');
             });
 
@@ -59,14 +57,14 @@ describe('lib/image: blog icon', function () {
 
         describe('with subdirectory', function () {
             it('custom uploaded ico blog icon', function () {
-                sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.ico');
+                sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.ico');
                 configUtils.set({url: 'http://my-ghost-blog.com/blog'});
 
                 blogIcon.getIconUrl().should.eql('/blog/favicon.ico');
             });
 
             it('custom uploaded png blog icon', function () {
-                sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
+                sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
                 configUtils.set({url: 'http://my-ghost-blog.com/blog'});
 
                 blogIcon.getIconUrl().should.eql('/blog/favicon.png');
@@ -81,12 +79,12 @@ describe('lib/image: blog icon', function () {
 
     describe('getIconPath', function () {
         it('custom uploaded ico blog icon', function () {
-            sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.ico');
+            sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.ico');
             blogIcon.getIconPath().should.eql('/2017/04/my-icon.ico');
         });
 
         it('custom uploaded png blog icon', function () {
-            sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
+            sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
             blogIcon.getIconPath().should.eql('/2017/04/my-icon.png');
         });
 
@@ -96,14 +94,14 @@ describe('lib/image: blog icon', function () {
 
         describe('with subdirectory', function () {
             it('custom uploaded ico blog icon', function () {
-                sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/blog/content/images/2017/04/my-icon.ico');
+                sinon.stub(settingsCache, 'get').withArgs('icon').returns('/blog/content/images/2017/04/my-icon.ico');
                 configUtils.set({url: 'http://my-ghost-blog.com/blog'});
 
                 blogIcon.getIconPath().should.eql('/2017/04/my-icon.ico');
             });
 
             it('custom uploaded png blog icon', function () {
-                sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/blog/content/images/2017/04/my-icon.png');
+                sinon.stub(settingsCache, 'get').withArgs('icon').returns('/blog/content/images/2017/04/my-icon.png');
                 configUtils.set({url: 'http://my-ghost-blog.com/blog'});
 
                 blogIcon.getIconPath().should.eql('/2017/04/my-icon.png');
@@ -174,7 +172,7 @@ describe('lib/image: blog icon', function () {
         });
 
         it('[failure] return error message', function (done) {
-            var sizeOfStub = sandbox.stub();
+            var sizeOfStub = sinon.stub();
 
             sizeOfStub.throws({error: 'image-size could not find dimensions'});
 

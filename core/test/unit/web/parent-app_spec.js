@@ -1,7 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    proxyquire = require('proxyquire'),
-    sandbox = sinon.sandbox.create();
+    proxyquire = require('proxyquire');
 
 describe('parent app', function () {
     let expressStub;
@@ -12,7 +11,7 @@ describe('parent app', function () {
     let siteSpy;
 
     beforeEach(function () {
-        use = sandbox.spy();
+        use = sinon.spy();
         expressStub = () => ({
             use,
             enable: () => {}
@@ -31,7 +30,7 @@ describe('parent app', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should mount 3 apps and assign correct routes to them', function () {

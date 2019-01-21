@@ -6,8 +6,7 @@ var should = require('should'),
     models = require('../../../../server/models'),
     urlService = require('../../../../server/services/url'),
     filters = require('../../../../server/filters'),
-    testUtils = require('../../../utils'),
-    sandbox = sinon.sandbox.create();
+    testUtils = require('../../../utils');
 
 describe('Models: base', function () {
     before(function () {
@@ -15,7 +14,7 @@ describe('Models: base', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('generateSlug', function () {
@@ -23,15 +22,15 @@ describe('Models: base', function () {
         let options = {};
 
         beforeEach(function () {
-            sandbox.stub(security.string, 'safe');
-            sandbox.stub(filters, 'doFilter').resolves();
-            sandbox.stub(urlService.utils, 'getProtectedSlugs').returns(['upsi', 'schwupsi']);
+            sinon.stub(security.string, 'safe');
+            sinon.stub(filters, 'doFilter').resolves();
+            sinon.stub(urlService.utils, 'getProtectedSlugs').returns(['upsi', 'schwupsi']);
 
-            Model = sandbox.stub();
+            Model = sinon.stub();
             Model.prototype = {
                 tableName: 'tableName'
             };
-            Model.findOne = sandbox.stub();
+            Model.findOne = sinon.stub();
         });
 
         it('default', function () {
@@ -175,7 +174,7 @@ describe('Models: base', function () {
         it('resets given empty value to null', function () {
             const base = models.Base.Model.forge({a: '', b: ''});
 
-            base.emptyStringProperties = sandbox.stub();
+            base.emptyStringProperties = sinon.stub();
             base.emptyStringProperties.returns(['a']);
 
             base.get('a').should.eql('');
@@ -201,12 +200,12 @@ describe('Models: base', function () {
                 }
             };
             const model = models.Base.Model.forge({});
-            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
-            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+            const filterOptionsSpy = sinon.spy(models.Base.Model, 'filterOptions');
+            const forgeStub = sinon.stub(models.Base.Model, 'forge')
                 .returns(model);
-            const fetchStub = sandbox.stub(model, 'fetch')
+            const fetchStub = sinon.stub(model, 'fetch')
                 .resolves(model);
-            const destroyStub = sandbox.stub(model, 'destroy');
+            const destroyStub = sinon.stub(model, 'destroy');
 
             return models.Base.Model.destroy(unfilteredOptions).then(() => {
                 should.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
@@ -228,12 +227,12 @@ describe('Models: base', function () {
                 id: 23
             };
             const model = models.Base.Model.forge({});
-            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
-            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+            const filterOptionsSpy = sinon.spy(models.Base.Model, 'filterOptions');
+            const forgeStub = sinon.stub(models.Base.Model, 'forge')
                 .returns(model);
-            const fetchStub = sandbox.stub(model, 'fetch')
+            const fetchStub = sinon.stub(model, 'fetch')
                 .resolves(model);
-            const destroyStub = sandbox.stub(model, 'destroy');
+            const destroyStub = sinon.stub(model, 'destroy');
 
             return models.Base.Model.destroy(unfilteredOptions).then(() => {
                 should.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
@@ -261,11 +260,11 @@ describe('Models: base', function () {
             };
             const model = models.Base.Model.forge({});
             const fetchedModel = models.Base.Model.forge({});
-            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
-            const filterDataSpy = sandbox.spy(models.Base.Model, 'filterData');
-            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+            const filterOptionsSpy = sinon.spy(models.Base.Model, 'filterOptions');
+            const filterDataSpy = sinon.spy(models.Base.Model, 'filterData');
+            const forgeStub = sinon.stub(models.Base.Model, 'forge')
                 .returns(model);
-            const fetchStub = sandbox.stub(model, 'fetch')
+            const fetchStub = sinon.stub(model, 'fetch')
                 .resolves(fetchedModel);
 
             const findOneReturnValue = models.Base.Model.findOne(data, unfilteredOptions);
@@ -299,13 +298,13 @@ describe('Models: base', function () {
             };
             const model = models.Base.Model.forge({});
             const savedModel = models.Base.Model.forge({});
-            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
-            const filterDataSpy = sandbox.spy(models.Base.Model, 'filterData');
-            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+            const filterOptionsSpy = sinon.spy(models.Base.Model, 'filterOptions');
+            const filterDataSpy = sinon.spy(models.Base.Model, 'filterData');
+            const forgeStub = sinon.stub(models.Base.Model, 'forge')
                 .returns(model);
-            const fetchStub = sandbox.stub(model, 'fetch')
+            const fetchStub = sinon.stub(model, 'fetch')
                 .resolves(model);
-            const saveStub = sandbox.stub(model, 'save')
+            const saveStub = sinon.stub(model, 'save')
                 .resolves(savedModel);
 
             return models.Base.Model.edit(data, unfilteredOptions).then((result) => {
@@ -336,9 +335,9 @@ describe('Models: base', function () {
                 importing: true
             };
             const model = models.Base.Model.forge({});
-            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+            const forgeStub = sinon.stub(models.Base.Model, 'forge')
                 .returns(model);
-            const fetchStub = sandbox.stub(model, 'fetch')
+            const fetchStub = sinon.stub(model, 'fetch')
                 .resolves();
 
             return models.Base.Model.findOne(data, unfilteredOptions).then(() => {
@@ -354,13 +353,13 @@ describe('Models: base', function () {
                 id: 'something real special',
             };
             const model = models.Base.Model.forge({});
-            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
-            const filterDataSpy = sandbox.spy(models.Base.Model, 'filterData');
-            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+            const filterOptionsSpy = sinon.spy(models.Base.Model, 'filterOptions');
+            const filterDataSpy = sinon.spy(models.Base.Model, 'filterData');
+            const forgeStub = sinon.stub(models.Base.Model, 'forge')
                 .returns(model);
-            const fetchStub = sandbox.stub(model, 'fetch')
+            const fetchStub = sinon.stub(model, 'fetch')
                 .resolves();
-            const saveSpy = sandbox.stub(model, 'save');
+            const saveSpy = sinon.stub(model, 'save');
 
             return models.Base.Model.edit(data, unfilteredOptions).then((result) => {
                 should.equal(result, undefined);
@@ -377,11 +376,11 @@ describe('Models: base', function () {
             const unfilteredOptions = {};
             const model = models.Base.Model.forge({});
             const savedModel = models.Base.Model.forge({});
-            const filterOptionsSpy = sandbox.spy(models.Base.Model, 'filterOptions');
-            const filterDataSpy = sandbox.spy(models.Base.Model, 'filterData');
-            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+            const filterOptionsSpy = sinon.spy(models.Base.Model, 'filterOptions');
+            const filterDataSpy = sinon.spy(models.Base.Model, 'filterData');
+            const forgeStub = sinon.stub(models.Base.Model, 'forge')
                 .returns(model);
-            const saveStub = sandbox.stub(model, 'save')
+            const saveStub = sinon.stub(model, 'save')
                 .resolves(savedModel);
 
             return models.Base.Model.add(data, unfilteredOptions).then((result) => {
@@ -410,9 +409,9 @@ describe('Models: base', function () {
                 importing: true
             };
             const model = models.Base.Model.forge({});
-            const forgeStub = sandbox.stub(models.Base.Model, 'forge')
+            const forgeStub = sinon.stub(models.Base.Model, 'forge')
                 .returns(model);
-            const saveStub = sandbox.stub(model, 'save')
+            const saveStub = sinon.stub(model, 'save')
                 .resolves();
 
             return models.Base.Model.add(data, unfilteredOptions).then(() => {

@@ -7,20 +7,18 @@ var should = require('should'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     xmlrpc = rewire('../../../server/services/xmlrpc'),
-    common = require('../../../server/lib/common'),
-
-    sandbox = sinon.sandbox.create();
+    common = require('../../../server/lib/common');
 
 describe('XMLRPC', function () {
     var eventStub;
 
     beforeEach(function () {
-        eventStub = sandbox.stub(common.events, 'on');
+        eventStub = sinon.stub(common.events, 'on');
         configUtils.set('privacy:useRpcPing', true);
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
         nock.cleanAll();
     });
@@ -38,7 +36,7 @@ describe('XMLRPC', function () {
                     return testPost;
                 }
             },
-            pingStub = sandbox.stub(),
+            pingStub = sinon.stub(),
             resetXmlRpc = xmlrpc.__set__('ping', pingStub),
             listener = xmlrpc.__get__('listener');
 
@@ -58,7 +56,7 @@ describe('XMLRPC', function () {
                     return testPost;
                 }
             },
-            pingStub = sandbox.stub(),
+            pingStub = sinon.stub(),
             resetXmlRpc = xmlrpc.__set__('ping', pingStub),
             listener = xmlrpc.__get__('listener');
 
@@ -122,7 +120,7 @@ describe('XMLRPC', function () {
         it('captures && logs errors from requests', function (done) {
             var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
                 ping1 = nock('http://rpc.pingomatic.com').post('/').reply(400),
-                loggingStub = sandbox.stub(common.logging, 'error');
+                loggingStub = sinon.stub(common.logging, 'error');
 
             ping(testPost);
 
@@ -163,7 +161,7 @@ describe('XMLRPC', function () {
                      </param>
                    </params>
                  </methodResponse>`),
-                loggingStub = sandbox.stub(common.logging, 'error');
+                loggingStub = sinon.stub(common.logging, 'error');
 
             ping(testPost);
 
@@ -204,7 +202,7 @@ describe('XMLRPC', function () {
                      </param>
                    </params>
                  </methodResponse>`).replace('\n', '')),
-                loggingStub = sandbox.stub(common.logging, 'error');
+                loggingStub = sinon.stub(common.logging, 'error');
 
             ping(testPost);
 
@@ -235,7 +233,7 @@ describe('XMLRPC', function () {
                         </param>
                       </params>
                     </methodResponse>`),
-                loggingStub = sandbox.stub(common.logging, 'error');
+                loggingStub = sinon.stub(common.logging, 'error');
 
             ping(testPost);
 

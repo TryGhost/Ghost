@@ -5,13 +5,11 @@ var should = require('should'),
     ObjectId = require('bson-objectid'),
     permissions = require('../../../../server/services/permissions'),
     common = require('../../../../server/lib/common'),
-    apiUtils = require('../../../../server/api/v0.1/utils'),
-
-    sandbox = sinon.sandbox.create();
+    apiUtils = require('../../../../server/api/v0.1/utils');
 
 describe('API Utils', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('exports', function () {
@@ -91,7 +89,7 @@ describe('API Utils', function () {
 
         it('should check data if an object is passed', function (done) {
             var object = {test: [{id: 1}]},
-                checkObjectStub = sandbox.stub(apiUtils, 'checkObject').returns(Promise.resolve(object));
+                checkObjectStub = sinon.stub(apiUtils, 'checkObject').returns(Promise.resolve(object));
 
             apiUtils.validate('test')(object, {}).then(function (options) {
                 checkObjectStub.calledOnce.should.be.true();
@@ -111,7 +109,7 @@ describe('API Utils', function () {
 
         it('should handle options being undefined when provided with object', function (done) {
             var object = {test: [{id: 1}]},
-                checkObjectStub = sandbox.stub(apiUtils, 'checkObject').returns(Promise.resolve(object));
+                checkObjectStub = sinon.stub(apiUtils, 'checkObject').returns(Promise.resolve(object));
 
             apiUtils.validate('test')(object, undefined).then(function (options) {
                 checkObjectStub.calledOnce.should.be.true();
@@ -287,14 +285,14 @@ describe('API Utils', function () {
 
     describe('convertOptions', function () {
         it('should not call prepareInclude if there is no include option', function () {
-            var prepareIncludeStub = sandbox.stub(apiUtils, 'prepareInclude');
+            var prepareIncludeStub = sinon.stub(apiUtils, 'prepareInclude');
             apiUtils.convertOptions(['a', 'b', 'c'])({}).should.eql({});
             prepareIncludeStub.called.should.be.false();
         });
 
         it('should pass options.include to prepareInclude if provided', function () {
             var expectedResult = ['a', 'b'],
-                prepareIncludeStub = sandbox.stub(apiUtils, 'prepareInclude').returns(expectedResult),
+                prepareIncludeStub = sinon.stub(apiUtils, 'prepareInclude').returns(expectedResult),
                 allowed = ['a', 'b', 'c'],
                 options = {include: 'a,b'},
                 actualResult;
@@ -589,7 +587,7 @@ describe('API Utils', function () {
 
     describe('isPublicContext', function () {
         it('should call out to permissions', function () {
-            var permsStub = sandbox.stub(permissions, 'parseContext').returns({public: true});
+            var permsStub = sinon.stub(permissions, 'parseContext').returns({public: true});
             apiUtils.detectPublicContext({context: 'test'}).should.be.true();
             permsStub.called.should.be.true();
             permsStub.calledWith('test').should.be.true();
@@ -598,7 +596,7 @@ describe('API Utils', function () {
 
     describe('applyPublicPermissions', function () {
         it('should call out to permissions', function () {
-            var permsStub = sandbox.stub(permissions, 'applyPublicRules');
+            var permsStub = sinon.stub(permissions, 'applyPublicRules');
             apiUtils.applyPublicPermissions('test', {});
             permsStub.called.should.be.true();
             permsStub.calledWith('test', {}).should.be.true();
@@ -614,7 +612,7 @@ describe('API Utils', function () {
         });
 
         it('should treat no context as public', function (done) {
-            var aPPStub = sandbox.stub(apiUtils, 'applyPublicPermissions').returns(Promise.resolve({}));
+            var aPPStub = sinon.stub(apiUtils, 'applyPublicPermissions').returns(Promise.resolve({}));
             apiUtils.handlePublicPermissions('tests', 'test')({}).then(function (options) {
                 aPPStub.calledOnce.should.eql(true);
                 options.should.eql({context: {app: null, external: false, internal: false, public: true, user: null, api_key_id: null}});
@@ -625,10 +623,10 @@ describe('API Utils', function () {
         it('should treat user context as NOT public', function (done) {
             var cTMethodStub = {
                     test: {
-                        test: sandbox.stub().returns(Promise.resolve())
+                        test: sinon.stub().returns(Promise.resolve())
                     }
                 },
-                cTStub = sandbox.stub(permissions, 'canThis').returns(cTMethodStub);
+                cTStub = sinon.stub(permissions, 'canThis').returns(cTMethodStub);
 
             apiUtils.handlePublicPermissions('tests', 'test')({context: {user: 1}}).then(function (options) {
                 cTStub.calledOnce.should.eql(true);
@@ -641,10 +639,10 @@ describe('API Utils', function () {
         it('should throw a permissions error if permission is not granted', function (done) {
             var cTMethodStub = {
                     test: {
-                        test: sandbox.stub().returns(Promise.reject(new common.errors.NoPermissionError()))
+                        test: sinon.stub().returns(Promise.reject(new common.errors.NoPermissionError()))
                     }
                 },
-                cTStub = sandbox.stub(permissions, 'canThis').returns(cTMethodStub);
+                cTStub = sinon.stub(permissions, 'canThis').returns(cTMethodStub);
 
             apiUtils.handlePublicPermissions('tests', 'test')({context: {user: 1}}).then(function () {
                 done(new Error('should throw error when no permissions'));
@@ -667,8 +665,8 @@ describe('API Utils', function () {
         });
 
         it('should handle an unknown rejection', function (done) {
-            var testStub = sandbox.stub().returns(new Promise.reject(new Error('not found'))),
-                permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
+            var testStub = sinon.stub().returns(new Promise.reject(new Error('not found'))),
+                permsStub = sinon.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
                             test: testStub
@@ -691,8 +689,8 @@ describe('API Utils', function () {
         });
 
         it('should handle a NoPermissions rejection', function (done) {
-            var testStub = sandbox.stub().returns(Promise.reject(new common.errors.NoPermissionError())),
-                permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
+            var testStub = sinon.stub().returns(Promise.reject(new common.errors.NoPermissionError())),
+                permsStub = sinon.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
                             test: testStub
@@ -717,8 +715,8 @@ describe('API Utils', function () {
         });
 
         it('should handle success', function (done) {
-            var testStub = sandbox.stub().returns(new Promise.resolve()),
-                permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
+            var testStub = sinon.stub().returns(new Promise.resolve()),
+                permsStub = sinon.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
                             test: testStub
@@ -744,8 +742,8 @@ describe('API Utils', function () {
         });
 
         it('should ignore unsafe attrs if none are provided', function (done) {
-            var testStub = sandbox.stub().returns(new Promise.resolve()),
-                permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
+            var testStub = sinon.stub().returns(new Promise.resolve()),
+                permsStub = sinon.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
                             test: testStub
@@ -771,8 +769,8 @@ describe('API Utils', function () {
         });
 
         it('should ignore unsafe attrs if they are provided but not present', function (done) {
-            var testStub = sandbox.stub().returns(new Promise.resolve()),
-                permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
+            var testStub = sinon.stub().returns(new Promise.resolve()),
+                permsStub = sinon.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
                             test: testStub
@@ -798,8 +796,8 @@ describe('API Utils', function () {
         });
 
         it('should pass through unsafe attrs if they DO exist', function (done) {
-            var testStub = sandbox.stub().returns(new Promise.resolve()),
-                permsStub = sandbox.stub(permissions, 'canThis').callsFake(function () {
+            var testStub = sinon.stub().returns(new Promise.resolve()),
+                permsStub = sinon.stub(permissions, 'canThis').callsFake(function () {
                     return {
                         testing: {
                             test: testStub
@@ -825,8 +823,8 @@ describe('API Utils', function () {
         });
 
         it('should strip excludedAttrs from data if permissions function returns them', function () {
-            var testStub = sandbox.stub().resolves({excludedAttrs: ['foo']}),
-                permsStub = sandbox.stub(permissions, 'canThis').returns({
+            var testStub = sinon.stub().resolves({excludedAttrs: ['foo']}),
+                permsStub = sinon.stub(permissions, 'canThis').returns({
                     testing: {
                         test: testStub
                     }

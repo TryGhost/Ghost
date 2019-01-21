@@ -3,33 +3,32 @@ const should = require('should'),
     configUtils = require('../../../utils/configUtils'),
     common = require('../../../../server/lib/common'),
     urlService = require('../../../../server/services/url'),
-    ParentRouter = require('../../../../server/services/routing/ParentRouter'),
-    sandbox = sinon.sandbox.create();
+    ParentRouter = require('../../../../server/services/routing/ParentRouter');
 
 describe('UNIT - services/routing/ParentRouter', function () {
     let req, res, next;
 
     beforeEach(function () {
-        sandbox.stub(common.events, 'emit');
-        sandbox.stub(common.events, 'on');
+        sinon.stub(common.events, 'emit');
+        sinon.stub(common.events, 'on');
 
-        sandbox.stub(urlService.utils, 'redirect301');
+        sinon.stub(urlService.utils, 'redirect301');
 
-        req = sandbox.stub();
+        req = sinon.stub();
         req.app = {
             _router: {
                 stack: []
             }
         };
 
-        res = sandbox.stub();
-        next = sandbox.stub();
+        res = sinon.stub();
+        next = sinon.stub();
 
         res.locals = {};
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
     });
 
@@ -52,9 +51,9 @@ describe('UNIT - services/routing/ParentRouter', function () {
     describe('fn: _respectDominantRouter', function () {
         it('redirect', function () {
             const parentRouter = new ParentRouter();
-            parentRouter.getResourceType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sinon.stub().returns('tags');
             parentRouter.permalinks = {
-                getValue: sandbox.stub().returns('/tag/:slug/')
+                getValue: sinon.stub().returns('/tag/:slug/')
             };
 
             req.url = '/tag/bacon/';
@@ -67,8 +66,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
                         name: 'StaticRoutesRouter',
                         handle: {
                             parent: {
-                                isRedirectEnabled: sandbox.stub().returns(true),
-                                getRoute: sandbox.stub().returns('/channel/')
+                                isRedirectEnabled: sinon.stub().returns(true),
+                                getRoute: sinon.stub().returns('/channel/')
                             }
                         }
                     }]
@@ -82,9 +81,9 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
         it('redirect with query params', function () {
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
-            parentRouter.getResourceType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sinon.stub().returns('tags');
             parentRouter.permalinks = {
-                getValue: sandbox.stub().returns('/tag/:slug/')
+                getValue: sinon.stub().returns('/tag/:slug/')
             };
 
             req.url = '/tag/bacon/';
@@ -97,8 +96,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
                         name: 'StaticRoutesRouter',
                         handle: {
                             parent: {
-                                isRedirectEnabled: sandbox.stub().returns(true),
-                                getRoute: sandbox.stub().returns('/channel/')
+                                isRedirectEnabled: sinon.stub().returns(true),
+                                getRoute: sinon.stub().returns('/channel/')
                             }
                         }
                     }]
@@ -112,9 +111,9 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
         it('redirect rss', function () {
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
-            parentRouter.getResourceType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sinon.stub().returns('tags');
             parentRouter.permalinks = {
-                getValue: sandbox.stub().returns('/tag/:slug/')
+                getValue: sinon.stub().returns('/tag/:slug/')
             };
 
             req.url = '/tag/bacon/rss/';
@@ -127,8 +126,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
                         name: 'StaticRoutesRouter',
                         handle: {
                             parent: {
-                                isRedirectEnabled: sandbox.stub().returns(true),
-                                getRoute: sandbox.stub().returns('/channel/')
+                                isRedirectEnabled: sinon.stub().returns(true),
+                                getRoute: sinon.stub().returns('/channel/')
                             }
                         }
                     }]
@@ -142,9 +141,9 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
         it('redirect pagination', function () {
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
-            parentRouter.getResourceType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sinon.stub().returns('tags');
             parentRouter.permalinks = {
-                getValue: sandbox.stub().returns('/tag/:slug/')
+                getValue: sinon.stub().returns('/tag/:slug/')
             };
 
             req.url = '/tag/bacon/page/2/';
@@ -157,8 +156,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
                         name: 'StaticRoutesRouter',
                         handle: {
                             parent: {
-                                isRedirectEnabled: sandbox.stub().returns(true),
-                                getRoute: sandbox.stub().returns('/channel/')
+                                isRedirectEnabled: sinon.stub().returns(true),
+                                getRoute: sinon.stub().returns('/channel/')
                             }
                         }
                     }]
@@ -174,9 +173,9 @@ describe('UNIT - services/routing/ParentRouter', function () {
             configUtils.set('url', 'http://localhost:7777/blog/');
 
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
-            parentRouter.getResourceType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sinon.stub().returns('tags');
             parentRouter.permalinks = {
-                getValue: sandbox.stub().returns('/tag/:slug/')
+                getValue: sinon.stub().returns('/tag/:slug/')
             };
 
             req.url = '/tag/bacon/';
@@ -189,8 +188,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
                         name: 'StaticRoutesRouter',
                         handle: {
                             parent: {
-                                isRedirectEnabled: sandbox.stub().returns(true),
-                                getRoute: sandbox.stub().returns('/channel/')
+                                isRedirectEnabled: sinon.stub().returns(true),
+                                getRoute: sinon.stub().returns('/channel/')
                             }
                         }
                     }]
@@ -204,9 +203,9 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
         it('no redirect: different data key', function () {
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
-            parentRouter.getResourceType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sinon.stub().returns('tags');
             parentRouter.permalinks = {
-                getValue: sandbox.stub().returns('/tag/:slug/')
+                getValue: sinon.stub().returns('/tag/:slug/')
             };
 
             req.app._router.stack = [{
@@ -216,8 +215,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
                         name: 'StaticRoutesRouter',
                         handle: {
                             parent: {
-                                isRedirectEnabled: sandbox.stub().returns(false),
-                                getRoute: sandbox.stub().returns('/channel/')
+                                isRedirectEnabled: sinon.stub().returns(false),
+                                getRoute: sinon.stub().returns('/channel/')
                             }
                         }
                     }]
@@ -231,9 +230,9 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
         it('no redirect: no channel defined', function () {
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
-            parentRouter.getResourceType = sandbox.stub().returns('tags');
+            parentRouter.getResourceType = sinon.stub().returns('tags');
             parentRouter.permalinks = {
-                getValue: sandbox.stub().returns('/tag/:slug/')
+                getValue: sinon.stub().returns('/tag/:slug/')
             };
 
             req.app._router.stack = [{
@@ -253,9 +252,9 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
         it('redirect primary tag permalink', function () {
             const parentRouter = new ParentRouter('index');
-            parentRouter.getResourceType = sandbox.stub().returns('posts');
+            parentRouter.getResourceType = sinon.stub().returns('posts');
             parentRouter.permalinks = {
-                getValue: sandbox.stub().returns('/:primary_tag/:slug/')
+                getValue: sinon.stub().returns('/:primary_tag/:slug/')
             };
 
             req.url = '/bacon/welcome/';
@@ -268,8 +267,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
                         name: 'StaticRoutesRouter',
                         handle: {
                             parent: {
-                                isRedirectEnabled: sandbox.stub().returns(true),
-                                getRoute: sandbox.stub().returns('/route/')
+                                isRedirectEnabled: sinon.stub().returns(true),
+                                getRoute: sinon.stub().returns('/route/')
                             }
                         }
                     }]

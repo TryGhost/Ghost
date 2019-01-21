@@ -7,8 +7,7 @@ const should = require('should'),
     settingsCache = require('../../../../../server/services/settings/cache'),
     controllers = require('../../../../../server/services/routing/controllers'),
     helpers = require('../../../../../server/services/routing/helpers'),
-    rssService = require('../../../../../server/services/rss'),
-    sandbox = sinon.sandbox.create();
+    rssService = require('../../../../../server/services/rss');
 
 // Helper function to prevent unit tests
 // from failing via timeout when they
@@ -40,24 +39,24 @@ describe('Unit - services/routing/controllers/rss', function () {
             }
         };
 
-        next = sandbox.stub();
-        fetchDataStub = sandbox.stub();
+        next = sinon.stub();
+        fetchDataStub = sinon.stub();
 
-        sandbox.stub(helpers, 'fetchData').get(function () {
+        sinon.stub(helpers, 'fetchData').get(function () {
             return fetchDataStub;
         });
 
-        sandbox.stub(security.string, 'safe').returns('safe');
+        sinon.stub(security.string, 'safe').returns('safe');
 
-        sandbox.stub(rssService, 'render');
+        sinon.stub(rssService, 'render');
 
-        sandbox.stub(settingsCache, 'get');
+        sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('title').returns('Ghost');
         settingsCache.get.withArgs('description').returns('Ghost is cool!');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should fetch data and attempt to send XML', function (done) {

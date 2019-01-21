@@ -11,10 +11,8 @@ let request;
 
 describe('Slack API', function () {
     let ghostServer;
-    let sandbox;
-    before(function () {
-        sandbox = sinon.sandbox.create();
 
+    before(function () {
         return ghost()
             .then(function (_ghostServer) {
                 ghostServer = _ghostServer;
@@ -25,11 +23,11 @@ describe('Slack API', function () {
             });
     });
     after(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should be able to post slack test', function (done) {
-        const eventSpy = sandbox.spy(common.events, 'emit');
+        const eventSpy = sinon.spy(common.events, 'emit');
         request.post(localUtils.API.getApiQuery('slack/test/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)

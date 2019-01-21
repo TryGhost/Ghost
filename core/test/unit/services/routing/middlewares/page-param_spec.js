@@ -2,24 +2,23 @@ const should = require('should'),
     sinon = require('sinon'),
     common = require('../../../../../server/lib/common'),
     urlService = require('../../../../../server/services/url'),
-    middlewares = require('../../../../../server/services/routing/middlewares'),
-    sandbox = sinon.sandbox.create();
+    middlewares = require('../../../../../server/services/routing/middlewares');
 
 describe('UNIT: services/routing/middlewares/page-param', function () {
     let req, res, next;
 
     beforeEach(function () {
-        req = sandbox.stub();
+        req = sinon.stub();
         req.params = {};
 
-        res = sandbox.stub();
-        next = sandbox.stub();
+        res = sinon.stub();
+        next = sinon.stub();
 
-        sandbox.stub(urlService.utils, 'redirect301');
+        sinon.stub(urlService.utils, 'redirect301');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('success', function () {

@@ -7,9 +7,7 @@ const should = require('should'),
     filters = require('../../../../../server/filters'),
     controllers = require('../../../../../server/services/routing/controllers'),
     helpers = require('../../../../../server/services/routing/helpers'),
-    themes = require('../../../../../server/services/themes'),
     urlService = require('../../../../../server/services/url'),
-    sandbox = sinon.sandbox.create(),
     EDITOR_URL = '/editor/';
 
 describe('Unit - services/routing/controllers/preview', function () {
@@ -24,7 +22,7 @@ describe('Unit - services/routing/controllers/preview', function () {
     }
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
     });
 
@@ -56,24 +54,24 @@ describe('Unit - services/routing/controllers/preview', function () {
                 set: sinon.spy()
             };
 
-            secureStub = sandbox.stub();
-            renderStub = sandbox.stub();
+            secureStub = sinon.stub();
+            renderStub = sinon.stub();
 
-            sandbox.stub(urlService.utils, 'redirectToAdmin');
-            sandbox.stub(urlService.utils, 'redirect301');
-            sandbox.stub(urlService, 'getUrlByResourceId');
+            sinon.stub(urlService.utils, 'redirectToAdmin');
+            sinon.stub(urlService.utils, 'redirect301');
+            sinon.stub(urlService, 'getUrlByResourceId');
 
-            sandbox.stub(helpers, 'secure').get(function () {
+            sinon.stub(helpers, 'secure').get(function () {
                 return secureStub;
             });
 
-            sandbox.stub(helpers, 'renderEntry').get(function () {
+            sinon.stub(helpers, 'renderEntry').get(function () {
                 return renderStub;
             });
 
-            sandbox.stub(filters, 'doFilter');
+            sinon.stub(filters, 'doFilter');
 
-            sandbox.stub(api.posts, 'read').withArgs({
+            sinon.stub(api.posts, 'read').withArgs({
                 uuid: req.params.uuid,
                 status: 'all',
                 include: 'author,authors,tags'
@@ -175,31 +173,31 @@ describe('Unit - services/routing/controllers/preview', function () {
                 set: sinon.spy()
             };
 
-            secureStub = sandbox.stub();
-            renderStub = sandbox.stub();
+            secureStub = sinon.stub();
+            renderStub = sinon.stub();
 
-            sandbox.stub(urlService.utils, 'redirectToAdmin');
-            sandbox.stub(urlService.utils, 'redirect301');
-            sandbox.stub(urlService, 'getUrlByResourceId');
+            sinon.stub(urlService.utils, 'redirectToAdmin');
+            sinon.stub(urlService.utils, 'redirect301');
+            sinon.stub(urlService, 'getUrlByResourceId');
 
-            sandbox.stub(helpers, 'secure').get(function () {
+            sinon.stub(helpers, 'secure').get(function () {
                 return secureStub;
             });
 
-            sandbox.stub(helpers, 'renderEntry').get(function () {
+            sinon.stub(helpers, 'renderEntry').get(function () {
                 return renderStub;
             });
 
-            sandbox.stub(filters, 'doFilter');
+            sinon.stub(filters, 'doFilter');
 
-            previewStub = sandbox.stub();
+            previewStub = sinon.stub();
             previewStub.withArgs({
                 uuid: req.params.uuid,
                 status: 'all',
                 include: 'author,authors,tags'
             }).resolves(apiResponse);
 
-            sandbox.stub(api.v2, 'preview').get(() => {
+            sinon.stub(api.v2, 'preview').get(() => {
                 return {
                     read: previewStub
                 };

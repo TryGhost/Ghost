@@ -2,13 +2,11 @@ var should = require('should'),
     sinon = require('sinon'),
     configUtils = require('../../utils/configUtils'),
     helpers = require('../../../server/helpers'),
-    settingsCache = require('../../../server/services/settings/cache'),
-
-    sandbox = sinon.sandbox.create();
+    settingsCache = require('../../../server/services/settings/cache');
 
 describe('{{meta_title}} helper', function () {
     before(function () {
-        sandbox.stub(settingsCache, 'get').callsFake(function (key) {
+        sinon.stub(settingsCache, 'get').callsFake(function (key) {
             return {
                 title: 'Ghost'
             }[key];
@@ -17,7 +15,7 @@ describe('{{meta_title}} helper', function () {
 
     after(function () {
         configUtils.restore();
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('returns correct title for homepage', function () {

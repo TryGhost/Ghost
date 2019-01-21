@@ -3,8 +3,7 @@ const should = require('should'),
     helpers = require('../../../../server/helpers/register'),
     filters = require('../../../../server/filters'),
     AppProxy = require('../../../../server/services/apps/proxy'),
-    routing = require('../../../../server/services/routing'),
-    sandbox = sinon.sandbox.create();
+    routing = require('../../../../server/services/routing');
 
 describe('Apps', function () {
     var fakeApi;
@@ -12,38 +11,38 @@ describe('Apps', function () {
     beforeEach(function () {
         fakeApi = {
             posts: {
-                browse: sandbox.stub(),
-                read: sandbox.stub(),
-                edit: sandbox.stub(),
-                add: sandbox.stub(),
-                destroy: sandbox.stub()
+                browse: sinon.stub(),
+                read: sinon.stub(),
+                edit: sinon.stub(),
+                add: sinon.stub(),
+                destroy: sinon.stub()
             },
             users: {
-                browse: sandbox.stub(),
-                read: sandbox.stub(),
-                edit: sandbox.stub()
+                browse: sinon.stub(),
+                read: sinon.stub(),
+                edit: sinon.stub()
             },
             tags: {
-                all: sandbox.stub()
+                all: sinon.stub()
             },
             notifications: {
-                destroy: sandbox.stub(),
-                add: sandbox.stub()
+                destroy: sinon.stub(),
+                add: sinon.stub()
             },
             settings: {
-                browse: sandbox.stub(),
-                read: sandbox.stub(),
-                add: sandbox.stub()
+                browse: sinon.stub(),
+                read: sinon.stub(),
+                add: sinon.stub()
             }
         };
 
-        sandbox.stub(routing.registry, 'getRouter').withArgs('appRouter').returns({
-            mountRouter: sandbox.stub()
+        sinon.stub(routing.registry, 'getRouter').withArgs('appRouter').returns({
+            mountRouter: sinon.stub()
         });
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Proxy', function () {
@@ -109,7 +108,7 @@ describe('Apps', function () {
         });
 
         it('allows filter registration with permission', function (done) {
-            var registerSpy = sandbox.spy(filters, 'registerFilter'),
+            var registerSpy = sinon.spy(filters, 'registerFilter'),
                 appProxy = new AppProxy({
                     name: 'TestApp',
                     permissions: {
@@ -119,7 +118,7 @@ describe('Apps', function () {
                     }
                 }),
                 fakePosts = [{id: 0}, {id: 1}],
-                filterStub = sandbox.spy(function (val) {
+                filterStub = sinon.spy(function (val) {
                     return val;
                 });
 
@@ -139,7 +138,7 @@ describe('Apps', function () {
         });
 
         it('does not allow filter registration without permission', function () {
-            var registerSpy = sandbox.spy(filters, 'registerFilter'),
+            var registerSpy = sinon.spy(filters, 'registerFilter'),
                 appProxy = new AppProxy({
                     name: 'TestApp',
                     permissions: {
@@ -148,7 +147,7 @@ describe('Apps', function () {
                         posts: ['browse', 'read', 'edit', 'add', 'delete']
                     }
                 }),
-                filterStub = sandbox.stub().returns('test result');
+                filterStub = sinon.stub().returns('test result');
 
             function registerFilterWithoutPermission() {
                 appProxy.filters.register('superSecretFilter', 5, filterStub);
@@ -161,7 +160,7 @@ describe('Apps', function () {
         });
 
         it('allows filter deregistration with permission', function (done) {
-            var registerSpy = sandbox.spy(filters, 'deregisterFilter'),
+            var registerSpy = sinon.spy(filters, 'deregisterFilter'),
                 appProxy = new AppProxy({
                     name: 'TestApp',
                     permissions: {
@@ -171,7 +170,7 @@ describe('Apps', function () {
                     }
                 }),
                 fakePosts = [{id: 0}, {id: 1}],
-                filterStub = sandbox.stub().returns(fakePosts);
+                filterStub = sinon.stub().returns(fakePosts);
 
             appProxy.filters.deregister('prePostsRender', 5, filterStub);
 
@@ -188,7 +187,7 @@ describe('Apps', function () {
         });
 
         it('does not allow filter deregistration without permission', function () {
-            var registerSpy = sandbox.spy(filters, 'deregisterFilter'),
+            var registerSpy = sinon.spy(filters, 'deregisterFilter'),
                 appProxy = new AppProxy({
                     name: 'TestApp',
                     permissions: {
@@ -197,7 +196,7 @@ describe('Apps', function () {
                         posts: ['browse', 'read', 'edit', 'add', 'delete']
                     }
                 }),
-                filterStub = sandbox.stub().returns('test result');
+                filterStub = sinon.stub().returns('test result');
 
             function deregisterFilterWithoutPermission() {
                 appProxy.filters.deregister('superSecretFilter', 5, filterStub);
@@ -210,7 +209,7 @@ describe('Apps', function () {
         });
 
         it('allows helper registration with permission', function () {
-            var registerSpy = sandbox.stub(helpers, 'registerThemeHelper'),
+            var registerSpy = sinon.stub(helpers, 'registerThemeHelper'),
                 appProxy = new AppProxy({
                     name: 'TestApp',
                     permissions: {
@@ -220,13 +219,13 @@ describe('Apps', function () {
                     }
                 });
 
-            appProxy.helpers.register('myTestHelper', sandbox.stub().returns('test result'));
+            appProxy.helpers.register('myTestHelper', sinon.stub().returns('test result'));
 
             registerSpy.called.should.equal(true);
         });
 
         it('does not allow helper registration without permission', function () {
-            var registerSpy = sandbox.stub(helpers, 'registerThemeHelper'),
+            var registerSpy = sinon.stub(helpers, 'registerThemeHelper'),
                 appProxy = new AppProxy({
                     name: 'TestApp',
                     permissions: {
@@ -237,7 +236,7 @@ describe('Apps', function () {
                 });
 
             function registerWithoutPermissions() {
-                appProxy.helpers.register('otherHelper', sandbox.stub().returns('test result'));
+                appProxy.helpers.register('otherHelper', sinon.stub().returns('test result'));
             }
 
             registerWithoutPermissions.should.throw('The App "TestApp" attempted to perform an action or access a ' +
@@ -247,7 +246,7 @@ describe('Apps', function () {
         });
 
         it('does allow INTERNAL app to register helper without permission', function () {
-            var registerSpy = sandbox.stub(helpers, 'registerThemeHelper'),
+            var registerSpy = sinon.stub(helpers, 'registerThemeHelper'),
                 appProxy = new AppProxy({
                     name: 'TestApp',
                     permissions: {},
@@ -255,7 +254,7 @@ describe('Apps', function () {
                 });
 
             function registerWithoutPermissions() {
-                appProxy.helpers.register('otherHelper', sandbox.stub().returns('test result'));
+                appProxy.helpers.register('otherHelper', sinon.stub().returns('test result'));
             }
 
             registerWithoutPermissions.should.not.throw('The App "TestApp" attempted to perform an action or access a ' +

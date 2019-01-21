@@ -15,7 +15,6 @@ const client = {
     id: 2,
     type: 'ua'
 };
-const sandbox = sinon.sandbox.create();
 
 function registerSuccessfulBearerStrategy() {
     // register fake BearerStrategy which always authenticates
@@ -90,12 +89,12 @@ describe('Auth', function () {
     beforeEach(function () {
         req = {};
         res = {};
-        next = sandbox.spy();
-        loggingStub = sandbox.stub(common.logging, 'error');
+        next = sinon.spy();
+        loggingStub = sinon.stub(common.logging, 'error');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should require authorized user (user exists)', function (done) {

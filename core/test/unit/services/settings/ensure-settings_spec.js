@@ -6,19 +6,17 @@ const sinon = require('sinon'),
     configUtils = require('../../../utils/configUtils'),
     common = require('../../../../server/lib/common'),
 
-    ensureSettings = require('../../../../server/services/settings/ensure-settings'),
-
-    sandbox = sinon.sandbox.create();
+    ensureSettings = require('../../../../server/services/settings/ensure-settings');
 
 describe('UNIT > Settings Service:', function () {
     beforeEach(function () {
         configUtils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures/'));
-        sandbox.stub(fs, 'readFile');
-        sandbox.stub(fs, 'copy');
+        sinon.stub(fs, 'readFile');
+        sinon.stub(fs, 'copy');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
     });
 

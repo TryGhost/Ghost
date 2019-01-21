@@ -3,8 +3,7 @@ const should = require('should'),
     testUtils = require('../../utils'),
     urlService = require('../../../server/services/url'),
     models = require('../../../server/models'),
-    helpers = require('../../../server/helpers'),
-    sandbox = sinon.sandbox.create();
+    helpers = require('../../../server/helpers');
 
 describe('{{tags}} helper', function () {
     before(function () {
@@ -12,11 +11,11 @@ describe('{{tags}} helper', function () {
     });
 
     beforeEach(function () {
-        sandbox.stub(urlService, 'getUrlByResourceId');
+        sinon.stub(urlService, 'getUrlByResourceId');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('can return string with tags', function () {

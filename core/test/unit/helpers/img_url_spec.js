@@ -4,9 +4,7 @@ var should = require('should'),
 
     // Stuff we are testing
     helpers = require('../../../server/helpers'),
-    common = require('../../../server/lib/common'),
-
-    sandbox = sinon.sandbox.create();
+    common = require('../../../server/lib/common');
 
 describe('{{image}} helper', function () {
     var logWarnStub;
@@ -16,11 +14,11 @@ describe('{{image}} helper', function () {
     });
 
     beforeEach(function () {
-        logWarnStub = sandbox.stub(common.logging, 'warn');
+        logWarnStub = sinon.stub(common.logging, 'warn');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     after(function () {

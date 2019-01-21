@@ -1,8 +1,6 @@
 var should = require('should'),
     rewire = require('rewire'),
     configUtils = require('../../../../test/utils/configUtils'),
-
-// Stuff we are testing
     ampContentHelper = rewire('../../../../server/apps/amp/lib/helpers/amp_content');
 
 // TODO: Amperize really needs to get stubbed, so we can test returning errors

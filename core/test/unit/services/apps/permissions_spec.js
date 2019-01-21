@@ -4,13 +4,11 @@ var should = require('should'),
     Promise = require('bluebird'),
 
     // Stuff we are testing
-    AppPermissions = require('../../../../server/services/apps/permissions'),
-
-    sandbox = sinon.sandbox.create();
+    AppPermissions = require('../../../../server/services/apps/permissions');
 
 describe('Apps', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Permissions', function () {
@@ -65,7 +63,7 @@ describe('Apps', function () {
             var perms = new AppPermissions('test');
 
             // No package.json in this directory
-            sandbox.stub(perms, 'checkPackageContentsExists').returns(Promise.resolve(false));
+            sinon.stub(perms, 'checkPackageContentsExists').returns(Promise.resolve(false));
 
             perms.read().then(function (readPerms) {
                 should.exist(readPerms);
@@ -80,9 +78,9 @@ describe('Apps', function () {
                 noGhostPackageJsonContents = JSON.stringify(noGhostPackageJson, null, 2);
 
             // package.json IS in this directory
-            sandbox.stub(perms, 'checkPackageContentsExists').returns(Promise.resolve(true));
+            sinon.stub(perms, 'checkPackageContentsExists').returns(Promise.resolve(true));
             // no ghost property on package
-            sandbox.stub(perms, 'getPackageContents').returns(Promise.resolve(noGhostPackageJsonContents));
+            sinon.stub(perms, 'getPackageContents').returns(Promise.resolve(noGhostPackageJsonContents));
 
             perms.read().then(function (readPerms) {
                 should.exist(readPerms);
@@ -96,9 +94,9 @@ describe('Apps', function () {
             var perms = new AppPermissions('test');
 
             // package.json IS in this directory
-            sandbox.stub(perms, 'checkPackageContentsExists').returns(Promise.resolve(true));
+            sinon.stub(perms, 'checkPackageContentsExists').returns(Promise.resolve(true));
             // malformed JSON on package
-            sandbox.stub(perms, 'getPackageContents').returns(Promise.reject(new Error('package.json file is malformed')));
+            sinon.stub(perms, 'getPackageContents').returns(Promise.reject(new Error('package.json file is malformed')));
 
             perms.read().then(function (readPerms) {
                 done(new Error('should not resolve'));
@@ -112,9 +110,9 @@ describe('Apps', function () {
                 validGhostPackageJsonContents = validGhostPackageJson;
 
             // package.json IS in this directory
-            sandbox.stub(perms, 'checkPackageContentsExists').returns(Promise.resolve(true));
+            sinon.stub(perms, 'checkPackageContentsExists').returns(Promise.resolve(true));
             // valid ghost property on package
-            sandbox.stub(perms, 'getPackageContents').returns(Promise.resolve(validGhostPackageJsonContents));
+            sinon.stub(perms, 'getPackageContents').returns(Promise.resolve(validGhostPackageJsonContents));
 
             perms.read().then(function (readPerms) {
                 should.exist(readPerms);

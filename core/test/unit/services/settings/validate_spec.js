@@ -3,7 +3,6 @@ const sinon = require('sinon');
 const common = require('../../../../server/lib/common');
 const themesService = require('../../../../server/services/themes');
 const validate = require('../../../../server/services/settings/validate');
-const sandbox = sinon.sandbox.create();
 
 should.equal(true, true);
 
@@ -11,7 +10,7 @@ describe('UNIT: services/settings/validate', function () {
     let apiVersion;
 
     before(function () {
-        sandbox.stub(themesService, 'getActive').returns({
+        sinon.stub(themesService, 'getActive').returns({
             engine: () => {
                 return apiVersion;
             }
@@ -19,7 +18,7 @@ describe('UNIT: services/settings/validate', function () {
     });
 
     after(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('v0.1', function () {

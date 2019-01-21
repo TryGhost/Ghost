@@ -3,19 +3,18 @@ const should = require('should'),
     Promise = require('bluebird'),
     testUtils = require('../../../../utils'),
     api = require('../../../../../server/api'),
-    helpers = require('../../../../../server/services/routing/helpers'),
-    sandbox = sinon.sandbox.create();
+    helpers = require('../../../../../server/services/routing/helpers');
 
 describe('Unit - services/routing/helpers/entry-lookup', function () {
     let posts, locals;
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('v0.1', function () {
         beforeEach(function () {
-            sandbox.stub(api.posts, 'read');
+            sinon.stub(api.posts, 'read');
 
             locals = {apiVersion: 'v0.1'};
         });
@@ -286,21 +285,21 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
                     testUtils.DataGenerator.forKnex.createPost({url: '/test/', slug: 'test', page: true})
                 ];
 
-                postsReadStub = sandbox.stub();
-                pagesReadStub = sandbox.stub();
+                postsReadStub = sinon.stub();
+                pagesReadStub = sinon.stub();
 
                 pagesReadStub.withArgs({slug: pages[0].slug, include: 'author,authors,tags'})
                     .resolves({
                         pages: pages
                     });
 
-                sandbox.stub(api.v2, 'posts').get(() => {
+                sinon.stub(api.v2, 'posts').get(() => {
                     return {
                         read: postsReadStub
                     };
                 });
 
-                sandbox.stub(api.v2, 'pages').get(() => {
+                sinon.stub(api.v2, 'pages').get(() => {
                     return {
                         read: pagesReadStub
                     };
@@ -337,21 +336,21 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
                     testUtils.DataGenerator.forKnex.createPost({url: '/test/', slug: 'test'})
                 ];
 
-                postsReadStub = sandbox.stub();
-                pagesReadStub = sandbox.stub();
+                postsReadStub = sinon.stub();
+                pagesReadStub = sinon.stub();
 
                 postsReadStub.withArgs({slug: posts[0].slug, include: 'author,authors,tags'})
                     .resolves({
                         posts: posts
                     });
 
-                sandbox.stub(api.v2, 'posts').get(() => {
+                sinon.stub(api.v2, 'posts').get(() => {
                     return {
                         read: postsReadStub
                     };
                 });
 
-                sandbox.stub(api.v2, 'pages').get(() => {
+                sinon.stub(api.v2, 'pages').get(() => {
                     return {
                         read: pagesReadStub
                     };

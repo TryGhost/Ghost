@@ -5,15 +5,13 @@ var should = require('should'),
 
     // Stuff we are testing
     exporter = require('../../server/data/exporter'),
-    ghostVersion = require('../../server/lib/ghost-version'),
-
-    sandbox = sinon.sandbox.create();
+    ghostVersion = require('../../server/lib/ghost-version');
 
 describe('Exporter', function () {
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
     beforeEach(testUtils.setup('default', 'settings'));
 

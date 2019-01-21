@@ -7,10 +7,7 @@ var should = require('should'),
     common = require('../../../../server/lib/common'),
     LocalFileStore = require('../../../../server/adapters/storage/LocalFileStorage'),
     localFileStore,
-
-    configUtils = require('../../../utils/configUtils'),
-
-    sandbox = sinon.sandbox.create();
+    configUtils = require('../../../utils/configUtils');
 
 describe('Local File System Storage', function () {
     var image,
@@ -24,26 +21,21 @@ describe('Local File System Storage', function () {
         momentStub.withArgs('MM').returns(month < 10 ? '0' + month.toString() : month.toString());
     }
 
-    before(function () {
+    beforeEach(function () {
         // Fake a date, do this once for all tests in this file
         momentStub = sinon.stub(moment.fn, 'format');
     });
 
-    after(function () {
-        // Moment stub requires it's own restore after all the tests
-        momentStub.restore();
-    });
-
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
     });
 
     beforeEach(function () {
-        sandbox.stub(fs, 'mkdirs').resolves();
-        sandbox.stub(fs, 'copy').resolves();
-        sandbox.stub(fs, 'stat').rejects();
-        sandbox.stub(fs, 'unlink').resolves();
+        sinon.stub(fs, 'mkdirs').resolves();
+        sinon.stub(fs, 'copy').resolves();
+        sinon.stub(fs, 'stat').rejects();
+        sinon.stub(fs, 'unlink').resolves();
 
         image = {
             path: 'tmp/123456.jpg',
@@ -232,8 +224,8 @@ describe('Local File System Storage', function () {
         var truePathSep = path.sep;
 
         beforeEach(function () {
-            sandbox.stub(path, 'join');
-            sandbox.stub(configUtils.config, 'getContentPath').returns('content/images/');
+            sinon.stub(path, 'join');
+            sinon.stub(configUtils.config, 'getContentPath').returns('content/images/');
         });
 
         afterEach(function () {

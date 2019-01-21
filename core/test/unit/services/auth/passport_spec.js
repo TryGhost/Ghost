@@ -1,16 +1,15 @@
 var should = require('should'),
     sinon = require('sinon'),
     passport = require('passport'),
-    ghostPassport = require('../../../../server/services/auth/passport'),
-    sandbox = sinon.sandbox.create();
+    ghostPassport = require('../../../../server/services/auth/passport');
 
 describe('Ghost Passport', function () {
     beforeEach(function () {
-        sandbox.spy(passport, 'use');
+        sinon.spy(passport, 'use');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('[default] local auth', function () {

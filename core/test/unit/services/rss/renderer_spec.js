@@ -3,15 +3,13 @@ var should = require('should'),
     Promise = require('bluebird'),
 
     rssCache = require('../../../../server/services/rss/cache'),
-    renderer = require('../../../../server/services/rss/renderer'),
-
-    sandbox = sinon.sandbox.create();
+    renderer = require('../../../../server/services/rss/renderer');
 
 describe('RSS: Renderer', function () {
     var rssCacheStub, res, baseUrl;
 
     beforeEach(function () {
-        rssCacheStub = sandbox.stub(rssCache, 'getXML');
+        rssCacheStub = sinon.stub(rssCache, 'getXML');
 
         res = {
             locals: {},
@@ -23,7 +21,7 @@ describe('RSS: Renderer', function () {
     });
 
     afterEach(function () {
-       sandbox.restore();
+       sinon.restore();
     });
 
     it('calls the cache and attempts to render, even without data', function (done) {

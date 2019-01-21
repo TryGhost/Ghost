@@ -4,20 +4,18 @@ var should = require('should'),
     rewire = require('rewire'),
 
     // Stuff we are testing
-    getCachedImageSizeFromUrl = rewire('../../../../server/lib/image/cached-image-size-from-url'),
-
-    sandbox = sinon.sandbox.create();
+    getCachedImageSizeFromUrl = rewire('../../../../server/lib/image/cached-image-size-from-url');
 
 describe('lib/image: image size cache', function () {
     var sizeOfStub,
         cachedImagedSize;
 
     beforeEach(function () {
-        sizeOfStub = sandbox.stub();
+        sizeOfStub = sinon.stub();
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         getCachedImageSizeFromUrl.__set__('cache', {});
     });
 

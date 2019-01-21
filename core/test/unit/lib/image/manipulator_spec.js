@@ -4,11 +4,10 @@ const fs = require('fs-extra');
 const common = require('../../../../server/lib/common');
 const manipulator = require('../../../../server/lib/image/manipulator');
 const testUtils = require('../../../utils');
-const sandbox = sinon.sandbox.create();
 
 describe('lib/image: manipulator', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         testUtils.unmockNotExistingModule();
     });
 
@@ -43,16 +42,16 @@ describe('lib/image: manipulator', function () {
         let sharp, sharpInstance;
 
         beforeEach(function () {
-            sandbox.stub(fs, 'readFile').resolves('original');
-            sandbox.stub(fs, 'writeFile').resolves();
+            sinon.stub(fs, 'readFile').resolves('original');
+            sinon.stub(fs, 'writeFile').resolves();
 
             sharpInstance = {
-                resize: sandbox.stub().returnsThis(),
-                rotate: sandbox.stub().returnsThis(),
-                toBuffer: sandbox.stub(),
+                resize: sinon.stub().returnsThis(),
+                rotate: sinon.stub().returnsThis(),
+                toBuffer: sinon.stub(),
             };
 
-            sharp = sandbox.stub().callsFake(() => {
+            sharp = sinon.stub().callsFake(() => {
                 return sharpInstance;
             });
 

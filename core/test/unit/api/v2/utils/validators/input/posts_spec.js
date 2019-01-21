@@ -3,11 +3,10 @@ const sinon = require('sinon');
 const Promise = require('bluebird');
 const common = require('../../../../../../../server/lib/common');
 const validators = require('../../../../../../../server/api/v2/utils/validators');
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: v2/utils/validators/input/posts', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('add', function () {
@@ -84,7 +83,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
 
     describe('edit', function () {
         it('default', function () {
-            sandbox.stub(validators.input.posts, 'add');
+            sinon.stub(validators.input.posts, 'add');
 
             const apiConfig = {};
             const frame = {};

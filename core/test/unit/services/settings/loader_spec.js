@@ -5,8 +5,7 @@ const sinon = require('sinon'),
     path = require('path'),
     configUtils = require('../../../utils/configUtils'),
     common = require('../../../../server/lib/common'),
-    loadSettings = rewire('../../../../server/services/settings/loader'),
-    sandbox = sinon.sandbox.create();
+    loadSettings = rewire('../../../../server/services/settings/loader');
 
 describe('UNIT > Settings Service:', function () {
     beforeEach(function () {
@@ -14,7 +13,7 @@ describe('UNIT > Settings Service:', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
     });
 
@@ -39,7 +38,7 @@ describe('UNIT > Settings Service:', function () {
         });
 
         it('can find yaml settings file and returns a settings object', function () {
-            const fsReadFileSpy = sandbox.spy(fs, 'readFileSync');
+            const fsReadFileSpy = sinon.spy(fs, 'readFileSync');
             const expectedSettingsFile = path.join(__dirname, '../../../utils/fixtures/settings/goodroutes.yaml');
 
             yamlParserStub.returns(yamlStubFile);
@@ -83,7 +82,7 @@ describe('UNIT > Settings Service:', function () {
             fsError.code = 'EPERM';
 
             const originalFn = fs.readFileSync;
-            const fsReadFileStub = sandbox.stub(fs, 'readFileSync').callsFake(function (filePath, options) {
+            const fsReadFileStub = sinon.stub(fs, 'readFileSync').callsFake(function (filePath, options) {
                 if (filePath.match(/routes\.yaml/)) {
                     throw fsError;
                 }

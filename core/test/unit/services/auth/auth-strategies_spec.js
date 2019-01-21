@@ -9,8 +9,6 @@ var should = require('should'),
     security = require('../../../../server/lib/security'),
     constants = require('../../../../server/lib/constants'),
 
-    sandbox = sinon.sandbox.create(),
-
     fakeClient = {
         slug: 'ghost-admin',
         secret: 'not_available',
@@ -39,18 +37,18 @@ describe('Auth Strategies', function () {
     });
 
     beforeEach(function () {
-        next = sandbox.spy();
+        next = sinon.spy();
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Client Password Strategy', function () {
         var clientStub;
 
         beforeEach(function () {
-            clientStub = sandbox.stub(Models.Client, 'findOne');
+            clientStub = sinon.stub(Models.Client, 'findOne');
             clientStub.returns(new Promise.resolve());
             clientStub.withArgs({slug: fakeClient.slug}).returns(new Promise.resolve({
                 toJSON: function () {
@@ -118,7 +116,7 @@ describe('Auth Strategies', function () {
         var tokenStub, userStub, userIsActive;
 
         beforeEach(function () {
-            tokenStub = sandbox.stub(Models.Accesstoken, 'findOne');
+            tokenStub = sinon.stub(Models.Accesstoken, 'findOne');
             tokenStub.returns(new Promise.resolve());
             tokenStub.withArgs({token: fakeValidToken.token}).returns(new Promise.resolve({
                 toJSON: function () {
@@ -132,7 +130,7 @@ describe('Auth Strategies', function () {
                 }
             }));
 
-            userStub = sandbox.stub(Models.User, 'findOne');
+            userStub = sinon.stub(Models.User, 'findOne');
             userStub.returns(new Promise.resolve());
             userStub.withArgs({id: 3}).returns(new Promise.resolve({
                 toJSON: function () {
@@ -230,10 +228,10 @@ describe('Auth Strategies', function () {
         var inviteFindOneStub, userAddStub, userEditStub, userFindOneStub;
 
         beforeEach(function () {
-            userFindOneStub = sandbox.stub(Models.User, 'findOne');
-            userAddStub = sandbox.stub(Models.User, 'add');
-            userEditStub = sandbox.stub(Models.User, 'edit');
-            inviteFindOneStub = sandbox.stub(Models.Invite, 'findOne');
+            userFindOneStub = sinon.stub(Models.User, 'findOne');
+            userAddStub = sinon.stub(Models.User, 'add');
+            userEditStub = sinon.stub(Models.User, 'edit');
+            inviteFindOneStub = sinon.stub(Models.Invite, 'findOne');
         });
 
         it('with invite, but with wrong invite token', function (done) {
@@ -286,7 +284,7 @@ describe('Auth Strategies', function () {
                     role_id: '2'
                 });
 
-            sandbox.stub(security.identifier, 'uid').returns('12345678');
+            sinon.stub(security.identifier, 'uid').returns('12345678');
 
             userFindOneStub.returns(Promise.resolve(null));
 
@@ -303,7 +301,7 @@ describe('Auth Strategies', function () {
 
             userEditStub.returns(Promise.resolve(invitedUser));
             inviteFindOneStub.returns(Promise.resolve(inviteModel));
-            sandbox.stub(inviteModel, 'destroy').returns(Promise.resolve());
+            sinon.stub(inviteModel, 'destroy').returns(Promise.resolve());
 
             authStrategies.ghostStrategy(req, ghostAuthAccessToken, null, invitedProfile, function (err, user, profile) {
                 should.not.exist(err);
