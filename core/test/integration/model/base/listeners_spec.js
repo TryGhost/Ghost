@@ -7,8 +7,7 @@ var should = require('should'),
     common = require('../../../../server/lib/common'),
     models = require('../../../../server/models'),
     testUtils = require('../../../../test/utils'),
-    sequence = require('../../../../server/lib/promise/sequence'),
-    sandbox = sinon.sandbox.create();
+    sequence = require('../../../../server/lib/promise/sequence');
 
 describe('Models: listeners', function () {
     var eventsToRemember = {},
@@ -25,7 +24,7 @@ describe('Models: listeners', function () {
     beforeEach(testUtils.setup('owner', 'user-token:0', 'settings'));
 
     beforeEach(function () {
-        sandbox.stub(common.events, 'on').callsFake(function (eventName, callback) {
+        sinon.stub(common.events, 'on').callsFake(function (eventName, callback) {
             eventsToRemember[eventName] = callback;
         });
 
@@ -34,7 +33,7 @@ describe('Models: listeners', function () {
 
     afterEach(function () {
         common.events.on.restore();
-        sandbox.restore();
+        sinon.restore();
         scope.posts = [];
         return testUtils.teardown();
     });
@@ -254,8 +253,8 @@ describe('Models: listeners', function () {
                     post1 = posts[0],
                     listenerHasFinished = false;
 
-                sandbox.spy(common.logging, 'error');
-                sandbox.spy(models.Post, 'findAll');
+                sinon.spy(common.logging, 'error');
+                sinon.spy(models.Post, 'findAll');
 
                 // simulate a delay, so that the edit operation from the test here interrupts
                 // the goal here is to force that the listener has old post data, updated_at is then too old

@@ -17,8 +17,7 @@ var should = require('should'),
         returnImportedData: true
     },
 
-    knex = db.knex,
-    sandbox = sinon.sandbox.create();
+    knex = db.knex;
 
 const exportedLatestBody = () => {
     return _.clone({
@@ -116,12 +115,12 @@ describe('Integration: Importer', function () {
     before(testUtils.teardown);
 
     beforeEach(function () {
-        sandbox.stub(importer, 'cleanUp');
+        sinon.stub(importer, 'cleanUp');
     });
 
     afterEach(testUtils.teardown);
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     should.exist(importer);

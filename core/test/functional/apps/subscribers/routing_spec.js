@@ -4,8 +4,7 @@ var supertest = require('supertest'),
     testUtils = require('../../../utils'),
     labs = require('../../../../server/services/labs'),
     config = require('../../../../server/config'),
-    ghost = testUtils.startGhost,
-    sandbox = sinon.sandbox.create();
+    ghost = testUtils.startGhost;
 
 describe('Subscriber: Routing', function () {
     var request;
@@ -18,7 +17,7 @@ describe('Subscriber: Routing', function () {
     });
 
     before(function () {
-        sandbox.stub(labs, 'isSet').callsFake(function (key) {
+        sinon.stub(labs, 'isSet').callsFake(function (key) {
             if (key === 'subscribers') {
                 return true;
             }
@@ -26,7 +25,7 @@ describe('Subscriber: Routing', function () {
     });
 
     after(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('GET', function () {

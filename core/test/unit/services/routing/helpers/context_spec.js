@@ -3,8 +3,7 @@ const should = require('should'),
     _ = require('lodash'),
     testUtils = require('../../../../utils'),
     helpers = require('../../../../../server/services/routing/helpers'),
-    labs = require('../../../../../server/services/labs'),
-    sandbox = sinon.sandbox.create();
+    labs = require('../../../../../server/services/labs');
 
 describe('Contexts', function () {
     let req, res, data, setupContext;
@@ -22,7 +21,7 @@ describe('Contexts', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Unknown', function () {
@@ -247,7 +246,7 @@ describe('Contexts', function () {
     describe('Subscribe', function () {
         it('should identify /subscribe/ as the subscribe route if labs flag set', function () {
             res.locals.relativeUrl = '/subscribe/';
-            sandbox.stub(labs, 'isSet').withArgs('subscribers').returns(true);
+            sinon.stub(labs, 'isSet').withArgs('subscribers').returns(true);
 
             delete res.routerOptions;
             helpers.context(req, res, data);
@@ -259,7 +258,7 @@ describe('Contexts', function () {
 
         it('should not identify /subscribe/ as subscribe route if labs flag NOT set', function () {
             res.locals.relativeUrl = '/subscribe/';
-            sandbox.stub(labs, 'isSet').withArgs('subscribers').returns(false);
+            sinon.stub(labs, 'isSet').withArgs('subscribers').returns(false);
             data.post = testUtils.DataGenerator.forKnex.createPost();
 
             delete res.routerOptions;

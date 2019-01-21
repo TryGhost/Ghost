@@ -1,9 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     fs = require('fs-extra'),
-    servePublicFile = require('../../../../server/web/shared/middlewares/serve-public-file'),
-
-    sandbox = sinon.sandbox.create();
+    servePublicFile = require('../../../../server/web/shared/middlewares/serve-public-file');
 
 describe('servePublicFile', function () {
     var res, req, next;
@@ -15,7 +13,7 @@ describe('servePublicFile', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should return a middleware', function () {
@@ -36,7 +34,7 @@ describe('servePublicFile', function () {
             body = 'User-agent: * Disallow: /';
         req.path = '/robots.txt';
 
-        sandbox.stub(fs, 'readFile').callsFake(function (file, cb) {
+        sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
             cb(null, body);
         });
 
@@ -62,7 +60,7 @@ describe('servePublicFile', function () {
             body = 'User-agent: * Disallow: /';
         req.path = '/robots.txt';
 
-        sandbox.stub(fs, 'readFile').callsFake(function (file, cb) {
+        sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
             cb(null, body);
         });
 
@@ -86,7 +84,7 @@ describe('servePublicFile', function () {
             body = 'User-agent: {{blog-url}}';
         req.path = '/robots.txt';
 
-        sandbox.stub(fs, 'readFile').callsFake(function (file, cb) {
+        sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
             cb(null, body);
         });
 

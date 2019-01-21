@@ -13,7 +13,6 @@ const localUtils = require('./utils');
 
 let ghost = testUtils.startGhost;
 let request;
-let sandbox = sinon.sandbox.create();
 let eventsTriggered;
 
 describe('DB API', function () {
@@ -42,7 +41,7 @@ describe('DB API', function () {
     beforeEach(function () {
         eventsTriggered = {};
 
-        sandbox.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
+        sinon.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
             if (!eventsTriggered[eventName]) {
                 eventsTriggered[eventName] = [];
             }
@@ -52,7 +51,7 @@ describe('DB API', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('attaches the Content-Disposition header on export', function (done) {
@@ -144,7 +143,7 @@ describe('DB API', function () {
 
     it('export can be triggered by backup client', function (done) {
         backupQuery = '?client_id=' + backupClient.slug + '&client_secret=' + backupClient.secret;
-        fsStub = sandbox.stub(fs, 'writeFile').resolves();
+        fsStub = sinon.stub(fs, 'writeFile').resolves();
         request.post(localUtils.API.getApiQuery('db/backup' + backupQuery))
             .expect('Content-Type', /json/)
             .expect(200)
@@ -163,7 +162,7 @@ describe('DB API', function () {
 
     it('export can be triggered and named by backup client', function (done) {
         backupQuery = '?client_id=' + backupClient.slug + '&client_secret=' + backupClient.secret + '&filename=test';
-        fsStub = sandbox.stub(fs, 'writeFile').resolves();
+        fsStub = sinon.stub(fs, 'writeFile').resolves();
         request.post(localUtils.API.getApiQuery('db/backup' + backupQuery))
             .expect('Content-Type', /json/)
             .expect(200)
@@ -182,7 +181,7 @@ describe('DB API', function () {
 
     it('export can not be triggered by client other than backup', function (done) {
         schedulerQuery = '?client_id=' + schedulerClient.slug + '&client_secret=' + schedulerClient.secret;
-        fsStub = sandbox.stub(fs, 'writeFile').resolves();
+        fsStub = sinon.stub(fs, 'writeFile').resolves();
         request.post(localUtils.API.getApiQuery('db/backup' + schedulerQuery))
             .expect('Content-Type', /json/)
             .expect(403)

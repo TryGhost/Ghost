@@ -1,18 +1,17 @@
 const should = require('should'),
     sinon = require('sinon'),
-    sandbox = sinon.sandbox.create(),
     urlService = require('../../../../server/services/url'),
     getUrl = require('../../../../server/data/meta/url'),
     testUtils = require('../../../utils/');
 
 describe('getUrl', function () {
     beforeEach(function () {
-        sandbox.stub(urlService, 'getUrlByResourceId');
-        sandbox.stub(urlService.utils, 'urlFor');
+        sinon.stub(urlService, 'getUrlByResourceId');
+        sinon.stub(urlService.utils, 'urlFor');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should return url for a post', function () {

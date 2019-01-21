@@ -3,9 +3,7 @@ var should = require('should'),
 
     express = require('express'),
     themeUtils = require('../../../../server/services/themes'),
-    staticTheme = require('../../../../server/web/shared/middlewares/static-theme'),
-
-    sandbox = sinon.sandbox.create();
+    staticTheme = require('../../../../server/web/shared/middlewares/static-theme');
 
 describe('staticTheme', function () {
     var expressStaticStub, activeThemeStub, req, res;
@@ -14,15 +12,15 @@ describe('staticTheme', function () {
         req = {};
         res = {};
 
-        activeThemeStub = sandbox.stub(themeUtils, 'getActive').returns({
+        activeThemeStub = sinon.stub(themeUtils, 'getActive').returns({
             path: 'my/fake/path'
         });
 
-        expressStaticStub = sandbox.spy(express, 'static');
+        expressStaticStub = sinon.spy(express, 'static');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should skip for .hbs file', function (done) {

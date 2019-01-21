@@ -5,7 +5,6 @@ const should = require('should'),
     urlService = require('../../../../../server/services/url'),
     controllers = require('../../../../../server/services/routing/controllers'),
     helpers = require('../../../../../server/services/routing/helpers'),
-    sandbox = sinon.sandbox.create(),
     EDITOR_URL = '/editor/';
 
 describe('Unit - services/routing/controllers/entry', function () {
@@ -17,27 +16,27 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         page = testUtils.DataGenerator.forKnex.createPost({page: 1});
 
-        secureStub = sandbox.stub();
-        entryLookUpStub = sandbox.stub();
-        renderStub = sandbox.stub();
+        secureStub = sinon.stub();
+        entryLookUpStub = sinon.stub();
+        renderStub = sinon.stub();
 
-        sandbox.stub(helpers, 'entryLookup').get(function () {
+        sinon.stub(helpers, 'entryLookup').get(function () {
             return entryLookUpStub;
         });
 
-        sandbox.stub(helpers, 'secure').get(function () {
+        sinon.stub(helpers, 'secure').get(function () {
             return secureStub;
         });
 
-        sandbox.stub(helpers, 'renderEntry').get(function () {
+        sinon.stub(helpers, 'renderEntry').get(function () {
             return renderStub;
         });
 
-        sandbox.stub(filters, 'doFilter');
+        sinon.stub(filters, 'doFilter');
 
-        sandbox.stub(urlService.utils, 'redirectToAdmin');
-        sandbox.stub(urlService.utils, 'redirect301');
-        sandbox.stub(urlService, 'getResourceById');
+        sinon.stub(urlService.utils, 'redirectToAdmin');
+        sinon.stub(urlService.utils, 'redirect301');
+        sinon.stub(urlService, 'getResourceById');
 
         req = {
             path: '/',
@@ -53,7 +52,7 @@ describe('Unit - services/routing/controllers/entry', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('resource not found', function (done) {

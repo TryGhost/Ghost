@@ -8,15 +8,12 @@ const sessionController = require('../../../../server/api/v2/session');
 const sessionServiceMiddleware = require('../../../../server/services/auth/session/middleware');
 
 describe('Session controller', function () {
-    let sandbox;
-
     before(function () {
         models.init();
-        sandbox = sinon.sandbox.create();
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('exports an add method', function () {
@@ -36,7 +33,7 @@ describe('Session controller', function () {
         });
 
         it('it checks the username and password and throws UnauthorizedError if it fails', function () {
-            const userCheckStub = sandbox.stub(models.User, 'check')
+            const userCheckStub = sinon.stub(models.User, 'check')
                 .rejects(new Error());
 
             return sessionController.add({
@@ -52,16 +49,16 @@ describe('Session controller', function () {
         it('it returns a function that calls req.brute.reset, sets req.user and calls createSession if the check works', function () {
             const fakeReq = {
                 brute: {
-                    reset: sandbox.stub().callsArg(0)
+                    reset: sinon.stub().callsArg(0)
                 }
             };
             const fakeRes = {};
             const fakeNext = () => {};
             const fakeUser = models.User.forge({});
-            sandbox.stub(models.User, 'check')
+            sinon.stub(models.User, 'check')
                 .resolves(fakeUser);
 
-            const createSessionStub = sandbox.stub(sessionServiceMiddleware, 'createSession');
+            const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
 
             return sessionController.add({
                 username: 'freddy@vodafone.com',
@@ -83,16 +80,16 @@ describe('Session controller', function () {
             const resetError = new Error();
             const fakeReq = {
                 brute: {
-                    reset: sandbox.stub().callsArgWith(0, resetError)
+                    reset: sinon.stub().callsArgWith(0, resetError)
                 }
             };
             const fakeRes = {};
-            const fakeNext = sandbox.stub();
+            const fakeNext = sinon.stub();
             const fakeUser = models.User.forge({});
-            sandbox.stub(models.User, 'check')
+            sinon.stub(models.User, 'check')
                 .resolves(fakeUser);
 
-            const createSessionStub = sandbox.stub(sessionServiceMiddleware, 'createSession');
+            const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
 
             return sessionController.add({
                 username: 'freddy@vodafone.com',
@@ -112,7 +109,7 @@ describe('Session controller', function () {
             const fakeReq = {};
             const fakeRes = {};
             const fakeNext = () => {};
-            const destroySessionStub = sandbox.stub(sessionServiceMiddleware, 'destroySession');
+            const destroySessionStub = sinon.stub(sessionServiceMiddleware, 'destroySession');
 
             return sessionController.delete().then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
@@ -128,7 +125,7 @@ describe('Session controller', function () {
     describe('#get', function () {
         it('returns the result of User.findOne', function () {
             const findOneReturnVal = new Promise(() => {});
-            const findOneStub = sandbox.stub(models.User, 'findOne')
+            const findOneStub = sinon.stub(models.User, 'findOne')
                 .returns(findOneReturnVal);
 
             const result = sessionController.read({

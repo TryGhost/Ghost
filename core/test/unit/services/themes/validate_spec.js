@@ -7,7 +7,6 @@ const validate = themes.validate;
 
 const gscan = require('gscan');
 const common = require('../../../../server/lib/common');
-const sandbox = sinon.sandbox.create();
 
 describe('Themes', function () {
     let checkZipStub;
@@ -15,13 +14,13 @@ describe('Themes', function () {
     let formatStub;
 
     beforeEach(function () {
-        checkZipStub = sandbox.stub(gscan, 'checkZip');
-        checkStub = sandbox.stub(gscan, 'check');
-        formatStub = sandbox.stub(gscan, 'format');
+        checkZipStub = sinon.stub(gscan, 'checkZip');
+        checkStub = sinon.stub(gscan, 'check');
+        formatStub = sinon.stub(gscan, 'format');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Validate', function () {

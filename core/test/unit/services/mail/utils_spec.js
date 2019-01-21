@@ -1,7 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    mail = require('../../../../server/services/mail'),
-    sandbox = sinon.sandbox.create();
+    mail = require('../../../../server/services/mail');
 
 describe('Mail: Utils', function () {
     var scope = {ghostMailer: null};
@@ -9,7 +8,7 @@ describe('Mail: Utils', function () {
     beforeEach(function () {
         scope.ghostMailer = new mail.GhostMailer();
 
-        sandbox.stub(scope.ghostMailer.transport, 'sendMail').callsFake(function (message, sendMailDone) {
+        sinon.stub(scope.ghostMailer.transport, 'sendMail').callsFake(function (message, sendMailDone) {
             sendMailDone(null, {
                 statusHandler: {
                     once: function (eventName, eventDone) {
@@ -23,7 +22,7 @@ describe('Mail: Utils', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('generate welcome', function (done) {

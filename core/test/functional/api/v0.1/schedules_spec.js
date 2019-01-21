@@ -9,7 +9,6 @@ const SchedulingDefault = require('../../../../../core/server/adapters/schedulin
 const models = require('../../../../../core/server/models');
 const config = require('../../../../../core/server/config');
 const ghost = testUtils.startGhost;
-const sandbox = sinon.sandbox.create();
 
 describe('Schedules API', function () {
     const posts = [];
@@ -21,11 +20,11 @@ describe('Schedules API', function () {
         models.init();
 
         // @NOTE: mock the post scheduler, otherwise it will auto publish the post
-        sandbox.stub(SchedulingDefault.prototype, '_pingUrl').resolves();
+        sinon.stub(SchedulingDefault.prototype, '_pingUrl').resolves();
     });
 
     after(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     before(function () {

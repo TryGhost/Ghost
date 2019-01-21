@@ -1,18 +1,17 @@
 const should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
-    registry = rewire('../../../../server/services/routing/registry'),
-    sandbox = sinon.sandbox.create();
+    registry = rewire('../../../../server/services/routing/registry');
 
 describe('UNIT: services/routing/registry', function () {
     let getRssUrlStub;
 
     beforeEach(function () {
-        getRssUrlStub = sandbox.stub();
+        getRssUrlStub = sinon.stub();
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('fn: getRssUrl', function () {
@@ -24,7 +23,7 @@ describe('UNIT: services/routing/registry', function () {
             registry.setRouter('CollectionRouter', {
                 name: 'CollectionRouter',
                 routerName: 'podcast',
-                getRssUrl: sandbox.stub().returns('/podcast/rss/')
+                getRssUrl: sinon.stub().returns('/podcast/rss/')
             });
 
             registry.getRssUrl().should.eql('/podcast/rss/');
@@ -34,7 +33,7 @@ describe('UNIT: services/routing/registry', function () {
             registry.setRouter('CollectionRouter', {
                 name: 'CollectionRouter',
                 routerName: 'podcast',
-                getRssUrl: sandbox.stub().returns(null)
+                getRssUrl: sinon.stub().returns(null)
             });
 
             should.not.exist(registry.getRssUrl());
@@ -44,13 +43,13 @@ describe('UNIT: services/routing/registry', function () {
             registry.setRouter('CollectionRouter', {
                 name: 'CollectionRouter',
                 routerName: 'podcast',
-                getRssUrl: sandbox.stub().returns('/podcast/rss/')
+                getRssUrl: sinon.stub().returns('/podcast/rss/')
             });
 
             registry.setRouter('CollectionRouter', {
                 name: 'CollectionRouter',
                 routerName: 'index',
-                getRssUrl: sandbox.stub().returns('/rss/')
+                getRssUrl: sinon.stub().returns('/rss/')
             });
 
             registry.getRssUrl().should.eql('/rss/');

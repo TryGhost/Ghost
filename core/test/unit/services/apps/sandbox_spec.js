@@ -1,24 +1,23 @@
 const should = require('should'),
     sinon = require('sinon'),
     path = require('path'),
-    AppSandbox = require('../../../../server/services/apps/sandbox'),
-    sandbox = sinon.sandbox.create();
+    AppSandbox = require('../../../../server/services/apps/sandbox');
 
 describe('Apps', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
-    describe('Sandbox', function () {
+    describe('sinon', function () {
         function makeAppPath(fileName) {
             return path.resolve(__dirname, '..', '..', '..', 'utils', 'fixtures', 'app', fileName);
         }
 
-        it('loads apps in a sandbox', function () {
+        it('loads apps in a sinon', function () {
             var appBox = new AppSandbox(),
                 appPath = makeAppPath('good.js'),
                 GoodApp,
-                appProxy = sandbox.stub(),
+                appProxy = sinon.stub(),
                 app;
 
             GoodApp = appBox.loadApp(appPath);
@@ -49,7 +48,7 @@ describe('Apps', function () {
             var appBox = new AppSandbox(),
                 badAppPath = makeAppPath('badinstall.js'),
                 BadApp,
-                appProxy = sandbox.stub(),
+                appProxy = sinon.stub(),
                 app,
                 installApp = function () {
                     app.install(appProxy);

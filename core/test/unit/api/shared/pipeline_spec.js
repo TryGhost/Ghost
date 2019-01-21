@@ -1,27 +1,26 @@
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
-const sandbox = sinon.sandbox.create();
 const common = require('../../../../server/lib/common');
 const shared = require('../../../../server/api/shared');
 
 describe('Unit: api/shared/pipeline', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('stages', function () {
         describe('validation', function () {
             describe('input', function () {
                 beforeEach(function () {
-                    sandbox.stub(shared.validators.handle, 'input').resolves();
+                    sinon.stub(shared.validators.handle, 'input').resolves();
                 });
 
                 it('do it yourself', function () {
                     const apiUtils = {};
                     const apiConfig = {};
                     const apiImpl = {
-                        validation: sandbox.stub().resolves('response')
+                        validation: sinon.stub().resolves('response')
                     };
                     const frame = {};
 
@@ -88,7 +87,7 @@ describe('Unit: api/shared/pipeline', function () {
             beforeEach(function () {
                 apiUtils = {
                     permissions: {
-                        handle: sandbox.stub().resolves()
+                        handle: sinon.stub().resolves()
                     }
                 };
             });
@@ -109,7 +108,7 @@ describe('Unit: api/shared/pipeline', function () {
             it('do it yourself', function () {
                 const apiConfig = {};
                 const apiImpl = {
-                    permissions: sandbox.stub().resolves('lol')
+                    permissions: sinon.stub().resolves('lol')
                 };
                 const frame = {};
 
@@ -178,11 +177,11 @@ describe('Unit: api/shared/pipeline', function () {
 
     describe('pipeline', function () {
         beforeEach(function () {
-            sandbox.stub(shared.pipeline.STAGES.validation, 'input');
-            sandbox.stub(shared.pipeline.STAGES.serialisation, 'input');
-            sandbox.stub(shared.pipeline.STAGES.serialisation, 'output');
-            sandbox.stub(shared.pipeline.STAGES, 'permissions');
-            sandbox.stub(shared.pipeline.STAGES, 'query');
+            sinon.stub(shared.pipeline.STAGES.validation, 'input');
+            sinon.stub(shared.pipeline.STAGES.serialisation, 'input');
+            sinon.stub(shared.pipeline.STAGES.serialisation, 'output');
+            sinon.stub(shared.pipeline.STAGES, 'permissions');
+            sinon.stub(shared.pipeline.STAGES, 'query');
         });
 
         it('ensure we receive a callable api controller fn', function () {

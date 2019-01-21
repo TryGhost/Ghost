@@ -10,7 +10,6 @@ const schema = require('../../../server/data/schema');
 const models = require('../../../server/models');
 const common = require('../../../server/lib/common');
 const security = require('../../../server/lib/security');
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: models/post', function () {
     const mockDb = require('mock-knex');
@@ -23,7 +22,7 @@ describe('Unit: models/post', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     after(function () {
@@ -356,16 +355,16 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
     before(testUtils.setup('users:roles', 'posts'));
 
     beforeEach(function () {
-        sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
-        sandbox.stub(urlService, 'getUrlByResourceId');
+        sinon.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
+        sinon.stub(urlService, 'getUrlByResourceId');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     after(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('add', function () {
@@ -375,7 +374,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     post: []
                 };
 
-                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                     events.post.push({event: event, data: this.toJSON()});
                 });
 
@@ -424,7 +423,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     post: []
                 };
 
-                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                     events.post.push({event: event, data: this.toJSON()});
                 });
 
@@ -447,7 +446,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     post: []
                 };
 
-                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                     events.post.push({event: event, data: this.toJSON()});
                 });
 
@@ -481,7 +480,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     post: []
                 };
 
-                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                     events.post.push({event: event, data: this.toJSON()});
                 });
 
@@ -516,7 +515,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     post: []
                 };
 
-                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                     events.post.push({event: event, data: this.toJSON()});
                 });
 
@@ -562,7 +561,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     post: []
                 };
 
-                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                     events.post.push({event: event, data: this.toJSON()});
                 });
 
@@ -611,7 +610,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
             testUtils.DataGenerator.forKnex.posts[4].featured.should.eql(true);
 
             // @NOTE: simulate that the onSaving hook takes longer
-            sandbox.stub(models.Post.prototype, 'onSaving').callsFake(function () {
+            sinon.stub(models.Post.prototype, 'onSaving').callsFake(function () {
                 var self = this,
                     args = arguments;
 
@@ -650,11 +649,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 tag: []
             };
 
-            sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+            sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                 events.post.push(event);
             });
 
-            sandbox.stub(models.Tag.prototype, 'emitChange').callsFake(function (event) {
+            sinon.stub(models.Tag.prototype, 'emitChange').callsFake(function (event) {
                 events.tag.push(event);
             });
 
@@ -689,11 +688,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 tag: []
             };
 
-            sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+            sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                 events.post.push(event);
             });
 
-            sandbox.stub(models.Tag.prototype, 'emitChange').callsFake(function (event) {
+            sinon.stub(models.Tag.prototype, 'emitChange').callsFake(function (event) {
                 events.tag.push(event);
             });
 
@@ -723,11 +722,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 tag: []
             };
 
-            sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+            sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                 events.post.push(event);
             });
 
-            sandbox.stub(models.Tag.prototype, 'emitChange').callsFake(function (event) {
+            sinon.stub(models.Tag.prototype, 'emitChange').callsFake(function (event) {
                 events.tag.push(event);
             });
 
@@ -772,7 +771,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     post: []
                 };
 
-                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                     events.post.push({event: event, data: this.toJSON()});
                 });
 
@@ -810,7 +809,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     post: []
                 };
 
-                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                     events.post.push({event: event, data: this.toJSON()});
                 });
 
@@ -851,7 +850,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     post: []
                 };
 
-                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                     events.post.push({event: event, data: this.toJSON()});
                 });
 
@@ -892,7 +891,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     post: []
                 };
 
-                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                     events.post.push({event: event, data: this.toJSON()});
                 });
 
@@ -936,7 +935,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     post: []
                 };
 
-                sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                     events.post.push({event: event, data: this.toJSON()});
                 });
 
@@ -1517,8 +1516,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
             describe('Editing', function () {
                 it('rejects if changing status', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'published'};
@@ -1547,8 +1546,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if changing author id', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', author_id: 2};
@@ -1576,8 +1575,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if changing authors.0', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
@@ -1605,8 +1604,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('ignores if changes authors.1', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', authors: [{id: 1}, {id: 2}]};
@@ -1634,8 +1633,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if post is not draft', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'published', author_id: 1};
@@ -1665,8 +1664,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if contributor is not author of post', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', author_id: 2};
@@ -1696,8 +1695,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('resolves if none of the above cases are true', function () {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', author_id: 1};
@@ -1727,7 +1726,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
             describe('Adding', function () {
                 it('rejects if "published" status', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub()
+                            get: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'published', author_id: 1};
@@ -1752,7 +1751,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if different author id', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub()
+                            get: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', author_id: 2};
@@ -1777,7 +1776,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if different logged in user and `authors.0`', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub()
+                            get: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
@@ -1802,7 +1801,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if same logged in user and `authors.0`, but different author_id', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub()
+                            get: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', author_id: 3, authors: [{id: 1}]};
@@ -1827,7 +1826,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if different logged in user and `authors.0`, but correct author_id', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub()
+                            get: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', author_id: 1, authors: [{id: 2}]};
@@ -1852,7 +1851,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('resolves if same logged in user and `authors.0`', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub()
+                            get: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', authors: [{id: 1}]};
@@ -1876,7 +1875,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('resolves if none of the above cases are true', function () {
                     var mockPostObj = {
-                            get: sandbox.stub()
+                            get: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {status: 'draft', author_id: 1};
@@ -1901,8 +1900,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
             describe('Destroying', function () {
                 it('rejects if destroying another author\'s post', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1};
 
@@ -1929,8 +1928,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if destroying a published post', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1};
 
@@ -1958,8 +1957,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('resolves if none of the above cases are true', function () {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1};
 
@@ -1989,8 +1988,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
             describe('Editing', function () {
                 it('rejects if editing another\'s post', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {author_id: 2};
@@ -2019,8 +2018,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if editing another\'s post (using `authors`)', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {authors: [{id: 2}]};
@@ -2048,8 +2047,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if changing author', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {author_id: 2};
@@ -2078,8 +2077,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if changing authors', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {authors: [{id: 2}]};
@@ -2107,8 +2106,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if changing authors and author_id', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {authors: [{id: 1}], author_id: 2};
@@ -2137,8 +2136,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if changing authors and author_id', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {authors: [{id: 2}], author_id: 1};
@@ -2167,8 +2166,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('resolves if none of the above cases are true', function () {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {author_id: 1};
@@ -2195,7 +2194,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
             describe('Adding', function () {
                 it('rejects if different author id', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub()
+                            get: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {author_id: 2};
@@ -2220,8 +2219,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('rejects if different authors', function (done) {
                     var mockPostObj = {
-                            get: sandbox.stub(),
-                            related: sandbox.stub()
+                            get: sinon.stub(),
+                            related: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {authors: [{id: 2}]};
@@ -2248,7 +2247,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('resolves if none of the above cases are true', function () {
                     var mockPostObj = {
-                            get: sandbox.stub()
+                            get: sinon.stub()
                         },
                         context = {user: 1},
                         unsafeAttrs = {author_id: 1};
@@ -2272,8 +2271,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
         describe('Everyone Else', function () {
             it('rejects if hasUserPermissions is false and not current owner', function (done) {
                 var mockPostObj = {
-                        get: sandbox.stub(),
-                        related: sandbox.stub()
+                        get: sinon.stub(),
+                        related: sinon.stub()
                     },
                     context = {user: 1},
                     unsafeAttrs = {author_id: 2};
@@ -2302,7 +2301,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
             it('resolves if hasUserPermission is true', function () {
                 var mockPostObj = {
-                        get: sandbox.stub()
+                        get: sinon.stub()
                     },
                     context = {user: 1},
                     unsafeAttrs = {author_id: 2};
@@ -2335,7 +2334,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 post: []
             };
 
-            sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+            sinon.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
                 events.post.push({event: event, data: this.toJSON()});
             });
         });

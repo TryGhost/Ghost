@@ -3,14 +3,12 @@ var should = require('should'),
     getAssetUrl = require('../../../../server/data/meta/asset_url'),
     settingsCache = require('../../../../server/services/settings/cache'),
     configUtils = require('../../../utils/configUtils'),
-    config = configUtils.config,
-
-    sandbox = sinon.sandbox.create();
+    config = configUtils.config;
 
 describe('getAssetUrl', function () {
     afterEach(function () {
         configUtils.restore();
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should return asset url with just context', function () {
@@ -45,7 +43,7 @@ describe('getAssetUrl', function () {
         });
 
         it('should correct favicon path for custom png', function () {
-            sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
+            sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
             var testUrl = getAssetUrl('favicon.ico');
             testUrl.should.equal('/favicon.png');
         });
@@ -114,7 +112,7 @@ describe('getAssetUrl', function () {
             });
 
             it('should return correct favicon path for custom png', function () {
-                sandbox.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
+                sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
                 var testUrl = getAssetUrl('favicon.ico');
                 testUrl.should.equal('/blog/favicon.png');
             });

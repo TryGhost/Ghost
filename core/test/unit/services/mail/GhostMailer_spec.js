@@ -5,7 +5,6 @@ var should = require('should'),
     settingsCache = require('../../../../server/services/settings/cache'),
     configUtils = require('../../../utils/configUtils'),
     common = require('../../../../server/lib/common'),
-    sandbox = sinon.sandbox.create(),
     mailer,
 
     // Mock SMTP config
@@ -42,7 +41,7 @@ describe('Mail: Ghostmailer', function () {
     afterEach(function () {
         mailer = null;
         configUtils.restore();
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should attach mail provider to ghost instance', function () {
@@ -178,7 +177,7 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('should fall back to [blog.title] <ghost@[blog.url]>', function () {
-            sandbox.stub(settingsCache, 'get').returns('Test');
+            sinon.stub(settingsCache, 'get').returns('Test');
 
             // Standard domain
             configUtils.set({url: 'http://default.com', mail: {from: null}});
@@ -197,7 +196,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.from().should.equal('"Test" <ghost@default.com>');
 
             settingsCache.get.restore();
-            sandbox.stub(settingsCache, 'get').returns('Test"');
+            sinon.stub(settingsCache, 'get').returns('Test"');
 
             // Escape title
             configUtils.set({url: 'http://default.com:2368/', mail: {from: null}});
@@ -214,7 +213,7 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('should attach blog title', function () {
-            sandbox.stub(settingsCache, 'get').returns('Test');
+            sinon.stub(settingsCache, 'get').returns('Test');
 
             configUtils.set({mail: {from: 'from@default.com'}});
 

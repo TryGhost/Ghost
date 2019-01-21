@@ -5,55 +5,54 @@ const nql = require('@nexes/nql');
 const sinon = require('sinon');
 const urlUtils = require('../../../../server/services/url/utils');
 const UrlGenerator = require('../../../../server/services/url/UrlGenerator');
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: services/url/UrlGenerator', function () {
     let queue, router, urls, resources, resource, resource2;
 
     beforeEach(function () {
         queue = {
-            register: sandbox.stub(),
-            start: sandbox.stub()
+            register: sinon.stub(),
+            start: sinon.stub()
         };
 
         router = {
-            getFilter: sandbox.stub(),
-            addListener: sandbox.stub(),
-            getResourceType: sandbox.stub(),
-            getPermalinks: sandbox.stub()
+            getFilter: sinon.stub(),
+            addListener: sinon.stub(),
+            getResourceType: sinon.stub(),
+            getPermalinks: sinon.stub()
         };
 
         urls = {
-            add: sandbox.stub(),
-            getByUrl: sandbox.stub(),
-            removeResourceId: sandbox.stub(),
-            getByGeneratorId: sandbox.stub()
+            add: sinon.stub(),
+            getByUrl: sinon.stub(),
+            removeResourceId: sinon.stub(),
+            getByGeneratorId: sinon.stub()
         };
 
         resources = {
-            getAllByType: sandbox.stub(),
-            getByIdAndType: sandbox.stub()
+            getAllByType: sinon.stub(),
+            getByIdAndType: sinon.stub()
         };
 
         resource = {
-            reserve: sandbox.stub(),
-            release: sandbox.stub(),
-            isReserved: sandbox.stub(),
-            removeAllListeners: sandbox.stub(),
-            addListener: sandbox.stub()
+            reserve: sinon.stub(),
+            release: sinon.stub(),
+            isReserved: sinon.stub(),
+            removeAllListeners: sinon.stub(),
+            addListener: sinon.stub()
         };
 
         resource2 = {
-            reserve: sandbox.stub(),
-            release: sandbox.stub(),
-            isReserved: sandbox.stub(),
-            removeAllListeners: sandbox.stub(),
-            addListener: sandbox.stub()
+            reserve: sinon.stub(),
+            release: sinon.stub(),
+            isReserved: sinon.stub(),
+            removeAllListeners: sinon.stub(),
+            addListener: sinon.stub()
         };
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('ensure listeners', function () {
@@ -73,7 +72,7 @@ describe('Unit: services/url/UrlGenerator', function () {
     it('routing type has changed', function () {
         const urlGenerator = new UrlGenerator(router, queue, resources, urls);
 
-        sandbox.stub(urlGenerator, '_try');
+        sinon.stub(urlGenerator, '_try');
 
         urls.getByGeneratorId.returns([
             {
@@ -106,7 +105,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             resources.getAllByType.withArgs('posts').returns([resource]);
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-            sandbox.stub(urlGenerator, '_try');
+            sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onInit();
             urlGenerator._try.calledOnce.should.be.true();
@@ -117,7 +116,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             resources.getAllByType.withArgs('posts').returns([]);
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-            sandbox.stub(urlGenerator, '_try');
+            sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onInit();
             urlGenerator._try.called.should.be.false();
@@ -130,7 +129,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             resources.getByIdAndType.withArgs('posts', 1).returns(resource);
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-            sandbox.stub(urlGenerator, '_try');
+            sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onAdded({id: 1, type: 'posts'});
             urlGenerator._try.calledOnce.should.be.true();
@@ -140,7 +139,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             router.getResourceType.returns('pages');
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-            sandbox.stub(urlGenerator, '_try');
+            sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onAdded({id: 1, type: 'posts'});
             urlGenerator._try.called.should.be.false();
@@ -157,8 +156,8 @@ describe('Unit: services/url/UrlGenerator', function () {
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
                 should.not.exist(urlGenerator.nql);
 
-                sandbox.stub(urlGenerator, '_generateUrl').returns('something');
-                sandbox.stub(urlGenerator, '_resourceListeners');
+                sinon.stub(urlGenerator, '_generateUrl').returns('something');
+                sinon.stub(urlGenerator, '_resourceListeners');
 
                 urlGenerator._try(resource);
 
@@ -176,8 +175,8 @@ describe('Unit: services/url/UrlGenerator', function () {
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
                 should.not.exist(urlGenerator.nql);
 
-                sandbox.stub(urlGenerator, '_generateUrl').returns('something');
-                sandbox.stub(urlGenerator, '_resourceListeners');
+                sinon.stub(urlGenerator, '_generateUrl').returns('something');
+                sinon.stub(urlGenerator, '_resourceListeners');
 
                 urlGenerator._try(resource);
 
@@ -195,10 +194,10 @@ describe('Unit: services/url/UrlGenerator', function () {
                 resource.isReserved.returns(false);
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-                sandbox.stub(urlGenerator.nql, 'queryJSON').returns(true);
+                sinon.stub(urlGenerator.nql, 'queryJSON').returns(true);
 
-                sandbox.stub(urlGenerator, '_generateUrl').returns('something');
-                sandbox.stub(urlGenerator, '_resourceListeners');
+                sinon.stub(urlGenerator, '_generateUrl').returns('something');
+                sinon.stub(urlGenerator, '_resourceListeners');
 
                 urlGenerator._try(resource);
 
@@ -215,10 +214,10 @@ describe('Unit: services/url/UrlGenerator', function () {
                 resource.isReserved.returns(false);
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-                sandbox.stub(urlGenerator.nql, 'queryJSON').returns(false);
+                sinon.stub(urlGenerator.nql, 'queryJSON').returns(false);
 
-                sandbox.stub(urlGenerator, '_generateUrl').returns('something');
-                sandbox.stub(urlGenerator, '_resourceListeners');
+                sinon.stub(urlGenerator, '_generateUrl').returns('something');
+                sinon.stub(urlGenerator, '_resourceListeners');
 
                 urlGenerator._try(resource);
 
@@ -235,10 +234,10 @@ describe('Unit: services/url/UrlGenerator', function () {
                 resource.isReserved.returns(true);
 
                 const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-                sandbox.stub(urlGenerator.nql, 'queryJSON').returns(true);
+                sinon.stub(urlGenerator.nql, 'queryJSON').returns(true);
 
-                sandbox.stub(urlGenerator, '_generateUrl').returns('something');
-                sandbox.stub(urlGenerator, '_resourceListeners');
+                sinon.stub(urlGenerator, '_generateUrl').returns('something');
+                sinon.stub(urlGenerator, '_resourceListeners');
 
                 urlGenerator._try(resource);
 
@@ -260,7 +259,7 @@ describe('Unit: services/url/UrlGenerator', function () {
             });
 
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-            sandbox.stub(urlUtils, 'replacePermalink').returns('/url/');
+            sinon.stub(urlUtils, 'replacePermalink').returns('/url/');
 
             urlGenerator._generateUrl(resource).should.eql('/url/');
             urlUtils.replacePermalink.calledWith('/:slug/', resource.data).should.be.true();
@@ -278,8 +277,8 @@ describe('Unit: services/url/UrlGenerator', function () {
 
         it('resource was updated', function () {
             const urlGenerator = new UrlGenerator(router, queue, resources, urls);
-            sandbox.stub(urlGenerator, '_generateUrl').returns('/welcome/');
-            sandbox.stub(urlGenerator, '_try').returns(true);
+            sinon.stub(urlGenerator, '_generateUrl').returns('/welcome/');
+            sinon.stub(urlGenerator, '_try').returns(true);
 
             resource.data = {
                 id: 'object-id'
