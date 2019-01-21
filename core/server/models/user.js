@@ -37,6 +37,18 @@ User = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
+    /**
+     * @TODO:
+     *
+     * The user model does not use bookshelf-relations yet.
+     * Therefor we have to remove the relations manually.
+     */
+    onDestroying(model, options) {
+        return (options.transacting || ghostBookshelf.knex)('roles_users')
+            .where('user_id', model.id)
+            .del();
+    },
+
     onDestroyed: function onDestroyed(model, options) {
         if (_.includes(activeStates, model.previous('status'))) {
             model.emitChange('deactivated', options);
@@ -554,6 +566,23 @@ User = ghostBookshelf.Model.extend({
                 // find and return the added user
                 return self.findOne({id: userData.id, status: 'all'}, options);
             });
+    },
+
+    destroy: function destroy(unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
+
+        const destroyUser = () => {
+            return ghostBookshelf.Model.destroy.call(this, options);
+        };
+
+        if (!options.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                options.transacting = transacting;
+                return destroyUser();
+            });
+        }
+
+        return destroyUser();
     },
 
     /**
