@@ -3,9 +3,7 @@ var should = require('should'),
     testUtils = require('../../utils'),
     common = require('../../../server/lib/common'),
     constants = require('../../../server/lib/constants'),
-
-    // Stuff we are testing
-    AccesstokenModel = require('../../../server/models/accesstoken').Accesstoken();
+    AccesstokenModel = require('../../../server/models/accesstoken').Accesstoken;
 
 describe('Accesstoken Model', function () {
     // Keep the DB clean
@@ -20,7 +18,7 @@ describe('Accesstoken Model', function () {
 
     it('on creation emits token.added event', function (done) {
         // Setup
-        var eventSpy = sinon.spy(common.events, 'emit');
+        const eventSpy = sinon.spy(common.events, 'emit');
 
         // Test
         // Stub refreshtoken

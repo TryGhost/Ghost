@@ -9,7 +9,7 @@ var should = require('should'),
     imageLib = require('../../../server/lib/image'),
     UserModel = require('../../../server/models/user').User,
     RoleModel = require('../../../server/models/role').Role,
-    context = testUtils.context.admin();
+    context = testUtils.context.admin;
 
 describe('User Model', function run() {
     var eventsTriggered = {};

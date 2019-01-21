@@ -7,7 +7,7 @@ var should = require('should'),
     db = require('../../../server/data/db'),
     models = require('../../../server/models'),
     common = require('../../../server/lib/common'),
-    context = testUtils.context.admin();
+    context = testUtils.context.admin;
 
 describe('Tag Model', function () {
     var eventSpy;

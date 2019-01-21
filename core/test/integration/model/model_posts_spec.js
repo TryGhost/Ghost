@@ -11,7 +11,7 @@ var should = require('should'),
     common = require('../../../server/lib/common'),
     configUtils = require('../../utils/configUtils'),
     DataGenerator = testUtils.DataGenerator,
-    context = testUtils.context.owner(),
+    context = testUtils.context.owner,
     markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc;
 
 /**

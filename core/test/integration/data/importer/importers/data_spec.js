@@ -17,7 +17,7 @@ var should = require('should'),
         returnImportedData: true
     },
 
-    knex = db.knex();
+    knex = db.knex;
 
 const exportedLatestBody = () => {
     return _.clone({

@@ -2,12 +2,10 @@ var should = require('should'),
     _ = require('lodash'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
-
-    // Stuff we are testing
     SettingsModel = require('../../../server/models/settings').Settings,
     db = require('../../../server/data/db'),
     common = require('../../../server/lib/common'),
-    context = testUtils.context.admin();
+    context = testUtils.context.admin;
 
 describe('Settings Model', function () {
     var eventSpy;
