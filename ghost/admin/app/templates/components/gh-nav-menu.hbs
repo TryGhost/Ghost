@@ -50,10 +50,11 @@
             {{/if}}
         </li>
         <li>{{#link-to "team" data-test-nav="team"}}{{svg-jar "account-group"}}Team{{/link-to}}</li>
-        {{#if feature.subscribers}}
-            {{#if (gh-user-can-admin session.user)}}
-                <li>{{#link-to "subscribers" data-test-nav="subscribers"}}{{svg-jar "email"}}Subscribers{{/link-to}}</li>
-            {{/if}}
+        {{#if (and config.enableDeveloperExperiments (gh-user-can-admin session.user))}}
+            <li>{{#link-to "members" data-test-nav="members"}}{{svg-jar "email"}}Members{{/link-to}}</li>
+        {{/if}}
+        {{#if (and feature.subscribers (gh-user-can-admin session.user))}}
+            <li>{{#link-to "subscribers" data-test-nav="subscribers"}}{{svg-jar "email"}}Subscribers{{/link-to}}</li>
         {{/if}}
     </ul>
     {{#if (gh-user-can-admin session.user)}}

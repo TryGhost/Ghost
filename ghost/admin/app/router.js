@@ -64,6 +64,10 @@ Router.map(function () {
     this.route('settings.integrations.unsplash', {path: '/settings/integrations/unsplash'});
     this.route('settings.integrations.zapier', {path: '/settings/integrations/zapier'});
 
+    this.route('members', function () {
+        this.route('details', {path: ':member_id'});
+    });
+
     this.route('subscribers', function () {
         this.route('new');
         this.route('import');
