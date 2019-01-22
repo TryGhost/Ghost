@@ -9,7 +9,6 @@ const testUtils = require('../../../../utils');
 
 describe('Admin API Key Auth', function () {
     before(models.init);
-    before(testUtils.teardown);
 
     beforeEach(function () {
         const fakeApiKey = {
