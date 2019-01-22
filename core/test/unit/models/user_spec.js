@@ -9,8 +9,7 @@ const should = require('should'),
     validation = require('../../../server/data/validation'),
     common = require('../../../server/lib/common'),
     security = require('../../../server/lib/security'),
-    testUtils = require('../../utils'),
-    sandbox = sinon.sandbox.create();
+    testUtils = require('../../utils');
 
 describe('Unit: models/user', function () {
     before(function () {
@@ -21,7 +20,7 @@ describe('Unit: models/user', function () {
     before(testUtils.setup('users:roles'));
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('updateLastSeen method', function () {
@@ -31,8 +30,8 @@ describe('Unit: models/user', function () {
 
         it('sets the last_seen property to new Date and returns a call to save', function () {
             const instance = {
-                set: sandbox.spy(),
-                save: sandbox.stub().resolves()
+                set: sinon.spy(),
+                save: sinon.stub().resolves()
             };
 
             const now = new Date();
@@ -52,7 +51,7 @@ describe('Unit: models/user', function () {
 
     describe('validation', function () {
         beforeEach(function () {
-            sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
+            sinon.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
         });
 
         describe('password', function () {
@@ -103,7 +102,7 @@ describe('Unit: models/user', function () {
 
             it('email cannot be blank', function () {
                 let data = {name: 'name'};
-                sandbox.stub(models.User, 'findOne').resolves(null);
+                sinon.stub(models.User, 'findOne').resolves(null);
 
                 return models.User.add(data)
                     .then(function () {
@@ -120,14 +119,14 @@ describe('Unit: models/user', function () {
 
     describe('fn: check', function () {
         beforeEach(function () {
-            sandbox.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
+            sinon.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
         });
 
         it('user status is warn', function () {
-            sandbox.stub(security.password, 'compare').resolves(true);
+            sinon.stub(security.password, 'compare').resolves(true);
 
             // NOTE: Add a user with a broken field to ensure we only validate changed fields on login
-            sandbox.stub(validation, 'validateSchema').resolves();
+            sinon.stub(validation, 'validateSchema').resolves();
 
             const user = testUtils.DataGenerator.forKnex.createUser({
                 status: 'warn-1',
@@ -144,13 +143,13 @@ describe('Unit: models/user', function () {
         });
 
         it('user status is active', function () {
-            sandbox.stub(security.password, 'compare').resolves(true);
+            sinon.stub(security.password, 'compare').resolves(true);
 
             return models.User.check({email: testUtils.DataGenerator.Content.users[1].email, password: 'test'});
         });
 
         it('password is incorrect', function () {
-            sandbox.stub(security.password, 'compare').resolves(false);
+            sinon.stub(security.password, 'compare').resolves(false);
 
             return models.User.check({email: testUtils.DataGenerator.Content.users[1].email, password: 'test'})
                 .catch(function (err) {
@@ -159,7 +158,7 @@ describe('Unit: models/user', function () {
         });
 
         it('user not found', function () {
-            sandbox.stub(security.password, 'compare').resolves(true);
+            sinon.stub(security.password, 'compare').resolves(true);
 
             return models.User.check({email: 'notfound@example.to', password: 'test'})
                 .catch(function (err) {
@@ -168,7 +167,7 @@ describe('Unit: models/user', function () {
         });
 
         it('user not found', function () {
-            sandbox.stub(security.password, 'compare').resolves(true);
+            sinon.stub(security.password, 'compare').resolves(true);
 
             return models.User.check({email: null, password: 'test'})
                 .catch(function (err) {
@@ -179,15 +178,15 @@ describe('Unit: models/user', function () {
 
     describe('permissible', function () {
         function getUserModel(id, role, roleId) {
-            var hasRole = sandbox.stub();
+            var hasRole = sinon.stub();
 
             hasRole.withArgs(role).returns(true);
 
             return {
                 id: id,
                 hasRole: hasRole,
-                related: sandbox.stub().returns([{name: role, id: roleId}]),
-                get: sandbox.stub().returns(id)
+                related: sinon.stub().returns([{name: role, id: roleId}]),
+                get: sinon.stub().returns(id)
             };
         }
 
@@ -195,7 +194,7 @@ describe('Unit: models/user', function () {
             var mockUser = getUserModel(1, 'Owner'),
                 context = {user: 1};
 
-            models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.owner, true, true).then(() => {
+            models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.owner, true, true, true).then(() => {
                 done(new Error('Permissible function should have errored'));
             }).catch((error) => {
                 error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -208,7 +207,7 @@ describe('Unit: models/user', function () {
             var mockUser = getUserModel(3, 'Contributor'),
                 context = {user: 3};
 
-            return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.contributor, false, true).then(() => {
+            return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.contributor, false, true, true).then(() => {
                 should(mockUser.get.calledOnce).be.true();
             });
         });
@@ -217,7 +216,7 @@ describe('Unit: models/user', function () {
             var mockUser = getUserModel(3, 'Editor'),
                 context = {user: 3};
 
-            return models.User.permissible(mockUser, 'edit', context, {status: 'inactive'}, testUtils.permissions.editor, false, true)
+            return models.User.permissible(mockUser, 'edit', context, {status: 'inactive'}, testUtils.permissions.editor, false, true, true)
                 .then(Promise.reject)
                 .catch((err) => {
                     err.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -225,15 +224,15 @@ describe('Unit: models/user', function () {
         });
 
         it('without related roles', function () {
-            sandbox.stub(models.User, 'findOne').withArgs({
+            sinon.stub(models.User, 'findOne').withArgs({
                 id: 3,
                 status: 'all'
             }, {withRelated: ['roles']}).resolves(getUserModel(3, 'Contributor'));
 
-            const mockUser = {id: 3, related: sandbox.stub().returns()};
+            const mockUser = {id: 3, related: sinon.stub().returns()};
             const context = {user: 3};
 
-            return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.contributor, false, true)
+            return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.contributor, false, true, true)
                 .then(() => {
                     models.User.findOne.calledOnce.should.be.true();
                 });
@@ -241,21 +240,21 @@ describe('Unit: models/user', function () {
 
         describe('change role', function () {
             function getUserToEdit(id, role) {
-                var hasRole = sandbox.stub();
+                var hasRole = sinon.stub();
 
                 hasRole.withArgs(role).returns(true);
 
                 return {
                     id: id,
                     hasRole: hasRole,
-                    related: sandbox.stub().returns([role]),
-                    get: sandbox.stub().returns(id)
+                    related: sinon.stub().returns([role]),
+                    get: sinon.stub().returns(id)
                 };
             }
 
             beforeEach(function () {
-                sandbox.stub(models.User, 'getOwnerUser');
-                sandbox.stub(permissions, 'canThis');
+                sinon.stub(models.User, 'getOwnerUser');
+                sinon.stub(permissions, 'canThis');
 
                 models.User.getOwnerUser.resolves({
                     id: testUtils.context.owner.context.user,
@@ -274,7 +273,7 @@ describe('Unit: models/user', function () {
                 const context = testUtils.context.admin.context;
                 const unsafeAttrs = testUtils.permissions.editor.user;
 
-                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.admin, false, true)
+                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.admin, false, true, true)
                     .then(Promise.reject)
                     .catch((err) => {
                         err.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -286,7 +285,7 @@ describe('Unit: models/user', function () {
                 const context = testUtils.context.owner.context;
                 const unsafeAttrs = testUtils.permissions.owner.user;
 
-                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.owner, false, true)
+                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.owner, false, true, true)
                     .then(() => {
                         models.User.getOwnerUser.calledOnce.should.be.true();
                     });
@@ -297,7 +296,7 @@ describe('Unit: models/user', function () {
                 const context = testUtils.context.admin.context;
                 const unsafeAttrs = testUtils.permissions.editor.user;
 
-                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.admin, false, true)
+                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.admin, false, true, true)
                     .then(Promise.reject)
                     .catch((err) => {
                         err.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -311,11 +310,11 @@ describe('Unit: models/user', function () {
 
                 permissions.canThis.returns({
                     assign: {
-                        role: sandbox.stub().resolves()
+                        role: sinon.stub().resolves()
                     }
                 });
 
-                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.admin, true, true)
+                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.admin, true, true, true)
                     .then(() => {
                         models.User.getOwnerUser.calledOnce.should.be.true();
                         permissions.canThis.calledOnce.should.be.true();
@@ -329,11 +328,11 @@ describe('Unit: models/user', function () {
 
                 permissions.canThis.returns({
                     assign: {
-                        role: sandbox.stub().resolves()
+                        role: sinon.stub().resolves()
                     }
                 });
 
-                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.author, false, true)
+                return models.User.permissible(mockUser, 'edit', context, unsafeAttrs, testUtils.permissions.author, false, true, true)
                     .then(Promise.reject)
                     .catch((err) => {
                         err.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -346,7 +345,7 @@ describe('Unit: models/user', function () {
                 var mockUser = getUserModel(3, 'Editor'),
                     context = {user: 2};
 
-                models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true).then(() => {
+                models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
                     done(new Error('Permissible function should have errored'));
                 }).catch((error) => {
                     error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -360,7 +359,7 @@ describe('Unit: models/user', function () {
                 var mockUser = getUserModel(3, 'Owner'),
                     context = {user: 2};
 
-                models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true).then(() => {
+                models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
                     done(new Error('Permissible function should have errored'));
                 }).catch((error) => {
                     error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -374,7 +373,7 @@ describe('Unit: models/user', function () {
                 var mockUser = getUserModel(3, 'Administrator'),
                     context = {user: 2};
 
-                models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true).then(() => {
+                models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
                     done(new Error('Permissible function should have errored'));
                 }).catch((error) => {
                     error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -388,7 +387,7 @@ describe('Unit: models/user', function () {
                 var mockUser = getUserModel(3, 'Author'),
                     context = {user: 2};
 
-                return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true).then(() => {
+                return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
                     should(mockUser.hasRole.called).be.true();
                     should(mockUser.get.calledOnce).be.true();
                 });
@@ -398,7 +397,7 @@ describe('Unit: models/user', function () {
                 var mockUser = getUserModel(3, 'Contributor'),
                     context = {user: 2};
 
-                return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true).then(() => {
+                return models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
                     should(mockUser.hasRole.called).be.true();
                     should(mockUser.get.calledOnce).be.true();
                 });
@@ -408,7 +407,7 @@ describe('Unit: models/user', function () {
                 var mockUser = getUserModel(3, 'Editor'),
                     context = {user: 3};
 
-                return models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true).then(() => {
+                return models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
                     should(mockUser.hasRole.called).be.true();
                     should(mockUser.get.calledOnce).be.true();
                 });
@@ -418,7 +417,7 @@ describe('Unit: models/user', function () {
                 var mockUser = getUserModel(3, 'Editor'),
                     context = {user: 2};
 
-                models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true).then(() => {
+                models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
                     done(new Error('Permissible function should have errored'));
                 }).catch((error) => {
                     error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -432,7 +431,7 @@ describe('Unit: models/user', function () {
                 var mockUser = getUserModel(3, 'Administrator'),
                     context = {user: 2};
 
-                models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true).then(() => {
+                models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
                     done(new Error('Permissible function should have errored'));
                 }).catch((error) => {
                     error.should.be.an.instanceof(common.errors.NoPermissionError);
@@ -446,7 +445,7 @@ describe('Unit: models/user', function () {
                 var mockUser = getUserModel(3, 'Author'),
                     context = {user: 2};
 
-                return models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true).then(() => {
+                return models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
                     should(mockUser.hasRole.called).be.true();
                     should(mockUser.get.calledOnce).be.true();
                 });
@@ -456,7 +455,7 @@ describe('Unit: models/user', function () {
                 var mockUser = getUserModel(3, 'Contributor'),
                     context = {user: 2};
 
-                return models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true).then(() => {
+                return models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
                     should(mockUser.hasRole.called).be.true();
                     should(mockUser.get.calledOnce).be.true();
                 });
@@ -470,7 +469,7 @@ describe('Unit: models/user', function () {
         });
 
         after(function () {
-            sandbox.restore();
+            sinon.restore();
         });
 
         it('ensure data type', function () {
@@ -490,7 +489,7 @@ describe('Unit: models/user', function () {
         });
 
         after(function () {
-            sandbox.restore();
+            sinon.restore();
         });
 
         it('resets given empty value to null', function () {
@@ -517,13 +516,13 @@ describe('Unit: models/user', function () {
         before(function () {
             models.init();
 
-            sandbox.stub(models.User.prototype, 'emitChange').callsFake(function (event) {
+            sinon.stub(models.User.prototype, 'emitChange').callsFake(function (event) {
                 events.user.push({event: event, data: this.toJSON()});
             });
         });
 
         after(function () {
-            sandbox.restore();
+            sinon.restore();
         });
 
         it('defaults', function () {
@@ -550,9 +549,9 @@ describe('Unit: models/user', function () {
         let ownerRole;
 
         beforeEach(function () {
-            ownerRole = sandbox.stub();
+            ownerRole = sinon.stub();
 
-            sandbox.stub(models.Role, 'findOne');
+            sinon.stub(models.Role, 'findOne');
 
             models.Role.findOne
                 .withArgs({name: 'Owner'})
@@ -562,15 +561,15 @@ describe('Unit: models/user', function () {
                 .withArgs({name: 'Administrator'})
                 .resolves(testUtils.permissions.admin.user.roles[0]);
 
-            sandbox.stub(models.User, 'findOne');
+            sinon.stub(models.User, 'findOne');
         });
 
         it('Cannot transfer ownership if not owner', function () {
             const loggedInUser = testUtils.context.admin;
             const userToChange = loggedInUser;
-            const contextUser = sandbox.stub();
+            const contextUser = sinon.stub();
 
-            contextUser.toJSON = sandbox.stub().returns(testUtils.permissions.admin.user);
+            contextUser.toJSON = sinon.stub().returns(testUtils.permissions.admin.user);
 
             models.User
                 .findOne
@@ -587,9 +586,9 @@ describe('Unit: models/user', function () {
         it('Owner tries to transfer ownership to author', function () {
             const loggedInUser = testUtils.context.owner;
             const userToChange = testUtils.context.editor;
-            const contextUser = sandbox.stub();
+            const contextUser = sinon.stub();
 
-            contextUser.toJSON = sandbox.stub().returns(testUtils.permissions.owner.user);
+            contextUser.toJSON = sinon.stub().returns(testUtils.permissions.owner.user);
 
             models.User
                 .findOne
@@ -611,7 +610,7 @@ describe('Unit: models/user', function () {
 
     describe('isSetup', function () {
         it('active', function () {
-            sandbox.stub(models.User, 'getOwnerUser').resolves({get: sandbox.stub().returns('active')});
+            sinon.stub(models.User, 'getOwnerUser').resolves({get: sinon.stub().returns('active')});
 
             return models.User.isSetup()
                 .then((result) => {
@@ -620,7 +619,7 @@ describe('Unit: models/user', function () {
         });
 
         it('inactive', function () {
-            sandbox.stub(models.User, 'getOwnerUser').resolves({get: sandbox.stub().returns('inactive')});
+            sinon.stub(models.User, 'getOwnerUser').resolves({get: sinon.stub().returns('inactive')});
 
             return models.User.isSetup()
                 .then((result) => {

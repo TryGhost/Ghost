@@ -4,8 +4,7 @@ const should = require('should'),
     common = require('../../../server/lib/common'),
     models = require('../../../server/models'),
     settingsCache = require('../../../server/services/settings/cache'),
-    testUtils = require('../../utils'),
-    sandbox = sinon.sandbox.create();
+    testUtils = require('../../utils');
 
 describe('Unit: models/invite', function () {
     before(function () {
@@ -13,11 +12,11 @@ describe('Unit: models/invite', function () {
     });
 
     beforeEach(function () {
-        sandbox.stub(settingsCache, 'get').withArgs('db_hash').returns('12345678');
+        sinon.stub(settingsCache, 'get').withArgs('db_hash').returns('12345678');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     before(testUtils.teardown);
@@ -85,8 +84,8 @@ describe('Unit: models/invite', function () {
                 inviteModel = {};
                 context = {};
                 unsafeAttrs = {role_id: 'role_id'};
-                roleModel = sandbox.stub();
-                roleModel.get = sandbox.stub();
+                roleModel = sinon.stub();
+                roleModel.get = sinon.stub();
                 loadedPermissions = {
                     user: {
                         roles: []
@@ -95,7 +94,7 @@ describe('Unit: models/invite', function () {
             });
 
             it('role does not exist', function () {
-                sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(null);
+                sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(null);
 
                 return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs)
                     .then(Promise.reject)
@@ -105,7 +104,7 @@ describe('Unit: models/invite', function () {
             });
 
             it('invite owner', function () {
-                sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                 roleModel.get.withArgs('name').returns('Owner');
 
                 return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs)
@@ -121,31 +120,31 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite administrator', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Administrator');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true);
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true);
                 });
 
                 it('invite editor', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Editor');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true);
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true);
                 });
 
                 it('invite author', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Author');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true);
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true);
                 });
 
                 it('invite contributor', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Contributor');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true);
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true);
                 });
             });
 
@@ -155,31 +154,31 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite administrator', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Administrator');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true);
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true);
                 });
 
                 it('invite editor', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Editor');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true);
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true);
                 });
 
                 it('invite author', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Author');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true);
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true);
                 });
 
                 it('invite contributor', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Contributor');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true);
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true);
                 });
             });
 
@@ -189,10 +188,10 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite administrator', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Administrator');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true)
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true)
                         .then(Promise.reject)
                         .catch((err) => {
                             (err instanceof common.errors.NoPermissionError).should.eql(true);
@@ -200,10 +199,10 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite editor', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Editor');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true)
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true)
                         .then(Promise.reject)
                         .catch((err) => {
                             (err instanceof common.errors.NoPermissionError).should.eql(true);
@@ -211,17 +210,17 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite author', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Author');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true);
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true);
                 });
 
                 it('invite contributor', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Contributor');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true);
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, true, true, true);
                 });
             });
 
@@ -231,10 +230,10 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite administrator', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Administrator');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false)
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
                             (err instanceof common.errors.NoPermissionError).should.eql(true);
@@ -242,10 +241,10 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite editor', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Editor');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false)
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
                             (err instanceof common.errors.NoPermissionError).should.eql(true);
@@ -253,10 +252,10 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite author', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Author');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false)
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
                             (err instanceof common.errors.NoPermissionError).should.eql(true);
@@ -264,10 +263,10 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite contributor', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Contributor');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false)
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
                             (err instanceof common.errors.NoPermissionError).should.eql(true);
@@ -281,10 +280,10 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite administrator', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Administrator');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false)
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
                             (err instanceof common.errors.NoPermissionError).should.eql(true);
@@ -292,10 +291,10 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite editor', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Editor');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false)
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
                             (err instanceof common.errors.NoPermissionError).should.eql(true);
@@ -303,10 +302,10 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite author', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Author');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false)
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
                             (err instanceof common.errors.NoPermissionError).should.eql(true);
@@ -314,10 +313,10 @@ describe('Unit: models/invite', function () {
                 });
 
                 it('invite contributor', function () {
-                    sandbox.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
+                    sinon.stub(models.Role, 'findOne').withArgs({id: 'role_id'}).resolves(roleModel);
                     roleModel.get.withArgs('name').returns('Contributor');
 
-                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false)
+                    return models.Invite.permissible(inviteModel, 'add', context, unsafeAttrs, loadedPermissions, false, false, true)
                         .then(Promise.reject)
                         .catch((err) => {
                             (err instanceof common.errors.NoPermissionError).should.eql(true);

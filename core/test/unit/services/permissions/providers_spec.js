@@ -3,9 +3,7 @@ var should = require('should'),
     testUtils = require('../../../utils'),
     Promise = require('bluebird'),
     models = require('../../../../server/models'),
-    providers = require('../../../../server/services/permissions/providers'),
-
-    sandbox = sinon.sandbox.create();
+    providers = require('../../../../server/services/permissions/providers');
 
 describe('Permission Providers', function () {
     before(function () {
@@ -13,12 +11,12 @@ describe('Permission Providers', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('User', function () {
         it('errors if user cannot be found', function (done) {
-            var findUserSpy = sandbox.stub(models.User, 'findOne').callsFake(function () {
+            var findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
                 return Promise.resolve();
             });
 
@@ -35,7 +33,7 @@ describe('Permission Providers', function () {
 
         it('can load user with role, and permissions', function (done) {
             // This test requires quite a lot of unique setup work
-            var findUserSpy = sandbox.stub(models.User, 'findOne').callsFake(function () {
+            var findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
                 // Create a fake model
                 var fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]),
                     // Roles & Permissions need to be collections
@@ -80,7 +78,7 @@ describe('Permission Providers', function () {
 
         it('can load user with role, and role.permissions', function (done) {
             // This test requires quite a lot of unique setup work
-            var findUserSpy = sandbox.stub(models.User, 'findOne').callsFake(function () {
+            var findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
                 // Create a fake model
                 var fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]),
                     // Roles & Permissions need to be collections
@@ -127,7 +125,7 @@ describe('Permission Providers', function () {
 
         it('can load user with role, permissions and role.permissions and deduplicate them', function (done) {
             // This test requires quite a lot of unique setup work
-            var findUserSpy = sandbox.stub(models.User, 'findOne').callsFake(function () {
+            var findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
                 // Create a fake model
                 var fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]),
                     // Roles & Permissions need to be collections
@@ -174,12 +172,53 @@ describe('Permission Providers', function () {
         });
     });
 
+    describe('API Key', function () {
+        it('errors if api_key cannot be found', function (done) {
+            let findApiKeySpy = sinon.stub(models.ApiKey, 'findOne');
+            findApiKeySpy.returns(new Promise.resolve());
+            providers.apiKey(1)
+                .then(() => {
+                    done(new Error('Should have thrown an api key not found error'));
+                })
+                .catch((err) => {
+                    findApiKeySpy.callCount.should.eql(1);
+                    err.errorType.should.eql('NotFoundError');
+                    done();
+                });
+        });
+        it('can load api_key with role, and role.permissions', function (done) {
+            const findApiKeySpy = sinon.stub(models.ApiKey, 'findOne').callsFake(function () {
+                const fakeApiKey = models.ApiKey.forge(testUtils.DataGenerator.Content.api_keys[0]);
+                const fakeAdminRole = models.Role.forge(testUtils.DataGenerator.Content.roles[0]);
+                const fakeAdminRolePermissions = models.Permissions.forge(testUtils.DataGenerator.Content.permissions);
+                fakeAdminRole.relations = {
+                    permissions: fakeAdminRolePermissions
+                };
+                fakeApiKey.relations = {
+                    role: fakeAdminRole
+                };
+                fakeApiKey.withRelated = ['role', 'role.permissions'];
+                return Promise.resolve(fakeApiKey);
+            });
+            providers.apiKey(1).then((res) => {
+                findApiKeySpy.callCount.should.eql(1);
+                res.should.be.an.Object().with.properties('permissions', 'roles');
+                res.roles.should.be.an.Array().with.lengthOf(1);
+                res.permissions[0].should.be.an.Object().with.properties('attributes', 'id');
+                res.roles[0].should.be.an.Object().with.properties('id', 'name', 'description');
+                res.permissions[0].should.be.instanceOf(models.Base.Model);
+                res.roles[0].should.not.be.instanceOf(models.Base.Model);
+                done();
+            }).catch(done);
+        });
+    });
+
     describe('App', function () {
         // @TODO make this consistent or sane or something!
         // Why is this an empty array, when the success is an object?
         // Also why is this an empty array when for users we error?!
         it('returns empty array if app cannot be found!', function (done) {
-            var findAppSpy = sandbox.stub(models.App, 'findOne').callsFake(function () {
+            var findAppSpy = sinon.stub(models.App, 'findOne').callsFake(function () {
                 return Promise.resolve();
             });
 
@@ -194,7 +233,7 @@ describe('Permission Providers', function () {
 
         it('can load user with role, and permissions', function (done) {
             // This test requires quite a lot of unique setup work
-            var findAppSpy = sandbox.stub(models.App, 'findOne').callsFake(function () {
+            var findAppSpy = sinon.stub(models.App, 'findOne').callsFake(function () {
                 var fakeApp = models.App.forge(testUtils.DataGenerator.Content.apps[0]),
                     fakePermissions = models.Permissions.forge(testUtils.DataGenerator.Content.permissions);
 

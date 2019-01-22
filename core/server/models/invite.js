@@ -42,11 +42,11 @@ Invite = ghostBookshelf.Model.extend({
         return ghostBookshelf.Model.add.call(this, data, options);
     },
 
-    permissible(inviteModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission /*result*/) {
+    permissible(inviteModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, hasApiKeyPermission) {
         const isAdd = (action === 'add');
 
         if (!isAdd) {
-            if (hasUserPermission && hasAppPermission) {
+            if (hasUserPermission && hasAppPermission && hasApiKeyPermission) {
                 return Promise.resolve();
             }
 
@@ -86,7 +86,7 @@ Invite = ghostBookshelf.Model.extend({
                     });
                 }
 
-                if (hasUserPermission && hasAppPermission) {
+                if (hasUserPermission && hasAppPermission && hasApiKeyPermission) {
                     return Promise.resolve();
                 }
 

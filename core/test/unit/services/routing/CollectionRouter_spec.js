@@ -5,30 +5,29 @@ const should = require('should'),
     common = require('../../../../server/lib/common'),
     controllers = require('../../../../server/services/routing/controllers'),
     CollectionRouter = require('../../../../server/services/routing/CollectionRouter'),
-    sandbox = sinon.sandbox.create(),
     RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}};
 
 describe('UNIT - services/routing/CollectionRouter', function () {
     let req, res, next;
 
     beforeEach(function () {
-        sandbox.stub(common.events, 'emit');
-        sandbox.stub(common.events, 'on');
+        sinon.stub(common.events, 'emit');
+        sinon.stub(common.events, 'on');
 
-        sandbox.spy(CollectionRouter.prototype, 'mountRoute');
-        sandbox.spy(CollectionRouter.prototype, 'mountRouter');
-        sandbox.spy(CollectionRouter.prototype, 'unmountRoute');
-        sandbox.spy(express.Router, 'param');
+        sinon.spy(CollectionRouter.prototype, 'mountRoute');
+        sinon.spy(CollectionRouter.prototype, 'mountRouter');
+        sinon.spy(CollectionRouter.prototype, 'unmountRoute');
+        sinon.spy(express.Router, 'param');
 
-        req = sandbox.stub();
-        res = sandbox.stub();
-        next = sandbox.stub();
+        req = sinon.stub();
+        res = sinon.stub();
+        next = sinon.stub();
 
         res.locals = {};
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('instantiate', function () {
@@ -187,11 +186,11 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             it('default', function () {
                 const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'}, RESOURCE_CONFIG);
 
-                sandbox.stub(collectionRouter, 'emit');
+                sinon.stub(collectionRouter, 'emit');
 
                 common.events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
-                    _updatedAttributes: {value: 'Europe/London'}
+                    _previousAttributes: {value: 'Europe/London'}
                 });
 
                 collectionRouter.emit.called.should.be.false();
@@ -200,11 +199,11 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             it('tz has not changed', function () {
                 const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'}, RESOURCE_CONFIG);
 
-                sandbox.stub(collectionRouter, 'emit');
+                sinon.stub(collectionRouter, 'emit');
 
                 common.events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
-                    _updatedAttributes: {value: 'America/Los_Angeles'}
+                    _previousAttributes: {value: 'America/Los_Angeles'}
                 });
 
                 collectionRouter.emit.called.should.be.false();
@@ -215,11 +214,11 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             it('default', function () {
                 const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'}, RESOURCE_CONFIG);
 
-                sandbox.stub(collectionRouter, 'emit');
+                sinon.stub(collectionRouter, 'emit');
 
                 common.events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
-                    _updatedAttributes: {value: 'Europe/London'}
+                    _previousAttributes: {value: 'Europe/London'}
                 });
 
                 collectionRouter.emit.calledOnce.should.be.true();
@@ -228,11 +227,11 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             it('tz has not changed', function () {
                 const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'}, RESOURCE_CONFIG);
 
-                sandbox.stub(collectionRouter, 'emit');
+                sinon.stub(collectionRouter, 'emit');
 
                 common.events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
-                    _updatedAttributes: {value: 'America/Los_Angeles'}
+                    _previousAttributes: {value: 'America/Los_Angeles'}
                 });
 
                 collectionRouter.emit.called.should.be.false();

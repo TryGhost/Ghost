@@ -37,6 +37,18 @@ User = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
+    /**
+     * @TODO:
+     *
+     * The user model does not use bookshelf-relations yet.
+     * Therefor we have to remove the relations manually.
+     */
+    onDestroying(model, options) {
+        return (options.transacting || ghostBookshelf.knex)('roles_users')
+            .where('user_id', model.id)
+            .del();
+    },
+
     onDestroyed: function onDestroyed(model, options) {
         if (_.includes(activeStates, model.previous('status'))) {
             model.emitChange('deactivated', options);
@@ -55,7 +67,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     onUpdated: function onUpdated(model, response, options) {
-        model.statusChanging = model.get('status') !== model.updated('status');
+        model.statusChanging = model.get('status') !== model.previous('status');
         model.isActive = _.includes(activeStates, model.get('status'));
 
         if (model.statusChanging) {
@@ -556,6 +568,23 @@ User = ghostBookshelf.Model.extend({
             });
     },
 
+    destroy: function destroy(unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
+
+        const destroyUser = () => {
+            return ghostBookshelf.Model.destroy.call(this, options);
+        };
+
+        if (!options.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                options.transacting = transacting;
+                return destroyUser();
+            });
+        }
+
+        return destroyUser();
+    },
+
     /**
      * We override the owner!
      * Owner already has a slug -> force setting a new one by setting slug to null
@@ -611,7 +640,7 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
-    permissible: function permissible(userModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
+    permissible: function permissible(userModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, hasApiKeyPermission) {
         var self = this,
             userModel = userModelOrId,
             origArgs;
@@ -701,7 +730,7 @@ User = ghostBookshelf.Model.extend({
                 .then((owner) => {
                     // CASE: owner can assign role to any user
                     if (context.user === owner.id) {
-                        if (hasUserPermission && hasAppPermission) {
+                        if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
                             return Promise.resolve();
                         }
 
@@ -723,7 +752,7 @@ User = ghostBookshelf.Model.extend({
                         // e.g. admin can assign admin role to a user, but not owner
                         return permissions.canThis(context).assign.role(role)
                             .then(() => {
-                                if (hasUserPermission && hasAppPermission) {
+                                if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
                                     return Promise.resolve();
                                 }
 
@@ -733,7 +762,7 @@ User = ghostBookshelf.Model.extend({
                             });
                     }
 
-                    if (hasUserPermission && hasAppPermission) {
+                    if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
                         return Promise.resolve();
                     }
 
@@ -743,7 +772,7 @@ User = ghostBookshelf.Model.extend({
                 });
         }
 
-        if (hasUserPermission && hasAppPermission) {
+        if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
             return Promise.resolve();
         }
 
@@ -924,6 +953,7 @@ User = ghostBookshelf.Model.extend({
             var userWithEmail = users.find(function findUser(user) {
                 return user.get('email').toLowerCase() === email.toLowerCase();
             });
+
             if (userWithEmail) {
                 return userWithEmail;
             }

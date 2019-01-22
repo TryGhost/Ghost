@@ -2,8 +2,7 @@ const should = require('should'),
     sinon = require('sinon'),
     api = require('../../../../../server/api')['v0.1'],
     helpers = require('../../../../../server/services/routing/helpers'),
-    testUtils = require('../../../../utils'),
-    sandbox = sinon.sandbox.create();
+    testUtils = require('../../../../utils');
 
 describe('Unit - services/routing/helpers/fetch-data', function () {
     let posts, tags, locals;
@@ -23,7 +22,7 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             testUtils.DataGenerator.forKnex.createTag()
         ];
 
-        sandbox.stub(api.posts, 'browse')
+        sinon.stub(api.posts, 'browse')
             .resolves({
                 posts: posts,
                 meta: {
@@ -33,13 +32,13 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
                 }
             });
 
-        sandbox.stub(api.tags, 'read').resolves({tags: tags});
+        sinon.stub(api.tags, 'read').resolves({tags: tags});
 
         locals = {apiVersion: 'v0.1'};
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should handle no options', function (done) {

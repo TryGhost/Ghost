@@ -1,20 +1,18 @@
 var should = require('should'),
     sinon = require('sinon'),
-    cacheControl = require('../../../../server/web/shared/middlewares/cache-control'),
-
-    sandbox = sinon.sandbox.create();
+    cacheControl = require('../../../../server/web/shared/middlewares/cache-control');
 
 describe('Middleware: cacheControl', function () {
     var res;
 
     beforeEach(function () {
         res = {
-            set: sandbox.spy()
+            set: sinon.spy()
         };
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('correctly sets the public profile headers', function (done) {

@@ -7,7 +7,6 @@ const validate = themes.validate;
 
 const gscan = require('gscan');
 const common = require('../../../../server/lib/common');
-const sandbox = sinon.sandbox.create();
 
 describe('Themes', function () {
     let checkZipStub;
@@ -15,13 +14,13 @@ describe('Themes', function () {
     let formatStub;
 
     beforeEach(function () {
-        checkZipStub = sandbox.stub(gscan, 'checkZip');
-        checkStub = sandbox.stub(gscan, 'check');
-        formatStub = sandbox.stub(gscan, 'format');
+        checkZipStub = sinon.stub(gscan, 'checkZip');
+        checkStub = sinon.stub(gscan, 'check');
+        formatStub = sinon.stub(gscan, 'format');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Validate', function () {
@@ -68,7 +67,7 @@ describe('Themes', function () {
                             fatal: true,
                             level: 'error',
                             rule: 'Replace the <code>{{#if author.cover}}</code> helper with <code>{{#if author.cover_image}}</code>',
-                            details: 'The <code>cover</code> attribute was replaced with <code>cover_image</code>.<br>Instead of <code>{{#if author.cover}}</code> you need to use <code>{{#if author.cover_image}}</code>.<br>See the object attributes of <code>author</code> <a href="https://themes.ghost.org/docs/author-context#section-author-object-attributes" target=_blank>here</a>.',
+                            details: 'The <code>cover</code> attribute was replaced with <code>cover_image</code>.<br>Instead of <code>{{#if author.cover}}</code> you need to use <code>{{#if author.cover_image}}</code>.<br>See the object attributes of <code>author</code> <a href="https://docs.ghost.org/api/handlebars-themes/context/author/#author-object-attributes" target=_blank>here</a>.',
                             failures: [ {} ],
                             code: 'GS001-DEPR-CON-AC'
                         }
@@ -98,7 +97,7 @@ describe('Themes', function () {
                             fatal: true,
                             level: 'error',
                             rule: 'Replace the <code>{{#if author.cover}}</code> helper with <code>{{#if author.cover_image}}</code>',
-                            details: 'The <code>cover</code> attribute was replaced with <code>cover_image</code>.<br>Instead of <code>{{#if author.cover}}</code> you need to use <code>{{#if author.cover_image}}</code>.<br>See the object attributes of <code>author</code> <a href="https://themes.ghost.org/docs/author-context#section-author-object-attributes" target=_blank>here</a>.',
+                            details: 'The <code>cover</code> attribute was replaced with <code>cover_image</code>.<br>Instead of <code>{{#if author.cover}}</code> you need to use <code>{{#if author.cover_image}}</code>.<br>See the object attributes of <code>author</code> <a href="https://docs.ghost.org/api/handlebars-themes/context/author/#author-object-attributes" target=_blank>here</a>.',
                             failures: [ {} ],
                             code: 'GS001-DEPR-CON-AC'
                         }

@@ -4,13 +4,11 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    AppDependencies = require('../../../../server/services/apps/dependencies'),
-
-    sandbox = sinon.sandbox.create();
+    AppDependencies = require('../../../../server/services/apps/dependencies');
 
 describe('Apps', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Dependencies', function () {
@@ -18,7 +16,7 @@ describe('Apps', function () {
             var deps = new AppDependencies(process.cwd()),
                 fakeEmitter = new EventEmitter();
 
-            deps.spawnCommand = sandbox.stub().returns(fakeEmitter);
+            deps.spawnCommand = sinon.stub().returns(fakeEmitter);
 
             deps.install().then(function () {
                 deps.spawnCommand.calledWith('npm').should.equal(true);
@@ -33,7 +31,7 @@ describe('Apps', function () {
             var deps = new AppDependencies(__dirname),
                 fakeEmitter = new EventEmitter();
 
-            deps.spawnCommand = sandbox.stub().returns(fakeEmitter);
+            deps.spawnCommand = sinon.stub().returns(fakeEmitter);
 
             deps.install().then(function () {
                 deps.spawnCommand.called.should.equal(false);

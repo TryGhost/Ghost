@@ -3,11 +3,7 @@ var should = require('should'),
     testUtils = require('../../utils'),
     common = require('../../../server/lib/common'),
     constants = require('../../../server/lib/constants'),
-
-    // Stuff we are testing
-    AccesstokenModel = require('../../../server/models/accesstoken').Accesstoken,
-
-    sandbox = sinon.sandbox.create();
+    AccesstokenModel = require('../../../server/models/accesstoken').Accesstoken;
 
 describe('Accesstoken Model', function () {
     // Keep the DB clean
@@ -15,14 +11,14 @@ describe('Accesstoken Model', function () {
     afterEach(testUtils.teardown);
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     beforeEach(testUtils.setup('owner', 'clients'));
 
     it('on creation emits token.added event', function (done) {
         // Setup
-        var eventSpy = sandbox.spy(common.events, 'emit');
+        const eventSpy = sinon.spy(common.events, 'emit');
 
         // Test
         // Stub refreshtoken

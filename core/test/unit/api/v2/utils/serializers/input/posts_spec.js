@@ -46,7 +46,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('status:published+tag:eins+page:false');
+            frame.options.filter.should.eql('(status:published+tag:eins)+page:false');
         });
 
         it('combine filters', function () {
@@ -62,7 +62,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('page:true+tag:eins+page:false');
+            frame.options.filter.should.eql('(page:true+tag:eins)+page:false');
         });
 
         it('combine filters', function () {
@@ -78,7 +78,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('page:true+page:false');
+            frame.options.filter.should.eql('(page:true)+page:false');
         });
 
         it('combine filters', function () {
@@ -94,7 +94,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(page:true,page:false)+page:false');
+            frame.options.filter.should.eql('((page:true,page:false))+page:false');
         });
 
         it('remove mobiledoc option from formats', function () {

@@ -4,8 +4,7 @@ var should = require('should'),
     testUtils = require('../../../utils'),
     configUtils = require('../../../utils/configUtils'),
     urlService = require('../../../../server/services/url'),
-    generateFeed = require('../../../../server/services/rss/generate-feed'),
-    sandbox = sinon.sandbox.create();
+    generateFeed = require('../../../../server/services/rss/generate-feed');
 
 describe('RSS: Generate Feed', function () {
     var data = {},
@@ -28,13 +27,13 @@ describe('RSS: Generate Feed', function () {
 
     afterEach(function () {
         configUtils.restore();
-        sandbox.restore();
+        sinon.restore();
     });
 
     beforeEach(function () {
         configUtils.set({url: 'http://my-ghost-blog.com'});
 
-        sandbox.stub(urlService, 'getUrlByResourceId');
+        sinon.stub(urlService, 'getUrlByResourceId');
 
         baseUrl = '/rss/';
 

@@ -79,9 +79,13 @@
                 "accessDenied": "Access denied.",
                 "pleaseSignIn": "Please Sign In",
                 "pleaseSignInOrAuthenticate": "Please sign in or authenticate with an API Key",
+                "adminApiKeyMissing": "Admin API Key missing.",
                 "unknownAdminApiKey": "Unknown Admin API Key",
                 "unknownContentApiKey": "Unknown Content API Key",
-                "invalidApiKeyType": "Invalid API Key type"
+                "invalidApiKeyType": "Invalid API Key type",
+                "invalidToken": "Invalid token",
+                "invalidTokenWithMessage": "Invalid token: {message}",
+                "incorrectAuthHeaderFormat": "Authorization header format is \"Authorization: Ghost [token]\""
             },
             "oauth": {
                 "invalidClient": "Invalid client.",
@@ -269,6 +273,9 @@
                 "ownerNotFound": "Owner not found",
                 "onlyOwnerCanTransferOwnerRole": "Only owners are able to transfer the owner role.",
                 "onlyAdmCanBeAssignedOwnerRole": "Only administrators can be assigned the owner role."
+            },
+            "api_key": {
+                "apiKeyNotFound": "API Key not found"
             },
             "base": {
                 "index": {
@@ -573,7 +580,7 @@
                 "isDeprecated": "Warning: pageUrl is deprecated, please use page_url instead\nThe helper pageUrl has been replaced with page_url in Ghost 0.4.2, and will be removed entirely in Ghost 0.6\nIn your theme's pagination.hbs file, pageUrl should be renamed to page_url"
             },
             "pagination": {
-                "invalidData": "The \\{\\{pagination\\}\\} helper was used outside of a paginated context. See https://themes.ghost.org/docs/pagination.",
+                "invalidData": "The \\{\\{pagination\\}\\} helper was used outside of a paginated context. See https://docs.ghost.org/api/handlebars-themes/helpers/pagination/.",
                 "valuesMustBeDefined": "All values must be defined for page, pages, limit and total",
                 "nextPrevValuesMustBeNumeric": "Invalid value, Next/Prev must be a number",
                 "valuesMustBeNumeric": "Invalid value, check page, pages, limit and total are numbers"

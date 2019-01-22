@@ -7,9 +7,7 @@ var should = require('should'),
     models = require('../../../server/models'),
     api = require('../../../server/api'),
 
-    labs = require('../../../server/services/labs'),
-
-    sandbox = sinon.sandbox.create();
+    labs = require('../../../server/services/labs');
 
 describe('{{#get}} helper', function () {
     var fn, inverse, labsStub;
@@ -20,15 +18,15 @@ describe('{{#get}} helper', function () {
     });
 
     beforeEach(function () {
-        fn = sandbox.spy();
-        inverse = sandbox.spy();
-        labsStub = sandbox.stub(labs, 'isSet').returns(true);
+        fn = sinon.spy();
+        inverse = sinon.spy();
+        labsStub = sinon.stub(labs, 'isSet').returns(true);
 
         locals = {root: {_locals: {apiVersion: 'v0.1'}}};
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('errors correctly if labs flag not set', function (done) {
@@ -49,7 +47,7 @@ describe('{{#get}} helper', function () {
                 'string',
                 '<script>console.error("The {{get}} helper is not available. ' +
                 'The Public API flag must be enabled in labs if you wish to use the {{get}} helper. ' +
-                'See https://help.ghost.org/hc/en-us/articles/115000301672-Public-API-Beta");</script>'
+                'See https://docs.ghost.org/faq/api-versioning/");</script>'
             );
 
             done();
@@ -66,10 +64,10 @@ describe('{{#get}} helper', function () {
             meta = {pagination: {}};
 
         beforeEach(function () {
-            browsePostsStub = sandbox.stub(api["v0.1"].posts, 'browse');
-            readPostsStub = sandbox.stub(api["v0.1"].posts, 'read');
-            readTagsStub = sandbox.stub(api["v0.1"].tags, 'read').returns(new Promise.resolve({tags: []}));
-            readUsersStub = sandbox.stub(api["v0.1"].users, 'read').returns(new Promise.resolve({users: []}));
+            browsePostsStub = sinon.stub(api["v0.1"].posts, 'browse');
+            readPostsStub = sinon.stub(api["v0.1"].posts, 'read');
+            readTagsStub = sinon.stub(api["v0.1"].tags, 'read').returns(new Promise.resolve({tags: []}));
+            readUsersStub = sinon.stub(api["v0.1"].users, 'read').returns(new Promise.resolve({users: []}));
 
             browsePostsStub.returns(new Promise.resolve({posts: testPostsArr, meta: meta}));
             browsePostsStub.withArgs({limit: '3'}).returns(new Promise.resolve({
@@ -261,7 +259,7 @@ describe('{{#get}} helper', function () {
         const meta = {pagination: {}};
 
         beforeEach(function () {
-            browseUsersStub = sandbox.stub(api["v0.1"].users, 'browse');
+            browseUsersStub = sinon.stub(api["v0.1"].users, 'browse');
             browseUsersStub.returns(new Promise.resolve({users: [], meta: meta}));
         });
 
@@ -288,7 +286,7 @@ describe('{{#get}} helper', function () {
         const meta = {pagination: {}};
 
         beforeEach(function () {
-            browseUsersStub = sandbox.stub(api["v0.1"].users, 'browse');
+            browseUsersStub = sinon.stub(api["v0.1"].users, 'browse');
             browseUsersStub.returns(new Promise.resolve({users: [], meta: meta}));
         });
 
@@ -313,9 +311,9 @@ describe('{{#get}} helper', function () {
         beforeEach(function () {
             locals = {root: {_locals: {apiVersion: 'v2'}}};
 
-            browseUsersStub = sandbox.stub(api["v2"], 'authors').get(() => {
+            browseUsersStub = sinon.stub(api["v2"], 'authors').get(() => {
                 return {
-                    browse: sandbox.stub().resolves({authors: [], meta: meta})
+                    browse: sinon.stub().resolves({authors: [], meta: meta})
                 };
             });
         });
@@ -346,9 +344,9 @@ describe('{{#get}} helper', function () {
         beforeEach(function () {
             locals = {root: {_locals: {apiVersion: 'v2'}}};
 
-            browseUsersStub = sandbox.stub(api["v2"], 'authors').get(() => {
+            browseUsersStub = sinon.stub(api["v2"], 'authors').get(() => {
                 return {
-                    browse: sandbox.stub().resolves({authors: [], meta: meta})
+                    browse: sinon.stub().resolves({authors: [], meta: meta})
                 };
             });
         });
@@ -427,8 +425,8 @@ describe('{{#get}} helper', function () {
             };
 
         beforeEach(function () {
-            browseStub = sandbox.stub(api["v0.1"].posts, 'browse').returns(new Promise.resolve());
-            readStub = sandbox.stub(api["v0.1"].posts, 'read').returns(new Promise.resolve());
+            browseStub = sinon.stub(api["v0.1"].posts, 'browse').returns(new Promise.resolve());
+            readStub = sinon.stub(api["v0.1"].posts, 'read').returns(new Promise.resolve());
         });
 
         it('should resolve post.tags alias', function (done) {

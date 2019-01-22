@@ -4,9 +4,7 @@ var should = require('should'),
     path = require('path'),
     configUtils = require('../../../utils/configUtils'),
     themes = require('../../../../server/services/themes'),
-    privateController = require('../../../../server/apps/private-blogging/lib/router'),
-
-    sandbox = sinon.sandbox.create();
+    privateController = require('../../../../server/apps/private-blogging/lib/router');
 
 describe('Private Controller', function () {
     var res, req, defaultPath, hasTemplateStub;
@@ -21,16 +19,16 @@ describe('Private Controller', function () {
     }
 
     beforeEach(function () {
-        hasTemplateStub = sandbox.stub().returns(false);
+        hasTemplateStub = sinon.stub().returns(false);
         hasTemplateStub.withArgs('index').returns(true);
 
-        sandbox.stub(themes, 'getActive').returns({
+        sinon.stub(themes, 'getActive').returns({
             hasTemplate: hasTemplateStub
         });
 
         res = {
             locals: {version: ''},
-            render: sandbox.spy()
+            render: sinon.spy()
         };
 
         req = {
@@ -49,7 +47,7 @@ describe('Private Controller', function () {
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
     });
 

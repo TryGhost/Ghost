@@ -5,25 +5,30 @@ var should = require('should'),
 
     helpers = require('../../../server/helpers'),
     api = require('../../../server/api'),
-    common = require('../../../server/lib/common'),
-
-    sandbox = sinon.sandbox.create();
+    common = require('../../../server/lib/common');
 
 describe('{{prev_post}} helper', function () {
     var browsePostStub;
     let locals;
 
     beforeEach(function () {
-        locals = {root: {_locals: {apiVersion: 'v0.1'}}};
+        locals = {
+            root: {
+                _locals: {
+                    apiVersion: 'v0.1'
+                },
+                context: ['post']
+            }
+        };
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('with valid post data - ', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:<=') > -1) {
                     return Promise.resolve({
                         posts: [{slug: '/previous/', title: 'post 1'}]
@@ -65,7 +70,7 @@ describe('{{prev_post}} helper', function () {
 
     describe('for valid post with no previous post', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:<=') > -1) {
                     return Promise.resolve({posts: []});
                 }
@@ -103,7 +108,7 @@ describe('{{prev_post}} helper', function () {
 
     describe('for invalid post data', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:<=') > -1) {
                     return Promise.resolve({});
                 }
@@ -130,7 +135,16 @@ describe('{{prev_post}} helper', function () {
 
     describe('for page', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            locals = {
+                root: {
+                    _locals: {
+                        apiVersion: 'v0.1'
+                    },
+                    context: ['page']
+                }
+            };
+
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:<=') > -1) {
                     return Promise.resolve({posts: [{slug: '/previous/', title: 'post 1'}]});
                 }
@@ -165,7 +179,16 @@ describe('{{prev_post}} helper', function () {
 
     describe('for unpublished post', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            locals = {
+                root: {
+                    _locals: {
+                        apiVersion: 'v0.1'
+                    },
+                    context: ['preview', 'post']
+                }
+            };
+
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:<=') > -1) {
                     return Promise.resolve({posts: [{slug: '/previous/', title: 'post 1'}]});
                 }
@@ -199,7 +222,7 @@ describe('{{prev_post}} helper', function () {
 
     describe('with "in" option', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
                 if (options.filter.indexOf('published_at:<=') > -1) {
                     return Promise.resolve({
                         posts: [{slug: '/previous/', title: 'post 1'}]
@@ -370,7 +393,7 @@ describe('{{prev_post}} helper', function () {
 
     describe('general error handling', function () {
         beforeEach(function () {
-            browsePostStub = sandbox.stub(api['v0.1'].posts, 'browse').callsFake(function () {
+            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function () {
                 return Promise.reject(new common.errors.NotFoundError({message: 'Something wasn\'t found'}));
             });
         });
@@ -406,7 +429,7 @@ describe('{{prev_post}} helper', function () {
         it('should show warning for call without any options', function (done) {
             var fn = sinon.spy(),
                 inverse = sinon.spy(),
-                optionsData = {name: 'prev_post'};
+                optionsData = {name: 'prev_post', data: {root: {}}};
 
             helpers.prev_post
                 .call(

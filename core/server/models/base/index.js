@@ -117,8 +117,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     emitChange: function (model, event, options) {
         debug(model.tableName, event);
 
-        const previousAttributes = model._previousAttributes;
-
         if (!options.transacting) {
             return common.events.emit(event, model, options);
         }
@@ -139,7 +137,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 }
 
                 _.each(this.ghostEvents, (ghostEvent) => {
-                    model._previousAttributes = previousAttributes;
                     common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
                 });
 
@@ -227,11 +224,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
     },
 
-    onSaving: function onSaving(newObj) {
+    onSaving: function onSaving() {
         // Remove any properties which don't belong on the model
         this.attributes = this.pick(this.permittedAttributes());
-        // Store the previous attributes so we can tell what was updated later
-        this._updatedAttributes = newObj.previousAttributes();
     },
 
     /**
@@ -404,6 +399,33 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         if (options.context.user || ghostBookshelf.Model.isExternalUser(options.context.user)) {
             return options.context.user;
+        } else if (options.context.integration) {
+            /**
+             * @NOTE:
+             *
+             * This is a dirty hotfix for v0.1 only.
+             * The `x_by` columns are getting deprecated soon (https://github.com/TryGhost/Ghost/issues/10286).
+             *
+             * We return the owner ID '1' in case an integration updates or creates
+             * resources. v0.1 will continue to use the `x_by` columns. v0.1 does not support integrations.
+             * API v2 will introduce a new feature to solve inserting/updating resources
+             * from users or integrations. API v2 won't expose `x_by` columns anymore.
+             *
+             * ---
+             *
+             * Why using ID '1'? WAIT. What???????
+             *
+             * See https://github.com/TryGhost/Ghost/issues/9299.
+             *
+             * We currently don't read the correct owner ID from the database and assume it's '1'.
+             * This is a leftover from switching from auto increment ID's to Object ID's.
+             * But this takes too long to refactor out now. If an internal update happens, we also
+             * use ID '1'. This logic exists for a LONG while now. The owner ID only changes from '1' to something else,
+             * if you transfer ownership.
+             *
+             * @TODO: Update this code section as soon as we have decided between `context.api_key_id` and `context.integration`
+             */
+            return ghostBookshelf.Model.internalUser;
         } else if (options.context.internal) {
             return ghostBookshelf.Model.internalUser;
         } else if (this.get('id')) {
@@ -444,27 +466,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return proto.toJSON.call(this, options);
     },
 
-    // Get attributes that have been updated (values before a .save() call)
-    updatedAttributes: function updatedAttributes() {
-        return this._updatedAttributes || {};
-    },
-
-    // Get a specific updated attribute value
-    updated: function updated(attr) {
-        return this.updatedAttributes()[attr];
-    },
-
-    /**
-     * There is difference between `updated` and `previous`:
-     * Depending on the hook (before or after writing into the db), both fields have a different meaning.
-     * e.g. onSaving  -> before db write (has to use previous)
-     *      onUpdated -> after db write  (has to use updated)
-     *
-     * hasDateChanged('attr', {beforeWrite: true})
-     */
-    hasDateChanged: function (attr, options) {
-        options = options || {};
-        return moment(this.get(attr)).diff(moment(options.beforeWrite ? this.previous(attr) : this.updated(attr))) !== 0;
+    hasDateChanged: function (attr) {
+        return moment(this.get(attr)).diff(moment(this.previous(attr))) !== 0;
     },
 
     /**
@@ -547,7 +550,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * - Bookshelf updates the model with the new client data via the `set` function
      * - Bookshelf uses a simple `isEqual` function from lodash to detect real changes
      * - .previous(attr) and .get(attr) returns false obviously
-     * - internally we use our `hasDateChanged` if we have to compare previous/updated dates
+     * - internally we use our `hasDateChanged` if we have to compare previous dates
      * - but Bookshelf is not in our control for this case
      *
      * @IMPORTANT

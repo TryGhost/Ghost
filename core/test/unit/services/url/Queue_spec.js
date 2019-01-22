@@ -1,11 +1,9 @@
-
 const _ = require('lodash');
 const Promise = require('bluebird');
 const should = require('should');
 const sinon = require('sinon');
 const common = require('../../../../server/lib/common');
 const Queue = require('../../../../server/services/url/Queue');
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: services/url/Queue', function () {
     let queue;
@@ -13,12 +11,12 @@ describe('Unit: services/url/Queue', function () {
     beforeEach(function () {
         queue = new Queue();
 
-        sandbox.spy(queue, 'run');
-        sandbox.stub(common.logging, 'error');
+        sinon.spy(queue, 'run');
+        sinon.stub(common.logging, 'error');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('fn: register', function () {

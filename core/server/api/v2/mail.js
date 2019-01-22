@@ -18,7 +18,7 @@ _private.sendMail = (object) => {
                         type: 'warn',
                         message: [
                             common.i18n.t('warnings.index.unableToSendEmail'),
-                            common.i18n.t('common.seeLinkForInstructions', {link: 'https://docs.ghost.org/docs/mail-config'})
+                            common.i18n.t('common.seeLinkForInstructions', {link: 'https://docs.ghost.org/mail/'})
                         ].join(' ')
                     }]
                 },

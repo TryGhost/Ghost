@@ -6,8 +6,7 @@ const should = require('should'),
     configUtils = require('../../utils/configUtils'),
     settingsService = require('../../../server/services/settings'),
     themeService = require('../../../server/services/themes'),
-    siteApp = require('../../../server/web/parent-app'),
-    sandbox = sinon.sandbox.create();
+    siteApp = require('../../../server/web/parent-app');
 
 describe('Integration - Web - Site', function () {
     let app;
@@ -21,13 +20,13 @@ describe('Integration - Web - Site', function () {
 
         describe('default routes.yaml', function () {
             before(function () {
-                testUtils.integrationTesting.defaultMocks(sandbox);
+                testUtils.integrationTesting.defaultMocks(sinon);
                 testUtils.integrationTesting.overrideGhostConfig(configUtils);
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                        sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -37,7 +36,7 @@ describe('Integration - Web - Site', function () {
             beforeEach(function () {
                 configUtils.set('url', 'http://example.com');
 
-                sandbox.spy(api.posts, 'browse');
+                sinon.spy(api.posts, 'browse');
             });
 
             afterEach(function () {
@@ -46,7 +45,7 @@ describe('Integration - Web - Site', function () {
 
             after(function () {
                 configUtils.restore();
-                sandbox.restore();
+                sinon.restore();
             });
 
             describe('behaviour: default cases', function () {
@@ -429,7 +428,7 @@ describe('Integration - Web - Site', function () {
         describe('extended routes.yaml: collections', function () {
             describe('2 collections', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {
                             '/': 'home'
                         },
@@ -453,12 +452,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -474,7 +473,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve static route', function () {
@@ -562,7 +561,7 @@ describe('Integration - Web - Site', function () {
 
             describe('no collections', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {
                             '/test/': 'test'
                         },
@@ -571,12 +570,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -592,7 +591,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve route', function () {
@@ -613,7 +612,7 @@ describe('Integration - Web - Site', function () {
 
             describe('static permalink route', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -631,12 +630,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -652,7 +651,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve post', function () {
@@ -719,7 +718,7 @@ describe('Integration - Web - Site', function () {
 
             describe('primary author permalink', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -732,12 +731,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -753,7 +752,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve post', function () {
@@ -804,7 +803,7 @@ describe('Integration - Web - Site', function () {
 
             describe('primary tag permalink', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -817,12 +816,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -838,7 +837,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve post', function () {
@@ -904,7 +903,7 @@ describe('Integration - Web - Site', function () {
 
             describe('collection with data key', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -955,12 +954,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -976,7 +975,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve /food/', function () {
@@ -1042,7 +1041,7 @@ describe('Integration - Web - Site', function () {
         describe('extended routes.yaml: templates', function () {
             describe('default template, no template', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -1057,12 +1056,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -1078,7 +1077,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve collection', function () {
@@ -1114,7 +1113,7 @@ describe('Integration - Web - Site', function () {
 
             describe('two templates', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -1126,12 +1125,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -1147,7 +1146,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve collection', function () {
@@ -1168,7 +1167,7 @@ describe('Integration - Web - Site', function () {
 
             describe('home.hbs priority', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -1184,12 +1183,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox, {theme: 'test-theme'});
+                    testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -1205,7 +1204,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve collection', function () {
@@ -1247,9 +1246,9 @@ describe('Integration - Web - Site', function () {
                 before(testUtils.setup('users:roles', 'posts'));
 
                 before(function () {
-                    testUtils.integrationTesting.defaultMocks(sandbox, {theme: 'test-theme-channels'});
+                    testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {
                             '/channel1/': {
                                 controller: 'channel',
@@ -1393,8 +1392,8 @@ describe('Integration - Web - Site', function () {
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(10);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(10);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -1410,7 +1409,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve channel 1', function () {
@@ -1637,7 +1636,7 @@ describe('Integration - Web - Site', function () {
 
         describe('extended routes.yaml (5): rss override', function () {
             before(function () {
-                sandbox.stub(settingsService, 'get').returns({
+                sinon.stub(settingsService, 'get').returns({
                     routes: {
                         '/about/': 'about',
                         '/podcast/rss/': {
@@ -1673,12 +1672,12 @@ describe('Integration - Web - Site', function () {
                 });
 
                 testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sandbox, {theme: 'test-theme'});
+                testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                        sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -1694,7 +1693,7 @@ describe('Integration - Web - Site', function () {
             });
 
             after(function () {
-                sandbox.restore();
+                sinon.restore();
             });
 
             it('serve /rss/', function () {
@@ -1794,13 +1793,13 @@ describe('Integration - Web - Site', function () {
         describe('default routes.yaml', function () {
             before(function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sandbox);
+                testUtils.integrationTesting.defaultMocks(sinon);
                 testUtils.integrationTesting.overrideGhostConfig(configUtils);
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                        sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -1810,7 +1809,7 @@ describe('Integration - Web - Site', function () {
             beforeEach(function () {
                 const postsAPI = require('../../../server/api/v2/posts');
                 configUtils.set('url', 'http://example.com');
-                postSpy = sandbox.spy(postsAPI.browse, 'query');
+                postSpy = sinon.spy(postsAPI.browse, 'query');
             });
 
             afterEach(function () {
@@ -1819,7 +1818,7 @@ describe('Integration - Web - Site', function () {
 
             after(function () {
                 configUtils.restore();
-                sandbox.restore();
+                sinon.restore();
             });
 
             describe('behaviour: default cases', function () {
@@ -1900,7 +1899,7 @@ describe('Integration - Web - Site', function () {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('tag');
 
-                            postSpy.args[0][0].options.filter.should.eql('tags:\'bacon\'+tags.visibility:public+page:false');
+                            postSpy.args[0][0].options.filter.should.eql('(tags:\'bacon\'+tags.visibility:public)+page:false');
                             postSpy.args[0][0].options.page.should.eql(1);
                             postSpy.args[0][0].options.limit.should.eql(2);
                         });
@@ -2202,7 +2201,7 @@ describe('Integration - Web - Site', function () {
         describe('extended routes.yaml: collections', function () {
             describe('2 collections', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {
                             '/': 'home'
                         },
@@ -2226,12 +2225,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -2247,7 +2246,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve static route', function () {
@@ -2335,7 +2334,7 @@ describe('Integration - Web - Site', function () {
 
             describe('no collections', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {
                             '/test/': 'test'
                         },
@@ -2344,12 +2343,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -2365,7 +2364,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve route', function () {
@@ -2386,7 +2385,7 @@ describe('Integration - Web - Site', function () {
 
             describe('static permalink route', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -2404,12 +2403,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -2425,7 +2424,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve post', function () {
@@ -2492,7 +2491,7 @@ describe('Integration - Web - Site', function () {
 
             describe('primary author permalink', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -2505,12 +2504,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -2526,7 +2525,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve post', function () {
@@ -2577,7 +2576,7 @@ describe('Integration - Web - Site', function () {
 
             describe('primary tag permalink', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -2590,12 +2589,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -2611,7 +2610,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve post', function () {
@@ -2677,7 +2676,7 @@ describe('Integration - Web - Site', function () {
 
             describe('collection with data key', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -2728,12 +2727,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -2749,7 +2748,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve /food/', function () {
@@ -2815,7 +2814,7 @@ describe('Integration - Web - Site', function () {
         describe('extended routes.yaml: templates', function () {
             describe('default template, no template', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -2830,12 +2829,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -2851,7 +2850,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve collection', function () {
@@ -2887,7 +2886,7 @@ describe('Integration - Web - Site', function () {
 
             describe('two templates', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -2899,12 +2898,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox);
+                    testUtils.integrationTesting.defaultMocks(sinon);
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -2920,7 +2919,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve collection', function () {
@@ -2941,7 +2940,7 @@ describe('Integration - Web - Site', function () {
 
             describe('home.hbs priority', function () {
                 before(function () {
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -2957,12 +2956,12 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sandbox, {theme: 'test-theme'});
+                    testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -2978,7 +2977,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve collection', function () {
@@ -3020,9 +3019,9 @@ describe('Integration - Web - Site', function () {
                 before(testUtils.setup('users:roles', 'posts'));
 
                 before(function () {
-                    testUtils.integrationTesting.defaultMocks(sandbox, {theme: 'test-theme-channels'});
+                    testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
-                    sandbox.stub(settingsService, 'get').returns({
+                    sinon.stub(settingsService, 'get').returns({
                         routes: {
                             '/channel1/': {
                                 controller: 'channel',
@@ -3146,8 +3145,8 @@ describe('Integration - Web - Site', function () {
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
-                            sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                            sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(10);
+                            sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                            sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(10);
 
                             app = siteApp({start: true});
                             return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -3163,7 +3162,7 @@ describe('Integration - Web - Site', function () {
                 });
 
                 after(function () {
-                    sandbox.restore();
+                    sinon.restore();
                 });
 
                 it('serve channel 1', function () {
@@ -3356,7 +3355,7 @@ describe('Integration - Web - Site', function () {
 
         describe('extended routes.yaml (5): rss override', function () {
             before(function () {
-                sandbox.stub(settingsService, 'get').returns({
+                sinon.stub(settingsService, 'get').returns({
                     routes: {
                         '/about/': 'about',
                         '/podcast/rss/': {
@@ -3392,12 +3391,12 @@ describe('Integration - Web - Site', function () {
                 });
 
                 testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sandbox, {theme: 'test-theme'});
+                testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
                 return testUtils.integrationTesting.initGhost()
                     .then(function () {
-                        sandbox.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                        sandbox.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
@@ -3413,7 +3412,7 @@ describe('Integration - Web - Site', function () {
             });
 
             after(function () {
-                sandbox.restore();
+                sinon.restore();
             });
 
             it('serve /rss/', function () {

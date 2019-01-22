@@ -5,8 +5,6 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 
-const sandbox = sinon.sandbox.create();
-
 describe('Content API Key Auth', function () {
     before(models.init);
     before(testUtils.teardown);
@@ -22,13 +20,13 @@ describe('Content API Key Auth', function () {
         };
         this.fakeApiKey = fakeApiKey;
 
-        this.apiKeyStub = sandbox.stub(models.ApiKey, 'findOne');
+        this.apiKeyStub = sinon.stub(models.ApiKey, 'findOne');
         this.apiKeyStub.returns(new Promise.resolve());
         this.apiKeyStub.withArgs({secret: fakeApiKey.secret}).returns(new Promise.resolve(fakeApiKey));
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('should authenticate with known+valid key', function (done) {

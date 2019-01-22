@@ -102,8 +102,10 @@ const authenticate = {
         )(req, res, next);
     },
 
-    // ### v2 API auth middleware
-    authenticateAdminApi: [session.safeGetSession, session.getUser],
+    // @NOTE: authentication for admin api keys is disabled
+    // authenticateAdminApi: [apiKeyAuth.admin.authenticate, session.authenticate],
+    authenticateAdminApi: [session.authenticate],
+
     authenticateContentApi: [apiKeyAuth.content.authenticateContentApiKey, members.authenticateMembersToken]
 };
 

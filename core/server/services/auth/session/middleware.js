@@ -1,10 +1,10 @@
 const url = require('url');
+const session = require('express-session');
 const common = require('../../../lib/common');
 const constants = require('../../../lib/constants');
 const config = require('../../../config');
 const settingsCache = require('../../settings/cache');
 const models = require('../../../models');
-const session = require('express-session');
 const SessionStore = require('./store');
 const urlService = require('../../url');
 
@@ -76,56 +76,65 @@ const destroySession = (req, res, next) => {
     });
 };
 
-const getUser = (req, res, next) => {
-    if (!req.session || !req.session.user_id) {
-        req.user = null;
-        return next();
-    }
-    models.User.findOne({id: req.session.user_id})
-        .then((user) => {
-            req.user = user;
-            next();
-        }).catch(() => {
-            req.user = null;
-            next();
-        });
-};
-
-const ensureUser = (req, res, next) => {
-    if (req.user && req.user.id) {
-        return next();
-    }
-    next(new common.errors.UnauthorizedError({
-        message: common.i18n.t('errors.middleware.auth.accessDenied')
-    }));
-};
-
-const cookieCsrfProtection = (req, res, next) => {
+const cookieCsrfProtection = (req) => {
     // If there is no origin on the session object it means this is a *new*
     // session, that hasn't been initialised yet. So we don't need CSRF protection
     if (!req.session.origin) {
-        return next();
+        return;
     }
 
     const origin = getOrigin(req);
+
     if (req.session.origin !== origin) {
-        return next(new common.errors.BadRequestError({
+        throw new common.errors.BadRequestError({
             message: common.i18n.t('errors.middleware.auth.mismatchedOrigin', {
                 expected: req.session.origin,
                 actual: origin
             })
-        }));
+        });
     }
-
-    return next();
 };
 
+const authenticate = (req, res, next) => {
+    // CASE: we don't have a cookie header so allow fallthrough to other
+    // auth middleware or final "ensure authenticated" check
+    if (!req.headers || !req.headers.cookie) {
+        req.user = null;
+        return next();
+    }
+
+    getSession(req, res, function (err) {
+        if (err) {
+            return next(err);
+        }
+
+        try {
+            cookieCsrfProtection(req);
+        } catch (err) {
+            return next(err);
+        }
+
+        if (!req.session || !req.session.user_id) {
+            req.user = null;
+            return next();
+        }
+
+        models.User.findOne({id: req.session.user_id})
+            .then((user) => {
+                req.user = user;
+                next();
+            })
+            .catch(() => {
+                req.user = null;
+                next();
+            });
+    });
+};
+
+// @TODO: this interface exposes private functions
 module.exports = exports = {
-    getSession,
-    cookieCsrfProtection,
-    safeGetSession: [getSession, cookieCsrfProtection],
     createSession,
     destroySession,
-    getUser,
-    ensureUser
+    cookieCsrfProtection,
+    authenticate
 };

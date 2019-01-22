@@ -2,8 +2,7 @@ const should = require('should'),
     sinon = require('sinon'),
     models = require('../../../server/models'),
     testUtils = require('../../utils'),
-    configUtils = require('../../utils/configUtils'),
-    sandbox = sinon.sandbox.create();
+    configUtils = require('../../utils/configUtils');
 
 describe('Unit: models/permission', function () {
     before(function () {
@@ -11,7 +10,7 @@ describe('Unit: models/permission', function () {
     });
 
     after(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
     });
 

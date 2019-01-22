@@ -1,7 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
 const shared = require('../../../../server/api/shared');
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: api/shared/http', function () {
     let req;
@@ -9,28 +8,28 @@ describe('Unit: api/shared/http', function () {
     let next;
 
     beforeEach(function () {
-        req = sandbox.stub();
-        res = sandbox.stub();
-        next = sandbox.stub();
+        req = sinon.stub();
+        res = sinon.stub();
+        next = sinon.stub();
 
         req.body = {
             a: 'a'
         };
 
-        res.status = sandbox.stub();
-        res.json = sandbox.stub();
-        res.set = sandbox.stub();
-        res.send = sandbox.stub();
+        res.status = sinon.stub();
+        res.json = sinon.stub();
+        res.set = sinon.stub();
+        res.send = sinon.stub();
 
-        sandbox.stub(shared.headers, 'get').resolves();
+        sinon.stub(shared.headers, 'get').resolves();
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('check options', function () {
-        const apiImpl = sandbox.stub().resolves();
+        const apiImpl = sinon.stub().resolves();
         shared.http(apiImpl)(req, res, next);
 
         Object.keys(apiImpl.args[0][0]).should.eql([
@@ -53,7 +52,7 @@ describe('Unit: api/shared/http', function () {
     });
 
     it('api response is fn', function (done) {
-        const response = sandbox.stub().callsFake(function (req, res, next) {
+        const response = sinon.stub().callsFake(function (req, res, next) {
             should.exist(req);
             should.exist(res);
             should.exist(next);
@@ -62,12 +61,12 @@ describe('Unit: api/shared/http', function () {
             done();
         });
 
-        const apiImpl = sandbox.stub().resolves(response);
+        const apiImpl = sinon.stub().resolves(response);
         shared.http(apiImpl)(req, res, next);
     });
 
     it('api response is fn', function (done) {
-        const apiImpl = sandbox.stub().resolves('data');
+        const apiImpl = sinon.stub().resolves('data');
 
         next.callsFake(done);
 

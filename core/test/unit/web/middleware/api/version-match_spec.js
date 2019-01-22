@@ -1,19 +1,16 @@
 var should  = require('should'),
     sinon   = require('sinon'),
-
-    versionMatch = require('../../../../../server/web/shared/middlewares/api/version-match'),
-
-    sandbox = sinon.sandbox.create();
+    versionMatch = require('../../../../../server/web/shared/middlewares/api/version-match');
 
 describe('Version Mismatch', function () {
     var req, res, getStub, nextStub;
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     beforeEach(function () {
-        getStub = sandbox.stub();
-        nextStub = sandbox.stub();
+        getStub = sinon.stub();
+        nextStub = sinon.stub();
 
         req = {
             get: getStub

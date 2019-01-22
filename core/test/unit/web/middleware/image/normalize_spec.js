@@ -5,8 +5,6 @@ const image = require('../../../../../server/lib/image');
 const common = require('../../../../../server/lib/common');
 const normalize = require('../../../../../server/web/shared/middlewares/image/normalize');
 
-const sandbox = sinon.sandbox.create();
-
 describe('normalize', function () {
     let res, req;
 
@@ -19,12 +17,12 @@ describe('normalize', function () {
             }
         };
 
-        sandbox.stub(image.manipulator, 'process');
-        sandbox.stub(common.logging, 'error');
+        sinon.stub(image.manipulator, 'process');
+        sinon.stub(common.logging, 'error');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
         configUtils.restore();
     });
 
