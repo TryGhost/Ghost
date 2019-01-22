@@ -52,7 +52,8 @@ export default Model.extend(ValidationEngine, {
     isAdmin: equal('role.name', 'Administrator'),
     isOwner: equal('role.name', 'Owner'),
 
-    // This is used in enough places that it's useful to throw it here
+    // These are used in enough places that it's useful to throw them here
+    isOwnerOrAdmin: or('isOwner', 'isAdmin'),
     isAuthorOrContributor: or('isAuthor', 'isContributor'),
 
     isLoggedIn: computed('id', 'session.user.id', function () {

@@ -18,7 +18,7 @@ export default AuthenticatedRoute.extend({
         return RSVP.hash(promises).then((hash) => {
             let {user, subscribers} = hash;
 
-            if (!subscribers || !(user.get('isOwner') || user.get('isAdmin'))) {
+            if (!subscribers || !user.isOwnerOrAdmin) {
                 return this.transitionTo('posts');
             }
         });
