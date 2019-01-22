@@ -152,6 +152,7 @@ module.exports = function MembersApi({
 
     httpHandler.staticRouter = staticRouter;
     httpHandler.apiRouter = apiRouter;
+    httpHandler.memberUserObject = users;
 
     return httpHandler;
 };
