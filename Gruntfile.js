@@ -254,21 +254,6 @@ var config = require('./core/server/config'),
                 }
             },
 
-            // ### grunt-docker
-            // Generate documentation from code
-            docker: {
-                docs: {
-                    dest: 'docs',
-                    src: ['.'],
-                    options: {
-                        onlyUpdated: true,
-                        exclude: 'node_modules,bower_components,content,core/client,*test,*doc*,' +
-                        '*vendor,config.*.json,*buil*,.dist*,.idea,.git*,.travis.yml,.bower*,.editorconfig,.js*,*.md,' +
-                        'MigratorConfig.js'
-                    }
-                }
-            },
-
             // ### grunt-contrib-clean
             // Clean up files as part of other tasks
             clean: {
