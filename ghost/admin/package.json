@@ -32,7 +32,6 @@
     "@tryghost/mobiledoc-kit": "0.11.1-ghost.5",
     "blueimp-md5": "2.10.0",
     "broccoli-asset-rev": "3.0.0",
-    "broccoli-clean-css": "^2.0.1",
     "broccoli-concat": "3.7.3",
     "broccoli-funnel": "2.0.1",
     "broccoli-merge-trees": "3.0.2",
