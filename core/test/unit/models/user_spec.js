@@ -16,9 +16,6 @@ describe('Unit: models/user', function () {
         models.init();
     });
 
-    before(testUtils.teardown);
-    before(testUtils.setup('users:roles'));
-
     afterEach(function () {
         sinon.restore();
     });
@@ -54,40 +51,6 @@ describe('Unit: models/user', function () {
             sinon.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
         });
 
-        describe('password', function () {
-            it('no password', function () {
-                return models.User.add({email: 'test1@ghost.org', name: 'Ghosty'})
-                    .then(function (user) {
-                        user.get('name').should.eql('Ghosty');
-                        should.exist(user.get('password'));
-                    });
-            });
-
-            it('only numbers', function () {
-                return models.User.add({email: 'test2@ghost.org', name: 'Wursti', password: 109674836589})
-                    .then(function (user) {
-                        user.get('name').should.eql('Wursti');
-                        should.exist(user.get('password'));
-                    });
-            });
-
-            it('can change password', function () {
-                let oldPassword;
-
-                return models.User.findOne({slug: 'joe-bloggs'})
-                    .then(function (user) {
-                        user.get('slug').should.eql('joe-bloggs');
-                        oldPassword = user.get('password');
-                        user.set('password', '12734!!332');
-                        return user.save();
-                    })
-                    .then(function (user) {
-                        user.get('slug').should.eql('joe-bloggs');
-                        user.get('password').should.not.eql(oldPassword);
-                    });
-            });
-        });
-
         describe('blank', function () {
             it('name cannot be blank', function () {
                 return models.User.add({email: 'test@ghost.org'})
@@ -95,7 +58,7 @@ describe('Unit: models/user', function () {
                         throw new Error('expected ValidationError');
                     })
                     .catch(function (err) {
-                        (err instanceof common.errors.ValidationError).should.be.true;
+                        (err instanceof common.errors.ValidationError).should.eql(true);
                         err.message.should.match(/users\.name/);
                     });
             });
@@ -110,7 +73,7 @@ describe('Unit: models/user', function () {
                     })
                     .catch(function (err) {
                         err.should.be.an.Array();
-                        (err[0] instanceof common.errors.ValidationError).should.eql.true;
+                        (err[0] instanceof common.errors.ValidationError).should.eql(true);
                         err[0].message.should.match(/users\.email/);
                     });
             });
@@ -128,50 +91,48 @@ describe('Unit: models/user', function () {
             // NOTE: Add a user with a broken field to ensure we only validate changed fields on login
             sinon.stub(validation, 'validateSchema').resolves();
 
-            const user = testUtils.DataGenerator.forKnex.createUser({
+            const user = models.User.forge(testUtils.DataGenerator.forKnex.createUser({
                 status: 'warn-1',
                 email: 'test-9@example.de',
                 website: '!!!!!this-is-not-a-website!!!!'
-            });
+            }));
 
-            return models.User.add(user)
-                .then(function (model) {
-                    validation.validateSchema.restore();
+            sinon.stub(models.User, 'getByEmail').resolves(user);
+            sinon.stub(models.User, 'isPasswordCorrect').resolves();
 
-                    return models.User.check({email: model.get('email'), password: 'test'});
-                });
+            sinon.stub(user, 'updateLastSeen').resolves();
+            sinon.stub(user, 'save').resolves();
+
+            return models.User.check({email: user.get('email'), password: 'test'});
         });
 
         it('user status is active', function () {
-            sinon.stub(security.password, 'compare').resolves(true);
+            const user = models.User.forge(testUtils.DataGenerator.forKnex.createUser({
+                status: 'active',
+                email: 'test@ghost.de'
+            }));
 
-            return models.User.check({email: testUtils.DataGenerator.Content.users[1].email, password: 'test'});
+            sinon.stub(models.User, 'getByEmail').resolves(user);
+            sinon.stub(models.User, 'isPasswordCorrect').resolves();
+
+            sinon.stub(user, 'updateLastSeen').resolves();
+            sinon.stub(user, 'save').resolves();
+
+            return models.User.check({email: user.get('email'), password: 'test'});
         });
 
         it('password is incorrect', function () {
-            sinon.stub(security.password, 'compare').resolves(false);
+            const user = models.User.forge(testUtils.DataGenerator.forKnex.createUser({
+                status: 'active',
+                email: 'test@ghost.de'
+            }));
 
-            return models.User.check({email: testUtils.DataGenerator.Content.users[1].email, password: 'test'})
+            sinon.stub(models.User, 'getByEmail').resolves(user);
+            sinon.stub(models.User, 'isPasswordCorrect').rejects(new common.errors.ValidationError());
+
+            return models.User.check({email: user.get('email'), password: 'test'})
                 .catch(function (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true;
-                });
-        });
-
-        it('user not found', function () {
-            sinon.stub(security.password, 'compare').resolves(true);
-
-            return models.User.check({email: 'notfound@example.to', password: 'test'})
-                .catch(function (err) {
-                    (err instanceof common.errors.NotFoundError).should.be.true;
-                });
-        });
-
-        it('user not found', function () {
-            sinon.stub(security.password, 'compare').resolves(true);
-
-            return models.User.check({email: null, password: 'test'})
-                .catch(function (err) {
-                    (err instanceof common.errors.NotFoundError).should.be.true;
+                    (err instanceof common.errors.ValidationError).should.eql(true);
                 });
         });
     });
@@ -460,88 +421,6 @@ describe('Unit: models/user', function () {
                     should(mockUser.get.calledOnce).be.true();
                 });
             });
-        });
-    });
-
-    describe('Fetch', function () {
-        before(function () {
-            models.init();
-        });
-
-        after(function () {
-            sinon.restore();
-        });
-
-        it('ensure data type', function () {
-            return models.User.findOne({slug: 'joe-bloggs'}, testUtils.context.internal)
-                .then((user) => {
-                    user.get('updated_by').should.be.a.String();
-                    user.get('created_by').should.be.a.String();
-                    user.get('created_at').should.be.a.Date();
-                    user.get('updated_at').should.be.a.Date();
-                });
-        });
-    });
-
-    describe('Edit', function () {
-        before(function () {
-            models.init();
-        });
-
-        after(function () {
-            sinon.restore();
-        });
-
-        it('resets given empty value to null', function () {
-            return models.User.findOne({slug: 'joe-bloggs'})
-                .then(function (user) {
-                    user.get('slug').should.eql('joe-bloggs');
-                    user.get('profile_image').should.eql('https://example.com/super_photo.jpg');
-                    user.set('profile_image', '');
-                    user.set('bio', '');
-                    return user.save();
-                })
-                .then(function (user) {
-                    should(user.get('profile_image')).be.null();
-                    user.get('bio').should.eql('');
-                });
-        });
-    });
-
-    describe('Add', function () {
-        const events = {
-            user: []
-        };
-
-        before(function () {
-            models.init();
-
-            sinon.stub(models.User.prototype, 'emitChange').callsFake(function (event) {
-                events.user.push({event: event, data: this.toJSON()});
-            });
-        });
-
-        after(function () {
-            sinon.restore();
-        });
-
-        it('defaults', function () {
-            return models.User.add({slug: 'joe', name: 'Joe', email: 'joe@test.com'})
-                .then(function (user) {
-                    user.get('name').should.eql('Joe');
-                    user.get('email').should.eql('joe@test.com');
-                    user.get('slug').should.eql('joe');
-                    user.get('visibility').should.eql('public');
-                    user.get('status').should.eql('active');
-
-                    _.each(_.keys(schema.tables.users), (key) => {
-                        should.exist(events.user[0].data.hasOwnProperty(key));
-
-                        if (['status', 'visibility'].indexOf(key) !== -1) {
-                            events.user[0].data[key].should.eql(schema.tables.users[key].defaultTo);
-                        }
-                    });
-                });
         });
     });
 
