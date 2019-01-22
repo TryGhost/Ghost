@@ -380,7 +380,7 @@
 
 /* ensure there's no flash of unstyled textarea while initializing */
 .gh-markdown-editor textarea {
-    visibility: hidden;
+    opacity: 0;
 }
 
 .gh-editor-title {
