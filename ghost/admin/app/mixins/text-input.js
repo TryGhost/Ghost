@@ -1,5 +1,5 @@
 import Mixin from '@ember/object/mixin';
-import device from 'npm:current-device';
+import device from 'current-device';
 import {computed} from '@ember/object';
 
 const keyCodes = {

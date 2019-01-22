@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import Component from '@ember/component';
-import md5 from 'npm:blueimp-md5';
+import md5 from 'blueimp-md5';
 import request from 'ember-ajax/request';
-import validator from 'npm:validator';
+import validator from 'validator';
 import {htmlSafe} from '@ember/string';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';

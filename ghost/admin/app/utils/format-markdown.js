@@ -1,7 +1,7 @@
-import markdownit from 'npm:markdown-it';
-import markdownitFootnote from 'npm:markdown-it-footnote';
-import markdownitLazyHeaders from 'npm:markdown-it-lazy-headers';
-import markdownitMark from 'npm:markdown-it-mark';
+import markdownit from 'markdown-it';
+import markdownitFootnote from 'markdown-it-footnote';
+import markdownitLazyHeaders from 'markdown-it-lazy-headers';
+import markdownitMark from 'markdown-it-mark';
 import {sanitizeHtml} from 'koenig-editor/helpers/sanitize-html';
 
 let slugify = function slugify(inputString, usedHeaders) {

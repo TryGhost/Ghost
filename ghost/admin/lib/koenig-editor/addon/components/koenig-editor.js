@@ -17,7 +17,7 @@ import layout from '../templates/components/koenig-editor';
 import parserPlugins from '../options/parser-plugins';
 import registerKeyCommands from '../options/key-commands';
 import registerTextExpansions from '../options/text-expansions';
-import validator from 'npm:validator';
+import validator from 'validator';
 import {A} from '@ember/array';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {assign} from '@ember/polyfills';

@@ -44,7 +44,7 @@
     "element-resize-detector": "^1.1.14",
     "ember-ajax": "4.0.2",
     "ember-assign-helper": "0.2.0",
-    "ember-browserify": "1.2.2",
+    "ember-auto-import": "1.2.19",
     "ember-cli": "3.4.1",
     "ember-cli-app-version": "3.2.0",
     "ember-cli-babel": "6.18.0",

@@ -1,5 +1,5 @@
 import Service from '@ember/service';
-import erd from 'npm:element-resize-detector';
+import erd from 'element-resize-detector';
 
 export default Service.extend({
     init() {
