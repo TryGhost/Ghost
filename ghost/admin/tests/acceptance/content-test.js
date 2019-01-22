@@ -117,7 +117,10 @@ describe('Acceptance: Content', function () {
             expect(currentURL(), 'url after double-click').to.equal(`/editor/${authorPost.id}`);
         });
 
-        it('sorts tags filter alphabetically', async function () {
+        // TODO: skipped due to consistently random failures on Travis
+        // options[0] is undefined
+        // https://github.com/TryGhost/Ghost/issues/10308
+        it.skip('sorts tags filter alphabetically', async function () {
             this.server.create('tag', {name: 'B - Second', slug: 'second'});
             this.server.create('tag', {name: 'Z - Last', slug: 'last'});
             this.server.create('tag', {name: 'A - First', slug: 'first'});
