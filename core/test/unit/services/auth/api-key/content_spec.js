@@ -7,7 +7,6 @@ const testUtils = require('../../../../utils');
 
 describe('Content API Key Auth', function () {
     before(models.init);
-    before(testUtils.teardown);
 
     this.beforeEach(function () {
         const fakeApiKey = {
