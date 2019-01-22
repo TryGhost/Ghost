@@ -1025,6 +1025,15 @@ startGhost = function startGhost(options) {
 module.exports = {
     startGhost: startGhost,
 
+    stopGhost: () => {
+        if (ghostServer && ghostServer.httpServer) {
+            return ghostServer.stop()
+                .then(() => {
+                    urlService.resetGenerators();
+                });
+        }
+    },
+
     integrationTesting: {
         overrideGhostConfig: function overrideGhostConfig(configUtils) {
             configUtils.set('paths:contentPath', path.join(__dirname, 'fixtures'));
