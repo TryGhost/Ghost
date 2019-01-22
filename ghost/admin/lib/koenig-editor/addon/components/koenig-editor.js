@@ -221,8 +221,8 @@ export default Component.extend({
         // add our default atoms and cards, we want the defaults to be first so
         // that they can be overridden by any passed-in atoms or cards.
         // Use Array.concat to avoid modifying any passed in array references
-        atoms = Array.concat(defaultAtoms, atoms);
-        cards = Array.concat(defaultCards, cards);
+        atoms = defaultAtoms.concat(atoms);
+        cards = defaultCards.concat(cards);
 
         return assign({
             placeholder: this.placeholder,
