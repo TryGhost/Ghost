@@ -131,7 +131,10 @@ describe('Integration: Component: gh-psm-tags-input', function () {
             ).to.equal('#Tag 2,Tag 3,Tag 1');
         });
 
-        it('destroys new tag records when not selected', async function () {
+        // TODO: skipped due to consistently random failures on Travis
+        // '#ember-basic-dropdown-content-ember17494 Add "New"...' is not a valid selector
+        // https://github.com/TryGhost/Ghost/issues/10308
+        it.skip('destroys new tag records when not selected', async function () {
             await assignPostWithTags(this, 'two', 'three');
             await render(hbs`{{gh-psm-tags-input post=post}}`);
             await clickTrigger();
