@@ -3,7 +3,7 @@ import Editor from 'mobiledoc-kit/editor/editor';
 import layout from '../templates/components/koenig-basic-html-input';
 import parserPlugins from '../options/basic-html-parser-plugins';
 import registerKeyCommands, {BASIC_KEY_COMMANDS} from '../options/key-commands';
-import validator from 'npm:validator';
+import validator from 'validator';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {arrayToMap, toggleSpecialFormatEditState} from './koenig-editor';
 import {assign} from '@ember/polyfills';

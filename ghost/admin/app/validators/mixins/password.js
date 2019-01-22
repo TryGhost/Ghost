@@ -1,5 +1,5 @@
 import Mixin from '@ember/object/mixin';
-import validator from 'npm:validator';
+import validator from 'validator';
 
 const BAD_PASSWORDS = [
     '1234567890',

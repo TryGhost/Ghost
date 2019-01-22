@@ -1,6 +1,6 @@
 import BaseValidator from './base';
 import moment from 'moment';
-import validator from 'npm:validator';
+import validator from 'validator';
 import {isBlank, isEmpty, isPresent} from '@ember/utils';
 
 export default BaseValidator.create({

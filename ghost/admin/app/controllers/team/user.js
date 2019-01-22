@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import isNumber from 'ghost-admin/utils/isNumber';
-import validator from 'npm:validator';
+import validator from 'validator';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {alias, and, not, or, readOnly} from '@ember/object/computed';
 import {computed} from '@ember/object';

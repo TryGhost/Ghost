@@ -2,7 +2,7 @@
 import $ from 'jquery';
 import Controller from '@ember/controller';
 import randomPassword from 'ghost-admin/utils/random-password';
-import validator from 'npm:validator';
+import validator from 'validator';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES

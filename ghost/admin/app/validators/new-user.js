@@ -1,6 +1,6 @@
 import BaseValidator from './base';
 import PasswordValidatorMixin from './mixins/password';
-import validator from 'npm:validator';
+import validator from 'validator';
 import {isBlank} from '@ember/utils';
 
 export default BaseValidator.extend(PasswordValidatorMixin, {

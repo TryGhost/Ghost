@@ -1,5 +1,5 @@
 import BaseValidator from './base';
-import validator from 'npm:validator';
+import validator from 'validator';
 
 export default BaseValidator.create({
     properties: ['title', 'description', 'password'],

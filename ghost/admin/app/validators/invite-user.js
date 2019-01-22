@@ -1,5 +1,5 @@
 import BaseValidator from './base';
-import validator from 'npm:validator';
+import validator from 'validator';
 import {isBlank} from '@ember/utils';
 
 export default BaseValidator.create({

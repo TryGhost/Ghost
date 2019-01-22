@@ -3,7 +3,7 @@ import Controller, {inject as controller} from '@ember/controller';
 import DS from 'ember-data';
 import Ember from 'ember';
 import RSVP from 'rsvp';
-import validator from 'npm:validator';
+import validator from 'validator';
 import {alias} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {A as emberA} from '@ember/array';

@@ -1,7 +1,7 @@
 import Pretender from 'pretender';
 import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
-import md5 from 'npm:blueimp-md5';
+import md5 from 'blueimp-md5';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {find, render} from '@ember/test-helpers';
