@@ -1,9 +1,11 @@
-const jose = require('node-jose');
 const {Router, static} = require('express');
 const body = require('body-parser');
-const jwt = require('jsonwebtoken');
 
-const cookies = require('./cookies');
+const {getData, handleError} = require('./util');
+
+const Cookies = require('./cookies');
+const Tokens = require('./tokens');
+const Users = require('./users');
 
 module.exports = function MembersApi({
     config: {
@@ -20,23 +22,28 @@ module.exports = function MembersApi({
     getMember,
     sendEmail
 }) {
-    const keyStore = jose.JWK.createKeyStore();
-    const keyStoreReady = keyStore.add(privateKey, 'pem');
+    const {encodeToken, decodeToken, getPublicKeys} = Tokens({privateKey, publicKey, issuer});
+
+    const users = Users({
+        createMember,
+        updateMember,
+        getMember,
+        validateMember,
+        sendEmail,
+        encodeToken,
+        decodeToken
+    });
 
     const router = Router();
 
     const apiRouter = Router();
 
     apiRouter.use(body.json());
-    apiRouter.use(function waitForKeyStore(req, res, next) {
-        keyStoreReady.then((jwk) => {
-            req.jwk = jwk;
-            next();
-        });
-    });
 
-    const {getCookie, setCookie, removeCookie} = cookies(sessionSecret);
+    /* session */
+    const {getCookie, setCookie, removeCookie} = Cookies(sessionSecret);
 
+    /* token */
     apiRouter.post('/token', getData('audience'), (req, res) => {
         const {signedin} = getCookie(req);
         if (!signedin) {
@@ -48,19 +55,16 @@ module.exports = function MembersApi({
 
         const {audience, origin} = req.data;
 
-        validateAudience({audience, origin, id: signedin}).then(() => {
-            const token = jwt.sign({
+        validateAudience({audience, origin, id: signedin})
+            .then(() => encodeToken({
                 sub: signedin,
-                kid: req.jwk.kid
-            }, privateKey, {
-                algorithm: 'RS512',
-                audience,
-                issuer
-            });
-            return res.end(token);
-        }).catch(handleError(403, res));
+                aud: audience
+            }))
+            .then(token => res.end(token))
+            .catch(handleError(403, res));
     });
 
+    /* security */
     function ssoOriginCheck(req, res, next) {
         if (!req.data.origin || req.data.origin !== ssoOrigin) {
             res.writeHead(403);
@@ -69,47 +73,21 @@ module.exports = function MembersApi({
         next();
     }
 
+    /* users, token, emails */
     apiRouter.post('/request-password-reset', getData('email'), ssoOriginCheck, (req, res) => {
         const {email} = req.data;
 
-        const memberPromise = getMember({email});
-
-        memberPromise.catch(() => {
-            res.writeHead(200);
-            res.end();
-        });
-
-        memberPromise.then((member) => {
-            const token = jwt.sign({
-                sub: member.id,
-                kid: req.jwk.kid
-            }, privateKey, {
-                algorithm: 'RS512',
-                issuer
-            });
-            return sendEmail(member, {token});
-        }).then(() => {
+        users.requestPasswordReset({email}).then(() => {
             res.writeHead(200);
             res.end();
         }).catch(handleError(500, res));
     });
 
+    /* users, token */
     apiRouter.post('/reset-password', getData('token', 'password'), ssoOriginCheck, (req, res) => {
         const {token, password} = req.data;
 
-        try {
-            jwt.verify(token, publicKey, {
-                algorithm: 'RS512',
-                issuer
-            });
-        } catch (err) {
-            res.writeHead(401);
-            return res.end();
-        }
-
-        const id = jwt.decode(token).sub;
-
-        updateMember({id}, {password}).then((member) => {
+        users.resetPassword({token, password}).then((member) => {
             res.writeHead(200, {
                 'Set-Cookie': setCookie(member)
             });
@@ -117,11 +95,12 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
+    /* users, email */
     apiRouter.post('/signup', getData('name', 'email', 'password'), ssoOriginCheck, (req, res) => {
         const {name, email, password} = req.data;
 
         // @TODO this should attempt to reset password before creating member
-        createMember({name, email, password}).then((member) => {
+        users.create({name, email, password}).then((member) => {
             res.writeHead(200, {
                 'Set-Cookie': setCookie(member)
             });
@@ -129,10 +108,11 @@ module.exports = function MembersApi({
         }).catch(handleError(400, res));
     });
 
+    /* users, session */
     apiRouter.post('/signin', getData('email', 'password'), ssoOriginCheck, (req, res) => {
         const {email, password} = req.data;
 
-        validateMember({email, password}).then((member) => {
+        users.validate({email, password}).then((member) => {
             res.writeHead(200, {
                 'Set-Cookie': setCookie(member)
             });
@@ -140,6 +120,7 @@ module.exports = function MembersApi({
         }).catch(handleError(401, res));
     });
 
+    /* session */
     apiRouter.post('/signout', getData(), (req, res) => {
         res.writeHead(200, {
             'Set-Cookie': removeCookie()
@@ -147,6 +128,7 @@ module.exports = function MembersApi({
         res.end();
     });
 
+    /* http */
     const staticRouter = Router();
     staticRouter.use('/static', static(require('path').join(__dirname, './static/auth/dist')));
     staticRouter.use('/gateway', static(require('path').join(__dirname, './static/gateway')));
@@ -154,11 +136,13 @@ module.exports = function MembersApi({
         res.sendFile(require('path').join(__dirname, './static/auth/dist/index.html'));
     });
 
+    /* http */
     router.use('/api', apiRouter);
     router.use('/static', staticRouter);
+    /* token */
     router.get('/.well-known/jwks.json', (req, res) => {
-        keyStoreReady.then(() => {
-            res.json(keyStore.toJSON());
+        getPublicKeys().then((jwks) => {
+            res.json(jwks);
         });
     });
 
@@ -168,39 +152,7 @@ module.exports = function MembersApi({
 
     httpHandler.staticRouter = staticRouter;
     httpHandler.apiRouter = apiRouter;
-    httpHandler.keyStore = keyStore;
+    httpHandler.memberUserObject = users;
 
     return httpHandler;
 };
-
-function getData(...props) {
-    return function (req, res, next) {
-        if (!req.body) {
-            res.writeHead(400);
-            return res.end();
-        }
-
-        const data = props.concat('origin').reduce((data, prop) => {
-            if (!data || !req.body[prop]) {
-                return null;
-            }
-            return Object.assign(data, {
-                [prop]: req.body[prop]
-            });
-        }, {});
-
-        if (!data) {
-            res.writeHead(400);
-            return res.end(`Expected {${props.join(', ')}}`);
-        }
-        req.data = data || {};
-        next();
-    };
-}
-
-function handleError(status, res) {
-    return function () {
-        res.writeHead(status);
-        res.end();
-    };
-}
