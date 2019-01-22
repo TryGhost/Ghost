@@ -150,6 +150,15 @@ export default class App extends Component {
                     this.hasError({errorType: 'no-input', data: 'password'}) ||
                     this.hasError({errorType: 'no-input', data: 'name'})
                 );
+            case 'request-password-reset':
+                return (
+                    this.hasError({errorType: 'no-input', data: 'email'})
+                );
+            case 'reset-password':
+                return (
+                    this.hasError({errorType: 'no-input', data: 'password'})
+                );
+                break;
         }
         return false;
     }
