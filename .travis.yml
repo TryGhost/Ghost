@@ -39,6 +39,13 @@ install:
   - yarn
   - if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi # fix sqlite caching issues
 
+script: |
+  if [ "${TRAVIS_EVENT_TYPE}" = "cron" ]; then
+    yarn test:regression
+  else
+    yarn test
+  fi
+
 after_success:
   - |
       if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
