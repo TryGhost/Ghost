@@ -88,7 +88,7 @@ const authenticate = (req, res, next) => {
 
         // ensure the token was meant for this endpoint
         const options = Object.assign({
-            aud: req.originalUrl
+            audience: req.originalUrl
         }, JWT_OPTIONS);
 
         try {
