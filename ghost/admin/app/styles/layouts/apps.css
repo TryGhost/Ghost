@@ -290,12 +290,17 @@
 .app-icon {
     position: relative;
     flex: 0 0 60px;
-    margin: 0 15px 0 0;
+    margin: 0 10px 0 0;
+    padding: 5px;
     width: 60px;
     height: 60px;
     background-position: center center;
     background-size: cover;
     border-radius: 10%;
+}
+
+.app-icon img {
+    display: block;
 }
 
 .app-cell h3 {
