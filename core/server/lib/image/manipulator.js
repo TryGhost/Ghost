@@ -46,6 +46,7 @@ const makeSafe = fn => (...args) => {
     try {
         require('sharp');
     } catch (err) {
+        delete err.code;
         return Promise.reject(new common.errors.InternalServerError({
             message: 'Sharp wasn\'t installed',
             code: 'SHARP_INSTALLATION',
