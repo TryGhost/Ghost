@@ -105,6 +105,7 @@ module.exports = {
         const jwt = require('jsonwebtoken');
         const JWT_OPTIONS = {
             algorithm: 'HS256',
+            expiresIn: '5m',
             audience: endpoint
         };
 

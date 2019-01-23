@@ -168,4 +168,39 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
             urlUtil.forTag.getCall(0).args.should.eql(['id3', tag]);
         });
     });
+
+    describe('mapIntegration', () => {
+        let integrationModel;
+
+        beforeEach(() => {
+            integrationModel = (data) => {
+                return Object.assign(data, {toJSON: sinon.stub().returns(data)});
+            };
+        });
+
+        it('formats admin keys', () => {
+            const frame = {
+            };
+
+            const integration = integrationModel(testUtils.DataGenerator.forKnex.createIntegration({
+                api_keys: testUtils.DataGenerator.Content.api_keys
+            }));
+
+            const mapped = mapper.mapIntegration(integration, frame);
+
+            should.exist(mapped.api_keys);
+
+            mapped.api_keys.forEach(key => {
+                if (key.type === 'admin') {
+                    const [id, secret] = key.secret.split(':');
+                    should.exist(id);
+                    should.exist(secret);
+                } else {
+                    const [id, secret] = key.secret.split(':');
+                    should.exist(id);
+                    should.not.exist(secret);
+                }
+            });
+        });
+    });
 });

@@ -50,6 +50,14 @@ describe('Integrations API', function () {
 
                     const adminApiKey = integration.api_keys.find(findBy('type', 'admin'));
                     should.equal(adminApiKey.integration_id, integration.id);
+                    should.exist(adminApiKey.secret);
+
+                    // check Admin API key secret format
+                    const [id, secret] = adminApiKey.secret.split(':');
+                    should.exist(id);
+                    should.equal(id, adminApiKey.id);
+                    should.exist(secret);
+                    secret.length.should.equal(128);
 
                     done();
                 });
