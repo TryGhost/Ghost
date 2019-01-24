@@ -8,7 +8,7 @@ describe('Permissions', function () {
                 internal: false,
                 external: false,
                 user: null,
-                api_key_id: null,
+                api_key: null,
                 app: null,
                 public: true
             });
@@ -16,7 +16,7 @@ describe('Permissions', function () {
                 internal: false,
                 external: false,
                 user: null,
-                api_key_id: null,
+                api_key: null,
                 app: null,
                 public: true
             });
@@ -27,7 +27,7 @@ describe('Permissions', function () {
                 internal: false,
                 external: false,
                 user: null,
-                api_key_id: null,
+                api_key: null,
                 app: null,
                 public: true
             });
@@ -35,7 +35,7 @@ describe('Permissions', function () {
                 internal: false,
                 external: false,
                 user: null,
-                api_key_id: null,
+                api_key: null,
                 app: null,
                 public: true
             });
@@ -46,20 +46,43 @@ describe('Permissions', function () {
                 internal: false,
                 external: false,
                 user: 1,
-                api_key_id: null,
+                api_key: null,
                 app: null,
                 public: false
             });
         });
 
-        it('should return api_key_id if api_key_id provided', function () {
-            parseContext({api_key_id: 1}).should.eql({
+        it('should return api_key and public context if content api_key provided', function () {
+            parseContext({api_key: {
+                id: 1,
+                type: 'content'
+            }}).should.eql({
                 internal: false,
                 external: false,
                 user: null,
-                api_key_id: 1,
+                api_key: {
+                    id: 1,
+                    type: 'content'
+                },
                 app: null,
                 public: true
+            });
+        });
+
+        it('should return api_key and non public context if admin api_key provided', function () {
+            parseContext({api_key: {
+                id: 1,
+                type: 'admin'
+            }}).should.eql({
+                internal: false,
+                external: false,
+                user: null,
+                api_key: {
+                    id: 1,
+                    type: 'admin'
+                },
+                app: null,
+                public: false
             });
         });
 
@@ -68,7 +91,7 @@ describe('Permissions', function () {
                 internal: false,
                 external: false,
                 user: null,
-                api_key_id: null,
+                api_key: null,
                 app: 5,
                 public: false
             });
@@ -79,7 +102,7 @@ describe('Permissions', function () {
                 internal: true,
                 external: false,
                 user: null,
-                api_key_id: null,
+                api_key: null,
                 app: null,
                 public: false
             });
@@ -88,7 +111,7 @@ describe('Permissions', function () {
                 internal: true,
                 external: false,
                 user: null,
-                api_key_id: null,
+                api_key: null,
                 app: null,
                 public: false
             });
@@ -99,7 +122,7 @@ describe('Permissions', function () {
                 internal: false,
                 external: true,
                 user: null,
-                api_key_id: null,
+                api_key: null,
                 app: null,
                 public: false
             });
@@ -108,7 +131,7 @@ describe('Permissions', function () {
                 internal: false,
                 external: true,
                 user: null,
-                api_key_id: null,
+                api_key: null,
                 app: null,
                 public: false
             });

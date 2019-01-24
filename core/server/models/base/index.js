@@ -423,7 +423,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
              * use ID '1'. This logic exists for a LONG while now. The owner ID only changes from '1' to something else,
              * if you transfer ownership.
              *
-             * @TODO: Update this code section as soon as we have decided between `context.api_key_id` and `context.integration`
+             * @TODO: Update this code section as soon as we have decided between `context.api_key` and `context.integration`
              */
             return ghostBookshelf.Model.internalUser;
         } else if (options.context.internal) {

@@ -7,23 +7,29 @@ describe('Unit: v2/utils/index', function () {
         sinon.restore();
     });
     describe('isContentAPI', function () {
-        it('is truthy when having api key and no user', function () {
+        it('is truthy when having api key of content type', function () {
             const frame = {
                 options: {
                     context: {
-                        api_key_id: 'api_key'
+                        api_key: {
+                            id: 'keyId',
+                            type: 'content'
+                        }
                     }
                 }
             };
             should(utils.isContentAPI(frame)).equal(true);
         });
 
-        it('is falsy when having api key and a user', function () {
+        it.only('is falsy when having api key and a user', function () {
             const frame = {
                 options: {
                     context: {
                         user: {},
-                        api_key_id: 'api_key'
+                        api_key: {
+                            id: 'keyId',
+                            type: 'content'
+                        }
                     }
                 }
             };
