@@ -22,5 +22,10 @@ export default AuthenticatedRoute.extend({
                 return this.transitionTo('posts');
             }
         });
+    },
+
+    setupController(controller) {
+        this._super(...arguments);
+        controller.fetchMembers.perform();
     }
 });
