@@ -18,10 +18,10 @@ const {Role} = require('./role');
  * ref: https://en.wikipedia.org/wiki/Birthday_problem#Approximations
  *
  * 26 char hex string = 13 bytes
- * 512 bit JWT secret     = 64 bytes
+ * 64 char hex string JWT secret = 32 bytes
  */
 const createSecret = (type) => {
-    const bytes = type === 'content' ? 13 : 64;
+    const bytes = type === 'content' ? 13 : 32;
     return crypto.randomBytes(bytes).toString('hex');
 };
 
@@ -68,7 +68,7 @@ const ApiKey = ghostBookshelf.Model.extend({
     }
 }, {
     refreshSecret(data, options) {
-        const secret = createSecret();
+        const secret = createSecret(data.type);
         return this.edit(Object.assign({}, data, {secret}), options);
     }
 });

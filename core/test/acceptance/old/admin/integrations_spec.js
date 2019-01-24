@@ -57,7 +57,7 @@ describe('Integrations API', function () {
                     should.exist(id);
                     should.equal(id, adminApiKey.id);
                     should.exist(secret);
-                    secret.length.should.equal(128);
+                    secret.length.should.equal(64);
 
                     done();
                 });
