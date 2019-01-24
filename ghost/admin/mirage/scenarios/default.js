@@ -8,4 +8,6 @@ export default function (server) {
     server.createList('tag', 100);
 
     server.create('integration', {name: 'Demo'});
+
+    server.createList('member', 125);
 }
