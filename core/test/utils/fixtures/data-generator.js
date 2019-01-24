@@ -386,7 +386,7 @@ DataGenerator.Content = {
         {
             id: ObjectId.generate(),
             type: 'admin',
-            secret: _.repeat('a', 128)
+            secret: _.repeat('a', 64)
             // integration_id: DataGenerator.Content.integrations[0].id
         },
         {
