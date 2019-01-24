@@ -13,6 +13,7 @@ const stringToHslColor = function (str, saturation, lightness) {
 };
 
 export default Component.extend({
+    tagName: '',
 
     member: null,
 

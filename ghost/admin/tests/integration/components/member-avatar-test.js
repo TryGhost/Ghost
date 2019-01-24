@@ -1,24 +1,19 @@
-import { expect } from 'chai';
-import { describe, it } from 'mocha';
-import { setupComponentTest } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
+import {describe, it} from 'mocha';
+import {expect} from 'chai';
+import {render} from '@ember/test-helpers';
+import {setupRenderingTest} from 'ember-mocha';
 
-describe('Integration | Component | member-avatar', function() {
-  setupComponentTest('member-avatar', {
-    integration: true
-  });
+describe('Integration: Component: member-avatar', function () {
+    setupRenderingTest();
 
-  it('renders', function() {
-    // Set any properties with this.set('myProperty', 'value');
-    // Handle any actions with this.on('myAction', function(val) { ... });
-    // Template block usage:
-    // this.render(hbs`
-    //   {{#member-avatar}}
-    //     template content
-    //   {{/member-avatar}}
-    // `);
+    it('renders', async function () {
+        this.set('member', {
+            name: 'Homer Simpson'
+        });
 
-    this.render(hbs`{{member-avatar}}`);
-    expect(this.$()).to.have.length(1);
-  });
+        await render(hbs`<MemberAvatar @member={{member}} />`);
+        let avatar = this.element;
+        expect(avatar).to.exist;
+    });
 });
