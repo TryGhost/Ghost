@@ -435,7 +435,9 @@ describe('Permissions', function () {
                         roles: [testUtils.DataGenerator.Content.roles[5]]
                     });
                 });
-                permissions.canThis({api_key_id: 123}) // api key context
+                permissions.canThis({api_key: {
+                    id: 123
+                }}) // api key context
                     .edit
                     .tag({id: 1}) // tag id in model syntax
                     .then(function (res) {
