@@ -6,6 +6,22 @@ const http = (apiImpl) => {
     return (req, res, next) => {
         debug('request');
 
+        let apiKey = null;
+        let integration = null;
+        let user = null;
+
+        if (req.api_key) {
+            apiKey = {
+                id: req.api_key.get('id'),
+                type: req.api_key.get('type')
+            };
+            integration = req.api_key.get('integration_id');
+        }
+
+        if ((req.user && req.user.id) || (req.user && models.User.isExternalUser(req.user.id))) {
+            user = req.user.id;
+        }
+
         const frame = new shared.Frame({
             body: req.body,
             file: req.file,
@@ -14,8 +30,9 @@ const http = (apiImpl) => {
             params: req.params,
             user: req.user,
             context: {
-                api_key_id: (req.api_key && req.api_key.id) ? req.api_key.id : null,
-                user: ((req.user && req.user.id) || (req.user && models.User.isExternalUser(req.user.id))) ? req.user.id : null,
+                api_key: apiKey,
+                user: user,
+                integration: integration,
                 member: (req.member || null)
             }
         });

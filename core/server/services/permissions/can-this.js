@@ -124,7 +124,7 @@ CanThisResult.prototype.beginCheck = function (context) {
         appPermissionLoad,
         permissionsLoad;
 
-    // Get context.user, context.api_key_id and context.app
+    // Get context.user, context.api_key and context.app
     context = parseContext(context);
 
     if (actionsMap.empty()) {
@@ -140,10 +140,10 @@ CanThisResult.prototype.beginCheck = function (context) {
     }
 
     // Kick off loading of api key permissions if necessary
-    if (context.api_key_id) {
-        apiKeyPermissionLoad = providers.apiKey(context.api_key_id);
+    if (context.api_key) {
+        apiKeyPermissionLoad = providers.apiKey(context.api_key.id);
     } else {
-        // Resolve null if no context.api_key_id
+        // Resolve null if no context.api_key
         apiKeyPermissionLoad = Promise.resolve(null);
     }
 

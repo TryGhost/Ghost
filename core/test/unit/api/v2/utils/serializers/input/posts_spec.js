@@ -10,7 +10,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 options: {
                     context: {
                         user: 0,
-                        api_key_id: 1
+                        api_key: {
+                            id: 1,
+                            type: 'content'
+                        },
                     }
                 }
             };
@@ -39,7 +42,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 options: {
                     context: {
                         user: 0,
-                        api_key_id: 1
+                        api_key: {
+                            id: 1,
+                            type: 'content'
+                        },
                     },
                     filter: 'status:published+tag:eins'
                 }
@@ -55,7 +61,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 options: {
                     context: {
                         user: 0,
-                        api_key_id: 1
+                        api_key: {
+                            id: 1,
+                            type: 'content'
+                        },
                     },
                     filter: 'page:true+tag:eins'
                 }
@@ -71,7 +80,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 options: {
                     context: {
                         user: 0,
-                        api_key_id: 1
+                        api_key: {
+                            id: 1,
+                            type: 'content'
+                        },
                     },
                     filter: 'page:true'
                 }
@@ -87,7 +99,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 options: {
                     context: {
                         user: 0,
-                        api_key_id: 1
+                        api_key: {
+                            id: 1,
+                            type: 'content'
+                        },
                     },
                     filter: '(page:true,page:false)'
                 }
@@ -120,7 +135,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 options: {
                     context: {
                         user: 0,
-                        api_key_id: 1
+                        api_key: {
+                            id: 1,
+                            type: 'content'
+                        },
                     }
                 },
                 data: {}
@@ -136,7 +154,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 options: {
                     context: {
                         user: 0,
-                        api_key_id: 1
+                        api_key: {
+                            id: 1,
+                            type: 'content'
+                        },
                     }
                 },
                 data: {
@@ -214,7 +235,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                     options: {
                         context: {
                             user: 0,
-                            api_key_id: 1
+                            api_key: {
+                                id: 1,
+                                type: 'content'
+                            },
                         },
                         withRelated: ['tags', 'authors']
                     },
@@ -254,7 +278,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                     options: {
                         context: {
                             user: 0,
-                            api_key_id: 1
+                            api_key: {
+                                id: 1,
+                                type: 'content'
+                            },
                         },
                         withRelated: ['tags', 'authors']
                     },
