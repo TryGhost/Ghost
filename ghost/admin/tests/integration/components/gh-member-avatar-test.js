@@ -4,7 +4,7 @@ import {expect} from 'chai';
 import {render} from '@ember/test-helpers';
 import {setupRenderingTest} from 'ember-mocha';
 
-describe('Integration: Component: member-avatar', function () {
+describe('Integration: Component: gh-member-avatar', function () {
     setupRenderingTest();
 
     it('renders', async function () {
@@ -12,7 +12,7 @@ describe('Integration: Component: member-avatar', function () {
             name: 'Homer Simpson'
         });
 
-        await render(hbs`<MemberAvatar @member={{member}} />`);
+        await render(hbs`<GhMemberAvatar @member={{member}} />`);
         let avatar = this.element;
         expect(avatar).to.exist;
     });
