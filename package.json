@@ -42,7 +42,7 @@
     "body-parser": "1.18.3",
     "bookshelf": "0.14.2",
     "bookshelf-relations": "0.2.1",
-    "brute-knex": "3.0.0",
+    "brute-knex": "3.0.1",
     "bson-objectid": "1.2.4",
     "chalk": "2.4.2",
     "cheerio": "0.22.0",
