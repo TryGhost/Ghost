@@ -13,7 +13,7 @@ module.exports = function ghostLocals(req, res, next) {
     // relative path from the URL
     res.locals.relativeUrl = req.path;
     // make ghost api version available for the theme + routing
-    res.locals.apiVersion = themeService.getActive().engine('ghost-api');
+    res.locals.apiVersion = themeService.getApiVersion();
 
     next();
 };

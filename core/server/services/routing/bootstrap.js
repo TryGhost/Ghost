@@ -38,7 +38,7 @@ module.exports.init = (options = {start: false}) => {
  *   - is the PreviewRouter an app?
  */
 module.exports.start = () => {
-    const apiVersion = themeService.getActive().engine('ghost-api');
+    const apiVersion = themeService.getApiVersion();
     const RESOURCE_CONFIG = require(`../../services/routing/config/${apiVersion}`);
 
     const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
