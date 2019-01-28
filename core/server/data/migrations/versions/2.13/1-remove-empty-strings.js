@@ -52,8 +52,8 @@ const createReplace = (connection, from, to) => (tableName, columnName) => {
         });
 };
 
-module.exports.up = ({connection}) => {
-    const replaceEmptyStringWithNull = createReplace(connection, '', null);
+module.exports.up = ({transacting}) => {
+    const replaceEmptyStringWithNull = createReplace(transacting, '', null);
 
     return Promise.all(
         tablesToUpdate.map(({tableName, columns}) => Promise.all(
