@@ -375,7 +375,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     // Gets nullable strings
-    emptyStringProperties(options) {
+    getNullableStringProperties(options) {
         return options.query.columnInfo().then((columns) => {
             return Object.keys(columns).filter((column) => {
                 return columns[column].nullable;
@@ -385,7 +385,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // Sets given values to `null`
     setEmptyValuesToNull: function setEmptyValuesToNull(options) {
-        return this.emptyStringProperties(options)
+        return this.getNullableStringProperties(options)
             .then((attributes = []) => {
                 return attributes.forEach((attr) => {
                     if (this.get(attr) === '') {
