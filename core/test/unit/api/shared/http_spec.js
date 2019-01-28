@@ -45,6 +45,7 @@ describe('Unit: api/shared/http', function () {
         apiImpl.args[0][0].options.should.eql({
             context: {
                 api_key: null,
+                integration: null,
                 user: null,
                 member: null
             }
