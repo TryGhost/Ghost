@@ -11,6 +11,9 @@ const schema = require('../../../schema');
 const tablesToUpdate = Object.keys(schema.tables).reduce((tablesToUpdate, tableName) => {
     const table = schema.tables[tableName];
     const columns = Object.keys(table).filter(columnName => table[columnName].nullable);
+    if (!columns.length) {
+        return tablesToUpdate;
+    }
     return tablesToUpdate.concat({
         tableName,
         columns
