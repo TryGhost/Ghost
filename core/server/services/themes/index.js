@@ -1,11 +1,13 @@
-var debug = require('ghost-ignition').debug('themes'),
-    common = require('../../lib/common'),
-    themeLoader = require('./loader'),
-    active = require('./active'),
-    validate = require('./validate'),
-    Storage = require('./Storage'),
-    settingsCache = require('../settings/cache'),
-    themeStorage;
+const debug = require('ghost-ignition').debug('themes');
+const common = require('../../lib/common');
+const themeLoader = require('./loader');
+const active = require('./active');
+const validate = require('./validate');
+const Storage = require('./Storage');
+const settingsCache = require('../settings/cache');
+const engineDefaults = require('./engines/defaults');
+
+let themeStorage;
 
 // @TODO: reduce the amount of things we expose to the outside world
 // Make this a nice clean sensible API we can all understand!
@@ -79,6 +81,13 @@ module.exports = {
     validate: validate,
     toJSON: require('./to-json'),
     getActive: active.get,
+    getApiVersion: function getApiVersion() {
+        if (this.getActive()) {
+            return this.getActive().engine('ghost-api');
+        } else {
+            return engineDefaults['ghost-api'];
+        }
+    },
     activate: function activate(loadedTheme, checkedTheme, error) {
         // no need to check the score, activation should be used in combination with validate.check
         // Use the two theme objects to set the current active theme
@@ -86,11 +95,11 @@ module.exports = {
             let previousGhostAPI;
 
             if (this.getActive()) {
-                previousGhostAPI = this.getActive().engine('ghost-api');
+                previousGhostAPI = this.getApiVersion();
             }
 
             active.set(loadedTheme, checkedTheme, error);
-            const currentGhostAPI = this.getActive().engine('ghost-api');
+            const currentGhostAPI = this.getApiVersion();
 
             common.events.emit('services.themes.activated');
 

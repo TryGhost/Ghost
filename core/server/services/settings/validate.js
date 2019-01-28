@@ -392,7 +392,7 @@ module.exports = function validate(object) {
         object.taxonomies = {};
     }
 
-    const apiVersion = themeService.getActive().engine('ghost-api');
+    const apiVersion = themeService.getApiVersion();
 
     debug('api version', apiVersion);
 
