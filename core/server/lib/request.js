@@ -1,7 +1,14 @@
 var got = require('got'),
     _ = require('lodash'),
     validator = require('../data/validation').validator,
-    common = require('./common');
+    common = require('./common'),
+    ghostVersion = require('./ghost-version');
+
+var defaultOptions = {
+    headers: {
+        'user-agent': 'Ghost/' + ghostVersion.original + ' (https://github.com/TryGhost/Ghost)'
+    }
+};
 
 module.exports = function request(url, options) {
     if (_.isEmpty(url) || !validator.isURL(url)) {
@@ -12,5 +19,7 @@ module.exports = function request(url, options) {
         }));
     }
 
-    return got(url, options);
+    var mergedOptions = _.merge({}, defaultOptions, options);
+
+    return got(url, mergedOptions);
 };
