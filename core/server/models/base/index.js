@@ -201,7 +201,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     onValidate: function onValidate(model, columns, options) {
         this.setEmptyValuesToNull();
-
         return validation.validateSchema(this.tableName, this, options);
     },
 
@@ -374,20 +373,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    // Sets given values to `null`
+    getNullableStringProperties() {
+        const table = schema.tables[this.tableName];
+        return Object.keys(table).filter(column => table[column].nullable);
+    },
+
     setEmptyValuesToNull: function setEmptyValuesToNull() {
-        var self = this,
-            attr;
-
-        if (!this.emptyStringProperties) {
-            return;
-        }
-
-        attr = this.emptyStringProperties();
-
-        _.each(attr, function (value) {
-            if (self.get(value) === '') {
-                self.set(value, null);
+        const nullableStringProps = this.getNullableStringProperties();
+        return nullableStringProps.forEach((prop) => {
+            if (this.get(prop) === '') {
+                this.set(prop, null);
             }
         });
     },
