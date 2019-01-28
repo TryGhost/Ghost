@@ -10,7 +10,10 @@ const schema = require('../../../schema');
  * */
 const tablesToUpdate = Object.keys(schema.tables).reduce((tablesToUpdate, tableName) => {
     const table = schema.tables[tableName];
-    const columns = Object.keys(table).filter(columnName => table[columnName].nullable);
+    const columns = Object.keys(table).filter((columnName) => {
+        const column = table[columnName];
+        return column.nullable && ['string', 'text'].includes(column.type);
+    });
     if (!columns.length) {
         return tablesToUpdate;
     }
@@ -74,5 +77,5 @@ module.exports.down = ({connection}) => {
 };
 
 module.exports.config = {
-      transaction: true
+    transaction: true
 };
