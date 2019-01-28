@@ -200,9 +200,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @returns {*}
      */
     onValidate: function onValidate(model, columns, options) {
-        return this.setEmptyValuesToNull(options).then(() => {
-            return validation.validateSchema(this.tableName, this, options);
-        });
+        this.setEmptyValuesToNull();
+        return validation.validateSchema(this.tableName, this, options);
     },
 
     /**
@@ -374,25 +373,18 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    getNullableStringProperties: _.memoize(function getNullableStringProperties(options) {
-        return options.query.columnInfo().then((columns) => {
-            return Object.keys(columns).filter((column) => {
-                return columns[column].nullable;
-            });
-        });
-    }, function getCacheKey() {
-        return this.tableName;
-    }),
+    getNullableStringProperties() {
+        const table = schema.tables[this.tableName];
+        return Object.keys(table).filter(column => table[column].nullable);
+    },
 
-    setEmptyValuesToNull: function setEmptyValuesToNull(options) {
-        return this.getNullableStringProperties(options)
-            .then((attributes = []) => {
-                return attributes.forEach((attr) => {
-                    if (this.get(attr) === '') {
-                        this.set(attr, null);
-                    }
-                });
-            });
+    setEmptyValuesToNull: function setEmptyValuesToNull() {
+        const nullableStringProps = this.getNullableStringProperties();
+        return nullableStringProps.forEach((prop) => {
+            if (this.get(prop) === '') {
+                this.set(prop, null);
+            }
+        });
     },
 
     // Get the user from the options object
