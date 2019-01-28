@@ -62,4 +62,4 @@ after_success:
       fi
 
 after_script:
-  - curl -X POST -H "Content-Type:application/json" -d "{\"attachments\": [{\"color\": \"warning\", \"fallback\": \"Build Notification: $TRAVIS_BUILD_WEB_URL\", \"title\": \"Build Notification\", \"text\": \"$TRAVIS_BUILD_WEB_URL\"}]}" $SLACK_URL
+  - "curl -X POST -H 'Content-Type:application/json' -d '{\"attachments\": [{\"color\": \"warning\", \"fallback\": \"Build Notification: $TRAVIS_BUILD_WEB_URL\", \"title\": \"Build Notification\", \"text\": \"$TRAVIS_BUILD_WEB_URL\"}]}' $SLACK_URL"
