@@ -4,6 +4,7 @@ import layout from '../templates/components/koenig-basic-html-input';
 import parserPlugins from '../options/basic-html-parser-plugins';
 import registerKeyCommands, {BASIC_KEY_COMMANDS} from '../options/key-commands';
 import validator from 'validator';
+import {DRAG_DISABLED_DATA_ATTR} from '../lib/dnd/constants';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {arrayToMap, toggleSpecialFormatEditState} from './koenig-editor';
 import {assign} from '@ember/polyfills';
@@ -214,6 +215,8 @@ export default Component.extend({
 
         this._pasteHandler = run.bind(this, this.handlePaste);
         editorElement.addEventListener('paste', this._pasteHandler);
+
+        this.element.dataset[DRAG_DISABLED_DATA_ATTR] = 'true';
     },
 
     // our ember component has rendered, now we need to render the mobiledoc

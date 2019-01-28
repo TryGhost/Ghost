@@ -104,6 +104,13 @@ export default Service.extend({
             this.grabbedElement = utils.getParent(event.target, constants.DRAGGABLE_SELECTOR);
 
             if (this.grabbedElement) {
+                // some elements may have explicitly disabled dragging such as
+                // captions where we want to allow text selection instead
+                let dragDisabledElement = utils.getParent(event.target, constants.DRAG_DISABLED_SELECTOR);
+                if (dragDisabledElement && this.grabbedElement.contains(dragDisabledElement)) {
+                    return;
+                }
+
                 let containerElement = utils.getParent(this.grabbedElement, constants.CONTAINER_SELECTOR);
                 let container = this.containers.findBy('element', containerElement);
                 this.sourceContainer = container;
