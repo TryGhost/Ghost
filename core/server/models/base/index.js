@@ -200,9 +200,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @returns {*}
      */
     onValidate: function onValidate(model, columns, options) {
-        this.setEmptyValuesToNull();
-
-        return validation.validateSchema(this.tableName, this, options);
+        return this.setEmptyValuesToNull(options).then(() => {
+            return validation.validateSchema(this.tableName, this, options);
+        });
     },
 
     /**
@@ -374,22 +374,25 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    // Sets given values to `null`
-    setEmptyValuesToNull: function setEmptyValuesToNull() {
-        var self = this,
-            attr;
-
-        if (!this.emptyStringProperties) {
-            return;
-        }
-
-        attr = this.emptyStringProperties();
-
-        _.each(attr, function (value) {
-            if (self.get(value) === '') {
-                self.set(value, null);
-            }
+    // Gets nullable strings
+    emptyStringProperties(options) {
+        return options.query.columnInfo().then((columns) => {
+            return Object.keys(columns).filter((column) => {
+                return columns[column].nullable;
+            });
         });
+    },
+
+    // Sets given values to `null`
+    setEmptyValuesToNull: function setEmptyValuesToNull(options) {
+        return this.emptyStringProperties(options)
+            .then((attributes = []) => {
+                return attributes.forEach((attr) => {
+                    if (this.get(attr) === '') {
+                        this.set(attr, null);
+                    }
+                });
+            });
     },
 
     // Get the user from the options object
