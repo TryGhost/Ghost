@@ -13,6 +13,9 @@ export const DRAGGABLE_SELECTOR = `[data-${dasherize(DRAGGABLE_DATA_ATTR)}]`;
 export const DROPPABLE_DATA_ATTR = 'koenigDndDroppable';
 export const DROPPABLE_SELECTOR = `[data-${dasherize(DROPPABLE_DATA_ATTR)}]`;
 
+export const DRAG_DISABLED_DATA_ATTR = 'koenigDndDisabled';
+export const DRAG_DISABLED_SELECTOR = `[data-${dasherize(DRAG_DISABLED_DATA_ATTR)}]`;
+
 export const DROP_INDICATOR_ID = 'koenig-drag-drop-indicator';
 export const DROP_INDICATOR_ZINDEX = 10000;
 

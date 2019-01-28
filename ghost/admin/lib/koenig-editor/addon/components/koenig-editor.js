@@ -1066,6 +1066,8 @@ export default Component.extend({
 
         // select the card with edit mode
         this.selectCard(card, true);
+
+        this._cardDragDropContainer.disableDrag();
     },
 
     deselectCard(card) {
@@ -1073,6 +1075,7 @@ export default Component.extend({
         card.set('isSelected', false);
         this.selectedCard = null;
         this._showCursor();
+        this._cardDragDropContainer.enableDrag();
     },
 
     deleteCard(card, cursorDirection) {
