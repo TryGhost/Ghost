@@ -6,6 +6,7 @@ describe('Unit: v2/utils/index', function () {
     afterEach(function () {
         sinon.restore();
     });
+
     describe('isContentAPI', function () {
         it('is truthy when having api key of content type', function () {
             const frame = {
@@ -21,7 +22,7 @@ describe('Unit: v2/utils/index', function () {
             should(utils.isContentAPI(frame)).equal(true);
         });
 
-        it.only('is falsy when having api key and a user', function () {
+        it('is falsy when having api key and a user', function () {
             const frame = {
                 options: {
                     context: {
