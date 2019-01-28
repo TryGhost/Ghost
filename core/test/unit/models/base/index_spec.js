@@ -174,21 +174,14 @@ describe('Models: base', function () {
         it('resets given empty value to null', function () {
             const base = models.Base.Model.forge({a: '', b: ''});
 
-            base.emptyStringProperties = sinon.stub();
-            base.emptyStringProperties.returns(['a']);
+            base.getNullableStringProperties = sinon.stub();
+            base.getNullableStringProperties.returns(['a']);
 
             base.get('a').should.eql('');
             base.get('b').should.eql('');
             base.setEmptyValuesToNull();
             should.not.exist(base.get('a'));
             base.get('b').should.eql('');
-        });
-
-        it('does not reset to null if model does\'t provide properties', function () {
-            const base = models.Base.Model.forge({a: ''});
-            base.get('a').should.eql('');
-            base.setEmptyValuesToNull();
-            base.get('a').should.eql('');
         });
     });
 

@@ -230,13 +230,6 @@ User = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    emptyStringProperties: function emptyStringProperties() {
-        // CASE: the client might send empty image properties with "" instead of setting them to null.
-        // This can cause GQL to fail. We therefore enforce 'null' for empty image properties.
-        // See https://github.com/TryGhost/GQL/issues/24
-        return ['profile_image', 'cover_image'];
-    },
-
     format: function format(options) {
         if (!_.isEmpty(options.website) &&
             !validator.isURL(options.website, {
