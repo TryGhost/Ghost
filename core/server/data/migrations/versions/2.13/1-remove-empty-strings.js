@@ -72,3 +72,7 @@ module.exports.down = ({connection}) => {
         ))
     );
 };
+
+module.exports.config = {
+      transaction: true
+};
