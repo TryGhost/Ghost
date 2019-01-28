@@ -374,7 +374,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    // Gets nullable strings
     getNullableStringProperties: _.memoize(function getNullableStringProperties(options) {
         return options.query.columnInfo().then((columns) => {
             return Object.keys(columns).filter((column) => {
@@ -385,7 +384,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return this.tableName;
     }),
 
-    // Sets given values to `null`
     setEmptyValuesToNull: function setEmptyValuesToNull(options) {
         return this.getNullableStringProperties(options)
             .then((attributes = []) => {
