@@ -117,7 +117,7 @@ module.exports = [
         events: {
             add: 'user.activated',
             update: 'user.activated.edited',
-            remove: 'user.deactivated'
+            remove: 'user.deleted'
         }
     }
 ];
