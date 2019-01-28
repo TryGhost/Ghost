@@ -156,13 +156,8 @@
     </section>
 
     <section class="apps-grid-container pt6">
-        <div class="flex flex-row items-center pb2">
-            <span class="dib flex-grow-1 midgrey">Custom integrations</span>
-            {{#link-to "settings.integrations.new" class="gh-btn gh-btn-green" data-test-button="new-integration"}}
-                <span>Add custom integration</span>
-            {{/link-to}}
-        </div>
 
+        <span class="apps-grid-title pb2">Custom integrations</span>
         <div class="apps-grid">
             {{#each integrations as |integration|}}
                 <div class="apps-grid-cell" data-test-custom-integration>
@@ -193,17 +188,37 @@
                     {{/link-to}}
                 </div>
             {{else}}
-                <div class="flex flex-column justify-center items-center mih40 miw-100" data-test-blank="custom-integrations">
+                <div class="flex flex-column justify-center items-center mih30 miw-100" data-test-blank="custom-integrations">
                     {{#if fetchIntegrations.isRunning}}
                         <div class="gh-loading-spinner"></div>
                     {{else}}
-                        <p class="ma0 pa0 tc midgrey lh-title">
-                            Create your own custom Ghost integrations<br>
-                            with dedicated API keys & webhooks
-                        </p>
+                        <div class="flex flex-column items-center pa5 pt15 pb15">
+                            <p class="ma0 pa0 tc midgrey lh-title mt2">
+                                Create your own custom Ghost integrations with dedicated API keys & webhooks
+                            </p>
+                            {{#link-to "settings.integrations.new" class="" data-test-button="new-integration"}}
+                                <div class="flex items-center pa2 pt1">
+                                    {{svg-jar "add" class="w3 h3 fill-blue-d1"}}
+                                    <span class="db ml1 blue nudge-bottom--1">Add custom integration</span>
+                                </div>
+                            {{/link-to}}
+                        </div>
                     {{/if}}
                 </div>
             {{/each}}
+
+            {{#if integrations}}
+            <div class="apps-grid-cell new-integration-cell">
+                {{#link-to "settings.integrations.new" class="" data-test-button="new-integration"}}
+                <article class="apps-card-app">
+                    <div class="flex items-center">
+                        {{svg-jar "add" class="w3 h3 fill-blue-d1"}}
+                        <span class="db ml1 blue nudge-bottom--1 fw4">Add custom integration</span>
+                    </div>
+                </article>
+                {{/link-to}}
+            </div>
+            {{/if}}
         </div>
     </section>
 </section>

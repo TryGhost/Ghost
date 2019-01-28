@@ -133,8 +133,9 @@
 .apps-grid-cell {
     flex: 1 1 100%;
 }
+
 .apps-grid-cell:hover {
-    background: color-mod(var(--lightgrey) l(+5%));
+    background: color-mod(var(--lightgrey) l(+6%) s(-2%));
 }
 
 .apps-card-app {
@@ -148,9 +149,19 @@
     transition: background 0.3s ease;
 }
 
+.new-integration-cell .apps-card-app {
+    padding: 10px 14px;
+    height: auto;
+}
+
 @media (max-width: 500px) {
     .apps-card-app {
         min-height: 75px;
+        height: auto;
+    }
+
+    .new-integration-cell .apps-card-app {
+        min-height: auto;
         height: auto;
     }
 }
@@ -229,7 +240,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 1.7rem;
+    font-size: 1.75rem;
     line-height: 1.15em;
     font-weight: bold;
 }
@@ -276,6 +287,7 @@
     margin-top: 15px;
     width: 100%;
 }
+
 /* Slack
 /* ---------------------------------------------------------- */
 
@@ -332,4 +344,15 @@
 .app-config-form > .gh-btn-grey:hover,
 .app-config-form > .gh-btn-grey:focus {
     border-color: rgb(223, 225, 227);
+}
+
+
+/* Custom Integrations
+/* ---------------------------------------------------------- */
+.new-webhook-cell td {
+    padding: 0;
+}
+
+.new-webhook-cell:hover {
+    background: color-mod(var(--lightgrey) l(+6%) s(-2%));
 }
