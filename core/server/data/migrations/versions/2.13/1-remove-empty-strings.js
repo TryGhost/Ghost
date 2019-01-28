@@ -21,13 +21,32 @@ const tablesToUpdate = Object.keys(schema.tables).reduce((tablesToUpdate, tableN
 }, []);
 
 const createReplace = (connection, from, to) => (tableName, columnName) => {
-    common.logging.info(
-        `Updating ${tableName}, setting all '${from}' in ${columnName} to ${to}`
-    );
+    return connection.schema.hasTable(tableName)
+        .then((tableExists) => {
+            if (!tableExists) {
+                common.logging.warn(
+                    `Table ${tableName} does not exist`
+                );
+                return;
+            }
+            return connection.schema.hasColumn(tableName, columnName)
+                .then((columnExists) => {
+                    if (!columnExists) {
+                        common.logging.warn(
+                            `Table '${tableName}' does not have column '${columnName}'`
+                        );
+                        return;
+                    }
 
-    return connection(tableName)
-        .where(columnName, from)
-        .update(columnName, to);
+                    common.logging.info(
+                        `Updating ${tableName}, setting '${from}' in ${columnName} to '${to}'`
+                    );
+
+                    return connection(tableName)
+                        .where(columnName, from)
+                        .update(columnName, to);
+                });
+        });
 };
 
 module.exports.up = ({connection}) => {
