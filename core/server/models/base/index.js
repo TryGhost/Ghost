@@ -375,13 +375,18 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     // Gets nullable strings
-    getNullableStringProperties(options) {
-        return options.query.columnInfo().then((columns) => {
-            return Object.keys(columns).filter((column) => {
-                return columns[column].nullable;
-            });
-        });
-    },
+    getNullableStringProperties: (function (cache = {}) {
+        return function getNullableStringProperties(options) {
+            if (!cache[this.tableName]) {
+                cache[this.tableName] = options.query.columnInfo().then((columns) => {
+                    return Object.keys(columns).filter((column) => {
+                        return columns[column].nullable;
+                    });
+                });
+            }
+            return cache[this.tableName];
+        }
+    })(),
 
     // Sets given values to `null`
     setEmptyValuesToNull: function setEmptyValuesToNull(options) {
