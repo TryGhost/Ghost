@@ -625,6 +625,30 @@ Post = ghostBookshelf.Model.extend({
         delete options.status;
         delete options.staticPages;
         return filter;
+    },
+
+    getAction(ghostEvent, options) {
+        const supported = ['post.edited', 'post.deleted', 'post.added'];
+
+        if (!supported.includes(ghostEvent)) {
+            return;
+        }
+
+        const actor = this.getActor(options);
+
+        // @NOTE: we ignore internal updates (`options.context.internal`) for now
+        if (!actor) {
+            return;
+        }
+
+        // @TODO: implement context
+        return {
+            event: ghostEvent.replace(/^\w+\./, ''),
+            resource_id: this.id || this.previous('id'),
+            resource_type: this.tableName.replace(/s$/, ''),
+            actor_id: actor.id,
+            actor_type: actor.type
+        };
     }
 }, {
     allowedFormats: ['mobiledoc', 'html', 'plaintext'],
