@@ -61,7 +61,8 @@ after_success:
         echo "This is a PR. No coverage generated."
       fi
 
-after_failure: |
-  if [ "${TRAVIS_EVENT_TYPE}" = "cron" ]; then
-    "curl -X POST -H \"Content-Type:application/json\" -d \"{\\\"attachments\\\": [{\\\"color\\\": \\\"danger\\\", \\\"fallback\\\": \\\"Build Failure: $TRAVIS_JOB_WEB_URL\\\", \\\"title\\\": \\\"Build Failure\\\", \\\"text\\\": \\\"$TRAVIS_JOB_WEB_URL\\\"}]}\" $SLACK_URL"
+after_script:
+  - |
+  if [ "${TRAVIS_EVENT_TYPE}" != "cron" ]; then
+    curl -X POST -H "Content-Type:application/json" -d "{\"attachments\": [{\"color\": \"danger\", \"fallback\": \"Build Failure: $TRAVIS_JOB_WEB_URL\", \"title\": \"Build Failure\", \"text\": \"$TRAVIS_JOB_WEB_URL\"}]}" $SLACK_URL
   fi
