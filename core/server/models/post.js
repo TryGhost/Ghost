@@ -658,7 +658,7 @@ Post = ghostBookshelf.Model.extend({
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
                 findOne: ['columns', 'importing', 'withRelated', 'require'],
-                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages'],
+                findPage: ['page', 'limit', 'columns', 'order', 'status', 'staticPages'],
                 findAll: ['columns', 'filter'],
                 destroy: ['destroyAll']
             };
