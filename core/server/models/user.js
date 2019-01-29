@@ -338,7 +338,7 @@ User = ghostBookshelf.Model.extend({
                 setup: ['id'],
                 edit: ['withRelated', 'importPersistUser'],
                 add: ['importPersistUser'],
-                findPage: ['page', 'limit', 'columns', 'order', 'status'],
+                findPage: ['status'],
                 findAll: ['filter']
             };
 
