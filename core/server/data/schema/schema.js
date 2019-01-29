@@ -383,5 +383,18 @@ module.exports = {
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    actions: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        resource_id: {type: 'string', maxlength: 24, nullable: true},
+        resource_type: {type: 'string', maxlength: 50, nullable: false},
+        actor_id: {type: 'string', maxlength: 24, nullable: false},
+        actor_type: {type: 'string', maxlength: 50, nullable: false},
+        // @NOTE: The event column contains short buzzwords e.g. subscribed, started, added, deleted, edited etc.
+        //        We already store and require the target resource type. No need to remember e.g. post.edited
+        event: {type: 'string', maxlength: 50, nullable: false},
+        // @NOTE: The context object can be used to store information about an action e.g. diffs, meta
+        context: {type: 'text', maxlength: 1000000000, nullable: true},
+        created_at: {type: 'dateTime', nullable: false}
     }
 };
