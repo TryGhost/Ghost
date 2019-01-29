@@ -256,5 +256,8 @@ module.exports = function apiRoutes() {
     // ## Oembed (fetch response from oembed provider)
     router.get('/oembed', mw.authAdminApi, apiv2.http(apiv2.oembed.read));
 
+    // ## Actions
+    router.get('/actions/:type/:id', mw.authAdminApi, apiv2.http(apiv2.actions.browse));
+
     return router;
 };
