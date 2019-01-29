@@ -116,14 +116,55 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * If the query runs in a txn, `_previousAttributes` will be empty.
      */
     emitChange: function (model, event, options) {
-        if (!options.transacting) {
+        debug(model.tableName, event);
+
+        const _emit = (ghostEvent, model) => {
             if (model._changed && !Object.keys(model._changed).length) {
                 return;
             }
 
-            debug(`event trigger without txn: ${event}`);
+            debug(model.tableName, event);
 
-            return common.events.emit(event, model, options);
+            // @NOTE: Internal Ghost events. These are very granular e.g. post.published
+            common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
+
+            // CASE: model does not support actions at all
+            if (!model.getAction) {
+                return;
+            }
+
+            const action = model.getAction(ghostEvent, options);
+
+            // CASE: model does not support action for target event
+            if (!action) {
+                return;
+            }
+
+            /**
+             * @NOTE:
+             *
+             * We add actions step by step and define how they should look like.
+             * Each post update triggers a couple of events, which we don't want to add actions for.
+             *
+             * e.g. transform post to page triggers a handful of events including `post.deleted` and `page.added`
+             *
+             * We protect adding too many and uncontrolled events.
+             */
+            ghostBookshelf.model('Action')
+                .add(action)
+                .catch((err) => {
+                    if (_.isArray(err)) {
+                        err = err[0];
+                    }
+
+                    common.logging.error(new common.errors.InternalServerError({
+                        err
+                    }));
+                });
+        };
+
+        if (!options.transacting) {
+            return _emit(event, model, options);
         }
 
         if (!model.ghostEvents) {
@@ -142,12 +183,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 }
 
                 _.each(this.ghostEvents, (ghostEvent) => {
-                    if (model._changed && !Object.keys(model._changed).length) {
-                        return;
-                    }
-
-                    debug(`event: ${ghostEvent}`);
-                    common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
+                    _emit(ghostEvent, model, options);
                 });
 
                 delete model.ghostEvents;
@@ -404,6 +440,24 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         });
     },
 
+    getActor(options = {context: {}}) {
+        if (options.context.integration) {
+            return {
+                id: options.context.integration,
+                type: 'integration'
+            };
+        }
+
+        if (options.context.user) {
+            return {
+                id: options.context.user,
+                type: 'user'
+            };
+        }
+
+        return null;
+    },
+
     // Get the user from the options object
     contextUser: function contextUser(options) {
         options = options || {};
@@ -434,8 +488,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
              * But this takes too long to refactor out now. If an internal update happens, we also
              * use ID '1'. This logic exists for a LONG while now. The owner ID only changes from '1' to something else,
              * if you transfer ownership.
-             *
-             * @TODO: Update this code section as soon as we have decided between `context.api_key` and `context.integration`
              */
             return ghostBookshelf.Model.internalUser;
         } else if (options.context.internal) {
