@@ -19,7 +19,7 @@
     "postcss-css-variables": "^0.11.0",
     "postcss-custom-properties": "^8.0.9",
     "postcss-import": "^12.0.1",
-    "preact-cli": "^2.0.0"
+    "preact-cli": "https://github.com/TryGhost/preact-cli/tarball/421f03bcf954c79d5f14fd2e278049a9bdfcba83"
   },
   "dependencies": {
     "preact": "^8.2.1",
