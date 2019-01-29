@@ -55,7 +55,6 @@ describe('Scheduling: Post Scheduling', function () {
 
     afterEach(function () {
         sinon.restore();
-        return testUtils.teardown();
     });
 
     describe('fn:init', function () {

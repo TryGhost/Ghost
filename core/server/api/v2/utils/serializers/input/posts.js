@@ -37,11 +37,10 @@ module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
 
-        // @TODO: `api_key_id` does not work long term, because it can be either a content or an admin api key?
         /**
          * ## current cases:
          * - context object is empty (functional call, content api access)
-         * - api_key_id exists? content api access
+         * - api_key.type == 'content' ? content api access
          * - user exists? admin api access
          */
         if (utils.isContentAPI(frame)) {
@@ -76,11 +75,10 @@ module.exports = {
     read(apiConfig, frame) {
         debug('read');
 
-        // @TODO: `api_key_id` does not work long term, because it can be either a content or an admin api key?
         /**
          * ## current cases:
          * - context object is empty (functional call, content api access)
-         * - api_key_id exists? content api access
+         * - api_key.type == 'content' ? content api access
          * - user exists? admin api access
          */
         if (utils.isContentAPI(frame)) {

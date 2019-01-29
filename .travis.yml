@@ -39,6 +39,13 @@ install:
   - yarn
   - if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi # fix sqlite caching issues
 
+script: |
+  if [ "${TRAVIS_EVENT_TYPE}" = "cron" ]; then
+    yarn test:regression
+  else
+    yarn test
+  fi
+
 after_success:
   - |
       if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
@@ -53,3 +60,8 @@ after_success:
       else
         echo "This is a PR. No coverage generated."
       fi
+
+after_failure: |
+  if [ "${TRAVIS_EVENT_TYPE}" = "cron" ]; then
+    "curl -X POST -H \"Content-Type:application/json\" -d \"{\\\"attachments\\\": [{\\\"color\\\": \\\"danger\\\", \\\"fallback\\\": \\\"Build Failure: $TRAVIS_JOB_WEB_URL\\\", \\\"title\\\": \\\"Build Failure\\\", \\\"text\\\": \\\"$TRAVIS_JOB_WEB_URL\\\"}]}\" $SLACK_URL"
+  fi

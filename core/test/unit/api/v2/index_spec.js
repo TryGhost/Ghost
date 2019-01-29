@@ -6,12 +6,16 @@ describe('Unit: v2/utils/index', function () {
     afterEach(function () {
         sinon.restore();
     });
+
     describe('isContentAPI', function () {
-        it('is truthy when having api key and no user', function () {
+        it('is truthy when having api key of content type', function () {
             const frame = {
                 options: {
                     context: {
-                        api_key_id: 'api_key'
+                        api_key: {
+                            id: 'keyId',
+                            type: 'content'
+                        }
                     }
                 }
             };
@@ -23,7 +27,10 @@ describe('Unit: v2/utils/index', function () {
                 options: {
                     context: {
                         user: {},
-                        api_key_id: 'api_key'
+                        api_key: {
+                            id: 'keyId',
+                            type: 'content'
+                        }
                     }
                 }
             };

@@ -201,7 +201,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     onValidate: function onValidate(model, columns, options) {
         this.setEmptyValuesToNull();
-
         return validation.validateSchema(this.tableName, this, options);
     },
 
@@ -374,20 +373,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    // Sets given values to `null`
+    getNullableStringProperties() {
+        const table = schema.tables[this.tableName];
+        return Object.keys(table).filter(column => table[column].nullable);
+    },
+
     setEmptyValuesToNull: function setEmptyValuesToNull() {
-        var self = this,
-            attr;
-
-        if (!this.emptyStringProperties) {
-            return;
-        }
-
-        attr = this.emptyStringProperties();
-
-        _.each(attr, function (value) {
-            if (self.get(value) === '') {
-                self.set(value, null);
+        const nullableStringProps = this.getNullableStringProperties();
+        return nullableStringProps.forEach((prop) => {
+            if (this.get(prop) === '') {
+                this.set(prop, null);
             }
         });
     },
@@ -423,7 +418,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
              * use ID '1'. This logic exists for a LONG while now. The owner ID only changes from '1' to something else,
              * if you transfer ownership.
              *
-             * @TODO: Update this code section as soon as we have decided between `context.api_key_id` and `context.integration`
+             * @TODO: Update this code section as soon as we have decided between `context.api_key` and `context.integration`
              */
             return ghostBookshelf.Model.internalUser;
         } else if (options.context.internal) {

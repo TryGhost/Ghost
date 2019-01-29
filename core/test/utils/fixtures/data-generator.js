@@ -386,7 +386,7 @@ DataGenerator.Content = {
         {
             id: ObjectId.generate(),
             type: 'admin',
-            secret: _.repeat('a', 128)
+            secret: _.repeat('a', 64)
             // integration_id: DataGenerator.Content.integrations[0].id
         },
         {
@@ -674,6 +674,20 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createIntegration(overrides) {
+        var newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            id: ObjectId.generate(),
+            name: 'test integration',
+            slug: 'test-integration',
+            created_by: DataGenerator.Content.users[0].id,
+            created_at: new Date(),
+            updated_by: DataGenerator.Content.users[0].id,
+            updated_at: new Date()
+        });
+    }
+
     const posts = [
         createPost(DataGenerator.Content.posts[0]),
         createPost(DataGenerator.Content.posts[1]),
@@ -902,6 +916,7 @@ DataGenerator.forKnex = (function () {
         createInvite: createInvite,
         createTrustedDomain: createTrustedDomain,
         createWebhook: createWebhook,
+        createIntegration: createIntegration,
 
         invites: invites,
         posts: posts,

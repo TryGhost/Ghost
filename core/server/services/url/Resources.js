@@ -45,7 +45,7 @@ class Resources {
             return this.resourceConfig;
         }
 
-        this.resourcesAPIVersion = require('../themes').getActive().engine('ghost-api') || 'v0.1';
+        this.resourcesAPIVersion = require('../themes').getApiVersion();
         this.resourcesConfig = require(`./configs/${this.resourcesAPIVersion}`);
     }
 

@@ -19,59 +19,6 @@ describe('Unit: models/invite', function () {
         sinon.restore();
     });
 
-    before(testUtils.teardown);
-
-    describe('add', function () {
-        beforeEach(testUtils.setup('roles'));
-        afterEach(testUtils.teardown);
-
-        it('default', function () {
-            return models.Invite.add({email: 'invited@test.org', role_id: testUtils.DataGenerator.forKnex.roles[1].id})
-                .then(function (invite) {
-                    invite.get('status').should.eql('pending');
-                    invite.get('email').should.eql('invited@test.org');
-                    should.exist(invite.get('token'));
-                    should.exist(invite.get('expires'));
-                });
-        });
-
-        it('set status with none internal context', function () {
-            return models.Invite.add({
-                email: 'invited@test.org',
-                role_id: testUtils.DataGenerator.forKnex.roles[1].id,
-                status: 'sent'
-            }).then(function (invite) {
-                invite.get('status').should.eql('pending');
-                invite.get('email').should.eql('invited@test.org');
-                should.exist(invite.get('token'));
-                should.exist(invite.get('expires'));
-            });
-        });
-
-        it('set status with internal context', function () {
-            return models.Invite.add({
-                email: 'invited@test.org',
-                role_id: testUtils.DataGenerator.forKnex.roles[1].id,
-                status: 'sent'
-            }, testUtils.context.internal).then(function (invite) {
-                invite.get('status').should.eql('sent');
-                invite.get('email').should.eql('invited@test.org');
-                should.exist(invite.get('token'));
-                should.exist(invite.get('expires'));
-            });
-        });
-
-        it('[error] no role passed', function () {
-            return models.Invite.add({email: 'invited@test.org'})
-                .then(function () {
-                    'Should fail'.should.be.true();
-                })
-                .catch(function (err) {
-                    (err[0] instanceof common.errors.ValidationError).should.be.true();
-                });
-        });
-    });
-
     describe('permissible', function () {
         describe('action: add', function () {
             let inviteModel;
