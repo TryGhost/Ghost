@@ -9,6 +9,9 @@ const _ = require('lodash');
  * with extra diacritics character matching.
  **/
 module.exports.wordCount = function wordCount(html) {
+    if (!html) {
+        return 0;
+    }
     html = html.replace(/<(.|\n)*?>/g, ' '); // strip tags
 
     const pattern = /[a-zA-ZÀ-ÿ0-9_\u0392-\u03c9\u0410-\u04F9]+|[\u4E00-\u9FFF\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g;
@@ -34,7 +37,7 @@ module.exports.wordCount = function wordCount(html) {
  * @description Takes an HTML string and returns the number of images
  **/
 module.exports.imageCount = function wordCount(html) {
-    return (html.match(/<img(.|\n)*?>/g) || []).length;
+    return html ? (html.match(/<img(.|\n)*?>/g) || []).length : 0;
 };
 
 module.exports.findKey = function findKey(key /* ...objects... */) {
