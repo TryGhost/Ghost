@@ -194,6 +194,10 @@ describe('Database Migration (special functions)', function () {
             permissions[62].should.be.AssignedToRoles(['Administrator']);
             permissions[63].name.should.eql('Delete API keys');
             permissions[63].should.be.AssignedToRoles(['Administrator']);
+
+            // Actions
+            permissions[64].name.should.eql('Browse Actions');
+            permissions[64].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
         });
 
         describe('Populate', function () {
@@ -258,7 +262,7 @@ describe('Database Migration (special functions)', function () {
                     result.roles.at(5).get('name').should.eql('Admin Integration');
 
                     // Permissions
-                    result.permissions.length.should.eql(64);
+                    result.permissions.length.should.eql(65);
                     result.permissions.toJSON().should.be.CompletePermissions();
                 });
             });
