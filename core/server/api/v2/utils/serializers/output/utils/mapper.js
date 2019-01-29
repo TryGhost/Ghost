@@ -95,9 +95,16 @@ const mapImage = (path) => {
     return url.forImage(path);
 };
 
+const mapAction = (model, frame) => {
+    const attrs = model.toJSON(frame.options);
+    clean.action(attrs);
+    return attrs;
+};
+
 module.exports.mapPost = mapPost;
 module.exports.mapUser = mapUser;
 module.exports.mapTag = mapTag;
 module.exports.mapIntegration = mapIntegration;
 module.exports.mapSettings = mapSettings;
 module.exports.mapImage = mapImage;
+module.exports.mapAction = mapAction;
