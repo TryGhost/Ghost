@@ -6651,10 +6651,9 @@ postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.2, postcss@^7.0.5, postcss@^7.0.6:
     source-map "^0.6.1"
     supports-color "^5.5.0"
 
-preact-cli@^2.0.0:
+"preact-cli@https://github.com/TryGhost/preact-cli/tarball/421f03bcf954c79d5f14fd2e278049a9bdfcba83":
   version "2.2.1"
-  resolved "https://registry.yarnpkg.com/preact-cli/-/preact-cli-2.2.1.tgz#05a3311e89bdb120a5273532c77b87bdd710e04b"
-  integrity sha1-BaMxHom9sSClJzUyx3uHvdcQ4Es=
+  resolved "https://github.com/TryGhost/preact-cli/tarball/421f03bcf954c79d5f14fd2e278049a9bdfcba83#eafbc54b2bf6e2b89fbca0ee284673798cd51ed2"
   dependencies:
     autoprefixer "^7.1.0"
     babel-loader "^7.0.0"
