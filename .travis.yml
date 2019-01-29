@@ -63,5 +63,5 @@ after_success:
 
 after_script: |
   if [ "${TRAVIS_EVENT_TYPE}" != "cron" ]; then
-    curl -X POST --data-urlencode 'payload={"attachments": [{"color": "danger", "fallback": "Build Failure: $TRAVIS_JOB_WEB_URL", "title": "Build Failure", "text": "$TRAVIS_JOB_WEB_URL"}]}' $SLACK_URL
+    curl -X POST --data-urlencode "payload={\"attachments\": [{\"color\": \"danger\", \"fallback\": \"Build Failure: $TRAVIS_JOB_WEB_URL\", \"title\": \"Build Failure\", \"text\": \"$TRAVIS_JOB_WEB_URL\"}]}" $SLACK_URL
   fi
