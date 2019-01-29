@@ -17,6 +17,9 @@ const expectedProperties = {
     slug: ['slug'],
     invites: ['invites', 'meta'],
     themes: ['themes'],
+    actions: ['actions', 'meta'],
+
+    action: ['id', 'resource_type', 'actor_type', 'event', 'created_at', 'actor'],
 
     post: _(schema.posts)
         .keys()

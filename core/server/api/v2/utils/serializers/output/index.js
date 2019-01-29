@@ -89,5 +89,9 @@ module.exports = {
 
     get themes() {
         return require('./themes');
+    },
+
+    get actions() {
+        return require('./actions');
     }
 };

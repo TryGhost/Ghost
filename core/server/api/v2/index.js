@@ -109,5 +109,9 @@ module.exports = {
 
     get themes() {
         return shared.pipeline(require('./themes'), localUtils);
+    },
+
+    get actions() {
+        return shared.pipeline(require('./actions'), localUtils);
     }
 };
