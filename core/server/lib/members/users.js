@@ -2,6 +2,7 @@ module.exports = function ({
     createMember,
     updateMember,
     getMember,
+    listMembers,
     validateMember,
     sendEmail,
     encodeToken,
@@ -30,6 +31,7 @@ module.exports = function ({
         resetPassword,
         create: createMember,
         validate: validateMember,
-        get: getMember
+        get: getMember,
+        list: listMembers
     };
 };

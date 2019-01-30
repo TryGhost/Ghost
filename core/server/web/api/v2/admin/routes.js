@@ -97,6 +97,10 @@ module.exports = function apiRoutes() {
     router.del('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminApi, apiv2.http(apiv2.subscribers.destroy));
     router.del('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminApi, apiv2.http(apiv2.subscribers.destroy));
 
+    // ## Members
+    router.get('/members', shared.middlewares.labs.members, mw.authAdminApi, apiv2.http(apiv2.members.browse));
+    router.get('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, apiv2.http(apiv2.members.read));
+
     // ## Roles
     router.get('/roles/', mw.authAdminApi, apiv2.http(apiv2.roles.browse));
 

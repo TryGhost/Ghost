@@ -25,11 +25,22 @@ function updateMember(member, newData) {
     });
 }
 
-function getMember(member) {
-    return models.Member.findOne(member, {
-        require: true
-    }).then((member) => {
-        return member.toJSON();
+function getMember(data, options) {
+    options = options || {};
+    return models.Member.findOne(data).then((model) => {
+        if (!model) {
+            return null;
+        }
+        return model.toJSON(options);
+    });
+}
+
+function listMembers(options) {
+    return models.Member.findPage(options).then((models) => {
+        return {
+            members: models.data.map(model => model.toJSON(options)),
+            meta: models.meta
+        };
     });
 }
 
@@ -104,6 +115,7 @@ const api = MembersApi({
     validateAudience,
     createMember,
     getMember,
+    listMembers,
     validateMember,
     updateMember,
     sendEmail
