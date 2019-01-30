@@ -102,9 +102,7 @@ const authenticate = {
         )(req, res, next);
     },
 
-    // @NOTE: authentication for admin api keys is disabled
-    // authenticateAdminApi: [apiKeyAuth.admin.authenticate, session.authenticate],
-    authenticateAdminApi: [session.authenticate],
+    authenticateAdminApi: [apiKeyAuth.admin.authenticate, session.authenticate],
 
     authenticateContentApi: [apiKeyAuth.content.authenticateContentApiKey, members.authenticateMembersToken]
 };
