@@ -163,7 +163,7 @@ export default Component.extend({
         }).compact();
 
         // we need a copy to avoid modifying the object references
-        let sections = JSON.parse(JSON.stringify(matchedItems));
+        let sections = JSON.parse(JSON.stringify(matchedItems || []));
 
         if (sections.length) {
             set(sections[0].items[0], 'selected', true);
