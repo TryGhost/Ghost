@@ -27,7 +27,7 @@ function updateMember(member, newData) {
 
 function getMember(data, options) {
     options = options || {};
-    return models.Member.findOne(data).then((model) => {
+    return models.Member.findOne(data, options).then((model) => {
         if (!model) {
             return null;
         }
