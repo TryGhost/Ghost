@@ -108,28 +108,28 @@ module.exports = function apiRoutes() {
     router.get('/slugs/:type/:name', mw.authAdminApi, apiv2.http(apiv2.slugs.generate));
 
     // ## Themes
-    router.get('/themes/', mw.authAdminApi, api.http(api.themes.browse));
+    router.get('/themes/', mw.authAdminApi, apiv2.http(apiv2.themes.browse));
 
     router.get('/themes/:name/download',
         mw.authAdminApi,
-        api.http(api.themes.download)
+        apiv2.http(apiv2.themes.download)
     );
 
     router.post('/themes/upload',
         mw.authAdminApi,
         upload.single('theme'),
         shared.middlewares.validation.upload({type: 'themes'}),
-        api.http(api.themes.upload)
+        apiv2.http(apiv2.themes.upload)
     );
 
     router.put('/themes/:name/activate',
         mw.authAdminApi,
-        api.http(api.themes.activate)
+        apiv2.http(apiv2.themes.activate)
     );
 
     router.del('/themes/:name',
         mw.authAdminApi,
-        api.http(api.themes.destroy)
+        apiv2.http(apiv2.themes.destroy)
     );
 
     // ## Notifications
