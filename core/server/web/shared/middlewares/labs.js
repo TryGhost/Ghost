@@ -8,6 +8,13 @@ const labs = {
         } else {
             return next(new common.errors.NotFoundError());
         }
+    },
+    members(req, res, next) {
+        if (labsUtil.isSet('members') === true) {
+            return next();
+        } else {
+            return next(new common.errors.NotFoundError());
+        }
     }
 };
 
