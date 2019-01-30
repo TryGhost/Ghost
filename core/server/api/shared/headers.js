@@ -1,4 +1,5 @@
 const debug = require('ghost-ignition').debug('api:shared:headers');
+const Promise = require('bluebird');
 const INVALIDATE_ALL = '/*';
 
 const cacheInvalidate = (result, options = {}) => {

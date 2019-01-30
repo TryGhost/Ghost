@@ -105,5 +105,9 @@ module.exports = {
 
     get publicSettings() {
         return shared.pipeline(require('./settings-public'), localUtils);
+    },
+
+    get themes() {
+        return shared.pipeline(require('./themes'), localUtils);
     }
 };
