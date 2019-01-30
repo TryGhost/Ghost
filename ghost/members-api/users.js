@@ -2,13 +2,14 @@ module.exports = function ({
     createMember,
     updateMember,
     getMember,
+    listMembers,
     validateMember,
     sendEmail,
     encodeToken,
     decodeToken
 }) {
     function requestPasswordReset({email}) {
-        return getMember({email}).then((member) => {
+        return getMember({email}, {require: true}).then((member) => {
             return encodeToken({
                 sub: member.id
             }).then((token) => {
@@ -30,6 +31,7 @@ module.exports = function ({
         resetPassword,
         create: createMember,
         validate: validateMember,
-        get: getMember
+        get: getMember,
+        list: listMembers
     };
 };
