@@ -20,6 +20,7 @@ module.exports = function MembersApi({
     validateMember,
     updateMember,
     getMember,
+    listMembers,
     sendEmail
 }) {
     const {encodeToken, decodeToken, getPublicKeys} = Tokens({privateKey, publicKey, issuer});
@@ -31,6 +32,7 @@ module.exports = function MembersApi({
         validateMember,
         sendEmail,
         encodeToken,
+        listMembers,
         decodeToken
     });
 
