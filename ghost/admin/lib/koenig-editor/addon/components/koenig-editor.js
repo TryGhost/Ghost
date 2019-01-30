@@ -312,7 +312,7 @@ export default Component.extend({
                 // `payload.files` is special because it's set by paste/drag-n-drop
                 // events and can't be copied for security reasons
                 let {files} = payload;
-                let payloadCopy = JSON.parse(JSON.stringify(payload));
+                let payloadCopy = JSON.parse(JSON.stringify(payload || null));
                 payloadCopy.files = files;
 
                 // all of the properties that will be passed through to the
