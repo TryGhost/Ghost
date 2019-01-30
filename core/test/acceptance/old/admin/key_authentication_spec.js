@@ -7,31 +7,7 @@ const config = require('../../../../server/config');
 
 const ghost = testUtils.startGhost;
 
-// TODO: remove this suite once Admin API key auth is enabled
 describe('Admin API V2 key authentication', function () {
-    let request;
-
-    before(function () {
-        return ghost()
-            .then(function (_ghostServer) {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return testUtils.initFixtures('api_keys');
-            });
-    });
-
-    it('browse with correct GET endpoint token', function () {
-        return request.get(localUtils.API.getApiQuery('posts/'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken(localUtils.API.getApiQuery('posts/'))}`)
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(403);
-    });
-});
-
-// TODO: enable this suite once Admin API key auth is enabled
-describe.skip('Admin API V2 key authentication', function () {
     let request;
 
     before(function () {
