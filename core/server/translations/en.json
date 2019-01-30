@@ -403,6 +403,10 @@
                 "subscriberNotFound": "Subscriber not found.",
                 "subscriberAlreadyExists": "Email address is already subscribed."
             },
+            "members": {
+                "memberNotFound": "Member not found.",
+                "memberAlreadyExists": "Email address is already member."
+            },
             "tags": {
                 "tagNotFound": "Tag not found."
             },
