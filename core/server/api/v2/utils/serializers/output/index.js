@@ -85,5 +85,9 @@ module.exports = {
 
     get configuration() {
         return require('./configuration');
+    },
+
+    get themes() {
+        return require('./themes');
     }
 };
