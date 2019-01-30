@@ -314,7 +314,8 @@
         },
         "api": {
             "common": {
-                "invalidTokenStructure": "Invalid token structure"
+                "invalidTokenStructure": "Invalid token structure",
+                "notImplemented": "The server does not support the functionality required to fulfill the request."
             },
             "authentication": {
                 "setupUnableToRun": "Database missing fixture data. Please reset database and try again.",

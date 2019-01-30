@@ -1,5 +1,40 @@
+const common = require('../../../../lib/common');
 const auth = require('../../../../services/auth');
 const shared = require('../../../shared');
+
+const notImplemented = function (req, res, next) {
+    // CASE: user is logged in, allow
+    if (!req.api_key) {
+        return next();
+    }
+
+    // @NOTE: integrations have limited access for now
+    const whitelisted = {
+        // @NOTE: stable
+        posts: ['GET', 'PUT', 'DELETE', 'POST'],
+        tags: ['GET', 'PUT', 'DELETE', 'POST'],
+        uploads: ['POST'],
+        // @NOTE: experimental
+        users: ['GET'],
+        themes: ['POST']
+    };
+
+    const match = req.url.match(/^\/(\w+)\//);
+
+    if (match) {
+        const entity = match[1];
+
+        if (whitelisted[entity] && whitelisted[entity].includes(req.method)) {
+            return next();
+        }
+    }
+
+    next(new common.errors.GhostError({
+        errorType: 'NotImplementedError',
+        message: common.i18n.t('errors.api.common.notImplemented'),
+        statusCode: '501'
+    }));
+};
 
 /**
  * Authentication for private endpoints
@@ -10,7 +45,8 @@ module.exports.authAdminApi = [
     shared.middlewares.updateUserLastSeen,
     shared.middlewares.api.cors,
     shared.middlewares.urlRedirects.adminRedirect,
-    shared.middlewares.prettyUrls
+    shared.middlewares.prettyUrls,
+    notImplemented
 ];
 
 /**
