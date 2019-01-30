@@ -6,7 +6,6 @@ import isNumber from 'ghost-admin/utils/isNumber';
 import {alias, mapBy} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as controller} from '@ember/controller';
-import {copy} from '@ember/object/internals';
 import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
@@ -319,7 +318,7 @@ export default Controller.extend({
         // set mobiledoc equal to what's in the editor but create a copy so that
         // nested objects/arrays don't keep references which can mean that both
         // scratch and mobiledoc get updated simultaneously
-        this.set('post.mobiledoc', copy(this.get('post.scratch'), true));
+        this.set('post.mobiledoc', JSON.parse(JSON.stringify(this.post.scratch)));
         this.set('post.status', status);
 
         // Set a default title

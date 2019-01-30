@@ -1,6 +1,5 @@
 import EmberPowerSelectMultipleTrigger from 'ember-power-select/components/power-select-multiple/trigger';
 import {assert} from '@ember/debug';
-import {copy} from '@ember/object/internals';
 import {get} from '@ember/object';
 import {isBlank} from '@ember/utils';
 
@@ -31,7 +30,8 @@ export default EmberPowerSelectMultipleTrigger.extend({
             // ember-drag-drop's sortable-objects has two-way bindings and will
             // update EPS' selected value directly. We have to create a copy
             // after sorting in order to force the onchange action to be triggered
-            this.get('select').actions.select(copy(this.get('select.selected')));
+            let selectedCopy = this.select.selected.slice();
+            this.get('select').actions.select(selectedCopy);
         },
 
         // copied directly from EPS, the default behaviour of stopping propagation

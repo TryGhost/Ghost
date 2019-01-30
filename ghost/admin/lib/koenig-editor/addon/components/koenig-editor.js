@@ -22,7 +22,6 @@ import {A} from '@ember/array';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {assign} from '@ember/polyfills';
 import {camelize, capitalize} from '@ember/string';
-import {copy} from '@ember/object/internals';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {getOwner} from '@ember/application';
@@ -313,7 +312,7 @@ export default Component.extend({
                 // `payload.files` is special because it's set by paste/drag-n-drop
                 // events and can't be copied for security reasons
                 let {files} = payload;
-                let payloadCopy = copy(payload, true);
+                let payloadCopy = JSON.parse(JSON.stringify(payload));
                 payloadCopy.files = files;
 
                 // all of the properties that will be passed through to the
