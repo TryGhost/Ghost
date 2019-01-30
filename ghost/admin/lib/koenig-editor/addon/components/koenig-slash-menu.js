@@ -3,7 +3,6 @@ import layout from '../templates/components/koenig-slash-menu';
 import {CARD_MENU} from '../options/cards';
 import {assign} from '@ember/polyfills';
 import {computed, set} from '@ember/object';
-import {copy} from '@ember/object/internals';
 import {htmlSafe} from '@ember/string';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
@@ -164,7 +163,7 @@ export default Component.extend({
         }).compact();
 
         // we need a copy to avoid modifying the object references
-        let sections = copy(matchedItems, true);
+        let sections = JSON.parse(JSON.stringify(matchedItems));
 
         if (sections.length) {
             set(sections[0].items[0], 'selected', true);
