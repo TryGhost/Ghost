@@ -55,6 +55,10 @@ module.exports = {
         return require('./subscribers');
     },
 
+    get members() {
+        return require('./members');
+    },
+
     get upload() {
         return require('./upload');
     },
