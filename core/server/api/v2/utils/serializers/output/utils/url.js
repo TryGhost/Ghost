@@ -90,7 +90,12 @@ const forSettings = (attrs) => {
     return attrs;
 };
 
+const forImage = (path) => {
+    return urlService.utils.urlFor('image', {image: path}, true);
+};
+
 module.exports.forPost = forPost;
 module.exports.forUser = forUser;
 module.exports.forTag = forTag;
 module.exports.forSettings = forSettings;
+module.exports.forImage = forImage;
