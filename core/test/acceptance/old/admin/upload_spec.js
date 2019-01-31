@@ -40,7 +40,9 @@ describe('Upload API', function () {
                         return done(err);
                     }
 
-                    images.push(res.body);
+                    res.body.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/ghost-logo.png`));
+
+                    images.push(res.body.replace(config.get('url'), ''));
                     done();
                 });
         });
@@ -56,7 +58,9 @@ describe('Upload API', function () {
                         return done(err);
                     }
 
-                    images.push(res.body);
+                    res.body.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/ghosticon.jpg`));
+
+                    images.push(res.body.replace(config.get('url'), ''));
                     done();
                 });
         });
@@ -72,7 +76,9 @@ describe('Upload API', function () {
                         return done(err);
                     }
 
-                    images.push(res.body);
+                    res.body.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/loadingcat.gif`));
+
+                    images.push(res.body.replace(config.get('url'), ''));
                     done();
                 });
         });
@@ -88,7 +94,9 @@ describe('Upload API', function () {
                         return done(err);
                     }
 
-                    images.push(res.body);
+                    res.body.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/loadingcat_square.gif`));
+
+                    images.push(res.body.replace(config.get('url'), ''));
                     done();
                 });
         });
