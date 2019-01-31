@@ -60,7 +60,7 @@ describe('Admin API V2 key authentication', function () {
         };
 
         return request
-            .post(localUtils.API.getApiQuery('posts'))
+            .post(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))
             .set('Authorization', `Ghost ${localUtils.getValidAdminToken(localUtils.API.getApiQuery('posts'))}`)
             .send({
@@ -68,6 +68,6 @@ describe('Admin API V2 key authentication', function () {
             })
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(501);
+            .expect(201);
     });
 });
