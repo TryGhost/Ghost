@@ -1,9 +1,29 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const common = require('../../../../../lib/common');
+const utils = require('../../index');
 
 module.exports = {
     add(apiConfig, frame) {
+        /**
+         * @NOTE:
+         *
+         * Session authentication does not require authors, because the logged in user
+         * becomes the primary author.
+         *
+         * Admin API key requires sending authors, because there is no user id.
+         */
+        if (utils.isAdminAPIKey(frame)) {
+            if (!frame.data.posts[0].hasOwnProperty('authors')) {
+                return Promise.reject(new common.errors.ValidationError({
+                    message: common.i18n.t('notices.data.validation.index.validationFailed', {
+                        validationName: 'FieldIsRequired',
+                        key: '"authors"'
+                    })
+                }));
+            }
+        }
+
         /**
          * Ensure correct incoming `post.authors` structure.
          *
@@ -33,10 +53,13 @@ module.exports = {
     },
 
     edit(apiConfig, frame) {
-        const result = this.add(apiConfig, frame);
-
-        if (result instanceof Promise) {
-            return result;
+        if (frame.data.posts[0].hasOwnProperty('authors')) {
+            if (!_.isArray(frame.data.posts[0].authors) ||
+                (frame.data.posts[0].authors.length && _.filter(frame.data.posts[0].authors, 'id').length !== frame.data.posts[0].authors.length)) {
+                return Promise.reject(new common.errors.BadRequestError({
+                    message: common.i18n.t('errors.api.utils.invalidStructure', {key: 'posts[*].authors'})
+                }));
+            }
         }
     }
 };

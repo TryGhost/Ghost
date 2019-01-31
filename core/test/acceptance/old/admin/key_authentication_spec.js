@@ -54,8 +54,9 @@ describe('Admin API V2 key authentication', function () {
 
     it('POST to /post endpoint returns not implemented', function () {
         const post = {
-            // @TODO: required for now, needs proper validation
-            author_id: '1',
+            authors: [{
+                id: testUtils.DataGenerator.Content.users[0].id
+            }],
             title: 'Post created with api_key'
         };
 
