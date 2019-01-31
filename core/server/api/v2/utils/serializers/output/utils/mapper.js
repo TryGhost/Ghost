@@ -90,8 +90,13 @@ const mapIntegration = (model, frame) => {
     return jsonModel;
 };
 
+const mapImage = (path) => {
+    return url.forImage(path);
+};
+
 module.exports.mapPost = mapPost;
 module.exports.mapUser = mapUser;
 module.exports.mapTag = mapTag;
 module.exports.mapIntegration = mapIntegration;
 module.exports.mapSettings = mapSettings;
+module.exports.mapImage = mapImage;
