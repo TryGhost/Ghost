@@ -78,37 +78,6 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
             urlUtil.forTag.getCall(0).args.should.eql(['id3', {id: 'id3', feature_image: 'value'}]);
             urlUtil.forUser.getCall(0).args.should.eql(['id4', {name: 'Ghosty', id: 'id4'}]);
         });
-
-        it('does not call cleanUtil in private context', () => {
-            const frame = {
-                withRelated: ['tags', 'authors'],
-                options: {
-                    context: {
-                        public: false
-                    }
-                },
-            };
-
-            const post = postModel(testUtils.DataGenerator.forKnex.createPost({
-                id: 'id1',
-                feature_image: 'value',
-                page: true,
-                tags: [{
-                    id: 'id3',
-                    feature_image: 'value'
-                }],
-                authors: [{
-                    id: 'id4',
-                    name: 'Ghosty'
-                }]
-            }));
-
-            mapper.mapPost(post, frame);
-
-            cleanUtil.post.callCount.should.equal(0);
-            cleanUtil.tag.callCount.should.equal(0);
-            cleanUtil.author.callCount.should.equal(0);
-        });
     });
 
     describe('mapUser', () => {
