@@ -13,7 +13,7 @@ const notImplemented = function (req, res, next) {
         // @NOTE: stable
         posts: ['GET', 'PUT', 'DELETE', 'POST'],
         tags: ['GET', 'PUT', 'DELETE', 'POST'],
-        uploads: ['POST'],
+        images: ['POST'],
         // @NOTE: experimental
         users: ['GET'],
         themes: ['POST']
