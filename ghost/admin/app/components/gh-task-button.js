@@ -28,6 +28,7 @@ const GhTaskButton = Component.extend({
 
     task: null,
     disabled: false,
+    defaultClick: false,
     buttonText: 'Save',
     idleClass: '',
     runningClass: '',
@@ -99,6 +100,16 @@ const GhTaskButton = Component.extend({
     },
 
     click() {
+        // let the default click bubble if defaultClick===true - useful when
+        // you want to handle a form submit action rather than triggering a
+        // task directly
+        if (this.defaultClick) {
+            if (!this.isRunning) {
+                this.get('_restartAnimation').perform();
+            }
+            return;
+        }
+
         // do nothing if disabled externally
         if (this.get('disabled')) {
             return false;
