@@ -150,9 +150,6 @@ describe('Acceptance: Signup', function () {
         // submitting sends correct details and redirects to content screen
         await click('.gh-btn-green');
 
-        this.timeout(0);
-        await this.pauseTest();
-
         expect(currentRouteName()).to.equal('posts.index');
     });
 
