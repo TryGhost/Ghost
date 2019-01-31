@@ -52,7 +52,7 @@ describe('Admin API V2 key authentication', function () {
             .expect(200);
     });
 
-    it('browse with correct POST endpoint token', function () {
+    it('POST to /post endpoint returns not implemented', function () {
         const post = {
             // @TODO: required for now, needs proper validation
             author_id: '1',
@@ -68,6 +68,6 @@ describe('Admin API V2 key authentication', function () {
             })
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201);
+            .expect(501);
     });
 });
