@@ -3,10 +3,11 @@
         <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
     </header>
 
-    <section class="view-container">
+    <section class="view-container h-100">
         <div class="flex justify-between items-center pt1">
             <h2 class="f7 fw4 midgrey">All members ({{this.meta.pagination.total}})</h2>
         </div>
+
         {{#if this.members}}
             {{!-- members list, styles taken from .apps-grid --}}
             <div class="flex flex-row flex-wrap items-start ba br3 b--whitegrey mt1">
@@ -34,9 +35,13 @@
                 </VerticalCollection>
             </div>
         {{else}}
-            {{#unless this.fetchMembers.isRunning}}
+            {{#if this.fetchMembers.isRunning}}
+                <div class="gh-content">
+                    <GhLoadingSpinner />
+                </div>
+            {{else}}
                 <p>No members found.</p>
-            {{/unless}}
+            {{/if}}
         {{/if}}
     </section>
 </section>
