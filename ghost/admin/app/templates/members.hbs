@@ -1,15 +1,15 @@
 <section class="gh-canvas">
     <header class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
-        <div class="view-actions">
-            <span>{{this.meta.pagination.total}} Members</span>
-        </div>
     </header>
 
     <section class="view-container">
+        <div class="flex justify-between items-center pt1">
+            <h2 class="f7 fw4 midgrey">All members ({{this.meta.pagination.total}})</h2>
+        </div>
         {{#if this.members}}
             {{!-- members list, styles taken from .apps-grid --}}
-            <div class="flex flex-row flex-wrap items-start ba br3">
+            <div class="flex flex-row flex-wrap items-start ba br3 b--whitegrey mt1">
                 <VerticalCollection
                     @items={{this.members}}
                     @key="id"
@@ -18,16 +18,16 @@
                     as |member index|
                 >
                     <div class="flex-grow-1 flex-shrink-1" style="flex-basis: 100%">
-                        {{#link-to "member" member}}
+                        {{#link-to "member" member classNames="link whitegrey"}}
                             <article class="flex items-center justify-between pa4 {{if index "bt"}}">
                                 <div class="flex items-center">
                                     <GhMemberAvatar @member={{member}} class="w10 h10 mr4" />
                                     <div class="flex flex-column">
-                                        <h3 class="ma0 f5 fw7">{{member.name}}</h3>
-                                        <p class="ma0 pa0 f7">{{member.email}}</p>
+                                        <h3 class="darkgrey ma0 f5 fw7">{{member.name}}</h3>
+                                        <p class="midgrey ma0 pa0 f7">{{member.email}}</p>
                                     </div>
                                 </div>
-                                <div class="flex items-center">{{svg-jar "arrow-right" class="w4"}}</div>
+                                <div class="flex items-center">{{svg-jar "arrow-right" class="w4 h4 fill-midlightgrey"}}</div>
                             </article>
                         {{/link-to}}
                     </div>
