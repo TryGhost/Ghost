@@ -247,7 +247,6 @@ describe('Posts API V2', function () {
                         jsonResponse.posts[0].page.should.not.be.ok();
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
-                        jsonResponse.posts[0].author.should.be.a.String();
                         testUtils.API.isISO8601(jsonResponse.posts[0].created_at).should.be.true();
                         // Tags aren't included by default
                         should.not.exist(jsonResponse.posts[0].tags);
@@ -299,7 +298,6 @@ describe('Posts API V2', function () {
                         jsonResponse.posts[0].page.should.not.be.ok();
                         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                         _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
-                        jsonResponse.posts[0].author.should.be.a.String();
                         // Tags aren't included by default
                         should.not.exist(jsonResponse.posts[0].tags);
                         done();
@@ -325,7 +323,6 @@ describe('Posts API V2', function () {
 
                         localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['tags', 'authors']);
 
-                        jsonResponse.posts[0].author.should.be.a.String();
                         jsonResponse.posts[0].page.should.not.be.ok();
 
                         jsonResponse.posts[0].authors[0].should.be.an.Object();
@@ -448,7 +445,6 @@ describe('Posts API V2', function () {
                         localUtils.API.checkResponse(res.body.posts[0], 'post');
 
                         res.body.posts[0].title.should.eql(post.title);
-                        res.body.posts[0].author.should.eql(post.author);
                         res.body.posts[0].status.should.eql('published');
                         res.body.posts[0].custom_template.should.eql('custom-about');
                     });
