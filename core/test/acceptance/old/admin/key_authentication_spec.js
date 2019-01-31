@@ -62,7 +62,7 @@ describe('Admin API V2 key authentication', function () {
         return request
             .post(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken(localUtils.API.getApiQuery('posts'))}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken(localUtils.API.getApiQuery('posts/'))}`)
             .send({
                 posts: [post]
             })
