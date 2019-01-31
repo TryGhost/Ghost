@@ -117,10 +117,6 @@
               {{/if}}
           </figure>
 
-            {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
-            <input style="display:none;" type="text" name="fakeusernameremembered"/>
-            <input style="display:none;" type="password" name="fakepasswordremembered"/>
-
             <fieldset class="user-details-bottom">
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="name" class="first-form-group"}}
@@ -288,12 +284,13 @@
         {{#if canChangePassword}}
             <form id="password-reset" class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform user.saveNewPassword) on="submit"}}>
                 <fieldset>
-                    {{#unless isNotOwnProfile}}
+                    {{#if isOwnProfile}}
                         {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="password"}}
                             <label for="user-password-old">Old Password</label>
                             {{gh-text-input
                                 type="password"
                                 id="user-password-old"
+                                autocomplete="current-password"
                                 value=(readonly user.password)
                                 input=(action "updatePassword" value="target.value")
                                 keyEvents=(hash
@@ -303,13 +300,14 @@
                             }}
                             {{gh-error-message errors=user.errors property="password" data-test-error="user-old-pass"}}
                         {{/gh-form-group}}
-                    {{/unless}}
+                    {{/if}}
 
                     {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="newPassword"}}
                         <label for="user-password-new">New Password</label>
                         {{gh-text-input
                             value=(readonly user.newPassword)
                             type="password"
+                            autocomplete="new-password"
                             id="user-password-new"
                             input=(action "updateNewPassword" value="target.value")
                             keyEvents=(hash

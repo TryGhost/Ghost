@@ -1,11 +1,9 @@
 import Controller from '@ember/controller';
-import RSVP from 'rsvp';
-import {
-    VersionMismatchError,
-    isVersionMismatchError
-} from 'ghost-admin/services/ajax';
 import {alias} from '@ember/object/computed';
 import {isArray as isEmberArray} from '@ember/array';
+import {
+    isVersionMismatchError
+} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -29,52 +27,13 @@ export default Controller.extend({
 
         setImage(image) {
             this.set('profileImage', image);
+        },
+
+        submit(event) {
+            event.preventDefault();
+            this.signup.perform();
         }
     },
-
-    authenticate: task(function* (authStrategy, authentication) {
-        try {
-            let authResult = yield this.get('session')
-                .authenticate(authStrategy, ...authentication);
-            let promises = [];
-
-            promises.pushObject(this.get('settings').fetch());
-            promises.pushObject(this.get('config').fetchPrivate());
-
-            // fetch settings and private config for synchronous access
-            yield RSVP.all(promises);
-
-            return authResult;
-        } catch (error) {
-            if (error && error.payload && error.payload.errors) {
-                // we don't get back an ember-data/ember-ajax error object
-                // back so we need to pass in a null status in order to
-                // test against the payload
-                if (isVersionMismatchError(null, error)) {
-                    let versionMismatchError = new VersionMismatchError(error);
-                    return this.get('notifications').showAPIError(versionMismatchError);
-                }
-
-                error.payload.errors.forEach((err) => {
-                    err.message = err.message.htmlSafe();
-                });
-
-                this.set('flowErrors', error.payload.errors[0].message.string);
-
-                if (error.payload.errors[0].message.string.match(/user with that email/)) {
-                    this.get('signupDetails.errors').add('email', '');
-                }
-
-                if (error.payload.errors[0].message.string.match(/password is incorrect/)) {
-                    this.get('signupDetails.errors').add('password', '');
-                }
-            } else {
-                // Connection errors don't return proper status message, only req.body
-                this.get('notifications').showAlert('There was a problem on the server.', {type: 'error', key: 'session.authenticate.failed'});
-                throw error;
-            }
-        }
-    }).drop(),
 
     signup: task(function* () {
         let setupProperties = ['name', 'email', 'password', 'token'];
