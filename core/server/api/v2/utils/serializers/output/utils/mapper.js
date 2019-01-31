@@ -38,8 +38,9 @@ const mapPost = (model, frame) => {
         date.forPost(jsonModel);
         members.forPost(jsonModel, frame);
         extraAttrs.forPost(frame, model, jsonModel);
-        clean.post(jsonModel);
     }
+
+    clean.post(jsonModel, frame);
 
     if (frame.options && frame.options.withRelated) {
         frame.options.withRelated.forEach((relation) => {

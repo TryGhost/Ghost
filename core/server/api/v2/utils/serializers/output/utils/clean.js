@@ -1,3 +1,5 @@
+const localUtils = require('../../../index');
+
 const tag = (attrs) => {
     // Already deleted in model.toJSON, but leaving here so that we can clean that up when we deprecate v0.1
     delete attrs.parent_id;
@@ -61,35 +63,37 @@ const author = (attrs) => {
     return attrs;
 };
 
-const post = (attrs) => {
-    // Extra properties removed from v2
-    delete attrs.locale;
+const post = (attrs, frame) => {
+    if (localUtils.isContentAPI(frame)) {
+        delete attrs.locale;
+
+        // @TODO: https://github.com/TryGhost/Ghost/issues/10335
+        // delete attrs.page;
+        delete attrs.status;
+        delete attrs.visibility;
+
+        // We are standardising on returning null from the Content API for any empty values
+        if (attrs.twitter_title === '') {
+            attrs.twitter_title = null;
+        }
+        if (attrs.twitter_description === '') {
+            attrs.twitter_description = null;
+        }
+        if (attrs.meta_title === '') {
+            attrs.meta_title = null;
+        }
+        if (attrs.meta_description === '') {
+            attrs.meta_description = null;
+        }
+        if (attrs.og_title === '') {
+            attrs.og_title = null;
+        }
+        if (attrs.og_description === '') {
+            attrs.og_description = null;
+        }
+    }
+
     delete attrs.author;
-
-    // @TODO: https://github.com/TryGhost/Ghost/issues/10335
-    // delete attrs.page;
-    delete attrs.status;
-    delete attrs.visibility;
-
-    // We are standardising on returning null from the Content API for any empty values
-    if (attrs.twitter_title === '') {
-        attrs.twitter_title = null;
-    }
-    if (attrs.twitter_description === '') {
-        attrs.twitter_description = null;
-    }
-    if (attrs.meta_title === '') {
-        attrs.meta_title = null;
-    }
-    if (attrs.meta_description === '') {
-        attrs.meta_description = null;
-    }
-    if (attrs.og_title === '') {
-        attrs.og_title = null;
-    }
-    if (attrs.og_description === '') {
-        attrs.og_description = null;
-    }
 
     return attrs;
 };
