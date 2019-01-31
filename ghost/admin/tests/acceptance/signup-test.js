@@ -45,110 +45,113 @@ describe('Acceptance: Signup', function () {
 
         // email address should be pre-filled and disabled
         expect(
-            find('input[name="email"]').value,
+            find('[data-test-input="email"]').value,
             'email field value'
         ).to.equal('kevin+test2@ghost.org');
 
         expect(
-            find('input[name="email"]').matches(':disabled'),
+            find('[data-test-input="email"]').matches(':disabled'),
             'email field is disabled'
         ).to.be.true;
 
         // focus out in Name field triggers inline error
-        await blur('input[name="name"]');
+        await blur('[data-test-input="name"]');
 
         expect(
-            find('input[name="name"]').closest('.form-group'),
+            find('[data-test-input="name"]').closest('.form-group'),
             'name field group has error class when empty'
         ).to.have.class('error');
 
         expect(
-            find('input[name="name"]').closest('.form-group').querySelector('.response').textContent,
+            find('[data-test-input="name"]').closest('.form-group').querySelector('.response').textContent,
             'name inline-error text'
         ).to.have.string('Please enter a name');
 
         // entering text in Name field clears error
-        await fillIn('input[name="name"]', 'Test User');
-        await blur('input[name="name"]');
+        await fillIn('[data-test-input="name"]', 'Test User');
+        await blur('[data-test-input="name"]');
 
         expect(
-            find('input[name="name"]').closest('.form-group'),
+            find('[data-test-input="name"]').closest('.form-group'),
             'name field loses error class after text input'
         ).to.not.have.class('error');
 
         expect(
-            find('input[name="name"]').closest('.form-group').querySelector('.response').textContent.trim(),
+            find('[data-test-input="name"]').closest('.form-group').querySelector('.response').textContent.trim(),
             'name field error is removed after text input'
         ).to.be.empty;
 
         // check password validation
         // focus out in password field triggers inline error
         // no password
-        await click('input[name="password"]');
+        await click('[data-test-input="password"]');
         await blur();
 
         expect(
-            find('input[name="password"]').closest('.form-group'),
+            find('[data-test-input="password"]').closest('.form-group'),
             'password field group has error class when empty'
         ).to.have.class('error');
 
         expect(
-            find('input[name="password"]').closest('.form-group').querySelector('.response').textContent,
+            find('[data-test-input="password"]').closest('.form-group').querySelector('.response').textContent,
             'password field error text'
         ).to.have.string('must be at least 10 characters');
 
         // password too short
-        await fillIn('input[name="password"]', 'short');
-        await blur('input[name="password"]');
+        await fillIn('[data-test-input="password"]', 'short');
+        await blur('[data-test-input="password"]');
 
         expect(
-            find('input[name="password"]').closest('.form-group').querySelector('.response').textContent,
+            find('[data-test-input="password"]').closest('.form-group').querySelector('.response').textContent,
             'password field error text'
         ).to.have.string('must be at least 10 characters');
 
         // password must not be a bad password
-        await fillIn('input[name="password"]', '1234567890');
-        await blur('input[name="password"]');
+        await fillIn('[data-test-input="password"]', '1234567890');
+        await blur('[data-test-input="password"]');
 
         expect(
-            find('input[name="password"]').closest('.form-group').querySelector('.response').textContent,
+            find('[data-test-input="password"]').closest('.form-group').querySelector('.response').textContent,
             'password field error text'
         ).to.have.string('you cannot use an insecure password');
 
         // password must not be a disallowed password
-        await fillIn('input[name="password"]', 'password99');
-        await blur('input[name="password"]');
+        await fillIn('[data-test-input="password"]', 'password99');
+        await blur('[data-test-input="password"]');
 
         expect(
-            find('input[name="password"]').closest('.form-group').querySelector('.response').textContent,
+            find('[data-test-input="password"]').closest('.form-group').querySelector('.response').textContent,
             'password field error text'
         ).to.have.string('you cannot use an insecure password');
 
         // password must not have repeating characters
-        await fillIn('input[name="password"]', '2222222222');
-        await blur('input[name="password"]');
+        await fillIn('[data-test-input="password"]', '2222222222');
+        await blur('[data-test-input="password"]');
 
         expect(
-            find('input[name="password"]').closest('.form-group').querySelector('.response').textContent,
+            find('[data-test-input="password"]').closest('.form-group').querySelector('.response').textContent,
             'password field error text'
         ).to.have.string('you cannot use an insecure password');
 
         // entering valid text in Password field clears error
-        await fillIn('input[name="password"]', 'thisissupersafe');
-        await blur('input[name="password"]');
+        await fillIn('[data-test-input="password"]', 'thisissupersafe');
+        await blur('[data-test-input="password"]');
 
         expect(
-            find('input[name="password"]').closest('.form-group'),
+            find('[data-test-input="password"]').closest('.form-group'),
             'password field loses error class after text input'
         ).to.not.have.class('error');
 
         expect(
-            find('input[name="password"]').closest('.form-group').querySelector('.response').textContent.trim(),
+            find('[data-test-input="password"]').closest('.form-group').querySelector('.response').textContent.trim(),
             'password field error is removed after text input'
         ).to.equal('');
 
         // submitting sends correct details and redirects to content screen
         await click('.gh-btn-green');
+
+        this.timeout(0);
+        await this.pauseTest();
 
         expect(currentRouteName()).to.equal('posts.index');
     });

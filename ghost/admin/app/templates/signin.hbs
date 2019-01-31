@@ -12,6 +12,7 @@
                             name="identification"
                             autocapitalize="off"
                             autocorrect="off"
+                            autocomplete="username"
                             tabindex="1"
                             value=(readonly signin.identification)
                             input=(action (mut signin.identification) value="target.value")
@@ -28,6 +29,7 @@
                             placeholder="Password"
                             name="password"
                             tabindex="2"
+                            autocomplete="current-password"
                             autocorrect="off"
                             value=(readonly signin.password)
                             input=(action (mut signin.password) value="target.value")}}

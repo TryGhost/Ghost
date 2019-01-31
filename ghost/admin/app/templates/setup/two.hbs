@@ -3,10 +3,6 @@
 </header>
 
 <form id="setup" class="gh-flow-create">
-    {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
-    <input style="display:none;" type="text" name="username"/>
-    <input style="display:none;" type="password" name="password"/>
-
     {{gh-profile-image email=email setImage=(action "setImage")}}
 
     {{#gh-form-group errors=errors hasValidated=hasValidated property="blogTitle"}}
@@ -38,6 +34,7 @@
                 name="name"
                 placeholder="Eg. John H. Watson"
                 autocorrect="off"
+                autocomplete="name"
                 value=(readonly name)
                 input=(action (mut name) value="target.value")
                 focus-out=(action "preValidate" "name")
@@ -57,6 +54,7 @@
                 name="email"
                 placeholder="Eg. john@example.com"
                 autocorrect="off"
+                autocomplete="username email"
                 value=(readonly email)
                 input=(action (mut email) value="target.value")
                 focus-out=(action "preValidate" "email")
@@ -76,6 +74,7 @@
                 name="password"
                 placeholder="At least 10 characters"
                 autocorrect="off"
+                autocomplete="new-password"
                 value=(readonly password)
                 input=(action (mut password) value="target.value")
                 focus-out=(action "preValidate" "password")
