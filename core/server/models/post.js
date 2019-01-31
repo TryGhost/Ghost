@@ -343,14 +343,21 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (this.hasChanged('html') || !this.get('plaintext')) {
-            this.set('plaintext', htmlToText.fromString(this.get('html'), {
+            const plaintext = htmlToText.fromString(this.get('html'), {
                 wordwrap: 80,
                 ignoreImage: true,
                 hideLinkHrefIfSameAsText: true,
                 preserveNewlines: true,
                 returnDomByDefault: true,
                 uppercaseHeadings: false
-            }));
+            });
+
+            // CASE: html is e.g. <p></p>
+            // @NOTE: Otherwise we will always update the resource to `plaintext: ''` and Bookshelf thinks that this
+            //        value was modified.
+            if (plaintext) {
+                this.set('plaintext', plaintext);
+            }
         }
 
         // disabling sanitization until we can implement a better version
