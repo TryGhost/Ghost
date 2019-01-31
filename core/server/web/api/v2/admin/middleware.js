@@ -19,7 +19,7 @@ const notImplemented = function (req, res, next) {
         themes: ['POST']
     };
 
-    const match = req.url.match(/^\/(\w+)\//);
+    const match = req.url.match(/^\/(\w+)\/?/);
 
     if (match) {
         const entity = match[1];
