@@ -181,8 +181,8 @@ module.exports = function apiRoutes() {
     router.put('/authentication/setup', mw.authAdminApi, api.http(api.authentication.updateSetup));
     router.get('/authentication/setup', api.http(api.authentication.isSetup));
 
-    // ## Uploads
-    // @TODO: rename endpoint to /images/upload (or similar)
+    // ## Images
+    // @TODO: remove /uploads/ in favor of /images/ in Ghost 3.x
     router.post('/uploads',
         mw.authAdminApi,
         upload.single('uploadimage'),
@@ -201,6 +201,31 @@ module.exports = function apiRoutes() {
     );
 
     router.post('/uploads/icon',
+        mw.authAdminApi,
+        upload.single('uploadimage'),
+        shared.middlewares.validation.upload({type: 'icons'}),
+        shared.middlewares.validation.blogIcon(),
+        apiv2.http(apiv2.upload.image)
+    );
+
+    router.post('/images',
+        mw.authAdminApi,
+        upload.single('uploadimage'),
+        shared.middlewares.validation.upload({type: 'images'}),
+        shared.middlewares.image.normalize,
+        apiv2.http(apiv2.upload.image)
+    );
+
+    router.post('/images/profile-image',
+        mw.authAdminApi,
+        upload.single('uploadimage'),
+        shared.middlewares.validation.upload({type: 'images'}),
+        shared.middlewares.validation.profileImage,
+        shared.middlewares.image.normalize,
+        apiv2.http(apiv2.upload.image)
+    );
+
+    router.post('/images/icon',
         mw.authAdminApi,
         upload.single('uploadimage'),
         shared.middlewares.validation.upload({type: 'icons'}),
