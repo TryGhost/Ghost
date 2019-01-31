@@ -118,6 +118,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         debug(model.tableName, event);
 
         if (!options.transacting) {
+            debug(`event: ${event}`);
             return common.events.emit(event, model, options);
         }
 
@@ -137,6 +138,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 }
 
                 _.each(this.ghostEvents, (ghostEvent) => {
+                    debug(`event: ${event}`);
                     common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
                 });
 
