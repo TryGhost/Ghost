@@ -20,7 +20,7 @@ export default Component.extend({
     backgroundStyle: computed('member.name', function () {
         let name = this.member.name;
         if (name) {
-            let color = stringToHslColor(name, 30, 80);
+            let color = stringToHslColor(name, 54, 55);
             return htmlSafe(`background-color: ${color}`);
         }
     }),
