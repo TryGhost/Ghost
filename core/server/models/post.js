@@ -332,7 +332,14 @@ Post = ghostBookshelf.Model.extend({
 
         // render mobiledoc to HTML
         if (this.hasChanged('mobiledoc') || !this.get('html')) {
-            this.set('html', converters.mobiledocConverter.render(JSON.parse(this.get('mobiledoc'))));
+            try {
+                this.set('html', converters.mobiledocConverter.render(JSON.parse(this.get('mobiledoc'))));
+            } catch (err) {
+                throw new common.errors.ValidationError({
+                    message: 'Invalid mobiledoc structure.',
+                    help: 'https://docs.ghost.org/concepts/posts/'
+                });
+            }
         }
 
         if (this.hasChanged('html') || !this.get('plaintext')) {
