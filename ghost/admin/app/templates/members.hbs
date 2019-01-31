@@ -10,7 +10,13 @@
         {{#if this.members}}
             {{!-- members list, styles taken from .apps-grid --}}
             <div class="flex flex-row flex-wrap items-start ba br3">
-                {{#each this.members as |member index|}}
+                <VerticalCollection
+                    @items={{this.members}}
+                    @key="id"
+                    @containerSelector=".gh-main"
+                    @estimateHeight=76
+                    as |member index|
+                >
                     <div class="flex-grow-1 flex-shrink-1" style="flex-basis: 100%">
                         {{#link-to "member" member}}
                             <article class="flex items-center justify-between pa4 {{if index "bt"}}">
@@ -25,7 +31,7 @@
                             </article>
                         {{/link-to}}
                     </div>
-                {{/each}}
+                </VerticalCollection>
             </div>
         {{else}}
             {{#unless this.fetchMembers.isRunning}}
