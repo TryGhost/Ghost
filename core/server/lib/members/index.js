@@ -63,8 +63,12 @@ module.exports = function MembersApi({
         const {audience, origin} = req.data;
 
         validateAudience({audience, origin, id: signedin})
-            .then(() => encodeToken({
-                sub: signedin,
+            .then(() => {
+                return users.get({id: signedin});
+            })
+            .then((member) => encodeToken({
+                sub: member.id,
+                plans: member.subscriptions.map(sub => sub.plan),
                 aud: audience
             }))
             .then(token => res.end(token))
