@@ -6,6 +6,7 @@ const {getData, handleError} = require('./util');
 const Cookies = require('./cookies');
 const Tokens = require('./tokens');
 const Users = require('./users');
+const Subscriptions = require('./subscriptions');
 
 module.exports = function MembersApi({
     config: {
@@ -15,6 +16,7 @@ module.exports = function MembersApi({
         sessionSecret,
         ssoOrigin
     },
+    paymentConfig,
     validateAudience,
     createMember,
     validateMember,
@@ -25,7 +27,10 @@ module.exports = function MembersApi({
 }) {
     const {encodeToken, decodeToken, getPublicKeys} = Tokens({privateKey, publicKey, issuer});
 
+    const subscriptions = new Subscriptions(paymentConfig);
+
     const users = Users({
+        subscriptions,
         createMember,
         updateMember,
         getMember,
