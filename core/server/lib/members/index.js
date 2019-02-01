@@ -9,7 +9,7 @@ const Users = require('./users');
 const Subscriptions = require('./subscriptions');
 
 module.exports = function MembersApi({
-    config: {
+    authConfig: {
         issuer,
         privateKey,
         publicKey,
