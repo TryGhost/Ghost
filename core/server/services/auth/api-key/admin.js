@@ -84,6 +84,10 @@ const authenticate = (req, res, next) => {
             }));
         }
 
+        // Decoding from hex and transforming into bytes is here to
+        // keep comparison of the bytes that are stored in the secret.
+        // Useful context:
+        // https://github.com/auth0/node-jsonwebtoken/issues/208#issuecomment-231861138
         const secret = Buffer.from(apiKey.get('secret'), 'hex');
 
         // ensure the token was meant for this endpoint
