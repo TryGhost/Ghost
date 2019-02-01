@@ -115,10 +115,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * If the query runs in a txn, `_previousAttributes` will be empty.
      */
     emitChange: function (model, event, options) {
-        debug(model.tableName, event);
-
         if (!options.transacting) {
-            debug(`event: ${event}`);
+            debug(`event trigger without txn: ${event}`);
             return common.events.emit(event, model, options);
         }
 
@@ -138,7 +136,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 }
 
                 _.each(this.ghostEvents, (ghostEvent) => {
-                    debug(`event: ${event}`);
+                    debug(`event: ${ghostEvent}`);
                     common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
                 });
 
