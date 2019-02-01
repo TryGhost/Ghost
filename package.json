@@ -101,6 +101,7 @@
     "semver": "5.6.0",
     "simple-dom": "0.3.2",
     "simple-html-tokenizer": "0.5.7",
+    "stripe": "6.23.0",
     "superagent": "4.1.0",
     "unidecode": "0.1.8",
     "uuid": "3.3.2",
