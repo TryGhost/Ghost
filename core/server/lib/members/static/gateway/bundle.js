@@ -60,6 +60,24 @@
 
     addMethod('getToken', getToken);
 
+    addMethod('createSubscription', function createSubscription(metadata) {
+        return fetch(`${membersApi}/subscription`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                origin,
+                metadata
+            })
+        }).then((res) => {
+            if (res.ok) {
+                storage.setItem('signedin', true);
+            }
+            return res.ok;
+        });
+    });
+
     addMethod('signin', function signin({email, password}) {
         return fetch(`${membersApi}/signin`, {
             method: 'POST',
