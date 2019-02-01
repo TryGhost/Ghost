@@ -1,4 +1,8 @@
-const adapters = {};
+const stripe = require('./payment-processors/stripe');
+
+const adapters = {
+    stripe
+};
 
 module.exports = class PaymentProcessorService {
     constructor(config) {
