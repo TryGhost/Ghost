@@ -77,6 +77,8 @@ const issuer = siteOrigin;
 const ssoOrigin = siteOrigin;
 let mailer;
 
+const membersConfig = config.get("members");
+
 function sendEmail(member, {token}) {
     if (!(mailer instanceof mail.GhostMailer)) {
         mailer = new mail.GhostMailer();
@@ -111,6 +113,9 @@ const api = MembersApi({
         privateKey,
         sessionSecret,
         ssoOrigin
+    },
+    paymentConfig: {
+        processors: membersConfig.payment_processors
     },
     validateAudience,
     createMember,
