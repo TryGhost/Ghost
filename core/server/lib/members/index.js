@@ -84,6 +84,34 @@ module.exports = function MembersApi({
         next();
     }
 
+    /* subscriptions */
+    apiRouter.post('/subscription', getData('metadata'), ssoOriginCheck, (req, res) => {
+        const {signedin} = getCookie(req);
+        if (!signedin) {
+            res.writeHead(401, {
+                'Set-Cookie': removeCookie()
+            });
+            return res.end();
+        }
+
+        const {adapter} = req.data.metadata;
+
+        subscriptions.getAdapters()
+            .then((adapters) => {
+                if (!adapters.includes(adapter)) {
+                    throw new Error('Invalid adapter');
+                }
+            })
+            .then(() => users.get({id: signedin}))
+            .then((member) => {
+                return subscriptions.createSubscription(member, req.data.metadata);
+            })
+            .then(() => {
+                res.end();
+            })
+            .catch(handleError(500, res));
+    });
+
     /* users, token, emails */
     apiRouter.post('/request-password-reset', getData('email'), ssoOriginCheck, (req, res) => {
         const {email} = req.data;
