@@ -157,7 +157,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
         serialize: function serialize(options) {
             const authors = this.related('authors');
-
             let attrs = proto.serialize.call(this, options);
 
             // CASE: e.g. you stub model response in the test
