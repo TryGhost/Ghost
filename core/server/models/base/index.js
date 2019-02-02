@@ -117,7 +117,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     emitChange: function (model, event, options) {
         if (!options.transacting) {
+            if (model._changed && !Object.keys(model._changed).length) {
+                return;
+            }
+
             debug(`event trigger without txn: ${event}`);
+
             return common.events.emit(event, model, options);
         }
 
@@ -137,6 +142,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 }
 
                 _.each(this.ghostEvents, (ghostEvent) => {
+                    if (model._changed && !Object.keys(model._changed).length) {
+                        return;
+                    }
+
                     debug(`event: ${ghostEvent}`);
                     common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
                 });
