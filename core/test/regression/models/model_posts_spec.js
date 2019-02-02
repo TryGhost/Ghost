@@ -449,7 +449,7 @@ describe('Post Model', function () {
                         });
                 }).then(function () {
                     // txn was successful
-                    Object.keys(eventsTriggered).length.should.eql(6);
+                    Object.keys(eventsTriggered).length.should.eql(4);
                 });
             });
 
@@ -708,8 +708,8 @@ describe('Post Model', function () {
                     should.exist(edited);
                     edited.attributes.status.should.equal('scheduled');
 
-                    Object.keys(eventsTriggered).length.should.eql(1);
-                    should.exist(eventsTriggered['post.edited']);
+                    // nothing has changed
+                    Object.keys(eventsTriggered).length.should.eql(0);
 
                     done();
                 }).catch(done);
