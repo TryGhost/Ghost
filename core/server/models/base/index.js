@@ -54,6 +54,7 @@ ghostBookshelf.plugin('bookshelf-relations', {
     allowedOptions: ['context', 'importing', 'migrating'],
     unsetRelations: true,
     extendChanged: '_changed',
+    attachPreviousRelations: true,
     hooks: {
         belongsToMany: {
             after: function (existing, targets, options) {
@@ -594,6 +595,18 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         const options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'toJSON');
         options.omitPivot = true;
 
+        if (options.previous) {
+            const attrs = {};
+            const relations = {};
+
+            _.each(Object.keys(this._previousRelations), (key) => {
+                relations[key] = this._previousRelations[key].toJSON();
+            });
+
+            Object.assign(attrs, this._previousAttributes, relations);
+            return attrs;
+        }
+
         return proto.toJSON.call(this, options);
     },
 
@@ -660,7 +673,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         switch (methodName) {
         case 'toJSON':
-            return baseOptions.concat('shallow', 'columns');
+            return baseOptions.concat('shallow', 'columns', 'previous');
         case 'destroy':
             return baseOptions.concat(extraOptions, ['id', 'destroyBy', 'require']);
         case 'edit':
