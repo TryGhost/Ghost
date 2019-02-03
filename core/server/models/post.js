@@ -208,12 +208,16 @@ Post = ghostBookshelf.Model.extend({
         model.related('tags').once('detaching', function onDetached(collection, tag) {
             model.related('tags').once('detached', function onDetached(detachedCollection, response, options) {
                 tag.emitChange('detached', options);
+                model.emitChange('tag.detached', options);
             });
         });
 
         model.related('tags').once('attaching', function onDetached(collection, tags) {
             model.related('tags').once('attached', function onDetached(detachedCollection, response, options) {
-                tags.forEach(tag => tag.emitChange('attached', options));
+                tags.forEach((tag) => {
+                    tag.emitChange('attached', options);
+                    model.emitChange('tag.attached', options);
+                });
             });
         });
 
