@@ -113,5 +113,9 @@ module.exports = {
 
     get actions() {
         return shared.pipeline(require('./actions'), localUtils);
+    },
+
+    get serializers() {
+        return require('./utils/serializers');
     }
 };
