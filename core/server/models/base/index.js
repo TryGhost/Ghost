@@ -599,9 +599,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             const attrs = {};
             const relations = {};
 
-            _.each(Object.keys(this._previousRelations), (key) => {
-                relations[key] = this._previousRelations[key].toJSON();
-            });
+            if (this._previousRelations) {
+                _.each(Object.keys(this._previousRelations), (key) => {
+                    relations[key] = this._previousRelations[key].toJSON();
+                });
+            }
 
             Object.assign(attrs, this._previousAttributes, relations);
             return attrs;
