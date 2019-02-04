@@ -22,7 +22,7 @@ describe('{{#get}} helper', function () {
         inverse = sinon.spy();
         labsStub = sinon.stub(labs, 'isSet').returns(true);
 
-        locals = {root: {_locals: {apiVersion: 'v0.1'}}};
+        locals = {root: {_locals: {apiVersion: 'v0.1'}}, globalProp: {foo: 'bar'}};
     });
 
     afterEach(function () {
@@ -508,6 +508,20 @@ describe('{{#get}} helper', function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 browseStub.firstCall.args[0].filter.should.eql('id:');
+
+                done();
+            }).catch(done);
+        });
+
+        it('should resolve global props', function (done) {
+            helpers.get.call(
+                resource,
+                'posts',
+                {hash: {filter: 'slug:{{@globalProp.foo}}'}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
+                browseStub.firstCall.args[0].filter.should.eql('slug:bar');
 
                 done();
             }).catch(done);
