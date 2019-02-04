@@ -43,7 +43,7 @@ module.exports = function staticController(req, res, next) {
                     if (config.type === 'browse') {
                         response.data[name].meta = result[name].meta;
                         // @TODO: remove in v3
-                        response.data[name][config.resource] = result[name][config.resource]
+                        response.data[name][config.resource] = result[name][config.resource];
                     }
                 });
             }
