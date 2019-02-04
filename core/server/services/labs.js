@@ -18,7 +18,8 @@ labs.isSet = function isSet(flag) {
 };
 
 labs.enabledHelper = function enabledHelper(options, callback) {
-    var errDetails, errString;
+    const errDetails = {};
+    let errString;
 
     if (labs.isSet(options.flagKey) === true) {
         // helper is active, use the callback
@@ -26,14 +27,12 @@ labs.enabledHelper = function enabledHelper(options, callback) {
     }
 
     // Else, the helper is not active and we need to handle this as an error
-    errDetails = {
-        message: common.i18n.t('warnings.helpers.helperNotAvailable', {helperName: options.helperName}),
-        context: common.i18n.t('warnings.helpers.flagMustBeEnabled', {
-            helperName: options.helperName,
-            flagName: options.flagName
-        }),
-        help: common.i18n.t('warnings.helpers.seeLink', {url: options.helpUrl})
-    };
+    errDetails.message = common.i18n.t(options.errMessagePath || 'warnings.helpers.helperNotAvailable', {helperName: options.helperName}),
+    errDetails.context = common.i18n.t(options.errContextPath || 'warnings.helpers.flagMustBeEnabled', {
+        helperName: options.helperName,
+        flagName: options.flagName
+    });
+    errDetails.help = common.i18n.t(options.errHelpPath || 'warnings.helpers.seeLink', {url: options.helpUrl});
 
     common.logging.error(new common.errors.DisabledFeatureError(errDetails));
 

@@ -565,7 +565,11 @@
                 "iteratorNeeded": "Need to pass an iterator to #foreach"
             },
             "get": {
-                "invalidResource": "Invalid resource given to get helper"
+                "invalidResource": "Invalid resource given to get helper",
+                "apiRequired": {
+                    "message": "The \\{\\{#get\\}\\} helper requires your theme to have API access.",
+                    "context": "Please enable the v2 API via your theme's package.json file."
+                }
             },
             "has": {
                 "invalidAttribute": "Invalid or no attribute given to has helper"

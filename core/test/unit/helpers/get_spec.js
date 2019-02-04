@@ -45,9 +45,9 @@ describe('{{#get}} helper', function () {
             result.should.be.a.Function();
             result().should.be.an.Object().with.property(
                 'string',
-                '<script>console.error("The {{get}} helper is not available. ' +
-                'The Public API flag must be enabled in labs if you wish to use the {{get}} helper. ' +
-                'See https://docs.ghost.org/faq/api-versioning/");</script>'
+                '<script>console.error("The {{#get}} helper requires your theme to have API access. ' +
+                'Please enable the v2 API via your theme\'s package.json file. ' +
+                'See https://docs.ghost.org/api/handlebars-themes/packagejson/");</script>'
             );
 
             done();
