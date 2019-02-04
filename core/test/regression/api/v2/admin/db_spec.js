@@ -89,7 +89,7 @@ describe('DB API', () => {
             .expect('Content-Type', /json/)
             .expect(200)
             .then((res) => {
-                (typeof res.body).should.be.Object();
+                res.body.should.be.Object();
                 res.body.db[0].filename.should.match(/test\.json/);
                 fsStub.calledOnce.should.eql(true);
             });

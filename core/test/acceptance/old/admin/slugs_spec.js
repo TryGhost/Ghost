@@ -1,8 +1,8 @@
 var should = require('should'),
     supertest = require('supertest'),
-    testUtils = require('../../../../utils'),
-    localUtils = require('../../../../acceptance/old/admin/utils'),
-    config = require('../../../../../server/config'),
+    testUtils = require('../../../utils'),
+    localUtils = require('../../../acceptance/old/admin/utils'),
+    config = require('../../../../server/config'),
     ghost = testUtils.startGhost,
     request;
 
