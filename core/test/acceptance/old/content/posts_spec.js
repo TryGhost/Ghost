@@ -12,7 +12,7 @@ const config = require('../../../../server/config');
 const ghost = testUtils.startGhost;
 let request;
 
-describe('Posts', function () {
+describe('Posts Content API', function () {
     before(function () {
         return ghost()
             .then(function () {
@@ -29,7 +29,7 @@ describe('Posts', function () {
 
     const validKey = localUtils.getValidKey();
 
-    it('browse posts', function (done) {
+    it('Can request posts', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
@@ -91,7 +91,7 @@ describe('Posts', function () {
             });
     });
 
-    it('browse posts with basic filters', function (done) {
+    it('Can filter posts by tag', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=tag:kitchen-sink,featured:true&include=tags`))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -140,50 +140,7 @@ describe('Posts', function () {
             });
     });
 
-    it('browse posts with basic page filter should not return pages', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=page:true`))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const jsonResponse = res.body;
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                should.exist(jsonResponse.posts);
-                localUtils.API.checkResponse(jsonResponse, 'posts');
-                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                jsonResponse.posts.should.have.length(0);
-
-                done();
-            });
-    });
-
-    it('browse posts with basic page filter should not return pages', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=page:true,featured:true`))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const jsonResponse = res.body;
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                should.exist(jsonResponse.posts);
-                localUtils.API.checkResponse(jsonResponse, 'posts');
-                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                jsonResponse.posts.should.have.length(2);
-                jsonResponse.posts.filter(p => (p.page === true)).should.have.length(0);
-
-                done();
-            });
-    });
-
-    it('browse posts with author filter', function (done) {
+    it('Can filter posts by authors', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=authors:[joe-bloggs,pat,ghost,slimer-mcectoplasm]&include=authors`))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -220,50 +177,7 @@ describe('Posts', function () {
             });
     });
 
-    it('browse posts with published and draft status, should not return drafts', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=status:published,status:draft`))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const jsonResponse = res.body;
-
-                jsonResponse.posts.should.be.an.Array().with.lengthOf(11);
-
-                done();
-            });
-    });
-
-    it('[deprecated] browse posts with page non matching filter', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=tag:no-posts`))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const jsonResponse = res.body;
-
-                jsonResponse.posts.should.be.an.Array().with.lengthOf(0);
-
-                jsonResponse.meta.should.have.property('pagination');
-                jsonResponse.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                jsonResponse.meta.pagination.page.should.eql(1);
-                jsonResponse.meta.pagination.limit.should.eql(15);
-                jsonResponse.meta.pagination.pages.should.eql(1);
-                jsonResponse.meta.pagination.total.should.eql(0);
-                should.equal(jsonResponse.meta.pagination.next, null);
-                should.equal(jsonResponse.meta.pagination.prev, null);
-
-                done();
-            });
-    });
-
-    it('browse posts: request only url fields', function (done) {
+    it('Can request fields of posts', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&fields=url`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
@@ -283,28 +197,7 @@ describe('Posts', function () {
             });
     });
 
-    it('browse posts: request only url fields with include', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&fields=url&include=tags`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const jsonResponse = res.body;
-
-                should.exist(jsonResponse.posts);
-
-                localUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url','tags']);
-                jsonResponse.posts[0].url.should.eql('http://127.0.0.1:2369/welcome/');
-                jsonResponse.posts[0].tags[0].url.should.eql('http://127.0.0.1:2369/tag/getting-started/');
-                done();
-            });
-    });
-
-    it('browse posts: request to include tags and authors should always contain absolute urls', function (done) {
+    it('Can include relations', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&include=tags,authors`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
@@ -344,7 +237,7 @@ describe('Posts', function () {
             });
     });
 
-    it('browse posts from different origin', function (done) {
+    it('Can request posts from different origin', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
             .set('Origin', 'https://example.com')
             .expect('Content-Type', /json/)
@@ -370,73 +263,7 @@ describe('Posts', function () {
             });
     });
 
-    it('ensure origin header on redirect is not getting lost', function (done) {
-        // NOTE: force a redirect to the admin url
-        configUtils.set('admin:url', 'http://localhost:9999');
-
-        request.get(localUtils.API.getApiQuery(`posts?key=${validKey}`))
-            .set('Origin', 'https://example.com')
-            // 301 Redirects _should_ be cached
-            .expect('Cache-Control', testUtils.cacheRules.year)
-            .expect(301)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                res.headers.vary.should.eql('Accept, Accept-Encoding');
-                res.headers.location.should.eql(`http://localhost:9999/ghost/api/v2/content/posts/?key=${validKey}`);
-                should.exist(res.headers['access-control-allow-origin']);
-                should.not.exist(res.headers['x-cache-invalidate']);
-                done();
-            });
-    });
-
-    it('browse posts, ignores staticPages', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&staticPages=true`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse.posts);
-                localUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(11);
-                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                done();
-            });
-    });
-
-    it('denies access with invalid key', function (done) {
-        request.get(localUtils.API.getApiQuery('posts/?key=invalid-key'))
-            .set('Origin', testUtils.API.getURL())
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(401)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.errors);
-                testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
-                done();
-            });
-    });
-
-    it('fetch the most recent post, then the prev, then the next should match the first', function (done) {
+    it('Can filter by published date', function (done) {
         function createFilter(publishedAt, op) {
             // This line deliberately uses double quotes because GQL cannot handle either double quotes
             // or escaped singles, see TryGhost/GQL#34
@@ -488,7 +315,7 @@ describe('Posts', function () {
             .catch(done);
     });
 
-    it('read posts', function () {
+    it('Can request a single post', function () {
         return request
             .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
@@ -503,14 +330,5 @@ describe('Posts', function () {
                 jsonResponse.posts.should.have.length(1);
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
             });
-    });
-
-    it('can\'t read page', function () {
-        return request
-            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[5].id}/?key=${validKey}`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(404);
     });
 });

@@ -10,7 +10,7 @@ const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
 let request;
 
-describe('Authors Content API V2', function () {
+describe('Authors Content API', function () {
     let ghostServer;
 
     before(function () {
@@ -30,7 +30,7 @@ describe('Authors Content API V2', function () {
 
     const validKey = localUtils.getValidKey();
 
-    it('browse authors', function (done) {
+    it('Can request authors', function (done) {
         request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
@@ -67,69 +67,7 @@ describe('Authors Content API V2', function () {
             });
     });
 
-    it('browse authors: does not give back roles if trying to fetch roles', function (done) {
-        request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&include=roles`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.body.authors[0].roles);
-                done();
-            });
-    });
-
-    it('browse user by slug: count.posts', function (done) {
-        request.get(localUtils.API.getApiQuery(`authors/slug/ghost/?key=${validKey}&include=count.posts`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-
-                should.exist(jsonResponse.authors);
-                jsonResponse.authors.should.have.length(1);
-
-                // We don't expose the email address.
-                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);
-                done();
-            });
-    });
-
-    it('browse user by id: count.posts', function (done) {
-        request.get(localUtils.API.getApiQuery(`authors/1/?key=${validKey}&include=count.posts`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-
-                should.exist(jsonResponse.authors);
-                jsonResponse.authors.should.have.length(1);
-
-                // We don't expose the email address.
-                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);
-                done();
-            });
-    });
-
-    it('browse user with count.posts', function (done) {
+    it('Can request authors including post count', function (done) {
         request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&include=count.posts&order=count.posts ASC`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
@@ -166,8 +104,8 @@ describe('Authors Content API V2', function () {
             });
     });
 
-    it('browse authors: post count', function (done) {
-        request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&include=count.posts`))
+    it('Can request single author', function (done) {
+        request.get(localUtils.API.getApiQuery(`authors/slug/ghost/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -179,9 +117,32 @@ describe('Authors Content API V2', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
+
                 should.exist(jsonResponse.authors);
-                localUtils.API.checkResponse(jsonResponse, 'authors');
-                jsonResponse.authors.should.have.length(3);
+                jsonResponse.authors.should.have.length(1);
+
+                // We don't expose the email address.
+                localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['url'], null, null);
+                done();
+            });
+    });
+
+    it('Can request author by id including post count', function (done) {
+        request.get(localUtils.API.getApiQuery(`authors/1/?key=${validKey}&include=count.posts`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+
+                should.exist(jsonResponse.authors);
+                jsonResponse.authors.should.have.length(1);
 
                 // We don't expose the email address.
                 localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);

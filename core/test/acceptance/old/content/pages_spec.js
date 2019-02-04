@@ -9,7 +9,7 @@ const config = require('../../../../server/config');
 const ghost = testUtils.startGhost;
 let request;
 
-describe('Pages', function () {
+describe('Pages Content API', function () {
     before(function () {
         return ghost()
             .then(function () {
@@ -24,7 +24,7 @@ describe('Pages', function () {
         configUtils.restore();
     });
 
-    it('browse pages', function () {
+    it('Can request pages', function () {
         const key = localUtils.getValidKey();
         return request.get(localUtils.API.getApiQuery(`pages/?key=${key}`))
             .set('Origin', testUtils.API.getURL())
@@ -49,27 +49,7 @@ describe('Pages', function () {
             });
     });
 
-    it('browse pages with page:false', function () {
-        const key = localUtils.getValidKey();
-        return request.get(localUtils.API.getApiQuery(`pages/?key=${key}&filter=page:false`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .then((res) => {
-                res.headers.vary.should.eql('Accept-Encoding');
-                should.exist(res.headers['access-control-allow-origin']);
-                should.not.exist(res.headers['x-cache-invalidate']);
-
-                const jsonResponse = res.body;
-                should.exist(jsonResponse.pages);
-                should.exist(jsonResponse.meta);
-
-                jsonResponse.pages.should.have.length(0);
-            });
-    });
-
-    it('read page', function () {
+    it('Can request page', function () {
         const key = localUtils.getValidKey();
         return request.get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[5].id}/?key=${key}`))
             .set('Origin', testUtils.API.getURL())
@@ -91,16 +71,5 @@ describe('Pages', function () {
                 should.exist(urlParts.protocol);
                 should.exist(urlParts.host);
             });
-    });
-
-    it('can\'t read post', function () {
-        const key = localUtils.getValidKey();
-
-        return request
-            .get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[0].id}/?key=${key}`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(404);
     });
 });

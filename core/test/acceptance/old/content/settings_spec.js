@@ -12,7 +12,7 @@ const defaultSettings = require('../../../../server/data/schema').defaultSetting
 const ghost = testUtils.startGhost;
 let request;
 
-describe('Settings', function () {
+describe('Settings Content API', function () {
     before(function () {
         return ghost()
             .then(function () {
@@ -22,7 +22,7 @@ describe('Settings', function () {
             });
     });
 
-    it('browse settings', function () {
+    it('Can request settings', function () {
         const key = localUtils.getValidKey();
         return request.get(localUtils.API.getApiQuery(`settings/?key=${key}`))
             .set('Origin', testUtils.API.getURL())

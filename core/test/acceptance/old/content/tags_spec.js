@@ -8,7 +8,7 @@ const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
 
-describe('Tags Content API V2', function () {
+describe('Tags Content API', function () {
     let request;
 
     before(function () {
@@ -27,7 +27,7 @@ describe('Tags Content API V2', function () {
 
     const validKey = localUtils.getValidKey();
 
-    it('browse tags without limit defaults to 15', function (done) {
+    it('Can request tags', function (done) {
         request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
@@ -65,7 +65,7 @@ describe('Tags Content API V2', function () {
             });
     });
 
-    it('browse tags - limit=all should fetch all tags', function (done) {
+    it('Can request tags with limit=all', function (done) {
         request.get(localUtils.API.getApiQuery(`tags/?limit=all&key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
@@ -86,7 +86,7 @@ describe('Tags Content API V2', function () {
             });
     });
 
-    it('browse tags without limit=4 fetches 4 tags', function (done) {
+    it('Can limit tags to receive', function (done) {
         request.get(localUtils.API.getApiQuery(`tags/?limit=3&key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
@@ -108,8 +108,8 @@ describe('Tags Content API V2', function () {
             });
     });
 
-    it('browse tags - limit=all should fetch all tags and include count.posts', function (done) {
-        request.get(localUtils.API.getApiQuery(`tags/?limit=all&key=${validKey}&include=count.posts`))
+    it('Can include post count', function (done) {
+        request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&include=count.posts`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)

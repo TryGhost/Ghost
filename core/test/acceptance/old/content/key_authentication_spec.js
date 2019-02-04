@@ -7,12 +7,12 @@ const config = require('../../../../server/config');
 
 const ghost = testUtils.startGhost;
 
-describe('Content API V2 key authentication', function () {
+describe('Content API key authentication', function () {
     let request;
 
     before(function () {
         return ghost()
-            .then(function (_ghostServer) {
+            .then(function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
@@ -20,14 +20,14 @@ describe('Content API V2 key authentication', function () {
             });
     });
 
-    it('forbid access without key', function () {
+    it('Can not access without key', function () {
         return request.get(localUtils.API.getApiQuery('posts/'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(403);
     });
 
-    it('browse with valid key', function () {
+    it('Can access with with valid key', function () {
         const key = localUtils.getValidKey();
 
         return request.get(localUtils.API.getApiQuery(`posts/?key=${key}`))
