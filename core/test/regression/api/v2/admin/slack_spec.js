@@ -1,10 +1,10 @@
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
-const testUtils = require('../../../utils');
-const localUtils = require('./utils');
-const config = require('../../../../server/config');
-const common = require('../../../../server/lib/common');
+const testUtils = require('../../../../utils');
+const localUtils = require('../../../../acceptance/old/admin/utils');
+const config = require('../../../../../server/config');
+const common = require('../../../../../server/lib/common');
 const ghost = testUtils.startGhost;
 
 let request;

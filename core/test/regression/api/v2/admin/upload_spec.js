@@ -3,8 +3,8 @@ const fs = require('fs-extra');
 const should = require('should');
 const supertest = require('supertest');
 const localUtils = require('./utils');
-const testUtils = require('../../../utils');
-const config = require('../../../../server/config');
+const testUtils = require('../../../../utils');
+const config = require('../../../../../server/config');
 
 const ghost = testUtils.startGhost;
 
@@ -28,74 +28,63 @@ describe('Upload API', function () {
         });
     });
 
-    it('Can upload a png', function (done) {
+    it('import should fail without file', function (done) {
         request.post(localUtils.API.getApiQuery('uploads'))
             .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.png'))
-            .expect(201)
-            .end(function (err, res) {
+            .expect(403)
+            .end(function (err) {
                 if (err) {
                     return done(err);
                 }
 
-                res.body.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/ghost-logo.png`));
-
-                images.push(res.body.replace(config.get('url'), ''));
                 done();
             });
     });
 
-    it('Can upload a jpg', function (done) {
+    it('import should fail with unsupported file', function (done) {
         request.post(localUtils.API.getApiQuery('uploads'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghosticon.jpg'))
-            .expect(201)
-            .end(function (err, res) {
+            .attach('uploadimage', path.join(__dirname, '/../../../../utils/fixtures/csv/single-column-with-header.csv'))
+            .expect(415)
+            .end(function (err) {
                 if (err) {
                     return done(err);
                 }
 
-                res.body.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/ghosticon.jpg`));
-
-                images.push(res.body.replace(config.get('url'), ''));
                 done();
             });
     });
 
-    it('Can upload a gif', function (done) {
+    it('incorrect extension', function (done) {
         request.post(localUtils.API.getApiQuery('uploads'))
             .set('Origin', config.get('url'))
+            .set('content-type', 'image/png')
             .expect('Content-Type', /json/)
-            .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat.gif'))
-            .expect(201)
-            .end(function (err, res) {
+            .attach('uploadimage', path.join(__dirname, '/../../../../utils/fixtures/images/ghost-logo.pngx'))
+            .expect(415)
+            .end(function (err) {
                 if (err) {
                     return done(err);
                 }
 
-                res.body.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/loadingcat.gif`));
-
-                images.push(res.body.replace(config.get('url'), ''));
                 done();
             });
     });
 
-    it('Can upload a square profile image', function (done) {
+    it('import should fail if profile image is not square', function (done) {
         request.post(localUtils.API.getApiQuery('uploads/profile-image'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat_square.gif'))
-            .expect(201)
-            .end(function (err, res) {
+            .attach('uploadimage', path.join(__dirname, '/../../../../utils/fixtures/images/favicon_not_square.png'))
+            .expect(422)
+            .end(function (err) {
                 if (err) {
                     return done(err);
                 }
 
-                res.body.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/loadingcat_square.gif`));
-
-                images.push(res.body.replace(config.get('url'), ''));
                 done();
             });
     });
