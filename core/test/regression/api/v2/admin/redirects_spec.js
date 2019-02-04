@@ -3,10 +3,10 @@ const supertest = require('supertest');
 const fs = require('fs-extra');
 const Promise = require('bluebird');
 const path = require('path');
-const testUtils = require('../../../utils');
-const localUtils = require('./utils');
-const configUtils = require('../../../utils/configUtils');
-const config = require('../../../../server/config');
+const testUtils = require('../../../../utils');
+const localUtils = require('../../../../acceptance/old/admin/utils');
+const configUtils = require('../../../../utils/configUtils');
+const config = require('../../../../../server/config');
 
 const ghost = testUtils.startGhost;
 let request;

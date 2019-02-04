@@ -9,8 +9,8 @@ const ghost = testUtils.startGhost;
 
 let request;
 
-describe('Invites API V2', function () {
-    var accesstoken = '', ghostServer;
+describe('Invites API', function () {
+    let ghostServer;
 
     before(function () {
         return ghost()
@@ -20,9 +20,6 @@ describe('Invites API V2', function () {
             })
             .then(function () {
                 return localUtils.doAuth(request, 'invites');
-            })
-            .then(function (token) {
-                accesstoken = token;
             });
     });
 
@@ -34,146 +31,107 @@ describe('Invites API V2', function () {
         sinon.restore();
     });
 
-    describe('browse', function () {
-        it('default', function (done) {
-            request.get(localUtils.API.getApiQuery('invites/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+    it('Can fetch all invites', function (done) {
+        request.get(localUtils.API.getApiQuery('invites/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.invites);
-                    jsonResponse.invites.should.have.length(2);
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.invites);
+                jsonResponse.invites.should.have.length(2);
 
-                    localUtils.API.checkResponse(jsonResponse, 'invites');
-                    localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+                localUtils.API.checkResponse(jsonResponse, 'invites');
+                localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
 
-                    jsonResponse.invites[0].status.should.eql('sent');
-                    jsonResponse.invites[0].email.should.eql('test1@ghost.org');
-                    jsonResponse.invites[0].role_id.should.eql(testUtils.roles.ids.admin);
+                jsonResponse.invites[0].status.should.eql('sent');
+                jsonResponse.invites[0].email.should.eql('test1@ghost.org');
+                jsonResponse.invites[0].role_id.should.eql(testUtils.roles.ids.admin);
 
-                    jsonResponse.invites[1].status.should.eql('sent');
-                    jsonResponse.invites[1].email.should.eql('test2@ghost.org');
-                    jsonResponse.invites[1].role_id.should.eql(testUtils.roles.ids.author);
+                jsonResponse.invites[1].status.should.eql('sent');
+                jsonResponse.invites[1].email.should.eql('test2@ghost.org');
+                jsonResponse.invites[1].role_id.should.eql(testUtils.roles.ids.author);
 
-                    mailService.GhostMailer.prototype.send.called.should.be.false();
+                mailService.GhostMailer.prototype.send.called.should.be.false();
 
-                    done();
-                });
-        });
+                done();
+            });
     });
 
-    describe('read', function () {
-        it('default', function (done) {
-            request.get(localUtils.API.getApiQuery(`invites/${testUtils.DataGenerator.forKnex.invites[0].id}/`))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+    it('Can read an invitation by id', function (done) {
+        request.get(localUtils.API.getApiQuery(`invites/${testUtils.DataGenerator.forKnex.invites[0].id}/`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.invites);
-                    jsonResponse.invites.should.have.length(1);
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.invites);
+                jsonResponse.invites.should.have.length(1);
 
-                    localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+                localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
 
-                    mailService.GhostMailer.prototype.send.called.should.be.false();
+                mailService.GhostMailer.prototype.send.called.should.be.false();
 
-                    done();
-                });
-        });
+                done();
+            });
     });
 
-    describe('add', function () {
-        it('default', function (done) {
-            request
-                .post(localUtils.API.getApiQuery('invites/'))
-                .set('Origin', config.get('url'))
-                .send({
-                    invites: [{email: 'test@example.com', role_id: testUtils.existingData.roles[1].id}]
-                })
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+    it('Can add a new invite', function (done) {
+        request
+            .post(localUtils.API.getApiQuery('invites/'))
+            .set('Origin', config.get('url'))
+            .send({
+                invites: [{email: 'test@example.com', role_id: testUtils.existingData.roles[1].id}]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.invites);
-                    jsonResponse.invites.should.have.length(1);
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.invites);
+                jsonResponse.invites.should.have.length(1);
 
-                    localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-                    jsonResponse.invites[0].role_id.should.eql(testUtils.existingData.roles[1].id);
+                localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+                jsonResponse.invites[0].role_id.should.eql(testUtils.existingData.roles[1].id);
 
-                    mailService.GhostMailer.prototype.send.called.should.be.true();
+                mailService.GhostMailer.prototype.send.called.should.be.true();
 
-                    done();
-                });
-        });
-
-        it('no email', function () {
-            return request
-                .post(localUtils.API.getApiQuery('invites/'))
-                .set('Origin', config.get('url'))
-                .send({
-                    invites: [{role_id: testUtils.existingData.roles[1].id}]
-                })
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422);
-        });
-
-        it('user exists', function (done) {
-            request.post(localUtils.API.getApiQuery('invites/'))
-                .set('Origin', config.get('url'))
-                .send({
-                    invites: [{email: 'ghost-author@example.com', role_id: testUtils.existingData.roles[1].id}]
-                })
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(422)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    mailService.GhostMailer.prototype.send.called.should.be.false();
-                    done();
-                });
-        });
+                done();
+            });
     });
 
-    describe('destroy', function () {
-        it('default', function (done) {
-            request.del(localUtils.API.getApiQuery(`invites/${testUtils.DataGenerator.forKnex.invites[0].id}/`))
-                .set('Origin', config.get('url'))
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+    it('Can destroy an existing invite', function (done) {
+        request.del(localUtils.API.getApiQuery(`invites/${testUtils.DataGenerator.forKnex.invites[0].id}/`))
+            .set('Origin', config.get('url'))
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(204)
+            .end(function (err) {
+                if (err) {
+                    return done(err);
+                }
 
-                    mailService.GhostMailer.prototype.send.called.should.be.false();
-                    done();
-                });
-        });
+                mailService.GhostMailer.prototype.send.called.should.be.false();
+                done();
+            });
     });
 });

@@ -2,10 +2,10 @@ const path = require('path');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
-const testUtils = require('../../../utils');
-const localUtils = require('./utils');
-const config = require('../../../../server/config');
-const labs = require('../../../../server/services/labs');
+const testUtils = require('../../../../utils');
+const localUtils = require('../../../../acceptance/old/admin/utils');
+const config = require('../../../../../server/config');
+const labs = require('../../../../../server/services/labs');
 
 const ghost = testUtils.startGhost;
 
@@ -208,7 +208,7 @@ describe('Subscribers API', function () {
     it('importCSV', function () {
         return request
             .post(localUtils.API.getApiQuery(`subscribers/csv/`))
-            .attach('subscribersfile', path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
+            .attach('subscribersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/single-column-with-header.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)

@@ -5,12 +5,12 @@ const localUtils = require('./utils');
 const config = require('../../../../server/config');
 const ghost = testUtils.startGhost;
 
-describe('Tag API V2', function () {
+describe('Tag API', function () {
     let request;
 
     before(function () {
         return ghost()
-            .then(function (_ghostServer) {
+            .then(function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
@@ -18,7 +18,7 @@ describe('Tag API V2', function () {
             });
     });
 
-    it('browse', function () {
+    it('Can request all tags', function () {
         return request
             .get(localUtils.API.getApiQuery('tags/?include=count.posts&order=name%20DESC'))
             .set('Origin', config.get('url'))
@@ -49,7 +49,7 @@ describe('Tag API V2', function () {
             });
     });
 
-    it('browse accepts the page parameter', function () {
+    it('Can paginate tags', function () {
         return request
             .get(localUtils.API.getApiQuery('tags/?page=2'))
             .set('Origin', config.get('url'))
@@ -61,7 +61,7 @@ describe('Tag API V2', function () {
             });
     });
 
-    it('read', function () {
+    it('Can read a tag', function () {
         return request
             .get(localUtils.API.getApiQuery(`tags/${testUtils.existingData.tags[0].id}/?include=count.posts`))
             .set('Origin', config.get('url'))
@@ -81,7 +81,7 @@ describe('Tag API V2', function () {
             });
     });
 
-    it('add', function () {
+    it('Can add a tag', function () {
         const tag = testUtils.DataGenerator.forKnex.createTag();
 
         return request
@@ -110,7 +110,7 @@ describe('Tag API V2', function () {
             });
     });
 
-    it('add internal', function () {
+    it('Can add an internal tag', function () {
         const tag = testUtils.DataGenerator.forKnex.createTag({
             name: '#test',
             slug: null
@@ -135,7 +135,7 @@ describe('Tag API V2', function () {
             });
     });
 
-    it('edit', function () {
+    it('Can edit a tag', function () {
         return request
             .put(localUtils.API.getApiQuery(`tags/${testUtils.existingData.tags[0].id}`))
             .set('Origin', config.get('url'))
@@ -156,7 +156,7 @@ describe('Tag API V2', function () {
             });
     });
 
-    it('destroy', function () {
+    it('Can destroy a tag', function () {
         return request
             .del(localUtils.API.getApiQuery(`tags/${testUtils.existingData.tags[0].id}`))
             .set('Origin', config.get('url'))

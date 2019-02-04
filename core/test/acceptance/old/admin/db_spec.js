@@ -52,7 +52,7 @@ describe('DB API', () => {
         sinon.restore();
     });
 
-    it('should export data', () => {
+    it('Can export a JSON database', () => {
         return request.get(localUtils.API.getApiQuery(`db/`))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -70,20 +70,7 @@ describe('DB API', () => {
             });
     });
 
-    it('include more tables', () => {
-        return request.get(localUtils.API.getApiQuery('db/?include=clients,client_trusted_domains'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect(200)
-            .then((res) => {
-                const jsonResponse = res.body;
-                should.exist(jsonResponse.db);
-                jsonResponse.db.should.have.length(1);
-                Object.keys(jsonResponse.db[0].data).length.should.eql(27);
-            });
-    });
-
-    it('import should succeed with default content', () => {
+    it('Can import a JSON database', () => {
         return Promise.resolve()
             .then(() => {
                 return request.delete(localUtils.API.getApiQuery('db/'))
@@ -120,80 +107,9 @@ describe('DB API', () => {
             });
     });
 
-    it('import should fail without file', () => {
-        return request.post(localUtils.API.getApiQuery('db/'))
-            .set('Origin', config.get('url'))
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .expect(403);
-    });
-
-    it('import should fail with unsupported file', () => {
-        return request.post(localUtils.API.getApiQuery('db/'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .attach('importfile', path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
-            .expect(415);
-    });
-
-    it('export can be triggered by backup client', () => {
-        const backupQuery = `?client_id=${backupClient.slug}&client_secret=${backupClient.secret}`;
-        const fsStub = sinon.stub(fs, 'writeFile').resolves();
-
-        return request.post(localUtils.API.getApiQuery(`db/backup${backupQuery}`))
-            .expect('Content-Type', /json/)
-            .expect(200)
-            .then((res) => {
-                (typeof res.body).should.be.Object;
-                should.exist(res.body.db[0].filename);
-                fsStub.calledOnce.should.eql(true);
-            });
-    });
-
-    it('export can be triggered and named by backup client', () => {
-        const backupQuery = `?client_id=${backupClient.slug}&client_secret=${backupClient.secret}&filename=test`;
-        const fsStub = sinon.stub(fs, 'writeFile').resolves();
-
-        return request.post(localUtils.API.getApiQuery(`db/backup${backupQuery}`))
-            .expect('Content-Type', /json/)
-            .expect(200)
-            .then((res) => {
-                (typeof res.body).should.be.Object;
-                res.body.db[0].filename.should.match(/test\.json/);
-                fsStub.calledOnce.should.eql(true);
-            });
-    });
-
-    it('export can not be triggered by client other than backup', () => {
-        const schedulerQuery = `?client_id=${schedulerClient.slug}&client_secret=${schedulerClient.secret}`;
-        const fsStub = sinon.stub(fs, 'writeFile').resolves();
-
-        return request.post(localUtils.API.getApiQuery(`db/backup${schedulerQuery}`))
-            .expect('Content-Type', /json/)
-            .expect(403)
-            .then(res => {
-                should.exist(res.body.errors);
-                res.body.errors[0].errorType.should.eql('NoPermissionError');
-                fsStub.called.should.eql(false);
-            });
-    });
-
-    it('export can not be triggered by regular authentication', () => {
-        const fsStub = sinon.stub(fs, 'writeFile').resolves();
-
-        return request.post(localUtils.API.getApiQuery(`db/backup`))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect(401)
-            .then(res => {
-                should.exist(res.body.errors);
-                res.body.errors[0].errorType.should.eql('UnauthorizedError');
-                fsStub.called.should.eql(false);
-            });
-    });
-
-    it('delete all content (owner)', () => {
-        return request.get(localUtils.API.getApiQuery('posts/'))
+    it('Can delete all content', () => {
+        return request
+            .get(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
