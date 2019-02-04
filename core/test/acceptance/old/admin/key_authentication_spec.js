@@ -7,12 +7,12 @@ const config = require('../../../../server/config');
 
 const ghost = testUtils.startGhost;
 
-describe('Admin API V2 key authentication', function () {
+describe('Admin API key authentication', function () {
     let request;
 
     before(function () {
         return ghost()
-            .then(function (_ghostServer) {
+            .then(function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
@@ -20,7 +20,7 @@ describe('Admin API V2 key authentication', function () {
             });
     });
 
-    it('do not authenticate without token header', function () {
+    it('Can not access endpoint without a token header', function () {
         return request.get(localUtils.API.getApiQuery('posts/'))
             .set('Authorization', `Ghost`)
             .expect('Content-Type', /json/)
@@ -28,7 +28,7 @@ describe('Admin API V2 key authentication', function () {
             .expect(401);
     });
 
-    it('do not authenticate with wrong endpoint token', function () {
+    it('Can not access endpoint with a wrong endpoint token', function () {
         return request.get(localUtils.API.getApiQuery('posts/'))
             .set('Authorization', `Ghost ${localUtils.getValidAdminToken('https://wrong.com')}`)
             .expect('Content-Type', /json/)
@@ -36,15 +36,7 @@ describe('Admin API V2 key authentication', function () {
             .expect(401);
     });
 
-    it('browse with no endpoint token', function () {
-        return request.get(localUtils.API.getApiQuery('posts/'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('')}`)
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(401);
-    });
-
-    it('browse with correct GET endpoint token', function () {
+    it('Can access browse endpoint with correct token', function () {
         return request.get(localUtils.API.getApiQuery('posts/'))
             .set('Authorization', `Ghost ${localUtils.getValidAdminToken(localUtils.API.getApiQuery('posts/'))}`)
             .expect('Content-Type', /json/)
@@ -52,7 +44,7 @@ describe('Admin API V2 key authentication', function () {
             .expect(200);
     });
 
-    it('POST to /post endpoint returns not implemented', function () {
+    it('Can access add endpoint with correct token', function () {
         const post = {
             authors: [{
                 id: testUtils.DataGenerator.Content.users[0].id

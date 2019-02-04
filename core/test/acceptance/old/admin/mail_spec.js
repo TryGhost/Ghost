@@ -9,8 +9,8 @@ const ghost = testUtils.startGhost;
 
 let request;
 
-describe('Mail API V2', function () {
-    var accesstoken = '', ghostServer;
+describe('Mail API', function () {
+    let ghostServer;
 
     before(function () {
         return ghost()
@@ -20,9 +20,6 @@ describe('Mail API V2', function () {
             })
             .then(function () {
                 return localUtils.doAuth(request, 'invites');
-            })
-            .then(function (token) {
-                accesstoken = token;
             });
     });
 
@@ -34,7 +31,7 @@ describe('Mail API V2', function () {
         sinon.restore();
     });
 
-    it('default', function () {
+    it('Can send mail', function () {
         return request
             .post(localUtils.API.getApiQuery('mail/'))
             .set('Origin', config.get('url'))
@@ -61,21 +58,6 @@ describe('Mail API V2', function () {
 
                 jsonResponse.mail[0].status.should.eql({message: 'sent'});
                 jsonResponse.mail[0].message.subject.should.eql('testemail');
-                mailService.GhostMailer.prototype.send.called.should.be.true();
-            });
-    });
-
-    it('test mail', function () {
-        return request
-            .post(localUtils.API.getApiQuery('mail/test/'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                jsonResponse.should.eql({message: 'sent'});
                 mailService.GhostMailer.prototype.send.called.should.be.true();
             });
     });

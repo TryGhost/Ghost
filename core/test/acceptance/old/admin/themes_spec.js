@@ -8,7 +8,7 @@ const localUtils = require('./utils');
 const config = require('../../../../server/config');
 const ghost = testUtils.startGhost;
 
-describe('v2 Themes API', function () {
+describe('Themes API', function () {
     let ghostServer;
     let ownerRequest;
 
@@ -35,7 +35,7 @@ describe('v2 Themes API', function () {
         return localUtils.doAuth(ownerRequest);
     });
 
-    it('browse', function () {
+    it('Can request all available themes', function () {
         return ownerRequest
             .get(localUtils.API.getApiQuery('themes/'))
             .set('Origin', config.get('url'))
@@ -73,7 +73,7 @@ describe('v2 Themes API', function () {
             });
     });
 
-    it('download', function () {
+    it('Can download a theme', function () {
         return ownerRequest
             .get(localUtils.API.getApiQuery('themes/casper/download/'))
             .set('Origin', config.get('url'))
@@ -82,7 +82,7 @@ describe('v2 Themes API', function () {
             .expect(200);
     });
 
-    it('upload valid theme', function () {
+    it('Can upload a valid theme', function () {
         return uploadTheme({themePath: path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')})
             .then((res) => {
                 const jsonResponse = res.body;
@@ -159,7 +159,7 @@ describe('v2 Themes API', function () {
             });
     });
 
-    it('delete', function () {
+    it('Can delete a theme', function () {
         return ownerRequest
             .del(localUtils.API.getApiQuery('themes/valid'))
             .set('Origin', config.get('url'))
@@ -215,7 +215,7 @@ describe('v2 Themes API', function () {
             });
     });
 
-    it('upload with warnings', function () {
+    it('Can upload a theme, which has warnings', function () {
         return uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/themes/warnings.zip')})
             .then((res) => {
                 const jsonResponse = res.body;
@@ -236,7 +236,7 @@ describe('v2 Themes API', function () {
             });
     });
 
-    it('activate', function () {
+    it('Can activate a theme', function () {
         return ownerRequest
             .get(localUtils.API.getApiQuery('themes/'))
             .set('Origin', config.get('url'))
