@@ -197,7 +197,10 @@ module.exports = function getLabsWrapper() {
             flagKey: 'publicAPI',
             flagName: 'Public API',
             helperName: 'get',
-            helpUrl: 'https://docs.ghost.org/faq/api-versioning/',
+            // Even though this is a labs enabled helper, really we want users to upgrade to v2 API.
+            errMessagePath: 'warnings.helpers.get.apiRequired.message',
+            errContextPath: 'warnings.helpers.get.apiRequired.context',
+            helpUrl: 'https://docs.ghost.org/api/handlebars-themes/packagejson/',
             async: true
         }, function executeHelper() {
             return get.apply(self, args);
