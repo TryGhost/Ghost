@@ -1,6 +1,5 @@
 const should = require('should');
 const supertest = require('supertest');
-const _ = require('lodash');
 const ObjectId = require('bson-objectid');
 const moment = require('moment-timezone');
 const testUtils = require('../../../../utils');
@@ -89,45 +88,6 @@ describe('Posts API', function () {
                     done();
                 });
         });
-
-        it('can use a filter', function (done) {
-            request.get(localUtils.API.getApiQuery('posts/?filter=page:[false,true]&status=all'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse.posts);
-                    localUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(15);
-                    localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                    localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                    done();
-                });
-        });
-
-        it('supports usage of the page param', function (done) {
-            request.get(localUtils.API.getApiQuery('posts/?page=2'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    const jsonResponse = res.body;
-                    should.equal(jsonResponse.meta.pagination.page, 2);
-                    done();
-                });
-        });
     });
 
     describe('read', function () {
@@ -149,36 +109,6 @@ describe('Posts API', function () {
                     should.exist(jsonResponse.errors);
                     testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                     done();
-                });
-        });
-    });
-
-    describe('add', function () {
-        it('published post with response timestamps in UTC format respecting original UTC offset', function () {
-            const post = {
-                posts: [{
-                    status: 'published',
-                    published_at: '2016-05-31T07:00:00.000+06:00',
-                    created_at: '2016-05-30T03:00:00.000Z',
-                    updated_at: '2016-05-30T07:00:00.000'
-                }]
-            };
-
-            return request.post(localUtils.API.getApiQuery('posts'))
-                .set('Origin', config.get('url'))
-                .send(post)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(201)
-                .then((res) => {
-                    res.body.posts.length.should.eql(1);
-                    localUtils.API.checkResponse(res.body.posts[0], 'post');
-                    res.body.posts[0].status.should.eql('published');
-                    res.headers['x-cache-invalidate'].should.eql('/*');
-
-                    res.body.posts[0].published_at.should.eql('2016-05-31T01:00:00.000Z');
-                    res.body.posts[0].created_at.should.eql('2016-05-30T03:00:00.000Z');
-                    res.body.posts[0].updated_at.should.eql('2016-05-30T07:00:00.000Z');
                 });
         });
     });

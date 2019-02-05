@@ -1,8 +1,5 @@
 const should = require('should');
-const _ = require('lodash');
 const supertest = require('supertest');
-const os = require('os');
-const fs = require('fs-extra');
 const config = require('../../../../../server/config');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
@@ -27,7 +24,7 @@ describe('Settings API', function () {
         return ghostServer.stop();
     });
 
-    it('read core setting', function () {
+    it('Can\'t read core setting', function () {
         return request
             .get(localUtils.API.getApiQuery('settings/db_hash/'))
             .set('Origin', config.get('url'))
@@ -36,7 +33,7 @@ describe('Settings API', function () {
             .expect(403);
     });
 
-    it('can\'t read permalinks', function (done) {
+    it('Can\'t read permalinks', function (done) {
         request.get(localUtils.API.getApiQuery('settings/permalinks/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
