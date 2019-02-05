@@ -197,61 +197,6 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
-        it('can findAll', function (done) {
-            UserModel.findAll().then(function (results) {
-                should.exist(results);
-                results.length.should.equal(5);
-
-                done();
-            }).catch(done);
-        });
-
-        it('can findPage (default)', function (done) {
-            UserModel.findPage().then(function (results) {
-                should.exist(results);
-
-                results.meta.pagination.page.should.equal(1);
-                results.meta.pagination.limit.should.equal(15);
-                results.meta.pagination.pages.should.equal(1);
-                results.data.length.should.equal(5);
-
-                done();
-            }).catch(done);
-        });
-
-        /**
-         * Removed in favour of filters, but this relation hasn't been re-added yet
-         */
-        it.skip('can findPage by role', function (done) {
-            return testUtils.fixtures.createExtraUsers().then(function () {
-                return UserModel.findPage({role: 'Administrator'});
-            }).then(function (results) {
-                results.meta.pagination.page.should.equal(1);
-                results.meta.pagination.limit.should.equal(15);
-                results.meta.pagination.pages.should.equal(1);
-                results.meta.pagination.total.should.equal(2);
-                results.data.length.should.equal(2);
-
-                return UserModel.findPage({role: 'Owner'});
-            }).then(function (results) {
-                results.meta.pagination.page.should.equal(1);
-                results.meta.pagination.limit.should.equal(15);
-                results.meta.pagination.pages.should.equal(1);
-                results.meta.pagination.total.should.equal(1);
-                results.data.length.should.equal(1);
-
-                return UserModel.findPage({role: 'Editor', limit: 1});
-            }).then(function (results) {
-                results.meta.pagination.page.should.equal(1);
-                results.meta.pagination.limit.should.equal(1);
-                results.meta.pagination.pages.should.equal(2);
-                results.meta.pagination.total.should.equal(2);
-                results.data.length.should.equal(1);
-
-                done();
-            }).catch(done);
-        });
-
         it('can findPage with limit all', function () {
             return testUtils.fixtures.createExtraUsers().then(function () {
                 return UserModel.findPage({limit: 'all'});
@@ -272,23 +217,6 @@ describe('User Model', function run() {
 
                     done();
                 }).catch(done);
-        });
-
-        it('can findOne', function (done) {
-            var firstUser;
-
-            UserModel.findAll().then(function (results) {
-                should.exist(results);
-                results.length.should.be.above(0);
-                firstUser = results.models[0];
-
-                return UserModel.findOne({email: firstUser.attributes.email});
-            }).then(function (found) {
-                should.exist(found);
-                found.attributes.name.should.equal(firstUser.attributes.name);
-
-                done();
-            }).catch(done);
         });
 
         it('can findOne by role name', function () {
@@ -466,34 +394,6 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
-        it('can destroy active user', function (done) {
-            var firstUser = {id: testUtils.DataGenerator.Content.users[0].id};
-
-            // Test that we have the user we expect
-            UserModel.findOne(firstUser).then(function (results) {
-                var user;
-                should.exist(results);
-                user = results.toJSON();
-                user.id.should.equal(firstUser.id);
-
-                // Destroy the user
-                return UserModel.destroy(firstUser);
-            }).then(function (response) {
-                response.toJSON().should.be.empty();
-
-                Object.keys(eventsTriggered).length.should.eql(2);
-                should.exist(eventsTriggered['user.deactivated']);
-                should.exist(eventsTriggered['user.deleted']);
-
-                // Double check we can't find the user again
-                return UserModel.findOne(firstUser);
-            }).then(function (newResults) {
-                should.equal(newResults, null);
-
-                done();
-            }).catch(done);
-        });
-
         it('can destroy invited user', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4],
                 userId;
@@ -643,20 +543,6 @@ describe('User Model', function run() {
                 });
             });
         });
-
-        describe('success', function () {
-            it('can change password', function (done) {
-                UserModel.changePassword({
-                    newPassword: 'thisissupersafe',
-                    ne2Password: 'thisissupersafe',
-                    oldPassword: 'Sl1m3rson99',
-                    user_id: testUtils.DataGenerator.Content.users[0].id
-                }, testUtils.context.owner).then(function (user) {
-                    user.get('password').should.not.eql('thisissupersafe');
-                    done();
-                }).catch(done);
-            });
-        });
     });
 
     describe('User setup', function () {
@@ -680,24 +566,6 @@ describe('User Model', function run() {
                     done();
                 })
                 .catch(done);
-        });
-    });
-
-    describe('User Login', function () {
-        beforeEach(testUtils.setup('owner'));
-
-        it('gets the correct validations when entering an invalid password', function () {
-            var object = {email: 'jbloggs@example.com', password: 'wrong'};
-
-            function userWasLoggedIn() {
-                throw new Error('User should not have been logged in.');
-            }
-
-            return UserModel.check(object).then(userWasLoggedIn)
-                .catch(function checkError(error) {
-                    should.exist(error);
-                    error.errorType.should.equal('ValidationError');
-                });
         });
     });
 });

@@ -263,13 +263,13 @@ describe('Models: listeners', function () {
                     var self = this,
                         args = arguments;
 
-                    return Promise.delay(3000)
+                    return Promise.delay(300)
                         .then(function () {
                             return sequence.apply(self, args)
                                 .finally(function () {
                                     setTimeout(function () {
                                         listenerHasFinished = true;
-                                    }, 500);
+                                    }, 50);
                                 });
                         });
                 });
@@ -303,10 +303,10 @@ describe('Models: listeners', function () {
                                     clearInterval(interval);
                                     return done();
                                 }
-                            }, 1000);
+                            }, 100);
                         })
                         .catch(done);
-                }, 2000);
+                }, 200);
             });
         });
 
@@ -420,7 +420,7 @@ describe('Models: listeners', function () {
                                 done();
                             })
                             .catch(done);
-                    }, 1000);
+                    }, 100);
                 })
                 .catch(done);
         });

@@ -100,14 +100,6 @@ describe('Post Model', function () {
             });
 
             describe('findAll', function () {
-                it('can findAll', function (done) {
-                    models.Post.findAll().then(function (results) {
-                        should.exist(results);
-                        results.length.should.be.above(1);
-                        done();
-                    }).catch(done);
-                });
-
                 it('can findAll, returning all related data', function (done) {
                     var options = {withRelated: ['author', 'authors', 'tags', 'created_by', 'updated_by', 'published_by']};
 
@@ -149,19 +141,6 @@ describe('Post Model', function () {
             });
 
             describe('findPage', function () {
-                it('can findPage (default)', function (done) {
-                    models.Post.findPage().then(function (results) {
-                        should.exist(results);
-
-                        results.meta.pagination.page.should.equal(1);
-                        results.meta.pagination.limit.should.equal(15);
-                        results.meta.pagination.pages.should.equal(1);
-                        results.data.length.should.equal(4);
-
-                        done();
-                    }).catch(done);
-                });
-
                 it('can findPage, returning all related data', function (done) {
                     models.Post.findPage({withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                         .then(function (results) {
@@ -352,24 +331,6 @@ describe('Post Model', function () {
             });
 
             describe('findOne', function () {
-                it('can findOne', function (done) {
-                    var firstPost;
-
-                    models.Post.findPage().then(function (results) {
-                        should.exist(results);
-                        should.exist(results.data);
-                        results.data.length.should.be.above(0);
-                        firstPost = results.data[0].toJSON();
-
-                        return models.Post.findOne({slug: firstPost.slug});
-                    }).then(function (found) {
-                        should.exist(found);
-                        found.attributes.title.should.equal(firstPost.title);
-
-                        done();
-                    }).catch(done);
-                });
-
                 it('can findOne, returning all related data', function (done) {
                     var firstPost;
 

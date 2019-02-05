@@ -28,7 +28,7 @@ describe('Upload API', function () {
         });
     });
 
-    it('import should fail without file', function (done) {
+    it('Can\'t import fail without file', function (done) {
         request.post(localUtils.API.getApiQuery('uploads'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
@@ -43,7 +43,7 @@ describe('Upload API', function () {
             });
     });
 
-    it('import should fail with unsupported file', function (done) {
+    it('Can\'t import with unsupported file', function (done) {
         request.post(localUtils.API.getApiQuery('uploads'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -58,7 +58,7 @@ describe('Upload API', function () {
             });
     });
 
-    it('incorrect extension', function (done) {
+    it('Can\'t upload incorrect extension', function (done) {
         request.post(localUtils.API.getApiQuery('uploads'))
             .set('Origin', config.get('url'))
             .set('content-type', 'image/png')
@@ -74,7 +74,7 @@ describe('Upload API', function () {
             });
     });
 
-    it('import should fail if profile image is not square', function (done) {
+    it('Can\'t import if profile image is not square', function (done) {
         request.post(localUtils.API.getApiQuery('uploads/profile-image'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)

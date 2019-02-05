@@ -28,38 +28,6 @@ describe('Settings Model', function () {
     });
 
     describe('API', function () {
-        it('can findAll', function (done) {
-            SettingsModel.findAll().then(function (results) {
-                should.exist(results);
-
-                results.length.should.be.above(0);
-                should.exist(_.find(results.models, {attributes: {key : 'permalinks'}}));
-
-                done();
-            }).catch(done);
-        });
-
-        it('can findOne', function (done) {
-            var firstSetting;
-
-            SettingsModel.findAll().then(function (results) {
-                should.exist(results);
-
-                results.length.should.be.above(0);
-
-                firstSetting = results.models[0];
-
-                return SettingsModel.findOne(firstSetting.attributes.key);
-            }).then(function (found) {
-                should.exist(found);
-
-                should(found.get('value')).equal(firstSetting.attributes.value);
-                found.get('created_at').should.be.an.instanceof(Date);
-
-                done();
-            }).catch(done);
-        });
-
         it('can edit single', function (done) {
             SettingsModel.findAll().then(function (results) {
                 should.exist(results);

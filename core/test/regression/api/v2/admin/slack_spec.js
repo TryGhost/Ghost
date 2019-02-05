@@ -26,7 +26,7 @@ describe('Slack API', function () {
         sinon.restore();
     });
 
-    it('should be able to post slack test', function (done) {
+    it('Can post slack test', function (done) {
         const eventSpy = sinon.spy(common.events, 'emit');
         request.post(localUtils.API.getApiQuery('slack/test/'))
             .set('Origin', config.get('url'))

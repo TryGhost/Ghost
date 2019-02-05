@@ -30,7 +30,7 @@ describe('Subscribers API', function () {
             });
     });
 
-    it('browse', function () {
+    it('Can browse', function () {
         return request
             .get(localUtils.API.getApiQuery('subscribers/'))
             .set('Origin', config.get('url'))
@@ -57,7 +57,7 @@ describe('Subscribers API', function () {
             });
     });
 
-    it('read', function () {
+    it('Can read', function () {
         return request
             .get(localUtils.API.getApiQuery(`subscribers/${testUtils.DataGenerator.Content.subscribers[0].id}/`))
             .set('Origin', config.get('url'))
@@ -74,7 +74,7 @@ describe('Subscribers API', function () {
             });
     });
 
-    it('add', function () {
+    it('Can add', function () {
         const subscriber = {
             name: 'test',
             email: 'subscriberTestAdd@test.com'
@@ -99,7 +99,7 @@ describe('Subscribers API', function () {
             });
     });
 
-    it('edit by id', function () {
+    it('Can edit by id', function () {
         const subscriberToChange = {
             name: 'changed',
             email: 'subscriber1Changed@test.com'
@@ -149,7 +149,7 @@ describe('Subscribers API', function () {
             });
     });
 
-    it('destroy', function () {
+    it('Can destroy', function () {
         const subscriber = {
             name: 'test',
             email: 'subscriberTestDestroy@test.com'
@@ -190,7 +190,7 @@ describe('Subscribers API', function () {
             });
     });
 
-    it('exportCSV', function () {
+    it('Can export CSV', function () {
         return request
             .get(localUtils.API.getApiQuery(`subscribers/csv/`))
             .set('Origin', config.get('url'))
@@ -205,7 +205,7 @@ describe('Subscribers API', function () {
             });
     });
 
-    it('importCSV', function () {
+    it('Can import CSV', function () {
         return request
             .post(localUtils.API.getApiQuery(`subscribers/csv/`))
             .attach('subscribersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/single-column-with-header.csv'))
