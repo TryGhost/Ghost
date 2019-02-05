@@ -13,15 +13,15 @@ module.exports.init = function () {
     toTrack = [
         {
             event: 'post.published',
-            name: 'Blog Post Published'
+            name: 'Post Published'
         },
         {
             event: 'page.published',
-            name: 'Blog Page Published'
+            name: 'Page Published'
         },
         {
             event: 'theme.uploaded',
-            name: 'Uploaded Theme'
+            name: 'Theme Uploaded'
         }
     ];
 
