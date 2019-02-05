@@ -18,6 +18,10 @@ module.exports.init = function () {
         {
             event: 'page.published',
             name: 'Blog Page Published'
+        },
+        {
+            event: 'theme.uploaded',
+            name: 'Uploaded Theme'
         }
     ];
 
