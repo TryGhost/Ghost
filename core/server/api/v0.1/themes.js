@@ -136,6 +136,8 @@ themes = {
                     themeUtils.activate(loadedTheme, checkedTheme);
                 }
 
+                common.events.emit('theme.uploaded');
+
                 // @TODO: unify the name across gscan and Ghost!
                 return themeUtils.toJSON(zip.shortName, checkedTheme);
             })
