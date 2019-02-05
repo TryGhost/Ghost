@@ -61,7 +61,7 @@
     "express-session": "1.15.6",
     "extract-zip": "1.6.7",
     "fs-extra": "3.0.1",
-    "ghost-ignition": "3.0.0",
+    "ghost-ignition": "3.0.1",
     "ghost-storage-base": "0.0.3",
     "glob": "5.0.15",
     "got": "8.3.2",
