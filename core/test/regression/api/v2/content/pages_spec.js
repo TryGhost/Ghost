@@ -1,4 +1,3 @@
-const url = require('url');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../../utils');
@@ -9,7 +8,7 @@ const config = require('../../../../../server/config');
 const ghost = testUtils.startGhost;
 let request;
 
-describe('Pages', function () {
+describe('Pages Content API', function () {
     before(function () {
         return ghost()
             .then(function () {
@@ -24,7 +23,7 @@ describe('Pages', function () {
         configUtils.restore();
     });
 
-    it('browse pages with page:false', function () {
+    it('Can browse pages with page:false', function () {
         const key = localUtils.getValidKey();
         return request.get(localUtils.API.getApiQuery(`pages/?key=${key}&filter=page:false`))
             .set('Origin', testUtils.API.getURL())

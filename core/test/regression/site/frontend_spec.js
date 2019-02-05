@@ -296,117 +296,115 @@ describe('Frontend Routing', function () {
         });
     });
 
-    describe('Static page', function () {
+    describe('Test with added posts', function () {
         before(addPosts);
 
-        it('should redirect without slash', function (done) {
-            request.get('/static-page-test')
-                .expect('Location', '/static-page-test/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(301)
-                .end(doEnd(done));
-        });
+        describe('Static page', function () {
+            it('should respond with html', function (done) {
+                request.get('/static-page-test/')
+                    .expect('Content-Type', /html/)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect(200)
+                    .end(doEnd(done));
+            });
 
-        it('should respond with xml', function (done) {
-            request.get('/static-page-test/')
-                .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200)
-                .end(doEnd(done));
-        });
-
-        describe('edit', function () {
             it('should redirect without slash', function (done) {
-                request.get('/static-page-test/edit')
-                    .expect('Location', '/static-page-test/edit/')
+                request.get('/static-page-test')
+                    .expect('Location', '/static-page-test/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
                     .end(doEnd(done));
             });
 
-            it('should redirect to editor', function (done) {
-                request.get('/static-page-test/edit/')
-                    .expect('Location', /ghost\/editor\/\w+/)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(302)
-                    .end(doEnd(done));
-            });
-
-            it('should 404 for non-edit parameter', function (done) {
-                request.get('/static-page-test/notedit/')
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(404)
-                    .expect(/Page not found/)
-                    .end(doEnd(done));
-            });
-        });
-
-        describe('amp', function () {
-            it('should 404 for amp parameter', function (done) {
-                request.get('/static-page-test/amp/')
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(404)
-                    .expect(/Page not found/)
-                    .end(doEnd(done));
-            });
-        });
-    });
-
-    describe('Post preview', function () {
-        before(addPosts);
-
-        it('should display draft posts accessed via uuid', function (done) {
-            request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c903/')
-                .expect('Content-Type', /html/)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    var $ = cheerio.load(res.text);
-
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    should.not.exist(res.headers['X-CSRF-Token']);
-                    should.not.exist(res.headers['set-cookie']);
-                    should.exist(res.headers.date);
-
-                    $('title').text().should.equal('Not finished yet');
-                    // @TODO: use theme from fixtures and don't rely on content/themes/casper
-                    // $('.content .post').length.should.equal(1);
-                    // $('.poweredby').text().should.equal('Proudly published with Ghost');
-                    // $('body.post-template').length.should.equal(1);
-                    // $('article.post').length.should.equal(1);
-
-                    done();
+            describe('edit', function () {
+                it('should redirect without slash', function (done) {
+                    request.get('/static-page-test/edit')
+                        .expect('Location', '/static-page-test/edit/')
+                        .expect('Cache-Control', testUtils.cacheRules.year)
+                        .expect(301)
+                        .end(doEnd(done));
                 });
+
+                it('should redirect to editor', function (done) {
+                    request.get('/static-page-test/edit/')
+                        .expect('Location', /ghost\/editor\/\w+/)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .expect(302)
+                        .end(doEnd(done));
+                });
+
+                it('should 404 for non-edit parameter', function (done) {
+                    request.get('/static-page-test/notedit/')
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(404)
+                        .expect(/Page not found/)
+                        .end(doEnd(done));
+                });
+            });
+
+            describe('amp', function () {
+                it('should 404 for amp parameter', function (done) {
+                    request.get('/static-page-test/amp/')
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(404)
+                        .expect(/Page not found/)
+                        .end(doEnd(done));
+                });
+            });
         });
 
-        it('should redirect published posts to their live url', function (done) {
-            request.get('/p/2ac6b4f6-e1f3-406c-9247-c94a0496d39d/')
-                .expect(301)
-                .expect('Location', '/short-and-sweet/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .end(doEnd(done));
+        describe('Post preview', function () {
+            it('should display draft posts accessed via uuid', function (done) {
+                request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c903/')
+                    .expect('Content-Type', /html/)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var $ = cheerio.load(res.text);
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        should.not.exist(res.headers['X-CSRF-Token']);
+                        should.not.exist(res.headers['set-cookie']);
+                        should.exist(res.headers.date);
+
+                        $('title').text().should.equal('Not finished yet');
+                        // @TODO: use theme from fixtures and don't rely on content/themes/casper
+                        // $('.content .post').length.should.equal(1);
+                        // $('.poweredby').text().should.equal('Proudly published with Ghost');
+                        // $('body.post-template').length.should.equal(1);
+                        // $('article.post').length.should.equal(1);
+
+                        done();
+                    });
+            });
+
+            it('should redirect published posts to their live url', function (done) {
+                request.get('/p/2ac6b4f6-e1f3-406c-9247-c94a0496d39d/')
+                    .expect(301)
+                    .expect('Location', '/short-and-sweet/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .end(doEnd(done));
+            });
+
+            it('404s unknown uuids', function (done) {
+                request.get('/p/aac6b4f6-e1f3-406c-9247-c94a0496d39f/')
+                    .expect(404)
+                    .end(doEnd(done));
+            });
         });
 
-        it('404s unknown uuids', function (done) {
-            request.get('/p/aac6b4f6-e1f3-406c-9247-c94a0496d39f/')
-                .expect(404)
-                .end(doEnd(done));
-        });
-    });
-
-    describe('Post with Ghost in the url', function () {
-        before(addPosts);
-
-        // All of Ghost's admin depends on the /ghost/ in the url to work properly
-        // Badly formed regexs can cause breakage if a post slug starts with the 5 letters ghost
-        it('should retrieve a blog post with ghost at the start of the url', function (done) {
-            request.get('/ghostly-kitchen-sink/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200)
-                .end(doEnd(done));
+        describe('Post with Ghost in the url', function () {
+            // All of Ghost's admin depends on the /ghost/ in the url to work properly
+            // Badly formed regexs can cause breakage if a post slug starts with the 5 letters ghost
+            it('should retrieve a blog post with ghost at the start of the url', function (done) {
+                request.get('/ghostly-kitchen-sink/')
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect(200)
+                    .end(doEnd(done));
+            });
         });
     });
 
@@ -763,15 +761,6 @@ describe('Frontend Routing', function () {
                     });
             });
 
-            it('should not redirect', function (done) {
-                request.get('/post/a-nice-blog-post/')
-                    .end(function (err, res) {
-                        res.statusCode.should.not.eql(302);
-                        res.statusCode.should.not.eql(301);
-                        doEnd(done)(err, res);
-                    });
-            });
-
             it('should not redirect with case sensitive', function (done) {
                 request.get('/casE-sensitivE')
                     .end(function (err, res) {
@@ -808,15 +797,6 @@ describe('Frontend Routing', function () {
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/revamped-url/');
-                        doEnd(done)(err, res);
-                    });
-            });
-
-            it('should not redirect', function (done) {
-                request.get('/my-old-blog-post-1/')
-                    .end(function (err, res) {
-                        res.statusCode.should.not.eql(302);
-                        res.statusCode.should.not.eql(301);
                         doEnd(done)(err, res);
                     });
             });

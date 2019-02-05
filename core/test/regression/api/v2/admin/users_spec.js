@@ -1,5 +1,4 @@
 const should = require('should');
-const _ = require('lodash');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid');
 const testUtils = require('../../../../utils');
