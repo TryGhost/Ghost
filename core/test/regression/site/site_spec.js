@@ -241,50 +241,6 @@ describe('Integration - Web - Site', function () {
             });
 
             describe('behaviour: url redirects', function () {
-                describe('url options', function () {
-                    it('should not redirect /edit/', function () {
-                        const req = {
-                            secure: false,
-                            host: 'example.com',
-                            method: 'GET',
-                            url: '/edit/'
-                        };
-
-                        return testUtils.mocks.express.invoke(app, req)
-                            .then(function (response) {
-                                response.statusCode.should.eql(404);
-                            });
-                    });
-
-                    it('should redirect static page /edit/', function () {
-                        const req = {
-                            secure: false,
-                            host: 'example.com',
-                            method: 'GET',
-                            url: '/static-page-test/edit/'
-                        };
-
-                        return testUtils.mocks.express.invoke(app, req)
-                            .then(function (response) {
-                                response.statusCode.should.eql(302);
-                            });
-                    });
-
-                    it('should redirect post /edit/', function () {
-                        const req = {
-                            secure: false,
-                            host: 'example.com',
-                            method: 'GET',
-                            url: '/html-ipsum/edit/'
-                        };
-
-                        return testUtils.mocks.express.invoke(app, req)
-                            .then(function (response) {
-                                response.statusCode.should.eql(302);
-                            });
-                    });
-                });
-
                 describe('pagination', function () {
                     it('redirect /page/1/ to /', function () {
                         const req = {
@@ -2014,50 +1970,6 @@ describe('Integration - Web - Site', function () {
             });
 
             describe('behaviour: url redirects', function () {
-                describe('url options', function () {
-                    it('should not redirect /edit/', function () {
-                        const req = {
-                            secure: false,
-                            host: 'example.com',
-                            method: 'GET',
-                            url: '/edit/'
-                        };
-
-                        return testUtils.mocks.express.invoke(app, req)
-                            .then(function (response) {
-                                response.statusCode.should.eql(404);
-                            });
-                    });
-
-                    it('should redirect static page /edit/', function () {
-                        const req = {
-                            secure: false,
-                            host: 'example.com',
-                            method: 'GET',
-                            url: '/static-page-test/edit/'
-                        };
-
-                        return testUtils.mocks.express.invoke(app, req)
-                            .then(function (response) {
-                                response.statusCode.should.eql(302);
-                            });
-                    });
-
-                    it('should redirect post /edit/', function () {
-                        const req = {
-                            secure: false,
-                            host: 'example.com',
-                            method: 'GET',
-                            url: '/html-ipsum/edit/'
-                        };
-
-                        return testUtils.mocks.express.invoke(app, req)
-                            .then(function (response) {
-                                response.statusCode.should.eql(302);
-                            });
-                    });
-                });
-
                 describe('pagination', function () {
                     it('redirect /page/1/ to /', function () {
                         const req = {

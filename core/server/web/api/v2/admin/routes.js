@@ -1,6 +1,4 @@
 const express = require('express');
-const os = require('os');
-const multer = require('multer');
 const api = require('../../../../api');
 const apiv2 = require('../../../../api/v2');
 const mw = require('./middleware');
@@ -9,8 +7,7 @@ const auth = require('../../../../services/auth');
 const shared = require('../../../shared');
 
 // Handling uploads & imports
-const tmpdir = os.tmpdir;
-const upload = multer({dest: tmpdir()});
+const upload = shared.middlewares.upload;
 
 module.exports = function apiRoutes() {
     const router = express.Router();
@@ -97,6 +94,10 @@ module.exports = function apiRoutes() {
     router.del('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminApi, apiv2.http(apiv2.subscribers.destroy));
     router.del('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminApi, apiv2.http(apiv2.subscribers.destroy));
 
+    // ## Members
+    router.get('/members', shared.middlewares.labs.members, mw.authAdminApi, apiv2.http(apiv2.members.browse));
+    router.get('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, apiv2.http(apiv2.members.read));
+
     // ## Roles
     router.get('/roles/', mw.authAdminApi, apiv2.http(apiv2.roles.browse));
 
@@ -107,28 +108,28 @@ module.exports = function apiRoutes() {
     router.get('/slugs/:type/:name', mw.authAdminApi, apiv2.http(apiv2.slugs.generate));
 
     // ## Themes
-    router.get('/themes/', mw.authAdminApi, api.http(api.themes.browse));
+    router.get('/themes/', mw.authAdminApi, apiv2.http(apiv2.themes.browse));
 
     router.get('/themes/:name/download',
         mw.authAdminApi,
-        api.http(api.themes.download)
+        apiv2.http(apiv2.themes.download)
     );
 
     router.post('/themes/upload',
         mw.authAdminApi,
         upload.single('theme'),
         shared.middlewares.validation.upload({type: 'themes'}),
-        api.http(api.themes.upload)
+        apiv2.http(apiv2.themes.upload)
     );
 
     router.put('/themes/:name/activate',
         mw.authAdminApi,
-        api.http(api.themes.activate)
+        apiv2.http(apiv2.themes.activate)
     );
 
     router.del('/themes/:name',
         mw.authAdminApi,
-        api.http(api.themes.destroy)
+        apiv2.http(apiv2.themes.destroy)
     );
 
     // ## Notifications
@@ -180,8 +181,8 @@ module.exports = function apiRoutes() {
     router.put('/authentication/setup', mw.authAdminApi, api.http(api.authentication.updateSetup));
     router.get('/authentication/setup', api.http(api.authentication.isSetup));
 
-    // ## Uploads
-    // @TODO: rename endpoint to /images/upload (or similar)
+    // ## Images
+    // @TODO: remove /uploads/ in favor of /images/ in Ghost 3.x
     router.post('/uploads',
         mw.authAdminApi,
         upload.single('uploadimage'),
@@ -200,6 +201,31 @@ module.exports = function apiRoutes() {
     );
 
     router.post('/uploads/icon',
+        mw.authAdminApi,
+        upload.single('uploadimage'),
+        shared.middlewares.validation.upload({type: 'icons'}),
+        shared.middlewares.validation.blogIcon(),
+        apiv2.http(apiv2.upload.image)
+    );
+
+    router.post('/images',
+        mw.authAdminApi,
+        upload.single('uploadimage'),
+        shared.middlewares.validation.upload({type: 'images'}),
+        shared.middlewares.image.normalize,
+        apiv2.http(apiv2.upload.image)
+    );
+
+    router.post('/images/profile-image',
+        mw.authAdminApi,
+        upload.single('uploadimage'),
+        shared.middlewares.validation.upload({type: 'images'}),
+        shared.middlewares.validation.profileImage,
+        shared.middlewares.image.normalize,
+        apiv2.http(apiv2.upload.image)
+    );
+
+    router.post('/images/icon',
         mw.authAdminApi,
         upload.single('uploadimage'),
         shared.middlewares.validation.upload({type: 'icons'}),

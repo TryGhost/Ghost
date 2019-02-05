@@ -55,6 +55,10 @@ module.exports = {
         return require('./subscribers');
     },
 
+    get members() {
+        return require('./members');
+    },
+
     get upload() {
         return require('./upload');
     },
@@ -81,5 +85,9 @@ module.exports = {
 
     get configuration() {
         return require('./configuration');
+    },
+
+    get themes() {
+        return require('./themes');
     }
 };

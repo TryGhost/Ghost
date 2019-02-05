@@ -74,7 +74,7 @@ function isBrowse(options) {
  * @param {String} value
  * @returns {String}
  */
-function resolvePaths(data, value) {
+function resolvePaths(globals, data, value) {
     var regex = /\{\{(.*?)\}\}/g;
 
     value = value.replace(regex, function (match, path) {
@@ -85,8 +85,12 @@ function resolvePaths(data, value) {
         // Handle Handlebars .[] style arrays
         path = path.replace(/\.\[/g, '[');
 
-        // Do the query, which always returns an array of matches
-        result = jsonpath.query(data, path);
+        if (path.charAt(0) === '@') {
+            result = jsonpath.query(globals, path.substr(1));
+        } else {
+            // Do the query, which always returns an array of matches
+            result = jsonpath.query(data, path);
+        }
 
         // Handle the case where the single data property we return is a Date
         // Data.toString() is not DB compatible, so use `toISOString()` instead
@@ -109,9 +113,9 @@ function resolvePaths(data, value) {
  * @param {Object} options
  * @returns {*}
  */
-function parseOptions(data, options) {
+function parseOptions(globals, data, options) {
     if (_.isString(options.filter)) {
-        options.filter = resolvePaths(data, options.filter);
+        options.filter = resolvePaths(globals, data, options.filter);
     }
 
     return options;
@@ -130,6 +134,7 @@ get = function get(resource, options) {
 
     const self = this;
     const data = createFrame(options.data);
+    const ghostGlobals = _.omit(data, ['_parent', 'root']);
     const apiVersion = _.get(data, 'root._locals.apiVersion');
     let apiOptions = options.hash;
 
@@ -156,7 +161,7 @@ get = function get(resource, options) {
     }
 
     // Parse the options we're going to pass to the API
-    apiOptions = parseOptions(this, apiOptions);
+    apiOptions = parseOptions(ghostGlobals, this, apiOptions);
 
     return api[apiVersion][controller][action](apiOptions).then(function success(result) {
         var blockParams;
@@ -192,7 +197,10 @@ module.exports = function getLabsWrapper() {
             flagKey: 'publicAPI',
             flagName: 'Public API',
             helperName: 'get',
-            helpUrl: 'https://docs.ghost.org/faq/api-versioning/',
+            // Even though this is a labs enabled helper, really we want users to upgrade to v2 API.
+            errMessagePath: 'warnings.helpers.get.apiRequired.message',
+            errContextPath: 'warnings.helpers.get.apiRequired.context',
+            helpUrl: 'https://docs.ghost.org/api/handlebars-themes/packagejson/',
             async: true
         }, function executeHelper() {
             return get.apply(self, args);

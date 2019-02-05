@@ -20,7 +20,7 @@ env:
 
 matrix:
   include:
-    - node_js: "8"
+    - node_js: "10"
       env: TEST_SUITE=lint
   fast_finish: true
 
@@ -40,7 +40,7 @@ install:
   - if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi # fix sqlite caching issues
 
 script: |
-  if [ "${TRAVIS_EVENT_TYPE}" = "cron" ]; then
+  if [ "${TRAVIS_EVENT_TYPE}" = "cron" && "${TEST_SUITE}" != "lint" ]; then
     yarn test:regression
   else
     yarn test
@@ -49,7 +49,7 @@ script: |
 after_success:
   - |
       if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "8" ]]; then
+        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "10" ]]; then
           echo "Generate coverage..."
           grunt coverage
           npm install -g codeclimate-test-reporter

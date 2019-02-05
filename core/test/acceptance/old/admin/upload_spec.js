@@ -28,132 +28,75 @@ describe('Upload API', function () {
         });
     });
 
-    describe('success cases', function () {
-        it('valid png', function (done) {
-            request.post(localUtils.API.getApiQuery('uploads'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.png'))
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+    it('Can upload a png', function (done) {
+        request.post(localUtils.API.getApiQuery('uploads'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.png'))
+            .expect(201)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
 
-                    images.push(res.body);
-                    done();
-                });
-        });
+                res.body.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/ghost-logo.png`));
 
-        it('valid jpg', function (done) {
-            request.post(localUtils.API.getApiQuery('uploads'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghosticon.jpg'))
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    images.push(res.body);
-                    done();
-                });
-        });
-
-        it('valid gif', function (done) {
-            request.post(localUtils.API.getApiQuery('uploads'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat.gif'))
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    images.push(res.body);
-                    done();
-                });
-        });
-
-        it('valid profile image', function (done) {
-            request.post(localUtils.API.getApiQuery('uploads/profile-image'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat_square.gif'))
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    images.push(res.body);
-                    done();
-                });
-        });
+                images.push(res.body.replace(config.get('url'), ''));
+                done();
+            });
     });
 
-    describe('error cases', function () {
-        it('import should fail without file', function (done) {
-            request.post(localUtils.API.getApiQuery('uploads'))
-                .set('Origin', config.get('url'))
-                .set('Accept', 'application/json')
-                .expect('Content-Type', /json/)
-                .expect(403)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+    it('Can upload a jpg', function (done) {
+        request.post(localUtils.API.getApiQuery('uploads'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghosticon.jpg'))
+            .expect(201)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
 
-                    done();
-                });
-        });
+                res.body.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/ghosticon.jpg`));
 
-        it('import should fail with unsupported file', function (done) {
-            request.post(localUtils.API.getApiQuery('uploads'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
-                .expect(415)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                images.push(res.body.replace(config.get('url'), ''));
+                done();
+            });
+    });
 
-                    done();
-                });
-        });
+    it('Can upload a gif', function (done) {
+        request.post(localUtils.API.getApiQuery('uploads'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat.gif'))
+            .expect(201)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
 
-        it('incorrect extension', function (done) {
-            request.post(localUtils.API.getApiQuery('uploads'))
-                .set('Origin', config.get('url'))
-                .set('content-type', 'image/png')
-                .expect('Content-Type', /json/)
-                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.pngx'))
-                .expect(415)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                res.body.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/loadingcat.gif`));
 
-                    done();
-                });
-        });
+                images.push(res.body.replace(config.get('url'), ''));
+                done();
+            });
+    });
 
-        it('import should fail if profile image is not square', function (done) {
-            request.post(localUtils.API.getApiQuery('uploads/profile-image'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/favicon_not_square.png'))
-                .expect(422)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+    it('Can upload a square profile image', function (done) {
+        request.post(localUtils.API.getApiQuery('uploads/profile-image'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat_square.gif'))
+            .expect(201)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
 
-                    done();
-                });
-        });
+                res.body.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/loadingcat_square.gif`));
+
+                images.push(res.body.replace(config.get('url'), ''));
+                done();
+            });
     });
 });

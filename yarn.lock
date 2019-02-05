@@ -532,13 +532,13 @@ body@^5.1.0:
     raw-body "~1.1.0"
     safe-json-parse "~1.0.1"
 
-bookshelf-relations@0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-0.2.1.tgz#6974c0ec92409807d2cf6e73e111a38ebc03e7cd"
+bookshelf-relations@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-1.0.0.tgz#709b49a8b51bbe30873a453b6b18c74858e52839"
   dependencies:
-    bluebird "^3.4.1"
-    ghost-ignition "2.9.2"
-    lodash "4.17.10"
+    bluebird "3.5.3"
+    ghost-ignition "3.0.0"
+    lodash "4.17.11"
 
 bookshelf@0.14.2:
   version "0.14.2"
@@ -2311,6 +2311,23 @@ ghost-ignition@2.9.2:
 ghost-ignition@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.0.tgz#fed40b40cc71f83ed1ea74429ac8071df38fdf68"
+  dependencies:
+    bunyan "1.8.12"
+    bunyan-loggly "^1.3.1"
+    caller "1.0.1"
+    debug "^2.6.9"
+    find-root "1.1.0"
+    fs-extra "^3.0.1"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.16.4"
+    moment "^2.15.2"
+    nconf "^0.10.0"
+    prettyjson "^1.1.3"
+    uuid "^3.0.0"
+
+ghost-ignition@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.1.tgz#ec4dbc070b66d98973a57a2959b1247fcf038fed"
   dependencies:
     bunyan "1.8.12"
     bunyan-loggly "^1.3.1"

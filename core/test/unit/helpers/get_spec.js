@@ -22,7 +22,7 @@ describe('{{#get}} helper', function () {
         inverse = sinon.spy();
         labsStub = sinon.stub(labs, 'isSet').returns(true);
 
-        locals = {root: {_locals: {apiVersion: 'v0.1'}}};
+        locals = {root: {_locals: {apiVersion: 'v0.1'}}, globalProp: {foo: 'bar'}};
     });
 
     afterEach(function () {
@@ -45,9 +45,9 @@ describe('{{#get}} helper', function () {
             result.should.be.a.Function();
             result().should.be.an.Object().with.property(
                 'string',
-                '<script>console.error("The {{get}} helper is not available. ' +
-                'The Public API flag must be enabled in labs if you wish to use the {{get}} helper. ' +
-                'See https://docs.ghost.org/faq/api-versioning/");</script>'
+                '<script>console.error("The {{#get}} helper requires your theme to have API access. ' +
+                'Please enable the v2 API via your theme\'s package.json file. ' +
+                'See https://docs.ghost.org/api/handlebars-themes/packagejson/");</script>'
             );
 
             done();
@@ -508,6 +508,20 @@ describe('{{#get}} helper', function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 browseStub.firstCall.args[0].filter.should.eql('id:');
+
+                done();
+            }).catch(done);
+        });
+
+        it('should resolve global props', function (done) {
+            helpers.get.call(
+                resource,
+                'posts',
+                {hash: {filter: 'slug:{{@globalProp.foo}}'}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
+                browseStub.firstCall.args[0].filter.should.eql('slug:bar');
 
                 done();
             }).catch(done);

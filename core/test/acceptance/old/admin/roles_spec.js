@@ -19,62 +19,60 @@ describe('Roles API', function () {
             });
     });
 
-    describe('browse', function () {
-        it('default', function (done) {
-            request.get(localUtils.API.getApiQuery('roles/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+    it('Can request all roles', function (done) {
+        request.get(localUtils.API.getApiQuery('roles/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    const response = res.body;
-                    should.exist(response);
-                    should.exist(response.roles);
-                    localUtils.API.checkResponse(response, 'roles');
-                    response.roles.should.have.length(6);
-                    localUtils.API.checkResponse(response.roles[0], 'role');
-                    localUtils.API.checkResponse(response.roles[1], 'role');
-                    localUtils.API.checkResponse(response.roles[2], 'role');
-                    localUtils.API.checkResponse(response.roles[3], 'role');
-                    localUtils.API.checkResponse(response.roles[4], 'role');
-                    localUtils.API.checkResponse(response.roles[5], 'role');
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const response = res.body;
+                should.exist(response);
+                should.exist(response.roles);
+                localUtils.API.checkResponse(response, 'roles');
+                response.roles.should.have.length(6);
+                localUtils.API.checkResponse(response.roles[0], 'role');
+                localUtils.API.checkResponse(response.roles[1], 'role');
+                localUtils.API.checkResponse(response.roles[2], 'role');
+                localUtils.API.checkResponse(response.roles[3], 'role');
+                localUtils.API.checkResponse(response.roles[4], 'role');
+                localUtils.API.checkResponse(response.roles[5], 'role');
 
-                    done();
-                });
-        });
+                done();
+            });
+    });
 
-        it('permissions=assign', function (done) {
-            request.get(localUtils.API.getApiQuery('roles/?permissions=assign'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+    it('Can request roles which i am able to assign to other users', function (done) {
+        request.get(localUtils.API.getApiQuery('roles/?permissions=assign'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
 
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    const response = res.body;
-                    should.exist(response.roles);
-                    localUtils.API.checkResponse(response, 'roles');
-                    response.roles.should.have.length(4);
-                    localUtils.API.checkResponse(response.roles[0], 'role');
-                    localUtils.API.checkResponse(response.roles[1], 'role');
-                    localUtils.API.checkResponse(response.roles[2], 'role');
-                    localUtils.API.checkResponse(response.roles[3], 'role');
-                    response.roles[0].name.should.equal('Administrator');
-                    response.roles[1].name.should.equal('Editor');
-                    response.roles[2].name.should.equal('Author');
-                    response.roles[3].name.should.equal('Contributor');
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const response = res.body;
+                should.exist(response.roles);
+                localUtils.API.checkResponse(response, 'roles');
+                response.roles.should.have.length(4);
+                localUtils.API.checkResponse(response.roles[0], 'role');
+                localUtils.API.checkResponse(response.roles[1], 'role');
+                localUtils.API.checkResponse(response.roles[2], 'role');
+                localUtils.API.checkResponse(response.roles[3], 'role');
+                response.roles[0].name.should.equal('Administrator');
+                response.roles[1].name.should.equal('Editor');
+                response.roles[2].name.should.equal('Author');
+                response.roles[3].name.should.equal('Contributor');
 
-                    done();
-                });
-        });
+                done();
+            });
     });
 });

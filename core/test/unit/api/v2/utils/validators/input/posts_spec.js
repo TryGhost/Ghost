@@ -80,16 +80,4 @@ describe('Unit: v2/utils/validators/input/posts', function () {
             return validators.input.posts.add(apiConfig, frame);
         });
     });
-
-    describe('edit', function () {
-        it('default', function () {
-            sinon.stub(validators.input.posts, 'add');
-
-            const apiConfig = {};
-            const frame = {};
-
-            validators.input.posts.edit(apiConfig, frame);
-            validators.input.posts.add.calledOnce.should.be.true();
-        });
-    });
 });

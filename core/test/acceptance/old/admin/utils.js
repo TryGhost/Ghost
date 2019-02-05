@@ -22,8 +22,8 @@ const expectedProperties = {
         .keys()
         // by default we only return html
         .without('mobiledoc', 'plaintext')
-        // swaps author_id to author, and always returns computed properties: url, comment_id, primary_tag, primary_author
-        .without('author_id').concat('author', 'url', 'primary_tag', 'primary_author')
+        // always returns computed properties: url, comment_id, primary_tag, primary_author
+        .without('author_id').concat('url', 'primary_tag', 'primary_author')
     ,
     user: _(schema.users)
         .keys()

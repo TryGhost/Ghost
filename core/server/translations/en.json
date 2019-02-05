@@ -314,7 +314,8 @@
         },
         "api": {
             "common": {
-                "invalidTokenStructure": "Invalid token structure"
+                "invalidTokenStructure": "Invalid token structure",
+                "notImplemented": "The server does not support the functionality required to fulfill the request."
             },
             "authentication": {
                 "setupUnableToRun": "Database missing fixture data. Please reset database and try again.",
@@ -402,6 +403,10 @@
                 "invalidFile": "Please select a valid CSV file to import.",
                 "subscriberNotFound": "Subscriber not found.",
                 "subscriberAlreadyExists": "Email address is already subscribed."
+            },
+            "members": {
+                "memberNotFound": "Member not found.",
+                "memberAlreadyExists": "Email address is already member."
             },
             "tags": {
                 "tagNotFound": "Tag not found."
@@ -560,7 +565,11 @@
                 "iteratorNeeded": "Need to pass an iterator to #foreach"
             },
             "get": {
-                "invalidResource": "Invalid resource given to get helper"
+                "invalidResource": "Invalid resource given to get helper",
+                "apiRequired": {
+                    "message": "The \\{\\{#get\\}\\} helper requires your theme to have API access.",
+                    "context": "Please enable the v2 API via your theme's package.json file."
+                }
             },
             "has": {
                 "invalidAttribute": "Invalid or no attribute given to has helper"

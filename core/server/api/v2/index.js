@@ -63,6 +63,10 @@ module.exports = {
         return shared.pipeline(require('./subscribers'), localUtils);
     },
 
+    get members() {
+        return shared.pipeline(require('./members'), localUtils);
+    },
+
     get upload() {
         return shared.pipeline(require('./upload'), localUtils);
     },
@@ -101,5 +105,9 @@ module.exports = {
 
     get publicSettings() {
         return shared.pipeline(require('./settings-public'), localUtils);
+    },
+
+    get themes() {
+        return shared.pipeline(require('./themes'), localUtils);
     }
 };

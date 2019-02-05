@@ -332,18 +332,32 @@ Post = ghostBookshelf.Model.extend({
 
         // render mobiledoc to HTML
         if (this.hasChanged('mobiledoc') || !this.get('html')) {
-            this.set('html', converters.mobiledocConverter.render(JSON.parse(this.get('mobiledoc'))));
+            try {
+                this.set('html', converters.mobiledocConverter.render(JSON.parse(this.get('mobiledoc'))));
+            } catch (err) {
+                throw new common.errors.ValidationError({
+                    message: 'Invalid mobiledoc structure.',
+                    help: 'https://docs.ghost.org/concepts/posts/'
+                });
+            }
         }
 
         if (this.hasChanged('html') || !this.get('plaintext')) {
-            this.set('plaintext', htmlToText.fromString(this.get('html'), {
+            const plaintext = htmlToText.fromString(this.get('html'), {
                 wordwrap: 80,
                 ignoreImage: true,
                 hideLinkHrefIfSameAsText: true,
                 preserveNewlines: true,
                 returnDomByDefault: true,
                 uppercaseHeadings: false
-            }));
+            });
+
+            // CASE: html is e.g. <p></p>
+            // @NOTE: Otherwise we will always update the resource to `plaintext: ''` and Bookshelf thinks that this
+            //        value was modified.
+            if (plaintext) {
+                this.set('plaintext', plaintext);
+            }
         }
 
         // disabling sanitization until we can implement a better version
@@ -658,7 +672,7 @@ Post = ghostBookshelf.Model.extend({
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
                 findOne: ['columns', 'importing', 'withRelated', 'require'],
-                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages'],
+                findPage: ['status', 'staticPages'],
                 findAll: ['columns', 'filter'],
                 destroy: ['destroyAll']
             };
