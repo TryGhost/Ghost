@@ -18,7 +18,8 @@ const notImplemented = function (req, res, next) {
         users: ['GET'],
         themes: ['POST'],
         subscribers: ['GET', 'PUT', 'DELETE', 'POST'],
-        configuration: ['GET']
+        configuration: ['GET'],
+        actions: ['GET']
     };
 
     const match = req.url.match(/^\/(\w+)\/?/);
