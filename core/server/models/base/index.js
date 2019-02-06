@@ -283,7 +283,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      *
      * Exceptions: internal context or importing
      */
-    onCreating: function onCreating(newObj, attr, options) {
+    onCreating: function onCreating(model, attr, options) {
         if (schema.tables[this.tableName].hasOwnProperty('created_by')) {
             if (!options.importing || (options.importing && !this.get('created_by'))) {
                 this.set('created_by', this.contextUser(options));
@@ -297,18 +297,20 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         if (schema.tables[this.tableName].hasOwnProperty('created_at')) {
-            if (!newObj.get('created_at')) {
-                newObj.set('created_at', new Date());
+            if (!model.get('created_at')) {
+                model.set('created_at', new Date());
             }
         }
 
         if (schema.tables[this.tableName].hasOwnProperty('updated_at')) {
-            if (!newObj.get('updated_at')) {
-                newObj.set('updated_at', new Date());
+            if (!model.get('updated_at')) {
+                model.set('updated_at', new Date());
             }
         }
 
-        return Promise.resolve(this.onValidate(newObj, attr, options));
+        model._changed = _.cloneDeep(model.changed);
+
+        return Promise.resolve(this.onValidate(model, attr, options));
     },
 
     /**
