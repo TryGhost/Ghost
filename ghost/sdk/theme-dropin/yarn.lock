@@ -541,10 +541,10 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/samsam/-/samsam-2.1.2.tgz#16947fce5f57258d01f1688fdc32723093c55d3f"
 
 "@tryghost/content-api@file:../../content-api":
-  version "0.1.0"
+  version "1.0.0"
   dependencies:
+    axios "0.18.0"
     ghost-ignition "^2.9.6"
-    superagent "^4.0.0-beta.5"
 
 "@tryghost/members-layer0@file:../layer0":
   version "0.0.0"
@@ -556,7 +556,7 @@
 "@tryghost/members-layer1@../layer1", "@tryghost/members-layer1@file:../layer1":
   version "0.0.0"
   dependencies:
-    "@tryghost/members-layer0" "file:../../../../../Library/Caches/Yarn/v4/npm-@tryghost-members-layer1-0.0.0-0d37ce78-17c3-4a6a-ad21-b8de0e2e41de-1543948924228/node_modules/@tryghost/layer0"
+    "@tryghost/members-layer0" "file:../../../../../../../.cache/yarn/v2/npm-@tryghost/layer0"
     ghost-ignition "^2.9.6"
     jsonwebtoken "^8.3.0"
     minivents "^2.2.0"
@@ -564,7 +564,7 @@
 "@tryghost/members-layer2@file:../layer2":
   version "0.0.0"
   dependencies:
-    "@tryghost/members-layer1" "file:../../../../../Library/Caches/Yarn/v4/npm-@tryghost-members-layer2-0.0.0-4cb09098-60ce-4c40-9320-e7e125528431-1543948924243/node_modules/@tryghost/layer1"
+    "@tryghost/members-layer1" "file:../../../../../../../.cache/yarn/v2/npm-@tryghost/layer1"
     bluebird "^3.5.3"
     document-ready "^2.0.1"
     ghost-ignition "^2.9.6"
@@ -672,6 +672,13 @@ aws-sign2@~0.7.0:
 aws4@^1.8.0:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.8.0.tgz#f0e003d9ca9e7f59c7a508945d7b2ef9a04a542f"
+
+axios@0.18.0:
+  version "0.18.0"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.18.0.tgz#32d53e4851efdc0a11993b6cd000789d70c05102"
+  dependencies:
+    follow-redirects "^1.3.0"
+    is-buffer "^1.1.5"
 
 babelify@^10.0.0:
   version "10.0.0"
@@ -1063,7 +1070,7 @@ date-now@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/date-now/-/date-now-0.1.4.tgz#eaf439fd4d4848ad74e5cc7dbef200672b9e345b"
 
-debug@3.1.0:
+debug@3.1.0, debug@=3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/debug/-/debug-3.1.0.tgz#5bb5a0672628b64149566ba16819e61518c67261"
   dependencies:
@@ -1224,6 +1231,12 @@ fast-json-stable-stringify@^2.0.0:
 find-root@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/find-root/-/find-root-1.1.0.tgz#abcfc8ba76f708c42a97b3d685b7e9450bfb9ce4"
+
+follow-redirects@^1.3.0:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.6.1.tgz#514973c44b5757368bad8bddfe52f81f015c94cb"
+  dependencies:
+    debug "=3.1.0"
 
 forever-agent@~0.6.1:
   version "0.6.1"
@@ -1445,7 +1458,7 @@ invert-kv@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/invert-kv/-/invert-kv-1.0.0.tgz#104a8e4aaca6d3d8cd157a8ef8bfab2d7a3ffdb6"
 
-is-buffer@^1.1.0:
+is-buffer@^1.1.0, is-buffer@^1.1.5:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-1.1.6.tgz#efaa2ea9daa0d7ab2ea13a97b2b8ad51fefbe8be"
 
@@ -1701,7 +1714,6 @@ minimist@^1.1.0, minimist@^1.1.1, minimist@^1.2.0:
 minivents@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/minivents/-/minivents-2.2.0.tgz#559492edc04bc00b62168850af5b8ca06d5e088b"
-  integrity sha1-VZSS7cBLwAtiFohQr1uMoG1eCIs=
 
 mkdirp@0.5.1, mkdirp@^0.5.0, mkdirp@~0.5.1:
   version "0.5.1"

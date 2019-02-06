@@ -1,3 +1,4 @@
+/* global window */
 var layer1 = require('@tryghost/members-layer1');
 
 module.exports = function layer2(options) {
@@ -20,13 +21,6 @@ module.exports = function layer2(options) {
         return frame;
     });
 
-    function closeAuth() {
-        return loadAuth.then(function (frame) {
-            frame.style.display = 'none';
-            return frame;
-        });
-    }
-
     function openAuth(hash, query = '') {
         return loadAuth.then(function (frame) {
             return new Promise(function (resolve) {
@@ -36,17 +30,12 @@ module.exports = function layer2(options) {
                     if (event.source !== frame.contentWindow) {
                         return;
                     }
-                    if (event.data !== 'pls-close-auth-popup') {
+                    if (!event.data || event.data.msg !== 'pls-close-auth-popup') {
                         return;
                     }
                     window.removeEventListener('message', messageListener);
                     frame.style.display = 'none';
-                    resolve(false);
-                })
-                members.bus.on('signedin', function signedinListener() {
-                    members.bus.off('signedin', signedinListener);
-                    frame.style.display = 'none';
-                    resolve(true);
+                    resolve(!!event.data.success);
                 });
             });
         });
