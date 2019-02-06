@@ -87,6 +87,58 @@ ghostBookshelf.plugin('bookshelf-relations', {
 // Cache an instance of the base model prototype
 proto = ghostBookshelf.Model.prototype;
 
+/**
+ * @NOTE:
+ *
+ * We add actions step by step and define how they should look like.
+ * Each post update triggers a couple of events, which we don't want to add actions for.
+ *
+ * e.g. transform post to page triggers a handful of events including `post.deleted` and `page.added`
+ *
+ * We protect adding too many and uncontrolled events.
+ *
+ * We could embedd adding actions more nicely in the future e.g. plugin.
+ */
+const addAction = (model, event, options) => {
+    // CASE: model does not support actions at all
+    if (!model.getAction) {
+        return;
+    }
+
+    const action = model.getAction(event, options);
+
+    // CASE: model does not support action for target event
+    if (!action) {
+        return;
+    }
+
+    const insert = (action) => {
+        ghostBookshelf.model('Action')
+            .add(action)
+            .catch((err) => {
+                if (_.isArray(err)) {
+                    err = err[0];
+                }
+
+                common.logging.error(new common.errors.InternalServerError({
+                    err
+                }));
+            });
+    };
+
+    if (options.transacting) {
+        options.transacting.once('committed', (committed) => {
+            if (!committed) {
+                return;
+            }
+
+            insert(action);
+        });
+    } else {
+        insert(action);
+    }
+};
+
 // ## ghostBookshelf.Model
 // The Base Model which other Ghost objects will inherit from,
 // including some convenience functions as static properties on the model.
@@ -127,40 +179,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
             // @NOTE: Internal Ghost events. These are very granular e.g. post.published
             common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
-
-            // CASE: model does not support actions at all
-            if (!model.getAction) {
-                return;
-            }
-
-            const action = model.getAction(ghostEvent, options);
-
-            // CASE: model does not support action for target event
-            if (!action) {
-                return;
-            }
-
-            /**
-             * @NOTE:
-             *
-             * We add actions step by step and define how they should look like.
-             * Each post update triggers a couple of events, which we don't want to add actions for.
-             *
-             * e.g. transform post to page triggers a handful of events including `post.deleted` and `page.added`
-             *
-             * We protect adding too many and uncontrolled events.
-             */
-            ghostBookshelf.model('Action')
-                .add(action)
-                .catch((err) => {
-                    if (_.isArray(err)) {
-                        err = err[0];
-                    }
-
-                    common.logging.error(new common.errors.InternalServerError({
-                        err
-                    }));
-                });
         };
 
         if (!options.transacting) {
@@ -365,6 +383,18 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         model._changed = _.cloneDeep(model.changed);
 
         return Promise.resolve(this.onValidate(model, attr, options));
+    },
+
+    onCreated(model, attrs, options) {
+        addAction(model, 'added', options);
+    },
+
+    onUpdated(model, attrs, options) {
+        addAction(model, 'edited', options);
+    },
+
+    onDestroyed(model, options) {
+        addAction(model, 'deleted', options);
     },
 
     /**

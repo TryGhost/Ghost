@@ -109,6 +109,8 @@ Post = ghostBookshelf.Model.extend({
     },
 
     onUpdated: function onUpdated(model, attrs, options) {
+        ghostBookshelf.Model.prototype.onUpdated.call(this, model, attrs, options);
+
         model.statusChanging = model.get('status') !== model.previous('status');
         model.isPublished = model.get('status') === 'published';
         model.isScheduled = model.get('status') === 'scheduled';
@@ -179,6 +181,8 @@ Post = ghostBookshelf.Model.extend({
     },
 
     onDestroyed: function onDestroyed(model, options) {
+        ghostBookshelf.Model.prototype.onDestroyed.call(this, model, options);
+
         if (model.previous('status') === 'published') {
             model.emitChange('unpublished', Object.assign({usePreviousAttribute: true}, options));
         }
@@ -627,13 +631,7 @@ Post = ghostBookshelf.Model.extend({
         return filter;
     },
 
-    getAction(ghostEvent, options) {
-        const supported = ['post.edited', 'post.deleted', 'post.added'];
-
-        if (!supported.includes(ghostEvent)) {
-            return;
-        }
-
+    getAction(event, options) {
         const actor = this.getActor(options);
 
         // @NOTE: we ignore internal updates (`options.context.internal`) for now
@@ -643,7 +641,7 @@ Post = ghostBookshelf.Model.extend({
 
         // @TODO: implement context
         return {
-            event: ghostEvent.replace(/^\w+\./, ''),
+            event: event,
             resource_id: this.id || this.previous('id'),
             resource_type: this.tableName.replace(/s$/, ''),
             actor_id: actor.id,
