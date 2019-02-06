@@ -19,6 +19,9 @@
     "scheduling": {
         "active": "SchedulingDefault"
     },
+    "members": {
+        "paymentProcessors": []
+    },
     "logging": {
         "level": "info",
         "rotation": {
