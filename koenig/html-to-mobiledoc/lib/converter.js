@@ -11,13 +11,17 @@ module.exports.toMobiledoc = (html, options = {}) => {
 
     // 2. Do something vaguely like loadPost
     // https://github.com/ErisDS/mobiledoc-kit/blob/master/src/js/editor/editor.js#L193
+
+    // 2.a. Parse our HTML and convert to a DOM with same API as browser
+    let dom = new JSDOM(sanitizedHTML);
+
+    // 2.b. Use Mobiledoc-kit's own DOM Parser to convert the DOM into mobiledoc's internal format
     // We use our parser plugins by default, but this is extensible
     options.plugins = options.plugins || parserPlugins;
     let parser = new DOMParser(new Builder(), options);
-    let dom = new JSDOM(sanitizedHTML);
     let post = parser.parse(dom.window.document.body);
 
-    // 3. Do something vaguely like serializePost
+    // 3. Do something vaguely like serializePost, to render the mobiledoc internal format as mobiledoc
     // https://github.com/ErisDS/mobiledoc-kit/blob/master/src/js/editor/editor.js#L567
     let mobiledoc = mobiledocRenderer.render(post, '0.3.1');
 
