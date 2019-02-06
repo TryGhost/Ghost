@@ -40,6 +40,7 @@ export default function () {
     this.passthrough('https://count.ghost.org/');
     this.passthrough('http://www.gravatar.com/**');
     this.passthrough('https://cdn.jsdelivr.net/**');
+    this.passthrough('https://api.unsplash.com/**');
 }
 
 // Mock all endpoints here as there is no real API during testing
