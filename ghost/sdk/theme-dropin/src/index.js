@@ -1,3 +1,4 @@
+/* global window document */
 const DomReady = require('domready');
 const GhostContentApi = require('@tryghost/content-api');
 const layer2 = require('@tryghost/members-layer2');
@@ -8,10 +9,10 @@ function reload(success) {
     }
 }
 
-function show (el) {
+function show(el) {
     el.style.display = 'block';
 }
-function hide (el) {
+function hide(el) {
     el.style.display = 'none';
 }
 
@@ -34,7 +35,7 @@ DomReady(function () {
         }
     }
 
-    const membersContentElements = Array.from(document.querySelectorAll("[data-members]")) // TODO use data-members-content;
+    const membersContentElements = Array.from(document.querySelectorAll('[data-members]')); // TODO use data-members-content;
 
     var signinBtn = document.querySelector('[data-members-signin]');
     var signinCta = document.querySelector('[data-members-signin-cta]');
@@ -67,27 +68,22 @@ DomReady(function () {
     signinCta.addEventListener('click', signin);
 
     membersContentElements.forEach(function (element) {
-        console.log(element);
         const resourceType = element.getAttribute('data-members-resource-type');
         const resourceId = element.getAttribute('data-members-resource-id');
         const host = element.getAttribute('data-members-content-host');
 
-        const api = GhostContentApi.create({
+        const api = GhostContentApi({
             host,
             version
         });
 
-        const audience = new URL(host).origin
-        console.log(audience);
+        const audience = new URL(host).origin;
         members.getToken({audience}).then((token) => {
-            console.log(token);
             if (!token) {
                 return;
             }
 
-            console.log({resourceType, resourceId});
-
-            api[resourceType].read({ id: resourceId }, {}, token).then(({html}) => {
+            api[resourceType].read({id: resourceId}, {}, token).then(({html}) => {
                 element.innerHTML = html;
             }).catch((err) => {
                 element.innerHTML = err.message;
