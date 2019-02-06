@@ -445,7 +445,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     getActor(options = {context: {}}) {
         if (options.context.integration) {
             return {
-                id: options.context.integration,
+                id: options.context.integration.id,
                 type: 'integration'
             };
         }
