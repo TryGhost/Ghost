@@ -10,7 +10,8 @@ describe('Permissions', function () {
                 user: null,
                 api_key: null,
                 app: null,
-                public: true
+                public: true,
+                integration: null
             });
             parseContext({}).should.eql({
                 internal: false,
@@ -18,7 +19,8 @@ describe('Permissions', function () {
                 user: null,
                 api_key: null,
                 app: null,
-                public: true
+                public: true,
+                integration: null
             });
         });
 
@@ -29,7 +31,8 @@ describe('Permissions', function () {
                 user: null,
                 api_key: null,
                 app: null,
-                public: true
+                public: true,
+                integration: null
             });
             parseContext({client: 'thing'}).should.eql({
                 internal: false,
@@ -37,7 +40,8 @@ describe('Permissions', function () {
                 user: null,
                 api_key: null,
                 app: null,
-                public: true
+                public: true,
+                integration: null
             });
         });
 
@@ -48,15 +52,16 @@ describe('Permissions', function () {
                 user: 1,
                 api_key: null,
                 app: null,
-                public: false
+                public: false,
+                integration: null
             });
         });
 
         it('should return api_key and public context if content api_key provided', function () {
             parseContext({api_key: {
                 id: 1,
-                type: 'content'
-            }}).should.eql({
+                type: 'content',
+            }, integration: {id: 2}}).should.eql({
                 internal: false,
                 external: false,
                 user: null,
@@ -65,7 +70,8 @@ describe('Permissions', function () {
                     type: 'content'
                 },
                 app: null,
-                public: true
+                public: true,
+                integration: {id: 2}
             });
         });
 
@@ -73,7 +79,7 @@ describe('Permissions', function () {
             parseContext({api_key: {
                 id: 1,
                 type: 'admin'
-            }}).should.eql({
+            }, integration: {id: 3}}).should.eql({
                 internal: false,
                 external: false,
                 user: null,
@@ -82,7 +88,8 @@ describe('Permissions', function () {
                     type: 'admin'
                 },
                 app: null,
-                public: false
+                public: false,
+                integration: {id: 3}
             });
         });
 
@@ -93,7 +100,8 @@ describe('Permissions', function () {
                 user: null,
                 api_key: null,
                 app: 5,
-                public: false
+                public: false,
+                integration: null
             });
         });
 
@@ -104,7 +112,8 @@ describe('Permissions', function () {
                 user: null,
                 api_key: null,
                 app: null,
-                public: false
+                public: false,
+                integration: null
             });
 
             parseContext('internal').should.eql({
@@ -113,7 +122,8 @@ describe('Permissions', function () {
                 user: null,
                 api_key: null,
                 app: null,
-                public: false
+                public: false,
+                integration: null
             });
         });
 
@@ -124,7 +134,8 @@ describe('Permissions', function () {
                 user: null,
                 api_key: null,
                 app: null,
-                public: false
+                public: false,
+                integration: null
             });
 
             parseContext('external').should.eql({
@@ -133,7 +144,8 @@ describe('Permissions', function () {
                 user: null,
                 api_key: null,
                 app: null,
-                public: false
+                public: false,
+                integration: null
             });
         });
     });

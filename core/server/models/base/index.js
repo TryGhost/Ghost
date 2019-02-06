@@ -443,14 +443,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     getActor(options = {context: {}}) {
-        if (options.context.integration) {
+        if (options.context && options.context.integration) {
             return {
                 id: options.context.integration.id,
                 type: 'integration'
             };
         }
 
-        if (options.context.user) {
+        if (options.context && options.context.user) {
             return {
                 id: options.context.user,
                 type: 'user'
