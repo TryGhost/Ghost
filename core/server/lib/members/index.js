@@ -8,7 +8,7 @@ const Tokens = require('./tokens');
 const Users = require('./users');
 
 module.exports = function MembersApi({
-    config: {
+    authConfig: {
         issuer,
         privateKey,
         publicKey,

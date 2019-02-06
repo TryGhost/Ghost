@@ -107,7 +107,7 @@ function sendEmail(member, {token}) {
 }
 
 const api = MembersApi({
-    config: {
+    authConfig: {
         issuer,
         publicKey,
         privateKey,
