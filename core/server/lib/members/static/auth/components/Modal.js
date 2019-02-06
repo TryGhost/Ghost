@@ -40,9 +40,9 @@ export default class Modal extends Component {
 
         return (
             <Pages className={containerClass} onChange={clearError} onClick={closeModal}>
-                <SignupPage error={error} hash="" handleSubmit={signup} handleClose={closeModal}/>
-                <SignupPage error={error} hash="signup" handleSubmit={signup} handleClose={closeModal}/>
+                <SigninPage error={error} hash="" handleSubmit={signup} handleClose={closeModal}/>
                 <SigninPage error={error} hash="signin" handleSubmit={signin} handleClose={closeModal}/>
+                <SignupPage error={error} hash="signup" handleSubmit={signup} handleClose={closeModal}/>
                 <RequestPasswordResetPage error={error} hash="request-password-reset" handleSubmit={requestReset} handleClose={closeModal}/>
                 <PasswordResetSentPage error={error} hash="password-reset-sent" handleSubmit={requestReset} handleClose={closeModal}/>
                 <ResetPasswordPage error={error} hash="reset-password" handleSubmit={resetPassword} handleClose={closeModal}/>
