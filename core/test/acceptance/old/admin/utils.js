@@ -61,14 +61,6 @@ const expectedProperties = {
     ,
     webhook: _(schema.webhooks)
             .keys()
-            .without(
-                'name',
-                'last_triggered_at',
-                'last_triggered_error',
-                'last_triggered_status',
-                'secret',
-                'integration_id'
-            )
 };
 
 _.each(expectedProperties, (value, key) => {

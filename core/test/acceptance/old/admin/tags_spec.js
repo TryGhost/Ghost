@@ -99,13 +99,8 @@ describe('Tag API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.have.length(1);
-                // @TODO: model layer has no defaults for these properties
-                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url'], [
-                    'feature_image',
-                    'meta_description',
-                    'meta_title',
-                    'parent'
-                ]);
+
+                localUtils.API.checkResponse(jsonResponse.tags[0], 'tag', ['url']);
                 testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true();
             });
     });
