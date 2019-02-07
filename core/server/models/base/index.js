@@ -396,6 +396,15 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     onDestroyed(model, options) {
+        if (!model._changed) {
+            model._changed = {};
+        }
+
+        // @NOTE: Bookshelf destroys ".changed" right after this event, but we should not throw away the information
+        //        It is useful for webhooks, events etc.
+        // @NOTE: Bookshelf returns ".changed = {empty...}" on destroying (https://github.com/bookshelf/bookshelf/issues/1943)
+        Object.assign(model._changed, _.cloneDeep(model.changed));
+
         addAction(model, 'deleted', options);
     },
 
