@@ -15,6 +15,7 @@ module.exports = class StripePaymentProcessor {
                 this._stripe = stripe;
                 this._product = product;
                 this._plans = plans;
+                this._public_token = config.public_token;
                 return {
                     product,
                     plans
@@ -32,6 +33,25 @@ module.exports = class StripePaymentProcessor {
 
         return this._ready.then(() => {
             return this._plans;
+        });
+    }
+
+    getPublicConfig() {
+        if (!this._plans) {
+            throw new Error('StripePaymentProcessor must be configured()');
+        }
+
+        return this._ready.then(() => {
+            return {
+                adapter: 'stripe',
+                config: {
+                    public_token: this._public_token,
+                    plans: this._plans.map(({id, currency, amount, interval, nickname}) => ({
+                        id, currency, amount, interval,
+                        name: nickname
+                    }))
+                }
+            };
         });
     }
 
