@@ -1,4 +1,5 @@
 module.exports = function ({
+    subscriptions,
     createMember,
     updateMember,
     getMember,
@@ -26,12 +27,30 @@ module.exports = function ({
         });
     }
 
+    function get(...args) {
+        return getMember(...args).then((member) => {
+            return subscriptions.getAdapters().then((adapters) => {
+                return Promise.all(adapters.map((adapter) => {
+                    return subscriptions.getSubscription(member, {
+                        adapter
+                    }).then((subscription) => {
+                        return Object.assign(subscription, {adapter});
+                    });
+                }));
+            }).then((subscriptions) => {
+                return Object.assign({}, member, {
+                    subscriptions: subscriptions.filter(sub => sub.status === 'active')
+                });
+            });
+        });
+    }
+
     return {
         requestPasswordReset,
         resetPassword,
         create: createMember,
         validate: validateMember,
-        get: getMember,
-        list: listMembers
+        list: listMembers,
+        get
     };
 };
