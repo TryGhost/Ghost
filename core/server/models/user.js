@@ -449,7 +449,7 @@ User = ghostBookshelf.Model.extend({
         }
 
         ops.push(function update() {
-            return ghostBookshelf.Model.edit.call(self, data, options).then(function then(user) {
+            return ghostBookshelf.Model.edit.call(self, data, options).then((user) => {
                 var roleId;
 
                 if (!data.roles) {
@@ -458,13 +458,13 @@ User = ghostBookshelf.Model.extend({
 
                 roleId = data.roles[0].id || data.roles[0];
 
-                return user.roles().fetch().then(function then(roles) {
+                return user.roles().fetch().then((roles) => {
                     // return if the role is already assigned
                     if (roles.models[0].id === roleId) {
                         return;
                     }
                     return ghostBookshelf.model('Role').findOne({id: roleId});
-                }).then(function then(roleToAssign) {
+                }).then((roleToAssign) => {
                     if (roleToAssign && roleToAssign.get('name') === 'Owner') {
                         return Promise.reject(
                             new common.errors.ValidationError({
@@ -475,9 +475,12 @@ User = ghostBookshelf.Model.extend({
                         // assign all other roles
                         return user.roles().updatePivot({role_id: roleId});
                     }
-                }).then(function then() {
+                }).then(() => {
                     options.status = 'all';
                     return self.findOne({id: user.id}, options);
+                }).then((model) => {
+                    model._changed = user._changed;
+                    return model;
                 });
             });
         });
