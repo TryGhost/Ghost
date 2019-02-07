@@ -150,6 +150,14 @@
         });
     });
 
+    addMethod('getConfig', function getConfig() {
+        return fetch(`${membersApi}/config`, {
+            method: 'GET'
+        }).then((res) => {
+            return res.json();
+        });
+    });
+
     window.addEventListener('storage', function (event) {
         if (event.storageArea !== storage) {
             return;
