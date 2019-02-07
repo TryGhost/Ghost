@@ -486,6 +486,10 @@
     line-height: 22px;
 }
 
+.settings-code-editor:hover {
+    cursor: text;
+}
+
 .settings-code-editor textarea {
     width: 100%;
     max-width: none;
