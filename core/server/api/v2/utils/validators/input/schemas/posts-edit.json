@@ -1,0 +1,16 @@
+
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "posts.edit",
+    "title": "posts.edit",
+    "description": "Schema for posts.edit",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "posts": {
+            "type": "array",
+            "items": {"$ref": "posts#/definitions/post"}
+        }
+    },
+    "required": [ "posts" ]
+  }

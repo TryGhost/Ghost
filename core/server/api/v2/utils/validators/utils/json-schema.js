@@ -1,11 +1,12 @@
 const Ajv = require('ajv');
 
-const validate = (schema, json) => {
+const validate = (schema, definitions, json) => {
     const ajv = new Ajv({
         allErrors: true
     });
 
-    const validator = ajv.compile(schema);
+    const validator = ajv.addSchema(definitions).compile(schema);
+
     validator(json);
 
     return validator.errors;

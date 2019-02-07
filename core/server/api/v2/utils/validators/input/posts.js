@@ -44,7 +44,8 @@ module.exports = {
          * @TODO: remove `id` restriction in Ghost 3.0
          */
         const schema = require(`./schemas/posts-add`);
-        const errors = jsonSchema.validate(schema, frame.data);
+        const definitions = require('./schemas/posts');
+        const errors = jsonSchema.validate(schema, definitions, frame.data);
 
         if (errors) {
             // TODO: consider better parsing of `errors` messages
@@ -64,11 +65,22 @@ module.exports = {
     },
 
     edit(apiConfig, frame) {
-        if (frame.data.posts[0].hasOwnProperty('authors')) {
-            if (!_.isArray(frame.data.posts[0].authors) ||
-                (frame.data.posts[0].authors.length && _.filter(frame.data.posts[0].authors, 'id').length !== frame.data.posts[0].authors.length)) {
+        const schema = require(`./schemas/posts-edit`);
+        const definitions = require('./schemas/posts');
+        const errors = jsonSchema.validate(schema, definitions, frame.data);
+
+        if (errors) {
+            // TODO: consider better parsing of `errors` messages
+            if (['type', 'required'].includes(errors[0].keyword)) {
                 return Promise.reject(new common.errors.BadRequestError({
-                    message: common.i18n.t('errors.api.utils.invalidStructure', {key: 'posts[*].authors'})
+                    message: common.i18n.t('errors.api.utils.invalidStructure', {key: errors[0].dataPath})
+                }));
+            } else {
+                return Promise.reject(new common.errors.ValidationError({
+                    message: common.i18n.t('notices.data.validation.index.validationFailed', {
+                        validationName: `${errors[0].dataPath} ${errors[0].keyword}`,
+                        context: errors[0]
+                    })
                 }));
             }
         }
