@@ -179,7 +179,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 return;
             }
 
-            debug(model.tableName, event);
+            debug(model.tableName, ghostEvent);
 
             // @NOTE: Internal Ghost events. These are very granular e.g. post.published
             common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
