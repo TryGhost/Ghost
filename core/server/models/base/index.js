@@ -328,9 +328,27 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             }
         }
 
-        model._changed = _.cloneDeep(model.changed);
+        return Promise.resolve(this.onValidate(model, attr, options))
+            .then(() => {
+                /**
+                 * @NOTE:
+                 *
+                 * The API requires only specific attributes to send. If we don't set the rest explicitly to null,
+                 * we end up in a situation that on "created" events the field set is incomplete, which is super confusing
+                 * and hard to work with if you trigger internal events, which rely on full field set. This ensures consistency.
+                 *
+                 * @NOTE:
+                 *
+                 * Happens after validation to ensure we don't set fields which are not nullable on db level.
+                 */
+                _.each(Object.keys(schema.tables[this.tableName]), (columnKey) => {
+                    if (model.get(columnKey) === undefined) {
+                        model.set(columnKey, null);
+                    }
+                });
 
-        return Promise.resolve(this.onValidate(model, attr, options));
+                model._changed = _.cloneDeep(model.changed);
+            });
     },
 
     /**
