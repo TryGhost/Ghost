@@ -113,20 +113,14 @@
                         "description": "Authors of the post",
                         "type": "array",
                         "items": {
-                            "oneOf": [{
-                                "type": "string"
-                            }, {
-                                "type": "string",
-                                "maxLength": 24
-                            }, {
-                                "type": "object",
-                                "properties": {
-                                    "id": {
-                                        "type": "string",
-                                        "maxLength": 24
-                                    }
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "maxLength": 24
                                 }
-                            }]
+                            },
+                            "required": ["id"]
                         }
                     }
                 },

@@ -20,6 +20,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 data: {
                     posts: [
                         {
+                            title: 'cool',
                             authors: {}
                         }
                     ]
@@ -43,6 +44,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 data: {
                     posts: [
                         {
+                            title: 'cool',
                             authors: [{
                                 name: 'hey'
                             }]
@@ -68,6 +70,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 data: {
                     posts: [
                         {
+                            title: 'cool',
                             authors: [{
                                 id: 'correct',
                                 name: 'ja'
