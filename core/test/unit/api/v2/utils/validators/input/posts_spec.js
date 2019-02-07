@@ -10,12 +10,89 @@ describe('Unit: v2/utils/validators/input/posts', function () {
     });
 
     describe('add', function () {
-        describe('authors structure', function () {
-            it('should require properties', function () {
-                const apiConfig = {
-                    docName: 'posts'
+        const apiConfig = {
+            docName: 'posts'
+        };
+
+        describe('required fields', function () {
+            it('should fail with no data', function () {
+                const frame = {
+                    options: {},
+                    data: {}
                 };
 
+                return validators.input.posts.add(apiConfig, frame)
+                    .then(Promise.reject)
+                    .catch((err) => {
+                        (err instanceof common.errors.BadRequestError).should.be.true();
+                    });
+            });
+
+            it('should fail with no posts', function () {
+                const frame = {
+                    options: {},
+                    data: {
+                        tags: []
+                    }
+                };
+
+                return validators.input.posts.add(apiConfig, frame)
+                    .then(Promise.reject)
+                    .catch((err) => {
+                        (err instanceof common.errors.ValidationError).should.be.true();
+                    });
+            });
+
+            it('should fail with more than post', function () {
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: [],
+                        tags: []
+                    }
+                };
+
+                return validators.input.posts.add(apiConfig, frame)
+                    .then(Promise.reject)
+                    .catch((err) => {
+                        (err instanceof common.errors.ValidationError).should.be.true();
+                    });
+            });
+
+            it('should fail without required fields', function () {
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: [{
+                            what: 'a fail'
+                        }],
+                    }
+                };
+
+                return validators.input.posts.add(apiConfig, frame)
+                    .then(Promise.reject)
+                    .catch((err) => {
+                        (err instanceof common.errors.ValidationError).should.be.true();
+                    });
+            });
+
+            it('should pass with required fields', function () {
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: [{
+                            title: 'pass',
+                            authors: [{id: 'correct'}]
+                        }],
+                    }
+                };
+
+                return validators.input.posts.add(apiConfig, frame);
+            });
+        });
+
+        describe('authors structure', function () {
+            it('should require properties', function () {
                 const frame = {
                     options: {},
                     data: {
@@ -36,10 +113,6 @@ describe('Unit: v2/utils/validators/input/posts', function () {
             });
 
             it('should require id', function () {
-                const apiConfig = {
-                    docName: 'posts'
-                };
-
                 const frame = {
                     options: {},
                     data: {
@@ -62,10 +135,6 @@ describe('Unit: v2/utils/validators/input/posts', function () {
             });
 
             it('should pass', function () {
-                const apiConfig = {
-                    docName: 'posts'
-                };
-
                 const frame = {
                     options: {},
                     data: {
