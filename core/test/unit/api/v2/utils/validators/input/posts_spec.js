@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
@@ -92,7 +93,49 @@ describe('Unit: v2/utils/validators/input/posts', function () {
         });
 
         describe('field formats', function () {
-            // TODO: add checks for correct format validations
+            const fieldMap = {
+                title: [123, new Date(), _.repeat('a', 2001)],
+                slug: [123, new Date(), _.repeat('a', 192)],
+                mobiledoc: [123, new Date()],
+                feature_image: [123, new Date(), 'abc'],
+                featured: [123, new Date(), 'abc'],
+                page: [123, new Date(), 'abc'],
+                status: [123, new Date(), 'abc'],
+                locale: [123, new Date(), _.repeat('a', 7)],
+                visibility: [123, new Date(), 'abc'],
+                meta_title: [123, new Date(), _.repeat('a', 301)],
+                meta_description: [123, new Date(), _.repeat('a', 501)],
+            };
+
+            Object.keys(fieldMap).forEach(key => {
+                it(`should fail for bad ${key}`, function () {
+                    const badValues = fieldMap[key];
+
+                    const checks = badValues.map((value) => {
+                        const post = {};
+                        post[key] = value;
+
+                        if (key !== 'title') {
+                            post.title = 'abc';
+                        }
+
+                        const frame = {
+                            options: {},
+                            data: {
+                                posts: [post]
+                            }
+                        };
+
+                        return validators.input.posts.add(apiConfig, frame)
+                            .then(Promise.reject)
+                            .catch((err) => {
+                                (err instanceof common.errors.ValidationError).should.be.true();
+                            });
+                    });
+
+                    return Promise.all(checks);
+                });
+            });
         });
 
         describe('authors structure', function () {

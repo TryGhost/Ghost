@@ -17,6 +17,8 @@ const validate = (schema, definitions, json) => {
             })
         }));
     }
+
+    return Promise.resolve();
 };
 
 module.exports.validate = validate;
