@@ -91,6 +91,10 @@ describe('Unit: v2/utils/validators/input/posts', function () {
             });
         });
 
+        describe('field formats', function () {
+            // TODO: add checks for correct format validations
+        });
+
         describe('authors structure', function () {
             it('should require properties', function () {
                 const frame = {
