@@ -1,8 +1,25 @@
-const _ = require('lodash');
 const Promise = require('bluebird');
 const common = require('../../../../../lib/common');
 const utils = require('../../index');
 const jsonSchema = require('../utils/json-schema');
+
+const handleErrors = (errors) => {
+    // TODO: consider better parsing of `errors` messages
+    // also might be a good idea to move this handling into more central
+    // place once validations are introduced for more endpoints
+    if (['type', 'required'].includes(errors[0].keyword)) {
+        return Promise.reject(new common.errors.BadRequestError({
+            message: common.i18n.t('errors.api.utils.invalidStructure', {key: errors[0].dataPath})
+        }));
+    } else {
+        return Promise.reject(new common.errors.ValidationError({
+            message: common.i18n.t('notices.data.validation.index.validationFailed', {
+                validationName: `${errors[0].dataPath} ${errors[0].keyword}`,
+                context: errors[0]
+            })
+        }));
+    }
+};
 
 module.exports = {
     add(apiConfig, frame) {
@@ -48,19 +65,7 @@ module.exports = {
         const errors = jsonSchema.validate(schema, definitions, frame.data);
 
         if (errors) {
-            // TODO: consider better parsing of `errors` messages
-            if (['type', 'required'].includes(errors[0].keyword)) {
-                return Promise.reject(new common.errors.BadRequestError({
-                    message: common.i18n.t('errors.api.utils.invalidStructure', {key: errors[0].dataPath})
-                }));
-            } else {
-                return Promise.reject(new common.errors.ValidationError({
-                    message: common.i18n.t('notices.data.validation.index.validationFailed', {
-                        validationName: `${errors[0].dataPath} ${errors[0].keyword}`,
-                        context: errors[0]
-                    })
-                }));
-            }
+            return handleErrors(errors);
         }
     },
 
@@ -70,19 +75,7 @@ module.exports = {
         const errors = jsonSchema.validate(schema, definitions, frame.data);
 
         if (errors) {
-            // TODO: consider better parsing of `errors` messages
-            if (['type', 'required'].includes(errors[0].keyword)) {
-                return Promise.reject(new common.errors.BadRequestError({
-                    message: common.i18n.t('errors.api.utils.invalidStructure', {key: errors[0].dataPath})
-                }));
-            } else {
-                return Promise.reject(new common.errors.ValidationError({
-                    message: common.i18n.t('notices.data.validation.index.validationFailed', {
-                        validationName: `${errors[0].dataPath} ${errors[0].keyword}`,
-                        context: errors[0]
-                    })
-                }));
-            }
+            return handleErrors(errors);
         }
     }
 };
