@@ -2,6 +2,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const common = require('../../../../../lib/common');
 const utils = require('../../index');
+const jsonSchema = require('../utils/json-schema');
 
 module.exports = {
     add(apiConfig, frame) {
@@ -49,6 +50,18 @@ module.exports = {
                     message: common.i18n.t('errors.api.utils.invalidStructure', {key: 'posts[*].authors'})
                 }));
             }
+        }
+
+        const errors = jsonSchema.validate('posts-add', frame.data);
+
+        if (errors) {
+            // TODO: consider better parsing of `errors` messages
+            return Promise.reject(new common.errors.ValidationError({
+                message: common.i18n.t('notices.data.validation.index.validationFailed', {
+                    validationName: `${errors[0].dataPath} ${errors[0].keyword}`,
+                    context: errors[0]
+                })
+            }));
         }
     },
 
