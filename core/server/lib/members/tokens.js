@@ -9,9 +9,10 @@ module.exports = function ({
     const keyStore = jose.JWK.createKeyStore();
     const keyStoreReady = keyStore.add(privateKey, 'pem');
 
-    function encodeToken({sub, aud = issuer}) {
+    function encodeToken({sub, aud = issuer, plans}) {
         return keyStoreReady.then(jwk => jwt.sign({
             sub,
+            plans,
             kid: jwk.kid
         }, privateKey, {
             algorithm: 'RS512',
