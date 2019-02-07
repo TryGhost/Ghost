@@ -23,7 +23,7 @@ module.exports = function cookies(sessionSecret) {
     function setCookie(member) {
         return cookie.serialize('signedin', member.id, {
             maxAge: MAX_AGE,
-            path: '/ghost/api/v2/members/token',
+            path: '/ghost/api/v2/members',
             httpOnly: true,
             encode: encodeCookie
         });
@@ -32,7 +32,7 @@ module.exports = function cookies(sessionSecret) {
     function removeCookie() {
         return cookie.serialize('signedin', false, {
             maxAge: 0,
-            path: '/ghost/api/v2/members/token',
+            path: '/ghost/api/v2/members',
             httpOnly: true
         });
     }
