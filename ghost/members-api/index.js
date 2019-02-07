@@ -6,15 +6,17 @@ const {getData, handleError} = require('./util');
 const Cookies = require('./cookies');
 const Tokens = require('./tokens');
 const Users = require('./users');
+const Subscriptions = require('./subscriptions');
 
 module.exports = function MembersApi({
-    config: {
+    authConfig: {
         issuer,
         privateKey,
         publicKey,
         sessionSecret,
         ssoOrigin
     },
+    paymentConfig,
     validateAudience,
     createMember,
     validateMember,
@@ -25,7 +27,10 @@ module.exports = function MembersApi({
 }) {
     const {encodeToken, decodeToken, getPublicKeys} = Tokens({privateKey, publicKey, issuer});
 
+    const subscriptions = new Subscriptions(paymentConfig);
+
     const users = Users({
+        subscriptions,
         createMember,
         updateMember,
         getMember,
@@ -58,8 +63,12 @@ module.exports = function MembersApi({
         const {audience, origin} = req.data;
 
         validateAudience({audience, origin, id: signedin})
-            .then(() => encodeToken({
-                sub: signedin,
+            .then(() => {
+                return users.get({id: signedin});
+            })
+            .then(member => encodeToken({
+                sub: member.id,
+                plans: member.subscriptions.map(sub => sub.plan),
                 aud: audience
             }))
             .then(token => res.end(token))
@@ -74,6 +83,38 @@ module.exports = function MembersApi({
         }
         next();
     }
+
+    /* subscriptions */
+    apiRouter.post('/subscription', getData('adapter', 'plan', 'stripeToken'), ssoOriginCheck, (req, res) => {
+        const {signedin} = getCookie(req);
+        if (!signedin) {
+            res.writeHead(401, {
+                'Set-Cookie': removeCookie()
+            });
+            return res.end();
+        }
+
+        const {plan, adapter, stripeToken} = req.data;
+
+        subscriptions.getAdapters()
+            .then((adapters) => {
+                if (!adapters.includes(adapter)) {
+                    throw new Error('Invalid adapter');
+                }
+            })
+            .then(() => users.get({id: signedin}))
+            .then((member) => {
+                return subscriptions.createSubscription(member, {
+                    adapter,
+                    plan,
+                    stripeToken
+                });
+            })
+            .then(() => {
+                res.end();
+            })
+            .catch(handleError(500, res));
+    });
 
     /* users, token, emails */
     apiRouter.post('/request-password-reset', getData('email'), ssoOriginCheck, (req, res) => {
