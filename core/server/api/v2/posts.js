@@ -131,7 +131,7 @@ module.exports = {
         query(frame) {
             return models.Post.edit(frame.data.posts[0], frame.options)
                 .then((model) => {
-                    if (model.get('status') === 'published' ||
+                    if (model.get('status') === 'published' && model.wasChanged() ||
                         model.get('status') === 'draft' && model.previous('status') === 'published') {
                         this.headers.cacheInvalidate = true;
                     } else if (model.get('status') === 'draft' && model.previous('status') !== 'published') {
