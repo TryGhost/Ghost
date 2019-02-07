@@ -10,77 +10,79 @@ describe('Unit: v2/utils/validators/input/posts', function () {
     });
 
     describe('add', function () {
-        it('authors structure', function () {
-            const apiConfig = {
-                docName: 'posts'
-            };
+        describe('authors structure', function () {
+            it('should require properties', function () {
+                const apiConfig = {
+                    docName: 'posts'
+                };
 
-            const frame = {
-                options: {},
-                data: {
-                    posts: [
-                        {
-                            title: 'cool',
-                            authors: {}
-                        }
-                    ]
-                }
-            };
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: [
+                            {
+                                title: 'cool',
+                                authors: {}
+                            }
+                        ]
+                    }
+                };
 
-            return validators.input.posts.add(apiConfig, frame)
-                .then(Promise.reject)
-                .catch((err) => {
-                    (err instanceof common.errors.BadRequestError).should.be.true();
-                });
-        });
+                return validators.input.posts.add(apiConfig, frame)
+                    .then(Promise.reject)
+                    .catch((err) => {
+                        (err instanceof common.errors.BadRequestError).should.be.true();
+                    });
+            });
 
-        it('authors structure', function () {
-            const apiConfig = {
-                docName: 'posts'
-            };
+            it('should require id', function () {
+                const apiConfig = {
+                    docName: 'posts'
+                };
 
-            const frame = {
-                options: {},
-                data: {
-                    posts: [
-                        {
-                            title: 'cool',
-                            authors: [{
-                                name: 'hey'
-                            }]
-                        }
-                    ]
-                }
-            };
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: [
+                            {
+                                title: 'cool',
+                                authors: [{
+                                    name: 'hey'
+                                }]
+                            }
+                        ]
+                    }
+                };
 
-            return validators.input.posts.add(apiConfig, frame)
-                .then(Promise.reject)
-                .catch((err) => {
-                    (err instanceof common.errors.BadRequestError).should.be.true();
-                });
-        });
+                return validators.input.posts.add(apiConfig, frame)
+                    .then(Promise.reject)
+                    .catch((err) => {
+                        (err instanceof common.errors.BadRequestError).should.be.true();
+                    });
+            });
 
-        it('authors structure', function () {
-            const apiConfig = {
-                docName: 'posts'
-            };
+            it('should pass', function () {
+                const apiConfig = {
+                    docName: 'posts'
+                };
 
-            const frame = {
-                options: {},
-                data: {
-                    posts: [
-                        {
-                            title: 'cool',
-                            authors: [{
-                                id: 'correct',
-                                name: 'ja'
-                            }]
-                        }
-                    ]
-                }
-            };
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: [
+                            {
+                                title: 'cool',
+                                authors: [{
+                                    id: 'correct',
+                                    name: 'ja'
+                                }]
+                            }
+                        ]
+                    }
+                };
 
-            return validators.input.posts.add(apiConfig, frame);
+                return validators.input.posts.add(apiConfig, frame);
+            });
         });
     });
 });
