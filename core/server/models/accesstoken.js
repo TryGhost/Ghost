@@ -13,6 +13,7 @@ Accesstoken = Basetoken.extend({
     },
 
     onCreated: function onCreated(model, attrs, options) {
+        ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
         model.emitChange('added', options);
     }
 });
