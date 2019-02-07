@@ -100,6 +100,10 @@ proto = ghostBookshelf.Model.prototype;
  * We could embedd adding actions more nicely in the future e.g. plugin.
  */
 const addAction = (model, event, options) => {
+    if (model._changed && !Object.keys(model._changed).length) {
+        return;
+    }
+
     // CASE: model does not support actions at all
     if (!model.getAction) {
         return;
