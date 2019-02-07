@@ -524,9 +524,9 @@ body@^5.1.0:
     raw-body "~1.1.0"
     safe-json-parse "~1.0.1"
 
-bookshelf-relations@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-1.0.0.tgz#709b49a8b51bbe30873a453b6b18c74858e52839"
+bookshelf-relations@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-1.1.0.tgz#35c883c569d8bddb334bbe4bed1fdc1e64d6d0ad"
   dependencies:
     bluebird "3.5.3"
     ghost-ignition "3.0.0"
@@ -1824,7 +1824,6 @@ express-brute@1.0.1, express-brute@^1.0.0:
 express-hbs@1.0.5, express-hbs@^1.0.3:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-1.0.5.tgz#6553b6bfcc55a965ee6161a6f374837f1eecea1f"
-  integrity sha512-eVqu6wAieXohjreBpq4uxq5lLH6PWp/Feg+jlDe7gk48iltMx96VjfbQRaD89RSYKO8gHLc6v5SCIJTkOc0R8A==
   dependencies:
     handlebars "4.0.13"
     js-beautify "1.6.8"
@@ -2679,7 +2678,6 @@ gzip-size@^3.0.0:
 handlebars@4.0.13:
   version "4.0.13"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.0.13.tgz#89fc17bf26f46fd7f6f99d341d92efaae64f997d"
-  integrity sha512-uydY0jy4Z3wy/iGXsi64UtLD4t1fFJe16c/NFxsYE4WdQis8ZCzOXUZaPQNG0e5bgtLQV41QTfqBindhEjnpyQ==
   dependencies:
     async "^2.5.0"
     optimist "^0.6.1"
@@ -2690,7 +2688,6 @@ handlebars@4.0.13:
 handlebars@^4.0.1:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.1.0.tgz#0d6a6f34ff1f63cecec8423aa4169827bf787c3a"
-  integrity sha512-l2jRuU1NAWK6AW5qqcTATWQJvNPEwkM7NEKSiv/gqOsoSQbVoWyqVEY5GS+XPQ88zLNmqASRpzfdm8d79hJS+w==
   dependencies:
     async "^2.5.0"
     optimist "^0.6.1"
