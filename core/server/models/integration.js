@@ -48,7 +48,9 @@ const Integration = ghostBookshelf.Model.extend({
         return editIntegration();
     },
 
-    onSaving(newIntegration, attr, options) {
+    onSaving(integration, attrs, options) {
+        ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
+
         if (this.hasChanged('slug') || !this.get('slug')) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
             return ghostBookshelf.Model.generateSlug(Integration, this.get('slug') || this.get('name'),

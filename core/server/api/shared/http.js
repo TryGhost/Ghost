@@ -15,7 +15,9 @@ const http = (apiImpl) => {
                 id: req.api_key.get('id'),
                 type: req.api_key.get('type')
             };
-            integration = req.api_key.get('integration_id');
+            integration = {
+                id: req.api_key.get('integration_id')
+            };
         }
 
         if ((req.user && req.user.id) || (req.user && models.User.isExternalUser(req.user.id))) {

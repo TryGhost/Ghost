@@ -122,6 +122,8 @@ module.exports = {
                         this.headers.cacheInvalidate = true;
                     }
 
+                    common.events.emit('theme.uploaded');
+
                     // @TODO: unify the name across gscan and Ghost!
                     return themeService.toJSON(zip.shortName, checkedTheme);
                 })

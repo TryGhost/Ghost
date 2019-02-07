@@ -95,6 +95,8 @@ Post = ghostBookshelf.Model.extend({
      * We ensure that we are catching the event after bookshelf relations.
      */
     onSaved: function onSaved(model, response, options) {
+        ghostBookshelf.Model.prototype.onSaved.apply(this, arguments);
+
         if (options.method !== 'insert') {
             return;
         }
@@ -109,6 +111,8 @@ Post = ghostBookshelf.Model.extend({
     },
 
     onUpdated: function onUpdated(model, attrs, options) {
+        ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
+
         model.statusChanging = model.get('status') !== model.previous('status');
         model.isPublished = model.get('status') === 'published';
         model.isScheduled = model.get('status') === 'scheduled';
@@ -179,6 +183,8 @@ Post = ghostBookshelf.Model.extend({
     },
 
     onDestroyed: function onDestroyed(model, options) {
+        ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
+
         if (model.previous('status') === 'published') {
             model.emitChange('unpublished', Object.assign({usePreviousAttribute: true}, options));
         }
@@ -187,6 +193,8 @@ Post = ghostBookshelf.Model.extend({
     },
 
     onDestroying: function onDestroyed(model) {
+        ghostBookshelf.Model.prototype.onDestroying.apply(this, arguments);
+
         this.handleAttachedModels(model);
     },
 
@@ -315,7 +323,7 @@ Post = ghostBookshelf.Model.extend({
 
         this.handleAttachedModels(model);
 
-        ghostBookshelf.Model.prototype.onSaving.call(this, model, attr, options);
+        ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
         // do not allow generated fields to be overridden via the API
         if (!options.migrating) {
@@ -625,6 +633,24 @@ Post = ghostBookshelf.Model.extend({
         delete options.status;
         delete options.staticPages;
         return filter;
+    },
+
+    getAction(event, options) {
+        const actor = this.getActor(options);
+
+        // @NOTE: we ignore internal updates (`options.context.internal`) for now
+        if (!actor) {
+            return;
+        }
+
+        // @TODO: implement context
+        return {
+            event: event,
+            resource_id: this.id || this.previous('id'),
+            resource_type: this.tableName.replace(/s$/, ''),
+            actor_id: actor.id,
+            actor_type: actor.type
+        };
     }
 }, {
     allowedFormats: ['mobiledoc', 'html', 'plaintext'],

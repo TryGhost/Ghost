@@ -1,5 +1,5 @@
 language: node_js
-# When changing node version also update it on lines 31 and 49.
+# When changing node version also update it on lines 23 and 52.
 node_js:
   - "10"
   - "8"
@@ -8,6 +8,7 @@ node_js:
 sudo: false
 
 cache:
+  yarn: true
   directories:
     - node_modules
 
