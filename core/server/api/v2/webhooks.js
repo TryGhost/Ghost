@@ -3,10 +3,22 @@ const common = require('../../lib/common');
 
 module.exports = {
     docName: 'webhooks',
+
     add: {
         statusCode: 201,
         headers: {},
         options: [],
+        data: [],
+        validation: {
+            data: {
+                event: {
+                    required: true
+                },
+                target_url: {
+                    required: true
+                }
+            }
+        },
         permissions: true,
         query(frame) {
             return models.Webhook.getByEventAndTarget(
@@ -24,6 +36,7 @@ module.exports = {
             });
         }
     },
+
     edit: {
         permissions: true,
         data: [
@@ -54,6 +67,7 @@ module.exports = {
                 });
         }
     },
+
     destroy: {
         statusCode: 204,
         headers: {},
