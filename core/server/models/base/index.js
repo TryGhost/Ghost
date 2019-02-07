@@ -292,6 +292,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         this.attributes = this.pick(this.permittedAttributes());
     },
 
+    onDestroying() {},
+
     /**
      * Adding resources implies setting these properties on the server side
      * - set `created_by` based on the context
@@ -396,6 +398,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     onDestroyed(model, options) {
         addAction(model, 'deleted', options);
     },
+
+    onSaved() {},
 
     /**
      * before we insert dates into the database, we have to normalize

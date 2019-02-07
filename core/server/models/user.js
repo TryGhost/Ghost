@@ -44,12 +44,16 @@ User = ghostBookshelf.Model.extend({
      * Therefor we have to remove the relations manually.
      */
     onDestroying(model, options) {
+        ghostBookshelf.Model.prototype.onDestroying.apply(this, arguments);
+
         return (options.transacting || ghostBookshelf.knex)('roles_users')
             .where('user_id', model.id)
             .del();
     },
 
     onDestroyed: function onDestroyed(model, options) {
+        ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
+
         if (_.includes(activeStates, model.previous('status'))) {
             model.emitChange('deactivated', options);
         }
@@ -58,6 +62,8 @@ User = ghostBookshelf.Model.extend({
     },
 
     onCreated: function onCreated(model, attrs, options) {
+        ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+
         model.emitChange('added', options);
 
         // active is the default state, so if status isn't provided, this will be an active user
@@ -67,6 +73,8 @@ User = ghostBookshelf.Model.extend({
     },
 
     onUpdated: function onUpdated(model, response, options) {
+        ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
+
         model.statusChanging = model.get('status') !== model.previous('status');
         model.isActive = _.includes(activeStates, model.get('status'));
 
