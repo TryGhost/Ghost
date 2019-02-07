@@ -116,7 +116,7 @@
         });
     });
 
-    addMethod('request-password-reset', function signout({email}) {
+    addMethod('requestPasswordReset', function signout({email}) {
         return fetch(`${membersApi}/request-password-reset`, {
             method: 'POST',
             headers: {
@@ -131,7 +131,7 @@
         });
     });
 
-    addMethod('reset-password', function signout({token, password}) {
+    addMethod('resetPassword', function signout({token, password}) {
         return fetch(`${membersApi}/reset-password`, {
             method: 'POST',
             headers: {
