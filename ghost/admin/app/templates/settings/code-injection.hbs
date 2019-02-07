@@ -21,14 +21,14 @@
                 </p>
 
                 <div class="form-group settings-code">
-                    <label for="ghost-head">Blog Header</label>
-                    <p>Code here will be injected into the <code>\{{ghost_head}}</code> tag on every page of your blog</p>
+                    <label for="ghost-head">Site Header</label>
+                    <p>Code here will be injected into the <code>\{{ghost_head}}</code> tag on every page of the site</p>
                     {{gh-cm-editor settings.ghostHead id="ghost-head" class="gh-input settings-code-editor" name="codeInjection[ghost_head]" type="text" update=(action (mut settings.ghostHead))}}
                 </div>
 
                 <div class="form-group settings-code">
-                    <label for="ghost-foot">Blog Footer</label>
-                    <p>Code here will be injected into the <code>\{{ghost_foot}}</code> tag on every page of your blog</p>
+                    <label for="ghost-foot">Site Footer</label>
+                    <p>Code here will be injected into the <code>\{{ghost_foot}}</code> tag on every page of the site</p>
                     {{gh-cm-editor settings.ghostFoot id="ghost-foot" class="gh-input settings-code-editor" name="codeInjection[ghost_foot]" type="text" update=(action (mut settings.ghostFoot))}}
                 </div>
             </fieldset>
