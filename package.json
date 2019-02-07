@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@nexes/nql": "0.2.1",
-    "ajv": "^6.8.1",
+    "ajv": "6.8.1",
     "amperize": "0.3.8",
     "analytics-node": "3.3.0",
     "archiver": "3.0.0",
