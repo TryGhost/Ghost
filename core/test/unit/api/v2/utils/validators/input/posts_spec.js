@@ -24,7 +24,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 return validators.input.posts.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.BadRequestError).should.be.true();
+                        (err instanceof common.errors.ValidationError).should.be.true();
                     });
             });
 
@@ -72,7 +72,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 return validators.input.posts.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.BadRequestError).should.be.true();
+                        (err instanceof common.errors.ValidationError).should.be.true();
                     });
             });
 
@@ -112,7 +112,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 return validators.input.posts.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.BadRequestError).should.be.true();
+                        (err instanceof common.errors.ValidationError).should.be.true();
                     });
             });
 
@@ -134,7 +134,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 return validators.input.posts.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.BadRequestError).should.be.true();
+                        (err instanceof common.errors.ValidationError).should.be.true();
                     });
             });
 
@@ -174,7 +174,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 return validators.input.posts.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.BadRequestError).should.be.true();
+                        (err instanceof common.errors.ValidationError).should.be.true();
                     });
             });
 
@@ -240,7 +240,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 return validators.input.posts.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.BadRequestError).should.be.true();
+                        (err instanceof common.errors.ValidationError).should.be.true();
                     });
             });
 
@@ -262,7 +262,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 return validators.input.posts.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.BadRequestError).should.be.true();
+                        (err instanceof common.errors.ValidationError).should.be.true();
                     });
             });
 
