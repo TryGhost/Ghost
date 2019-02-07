@@ -100,7 +100,7 @@ proto = ghostBookshelf.Model.prototype;
  * We could embedd adding actions more nicely in the future e.g. plugin.
  */
 const addAction = (model, event, options) => {
-    if (model._changed && !Object.keys(model._changed).length) {
+    if (!model.wasChanged()) {
         return;
     }
 
@@ -175,7 +175,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         debug(model.tableName, event);
 
         const _emit = (ghostEvent, model) => {
-            if (model._changed && !Object.keys(model._changed).length) {
+            if (!model.wasChanged()) {
                 return;
             }
 
