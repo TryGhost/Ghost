@@ -607,6 +607,25 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     setId: function setId() {
         this.set('id', ObjectId.generate());
+    },
+
+    wasChanged() {
+        /**
+         * @NOTE:
+         * Not every model & interaction is currently set up to handle "._changed".
+         * e.g. we trigger a manual event for "tag.attached", where as "._changed" is undefined.
+         *
+         * Keep "true" till we are sure that "._changed" is always a thing.
+         */
+        if (!this._changed) {
+            return true;
+        }
+
+        if (!Object.keys(this._changed).length) {
+            return false;
+        }
+
+        return true;
     }
 }, {
     // ## Data Utility Functions
