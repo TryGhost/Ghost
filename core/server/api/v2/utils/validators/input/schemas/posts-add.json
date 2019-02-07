@@ -12,7 +12,7 @@
             "items": {
                 "type": "object",
                 "allOf": [{"$ref": "posts#/definitions/post"}],
-                "required": ["title", "authors"]
+                "required": ["title"]
             }
         }
     },
