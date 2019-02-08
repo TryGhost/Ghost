@@ -155,7 +155,7 @@
                         "maxLength": 24
                     }
                 },
-                "oneOf": [
+                "anyOf": [
                     {"required": ["id"]},
                     {"required": ["name"]},
                     {"required": ["slug"]}
