@@ -12,9 +12,8 @@ const validate = (schema, definitions, json) => {
 
     if (validation.errors) {
         return Promise.reject(new common.errors.ValidationError({
-            message: common.i18n.t('notices.data.validation.index.validationFailed', {
-                errorDetails: validation.errors
-            })
+            message: common.i18n.t('notices.data.validation.index.validationFailed'),
+            errorDetails: validation.errors
         }));
     }
 
