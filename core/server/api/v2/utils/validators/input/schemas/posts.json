@@ -155,7 +155,11 @@
                         "maxLength": 24
                     }
                 },
-                "required": ["id"]
+                "oneOf": [
+                    {"required": ["id"]},
+                    {"required": ["name"]},
+                    {"required": ["slug"]}
+                ]
             }
         }
     }
