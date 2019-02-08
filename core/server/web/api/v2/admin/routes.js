@@ -150,6 +150,13 @@ module.exports = function apiRoutes() {
         mw.authenticateClient('Ghost Backup'),
         apiv2.http(apiv2.db.backupContent)
     );
+    router.get('/db/import', mw.authAdminApi, apiv2.http(apiv2.db.asyncImportStatus));
+    router.post('/db/import',
+        mw.authAdminApi,
+        upload.single('importfile'),
+        shared.middlewares.validation.upload({type: 'db'}),
+        apiv2.http(apiv2.db.importContentAsync)
+    );
 
     // ## Mail
     router.post('/mail', mw.authAdminApi, apiv2.http(apiv2.mail.send));

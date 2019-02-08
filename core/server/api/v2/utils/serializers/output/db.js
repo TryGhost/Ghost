@@ -31,6 +31,24 @@ module.exports = {
         };
     },
 
+    importContentAsync(response, apiConfig, frame) {
+        debug('importContentAsync');
+
+        frame.response = {
+            db: [],
+            importId: response
+        };
+    },
+
+    asyncImportStatus(status, apiConfig, frame) {
+        debug('asyncImportStatus');
+
+        status.importing = status.busy;
+        delete status.busy;
+
+        frame.response = status;
+    },
+
     deleteAllContent(response, apiConfig, frame) {
         frame.response = {
             db: []

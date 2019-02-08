@@ -2,8 +2,19 @@ const Promise = require('bluebird');
 const backupDatabase = require('../../data/db/backup');
 const exporter = require('../../data/exporter');
 const importer = require('../../data/importer');
+const AbstractPoller = require('../../lib/abstract-poller');
 const common = require('../../lib/common');
 const models = require('../../models');
+
+const transformImportSuccess = (result) => {
+    return {
+        // NOTE: response can contain 2 objects if images are imported
+        problems: result[result.length === 2 ? 1 : 0].problems
+    };
+};
+
+const transformImportFailure = error => ({errors: [error]});
+const asyncImporter = new AbstractPoller(importer.importFromFile, transformImportSuccess, transformImportFailure);
 
 module.exports = {
     docName: 'db',
@@ -74,6 +85,36 @@ module.exports = {
         },
         query(frame) {
             return importer.importFromFile(frame.file, {include: frame.options.withRelated});
+        }
+    },
+
+    importContentAsync: {
+        statusCode: 202,
+        options: [
+            'include'
+        ],
+        validation: {
+            options: {
+                include: {
+                    values: exporter.EXCLUDED_TABLES
+                }
+            }
+        },
+        permissions: {
+            method: 'importContent'
+        },
+        query(frame) {
+            return asyncImporter.run(frame.file, {include: frame.options.withRelated});
+        }
+    },
+
+    asyncImportStatus: {
+        permissions: {
+            method: 'importContent'
+        },
+        query() {
+            // `.state` is a getter which always returns a new object
+            return asyncImporter.state;
         }
     },
 
