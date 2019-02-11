@@ -129,7 +129,6 @@
     "grunt-contrib-uglify": "4.0.0",
     "grunt-contrib-watch": "1.1.0",
     "grunt-cssnano": "2.1.0",
-    "grunt-eslint": "21.0.0",
     "grunt-express-server": "0.5.4",
     "grunt-mocha-cli": "4.0.0",
     "grunt-mocha-istanbul": "5.0.2",

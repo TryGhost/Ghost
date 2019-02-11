@@ -147,7 +147,6 @@ ajv-keywords@^2.1.0:
 ajv@6.8.1:
   version "6.8.1"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.8.1.tgz#0890b93742985ebf8973cd365c5b23920ce3cb20"
-  integrity sha512-eqxCp82P+JfqL683wwsL73XmFs1eG6qjw+RD3YHx+Jll1r0jNd4dh8QG9NYAeNGA/hnZjeEDgtTskgJULbxpWQ==
   dependencies:
     fast-deep-equal "^2.0.1"
     fast-json-stable-stringify "^2.0.0"
@@ -1626,7 +1625,7 @@ eslint-visitor-keys@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#3f3180fb2e291017716acb4c9d6d5b5c34a6a81d"
 
-eslint@5.12.1, eslint@^5.0.0:
+eslint@5.12.1:
   version "5.12.1"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-5.12.1.tgz#5ca9931fb9029d04e7be92b03ce3b58edfac7e3b"
   dependencies:
@@ -2564,13 +2563,6 @@ grunt-cssnano@2.1.0:
   resolved "https://registry.yarnpkg.com/grunt-cssnano/-/grunt-cssnano-2.1.0.tgz#e564f7d5a88bef409e46431dacabafd5c71fbd87"
   dependencies:
     cssnano "^3.0.0"
-
-grunt-eslint@21.0.0:
-  version "21.0.0"
-  resolved "https://registry.yarnpkg.com/grunt-eslint/-/grunt-eslint-21.0.0.tgz#5863f593d328c27ffec2a183319e5ad5380eed9e"
-  dependencies:
-    chalk "^2.1.0"
-    eslint "^5.0.0"
 
 grunt-express-server@0.5.4:
   version "0.5.4"
