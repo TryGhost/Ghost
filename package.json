@@ -26,7 +26,9 @@
     "test": "grunt validate --verbose",
     "test:regression": "grunt test-regression --verbose",
     "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || true",
-    "lint": "grunt lint",
+    "lint:server": "eslint --ignore-path .eslintignore 'core/server/**/*.js' 'core/*.js' '*.js'",
+    "lint:test": "eslint --ignore-path core/test/.eslintignore 'core/test/**/*.js'",
+    "lint": "npm run lint:server && npm run lint:test",
     "fixmodulenotdefined": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../"
   },
   "engines": {
