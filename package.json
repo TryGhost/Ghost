@@ -147,29 +147,5 @@
     "sinon": "7.2.3",
     "supertest": "3.4.1",
     "tmp": "0.0.33"
-  },
-  "greenkeeper": {
-    "ignore": [
-      "glob",
-      "nodemailer",
-      "grunt",
-      "grunt-bg-shell",
-      "grunt-cli",
-      "grunt-contrib-clean",
-      "grunt-contrib-compress",
-      "grunt-contrib-copy",
-      "grunt-contrib-jshint",
-      "grunt-contrib-uglify",
-      "grunt-contrib-watch",
-      "grunt-docker",
-      "grunt-express-server",
-      "grunt-jscs",
-      "grunt-mocha-cli",
-      "grunt-mocha-istanbul",
-      "grunt-shell",
-      "grunt-subgrunt",
-      "grunt-update-submodules",
-      "sinon"
-    ]
   }
 }
