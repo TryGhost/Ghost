@@ -136,7 +136,6 @@
     "grunt-update-submodules": "0.4.1",
     "istanbul": "0.4.5",
     "matchdep": "2.0.0",
-    "minimist": "1.2.0",
     "mocha": "5.2.0",
     "mock-knex": "0.4.3",
     "nock": "10.0.6",
