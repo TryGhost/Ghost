@@ -123,29 +123,6 @@ describe('Request', function () {
         });
     });
 
-    it('[failure] will timeout', function () {
-        const url = 'http://nofilehere.com/files/test.txt';
-        const options = {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0'
-                },
-                timeout: 10
-            };
-
-        const requestMock = nock('http://nofilehere.com')
-            .get('/files/test.txt')
-            .socketDelay(100)
-            .reply(408);
-
-        return request(url, options).then(() => {
-            throw new Error('Request should have timed out');
-        }, (err) => {
-            requestMock.isDone().should.be.true();
-            should.exist(err);
-            err.statusMessage.should.be.equal('Request Timeout');
-        });
-    });
-
     it('[failure] returns error if request errors', function () {
         const url = 'http://nofilehere.com/files/test.txt';
         const options = {
