@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
 import config from 'ghost-admin/config/environment';
@@ -22,31 +21,41 @@ export default Service.extend({
     },
 
     loadScript(key, url) {
-        if (this.get('testing')) {
+        if (this.testing) {
             return RSVP.resolve();
         }
 
-        if (this.get(`scriptPromises.${key}`)) {
-            // Script is already loaded/in the process of being loaded,
-            // so return that promise
-            return this.get(`scriptPromises.${key}`);
+        if (this.scriptPromises[key]) {
+            return this.scriptPromises[key];
         }
 
-        let ajax = this.get('ajax');
-        let adminRoot = this.get('ghostPaths.adminRoot');
+        let scriptPromise = new RSVP.Promise((resolve, reject) => {
+            let {adminRoot} = this.ghostPaths;
 
-        let scriptPromise = ajax.request(`${adminRoot}${url}`, {
-            dataType: 'script',
-            cache: true
+            let script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.async = true;
+            script.src = `${adminRoot}${url}`;
+
+            let el = document.getElementsByTagName('script')[0];
+            el.parentNode.insertBefore(script, el);
+
+            script.addEventListener('load', () => {
+                resolve();
+            });
+
+            script.addEventListener('error', () => {
+                reject(new Error(`${url} failed to load`));
+            });
         });
 
-        this.set(`scriptPromises.${key}`, scriptPromise);
+        this.scriptPromises[key] = scriptPromise;
 
         return scriptPromise;
     },
 
     loadStyle(key, url, alternate = false) {
-        if (this.get('testing') || $(`#${key}-styles`).length) {
+        if (this.testing || document.querySelector(`#${key}-styles`)) {
             return RSVP.resolve();
         }
 
@@ -54,7 +63,7 @@ export default Service.extend({
             let link = document.createElement('link');
             link.id = `${key}-styles`;
             link.rel = alternate ? 'alternate stylesheet' : 'stylesheet';
-            link.href = `${this.get('ghostPaths.adminRoot')}${url}`;
+            link.href = `${this.ghostPaths.adminRoot}${url}`;
             link.onload = () => {
                 if (alternate) {
                     // If stylesheet is alternate and we disable the stylesheet before injecting into the DOM,
@@ -69,7 +78,7 @@ export default Service.extend({
                 link.title = key;
             }
 
-            $('head').append($(link));
+            document.querySelector('head').appendChild(link);
         });
     }
 });
