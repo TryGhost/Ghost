@@ -216,7 +216,7 @@ const configureGrunt = function (grunt) {
                     grunt.log.writeln('Pulling down the latest master from ' + upstream);
                     return `
                         if ! git diff --exit-code --quiet; then
-                            echo "Working directory is not clean"
+                            echo "Working directory is not clean, do you have uncommited changes? Please commit, stash or discard changes to continue."
                             exit 1
                         fi
 
