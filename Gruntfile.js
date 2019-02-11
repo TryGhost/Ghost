@@ -214,9 +214,19 @@ const configureGrunt = function (grunt) {
                 command: function () {
                     var upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
                     grunt.log.writeln('Pulling down the latest master from ' + upstream);
-                    return 'git checkout master; git pull ' + upstream + ' master; ' +
-                        'yarn; git submodule foreach "git checkout master && git pull ' +
-                        upstream + ' master"';
+                    return `
+                        if ! git diff --exit-code --quiet; then
+                            echo "Working directory is not clean, do you have uncommited changes? Please commit, stash or discard changes to continue."
+                            exit 1
+                        fi
+
+                        git checkout master
+                        git pull ${upstream} master
+                        yarn
+                        git submodule foreach "
+                            git checkout master && git pull ${upstream} master
+                        "
+                    `;
                 }
             }
         },
