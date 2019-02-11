@@ -26,7 +26,9 @@
     "test": "grunt validate --verbose",
     "test:regression": "grunt test-regression --verbose",
     "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || true",
-    "lint": "grunt lint",
+    "lint:server": "eslint --ignore-path .eslintignore 'core/server/**/*.js' 'core/*.js' '*.js'",
+    "lint:test": "eslint -c core/test/.eslintrc.json --ignore-path core/test/.eslintignore 'core/test/**/*.js'",
+    "lint": "yarn lint:server && yarn lint:test",
     "fixmodulenotdefined": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../"
   },
   "engines": {
@@ -127,7 +129,6 @@
     "grunt-contrib-uglify": "4.0.0",
     "grunt-contrib-watch": "1.1.0",
     "grunt-cssnano": "2.1.0",
-    "grunt-eslint": "21.0.0",
     "grunt-express-server": "0.5.4",
     "grunt-mocha-cli": "4.0.0",
     "grunt-mocha-istanbul": "5.0.2",
