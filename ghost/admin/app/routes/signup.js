@@ -46,7 +46,10 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
             tokenText = atob(params.token);
             email = tokenText.split('|')[1];
 
-            signupDetails.set('email', email);
+            // leave e-mail blank even though we get it from the token because
+            // we need the user to type it in for Chrome to remember the
+            // email/password combo properly
+            signupDetails.set('email', '');
             signupDetails.set('token', params.token);
             signupDetails.set('errors', Errors.create());
 
