@@ -44,9 +44,11 @@
                             autocomplete="username email"
                             value=(readonly signupDetails.email)
                             input=(action (mut signupDetails.email) value="target.value")
+                            focus-out=(action "validate" "email")
                             data-test-input="email"
                         }}
                     </span>
+                    {{gh-error-message errors=signupDetails.errors property="email"}}
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=signupDetails.errors hasValidated=signupDetails.hasValidated property="password"}}
