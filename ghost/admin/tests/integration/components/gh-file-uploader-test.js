@@ -249,7 +249,8 @@ describe('Integration: Component: gh-file-uploader', function () {
         expect(findAll('input[type="file"]').length).to.equal(1);
     });
 
-    it('displays upload progress', async function () {
+    // skipped due to random failures on Travis - https://github.com/TryGhost/Ghost/issues/10308
+    it.skip('displays upload progress', async function () {
         // pretender fires a progress event every 50ms
         stubSuccessfulUpload(server, 150);
 

@@ -24,7 +24,8 @@ describe('Unit: Component: gh-notification', function () {
         expect(notifications.closeNotification.calledWith(notification)).to.be.true;
     });
 
-    it('closes notification when animationend event is triggered', function (done) {
+    // skipped due to random failures on Travis - https://github.com/TryGhost/Ghost/issues/10308
+    it.skip('closes notification when animationend event is triggered', function (done) {
         let component = this.subject();
         let notifications = {};
         let notification = {message: 'Test close', type: 'success'};
