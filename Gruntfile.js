@@ -215,7 +215,6 @@ const configureGrunt = function (grunt) {
                     var upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
                     grunt.log.writeln('Pulling down the latest master from ' + upstream);
                     return `
-
                         if ! git diff --exit-code --quiet; then
                             echo "Working directory is not clean"
                             exit 1
