@@ -228,6 +228,64 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 configUtils.restore();
             });
 
+            it('when mobiledoc contains an absolute URL to image', function () {
+                configUtils.set({url: 'https://mysite.com'});
+                const apiConfig = {};
+                const frame = {
+                    options: {
+                        context: {
+                            user: 0,
+                            api_key: {
+                                id: 1,
+                                type: 'content'
+                            },
+                        },
+                    },
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"https://mysite.com/content/images/2019/02/image.jpg"}]]}'
+                            }
+                        ]
+                    }
+                };
+
+                serializers.input.posts.edit(apiConfig, frame);
+
+                let postData = frame.data.posts[0];
+                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"/content/images/2019/02/image.jpg"}]]}');
+            });
+
+            it('when mobiledoc contains multiple absolute URLs to images with different protocols', function () {
+                configUtils.set({url: 'https://mysite.com'});
+                const apiConfig = {};
+                const frame = {
+                    options: {
+                        context: {
+                            user: 0,
+                            api_key: {
+                                id: 1,
+                                type: 'content'
+                            },
+                        },
+                    },
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"https://mysite.com/content/images/2019/02/image.jpg"}],["image",{"src":"http://mysite.com/content/images/2019/02/image.png"}]]'
+                            }
+                        ]
+                    }
+                };
+
+                serializers.input.posts.edit(apiConfig, frame);
+
+                let postData = frame.data.posts[0];
+                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"/content/images/2019/02/image.jpg"}],["image",{"src":"/content/images/2019/02/image.png"}]]');
+            });
+
             it('when blog url is without subdir', function () {
                 configUtils.set({url: 'https://mysite.com'});
                 const apiConfig = {};
