@@ -93,7 +93,7 @@
     "node-jose": "1.1.0",
     "nodemailer": "0.7.1",
     "oauth2orize": "1.11.0",
-    "oembed-parser": "https://github.com/kevinansfield/oembed-parser/tarball/80af3dc41059bcc0caa80db010265a811a4267c7",
+    "oembed-parser": "1.2.2",
     "passport": "0.4.0",
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
