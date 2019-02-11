@@ -54,7 +54,7 @@ Session.vim
 /content/images/**/*
 /content/adapters/storage/**/*
 /content/adapters/scheduling/**/*
-!/content/themes/casper/**
+!/content/themes/casper
 !/README.md
 !/content/**/README.md
 
@@ -70,8 +70,7 @@ CHANGELOG.md
 
 # Built asset files
 /core/built
-/core/server/web/admin/views/*
-/core/server/public/ghost-sdk.min.js
+/core/server/web/admin/views/*.html
 /core/server/public/ghost.min.css
 
 # Coverage reports
