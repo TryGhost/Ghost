@@ -71,6 +71,7 @@ describe('Acceptance: Signup', function () {
         ).to.be.empty;
 
         // focus out in Email field triggers inline error
+        await click('[data-test-input="email"]');
         await blur('[data-test-input="email"]');
 
         expect(
