@@ -43,17 +43,6 @@ describe('Acceptance: Signup', function () {
 
         expect(currentRouteName()).to.equal('signup');
 
-        // email address should be pre-filled and disabled
-        expect(
-            find('[data-test-input="email"]').value,
-            'email field value'
-        ).to.equal('kevin+test2@ghost.org');
-
-        expect(
-            find('[data-test-input="email"]').matches(':disabled'),
-            'email field is disabled'
-        ).to.be.true;
-
         // focus out in Name field triggers inline error
         await blur('[data-test-input="name"]');
 
@@ -79,6 +68,33 @@ describe('Acceptance: Signup', function () {
         expect(
             find('[data-test-input="name"]').closest('.form-group').querySelector('.response').textContent.trim(),
             'name field error is removed after text input'
+        ).to.be.empty;
+
+        // focus out in Email field triggers inline error
+        await blur('[data-test-input="email"]');
+
+        expect(
+            find('[data-test-input="email"]').closest('.form-group'),
+            'email field group has error class when empty'
+        ).to.have.class('error');
+
+        expect(
+            find('[data-test-input="email"]').closest('.form-group').querySelector('.response').textContent,
+            'email inline-error text'
+        ).to.have.string('Please enter an email');
+
+        // entering text in email field clears error
+        await fillIn('[data-test-input="email"]', 'kevin+test2@ghost.org');
+        await blur('[data-test-input="email"]');
+
+        expect(
+            find('[data-test-input="email"]').closest('.form-group'),
+            'email field loses error class after text input'
+        ).to.not.have.class('error');
+
+        expect(
+            find('[data-test-input="email"]').closest('.form-group').querySelector('.response').textContent.trim(),
+            'email field error is removed after text input'
         ).to.be.empty;
 
         // check password validation
