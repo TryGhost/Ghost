@@ -1,6 +1,5 @@
 import 'ghost-admin/utils/link-component';
 import 'ghost-admin/utils/route';
-import 'ghost-admin/utils/text-field';
 import Application from '@ember/application';
 import Resolver from './resolver';
 import config from './config/environment';
