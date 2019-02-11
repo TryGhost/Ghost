@@ -28,7 +28,7 @@
     "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || true",
     "lint:server": "eslint --ignore-path .eslintignore 'core/server/**/*.js' 'core/*.js' '*.js'",
     "lint:test": "eslint -c core/test/.eslintrc.json --ignore-path core/test/.eslintignore 'core/test/**/*.js'",
-    "lint": "npm run lint:server && npm run lint:test",
+    "lint": "yarn lint:server && yarn lint:test",
     "fixmodulenotdefined": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../"
   },
   "engines": {
