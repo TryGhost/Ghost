@@ -107,35 +107,6 @@ const configureGrunt = function (grunt) {
             }
         },
 
-        // ### grunt-eslint
-        // Linting rules, run as part of `grunt validate`. See [grunt validate](#validate) and its subtasks for
-        // more information.
-        eslint: {
-            server: {
-                options: {
-                    config: '.eslintrc.json'
-                },
-                src: [
-                    '*.js',
-                    'core/*.js',
-                    'core/server/*.js',
-                    'core/server/**/*.js',
-                    '!core/server/public/**/*.js',
-                    '!core/server/lib/members/static/auth/**/*.js'
-                ]
-            },
-            test: {
-                options: {
-                    config: './core/test/.eslintrc.json'
-                },
-                src: [
-                    'core/test/*.js',
-                    'core/test/**/*.js',
-                    '!core/test/coverage/**'
-                ]
-            }
-        },
-
         // ### grunt-mocha-cli
         mochacli: {
             options: {
@@ -236,6 +207,9 @@ const configureGrunt = function (grunt) {
         // ### grunt-shell
         // Command line tools where it's easier to run a command directly than configure a grunt plugin
         shell: {
+            lint: {
+                command: 'yarn lint'
+            },
             master: {
                 command: function () {
                     var upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
@@ -496,7 +470,7 @@ const configureGrunt = function (grunt) {
     //
     // `grunt lint` will run the linter
     grunt.registerTask('lint', 'Run the code style checks for server & tests',
-        ['eslint']
+        ['shell:lint']
     );
 
     // ### test-setup *(utility)(
