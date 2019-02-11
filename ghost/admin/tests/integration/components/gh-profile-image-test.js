@@ -137,7 +137,8 @@ describe('Integration: Component: gh-profile-image', function () {
         ).to.have.attribute('style', 'background-image: url(); display: none');
     });
 
-    it('throttles gravatar loading as email is changed', async function () {
+    // skipped due to random failures on Travis - https://github.com/TryGhost/Ghost/issues/10308
+    it.skip('throttles gravatar loading as email is changed', async function () {
         let email = 'test@example.com';
         let expectedUrl = `//www.gravatar.com/avatar/${md5(email)}?s=100&d=404`;
 
