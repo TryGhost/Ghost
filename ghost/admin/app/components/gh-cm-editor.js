@@ -1,6 +1,5 @@
 /* global CodeMirror */
 import Component from '@ember/component';
-import RSVP from 'rsvp';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {assign} from '@ember/polyfills';
 import {bind, once, scheduleOnce} from '@ember/runloop';
@@ -63,10 +62,7 @@ const CmEditorComponent = Component.extend({
 
     initCodeMirror: task(function* () {
         let loader = this.get('lazyLoader');
-
-        yield RSVP.all([
-            loader.loadScript('codemirror', 'assets/codemirror/codemirror.js')
-        ]);
+        yield loader.loadScript('codemirror', 'assets/codemirror/codemirror.js');
 
         scheduleOnce('afterRender', this, this._initCodeMirror);
     }),
