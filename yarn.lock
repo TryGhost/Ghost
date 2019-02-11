@@ -2307,9 +2307,10 @@ ghost-ignition@3.0.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-ignition@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.1.tgz#ec4dbc070b66d98973a57a2959b1247fcf038fed"
+ghost-ignition@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.2.tgz#a74480c337b917c9350ed0c34dfbd13cac24accd"
+  integrity sha512-plTyR1tTxv0uGzRkkyatsuhK/eYJaDlRAISd7DMc8l675yc0FH/A9ji6jjCtpP+00+Av5geKee6zpCVtH0uW8Q==
   dependencies:
     bunyan "1.8.12"
     bunyan-loggly "^1.3.1"
