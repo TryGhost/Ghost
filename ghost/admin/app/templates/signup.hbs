@@ -9,26 +9,6 @@
             <form id="signup" class="gh-flow-create" method="post" novalidate="novalidate" onsubmit={{action "submit"}}>
                 {{gh-profile-image email=signupDetails.email setImage=(action "setImage")}}
 
-                {{#gh-form-group errors=signupDetails.errors hasValidated=signupDetails.hasValidated property="email"}}
-                    <label for="email">Email address</label>
-                    <span class="gh-input-icon gh-icon-mail">
-                        {{svg-jar "email"}}
-                        {{gh-text-input
-                            tabindex="2"
-                            type="text"
-                            id="username"
-                            name="username"
-                            placeholder="Eg. john@example.com"
-                            autocorrect="off"
-                            autocomplete="username email"
-                            disabled="disabled"
-                            value=(readonly signupDetails.email)
-                            input=(action (mut signupDetails.email) value="target.value")
-                            data-test-input="email"
-                        }}
-                    </span>
-                {{/gh-form-group}}
-
                 {{#gh-form-group errors=signupDetails.errors hasValidated=signupDetails.hasValidated property="name"}}
                     <label for="name">Full name</label>
                     <span class="gh-input-icon gh-icon-user">
@@ -48,6 +28,25 @@
                         }}
                     </span>
                     {{gh-error-message errors=signupDetails.errors property="name"}}
+                {{/gh-form-group}}
+
+                {{#gh-form-group errors=signupDetails.errors hasValidated=signupDetails.hasValidated property="email"}}
+                    <label for="email">Email address</label>
+                    <span class="gh-input-icon gh-icon-mail">
+                        {{svg-jar "email"}}
+                        {{gh-text-input
+                            tabindex="2"
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Eg. john@example.com"
+                            autocorrect="off"
+                            autocomplete="username email"
+                            value=(readonly signupDetails.email)
+                            input=(action (mut signupDetails.email) value="target.value")
+                            data-test-input="email"
+                        }}
+                    </span>
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=signupDetails.errors hasValidated=signupDetails.hasValidated property="password"}}
