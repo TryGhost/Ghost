@@ -26,7 +26,8 @@
     "test": "grunt validate --verbose",
     "test:regression": "grunt test-regression --verbose",
     "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || true",
-    "lint": "grunt lint"
+    "lint": "grunt lint",
+    "fixmodulenotdefined": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../"
   },
   "engines": {
     "node": "^6.9.0 || ^8.9.0 || ^10.13.0",
