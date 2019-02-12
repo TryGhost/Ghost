@@ -10,9 +10,7 @@ const mapUser = (model, frame) => {
 
     url.forUser(model.id, jsonModel);
 
-    if (utils.isContentAPI(frame)) {
-        clean.author(jsonModel);
-    }
+    clean.author(jsonModel, frame);
 
     return jsonModel;
 };

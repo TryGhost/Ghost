@@ -27,42 +27,45 @@ const tag = (attrs, frame) => {
     return attrs;
 };
 
-const author = (attrs) => {
-    // Already deleted in model.toJSON, but leaving here so that we can clean that up when we deprecate v0.1
-    delete attrs.created_at;
-    delete attrs.updated_at;
-    delete attrs.last_seen;
-    delete attrs.status;
+const author = (attrs, frame) => {
+    if (localUtils.isContentAPI(frame)) {
+        // Already deleted in model.toJSON, but leaving here so that we can clean that up when we deprecate v0.1
+        delete attrs.created_at;
+        delete attrs.updated_at;
+        delete attrs.last_seen;
+        delete attrs.status;
+
+        // Extra properties removed from v2
+        delete attrs.accessibility;
+        delete attrs.locale;
+        delete attrs.tour;
+        delete attrs.visibility;
+
+        // We are standardising on returning null from the Content API for any empty values
+        if (attrs.twitter === '') {
+            attrs.twitter = null;
+        }
+        if (attrs.bio === '') {
+            attrs.bio = null;
+        }
+        if (attrs.website === '') {
+            attrs.website = null;
+        }
+        if (attrs.facebook === '') {
+            attrs.facebook = null;
+        }
+        if (attrs.meta_title === '') {
+            attrs.meta_title = null;
+        }
+        if (attrs.meta_description === '') {
+            attrs.meta_description = null;
+        }
+        if (attrs.location === '') {
+            attrs.location = null;
+        }
+    }
+
     delete attrs.ghost_auth_id;
-
-    // Extra properties removed from v2
-    delete attrs.accessibility;
-    delete attrs.locale;
-    delete attrs.tour;
-    delete attrs.visibility;
-
-    // We are standardising on returning null from the Content API for any empty values
-    if (attrs.twitter === '') {
-        attrs.twitter = null;
-    }
-    if (attrs.bio === '') {
-        attrs.bio = null;
-    }
-    if (attrs.website === '') {
-        attrs.website = null;
-    }
-    if (attrs.facebook === '') {
-        attrs.facebook = null;
-    }
-    if (attrs.meta_title === '') {
-        attrs.meta_title = null;
-    }
-    if (attrs.meta_description === '') {
-        attrs.meta_description = null;
-    }
-    if (attrs.location === '') {
-        attrs.location = null;
-    }
 
     return attrs;
 };
