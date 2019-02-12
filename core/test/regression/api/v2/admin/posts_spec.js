@@ -125,14 +125,15 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .then((res) => {
-                    res.headers['x-cache-invalidate'].should.eql('/*');
+                    // @NOTE: you cannot modify published_at manually, that's why the resource won't change.
+                    should.not.exist(res.headers['x-cache-invalidate']);
                     should.exist(res.body.posts);
                     should.exist(res.body.posts[0].published_at);
                     localUtils.API.checkResponse(res.body.posts[0], 'post');
                 });
         });
 
-        it('update dates', function () {
+        it('update dates & x_by', function () {
             const post = {
                 created_by: ObjectId.generate(),
                 updated_by: ObjectId.generate(),
@@ -148,7 +149,9 @@ describe('Posts API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .then((res) => {
-                    res.headers['x-cache-invalidate'].should.eql('/*');
+                    // @NOTE: you cannot modify these fields above manually, that's why the resource won't change.
+                    should.not.exist(res.headers['x-cache-invalidate']);
+
                     localUtils.API.checkResponse(res.body.posts[0], 'post');
 
                     return models.Post.findOne({

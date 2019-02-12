@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "2.14.0",
+  "version": "2.14.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -26,7 +26,10 @@
     "test": "grunt validate --verbose",
     "test:regression": "grunt test-regression --verbose",
     "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || true",
-    "lint": "grunt lint"
+    "lint:server": "eslint --ignore-path .eslintignore 'core/server/**/*.js' 'core/*.js' '*.js'",
+    "lint:test": "eslint -c core/test/.eslintrc.json --ignore-path core/test/.eslintignore 'core/test/**/*.js'",
+    "lint": "yarn lint:server && yarn lint:test",
+    "fixmodulenotdefined": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../"
   },
   "engines": {
     "node": "^6.9.0 || ^8.9.0 || ^10.13.0",
@@ -34,6 +37,7 @@
   },
   "dependencies": {
     "@nexes/nql": "0.2.1",
+    "ajv": "6.8.1",
     "amperize": "0.3.8",
     "analytics-node": "3.3.0",
     "archiver": "3.0.0",
@@ -41,7 +45,7 @@
     "bluebird": "3.5.3",
     "body-parser": "1.18.3",
     "bookshelf": "0.14.2",
-    "bookshelf-relations": "1.0.0",
+    "bookshelf-relations": "1.1.0",
     "brute-knex": "3.0.1",
     "bson-objectid": "1.2.4",
     "chalk": "2.4.2",
@@ -61,7 +65,7 @@
     "express-session": "1.15.6",
     "extract-zip": "1.6.7",
     "fs-extra": "3.0.1",
-    "ghost-ignition": "3.0.1",
+    "ghost-ignition": "3.0.2",
     "ghost-storage-base": "0.0.3",
     "glob": "5.0.15",
     "got": "8.3.2",
@@ -91,7 +95,7 @@
     "node-jose": "1.1.0",
     "nodemailer": "0.7.1",
     "oauth2orize": "1.11.0",
-    "oembed-parser": "https://github.com/kevinansfield/oembed-parser/tarball/80af3dc41059bcc0caa80db010265a811a4267c7",
+    "oembed-parser": "1.2.2",
     "passport": "0.4.0",
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
@@ -125,7 +129,6 @@
     "grunt-contrib-uglify": "4.0.0",
     "grunt-contrib-watch": "1.1.0",
     "grunt-cssnano": "2.1.0",
-    "grunt-eslint": "21.0.0",
     "grunt-express-server": "0.5.4",
     "grunt-mocha-cli": "4.0.0",
     "grunt-mocha-istanbul": "5.0.2",
@@ -134,7 +137,6 @@
     "grunt-update-submodules": "0.4.1",
     "istanbul": "0.4.5",
     "matchdep": "2.0.0",
-    "minimist": "1.2.0",
     "mocha": "5.2.0",
     "mock-knex": "0.4.3",
     "nock": "10.0.6",
@@ -145,29 +147,5 @@
     "sinon": "7.2.3",
     "supertest": "3.4.1",
     "tmp": "0.0.33"
-  },
-  "greenkeeper": {
-    "ignore": [
-      "glob",
-      "nodemailer",
-      "grunt",
-      "grunt-bg-shell",
-      "grunt-cli",
-      "grunt-contrib-clean",
-      "grunt-contrib-compress",
-      "grunt-contrib-copy",
-      "grunt-contrib-jshint",
-      "grunt-contrib-uglify",
-      "grunt-contrib-watch",
-      "grunt-docker",
-      "grunt-express-server",
-      "grunt-jscs",
-      "grunt-mocha-cli",
-      "grunt-mocha-istanbul",
-      "grunt-shell",
-      "grunt-subgrunt",
-      "grunt-update-submodules",
-      "sinon"
-    ]
   }
 }

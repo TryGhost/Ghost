@@ -1,16 +1,38 @@
+const _ = require('lodash');
 const {absoluteToRelative, getBlogUrl, STATIC_IMAGE_URL_PREFIX} = require('../../../../../../services/url/utils');
 
+const blogDomain = getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+
 const handleImageUrl = (imageUrl) => {
-    const blogUrl = getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     const imageUrlAbsolute = imageUrl.replace(/^http(s?):\/\//, '');
-    const imagePathRe = new RegExp(`^${blogUrl}/${STATIC_IMAGE_URL_PREFIX}`);
+    const imagePathRe = new RegExp(`^${blogDomain}/${STATIC_IMAGE_URL_PREFIX}`);
     if (imagePathRe.test(imageUrlAbsolute)) {
         return absoluteToRelative(imageUrl);
     }
     return imageUrl;
 };
 
+const handleContentUrls = (content) => {
+    const imagePathRe = new RegExp(`(http(s?)://)?${blogDomain}/${STATIC_IMAGE_URL_PREFIX}`, 'g');
+
+    const matches = _.uniq(content.match(imagePathRe));
+
+    if (matches) {
+        matches.forEach((match) => {
+            const relative = absoluteToRelative(match);
+            content = content.replace(new RegExp(match, 'g'), relative);
+        });
+    }
+
+    return content;
+};
+
 const forPost = (attrs, options) => {
+    // make all content image URLs relative, ref: https://github.com/TryGhost/Ghost/issues/10477
+    if (attrs.mobiledoc) {
+        attrs.mobiledoc = handleContentUrls(attrs.mobiledoc);
+    }
+
     if (attrs.feature_image) {
         attrs.feature_image = handleImageUrl(attrs.feature_image);
     }

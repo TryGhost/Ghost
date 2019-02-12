@@ -38,10 +38,12 @@ module.exports = function staticController(req, res, next) {
                 response.data = {};
 
                 _.each(res.routerOptions.data, function (config, name) {
+                    response.data[name] = result[name][config.resource];
+
                     if (config.type === 'browse') {
-                        response.data[name] = result[name];
-                    } else {
-                        response.data[name] = result[name][config.resource];
+                        response.data[name].meta = result[name].meta;
+                        // @TODO: remove in v3
+                        response.data[name][config.resource] = result[name][config.resource];
                     }
                 });
             }

@@ -54,6 +54,7 @@ ghostBookshelf.plugin('bookshelf-relations', {
     allowedOptions: ['context', 'importing', 'migrating'],
     unsetRelations: true,
     extendChanged: '_changed',
+    attachPreviousRelations: true,
     hooks: {
         belongsToMany: {
             after: function (existing, targets, options) {
@@ -100,6 +101,10 @@ proto = ghostBookshelf.Model.prototype;
  * We could embedd adding actions more nicely in the future e.g. plugin.
  */
 const addAction = (model, event, options) => {
+    if (!model.wasChanged()) {
+        return;
+    }
+
     // CASE: model does not support actions at all
     if (!model.getAction) {
         return;
@@ -171,11 +176,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         debug(model.tableName, event);
 
         const _emit = (ghostEvent, model) => {
-            if (model._changed && !Object.keys(model._changed).length) {
+            if (!model.wasChanged()) {
                 return;
             }
 
-            debug(model.tableName, event);
+            debug(model.tableName, ghostEvent);
 
             // @NOTE: Internal Ghost events. These are very granular e.g. post.published
             common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
@@ -328,9 +333,27 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             }
         }
 
-        model._changed = _.cloneDeep(model.changed);
+        return Promise.resolve(this.onValidate(model, attr, options))
+            .then(() => {
+                /**
+                 * @NOTE:
+                 *
+                 * The API requires only specific attributes to send. If we don't set the rest explicitly to null,
+                 * we end up in a situation that on "created" events the field set is incomplete, which is super confusing
+                 * and hard to work with if you trigger internal events, which rely on full field set. This ensures consistency.
+                 *
+                 * @NOTE:
+                 *
+                 * Happens after validation to ensure we don't set fields which are not nullable on db level.
+                 */
+                _.each(Object.keys(schema.tables[this.tableName]), (columnKey) => {
+                    if (model.get(columnKey) === undefined) {
+                        model.set(columnKey, null);
+                    }
+                });
 
-        return Promise.resolve(this.onValidate(model, attr, options));
+                model._changed = _.cloneDeep(model.changed);
+            });
     },
 
     /**
@@ -572,6 +595,20 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         const options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'toJSON');
         options.omitPivot = true;
 
+        if (options.previous) {
+            const attrs = {};
+            const relations = {};
+
+            if (this._previousRelations) {
+                _.each(Object.keys(this._previousRelations), (key) => {
+                    relations[key] = this._previousRelations[key].toJSON();
+                });
+            }
+
+            Object.assign(attrs, this._previousAttributes, relations);
+            return attrs;
+        }
+
         return proto.toJSON.call(this, options);
     },
 
@@ -585,6 +622,25 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     setId: function setId() {
         this.set('id', ObjectId.generate());
+    },
+
+    wasChanged() {
+        /**
+         * @NOTE:
+         * Not every model & interaction is currently set up to handle "._changed".
+         * e.g. we trigger a manual event for "tag.attached", where as "._changed" is undefined.
+         *
+         * Keep "true" till we are sure that "._changed" is always a thing.
+         */
+        if (!this._changed) {
+            return true;
+        }
+
+        if (!Object.keys(this._changed).length) {
+            return false;
+        }
+
+        return true;
     }
 }, {
     // ## Data Utility Functions
@@ -619,7 +675,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         switch (methodName) {
         case 'toJSON':
-            return baseOptions.concat('shallow', 'columns');
+            return baseOptions.concat('shallow', 'columns', 'previous');
         case 'destroy':
             return baseOptions.concat(extraOptions, ['id', 'destroyBy', 'require']);
         case 'edit':

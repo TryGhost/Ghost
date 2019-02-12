@@ -1,7 +1,7 @@
-const _ = require('lodash');
 const Promise = require('bluebird');
 const common = require('../../../../../lib/common');
 const utils = require('../../index');
+const jsonSchema = require('../utils/json-schema');
 
 module.exports = {
     add(apiConfig, frame) {
@@ -42,24 +42,14 @@ module.exports = {
              *
          * @TODO: remove `id` restriction in Ghost 3.0
          */
-        if (frame.data.posts[0].hasOwnProperty('authors')) {
-            if (!_.isArray(frame.data.posts[0].authors) ||
-                (frame.data.posts[0].authors.length && _.filter(frame.data.posts[0].authors, 'id').length !== frame.data.posts[0].authors.length)) {
-                return Promise.reject(new common.errors.BadRequestError({
-                    message: common.i18n.t('errors.api.utils.invalidStructure', {key: 'posts[*].authors'})
-                }));
-            }
-        }
+        const schema = require(`./schemas/posts-add`);
+        const definitions = require('./schemas/posts');
+        return jsonSchema.validate(schema, definitions, frame.data);
     },
 
     edit(apiConfig, frame) {
-        if (frame.data.posts[0].hasOwnProperty('authors')) {
-            if (!_.isArray(frame.data.posts[0].authors) ||
-                (frame.data.posts[0].authors.length && _.filter(frame.data.posts[0].authors, 'id').length !== frame.data.posts[0].authors.length)) {
-                return Promise.reject(new common.errors.BadRequestError({
-                    message: common.i18n.t('errors.api.utils.invalidStructure', {key: 'posts[*].authors'})
-                }));
-            }
-        }
+        const schema = require(`./schemas/posts-edit`);
+        const definitions = require('./schemas/posts');
+        return jsonSchema.validate(schema, definitions, frame.data);
     }
 };

@@ -144,6 +144,15 @@ ajv-keywords@^2.1.0:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/ajv-keywords/-/ajv-keywords-2.1.1.tgz#617997fc5f60576894c435f940d819e135b80762"
 
+ajv@6.8.1:
+  version "6.8.1"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.8.1.tgz#0890b93742985ebf8973cd365c5b23920ce3cb20"
+  dependencies:
+    fast-deep-equal "^2.0.1"
+    fast-json-stable-stringify "^2.0.0"
+    json-schema-traverse "^0.4.1"
+    uri-js "^4.2.2"
+
 ajv@^5.2.3, ajv@^5.3.0:
   version "5.5.2"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.5.2.tgz#73b5eeca3fab653e3d3f9422b341ad42205dc965"
@@ -524,9 +533,9 @@ body@^5.1.0:
     raw-body "~1.1.0"
     safe-json-parse "~1.0.1"
 
-bookshelf-relations@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-1.0.0.tgz#709b49a8b51bbe30873a453b6b18c74858e52839"
+bookshelf-relations@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-1.1.0.tgz#35c883c569d8bddb334bbe4bed1fdc1e64d6d0ad"
   dependencies:
     bluebird "3.5.3"
     ghost-ignition "3.0.0"
@@ -1616,7 +1625,7 @@ eslint-visitor-keys@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#3f3180fb2e291017716acb4c9d6d5b5c34a6a81d"
 
-eslint@5.12.1, eslint@^5.0.0:
+eslint@5.12.1:
   version "5.12.1"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-5.12.1.tgz#5ca9931fb9029d04e7be92b03ce3b58edfac7e3b"
   dependencies:
@@ -1824,7 +1833,6 @@ express-brute@1.0.1, express-brute@^1.0.0:
 express-hbs@1.0.5, express-hbs@^1.0.3:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-1.0.5.tgz#6553b6bfcc55a965ee6161a6f374837f1eecea1f"
-  integrity sha512-eVqu6wAieXohjreBpq4uxq5lLH6PWp/Feg+jlDe7gk48iltMx96VjfbQRaD89RSYKO8gHLc6v5SCIJTkOc0R8A==
   dependencies:
     handlebars "4.0.13"
     js-beautify "1.6.8"
@@ -2299,9 +2307,10 @@ ghost-ignition@3.0.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-ignition@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.1.tgz#ec4dbc070b66d98973a57a2959b1247fcf038fed"
+ghost-ignition@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.2.tgz#a74480c337b917c9350ed0c34dfbd13cac24accd"
+  integrity sha512-plTyR1tTxv0uGzRkkyatsuhK/eYJaDlRAISd7DMc8l675yc0FH/A9ji6jjCtpP+00+Av5geKee6zpCVtH0uW8Q==
   dependencies:
     bunyan "1.8.12"
     bunyan-loggly "^1.3.1"
@@ -2556,13 +2565,6 @@ grunt-cssnano@2.1.0:
   dependencies:
     cssnano "^3.0.0"
 
-grunt-eslint@21.0.0:
-  version "21.0.0"
-  resolved "https://registry.yarnpkg.com/grunt-eslint/-/grunt-eslint-21.0.0.tgz#5863f593d328c27ffec2a183319e5ad5380eed9e"
-  dependencies:
-    chalk "^2.1.0"
-    eslint "^5.0.0"
-
 grunt-express-server@0.5.4:
   version "0.5.4"
   resolved "https://registry.yarnpkg.com/grunt-express-server/-/grunt-express-server-0.5.4.tgz#8ce79c335c6cbb9ef50ee1dfaa61942028f43aeb"
@@ -2679,7 +2681,6 @@ gzip-size@^3.0.0:
 handlebars@4.0.13:
   version "4.0.13"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.0.13.tgz#89fc17bf26f46fd7f6f99d341d92efaae64f997d"
-  integrity sha512-uydY0jy4Z3wy/iGXsi64UtLD4t1fFJe16c/NFxsYE4WdQis8ZCzOXUZaPQNG0e5bgtLQV41QTfqBindhEjnpyQ==
   dependencies:
     async "^2.5.0"
     optimist "^0.6.1"
@@ -2690,7 +2691,6 @@ handlebars@4.0.13:
 handlebars@^4.0.1:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.1.0.tgz#0d6a6f34ff1f63cecec8423aa4169827bf787c3a"
-  integrity sha512-l2jRuU1NAWK6AW5qqcTATWQJvNPEwkM7NEKSiv/gqOsoSQbVoWyqVEY5GS+XPQ88zLNmqASRpzfdm8d79hJS+w==
   dependencies:
     async "^2.5.0"
     optimist "^0.6.1"
@@ -4221,9 +4221,10 @@ node-abi@^2.2.0:
   dependencies:
     semver "^5.4.1"
 
-node-fetch@^2.1.2:
+node-fetch@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.3.0.tgz#1a1d940bbfb916a1d3e0219f037e89e71f8c5fa5"
+  integrity sha512-MOd8pV3fxENbryESLgVIeaGKrdl+uaYhCSSVkjeOb/31/njTpcis5aWfdqgNlHIrKOLRbMnfPINPOML2CIFeXA==
 
 node-forge@^0.7.6:
   version "0.7.6"
@@ -4458,11 +4459,12 @@ object.pick@^1.2.0, object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-"oembed-parser@https://github.com/kevinansfield/oembed-parser/tarball/80af3dc41059bcc0caa80db010265a811a4267c7":
-  version "1.1.1"
-  resolved "https://github.com/kevinansfield/oembed-parser/tarball/80af3dc41059bcc0caa80db010265a811a4267c7#42f417d83d79ee0d8631546e171e50d5b2f14027"
+oembed-parser@1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.2.2.tgz#0ababb60eb6bef0538878b690eb71ecb7fdfb4d1"
+  integrity sha512-dFsRPQZTUvIG5EA0Gq9kWCfxxdt+hBk0D9xvYkrGq1lh0NyzJTMWkrJWFXGu7P/9MiP7t2VHvlRFsC4I3SuGPw==
   dependencies:
-    node-fetch "^2.1.2"
+    node-fetch "^2.3.0"
     promise-wtf "^1.2.4"
 
 on-finished@^2.3.0, on-finished@~2.3.0:
@@ -5029,6 +5031,7 @@ progress@^2.0.0:
 promise-wtf@^1.2.4:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/promise-wtf/-/promise-wtf-1.2.4.tgz#8cbdd31ea10dee074fbb6387cbc96e413993376c"
+  integrity sha512-wOZ+ZUG0/Lsk+muOElLtteIteyvF5B1bNcVLhmlv6PDKcAAQGa5Bf0maN3rj73FWyjJE840MzeQyNE6KOKpgrg==
 
 propagate@^1.0.0:
   version "1.0.0"

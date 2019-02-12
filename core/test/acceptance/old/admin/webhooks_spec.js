@@ -44,7 +44,7 @@ describe('Webhooks API', function () {
 
                 should.exist(jsonResponse.webhooks);
 
-                localUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook', ['name', 'secret']);
+                localUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook');
 
                 jsonResponse.webhooks[0].event.should.equal(webhookData.event);
                 jsonResponse.webhooks[0].target_url.should.equal(webhookData.target_url);

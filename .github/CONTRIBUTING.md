@@ -49,22 +49,13 @@ We are following [gitmoji](https://gitmoji.carloscuesta.me/).
 Good commit message examples: [one](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [two](https://github.com/TryGhost/Ghost/commit/b392d1925a9f961d7b4bf781ee86393a7773ed4b) and [three](https://github.com/TryGhost/Ghost/commit/e4807a779c28a754e3f8ae871a26a8aad12ca9a9).
 
 
+
 ### Submitting Pull Requests
 
-Before submitting a PR, first ensure that your code passes all tests by running `yarn test` from the root directory.
+We aim to merge any straightforward, well-understood bug fixes or improvements immediately, as long as they pass our tests (run `yarn test` to check locally). We generally don’t merge new features and larger changes without prior discussion with the core product team for tech/design specification.
 
-When submitting a Pull Request please make sure you give as much information as possible about your change and why you made any particular design or structural decisions. Context is always helpful.
+Please provide plenty of context and reasoning around your changes, to help us merge quickly. Closing an already open issue is our preferred workflow. If your PR gets out of date, we may ask you to rebase as you are more familiar with your changes than we will be.
 
-Ensuring that your feature branch is up to date and has a clean working tree without merge conflicts will help us test, review and merge it faster. The easier it is for us to merge a PR, the more likely we are to do it.
-
-If you need help, you can always open a PR and let us know what you're struggling with, or reach out via [the forum](https://forum.ghost.org).
-
-
-## What Happens Next
-
-Small changes usually get merged as soon as we've had chance to read through them. For more involved changes one of us will checkout your PR, rebase with master if required and then run basic sanity / regression tests on the code, run the Casper tests and re-run grunt validate. If your PR has fallen behind master and can no longer be merged, we will in most cases rebase / merge master. In some cases with lots of small changes we will ask you to do this as you are more familiar with your changes than we will be.
-
-If any changes or discussion are needed, we'll let you know!
 
 
 ---
