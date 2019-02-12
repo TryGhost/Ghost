@@ -29,6 +29,7 @@ const expectedProperties = {
         .keys()
         .without('password')
         .without('ghost_auth_access_token')
+        .without('ghost_auth_id')
     ,
     tag: _(schema.tags)
         .keys()
