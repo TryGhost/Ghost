@@ -35,8 +35,8 @@ const expectedProperties = {
     ,
     tag: _(schema.tags)
         .keys()
-        // Tag API swaps parent_id to parent
-        .without('parent_id').concat('parent')
+        // unused field
+        .without('parent_id')
     ,
     setting: _(schema.settings)
         .keys()
