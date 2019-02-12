@@ -45,7 +45,7 @@ Tag = ghostBookshelf.Model.extend({
             this.set('visibility', 'internal');
         }
 
-        if (this.hasChanged('slug') || !this.get('slug')) {
+        if (this.hasChanged('slug') || (!this.get('slug') && this.get('name'))) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
             return ghostBookshelf.Model.generateSlug(Tag, this.get('slug') || this.get('name'),
                 {transacting: options.transacting})
