@@ -10,9 +10,6 @@ function hideMembersOnlyContent(attrs, frame) {
         return (tag.name === MEMBER_TAG);
     });
     const requestFromMember = frame.original.context.member;
-    const planRequired = false;
-    const memberHasPlan = !!(frame.origin.context.member.plans || []).length;
-
     if (!membersEnabled) {
         return PERMIT_CONTENT;
     }
@@ -22,6 +19,9 @@ function hideMembersOnlyContent(attrs, frame) {
     if (!requestFromMember) {
         return BLOCK_CONTENT;
     }
+
+    const planRequired = false;
+    const memberHasPlan = !!(frame.origin.context.member.plans || []).length;
     if (!planRequired) {
         return PERMIT_CONTENT;
     }
