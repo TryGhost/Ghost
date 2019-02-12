@@ -1,25 +1,28 @@
 const _ = require('lodash');
 const localUtils = require('../../../index');
 
-const tag = (attrs) => {
+const tag = (attrs, frame) => {
+    if (localUtils.isContentAPI(frame)) {
+        delete attrs.created_at;
+        delete attrs.updated_at;
+
+        // We are standardising on returning null from the Content API for any empty values
+        if (attrs.meta_title === '') {
+            attrs.meta_title = null;
+        }
+        if (attrs.meta_description === '') {
+            attrs.meta_description = null;
+        }
+        if (attrs.description === '') {
+            attrs.description = null;
+        }
+    }
+
     // Already deleted in model.toJSON, but leaving here so that we can clean that up when we deprecate v0.1
     delete attrs.parent_id;
 
     // Extra properties removed from v2
     delete attrs.parent;
-    delete attrs.created_at;
-    delete attrs.updated_at;
-
-    // We are standardising on returning null from the Content API for any empty values
-    if (attrs.meta_title === '') {
-        attrs.meta_title = null;
-    }
-    if (attrs.meta_description === '') {
-        attrs.meta_description = null;
-    }
-    if (attrs.description === '') {
-        attrs.description = null;
-    }
 
     return attrs;
 };
