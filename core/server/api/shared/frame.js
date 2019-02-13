@@ -10,6 +10,7 @@ class Frame {
         this.user = {};
         this.file = {};
         this.files = [];
+        this.apiType = obj.apiType;
     }
 
     /**
