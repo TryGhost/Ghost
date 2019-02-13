@@ -10,7 +10,8 @@ describe('Unit: api/shared/frame', function () {
             'data',
             'user',
             'file',
-            'files'
+            'files',
+            'apiType'
         ]);
     });
 

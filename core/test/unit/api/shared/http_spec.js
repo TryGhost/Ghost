@@ -38,7 +38,8 @@ describe('Unit: api/shared/http', function () {
             'data',
             'user',
             'file',
-            'files'
+            'files',
+            'apiType'
         ]);
 
         apiImpl.args[0][0].data.should.eql({a: 'a'});
