@@ -1,7 +1,6 @@
 const Promise = require('bluebird');
 const {isPlainObject} = require('lodash');
 const urlService = require('../../services/url');
-const models = require('../../models');
 const config = require('../../config');
 const labs = require('../../services/labs');
 const settingsCache = require('../../services/settings/cache');
@@ -41,15 +40,7 @@ module.exports = {
         ],
         query({data}) {
             if (!data.key) {
-                return models.Client.findOne({slug: 'ghost-admin'})
-                    .then((ghostAdmin) => {
-                        const configuration = getBaseConfig();
-
-                        configuration.clientId = ghostAdmin.get('slug');
-                        configuration.clientSecret = ghostAdmin.get('secret');
-
-                        return configuration;
-                    });
+                return Promise.resolve(getBaseConfig());
             }
 
             if (data.key === 'about') {
