@@ -134,9 +134,21 @@
                     "id": {
                         "type": "string",
                         "maxLength": 24
+                    },
+                    "slug": {
+                        "type": "string",
+                        "maxLength": 191
+                    },
+                    "email": {
+                        "type": "string",
+                        "maxLength": 191
                     }
                 },
-                "required": ["id"]
+                "anyOf": [
+                    {"required": ["id"]},
+                    {"required": ["slug"]},
+                    {"required": ["email"]}
+                ]
             }
         },
         "post-tags": {
