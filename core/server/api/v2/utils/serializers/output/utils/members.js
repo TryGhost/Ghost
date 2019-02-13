@@ -6,13 +6,14 @@ const BLOCK_CONTENT = true;
 // Checks if request should hide memnbers only content
 function hideMembersOnlyContent(attrs, frame) {
     const membersEnabled = labs.isSet('members');
+    if (!membersEnabled) {
+        return PERMIT_CONTENT;
+    }
+
     const postHasMemberTag = attrs.tags && attrs.tags.find((tag) => {
         return (tag.name === MEMBER_TAG);
     });
     const requestFromMember = frame.original.context.member;
-    if (!membersEnabled) {
-        return PERMIT_CONTENT;
-    }
     if (!postHasMemberTag) {
         return PERMIT_CONTENT;
     }
