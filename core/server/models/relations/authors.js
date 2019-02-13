@@ -1,6 +1,7 @@
-const _ = require('lodash'),
-    Promise = require('bluebird'),
-    common = require('../../lib/common');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const common = require('../../lib/common');
+const sequence = require('../../lib/promise/sequence');
 
 /**
  * Why and when do we have to fetch `authors` by default?
@@ -100,10 +101,13 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             return this._handleOptions('onUpdating')(model, attrs, options);
         },
 
-        // NOTE: `post.author` was always ignored [unsupported]
+        // @NOTE: `post.author` was always ignored [unsupported]
+        // @NOTE: triggered before creating and before updating
         onSaving: function (model, attrs, options) {
+            const ops = [];
+
             /**
-             * @deprecated: `author`, will be removed in Ghost 3.0
+             * @deprecated: `author`, will be removed in Ghost 3.0, drop v0.1
              */
             model.unset('author');
 
@@ -114,11 +118,47 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 });
             }
 
-            // CASE: `post.author_id` has changed
-            if (model.hasChanged('author_id')) {
-                // CASE: you don't send `post.authors`
-                // SOLUTION: we have to update the primary author
-                if (!model.get('authors')) {
+            /**
+             * @NOTE:
+             *
+             * Try to find a user with either id, slug or email if "authors" is present.
+             * Otherwise fallback to owner user.
+             *
+             * You cannot create an author via posts!
+             * Ghost uses the invite flow to create users.
+             */
+            if (model.get('authors')) {
+                ops.push(() => {
+                    return this.matchAuthors(model, options);
+                });
+            }
+
+            ops.push(() => {
+                // CASE: `post.author_id` has changed
+                if (model.hasChanged('author_id')) {
+                    // CASE: you don't send `post.authors`
+                    // SOLUTION: we have to update the primary author
+                    if (!model.get('authors')) {
+                        let existingAuthors = model.related('authors').toJSON();
+
+                        // CASE: override primary author
+                        existingAuthors[0] = {
+                            id: model.get('author_id')
+                        };
+
+                        model.set('authors', existingAuthors);
+                    } else {
+                        // CASE: you send `post.authors` next to `post.author_id`
+                        if (model.get('authors')[0].id !== model.get('author_id')) {
+                            model.set('author_id', model.get('authors')[0].id);
+                        }
+                    }
+                }
+
+                // CASE: if you change `post.author_id`, we have to update the primary author
+                // CASE: if the `author_id` has change and you pass `posts.authors`, we already check above that
+                //       the primary author id must be equal
+                if (model.hasChanged('author_id') && !model.get('authors')) {
                     let existingAuthors = model.related('authors').toJSON();
 
                     // CASE: override primary author
@@ -127,32 +167,15 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                     };
 
                     model.set('authors', existingAuthors);
-                } else {
-                    // CASE: you send `post.authors` next to `post.author_id`
-                    if (model.get('authors')[0].id !== model.get('author_id')) {
-                        model.set('author_id', model.get('authors')[0].id);
-                    }
+                } else if (model.get('authors') && model.get('authors').length) {
+                    // ensure we update the primary author id
+                    model.set('author_id', model.get('authors')[0].id);
                 }
-            }
 
-            // CASE: if you change `post.author_id`, we have to update the primary author
-            // CASE: if the `author_id` has change and you pass `posts.authors`, we already check above that
-            //       the primary author id must be equal
-            if (model.hasChanged('author_id') && !model.get('authors')) {
-                let existingAuthors = model.related('authors').toJSON();
+                return proto.onSaving.call(this, model, attrs, options);
+            });
 
-                // CASE: override primary author
-                existingAuthors[0] = {
-                    id: model.get('author_id')
-                };
-
-                model.set('authors', existingAuthors);
-            } else if (model.get('authors') && model.get('authors').length) {
-                // ensure we update the primary author id
-                model.set('author_id', model.get('authors')[0].id);
-            }
-
-            return proto.onSaving.call(this, model, attrs, options);
+            return sequence(ops);
         },
 
         serialize: function serialize(options) {
@@ -203,6 +226,54 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             }
 
             return attrs;
+        },
+
+        matchAuthors(model, options) {
+            let ownerUser;
+            const ops = [];
+
+            ops.push(() => {
+                return ghostBookshelf
+                    .model('User')
+                    .getOwnerUser(Object.assign({columns: ['id']}, _.pick(options, 'transacting')))
+                    .then((_ownerUser) => {
+                        ownerUser = _ownerUser;
+                    });
+            });
+
+            ops.push(() => {
+                const authors = model.get('authors');
+
+                return Promise.each(authors, (author, index) => {
+                    const query = {};
+
+                    if (author.id) {
+                        query.id = author.id;
+                    } else if (author.slug) {
+                        query.slug = author.slug;
+                    } else if (author.email) {
+                        query.email = author.email;
+                    }
+
+                    return ghostBookshelf
+                        .model('User')
+                        .where(query)
+                        .fetch(Object.assign({columns: ['id']}, _.pick(options, 'transacting')))
+                        .then((user) => {
+                            authors[index] = {};
+
+                            if (!user) {
+                                authors[index].id = ownerUser.id;
+                            } else {
+                                authors[index].id = user.id;
+                            }
+                        });
+                }).then(() => {
+                    model.set('authors', authors);
+                });
+            });
+
+            return sequence(ops);
         }
     }, {
         /**
