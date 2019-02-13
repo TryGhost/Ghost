@@ -25,12 +25,17 @@ const expectedProperties = {
         .keys()
         // by default we only return html
         .without('mobiledoc', 'plaintext')
+        .without('visibility')
+        .without('locale')
         // always returns computed properties: url, comment_id, primary_tag, primary_author
         .without('author_id').concat('url', 'primary_tag', 'primary_author')
     ,
     user: _(schema.users)
         .keys()
+        .without('visibility')
         .without('password')
+        .without('accessibility')
+        .without('locale')
         .without('ghost_auth_access_token')
         .without('ghost_auth_id')
     ,
