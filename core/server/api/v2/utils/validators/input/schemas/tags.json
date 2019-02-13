@@ -9,17 +9,13 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "id": {
-                    "type": "string",
-                    "maxLength": 24
-                },
                 "name": {
                     "type": "string",
                     "maxLength": 191,
                     "pattern": "^([^,]|$)"
                 },
                 "slug": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "maxLength": 191
                 },
                 "description": {
@@ -43,21 +39,23 @@
                     "type": ["string", "null"],
                     "maxLength": 500
                 },
+                "id": {
+                    "strip": true
+                },
+                "parent": {
+                    "strip": true
+                },
                 "created_at": {
-                    "type": "string",
-                    "format": "date-time"
+                    "strip": true
                 },
                 "created_by": {
-                    "type": "string",
-                    "maxLength": 24
+                    "strip": true
                 },
                 "updated_at": {
-                    "type": ["string", "null"],
-                    "format": "date-time"
+                    "strip": true
                 },
                 "updated_by": {
-                    "type": ["string", "null"],
-                    "maxLength": 24
+                    "strip": true
                 }
             }
         }
