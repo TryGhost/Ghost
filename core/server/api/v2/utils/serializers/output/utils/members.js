@@ -1,3 +1,4 @@
+const common = require('../../../../../../lib/common');
 const labs = require('../../../../../../services/labs');
 const membersService = require('../../../../../../services/members');
 const MEMBER_TAG = '#members';
@@ -30,7 +31,9 @@ function hideMembersOnlyContent(attrs, frame) {
     if (memberHasPlan) {
         return PERMIT_CONTENT;
     }
-    return BLOCK_CONTENT;
+    throw new common.errors.NoPermissionError({
+        message: common.i18n.t('errors.api.members.noActivePlans')
+    });
 }
 
 const forPost = (attrs, frame) => {
