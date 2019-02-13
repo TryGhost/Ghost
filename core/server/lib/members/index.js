@@ -75,6 +75,17 @@ module.exports = function MembersApi({
             .catch(handleError(403, res));
     });
 
+    apiRouter.get('/config', (req, res) => {
+        subscriptions.getAdapters()
+            .then((adapters) => {
+                return Promise.all(adapters.map((adapter) => {
+                    return subscriptions.getPublicConfig(adapter);
+                }));
+            })
+            .then(data => res.json(data))
+            .catch(handleError(500, res));
+    });
+
     /* security */
     function ssoOriginCheck(req, res, next) {
         if (!req.data.origin || req.data.origin !== ssoOrigin) {
