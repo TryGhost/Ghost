@@ -1,14 +1,17 @@
 const Ajv = require('ajv');
+const stripKeyword = require('./strip-keyword');
 const common = require('../../../../../lib/common');
 
-const validate = (schema, definitions, json) => {
+const validate = (schema, definitions, data) => {
     const ajv = new Ajv({
         allErrors: true
     });
 
+    stripKeyword(ajv);
+
     const validation = ajv.addSchema(definitions).compile(schema);
 
-    validation(json);
+    validation(data);
 
     if (validation.errors) {
         return Promise.reject(new common.errors.ValidationError({
