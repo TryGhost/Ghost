@@ -18,7 +18,7 @@ module.exports = function apiRoutes() {
     // ## CORS pre-flight check
     router.options('*', shared.middlewares.api.cors);
 
-    const http = method => apiv2.http(method, 'admin');
+    const http = apiImpl => apiv2.http(apiImpl, 'admin');
 
     // ## Configuration
     router.get('/configuration', http(apiv2.configuration.read));
