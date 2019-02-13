@@ -19,7 +19,7 @@ const getPlanHashSeed = (plan, product) => {
     return product.id + plan.interval + plan.currency + plan.amount;
 };
 
-const getProductHashSeed = product => product.name;
+const getProductHashSeed = () => 'Ghost Subscription';
 const getCustomerHashSeed = member => member.email;
 
 const plans = createApi('plans', isActive, getPlanAttr, getPlanHashSeed);
