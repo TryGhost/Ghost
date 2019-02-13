@@ -37,8 +37,6 @@ describe('Configuration API', function () {
                 props.blogUrl.should.eql('http://127.0.0.1:2369/');
 
                 props.useGravatar.should.eql(false);
-                props.clientId.should.eql('ghost-admin');
-                props.clientSecret.should.eql('not_available');
 
                 // value not available, because settings API was not called yet
                 props.hasOwnProperty('blogTitle').should.eql(true);
