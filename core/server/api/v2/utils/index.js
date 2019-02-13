@@ -16,10 +16,10 @@ module.exports = {
      * the whole context object currently: https://github.com/TryGhost/Ghost/issues/10099
      */
     isContentAPI: (frame) => {
-        return !!(Object.keys(frame.options.context).length === 0 ||
-                    (!frame.options.context.user && frame.options.context.api_key && (frame.options.context.api_key.type === 'content')) ||
-                    frame.options.context.public
-        );
+        // CASE: apiType = 'admin' for admin api
+        // CASE: apiType = 'content' for content api
+        // CASE: apiType = undefined if neither (e.g. internal)
+        return frame.apiType === 'content' || frame.apiType === undefined;
     },
 
     isAdminAPIKey: (frame) => {
