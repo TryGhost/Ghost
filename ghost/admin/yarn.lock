@@ -705,10 +705,10 @@
     array-from "^2.1.1"
     lodash.get "^4.4.2"
 
-"@tryghost/mobiledoc-kit@0.11.1-ghost.5":
-  version "0.11.1-ghost.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.1-ghost.5.tgz#c439736b4b6a0a7c959deb5462317bad070133b5"
-  integrity sha512-RBVm/J2cBMIygwkdLN4Oj5SZOvLA1yES0IfWO0UduGakZE2OLcsGZ91eAVieZAZ24c4roSgrOw/rBKy6PNdctA==
+"@tryghost/mobiledoc-kit@0.11.1-ghost.6":
+  version "0.11.1-ghost.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.1-ghost.6.tgz#539bad1d26f8885a066d24295d1e28f03408d3ec"
+  integrity sha512-ZtFy0Jjmb7IUOAv0HlkxO1B/tgB/tgYf07KyB1DptEwyidP/g/QxBK+hGDxhfKMrJnDT5FhvAx98gXmsy730Pw==
   dependencies:
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
