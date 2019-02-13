@@ -21,7 +21,7 @@ function hideMembersOnlyContent(attrs, frame) {
     }
 
     const planRequired = false;
-    const memberHasPlan = !!(frame.origin.context.member.plans || []).length;
+    const memberHasPlan = !!(frame.original.context.member.plans || []).length;
     if (!planRequired) {
         return PERMIT_CONTENT;
     }
