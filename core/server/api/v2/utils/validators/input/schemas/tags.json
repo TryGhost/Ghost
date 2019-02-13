@@ -45,6 +45,9 @@
                 "parent": {
                     "strip": true
                 },
+                "parent_id": {
+                    "strip": true
+                },
                 "created_at": {
                     "strip": true
                 },
