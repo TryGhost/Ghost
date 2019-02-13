@@ -39,6 +39,16 @@ module.exports = class PaymentProcessorService {
         });
     }
 
+    getPublicConfig(adapter) {
+        if (!adapter) {
+            return Promise.reject(new Error('getPublicConfig(adapter) requires an adapter'));
+        }
+
+        return this._ready.then(() => {
+            return this._processors[adapter].getPublicConfig();
+        });
+    }
+
     createSubscription(member, metadata) {
         if (!metadata.adapter) {
             return Promise.reject(new Error('createSubscription(member, { adapter }) requires an adapter'));

@@ -10,9 +10,7 @@ const mapUser = (model, frame) => {
 
     url.forUser(model.id, jsonModel);
 
-    if (utils.isContentAPI(frame)) {
-        clean.author(jsonModel);
-    }
+    clean.author(jsonModel, frame);
 
     return jsonModel;
 };
@@ -21,10 +19,7 @@ const mapTag = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
     url.forTag(model.id, jsonModel);
-
-    if (utils.isContentAPI(frame)) {
-        clean.tag(jsonModel);
-    }
+    clean.tag(jsonModel, frame);
 
     return jsonModel;
 };
