@@ -149,17 +149,17 @@ describe('Unit: v2/utils/validators/input/tags', function () {
                     const badValues = fieldMap[key];
 
                     const checks = badValues.map((value) => {
-                        const post = {};
-                        post[key] = value;
+                        const tag = {};
+                        tag[key] = value;
 
                         if (key !== 'title') {
-                            post.title = 'abc';
+                            tag.title = 'abc';
                         }
 
                         const frame = {
                             options: {},
                             data: {
-                                posts: [post]
+                                tags: [tag]
                             }
                         };
 
@@ -178,7 +178,7 @@ describe('Unit: v2/utils/validators/input/tags', function () {
 
     describe('edit', function () {
         const apiConfig = {
-            docName: 'posts'
+            docName: 'tags'
         };
 
         describe('required fields', function () {
