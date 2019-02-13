@@ -11,6 +11,10 @@ module.exports = {
         return require('./settings');
     },
 
+    get tags() {
+        return require('./tags');
+    },
+
     get users() {
         return require('./users');
     }
