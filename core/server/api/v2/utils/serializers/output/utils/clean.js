@@ -21,7 +21,7 @@ const tag = (attrs, frame) => {
     // Already deleted in model.toJSON, but leaving here so that we can clean that up when we deprecate v0.1
     delete attrs.parent_id;
 
-    // Extra properties removed from v2
+    // @NOTE: unused fields
     delete attrs.parent;
 
     return attrs;
@@ -36,10 +36,7 @@ const author = (attrs, frame) => {
         delete attrs.status;
 
         // Extra properties removed from v2
-        delete attrs.accessibility;
-        delete attrs.locale;
         delete attrs.tour;
-        delete attrs.visibility;
 
         // We are standardising on returning null from the Content API for any empty values
         if (attrs.twitter === '') {
@@ -65,6 +62,10 @@ const author = (attrs, frame) => {
         }
     }
 
+    // @NOTE: unused fields
+    delete attrs.visibility;
+    delete attrs.accessibility;
+    delete attrs.locale;
     delete attrs.ghost_auth_id;
 
     return attrs;
@@ -72,12 +73,9 @@ const author = (attrs, frame) => {
 
 const post = (attrs, frame) => {
     if (localUtils.isContentAPI(frame)) {
-        delete attrs.locale;
-
         // @TODO: https://github.com/TryGhost/Ghost/issues/10335
         // delete attrs.page;
         delete attrs.status;
-        delete attrs.visibility;
 
         // We are standardising on returning null from the Content API for any empty values
         if (attrs.twitter_title === '') {
@@ -100,6 +98,8 @@ const post = (attrs, frame) => {
         }
     }
 
+    delete attrs.locale;
+    delete attrs.visibility;
     delete attrs.author;
 
     return attrs;
