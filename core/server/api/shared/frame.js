@@ -2,7 +2,7 @@ const debug = require('ghost-ignition').debug('api:shared:frame');
 const _ = require('lodash');
 
 class Frame {
-    constructor(obj) {
+    constructor(obj = {}) {
         this.original = obj;
 
         this.options = {};
@@ -10,6 +10,7 @@ class Frame {
         this.user = {};
         this.file = {};
         this.files = [];
+        this.apiType = obj.apiType;
     }
 
     /**
