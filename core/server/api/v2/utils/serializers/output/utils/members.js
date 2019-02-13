@@ -1,4 +1,5 @@
 const labs = require('../../../../../../services/labs');
+const membersService = require('../../../../../../services/members');
 const MEMBER_TAG = '#members';
 const PERMIT_CONTENT = false;
 const BLOCK_CONTENT = true;
@@ -21,7 +22,7 @@ function hideMembersOnlyContent(attrs, frame) {
         return BLOCK_CONTENT;
     }
 
-    const planRequired = false;
+    const planRequired = membersService.api.paymentConfigured;
     const memberHasPlan = !!(frame.original.context.member.plans || []).length;
     if (!planRequired) {
         return PERMIT_CONTENT;
