@@ -44,6 +44,21 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     });
             });
 
+            it('should fail with no posts in array', function () {
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: []
+                    }
+                };
+
+                return validators.input.posts.add(apiConfig, frame)
+                    .then(Promise.reject)
+                    .catch((err) => {
+                        (err instanceof common.errors.ValidationError).should.be.true();
+                    });
+            });
+
             it('should fail with more than post', function () {
                 const frame = {
                     options: {},
@@ -90,6 +105,35 @@ describe('Unit: v2/utils/validators/input/posts', function () {
 
                 return validators.input.posts.add(apiConfig, frame);
             });
+
+            it('should remove `strip`able fields and leave regular fields', function () {
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: [{
+                            title: 'pass',
+                            authors: [{id: 'correct'}],
+                            id: 'strip me',
+                            created_at: 'strip me',
+                            created_by: 'strip me',
+                            updated_by: 'strip me',
+                            published_by: 'strip me'
+                        }],
+                    }
+                };
+
+                let result = validators.input.posts.add(apiConfig, frame);
+
+                should.exist(frame.data.posts[0].title);
+                should.exist(frame.data.posts[0].authors);
+                should.not.exist(frame.data.posts[0].id);
+                should.not.exist(frame.data.posts[0].created_at);
+                should.not.exist(frame.data.posts[0].created_by);
+                should.not.exist(frame.data.posts[0].updated_by);
+                should.not.exist(frame.data.posts[0].published_by);
+
+                return result;
+            });
         });
 
         describe('field formats', function () {
@@ -97,7 +141,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 title: [123, new Date(), _.repeat('a', 2001)],
                 slug: [123, new Date(), _.repeat('a', 192)],
                 mobiledoc: [123, new Date()],
-                feature_image: [123, new Date(), 'abc'],
+                feature_image: [123, new Date(), 'random words'],
                 featured: [123, new Date(), 'abc'],
                 page: [123, new Date(), 'abc'],
                 status: [123, new Date(), 'abc'],

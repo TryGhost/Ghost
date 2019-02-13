@@ -9,6 +9,8 @@
     "properties": {
         "posts": {
             "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
             "items": {
                 "type": "object",
                 "allOf": [{"$ref": "posts#/definitions/post"}],
