@@ -20,6 +20,8 @@ const validate = (schema, definitions, data) => {
 
         if (dataPath) {
             key = dataPath.split('.').pop();
+        } else {
+            key = schema.$id.split('.')[0];
         }
 
         return Promise.reject(new common.errors.ValidationError({
