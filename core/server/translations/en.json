@@ -407,7 +407,7 @@
             "members": {
                 "memberNotFound": "Member not found.",
                 "memberAlreadyExists": "Email address is already member.",
-                "noActivePlans": "You don’t have access to this article. Please subscribe to a membership plan to keep reading."
+                "noActivePlans": "You do not have an active membership plan."
             },
             "tags": {
                 "tagNotFound": "Tag not found."
