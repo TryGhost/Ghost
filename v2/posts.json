@@ -142,6 +142,12 @@
                     "email": {
                         "type": "string",
                         "maxLength": 191
+                    },
+                    "roles": {
+                        "strip": true
+                    },
+                    "permissions": {
+                        "strip": true
                     }
                 },
                 "anyOf": [
