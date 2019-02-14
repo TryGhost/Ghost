@@ -1,5 +1,5 @@
 /* Reusable components */
-/* ------------------------------------------------------------ 
+/* ------------------------------------------------------------
 
 
 */
@@ -39,6 +39,10 @@
     padding: 40px;
     box-shadow: var(--box-shadow-base);
     animation: openModal 0.6s ease 1 forwards;
+}
+
+.gm-subscribe-modal {
+    width: 600px;
 }
 
 .gm-modal-close {
@@ -108,7 +112,7 @@
         transform: none;
         height: 100vh;
     }
-    
+
     .gm-modal {
         width: calc(100% - 48px);
         height: calc(100vh - 48px);
@@ -209,7 +213,7 @@ button:hover {
 
 /* Change Autocomplete styles in Chrome*/
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
+input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active,
 textarea:-webkit-autofill,
@@ -393,3 +397,43 @@ select:-webkit-autofill:active {
 .gm-form-errortext i {
     margin: 1px 8px 0 0;
 }
+
+/**
+ * The CSS shown here will not be introduced in the Quickstart guide, but shows
+ * how you can use CSS to style your Element's container.
+ */
+ .StripeElement {
+    font-size: var(--text-s);
+    color: var(--grey-d3);
+    border: none;
+    border-radius: 4px;
+    border: 1px solid var(--grey-l1);
+    height: 38px;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    background: var(--white);
+    width: 100%;
+    outline: none;
+    transition: border var(--animation-speed-f1) ease-in-out;
+    letter-spacing: 0.2px;
+    line-height: 14px;
+    padding: 10px 12px;
+  }
+
+  .StripeElement:hover {
+    border: 1px solid var(--grey);
+  }
+
+  .StripeElement--focus {
+    border: 1px solid color-mod(var(--blue) a(0.8));
+    box-shadow: 0 0 6px rgba(62, 176, 239, 0.3), 0 0 0px 40px #FFF inset;
+  }
+
+  .StripeElement--invalid {
+    border: 1px solid color-mod(var(--red) a(0.8));
+    background: color-mod(var(--red) a(0.02))
+  }
+
+  .StripeElement--webkit-autofill {
+    background-color: #fefde5 !important;
+  }
