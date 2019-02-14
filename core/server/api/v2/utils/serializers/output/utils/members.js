@@ -1,15 +1,36 @@
 const labs = require('../../../../../../services/labs');
+const membersService = require('../../../../../../services/members');
 const MEMBER_TAG = '#members';
+const PERMIT_CONTENT = false;
+const BLOCK_CONTENT = true;
 
 // Checks if request should hide memnbers only content
 function hideMembersOnlyContent(attrs, frame) {
-    let hasMemberTag = false;
-    if (labs.isSet('members') && !frame.original.context.member && attrs.tags) {
-        hasMemberTag = attrs.tags.find((tag) => {
-            return (tag.name === MEMBER_TAG);
-        });
+    const membersEnabled = labs.isSet('members');
+    if (!membersEnabled) {
+        return PERMIT_CONTENT;
     }
-    return hasMemberTag;
+
+    const postHasMemberTag = attrs.tags && attrs.tags.find((tag) => {
+        return (tag.name === MEMBER_TAG);
+    });
+    const requestFromMember = frame.original.context.member;
+    if (!postHasMemberTag) {
+        return PERMIT_CONTENT;
+    }
+    if (!requestFromMember) {
+        return BLOCK_CONTENT;
+    }
+
+    const planRequired = membersService.api.paymentConfigured;
+    const memberHasPlan = !!(frame.original.context.member.plans || []).length;
+    if (!planRequired) {
+        return PERMIT_CONTENT;
+    }
+    if (memberHasPlan) {
+        return PERMIT_CONTENT;
+    }
+    return BLOCK_CONTENT;
 }
 
 const forPost = (attrs, frame) => {
