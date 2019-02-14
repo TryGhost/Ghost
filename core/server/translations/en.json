@@ -406,8 +406,7 @@
             },
             "members": {
                 "memberNotFound": "Member not found.",
-                "memberAlreadyExists": "Email address is already member.",
-                "noActivePlans": "You do not have an active membership plan."
+                "memberAlreadyExists": "Email address is already member."
             },
             "tags": {
                 "tagNotFound": "Tag not found."
