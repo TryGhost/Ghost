@@ -26,7 +26,7 @@ module.exports.QUERY = {
         }
     },
     page: {
-        controller: 'pages',
+        controller: 'pagesPublic',
         type: 'read',
         resource: 'pages',
         options: {

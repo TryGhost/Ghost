@@ -1288,7 +1288,7 @@ describe('UNIT: services/settings/validate', function () {
                             data: {
                                 query: {
                                     home: {
-                                        controller: 'pages',
+                                        controller: 'pagesPublic',
                                         resource: 'pages',
                                         type: 'read',
                                         options: {

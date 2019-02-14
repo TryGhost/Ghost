@@ -19,8 +19,8 @@ module.exports = {
         return require('./session');
     },
 
-    get pages() {
-        return shared.pipeline(require('./pages'), localUtils);
+    get pagesPublic() {
+        return shared.pipeline(require('./pages-public'), localUtils);
     },
 
     get redirects() {

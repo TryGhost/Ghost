@@ -1,14 +1,14 @@
 const common = require('../../lib/common');
 const models = require('../../models');
-const ALLOWED_INCLUDES = ['author', 'tags', 'authors', 'authors.roles'];
+const ALLOWED_INCLUDES = ['author', 'tags', 'authors'];
 
 module.exports = {
     docName: 'pages',
+
     browse: {
         options: [
             'include',
             'filter',
-            'status',
             'fields',
             'formats',
             'absolute_urls',
@@ -37,7 +37,6 @@ module.exports = {
         options: [
             'include',
             'fields',
-            'status',
             'formats',
             'debug',
             'absolute_urls'
