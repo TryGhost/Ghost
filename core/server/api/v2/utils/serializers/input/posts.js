@@ -108,25 +108,6 @@ module.exports = {
             delete frame.data.posts[0].author;
         }
 
-        /**
-         * Model notation is: `tag.parent_id`.
-         * The API notation is `tag.parent`.
-         */
-        if (frame.data.posts[0].hasOwnProperty('tags')) {
-            if (_.isArray(frame.data.posts[0].tags) && frame.data.posts[0].tags.length) {
-                _.each(frame.data.posts[0].tags, (tag, index) => {
-                    if (tag.hasOwnProperty('parent')) {
-                        frame.data.posts[0].tags[index].parent_id = tag.parent;
-                        delete frame.data.posts[0].tags[index].parent;
-                    }
-
-                    if (tag.hasOwnProperty('posts')) {
-                        delete frame.data.posts[0].tags[index].posts;
-                    }
-                });
-            }
-        }
-
         frame.data.posts[0] = url.forPost(Object.assign({}, frame.data.posts[0]), frame.options);
     },
 
