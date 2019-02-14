@@ -15,17 +15,34 @@ describe('Unit: v2/utils/index', function () {
             should(utils.isContentAPI(frame)).equal(true);
         });
 
-        it('is true when apiType is undefined', function () {
+        it('is true when options.context.public is true', function () {
             const frame = {
-                apiType: undefined
+                options: {
+                    context: {
+                        public: true
+                    }
+                }
             };
             should(utils.isContentAPI(frame)).equal(true);
-            should(utils.isContentAPI({})).equal(true);
         });
 
-        it('is false when apiType is "admin"', function () {
+        it('is true when options.context is empty', function () {
             const frame = {
-                apiType: 'admin'
+                options: {
+                    context: {}
+                }
+            };
+            should(utils.isContentAPI(frame)).equal(true);
+        });
+
+        it('is false when options.context has no public value and apiType is not content', function () {
+            const frame = {
+                apiType: 'admin',
+                options: {
+                    context: {
+                        no: 'public'
+                    }
+                }
             };
             should(utils.isContentAPI(frame)).equal(false);
         });

@@ -7,6 +7,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('default', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     context: {
                         user: 0,
@@ -40,6 +41,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('combine filters', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     context: {
                         user: 0,
@@ -59,6 +61,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('combine filters', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     context: {
                         user: 0,
@@ -78,6 +81,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('combine filters', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     context: {
                         user: 0,
@@ -97,6 +101,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('combine filters', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     context: {
                         user: 0,
@@ -161,7 +166,14 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'admin',
-                options: {},
+                options: {
+                    context: {
+                        api_key: {
+                            id: 1,
+                            type: 'admin'
+                        }
+                    }
+                },
                 data: {}
             };
 
@@ -169,11 +181,18 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             should.not.exist(frame.data.page);
         });
 
-        it('with apiType of "admin" it does not override data.page', function () {
+        it('with non public request it does not override data.page', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'admin',
-                options: {},
+                options: {
+                    context: {
+                        api_key: {
+                            id: 1,
+                            type: 'admin'
+                        }
+                    }
+                },
                 data: {
                     page: true
                 }
