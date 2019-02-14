@@ -850,8 +850,6 @@ Post = ghostBookshelf.Model.extend({
 
     // NOTE: the `authors` extension is the parent of the post model. It also has a permissible function.
     permissible: function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, hasApiKeyPermission) {
-        let isContributor, isEdit, isAdd, isDestroy;
-
         function isChanging(attr) {
             return unsafeAttrs[attr] && unsafeAttrs[attr] !== postModel.get(attr);
         }
@@ -864,10 +862,10 @@ Post = ghostBookshelf.Model.extend({
             return postModel.get('status') === 'draft';
         }
 
-        isContributor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Contributor'});
-        isEdit = (action === 'edit');
-        isAdd = (action === 'add');
-        isDestroy = (action === 'destroy');
+        const isContributor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Contributor'});
+        const isEdit = (action === 'edit');
+        const isAdd = (action === 'add');
+        const isDestroy = (action === 'destroy');
 
         if (isContributor && isEdit) {
             // Only allow contributor edit if status is changing, and the post is a draft post
