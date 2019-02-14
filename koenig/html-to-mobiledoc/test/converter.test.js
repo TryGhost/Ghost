@@ -118,7 +118,7 @@ describe('Nested examples', function () {
         mobiledoc.sections[1].should.eql([1, 'p', [[0, [], 0, 'World']]]);
     });
 
-    it('Can convert with whitespace', function () {
+    it.skip('Can convert with whitespace', function () {
         const mobiledoc = converter
             .toMobiledoc(`
                 <div>

@@ -6,10 +6,8 @@ const {JSDOM} = require('jsdom');
 
 module.exports.toMobiledoc = (html, options = {}) => {
     // 1. sanitize HTML
-    // @TODO: are there more sanitisations to do?
-    let sanitizedHTML = html
-        // Strip whitespace between tags before processing
-        .replace(/(<(pre|script|style|textarea)[^]+?<\/\2)|(^|>)\s+|\s+(?=<|$)/g, '$1$3');
+    // @TODO: what sanitisations are needed?
+    let sanitizedHTML = html;
 
     // 2. Do something vaguely like loadPost
     // https://github.com/ErisDS/mobiledoc-kit/blob/master/src/js/editor/editor.js#L193
