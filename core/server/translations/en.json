@@ -648,6 +648,7 @@
                     "valueIsNotInteger": "Value in [{tableName}.{columnKey}] is not an integer.",
                     "themeCannotBeActivated": "{themeName} cannot be activated because it is not currently installed.",
                     "validationFailed": "Validation ({validationName}) failed for {key}",
+                    "schemaValidationFailed": "Validation failed for '{key}'",
                     "validationFailedTypes": {
                         "isLength": "Value in [{tableName}.{key}] exceeds maximum length of {max} characters."
                     }
