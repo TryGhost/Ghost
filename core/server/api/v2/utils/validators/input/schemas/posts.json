@@ -166,7 +166,7 @@
                         "maxLength": 191
                     },
                     "slug": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "maxLength": 191
                     }
                 },
