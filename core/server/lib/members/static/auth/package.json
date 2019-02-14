@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "preact build --src=index.js --dest=dist  --service-worker=false --no-prerender",
+    "build": "preact build --template=index.html --src=index.js --dest=dist  --service-worker=false --no-prerender",
     "dev": "yarn build --no-production && preact watch --port=8080",
     "lint": "eslint src"
   },
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "preact": "^8.2.1",
-    "preact-compat": "^3.17.0"
+    "preact-compat": "^3.17.0",
+    "react-stripe-elements": "^2.0.3"
   }
 }
