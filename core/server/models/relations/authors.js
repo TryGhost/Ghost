@@ -333,7 +333,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 origArgs = _.toArray(arguments).slice(1);
 
                 // Get the actual post model
-                return this.findOne({id: postModelOrId, status: 'all'}, {withRelated: ['authors']})
+                return this.findOne({id: postModelOrId, status: 'all'}, {withRelated: ['authors', 'tags']})
                     .then(function then(foundPostModel) {
                         if (!foundPostModel) {
                             throw new common.errors.NotFoundError({
