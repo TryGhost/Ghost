@@ -8,54 +8,26 @@ describe('Unit: v2/utils/index', function () {
     });
 
     describe('isContentAPI', function () {
-        it('is truthy when having api key of content type', function () {
+        it('is true when apiType is "content"', function () {
             const frame = {
-                options: {
-                    context: {
-                        api_key: {
-                            id: 'keyId',
-                            type: 'content'
-                        }
-                    }
-                }
+                apiType: 'content'
             };
             should(utils.isContentAPI(frame)).equal(true);
         });
 
-        it('is falsy when having api key and a user', function () {
+        it('is true when apiType is undefined', function () {
             const frame = {
-                options: {
-                    context: {
-                        user: {},
-                        api_key: {
-                            id: 'keyId',
-                            type: 'content'
-                        }
-                    }
-                }
+                apiType: undefined
+            };
+            should(utils.isContentAPI(frame)).equal(true);
+            should(utils.isContentAPI({})).equal(true);
+        });
+
+        it('is false when apiType is "admin"', function () {
+            const frame = {
+                apiType: 'admin'
             };
             should(utils.isContentAPI(frame)).equal(false);
-        });
-
-        it('is truthy when context is empty', function () {
-            const frame = {
-                options: {
-                    context: {
-                    }
-                }
-            };
-            should(utils.isContentAPI(frame)).equal(true);
-        });
-
-        it('is truthy when context is public', function () {
-            const frame = {
-                options: {
-                    context: {
-                        public: true
-                    }
-                }
-            };
-            should(utils.isContentAPI(frame)).equal(true);
         });
     });
 });
