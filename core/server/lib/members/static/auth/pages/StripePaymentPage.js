@@ -17,10 +17,10 @@ class PaymentForm extends Component {
         super(props);
     }
 
-    handleSubmit = ({ name, email, password, plan = "Monthly" }) => {
+    handleSubmit = ({ name, email, password, plan }) => {
         // Within the context of `Elements`, this call to createToken knows which Element to
         // tokenize, since there's only one in this group.
-
+        plan = this.props.selectedPlan ? this.props.selectedPlan.name : "";
         this.props.stripe.createToken({ name: name }).then(({ token }) => {
             this.props.handleSubmit({
                 adapter: 'stripe',
@@ -52,7 +52,7 @@ export default class StripePaymentPage extends Component {
         super(props);
         this.plans = props.stripeConfig.config.plans || [];
         this.state = {
-            plan: this.plans[0] ? this.plans[0] : ""
+            selectedPlan: this.plans[0] ? this.plans[0] : ""
         }
     }
 
@@ -67,9 +67,10 @@ export default class StripePaymentPage extends Component {
             alignItems: 'center',
             width: "200px"
         };
+        const selectedPlanId = this.state.selectedPlan ? this.state.selectedPlan.id : "";
         return (
             <div style={planStyle}>
-                <input type="radio" id={id} name="radio-group" value={id} />
+                <input type="radio" id={id} name="radio-group" value={id} defaultChecked={id === selectedPlanId} />
                 <label for={id}>
                     <span style={{fontSize: "24px", marginLeft: "9px"}}> {`$${amount}`}</span>
                     <span style={{padding: "0px 1px", color: "#77919c"}}> / </span>
@@ -80,10 +81,9 @@ export default class StripePaymentPage extends Component {
     }
 
     changePlan(e) {
-        const plan = this.plans.filter(plan => plan.id === e.target.value);
-        console.log("e", e, e.target, e.target.value);
+        const plan = this.plans.find(plan => plan.id === e.target.value);
         this.setState({
-            plan: plan
+            selectedPlan: plan
         })
     }
 
@@ -132,7 +132,7 @@ export default class StripePaymentPage extends Component {
                             </FormHeader>
                             <StripeProvider apiKey={publicKey}>
                                 <Elements>
-                                    <PaymentFormWrapped handleSubmit={handleSubmit} publicKey={publicKey} plan={this.state.plan} />
+                                    <PaymentFormWrapped handleSubmit={handleSubmit} publicKey={publicKey} selectedPlan={this.state.selectedPlan} />
                                 </Elements>
                             </StripeProvider>
                         </div>
