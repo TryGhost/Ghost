@@ -379,7 +379,7 @@ describe('Unit: api/shared/validators/input/all', function () {
     describe('edit', function () {
         it('id mismatch', function () {
             const apiConfig = {
-                docName: 'posts'
+                docName: 'users'
             };
 
             const frame = {
