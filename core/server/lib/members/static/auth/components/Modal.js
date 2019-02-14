@@ -7,6 +7,7 @@ import SignupPage from '../pages/SignupPage';
 import RequestPasswordResetPage from '../pages/RequestPasswordResetPage';
 import PasswordResetSentPage from '../pages/PasswordResetSentPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
+import StripePaymentPage from '../pages/StripePaymentPage';
 
 export default class Modal extends Component {
     constructor(props, context) {
@@ -17,6 +18,21 @@ export default class Modal extends Component {
         }
     }
 
+    loadConfig() {
+        if (this.state.loadingConfig) {
+            return;
+        }
+        this.context.members.getConfig().then(paymentConfig => {
+            this.setState({paymentConfig, loadingConfig: false});
+        }).catch((error) => {
+            this.setState({error, loadingConfig: false});
+        });
+    }
+
+    componentWillMount() {
+        this.loadConfig();
+    }
+
     handleAction(promise) {
         promise.then((success) => {
             this.close(success);
@@ -25,9 +41,29 @@ export default class Modal extends Component {
         });
     }
 
+    renderSignupPage(state) {
+        const { error, paymentConfig } = state;
+        const { members } = this.context;
+        const signup = (data) => this.handleAction(members.signup(data));
+        const closeModal = () => this.close();
+        const createAccountWithSubscription = (data) => this.handleAction(
+            members.signup(data).then(() => {
+                members.createSubscription(data);
+            })
+        );
+        const stripeConfig = paymentConfig && paymentConfig.find(({adapter}) => adapter === 'stripe');
+        if (stripeConfig) {
+            return <StripePaymentPage stripeConfig={stripeConfig} error={error} hash="signup" handleSubmit={createAccountWithSubscription} handleClose={closeModal}/>
+
+        }
+        return (
+            <SignupPage error={error} hash="signup" handleSubmit={signup} handleClose={closeModal}/>
+        )
+    }
+
     render(props, state) {
         const { queryToken } = props;
-        const { containerClass, error } = state;
+        const { containerClass, error, loadingConfig, paymentConfig } = state;
         const { members } = this.context;
 
         const closeModal = () => this.close();
@@ -38,11 +74,18 @@ export default class Modal extends Component {
         const requestReset = (data) => this.handleAction(members.requestPasswordReset(data));
         const resetPassword = (data) => this.handleAction(members.resetPassword(data));
 
+        if (loadingConfig) {
+            return (
+                <Pages className={containerClass} onChange={clearError} onClick={closeModal}>
+                    Loading...
+                </Pages>
+            );
+        }
         return (
             <Pages className={containerClass} onChange={clearError} onClick={closeModal}>
                 <SigninPage error={error} hash="" handleSubmit={signup} handleClose={closeModal}/>
                 <SigninPage error={error} hash="signin" handleSubmit={signin} handleClose={closeModal}/>
-                <SignupPage error={error} hash="signup" handleSubmit={signup} handleClose={closeModal}/>
+                {this.renderSignupPage(state)}
                 <RequestPasswordResetPage error={error} hash="request-password-reset" handleSubmit={requestReset} handleClose={closeModal}/>
                 <PasswordResetSentPage error={error} hash="password-reset-sent" handleSubmit={requestReset} handleClose={closeModal}/>
                 <ResetPasswordPage error={error} hash="reset-password" handleSubmit={resetPassword} handleClose={closeModal}/>
