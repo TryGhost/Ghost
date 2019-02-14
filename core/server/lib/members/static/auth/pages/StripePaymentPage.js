@@ -37,7 +37,6 @@ class PaymentForm extends Component {
                 <NameInput bindTo="name" />
                 <EmailInput bindTo="email" />
                 <PasswordInput bindTo="password" />
-                <input id="prodId" name="prodId" type="hidden" value="xm234jq" />
                 <CheckoutForm />
 
                 <FormSubmit label="Confirm Payment" />
@@ -58,25 +57,66 @@ export default class StripePaymentPage extends Component {
     }
 
     renderPlan({ currency, amount, id, interval, name }) {
+        let planStyle = {
+            padding: "12px",
+            border: "1px solid #e2e8ed",
+            borderRadius: "6px",
+            marginBottom: "12px",
+            marginTop: "12px",
+            display: 'flex',
+            alignItems: 'center',
+            width: "200px"
+        };
         return (
-            <div>
-                <input type="radio" id={id} name="radio-group" />
+            <div style={planStyle}>
+                <input type="radio" id={id} name="radio-group" value={id} />
                 <label for={id}>
-                    <span> {`${amount}`}</span>
-                    <span> {`/${interval}`}</span>
+                    <span style={{fontSize: "24px", marginLeft: "9px"}}> {`$${amount}`}</span>
+                    <span style={{padding: "0px 1px", color: "#77919c"}}> / </span>
+                    <span style={{color: "#77919c"}}> {`${interval}`}</span>
                 </label>
             </div>
         )
     }
 
+    changePlan(e) {
+        const plan = this.plans.filter(plan => plan.id === e.target.value);
+        console.log("e", e, e.target, e.target.value);
+        this.setState({
+            plan: plan
+        })
+    }
+
     renderPlans(plans) {
         return (
-            <div>
+            <div onChange={(e) => this.changePlan(e)}>
                 {
                     plans.map((plan) => this.renderPlan(plan))
                 }
             </div>
         );
+    }
+
+    renderPlansSection() {
+        const separatorStyle = {
+            height: "1px",
+            borderTop: "2px solid #e7f0f6",
+            width: "180px",
+            margin: "12px 0"
+        }
+        return (
+            <div style={{ padding: "20px", width: "295px", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", background: "#fcfdfd" }}>
+                <div style={{display: "flex", alignItems: "center"}}>
+                    <div className="gm-logo"></div>
+                    <div style={{display: "flex", flexDirection: "column", paddingLeft: "12px"}}>
+                        <span style={{fontSize: "16px", fontWeight: "bold"}}> The Blueprint</span>
+                        <span style={{fontSize: "14px", color: "#9cb2bc", marginTop: "3px"}}> Subscription</span>
+                    </div>
+                </div>
+                <div className="separator" style={separatorStyle}> </div>
+                {this.renderPlans(this.plans)}
+            </div>
+        )
     }
 
     render({ error, handleClose, handleSubmit, stripeConfig }) {
@@ -97,11 +137,7 @@ export default class StripePaymentPage extends Component {
                             </StripeProvider>
                         </div>
                         <div style={{ border: "1px solid black" }}></div>
-                        <div style={{ padding: "20px", width: "295px", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column" }}>
-                            <div className="gm-logo"></div>
-                            <div className="separator"> </div>
-                            {this.renderPlans(this.plans)}
-                        </div>
+                        {this.renderPlansSection()}
                     </div>
                 </div>
             </div>
