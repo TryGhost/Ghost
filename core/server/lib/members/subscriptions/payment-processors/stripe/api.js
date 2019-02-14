@@ -70,7 +70,6 @@ function createSubscription(stripe, member, metadata) {
         if (customer.subscriptions && customer.subscriptions.total_count !== 0) {
             throw new Error('Customer already has a subscription');
         }
-
         return stripe.customers.createSource(customer.id, {
             source: metadata.stripeToken
         }).then(() => {
