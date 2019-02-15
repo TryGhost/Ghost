@@ -9,7 +9,7 @@ import PasswordInput from '../components/PasswordInput';
 import { IconClose } from '../components/icons';
 
 export default ({ error, handleClose, handleSubmit }) => (
-    <div>
+    <div className="gm-modal-form">
         <FormHeader title="Sign up" error={error} errorText="Email already registered">
             <FormHeaderCTA title="Already a member?" label="Log in" hash="#signin" />
         </FormHeader>
