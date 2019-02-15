@@ -23,6 +23,10 @@ module.exports = {
         return shared.pipeline(require('./pages-public'), localUtils);
     },
 
+    get pages() {
+        return shared.pipeline(require('./pages'), localUtils);
+    },
+
     get redirects() {
         return shared.pipeline(require('./redirects'), localUtils);
     },

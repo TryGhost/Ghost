@@ -39,26 +39,26 @@ module.exports = {
         debug('browse');
 
         /**
+         * CASE:
+         *
+         * - posts endpoint only returns posts, not pages
+         * - we have to enforce the filter
+         *
+         * @TODO: https://github.com/TryGhost/Ghost/issues/10268
+         */
+        if (frame.options.filter) {
+            frame.options.filter = `(${frame.options.filter})+page:false`;
+        } else {
+            frame.options.filter = 'page:false';
+        }
+
+        /**
          * ## current cases:
          * - context object is empty (functional call, content api access)
          * - api_key.type == 'content' ? content api access
          * - user exists? admin api access
          */
         if (utils.isContentAPI(frame)) {
-            /**
-             * CASE:
-             *
-             * - the content api endpoints for posts should only return non page type resources
-             * - we have to enforce the filter
-             *
-             * @TODO: https://github.com/TryGhost/Ghost/issues/10268
-             */
-            if (frame.options.filter) {
-                frame.options.filter = `(${frame.options.filter})+page:false`;
-            } else {
-                frame.options.filter = 'page:false';
-            }
-
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
 
@@ -76,6 +76,8 @@ module.exports = {
     read(apiConfig, frame) {
         debug('read');
 
+        frame.data.page = false;
+
         /**
          * ## current cases:
          * - context object is empty (functional call, content api access)
@@ -83,9 +85,9 @@ module.exports = {
          * - user exists? admin api access
          */
         if (utils.isContentAPI(frame)) {
-            frame.data.page = false;
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
+
             if (labs.isSet('members')) {
                 // CASE: Members needs to have the tags to check if its allowed access
                 includeTags(frame);
@@ -118,9 +120,22 @@ module.exports = {
         }
 
         frame.data.posts[0] = url.forPost(Object.assign({}, frame.data.posts[0]), frame.options);
+
+        // @NOTE: force storing post
+        frame.data.posts[0].page = false;
     },
 
     edit(apiConfig, frame) {
         this.add(apiConfig, frame);
+
+        // @NOTE: force that you cannot update pages via posts endpoint
+        frame.options.page = false;
+    },
+
+    destroy(apiConfig, frame) {
+        frame.options.destroyBy = {
+            id: frame.options.id,
+            page: false
+        };
     }
 };
