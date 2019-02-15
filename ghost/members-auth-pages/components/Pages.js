@@ -5,7 +5,7 @@ export default class Pages extends Component {
         super(props);
         this.state = this.getStateFromBrowser();
         window.addEventListener("hashchange", () => this.onHashChange(), false);
-        this.handleChange = props.onChange || (() => {});
+        this.handleChange = props.onChange || (() => { });
     }
 
     getStateFromBrowser() {
@@ -31,10 +31,18 @@ export default class Pages extends Component {
         });
     }
 
-    render({children, className, onClick}, state) {
+    render({ children, className, onClick, stripeConfig }, state) {
+        let modalClassName = "gm-modal gm-auth-modal";
+        if (state.hash === 'signup' && stripeConfig) {
+            modalClassName += " gm-subscribe-modal"
+        }
         return (
             <div className={className} onClick={onClick}>
-                { this.filterChildren(children, state) }
+                <div className="gm-modal-container">
+                    <div className={modalClassName} onClick={(e) => e.stopPropagation()}>
+                        {this.filterChildren(children, state)}
+                    </div>
+                </div>
             </div>
         );
     }
