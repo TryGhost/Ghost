@@ -91,10 +91,10 @@ const Integration = ghostBookshelf.Model.extend({
     }
 }, {
     permittedOptions(methodName) {
-        const options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
+        let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
 
         if (methodName === 'findOne') {
-            options.push('filter');
+            options = options.concat(['filter']);
         }
 
         return options;
