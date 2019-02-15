@@ -15,7 +15,6 @@ export default ({type, name, placeholder, value = '', error, onInput, required, 
                     className
                 ].join(' ')}
             />
-            <label for={ name }>{ placeholder }</label>
             <i>{ icon }</i>
             { children }
         </div>

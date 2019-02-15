@@ -55,9 +55,10 @@ a:hover {
 /* Auth Modal */
 /* --------------------------------------------- */
 .gm-logo {
-    width: 52px;
-    height: 52px;
-    border-radius: 4px;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    flex-shrink: 0;
     margin: 0 auto;
     background: #343F44 url('../assets/images/ghost-logo.svg') center center no-repeat;
 }
@@ -67,12 +68,11 @@ a:hover {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    align-items: center;
-    margin: 24px 0 0;
+    margin: 0;
 }
 
 .gm-auth-header h1 {
-    font-size: var(--text-xl);
+    font-size: var(--text-2xl);
 }
 
 .gm-auth-header h4,
@@ -80,12 +80,12 @@ a:hover {
     font-weight: normal;
     font-size: var(--text-s);
     letter-spacing: 0.4px;
-    /* color: var(--grey-d1); */
 }
 
 .gm-auth-header a,
 .gm-auth-footer a {
-    display: block;
+    display: flex;
+    align-items: center;
     font-size: var(--text-s);
     letter-spacing: 0.4px;
     padding: 8px;
@@ -98,6 +98,27 @@ a:hover {
 .gm-auth-header a:hover,
 .gm-auth-footer a:hover {
     color: var(--blue-d3);
+}
+
+.gm-auth-header a svg {
+    width: 12px;
+    height: 12px;
+    margin: 0 0 0 4px;
+}
+
+.gm-auth-header a svg g,
+.gm-auth-header a svg path {
+    fill: var(--blue);
+    transition: fill var(--animation-speed-f1) ease-in-out;
+}
+
+.gm-auth-header a:hover svg g,
+.gm-auth-header a:hover svg path {
+    fill: var(--blue-d3);
+}
+
+.gm-auth-footer {
+    margin: 24px 0 0;
 }
 
 .gm-forgot-link {
@@ -127,4 +148,130 @@ a:hover {
     h4 {
         display: none;
     }
+}
+
+.gm-subscribe-form {
+    width: 340px;
+}
+
+.gm-plans-container {
+    background: var(--grey-l3);
+    border-left: 1px solid var(--grey-l2);
+    padding: 48px;
+    min-width: 240px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.gm-plans-container .gm-publication-info {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 92px 0 0;
+}
+
+.gm-publication-name {
+    margin: 0 0 0 12px;
+    flex-grow: 1;
+}
+
+.gm-publication-name h2 {
+    padding: 0;
+    margin: 0;
+    font-size: var(--text-l);
+    color: var(--grey-d3);
+    word-wrap: none;
+    white-space: nowrap;
+}
+
+.gm-publication-name span {
+    color: var(--grey-d1);
+    font-size: var(--text-s);
+}
+
+.gm-plans {
+    border: 1px solid var(--grey-l1);
+    border-radius: 8px;
+    margin: 26px 0 0;
+}
+
+.gm-plan {
+    display: flex;
+    align-items: center;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--grey-l1);
+    margin: 0;
+}
+
+.gm-plan:last-child {
+    border-bottom: none;
+}
+
+.gm-plan input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 0 8px 0 0;
+}
+
+.gm-plan .gm-amount {
+    font-size: var(--text-xl);
+}
+
+.gm-plan .gm-interval {
+    position: relative;
+    font-size: var(--text-s);
+    color: var(--grey-d1);
+    padding: 0 0 0 9px;
+    margin: 0 0 0 6px;
+}
+
+.gm-plan .gm-interval::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 1px;
+    display: block;
+    width: 1px;
+    height: 18px;
+    background: var(--grey-d1);
+    transform: rotate(25deg);
+}
+
+/**
+ * The CSS shown here will not be introduced in the Quickstart guide, but shows
+ * how you can use CSS to style your Element's container.
+ */
+.StripeElement {
+    font-size: var(--text-s);
+    color: var(--grey-d3);
+    border: none;
+    border-radius: 4px;
+    border: 1px solid var(--grey-l1);
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    background: var(--white);
+    width: 100%;
+    outline: none;
+    transition: border var(--animation-speed-f1) ease-in-out;
+    letter-spacing: 0.2px;
+    line-height: 18px;
+    padding: 14px 12px 14px 10px;
+}
+
+.StripeElement:hover {
+    border: 1px solid var(--grey);
+}
+
+.StripeElement--focus {
+    border: 1px solid color-mod(var(--blue) a(0.8));
+    box-shadow: 0 0 6px rgba(62, 176, 239, 0.3), 0 0 0px 40px #FFF inset;
+}
+
+.StripeElement--invalid {
+    border: 1px solid color-mod(var(--red) a(0.8));
+    background: color-mod(var(--red) a(0.02))
+}
+
+.StripeElement--webkit-autofill {
+    background-color: #fefde5 !important;
 }

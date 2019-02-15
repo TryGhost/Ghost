@@ -11,7 +11,7 @@ const getTokenData = frameLocation => {
 };
 
 export default ({ error, frameLocation, handleSubmit }) => (
-    <div>
+    <div className="gm-modal-form">
         <FormHeader title="Reset password" error={error} errorText="Unable to reset password" />
         <Form includeData={getTokenData(frameLocation)} onSubmit={handleSubmit}>
             <PasswordInput bindTo="password" />
