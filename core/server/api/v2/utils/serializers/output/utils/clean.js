@@ -35,6 +35,9 @@ const author = (attrs, frame) => {
         delete attrs.last_seen;
         delete attrs.status;
 
+        // @NOTE: used for night shift
+        delete attrs.accessibility;
+
         // Extra properties removed from v2
         delete attrs.tour;
 
@@ -64,7 +67,6 @@ const author = (attrs, frame) => {
 
     // @NOTE: unused fields
     delete attrs.visibility;
-    delete attrs.accessibility;
     delete attrs.locale;
     delete attrs.ghost_auth_id;
 
