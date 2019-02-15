@@ -333,6 +333,13 @@ module.exports = {
     },
     integrations: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        type: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'custom',
+            validations: {isIn: [['internal', 'builtin', 'custom']]}
+        },
         name: {type: 'string', maxlength: 191, nullable: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         icon_image: {type: 'string', maxlength: 2000, nullable: true},

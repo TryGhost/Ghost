@@ -10,6 +10,12 @@ const Integration = ghostBookshelf.Model.extend({
         webhooks: 'webhooks'
     },
 
+    defaults() {
+        return {
+            type: 'custom'
+        };
+    },
+
     add(data, options) {
         const addIntegration = () => {
             return ghostBookshelf.Model.add.call(this, data, options)

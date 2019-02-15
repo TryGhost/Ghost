@@ -40,9 +40,6 @@ const ApiKey = ghostBookshelf.Model.extend({
         return this.belongsTo('Role');
     },
 
-    // if an ApiKey does not have a related Integration then it's considered
-    // "internal" and shouldn't show up in the UI. Example internal API Keys
-    // would be the ones used for the scheduler and backup clients
     integration() {
         return this.belongsTo('Integration');
     },

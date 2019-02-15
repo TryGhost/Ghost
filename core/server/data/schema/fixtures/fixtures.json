@@ -533,6 +533,18 @@
                     "feature_image": "https://static.ghost.org/v2.0.0/images/welcome-to-ghost.jpg"
                 }
             ]
+        },
+        {
+            "name": "Integration",
+            "entries": [
+                {
+                    "slug": "zapier",
+                    "name": "Zapier",
+                    "description": "Built-in Zapier integration",
+                    "type": "builtin",
+                    "api_keys": [{"type": "admin"}]
+                }
+            ]
         }
     ],
     "relations": [
