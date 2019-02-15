@@ -9,6 +9,7 @@ export default Model.extend(ValidationEngine, {
 
     name: attr('string'),
     slug: attr('string'),
+    type: attr('string'),
     iconImage: attr('string'),
     description: attr('string'),
     createdAtUTC: attr('moment-utc'),
