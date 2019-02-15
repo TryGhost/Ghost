@@ -136,9 +136,9 @@ describe('Unit: v2/utils/validators/input/tags', function () {
         describe('field formats', function () {
             const fieldMap = {
                 name: [123, new Date(), ',starts-with-coma', '', _.repeat('a', 192), null],
-                slug: [123, new Date(), _.repeat('a', 192), null],
-                description: [123, new Date(), _.repeat('a', 500)],
-                feature_image: [123, new Date(), 'abc'],
+                slug: [123, new Date(), _.repeat('a', 192)],
+                description: [123, new Date(), _.repeat('a', 501)],
+                feature_image: [123, new Date(), 'not uri'],
                 visibility: [123, new Date(), 'abc', null],
                 meta_title: [123, new Date(), _.repeat('a', 301)],
                 meta_description: [123, new Date(), _.repeat('a', 501)]
