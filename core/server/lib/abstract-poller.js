@@ -1,13 +1,7 @@
-const basicSuccessTransformer = () => ({});
-const basicFailTransformer = error => ({error});
-
 class AbstractPolling {
-    constructor(polledFunction, transformSuccess = basicSuccessTransformer, transformFailure = basicFailTransformer) {
+    constructor(polledFunction) {
         this.promise = false;
-
         this.polledFunction = polledFunction;
-        this.transformSuccess = transformSuccess;
-        this.transformFailure = transformFailure;
     }
 
     get isRunning() {
@@ -28,8 +22,8 @@ class AbstractPolling {
         }
 
         this.promise = this.polledFunction(...args)
-            .then(result => this.pollingFailed(result))
-            .catch(error => this.pollingSucceeded(error))
+            .then(result => this.pollingSucceeded(result))
+            .catch(error => this.pollingFailed(error))
             .finally(() => {
                 this.id = false;
                 this.promise = false;
@@ -39,18 +33,20 @@ class AbstractPolling {
         return this.id;
     }
 
-    pollingSucceeded(response) {
-        this.lastResult = Object.assign({
+    pollingSucceeded(result) {
+        this.lastResult = {
             id: this.id,
-            success: true
-        }, this.transformSuccess(response));
+            success: true,
+            result
+        }
     }
 
     pollingFailed(error) {
-        this.lastResult = Object.assign({
+        this.lastResult = {
             id: this.id,
-            success: false
-        }, this.transformFailure(error));
+            success: false,
+            error
+        };
     }
 }
 

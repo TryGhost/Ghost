@@ -46,6 +46,21 @@ module.exports = {
         status.importing = status.busy;
         delete status.busy;
 
+        if (status.lastResult) {
+            if (status.lastResult.error) {
+                status.lastResult.errors = [status.lastResult.error];
+                delete status.lastResult.error;
+            }
+
+            if (status.lastResult.result) {
+                const {result} = status.lastResult;
+                // NOTE: response can contain 2 objects if images are imported
+                status.lastResult.problems = result[result.length === 2 ? 1 : 0].problems;
+                delete status.lastResult.result;
+            }
+        }
+
+
         frame.response = status;
     },
 

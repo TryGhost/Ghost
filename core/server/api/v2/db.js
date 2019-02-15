@@ -6,15 +6,9 @@ const AbstractPoller = require('../../lib/abstract-poller');
 const common = require('../../lib/common');
 const models = require('../../models');
 
-const transformImportSuccess = (result) => {
-    return {
-        // NOTE: response can contain 2 objects if images are imported
-        problems: result[result.length === 2 ? 1 : 0].problems
-    };
-};
+const callImport = (...args) => importer.importFromFile(...args);
 
-const transformImportFailure = error => ({errors: [error]});
-const asyncImporter = new AbstractPoller(importer.importFromFile, transformImportSuccess, transformImportFailure);
+const asyncImporter = new AbstractPoller(callImport);
 
 module.exports = {
     docName: 'db',
