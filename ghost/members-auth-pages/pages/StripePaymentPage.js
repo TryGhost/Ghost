@@ -3,7 +3,6 @@ import { Component } from 'react';
 import FormHeader from '../components/FormHeader';
 import FormSubmit from '../components/FormSubmit';
 import FormHeaderCTA from '../components/FormHeaderCTA';
-import { IconClose } from '../components/icons';
 import NameInput from '../components/NameInput';
 import EmailInput from '../components/EmailInput';
 import PasswordInput from '../components/PasswordInput';
@@ -72,9 +71,9 @@ export default class StripePaymentPage extends Component {
             <div style={planStyle}>
                 <input type="radio" id={id} name="radio-group" value={id} defaultChecked={id === selectedPlanId} />
                 <label for={id}>
-                    <span style={{fontSize: "24px", marginLeft: "9px"}}> {`$${amount}`}</span>
-                    <span style={{padding: "0px 1px", color: "#77919c"}}> / </span>
-                    <span style={{color: "#77919c"}}> {`${interval}`}</span>
+                    <span style={{ fontSize: "24px", marginLeft: "9px" }}> {`$${amount}`}</span>
+                    <span style={{ padding: "0px 1px", color: "#77919c" }}> / </span>
+                    <span style={{ color: "#77919c" }}> {`${interval}`}</span>
                 </label>
             </div>
         )
@@ -106,11 +105,11 @@ export default class StripePaymentPage extends Component {
         }
         return (
             <div style={{ padding: "20px", width: "295px", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", background: "#fcfdfd" }}>
-                <div style={{display: "flex", alignItems: "center"}}>
+                <div style={{ display: "flex", alignItems: "center" }}>
                     <div className="gm-logo"></div>
-                    <div style={{display: "flex", flexDirection: "column", paddingLeft: "12px"}}>
-                        <span style={{fontSize: "16px", fontWeight: "bold"}}> The Blueprint</span>
-                        <span style={{fontSize: "14px", color: "#9cb2bc", marginTop: "3px"}}> Subscription</span>
+                    <div style={{ display: "flex", flexDirection: "column", paddingLeft: "12px" }}>
+                        <span style={{ fontSize: "16px", fontWeight: "bold" }}> The Blueprint</span>
+                        <span style={{ fontSize: "14px", color: "#9cb2bc", marginTop: "3px" }}> Subscription</span>
                     </div>
                 </div>
                 <div className="separator" style={separatorStyle}> </div>
@@ -119,27 +118,22 @@ export default class StripePaymentPage extends Component {
         )
     }
 
-    render({ error, handleClose, handleSubmit, stripeConfig }) {
+    render({ error, handleSubmit, stripeConfig }) {
         const publicKey = stripeConfig.config.publicKey || '';
         return (
-            <div className="gm-modal-container">
-                <div className="gm-modal gm-auth-modal gm-subscribe-modal" onClick={(e) => e.stopPropagation()}>
-                    <a className="gm-modal-close" onClick={handleClose}>{IconClose}</a>
-                    <div style={{ display: "flex" }}>
-                        <div style={{ width: "300px", padding: "20px" }}>
-                            <FormHeader title="Subscribe" error={error} errorText="Unable to confirm payment">
-                                <FormHeaderCTA title="Already a member?" label="Log in" hash="#signin" />
-                            </FormHeader>
-                            <StripeProvider apiKey={publicKey}>
-                                <Elements>
-                                    <PaymentFormWrapped handleSubmit={handleSubmit} publicKey={publicKey} selectedPlan={this.state.selectedPlan} />
-                                </Elements>
-                            </StripeProvider>
-                        </div>
-                        <div style={{ border: "1px solid black" }}></div>
-                        {this.renderPlansSection()}
-                    </div>
+            <div style={{ display: "flex" }}>
+                <div style={{ width: "300px", padding: "20px" }}>
+                    <FormHeader title="Subscribe" error={error} errorText="Unable to confirm payment">
+                        <FormHeaderCTA title="Already a member?" label="Log in" hash="#signin" />
+                    </FormHeader>
+                    <StripeProvider apiKey={publicKey}>
+                        <Elements>
+                            <PaymentFormWrapped handleSubmit={handleSubmit} publicKey={publicKey} selectedPlan={this.state.selectedPlan} />
+                        </Elements>
+                    </StripeProvider>
                 </div>
+                <div style={{ border: "1px solid black" }}></div>
+                {this.renderPlansSection()}
             </div>
         )
     }
