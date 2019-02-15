@@ -17,8 +17,10 @@ export default Controller.extend({
 
     // filter over the live query so that the list is automatically updated
     // as integrations are added/removed
-    integrations: computed('_allIntegrations.@each.isNew', function () {
-        return this._allIntegrations.rejectBy('isNew', true);
+    integrations: computed('_allIntegrations.@each.{isNew,type}', function () {
+        return this._allIntegrations.reject((integration) => {
+            return integration.isNew || integration.type !== 'custom';
+        });
     }),
 
     // use ember-concurrency so that we can use the derived state to show
