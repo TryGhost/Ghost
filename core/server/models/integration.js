@@ -89,6 +89,28 @@ const Integration = ghostBookshelf.Model.extend({
     webhooks: function webhooks() {
         return this.hasMany('Webhook', 'integration_id');
     }
+}, {
+    permittedOptions(methodName) {
+        const options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
+
+        if (methodName === 'findOne') {
+            options.push('filter');
+        }
+
+        return options;
+    },
+
+    findOne(data, unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'findOne');
+        data = this.filterData(data);
+        const item = this.forge(data);
+
+        if (options.filter) {
+            item.applyDefaultAndCustomFilters(options);
+        }
+
+        return item.fetch(options);
+    }
 });
 
 const Integrations = ghostBookshelf.Collection.extend({
