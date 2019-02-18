@@ -228,6 +228,13 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             return attrs;
         },
 
+        /**
+         * Authors relation is special. You cannot add new authors via relations.
+         * But you can for the tags relation. That's why we have to sort this out before
+         * we trigger bookshelf-relations.
+         *
+         * @TODO: Add a feature to bookshelf-relations to configure if relations can be added or should be matched only.
+         */
         matchAuthors(model, options) {
             let ownerUser;
             const ops = [];
@@ -243,6 +250,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
             ops.push(() => {
                 const authors = model.get('authors');
+                const authorsToSet = [];
 
                 return Promise.each(authors, (author, index) => {
                     const query = {};
@@ -260,16 +268,18 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                         .where(query)
                         .fetch(Object.assign({columns: ['id']}, _.pick(options, 'transacting')))
                         .then((user) => {
-                            authors[index] = {};
+                            let userId = user ? user.id : ownerUser.id;
 
-                            if (!user) {
-                                authors[index].id = ownerUser.id;
-                            } else {
-                                authors[index].id = user.id;
+                            // CASE: avoid attaching duplicate authors relation
+                            const userExists = _.find(authorsToSet, {id: userId.id});
+
+                            if (!userExists) {
+                                authorsToSet[index] = {};
+                                authorsToSet[index].id = userId;
                             }
                         });
                 }).then(() => {
-                    model.set('authors', authors);
+                    model.set('authors', authorsToSet);
                 });
             });
 
