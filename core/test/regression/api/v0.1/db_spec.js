@@ -111,19 +111,12 @@ describe('DB API', function () {
             });
     });
 
-    it('import should fail without file', function (done) {
-        request.post(localUtils.API.getApiQuery('db/'))
+    it('import should fail without file', function () {
+        return request.post(localUtils.API.getApiQuery('db/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(403)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-
-                done();
-            });
+            .expect(422);
     });
 
     it('import should fail with unsupported file', function (done) {

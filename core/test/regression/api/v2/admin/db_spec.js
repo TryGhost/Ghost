@@ -70,7 +70,7 @@ describe('DB API', () => {
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(403);
+            .expect(422);
     });
 
     it('import should fail with unsupported file', () => {
