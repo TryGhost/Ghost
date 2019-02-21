@@ -388,6 +388,36 @@ describe('Unit: v2/utils/validators/input/posts', function () {
 
                 return validators.input.posts.edit(apiConfig, frame);
             });
+
+            it('should pass with authors as array with strings', function () {
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: [
+                            {
+                                authors: ['email1', 'email2']
+                            }
+                        ]
+                    }
+                };
+
+                return validators.input.posts.edit(apiConfig, frame);
+            });
+
+            it('should pass with authors as array with strings & objects', function () {
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: [
+                            {
+                                authors: ['email1', {email: 'email'}]
+                            }
+                        ]
+                    }
+                };
+
+                return validators.input.posts.edit(apiConfig, frame);
+            });
         });
     });
 });
