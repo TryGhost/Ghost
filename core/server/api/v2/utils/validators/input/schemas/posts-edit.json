@@ -11,7 +11,11 @@
             "type": "array",
             "minItems": 1,
             "maxItems": 1,
-            "items": {"$ref": "posts#/definitions/post"}
+            "items": {
+                "type": "object",
+                "allOf": [{"$ref": "posts#/definitions/post"}],
+                "required": ["updated_at"]
+            }
         }
     },
     "required": [ "posts" ]
