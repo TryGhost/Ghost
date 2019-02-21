@@ -371,11 +371,17 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         });
 
         describe('Ensure html to mobiledoc conversion', function () {
+            before(function () {
+                // NOTE: only supported in node v8 and higher
+                if (process.version.startsWith('v6.')) {
+                    this.skip();
+                }
+            });
+
             it('no transformation when no html source option provided', function () {
                 const apiConfig = {};
                 const mobiledoc = '{"version":"0.3.1","atoms":[],"cards":[],"sections":[]}';
                 const frame = {
-                    options: {},
                     data: {
                         posts: [
                             {
