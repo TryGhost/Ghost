@@ -116,14 +116,23 @@ describe('Posts API', function () {
     describe('edit', function () {
         it('published_at = null', function () {
             return request
-                .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
                 .set('Origin', config.get('url'))
-                .send({
-                    posts: [{published_at: null}]
-                })
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
+                .then((res) => {
+                    return request
+                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                published_at: null,
+                                updated_at: res.body.posts[0].updated_at
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200);
+                })
                 .then((res) => {
                     // @NOTE: you cannot modify published_at manually, that's why the resource won't change.
                     should.not.exist(res.headers['x-cache-invalidate']);
