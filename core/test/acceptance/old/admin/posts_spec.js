@@ -288,12 +288,20 @@ describe('Posts API', function () {
             title: 'update draft'
         };
 
-        return request.put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[3].id))
+        return request
+            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[3].id}/?status=all`))
             .set('Origin', config.get('url'))
-            .send({posts: [post]})
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
+            .then((res) => {
+                post.updated_at = res.body.posts[0].updated_at;
+
+                return request.put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[3].id))
+                    .set('Origin', config.get('url'))
+                    .send({posts: [post]})
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200);
+            })
             .then((res) => {
                 res.headers['x-cache-invalidate'].should.eql('/p/' + res.body.posts[0].uuid + '/');
             });
@@ -305,12 +313,20 @@ describe('Posts API', function () {
         };
 
         return request
-            .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/'))
+            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[1].id}/?status=all`))
             .set('Origin', config.get('url'))
-            .send({posts: [post]})
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
+            .then((res) => {
+                post.updated_at = res.body.posts[0].updated_at;
+
+                return request
+                    .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/'))
+                    .set('Origin', config.get('url'))
+                    .send({posts: [post]})
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200);
+            })
             .then((res) => {
                 res.headers['x-cache-invalidate'].should.eql('/*');
                 res.body.posts[0].status.should.eql('draft');

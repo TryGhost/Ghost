@@ -301,7 +301,8 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     options: {},
                     data: {
                         posts: [{
-                            title: 'pass'
+                            title: 'pass',
+                            updated_at: new Date().toISOString()
                         }],
                     }
                 };
@@ -360,6 +361,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                         posts: [
                             {
                                 title: 'cool',
+                                updated_at: new Date().toISOString(),
                                 authors: [{
                                     id: 'correct',
                                     name: 'ja'
@@ -378,7 +380,8 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     data: {
                         posts: [
                             {
-                                title: 'cool'
+                                title: 'cool',
+                                updated_at: new Date().toISOString()
                             }
                         ]
                     }

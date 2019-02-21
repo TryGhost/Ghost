@@ -22,6 +22,7 @@ describe('Actions API', function () {
     // @NOTE: This test runs a little slower, because we store Dates without milliseconds.
     it('Can request actions for resource', function () {
         let postId;
+        let postUpdatedAt;
 
         return request
             .post(localUtils.API.getApiQuery('posts/'))
@@ -36,6 +37,7 @@ describe('Actions API', function () {
             .expect(201)
             .then((res) => {
                 postId = res.body.posts[0].id;
+                postUpdatedAt = res.body.posts[0].updated_at;
 
                 return request
                     .get(localUtils.API.getApiQuery(`actions/resource/${postId}/`))
@@ -67,14 +69,17 @@ describe('Actions API', function () {
                     .set('Origin', config.get('url'))
                     .send({
                         posts: [{
-                            slug: 'new-slug'
+                            slug: 'new-slug',
+                            updated_at: postUpdatedAt
                         }]
                     })
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200);
             })
-            .then(() => {
+            .then((res) => {
+                postUpdatedAt = res.body.posts[0].updated_at;
+
                 return request
                     .get(localUtils.API.getApiQuery(`actions/resource/${postId}/`))
                     .set('Origin', config.get('url'))
@@ -108,7 +113,8 @@ describe('Actions API', function () {
                     .set('Authorization', `Ghost ${localUtils.getValidAdminToken(localUtils.API.getApiQuery(`posts/${postId}/`))}`)
                     .send({
                         posts: [{
-                            featured: true
+                            featured: true,
+                            updated_at: postUpdatedAt
                         }]
                     })
                     .expect('Content-Type', /json/)
