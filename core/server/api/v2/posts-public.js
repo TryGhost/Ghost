@@ -11,7 +11,6 @@ module.exports = {
             'filter',
             'fields',
             'formats',
-            'status',
             'limit',
             'order',
             'page',
@@ -38,7 +37,6 @@ module.exports = {
         options: [
             'include',
             'fields',
-            'status',
             'formats',
             'debug',
             'absolute_urls'
@@ -46,7 +44,6 @@ module.exports = {
         data: [
             'id',
             'slug',
-            'status',
             'uuid'
         ],
         validation: {

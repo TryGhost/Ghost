@@ -44,7 +44,6 @@ module.exports = {
         data: [
             'id',
             'slug',
-            'status',
             'uuid'
         ],
         validation: {
