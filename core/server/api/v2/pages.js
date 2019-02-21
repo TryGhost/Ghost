@@ -1,8 +1,8 @@
 const models = require('../../models');
 const common = require('../../lib/common');
 const urlService = require('../../services/url');
-const ALLOWED_INCLUDES = ['author', 'tags', 'authors', 'authors.roles'];
-const UNSAFE_ATTRS = ['author_id', 'status', 'authors'];
+const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles'];
+const UNSAFE_ATTRS = ['status', 'authors'];
 
 module.exports = {
     docName: 'pages',

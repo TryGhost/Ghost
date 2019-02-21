@@ -101,15 +101,6 @@ module.exports = {
 
     add(apiConfig, frame) {
         debug('add');
-        /**
-         * Convert author property to author_id to match the name in the database.
-         *
-         * @deprecated: `author`, might be removed in Ghost 3.0
-         */
-        if (frame.data.posts[0].hasOwnProperty('author')) {
-            frame.data.posts[0].author_id = frame.data.posts[0].author;
-            delete frame.data.posts[0].author;
-        }
 
         if (_.get(frame,'options.source')) {
             const html = frame.data.posts[0].html;

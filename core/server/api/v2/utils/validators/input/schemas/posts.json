@@ -112,6 +112,12 @@
                 "id": {
                     "strip": true
                 },
+                "author": {
+                    "strip": true
+                },
+                "author_id": {
+                    "strip": true
+                },
                 "page": {
                     "strip": true
                 },
