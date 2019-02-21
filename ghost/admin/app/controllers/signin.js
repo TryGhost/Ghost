@@ -57,22 +57,26 @@ export default Controller.extend(ValidationEngine, {
             }
 
             if (error && error.payload && error.payload.errors) {
-                error.payload.errors.forEach((err) => {
-                    err.message = err.message.htmlSafe();
-                });
+                let [mainError] = error.payload.errors;
 
-                this.set('flowErrors', error.payload.errors[0].message.string);
+                mainError.message = (mainError.message || '').htmlSafe();
+                mainError.context = (mainError.context || '').htmlSafe();
 
-                if (error.payload.errors[0].message.string.match(/user with that email/)) {
+                this.set('flowErrors', (mainError.context.string || mainError.message.string));
+
+                if (mainError.context.string.match(/user with that email/i)) {
                     this.get('signin.errors').add('identification', '');
                 }
 
-                if (error.payload.errors[0].message.string.match(/password is incorrect/)) {
+                if (mainError.context.string.match(/password is incorrect/i)) {
                     this.get('signin.errors').add('password', '');
                 }
             } else {
                 // Connection errors don't return proper status message, only req.body
-                this.get('notifications').showAlert('There was a problem on the server.', {type: 'error', key: 'session.authenticate.failed'});
+                this.get('notifications').showAlert(
+                    'There was a problem on the server.',
+                    {type: 'error', key: 'session.authenticate.failed'}
+                );
             }
         }
     }).drop(),
