@@ -48,6 +48,13 @@ module.exports = {
             setDefaultOrder(frame);
         }
 
+        if (!localUtils.isContentAPI(frame)) {
+            // @TODO: remove when we drop v0.1
+            if (!frame.options.filter || !frame.options.filter.match(/status:/)) {
+                frame.options.status = 'all';
+            }
+        }
+
         debug(frame.options);
     },
 
@@ -59,6 +66,13 @@ module.exports = {
         if (localUtils.isContentAPI(frame)) {
             removeMobiledocFormat(frame);
             setDefaultOrder(frame);
+        }
+
+        if (!localUtils.isContentAPI(frame)) {
+            // @TODO: remove when we drop v0.1
+            if (!frame.options.filter || !frame.options.filter.match(/status:/)) {
+                frame.data.status = 'all';
+            }
         }
 
         debug(frame.options);

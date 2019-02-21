@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:posts');
 const url = require('./utils/url');
-const utils = require('../../index');
+const localUtils = require('../../index');
 const labs = require('../../../../../services/labs');
 const converters = require('../../../../../lib/mobiledoc/converters');
 
@@ -58,7 +58,7 @@ module.exports = {
          * - api_key.type == 'content' ? content api access
          * - user exists? admin api access
          */
-        if (utils.isContentAPI(frame)) {
+        if (localUtils.isContentAPI(frame)) {
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
 
@@ -68,6 +68,13 @@ module.exports = {
             }
 
             setDefaultOrder(frame);
+        }
+
+        if (!localUtils.isContentAPI(frame)) {
+            // @TODO: remove when we drop v0.1
+            if (!frame.options.filter || !frame.options.filter.match(/status:/)) {
+                frame.options.status = 'all';
+            }
         }
 
         debug(frame.options);
@@ -84,7 +91,7 @@ module.exports = {
          * - api_key.type == 'content' ? content api access
          * - user exists? admin api access
          */
-        if (utils.isContentAPI(frame)) {
+        if (localUtils.isContentAPI(frame)) {
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
 
@@ -94,6 +101,13 @@ module.exports = {
             }
 
             setDefaultOrder(frame);
+        }
+
+        if (!localUtils.isContentAPI(frame)) {
+            // @TODO: remove when we drop v0.1
+            if (!frame.options.filter || !frame.options.filter.match(/status:/)) {
+                frame.data.status = 'all';
+            }
         }
 
         debug(frame.options);

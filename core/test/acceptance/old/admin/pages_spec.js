@@ -43,14 +43,15 @@ describe('Pages API', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.pages);
                 localUtils.API.checkResponse(jsonResponse, 'pages');
-                jsonResponse.pages.should.have.length(1);
+                jsonResponse.pages.should.have.length(2);
 
                 localUtils.API.checkResponse(jsonResponse.pages[0], 'page');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.pages[0].featured).should.eql(true);
 
                 // Absolute urls by default
-                jsonResponse.pages[0].url.should.eql(`${config.get('url')}/static-page-test/`);
+                jsonResponse.pages[0].url.should.eql(`${config.get('url')}/404/`);
+                jsonResponse.pages[1].url.should.eql(`${config.get('url')}/static-page-test/`);
 
                 done();
             });
