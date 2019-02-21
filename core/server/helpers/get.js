@@ -23,7 +23,7 @@ var proxy = require('./proxy'),
  */
 const RESOURCES = {
     posts: {
-        alias: 'posts',
+        alias: 'postsPublic',
         resource: 'posts'
     },
     tags: {

@@ -18,7 +18,7 @@ module.exports.QUERY = {
         }
     },
     post: {
-        controller: 'posts',
+        controller: 'postsPublic',
         type: 'read',
         resource: 'posts',
         options: {

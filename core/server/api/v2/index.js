@@ -47,6 +47,10 @@ module.exports = {
         return shared.pipeline(require('./posts'), localUtils);
     },
 
+    get postsPublic() {
+        return shared.pipeline(require('./posts-public'), localUtils);
+    },
+
     get invites() {
         return shared.pipeline(require('./invites'), localUtils);
     },
