@@ -38,7 +38,6 @@
   "dependencies": {
     "@nexes/nql": "0.2.1",
     "ajv": "6.8.1",
-    "@tryghost/html-to-mobiledoc": "0.2.3",
     "amperize": "0.3.8",
     "analytics-node": "3.3.0",
     "archiver": "3.0.0",
@@ -114,6 +113,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
+    "@tryghost/html-to-mobiledoc": "0.2.3",
     "sharp": "0.21.3",
     "sqlite3": "4.0.6"
   },

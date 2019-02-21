@@ -5986,6 +5986,7 @@ sprintf-js@~1.0.2:
 sqlite3@4.0.6, sqlite3@^4.0.6:
   version "4.0.6"
   resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-4.0.6.tgz#e587b583b5acc6cb38d4437dedb2572359c080ad"
+  integrity sha512-EqBXxHdKiwvNMRCgml86VTL5TK1i0IKiumnfxykX0gh6H6jaKijAXvE9O1N7+omfNSawR2fOmIyJZcfe8HYWpw==
   dependencies:
     nan "~2.10.0"
     node-pre-gyp "^0.11.0"
