@@ -21,6 +21,10 @@
                     "type": ["string", "null"],
                     "maxLength": 1000000000
                 },
+                "html": {
+                    "type": ["string", "null"],
+                    "maxLength": 1000000000
+                },
                 "feature_image": {
                     "type": ["string", "null"],
                     "format": "uri-reference",
@@ -142,6 +146,12 @@
                     "email": {
                         "type": "string",
                         "maxLength": 191
+                    },
+                    "roles": {
+                        "strip": true
+                    },
+                    "permissions": {
+                        "strip": true
                     }
                 },
                 "anyOf": [
@@ -168,6 +178,15 @@
                     "slug": {
                         "type": ["string", "null"],
                         "maxLength": 191
+                    },
+                    "parent": {
+                        "strip": true
+                    },
+                    "parent_id": {
+                        "strip": true
+                    },
+                    "posts": {
+                        "strip": true
                     }
                 },
                 "anyOf": [

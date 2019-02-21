@@ -28,19 +28,13 @@ describe('Upload API', function () {
         });
     });
 
-    it('Can\'t import fail without file', function (done) {
-        request.post(localUtils.API.getApiQuery('uploads'))
+    it('Can\'t import fail without file', function () {
+        return request
+            .post(localUtils.API.getApiQuery('uploads'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(403)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-
-                done();
-            });
+            .expect(422);
     });
 
     it('Can\'t import with unsupported file', function (done) {

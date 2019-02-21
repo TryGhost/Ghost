@@ -28,7 +28,7 @@ export default class Form extends Component {
 
     wrapChildren(children, data, onInput = () => {}) {
         return children.map(child => {
-            const { bindTo } = child.attributes;
+            const { bindTo } = child.attributes || {};
             if (bindTo) {
                 child.attributes.value = data[bindTo];
                 child.attributes.onInput = (e) => {

@@ -1,5 +1,5 @@
 /* Reusable components */
-/* ------------------------------------------------------------ 
+/* ------------------------------------------------------------
 
 
 */
@@ -28,17 +28,21 @@
     position: relative;
     top: 50%;
     transform: translateY(-50%);
+    display: flex;
 }
 
 .gm-modal {
     position: relative;
     background: white;
     margin: 0 auto;
-    width: 288px;
-    border-radius: 4px;
-    padding: 40px;
+    border-radius: 8px;
     box-shadow: var(--box-shadow-base);
     animation: openModal 0.6s ease 1 forwards;
+}
+
+.gm-modal-form {
+    width: 300px;
+    padding: 48px;
 }
 
 .gm-modal-close {
@@ -108,7 +112,7 @@
         transform: none;
         height: 100vh;
     }
-    
+
     .gm-modal {
         width: calc(100% - 48px);
         height: calc(100vh - 48px);
@@ -159,7 +163,7 @@ button {
     text-align: center;
     cursor: pointer;
     white-space: nowrap;
-    padding: 15px 15px 16px;
+    padding: 13px 16px 14px;
     border-radius: 4px;
     outline: none;
     transition: all var(--animation-speed-f1) ease-in-out;
@@ -209,7 +213,7 @@ button:hover {
 
 /* Change Autocomplete styles in Chrome*/
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
+input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active,
 textarea:-webkit-autofill,
@@ -227,7 +231,7 @@ select:-webkit-autofill:active {
 ::-moz-placeholder,
 :-ms-input-placeholder,
 :-moz-placeholder {
-    color: var(--white);
+    color: var(--grey);
 }
 
 .gm-form-element {
@@ -245,16 +249,16 @@ select:-webkit-autofill:active {
     border: none;
     border-radius: 4px;
     border: 1px solid var(--grey-l1);
-    height: 38px;
     -webkit-appearance: none;
     box-sizing: border-box;
     background: var(--white);
     width: 100%;
     outline: none;
     transition: border var(--animation-speed-f1) ease-in-out;
-    padding: 20px 14px 22px 38px; /* 1px bottom padding fixes jump that's caused by the border change */
+    padding: 12px 14px 12px 38px; /* 1px bottom padding fixes jump that's caused by the border change */
     letter-spacing: 0.2px;
-    line-height: 14px;
+    vertical-align: middle;
+    line-height: 18px;
 }
 
 .gm-input input:hover {

@@ -31,7 +31,6 @@ const expectedProperties = {
         .keys()
         .without('visibility')
         .without('password')
-        .without('accessibility')
         .without('locale')
         .without('ghost_auth_access_token')
         .without('ghost_auth_id')

@@ -16,10 +16,13 @@ module.exports = {
      * the whole context object currently: https://github.com/TryGhost/Ghost/issues/10099
      */
     isContentAPI: (frame) => {
-        return !!(Object.keys(frame.options.context).length === 0 ||
-                    (!frame.options.context.user && frame.options.context.api_key && (frame.options.context.api_key.type === 'content')) ||
-                    frame.options.context.public
-        );
+        const context = frame.options && frame.options.context || {};
+        // CASE: An empty context is considered public by the core/server/services/permissions/parse-context.js
+        //       module, replicated here because the context is unparsed until after the permissions layer of the pipeline
+        const isPublic = context.public || Object.keys(context).length === 0;
+
+        // CASE: apiType = 'content' for HTTP Content API
+        return frame.apiType === 'content' || isPublic;
     },
 
     isAdminAPIKey: (frame) => {

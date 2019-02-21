@@ -69,7 +69,7 @@ fixtures = {
         return Promise.map(DataGenerator.forKnex.tags, function (tag) {
             return models.Tag.add(tag, module.exports.context.internal);
         }).then(function () {
-            return Promise.map(_.cloneDeep(DataGenerator.forKnex.posts), function (post) {
+            return Promise.each(_.cloneDeep(DataGenerator.forKnex.posts), function (post) {
                 let postTagRelations = _.filter(DataGenerator.forKnex.posts_tags, {post_id: post.id});
                 let postAuthorsRelations = _.filter(DataGenerator.forKnex.posts_authors, {post_id: post.id});
 

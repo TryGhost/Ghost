@@ -7,6 +7,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('default', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     context: {
                         user: 0,
@@ -25,6 +26,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('should not work for non public context', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'admin',
                 options: {
                     context: {
                         user: 1
@@ -39,6 +41,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('combine filters', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     context: {
                         user: 0,
@@ -58,6 +61,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('combine filters', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     context: {
                         user: 0,
@@ -77,6 +81,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('combine filters', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     context: {
                         user: 0,
@@ -96,6 +101,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('combine filters', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     context: {
                         user: 0,
@@ -129,18 +135,11 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
     });
 
     describe('read', function () {
-        it('with api_key_id', function () {
+        it('with apiType of "content" it sets data.page to false', function () {
             const apiConfig = {};
             const frame = {
-                options: {
-                    context: {
-                        user: 0,
-                        api_key: {
-                            id: 1,
-                            type: 'content'
-                        },
-                    }
-                },
+                apiType: 'content',
+                options: {},
                 data: {}
             };
 
@@ -148,18 +147,11 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             frame.data.page.should.eql(false);
         });
 
-        it('with api_key_id: overrides page', function () {
+        it('with apiType of "content" it overrides data.page to be false', function () {
             const apiConfig = {};
             const frame = {
-                options: {
-                    context: {
-                        user: 0,
-                        api_key: {
-                            id: 1,
-                            type: 'content'
-                        },
-                    }
-                },
+                apiType: 'content',
+                options: {},
                 data: {
                     status: 'all',
                     page: true
@@ -167,17 +159,19 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.data.status.should.eql('all');
             frame.data.page.should.eql(false);
         });
 
-        it('with user', function () {
+        it('with apiType of "admin" it does not set data.page', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'admin',
                 options: {
                     context: {
-                        user: 1,
-                        api_key_id: 0
+                        api_key: {
+                            id: 1,
+                            type: 'admin'
+                        }
                     }
                 },
                 data: {}
@@ -187,13 +181,16 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             should.not.exist(frame.data.page);
         });
 
-        it('with user', function () {
+        it('with non public request it does not override data.page', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'admin',
                 options: {
                     context: {
-                        user: 1,
-                        api_key_id: 0
+                        api_key: {
+                            id: 1,
+                            type: 'admin'
+                        }
                     }
                 },
                 data: {
@@ -370,6 +367,85 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 postData.twitter_image.should.eql('https://mysite.com/mycustomstorage/images/image.jpg');
                 postData.tags[0].feature_image.should.eql('http://mysite.com/blog/mycustomstorage/content/images/image.jpg');
                 postData.authors[0].profile_image.should.eql('https://somestorage.com/blog/content/images/image.jpg');
+            });
+        });
+
+        describe('Ensure html to mobiledoc conversion', function () {
+            before(function () {
+                // NOTE: only supported in node v8 and higher
+                if (process.version.startsWith('v6.')) {
+                    this.skip();
+                }
+            });
+
+            it('no transformation when no html source option provided', function () {
+                const apiConfig = {};
+                const mobiledoc = '{"version":"0.3.1","atoms":[],"cards":[],"sections":[]}';
+                const frame = {
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                html: '<p>convert me</p>',
+                                mobiledoc: mobiledoc
+                            }
+                        ]
+                    }
+                };
+
+                serializers.input.posts.edit(apiConfig, frame);
+
+                let postData = frame.data.posts[0];
+                postData.mobiledoc.should.equal(mobiledoc);
+            });
+
+            it('no transformation when html data is empty', function () {
+                const apiConfig = {};
+                const mobiledoc = '{"version":"0.3.1","atoms":[],"cards":[],"sections":[]}';
+                const frame = {
+                    options: {
+                        source: 'html'
+                    },
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                html: '',
+                                mobiledoc: mobiledoc
+                            }
+                        ]
+                    }
+                };
+
+                serializers.input.posts.edit(apiConfig, frame);
+
+                let postData = frame.data.posts[0];
+                postData.mobiledoc.should.equal(mobiledoc);
+            });
+
+            it('transforms html when html is present in data and source options', function () {
+                const apiConfig = {};
+                const mobiledoc = '{"version":"0.3.1","atoms":[],"cards":[],"sections":[]}';
+                const frame = {
+                    options: {
+                        source: 'html'
+                    },
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                html: '<p>this is great feature</p>',
+                                mobiledoc: mobiledoc
+                            }
+                        ]
+                    }
+                };
+
+                serializers.input.posts.edit(apiConfig, frame);
+
+                let postData = frame.data.posts[0];
+                postData.mobiledoc.should.not.equal(mobiledoc);
+                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]]]}');
             });
         });
     });
