@@ -52,7 +52,8 @@ const authorize = {
             return next();
         }
         return next(new common.errors.NoPermissionError({
-            message: common.i18n.t('errors.middleware.auth.pleaseSignInOrAuthenticate')
+            message: common.i18n.t('errors.middleware.auth.authorizationFailed'),
+            context: common.i18n.t('errors.middleware.auth.missingContentMemberOrIntegration')
         }));
     },
 
@@ -70,7 +71,8 @@ const authorize = {
             return next();
         } else {
             return next(new common.errors.NoPermissionError({
-                message: common.i18n.t('errors.middleware.auth.pleaseSignInOrAuthenticate')
+                message: common.i18n.t('errors.middleware.auth.authorizationFailed'),
+                context: common.i18n.t('errors.middleware.auth.missingAdminUserOrIntegration')
             }));
         }
     }
