@@ -12,7 +12,6 @@ module.exports = {
             'filter',
             'fields',
             'limit',
-            'status',
             'order',
             'page'
         ],
@@ -38,7 +37,6 @@ module.exports = {
         data: [
             'id',
             'slug',
-            'status',
             'email',
             'role'
         ],
