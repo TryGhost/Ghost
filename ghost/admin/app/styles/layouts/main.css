@@ -47,19 +47,20 @@
 .gh-nav {
     position: relative;
     z-index: 800;
-    flex: 0 0 280px;
+    flex: 0 0 296px;
     display: flex;
     flex-direction: column;
     min-width: 0; /* TODO: This is a bullshit Firefox hack */
-    background: color-mod(var(--lightgrey) l(+4%));
+    background: color-mod(var(--lightgrey) l(+5%) s(-2%));
     transform: translateX(0);
+    border-right: 1px solid var(--lightgrey);
 }
 
 .gh-nav-menu {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    padding: 25px;
+    padding: 25px 20px;
     cursor: pointer;
     outline: none;
 }
@@ -82,8 +83,8 @@
 }
 
 .gh-nav-menu svg path {
-    stroke-width: 1px;
-    stroke: color-mod(var(--darkgrey));
+    stroke-width: 1.5px;
+    stroke: color-mod(var(--midlightgrey) l(-5%));
 }
 
 .gh-nav-menu-icon {
@@ -106,7 +107,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     line-height: 1.3em;
     font-weight: 600;
 }
@@ -127,7 +128,7 @@
 
 .gh-nav-search {
     position: relative;
-    margin: 0 25px 15px;
+    margin: 0 20px 15px;
 }
 
 .gh-nav-search .ember-power-select-trigger {
@@ -147,7 +148,7 @@
 .gh-nav-search-button svg {
     width: 13px;
     height: 13px;
-    fill: var(--midgrey);
+    fill: color-mod(var(--midlightgrey) l(+10%));
     line-height: 13px;
     transition: color 0.2s ease;
     transform: rotate(90deg);
@@ -164,10 +165,10 @@
 
 .gh-nav-list {
     margin: 0;
-    padding: 0 25px 0 0;
+    padding: 10px 0 0;
     list-style: none;
-    font-size: 1.3rem;
-    line-height: 1.5em;
+    font-size: 1.4rem;
+    line-height: 1.6em;
 }
 
 .gh-nav-list li {
@@ -176,78 +177,115 @@
 
 .gh-nav-list .gh-nav-list-h {
     overflow: hidden;
-    margin-top: 15px;
-    padding: 10px 10px 10px 25px;
-    color: #808284;
-    text-transform: uppercase;
+    margin-top: 32px;
+    padding: 10px 20px;
+    color: color-mod(var(--midgrey) l(-10%) s(+5%));
     text-overflow: ellipsis;
+    text-transform: uppercase;
     white-space: nowrap;
-    letter-spacing: 0.05em;
-    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    font-size: 1.2rem;
     line-height: 1.1em;
+    font-weight: 500;
 }
 
 .gh-nav-list a {
     display: flex;
     align-items: center;
-    padding: 7px 10px 7px 25px;
-    border-radius: 0 4px 4px 0;
-    color: var(--darkgrey);
+    padding: 7px 20px;
+    color:  color-mod(var(--midgrey) l(+5%));
     opacity: 0.9;
     transition: none;
 }
 
 .gh-nav-list .active {
-    background: color-mod(var(--blue) lightness(+10%));
-    color: #fff;
+    background: color-mod(var(--lightgrey) l(-1%) s(-3%));
+    color: var(--darkgrey);
+    font-weight: 600;
     opacity: 1;
 }
 
 .gh-nav-list a:not(.active):hover {
-    background: color-mod(var(--blue) alpha(-85%));
-    color: var(--darkgrey);
+    background: color-mod(var(--lightgrey) l(+2%) s(-2%));
     opacity: 1;
 }
 
+/* Icons */
 .gh-nav-list svg {
     margin-right: 8px;
-    width: 15px;
-    height: 15px;
-    fill: rgba(0,0,0,0.6);
+    width: 16px;
+    height: 16px;
+    fill: color-mod(var(--midgrey) l(+5%));
     line-height: 1;
 }
 
-.gh-nav-list svg g {
-    stroke: rgba(0,0,0,0.6);
-}
-
 .gh-nav-list .active svg {
-    fill: #fff;
+    fill: color-mod(var(--blue) l(-3%) s(+3%));
 }
 
-.gh-nav-list .active svg g {
-    stroke: #fff;
+.gh-nav-list svg g {
+    stroke: color-mod(var(--midgrey) l(+5%));
 }
 
-.gh-nav-list a:not(.active):hover svg {
-    fill: var(--darkgrey);
+.gh-nav-list .gh-nav-new-post {
+    position: absolute;
+    z-index: 999;
+    padding: 6px;
+    margin: 0;
+    right: 17px;
 }
 
-.gh-nav-list a:not(.active):hover svg g {
-    stroke: var(--darkgrey);
+.gh-nav-list .gh-nav-new-post span {
+    color: color-mod(var(--blue) l(-3%) s(+5%));
+    width: 22px;
+    height: 22px;
+    border: 1px solid color-mod(var(--blue) l(-3%) s(+5%));
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+.gh-nav-list .gh-nav-new-post span svg {
+    margin-right: 0;
+    width: 10px;
+    height: 10px;
+}
+
+.gh-nav-list .gh-nav-new-post span svg path {
+    stroke: color-mod(var(--blue) l(-3%) s(+5%));
+    stroke-width: 3px;
+}
+
+.gh-nav-list a.gh-nav-new-post:hover,
+.gh-nav-list a.gh-nav-new-post.active {
+    background: none;
+}
+
+.gh-nav-list a.gh-nav-new-post:hover span {
+    background: color-mod(var(--blue) l(-3%) s(+5%));
+}
+
+.gh-nav-list .gh-nav-new-post:hover span svg path {
+    stroke: var(--white);
+}
+
+/* Left navbar footer */
 .gh-nav-foot-sitelink {
     display: flex;
-    justify-content: center;
     align-items: center;
-    height: 46px;
-    border-top: color-mod(var(--lightgrey) l(-1%)) 1px solid;
+    height: 32px;
     text-align: center;
-    font-size: 1.2rem;
-    line-height: 1em;
-    font-weight: 300;
+    font-size: 1.4rem;
+    line-height: 1.6em;
     color:  color-mod(var(--midgrey) l(+5%));
+    padding: 7px 10px 7px 16px;
+    margin: 20px 6px 12px;
+    transition: color .3s;
+}
+
+.gh-nav-foot-sitelink:hover {
+    color: var(--blue);
 }
 
 @media (max-width: 500px) {
@@ -257,10 +295,23 @@
 }
 
 .gh-nav-foot-sitelink svg {
-    width: 13px;
-    margin-left: 5px;
-    fill: color-mod(var(--midgrey) l(+5%));
+    width: 16px;
+    margin-right: 8px;
 }
+
+.gh-nav-foot-sitelink svg g,
+.gh-nav-foot-sitelink svg path
+{
+    fill: color-mod(var(--midgrey) l(+5%));
+    transition: fill .3s;
+}
+
+.gh-nav-foot-sitelink:hover svg g,
+.gh-nav-foot-sitelink:hover svg path
+{
+    fill: color-mod(var(--blue) l(+5%));
+}
+
 
 /* Mobile Nav Menu (Slides out)
 /* ---------------------------------------------------------- */

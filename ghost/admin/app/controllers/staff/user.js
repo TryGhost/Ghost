@@ -339,7 +339,7 @@ export default Controller.extend({
     _deleteUserSuccess() {
         this.get('notifications').closeAlerts('user.delete');
         this.store.unloadAll('post');
-        this.transitionToRoute('team');
+        this.transitionToRoute('staff');
     },
 
     _deleteUserFailure() {

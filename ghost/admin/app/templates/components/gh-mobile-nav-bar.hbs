@@ -4,6 +4,6 @@
 {{else}}
     {{#link-to "posts"}}{{svg-jar "content" data-test-mobile-nav="posts"}}Posts{{/link-to}}
 {{/if}}
-{{#link-to "team" classNames="gh-nav-main-users" data-test-mobile-nav="team"}}{{svg-jar "account-group"}}Team{{/link-to}}
+{{#link-to "staff" classNames="gh-nav-main-users" data-test-mobile-nav="staff"}}{{svg-jar "account-group"}}Staff{{/link-to}}
 <div class="gh-mobile-nav-bar-more" {{action "openMobileMenu" target=ui data-test-mobile-nav="more"}}>{{svg-jar "icon" class="icon-gh"}}More</div>
 {{yield}}

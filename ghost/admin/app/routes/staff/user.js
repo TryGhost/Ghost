@@ -4,7 +4,7 @@ import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import styleBody from 'ghost-admin/mixins/style-body';
 
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
-    titleToken: 'Team - User',
+    titleToken: 'Staff - User',
 
     classNames: ['team-view-user'],
 
@@ -21,9 +21,9 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
             let isEditor = currentUser.get('isEditor');
 
             if (isAuthorOrContributor && !isOwnProfile) {
-                this.transitionTo('team.user', currentUser);
+                this.transitionTo('staff.user', currentUser);
             } else if (isEditor && !isOwnProfile && !user.get('isAuthorOrContributor')) {
-                this.transitionTo('team');
+                this.transitionTo('staff');
             }
         });
     },
@@ -34,7 +34,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     actions: {
         didTransition() {
-            this.modelFor('team.user').get('errors').clear();
+            this.modelFor('staff.user').get('errors').clear();
         },
 
         save() {

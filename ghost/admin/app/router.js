@@ -39,7 +39,7 @@ Router.map(function () {
         this.route('edit', {path: ':type/:post_id'});
     });
 
-    this.route('team', {path: '/team'}, function () {
+    this.route('staff', {path: '/staff'}, function () {
         this.route('user', {path: ':user_slug'});
     });
 

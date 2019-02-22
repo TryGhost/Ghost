@@ -28,7 +28,7 @@ describe('Acceptance: Editor', function () {
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
-    it('does not redirect to team page when authenticated as contributor', async function () {
+    it('does not redirect to staff page when authenticated as contributor', async function () {
         let role = this.server.create('role', {name: 'Contributor'});
         let author = this.server.create('user', {roles: [role], slug: 'test-user'});
         this.server.create('post', {authors: [author]});
@@ -39,7 +39,7 @@ describe('Acceptance: Editor', function () {
         expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
     });
 
-    it('does not redirect to team page when authenticated as author', async function () {
+    it('does not redirect to staff page when authenticated as author', async function () {
         let role = this.server.create('role', {name: 'Author'});
         let author = this.server.create('user', {roles: [role], slug: 'test-user'});
         this.server.create('post', {authors: [author]});
@@ -50,7 +50,7 @@ describe('Acceptance: Editor', function () {
         expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
     });
 
-    it('does not redirect to team page when authenticated as editor', async function () {
+    it('does not redirect to staff page when authenticated as editor', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         let author = this.server.create('user', {roles: [role], slug: 'test-user'});
         this.server.create('post', {authors: [author]});
