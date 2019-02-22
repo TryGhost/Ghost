@@ -12,6 +12,7 @@ const notImplemented = function (req, res, next) {
     const whitelisted = {
         // @NOTE: stable
         posts: ['GET', 'PUT', 'DELETE', 'POST'],
+        pages: ['GET', 'PUT', 'DELETE', 'POST'],
         tags: ['GET', 'PUT', 'DELETE', 'POST'],
         images: ['POST'],
         // @NOTE: experimental

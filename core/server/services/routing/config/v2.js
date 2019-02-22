@@ -18,7 +18,7 @@ module.exports.QUERY = {
         }
     },
     post: {
-        controller: 'posts',
+        controller: 'postsPublic',
         type: 'read',
         resource: 'posts',
         options: {
@@ -26,7 +26,7 @@ module.exports.QUERY = {
         }
     },
     page: {
-        controller: 'pages',
+        controller: 'pagesPublic',
         type: 'read',
         resource: 'pages',
         options: {

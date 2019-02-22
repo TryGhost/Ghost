@@ -704,7 +704,8 @@ Post = ghostBookshelf.Model.extend({
                 findOne: ['columns', 'importing', 'withRelated', 'require'],
                 findPage: ['status', 'staticPages'],
                 findAll: ['columns', 'filter'],
-                destroy: ['destroyAll']
+                destroy: ['destroyAll', 'destroyBy'],
+                edit: ['page']
             };
 
         // The post model additionally supports having a formats option

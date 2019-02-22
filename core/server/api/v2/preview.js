@@ -1,6 +1,6 @@
 const common = require('../../lib/common');
 const models = require('../../models');
-const ALLOWED_INCLUDES = ['author', 'authors', 'tags'];
+const ALLOWED_INCLUDES = ['authors', 'tags'];
 
 module.exports = {
     docName: 'preview',

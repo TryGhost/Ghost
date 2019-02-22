@@ -11,14 +11,14 @@ module.exports = function apiRoutes() {
     const http = apiImpl => apiv2.http(apiImpl, 'content');
 
     // ## Posts
-    router.get('/posts', mw.authenticatePublic, http(apiv2.posts.browse));
-    router.get('/posts/:id', mw.authenticatePublic, http(apiv2.posts.read));
-    router.get('/posts/slug/:slug', mw.authenticatePublic, http(apiv2.posts.read));
+    router.get('/posts', mw.authenticatePublic, http(apiv2.postsPublic.browse));
+    router.get('/posts/:id', mw.authenticatePublic, http(apiv2.postsPublic.read));
+    router.get('/posts/slug/:slug', mw.authenticatePublic, http(apiv2.postsPublic.read));
 
     // ## Pages
-    router.get('/pages', mw.authenticatePublic, http(apiv2.pages.browse));
-    router.get('/pages/:id', mw.authenticatePublic, http(apiv2.pages.read));
-    router.get('/pages/slug/:slug', mw.authenticatePublic, http(apiv2.pages.read));
+    router.get('/pages', mw.authenticatePublic, http(apiv2.pagesPublic.browse));
+    router.get('/pages/:id', mw.authenticatePublic, http(apiv2.pagesPublic.read));
+    router.get('/pages/slug/:slug', mw.authenticatePublic, http(apiv2.pagesPublic.read));
 
     // ## Users
     router.get('/authors', mw.authenticatePublic, http(apiv2.authors.browse));

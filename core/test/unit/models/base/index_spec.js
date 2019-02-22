@@ -4,6 +4,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     security = require('../../../../server/lib/security'),
     models = require('../../../../server/models'),
+    common = require('../../../../server/lib/common'),
     urlService = require('../../../../server/services/url'),
     filters = require('../../../../server/filters'),
     testUtils = require('../../../utils');
@@ -338,7 +339,7 @@ describe('Models: base', function () {
             });
         });
 
-        it('resolves with nothing and does not call save if no model is fetched', function () {
+        it('throws an error if model cannot be found on edit', function () {
             const data = {
                 db: 'cooper'
             };
@@ -354,9 +355,10 @@ describe('Models: base', function () {
                 .resolves();
             const saveSpy = sinon.stub(model, 'save');
 
-            return models.Base.Model.edit(data, unfilteredOptions).then((result) => {
-                should.equal(result, undefined);
-                should.equal(saveSpy.callCount, 0);
+            return models.Base.Model.edit(data, unfilteredOptions).then(() => {
+                throw new Error('That should not happen');
+            }).catch((err) => {
+                (err instanceof common.errors.NotFoundError).should.be.true();
             });
         });
     });

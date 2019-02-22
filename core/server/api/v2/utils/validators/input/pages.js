@@ -14,7 +14,7 @@ module.exports = {
          * Admin API key requires sending authors, because there is no user id.
          */
         if (utils.isAdminAPIKey(frame)) {
-            if (!frame.data.posts[0].hasOwnProperty('authors')) {
+            if (!frame.data.pages[0].hasOwnProperty('authors')) {
                 return Promise.reject(new common.errors.ValidationError({
                     message: common.i18n.t('notices.data.validation.index.validationFailed', {
                         validationName: 'FieldIsRequired',
@@ -24,14 +24,14 @@ module.exports = {
             }
         }
 
-        const schema = require(`./schemas/posts-add`);
-        const definitions = require('./schemas/posts');
+        const schema = require(`./schemas/pages-add`);
+        const definitions = require('./schemas/pages');
         return jsonSchema.validate(schema, definitions, frame.data);
     },
 
     edit(apiConfig, frame) {
-        const schema = require(`./schemas/posts-edit`);
-        const definitions = require('./schemas/posts');
+        const schema = require(`./schemas/pages-edit`);
+        const definitions = require('./schemas/pages');
         return jsonSchema.validate(schema, definitions, frame.data);
     }
 };
