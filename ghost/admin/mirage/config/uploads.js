@@ -12,6 +12,6 @@ const fileUploadResponse = function (db, {requestBody}) {
 };
 
 export default function mockUploads(server) {
-    server.post('/uploads/', fileUploadResponse, 200, {timing: 100});
-    server.post('/uploads/icon/', fileUploadResponse, 200, {timing: 100});
+    server.post('/images/', fileUploadResponse, 200, {timing: 100});
+    server.post('/images/icon/', fileUploadResponse, 200, {timing: 100});
 }

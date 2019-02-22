@@ -130,7 +130,7 @@ describe('Acceptance: Settings - General', function () {
             ).to.not.exist;
 
             // failed upload shows error
-            this.server.post('/uploads/icon/', function () {
+            this.server.post('/images/icon/', function () {
                 return {
                     errors: [{
                         errorType: 'ValidationError',
@@ -199,7 +199,7 @@ describe('Acceptance: Settings - General', function () {
             ).to.not.exist;
 
             // failed upload shows error
-            this.server.post('/uploads/', function () {
+            this.server.post('/images/', function () {
                 return {
                     errors: [{
                         errorType: 'ValidationError',
@@ -268,7 +268,7 @@ describe('Acceptance: Settings - General', function () {
             ).to.not.exist;
 
             // failed upload shows error
-            this.server.post('/uploads/', function () {
+            this.server.post('/images/', function () {
                 return {
                     errors: [{
                         errorType: 'ValidationError',

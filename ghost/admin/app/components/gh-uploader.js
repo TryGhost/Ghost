@@ -61,7 +61,7 @@ export default Component.extend({
     uploadUrls: null, // [{filename: 'x', url: 'y'}],
 
     // Private
-    _defaultUploadUrl: '/uploads/',
+    _defaultUploadUrl: '/images/',
     _files: null,
     _uploadTrackers: null,
 

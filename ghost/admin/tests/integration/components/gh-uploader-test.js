@@ -9,13 +9,13 @@ import {run} from '@ember/runloop';
 import {setupRenderingTest} from 'ember-mocha';
 
 const stubSuccessfulUpload = function (server, delay = 0) {
-    server.post('/ghost/api/v2/admin/uploads/', function () {
+    server.post('/ghost/api/v2/admin/images/', function () {
         return [200, {'Content-Type': 'application/json'}, '"/content/images/test.png"'];
     }, delay);
 };
 
 const stubFailedUpload = function (server, code, error, delay = 0) {
-    server.post('/ghost/api/v2/admin/uploads/', function () {
+    server.post('/ghost/api/v2/admin/images/', function () {
         return [code, {'Content-Type': 'application/json'}, JSON.stringify({
             errors: [{
                 errorType: error,
@@ -51,7 +51,7 @@ describe('Integration: Component: gh-uploader', function () {
 
             let [lastRequest] = server.handledRequests;
             expect(server.handledRequests.length).to.equal(1);
-            expect(lastRequest.url).to.equal('/ghost/api/v2/admin/uploads/');
+            expect(lastRequest.url).to.equal('/ghost/api/v2/admin/images/');
             // requestBody is a FormData object
             // this will fail in anything other than Chrome and Firefox
             // https://developer.mozilla.org/en-US/docs/Web/API/FormData#Browser_compatibility
@@ -136,7 +136,7 @@ describe('Integration: Component: gh-uploader', function () {
 
         it('onComplete returns results in same order as selected', async function () {
             // first request has a delay to simulate larger file
-            server.post('/ghost/api/v2/admin/uploads/', function () {
+            server.post('/ghost/api/v2/admin/images/', function () {
                 // second request has no delay to simulate small file
                 stubSuccessfulUpload(server, 0);
 
