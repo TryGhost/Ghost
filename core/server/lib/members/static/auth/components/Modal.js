@@ -56,7 +56,7 @@ export default class Modal extends Component {
         }
         return (
             <SignupPage error={error} hash="signup" handleSubmit={signup} handleClose={closeModal} />
-        )
+        );
     }
 
     renderUpgradePage(props, state) {
@@ -89,7 +89,7 @@ export default class Modal extends Component {
                 <Pages className={containerClass} onChange={clearError} onClick={closeModal}>
                     Loading...
                 </Pages>
-            )
+            );
         }
         return (
             <Pages className={containerClass} onChange={clearError} onClick={closeModal} stripeConfig={stripeConfig}>
