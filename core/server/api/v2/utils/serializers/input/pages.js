@@ -84,7 +84,7 @@ module.exports = {
         debug(frame.options);
     },
 
-    add(apiConfig, frame) {
+    add(apiConfig, frame, options = {add: true}) {
         debug('add');
 
         if (_.get(frame,'options.source')) {
@@ -98,11 +98,34 @@ module.exports = {
         frame.data.pages[0] = url.forPost(Object.assign({}, frame.data.pages[0]), frame.options);
 
         // @NOTE: force storing page
-        frame.data.pages[0].page = true;
+        if (options.add) {
+            frame.data.pages[0].page = true;
+        }
+
+        // CASE: Transform short to long format
+        if (frame.data.pages[0].authors) {
+            frame.data.pages[0].authors.forEach((author, index) => {
+                if (_.isString(author)) {
+                    frame.data.pages[0].authors[index] = {
+                        email: author
+                    };
+                }
+            });
+        }
+
+        if (frame.data.pages[0].tags) {
+            frame.data.pages[0].tags.forEach((tag, index) => {
+                if (_.isString(tag)) {
+                    frame.data.pages[0].tags[index] = {
+                        name: tag
+                    };
+                }
+            });
+        }
     },
 
     edit(apiConfig, frame) {
-        this.add(...arguments);
+        this.add(...arguments, {add: false});
 
         debug('edit');
 

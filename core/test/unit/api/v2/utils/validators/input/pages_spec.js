@@ -388,6 +388,38 @@ describe('Unit: v2/utils/validators/input/pages', function () {
 
                 return validators.input.pages.edit(apiConfig, frame);
             });
+
+            it('should pass with authors as array with strings', function () {
+                const frame = {
+                    options: {},
+                    data: {
+                        pages: [
+                            {
+                                authors: ['email1', 'email2'],
+                                updated_at: new Date().toISOString()
+                            }
+                        ]
+                    }
+                };
+
+                return validators.input.pages.edit(apiConfig, frame);
+            });
+
+            it('should pass with authors as array with strings & objects', function () {
+                const frame = {
+                    options: {},
+                    data: {
+                        pages: [
+                            {
+                                authors: ['email1', {email: 'email'}],
+                                updated_at: new Date().toISOString()
+                            }
+                        ]
+                    }
+                };
+
+                return validators.input.pages.edit(apiConfig, frame);
+            });
         });
     });
 });

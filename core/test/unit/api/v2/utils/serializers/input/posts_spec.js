@@ -447,5 +447,51 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]]]}');
             });
         });
+
+        describe('Ensure relations format', function () {
+            it('relations is array of objects', function () {
+                const apiConfig = {};
+
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                authors: [{id: 'id'}],
+                                tags: [{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]
+                            }
+                        ]
+                    }
+                };
+
+                serializers.input.posts.edit(apiConfig, frame);
+
+                frame.data.posts[0].authors.should.eql([{id: 'id'}]);
+                frame.data.posts[0].tags.should.eql([{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
+            });
+
+            it('authors is array of strings', function () {
+                const apiConfig = {};
+
+                const frame = {
+                    options: {},
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                authors: ['email1', 'email2'],
+                                tags: ['name1', 'name2'],
+                            }
+                        ]
+                    }
+                };
+
+                serializers.input.posts.edit(apiConfig, frame);
+
+                frame.data.posts[0].authors.should.eql([{email: 'email1'}, {email: 'email2'}]);
+                frame.data.posts[0].tags.should.eql([{name: 'name1'}, {name: 'name2'}]);
+            });
+        });
     });
 });
