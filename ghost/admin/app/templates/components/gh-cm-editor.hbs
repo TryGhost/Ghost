@@ -1,7 +1,5 @@
 {{!-- display a standard textarea whilst waiting for CodeMirror to load/initialize --}}
-{{#if isInitializingCodemirror}}
-    {{gh-textarea
-        class="gh-cm-editor-textarea"
-        value=(readonly _value)
-        input=(action "updateFromTextarea" value="target.value")}}
-{{/if}}
+{{gh-textarea
+    class="gh-cm-editor-textarea"
+    value=(readonly _value)
+    input=(action "updateFromTextarea" value="target.value")}}

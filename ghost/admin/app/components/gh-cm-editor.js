@@ -12,7 +12,6 @@ const CmEditorComponent = Component.extend({
     classNameBindings: ['isFocused:focus'],
 
     isFocused: false,
-    isInitializingCodemirror: true,
 
     // options for the editor
     autofocus: false,
@@ -76,8 +75,7 @@ const CmEditorComponent = Component.extend({
             options.autofocus = true;
         }
 
-        this.set('isInitializingCodemirror', false);
-        this._editor = new CodeMirror(this.element, options);
+        this._editor = new CodeMirror.fromTextArea(textarea, options);
 
         // by default CodeMirror will place the cursor at the beginning of the
         // content, it makes more sense for the cursor to be at the end
