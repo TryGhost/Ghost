@@ -2,9 +2,11 @@ const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:u
 const mapper = require('./utils/mapper');
 
 module.exports = {
-    image(models, apiConfig, frame) {
+    image(path, apiConfig, frame) {
         debug('image');
 
-        return frame.response = mapper.mapImage(models);
+        return frame.response = {
+            url: mapper.mapImage(path)
+        };
     }
 };
