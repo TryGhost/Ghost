@@ -2,7 +2,7 @@
     <div id="entry-controls">
         <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
             <div class="settings-menu-header">
-                <h4>Post Settings</h4>
+                <h4>{{capitalize post.displayName}} Settings</h4>
                 <button class="close settings-menu-header-action" {{action "closeMenus" target=ui}} data-test-close-settings-menu>
                     {{svg-jar "close"}}<span class="hidden">Close</span>
                 </button>
@@ -17,12 +17,12 @@
                 }}
                 <form>
                 <div class="form-group">
-                    <label for="url">Post URL</label>
+                    <label for="url">{{capitalize post.displayName}} URL</label>
                     {{!-- new posts don't have a preview link --}}
                     {{#unless post.isNew}}
                         {{#if post.isPublished}}
                         <a class="post-view-link" target="_blank" href="{{post.url}}">
-                            View post {{svg-jar "external"}}
+                            View {{post.displayName}} {{svg-jar "external"}}
                         </a>
                         {{else}}
                         <a class="post-view-link" target="_blank" href="{{post.previewUrl}}">
@@ -127,20 +127,6 @@
                 </ul>
 
                 <div class="form-group for-checkbox">
-                    <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
-                        <input
-                            type="checkbox"
-                            checked={{post.page}}
-                            class="gh-input post-setting-static-page"
-                            name="static-page"
-                            id="static-page"
-                            onclick={{action (mut post.page) value="target.checked"}}
-                            data-test-checkbox="static-page"
-                        >
-                        <span class="input-toggle-component"></span>
-                        <p>Turn this post into a page</p>
-                    </label>
-
                     <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
                         <input
                             type="checkbox"
@@ -150,7 +136,7 @@
                             data-test-checkbox="featured"
                         >
                         <span class="input-toggle-component"></span>
-                        <p>Feature this post</p>
+                        <p>Feature this {{post.displayName}}</p>
                     </label>
                 </div>
 
@@ -410,13 +396,6 @@
     pane is shown
 --}}
 {{#if _showThrobbers}}
-    {{gh-tour-item "static-post"
-        target="label[for='static-page'] p"
-        throbberAttachment="middle middle"
-        throbberOffset="0px 33px"
-        popoverTriangleClass="bottom-right"
-    }}
-
     {{gh-tour-item "featured-post"
         target="label[for='featured'] p"
         throbberAttachment="middle middle"

@@ -33,7 +33,7 @@ export default Component.extend({
         let errors = this.get('errors');
         let property = this.get('dateErrorProperty');
 
-        if (!isEmpty(errors.errorsFor(property))) {
+        if (errors && !isEmpty(errors.errorsFor(property))) {
             return errors.errorsFor(property).get('firstObject').message;
         }
     }),
@@ -42,7 +42,7 @@ export default Component.extend({
         let errors = this.get('errors');
         let property = this.get('timeErrorProperty');
 
-        if (!isEmpty(errors.errorsFor(property))) {
+        if (errors && !isEmpty(errors.errorsFor(property))) {
             return errors.errorsFor(property).get('firstObject').message;
         }
     }),

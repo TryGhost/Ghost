@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {assign} from '@ember/polyfills';
 import {isBlank} from '@ember/utils';
@@ -26,14 +25,15 @@ export default AuthenticatedRoute.extend({
         }
     },
 
-    titleToken: 'Content',
+    titleToken: 'Posts',
+    modelName: 'post',
 
     perPage: 30,
 
     _type: null,
 
     model(params) {
-        return this.get('session.user').then((user) => {
+        return this.session.user.then((user) => {
             let queryParams = {};
             let filterParams = {tag: params.tag};
             let paginationParams = {
@@ -47,12 +47,12 @@ export default AuthenticatedRoute.extend({
                 filterParams.featured = true;
             }
 
-            if (user.get('isAuthor')) {
+            if (user.isAuthor) {
                 // authors can only view their own posts
-                filterParams.authors = user.get('slug');
-            } else if (user.get('isContributor')) {
+                filterParams.authors = user.slug;
+            } else if (user.isContributor) {
                 // Contributors can only view their own draft posts
-                filterParams.authors = user.get('slug');
+                filterParams.authors = user.slug;
                 filterParams.status = 'draft';
             } else if (params.author) {
                 filterParams.authors = params.author;
@@ -69,10 +69,10 @@ export default AuthenticatedRoute.extend({
 
             queryParams.formats = 'mobiledoc,plaintext';
 
-            let perPage = this.get('perPage');
+            let perPage = this.perPage;
             let paginationSettings = assign({perPage, startingPage: 1}, paginationParams, queryParams);
 
-            return this.infinity.model('post', paginationSettings);
+            return this.infinity.model(this.modelName, paginationSettings);
         });
     },
 
@@ -81,14 +81,14 @@ export default AuthenticatedRoute.extend({
         this._super(...arguments);
 
         if (!controller._hasLoadedTags) {
-            this.get('store').query('tag', {limit: 'all'}).then(() => {
+            this.store.query('tag', {limit: 'all'}).then(() => {
                 controller._hasLoadedTags = true;
             });
         }
 
-        this.get('session.user').then((user) => {
-            if (!user.get('isAuthorOrContributor') && !controller._hasLoadedAuthors) {
-                this.get('store').query('user', {limit: 'all'}).then(() => {
+        this.session.user.then((user) => {
+            if (!user.isAuthorOrContributor && !controller._hasLoadedAuthors) {
+                this.store.query('user', {limit: 'all'}).then(() => {
                     controller._hasLoadedAuthors = true;
                 });
             }
@@ -97,14 +97,17 @@ export default AuthenticatedRoute.extend({
 
     actions: {
         willTransition() {
-            if (this.get('controller')) {
+            if (this.controller) {
                 this.resetController();
             }
         },
 
         queryParamsDidChange() {
             // scroll back to the top
-            $('.content-list').scrollTop(0);
+            let contentList = document.querySelector('.content-list');
+            if (contentList) {
+                contentList.scrollTop = 0;
+            }
 
             this._super(...arguments);
         }
@@ -112,29 +115,21 @@ export default AuthenticatedRoute.extend({
 
     _getTypeFilters(type) {
         let status = '[draft,scheduled,published]';
-        let page = '[true,false]';
 
         switch (type) {
         case 'draft':
             status = 'draft';
-            page = false;
             break;
         case 'published':
             status = 'published';
-            page = false;
             break;
         case 'scheduled':
             status = 'scheduled';
-            page = false;
-            break;
-        case 'page':
-            page = true;
             break;
         }
 
         return {
-            status,
-            page
+            status
         };
     },
 

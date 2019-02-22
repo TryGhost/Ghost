@@ -27,7 +27,7 @@ function extractFilterParam(param, filter) {
     let match;
 
     let [, result] = filter.match(filterRegex) || [];
-    if (result.startsWith('[')) {
+    if (result && result.startsWith('[')) {
         match = result.replace(/^\[|\]$/g, '').split(',');
     } else if (result) {
         match = [result];
@@ -39,12 +39,12 @@ function extractFilterParam(param, filter) {
 // NOTE: mirage requires Model objects when saving relationships, however the
 // `attrs` on POST/PUT requests will contain POJOs for authors and tags so we
 // need to replace them
-function extractAuthors(postAttrs, users) {
-    return postAttrs.authors.map(author => users.find(author.id));
+function extractAuthors(pageAttrs, users) {
+    return pageAttrs.authors.map(author => users.find(author.id));
 }
 
-function extractTags(postAttrs, tags) {
-    return postAttrs.tags.map((requestTag) => {
+function extractTags(pageAttrs, tags) {
+    return pageAttrs.tags.map((requestTag) => {
         let tag = tags.find(requestTag.id);
 
         if (!tag) {
@@ -55,8 +55,8 @@ function extractTags(postAttrs, tags) {
     });
 }
 
-export default function mockPosts(server) {
-    server.post('/posts', function ({posts, users, tags}) {
+export default function mockPages(server) {
+    server.post('/pages', function ({pages, users, tags}) {
         let attrs = this.normalizedRequestAttrs();
 
         attrs.authors = extractAuthors(attrs, users);
@@ -66,11 +66,11 @@ export default function mockPosts(server) {
             attrs.slug = dasherize(attrs.title);
         }
 
-        return posts.create(attrs);
+        return pages.create(attrs);
     });
 
     // TODO: handle authors filter
-    server.get('/posts/', function ({posts}, {queryParams}) {
+    server.get('/pages/', function ({pages}, {queryParams}) {
         let {filter, page, limit} = queryParams;
 
         page = +page || 1;
@@ -78,42 +78,42 @@ export default function mockPosts(server) {
 
         let statusFilter = extractFilterParam('status', filter);
 
-        let collection = posts.all().filter((post) => {
+        let collection = pages.all().filter((page) => {
             let matchesStatus = true;
 
             if (!isEmpty(statusFilter)) {
-                matchesStatus = statusFilter.includes(post.status);
+                matchesStatus = statusFilter.includes(page.status);
             }
 
             return matchesStatus;
         });
 
-        return paginateModelCollection('posts', collection, page, limit);
+        return paginateModelCollection('pages', collection, page, limit);
     });
 
-    server.get('/posts/:id/', function ({posts}, {params}) {
+    server.get('/pages/:id/', function ({pages}, {params}) {
         let {id} = params;
-        let post = posts.find(id);
+        let page = pages.find(id);
 
-        return post || new Response(404, {}, {
+        return page || new Response(404, {}, {
             errors: [{
                 errorType: 'NotFoundError',
-                message: 'Post not found.'
+                message: 'Page not found.'
             }]
         });
     });
 
-    server.put('/posts/:id/', function ({posts, users, tags}, {params}) {
+    server.put('/pages/:id/', function ({pages, users, tags}, {params}) {
         let attrs = this.normalizedRequestAttrs();
-        let post = posts.find(params.id);
+        let page = pages.find(params.id);
 
         attrs.authors = extractAuthors(attrs, users);
         attrs.tags = extractTags(attrs, tags);
 
         attrs.updatedAt = moment.utc().toDate();
 
-        return post.update(attrs);
+        return page.update(attrs);
     });
 
-    server.del('/posts/:id/');
+    server.del('/pages/:id/');
 }

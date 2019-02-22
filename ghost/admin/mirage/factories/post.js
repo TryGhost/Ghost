@@ -18,7 +18,6 @@ export default Factory.extend({
     ogDescription: null,
     ogImage: null,
     ogTitle: null,
-    page: false,
     plaintext(i) { return `Plaintext for post ${i}.`; },
     publishedAt: '2015-12-19T16:25:07.000Z',
     publishedBy: 1,

@@ -54,10 +54,6 @@ export default Service.extend(Evented, {
             title: 'Using the Ghost editor',
             message: 'Ghost uses Markdown to allow you to write and format content quickly and easily. This toolbar also helps! Hit the <strong>?</strong> icon for more editor shortcuts.'
         }, {
-            id: 'static-post',
-            title: 'Turning posts into pages',
-            message: 'Static pages are permanent pieces of content which live outside of your usual stream of posts, for example an \'about\' or \'contact\' page.'
-        }, {
             id: 'featured-post',
             title: 'Setting a featured post',
             message: 'Depending on your theme, featured posts receive special styling to make them stand out as a particularly important or emphasised story.'

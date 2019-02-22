@@ -72,6 +72,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     clock: service(),
     settings: service(),
 
+    displayName: 'post',
     validationType: 'post',
 
     createdAtUTC: attr('moment-utc'),
@@ -92,7 +93,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     metaDescription: attr('string'),
     metaTitle: attr('string'),
     mobiledoc: attr('json-string'),
-    page: attr('boolean', {defaultValue: false}),
     plaintext: attr('string'),
     publishedAtUTC: attr('moment-utc'),
     slug: attr('string'),

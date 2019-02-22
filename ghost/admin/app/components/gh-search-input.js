@@ -33,7 +33,7 @@ export default Component.extend({
     currentSearch: '',
     selection: null,
 
-    posts: computedGroup('Stories'),
+    posts: computedGroup('Posts'),
     pages: computedGroup('Pages'),
     users: computedGroup('Users'),
     tags: computedGroup('Tags'),
@@ -42,7 +42,7 @@ export default Component.extend({
         let groups = [];
 
         if (!isEmpty(this.get('posts'))) {
-            groups.pushObject({groupName: 'Stories', options: this.get('posts')});
+            groups.pushObject({groupName: 'Posts', options: this.get('posts')});
         }
 
         if (!isEmpty(this.get('pages'))) {
@@ -71,9 +71,14 @@ export default Component.extend({
                 return;
             }
 
-            if (selected.category === 'Stories' || selected.category === 'Pages') {
+            if (selected.category === 'Posts') {
                 let id = selected.id.replace('post.', '');
-                this.get('router').transitionTo('editor.edit', id);
+                this.get('router').transitionTo('editor.edit', 'post', id);
+            }
+
+            if (selected.category === 'Pages') {
+                let id = selected.id.replace('page.', '');
+                this.get('router').transitionTo('editor.edit', 'page', id);
             }
 
             if (selected.category === 'Users') {
@@ -132,6 +137,7 @@ export default Component.extend({
 
         this.set('content', []);
         promises.pushObject(this._loadPosts());
+        promises.pushObject(this._loadPages());
         promises.pushObject(this._loadUsers());
         promises.pushObject(this._loadTags());
 
@@ -149,14 +155,31 @@ export default Component.extend({
     _loadPosts() {
         let store = this.get('store');
         let postsUrl = `${store.adapterFor('post').urlForQuery({}, 'post')}/`;
-        let postsQuery = {fields: 'id,title,page', limit: 'all', status: 'all', filter: 'page:[true,false]'};
+        let postsQuery = {fields: 'id,title,page', limit: 'all', status: 'all'};
         let content = this.get('content');
 
         return this.get('ajax').request(postsUrl, {data: postsQuery}).then((posts) => {
             content.pushObjects(posts.posts.map(post => ({
                 id: `post.${post.id}`,
                 title: post.title,
-                category: post.page ? 'Pages' : 'Stories'
+                category: 'Posts'
+            })));
+        }).catch((error) => {
+            this.get('notifications').showAPIError(error, {key: 'search.loadPosts.error'});
+        });
+    },
+
+    _loadPages() {
+        let store = this.get('store');
+        let pagesUrl = `${store.adapterFor('page').urlForQuery({}, 'page')}/`;
+        let pagesQuery = {fields: 'id,title,page', limit: 'all', status: 'all'};
+        let content = this.get('content');
+
+        return this.get('ajax').request(pagesUrl, {data: pagesQuery}).then((pages) => {
+            content.pushObjects(pages.pages.map(page => ({
+                id: `page.${page.id}`,
+                title: page.title,
+                category: 'Pages'
             })));
         }).catch((error) => {
             this.get('notifications').showAPIError(error, {key: 'search.loadPosts.error'});

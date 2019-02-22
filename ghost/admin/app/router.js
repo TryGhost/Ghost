@@ -32,10 +32,11 @@ Router.map(function () {
     this.route('about', {path: '/about'});
 
     this.route('posts', {path: '/'}, function () {});
+    this.route('pages', {path: '/pages'}, function () {});
 
     this.route('editor', function () {
-        this.route('new', {path: ''});
-        this.route('edit', {path: ':post_id'});
+        this.route('new', {path: ':type'});
+        this.route('edit', {path: ':type/:post_id'});
     });
 
     this.route('team', {path: '/team'}, function () {

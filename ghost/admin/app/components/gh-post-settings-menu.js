@@ -137,21 +137,6 @@ export default Component.extend(SettingsMenuMixin, {
             return false;
         },
 
-        togglePage() {
-            this.toggleProperty('post.page');
-
-            // If this is a new post.  Don't save the post.  Defer the save
-            // to the user pressing the save button
-            if (this.get('post.isNew')) {
-                return;
-            }
-
-            this.get('savePost').perform().catch((error) => {
-                this.showError(error);
-                this.get('post').rollbackAttributes();
-            });
-        },
-
         toggleFeatured() {
             this.toggleProperty('post.featured');
 

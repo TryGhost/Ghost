@@ -1,8 +1,8 @@
 <section class="gh-canvas">
     <header class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>Your posts</h2>
+        <h2 class="gh-canvas-title" data-test-screen-title>Your pages</h2>
         <section class="view-actions">
-            {{#link-to "editor.new" "post" class="gh-btn gh-btn-green" data-test-new-post-button=true}}<span>New post</span>{{/link-to}}
+            {{#link-to "editor.new" "page" class="gh-btn gh-btn-green" data-test-new-page-button=true}}<span>New page</span>{{/link-to}}
         </section>
     </header>
     <div class="gh-contentfilter">
@@ -88,20 +88,20 @@
 
     <section class="content-list">
         <ol class="posts-list">
-            {{#each postsInfinityModel as |post|}}
+            {{#each postsInfinityModel as |page|}}
                 {{gh-posts-list-item
-                    post=post
+                    post=page
                     onDoubleClick=(action "openEditor")
-                    data-test-post-id=post.id}}
+                    data-test-page-id=page.id}}
             {{else}}
                 <li class="no-posts-box">
                     <div class="no-posts">
                         {{#if showingAll}}
-                            <h3>You haven't written any posts yet!</h3>
-                            {{#link-to "editor.new" "post"}}<button type="button" class="gh-btn gh-btn-green gh-btn-lg"><span>Write a new Post</span></button>{{/link-to}}
+                            <h3>You haven't created any pages yet!</h3>
+                            {{#link-to "editor.new" "page"}}<button type="button" class="gh-btn gh-btn-green gh-btn-lg"><span>Create a new page</span></button>{{/link-to}}
                         {{else}}
-                            <h3>No posts match the current filter</h3>
-                            {{#link-to "posts.index" (query-params type=null author=null tag=null)}}<button type="button" class="gh-btn gh-btn-lg"><span>Show all posts</span></button>{{/link-to}}
+                            <h3>No pages match the current filter</h3>
+                            {{#link-to "pages.index" (query-params type=null author=null tag=null)}}<button type="button" class="gh-btn gh-btn-lg"><span>Show all pages</span></button>{{/link-to}}
                         {{/if}}
                     </div>
                 </li>
