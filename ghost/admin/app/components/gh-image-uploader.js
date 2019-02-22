@@ -30,7 +30,7 @@ export default Component.extend({
     text: '',
     altText: '',
     saveButton: true,
-    accept: null,
+    accept: '',
     extensions: null,
     uploadUrl: null,
     validate: null,
@@ -85,9 +85,8 @@ export default Component.extend({
         return htmlSafe(`width: ${width}`);
     }),
 
-    didReceiveAttrs() {
-        let image = this.get('image');
-        this.set('url', image);
+    init() {
+        this._super(...arguments);
 
         if (!this.get('accept')) {
             this.set('accept', this.get('_defaultAccept'));
@@ -98,6 +97,11 @@ export default Component.extend({
         if (!this.get('uploadUrl')) {
             this.set('uploadUrl', this.get('_defaultUploadUrl'));
         }
+    },
+
+    didReceiveAttrs() {
+        let image = this.get('image');
+        this.set('url', image);
     },
 
     actions: {
