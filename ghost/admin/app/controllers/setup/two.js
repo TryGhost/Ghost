@@ -2,6 +2,7 @@
 import Controller, {inject as controller} from '@ember/controller';
 import RSVP from 'rsvp';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import {get} from '@ember/object';
 import {isInvalidError} from 'ember-ajax/errors';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
@@ -85,7 +86,7 @@ export default Controller.extend(ValidationEngine, {
     _sendImage(user) {
         let formData = new FormData();
         let imageFile = this.get('profileImage');
-        let uploadUrl = this.get('ghostPaths.url').api('uploads');
+        let uploadUrl = this.get('ghostPaths.url').api('images');
 
         formData.append('uploadimage', imageFile, imageFile.name);
 
@@ -95,7 +96,7 @@ export default Controller.extend(ValidationEngine, {
             contentType: false,
             dataType: 'text'
         }).then((response) => {
-            let imageUrl = JSON.parse(response);
+            let imageUrl = get(JSON.parse(response), 'url');
             let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
             user.profile_image = imageUrl;
 

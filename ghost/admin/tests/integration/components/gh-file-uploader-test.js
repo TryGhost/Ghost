@@ -19,7 +19,7 @@ const notificationsStub = Service.extend({
 
 const stubSuccessfulUpload = function (server, delay = 0) {
     server.post('/ghost/api/v2/admin/images/', function () {
-        return [200, {'Content-Type': 'application/json'}, '"/content/images/test.png"'];
+        return [200, {'Content-Type': 'application/json'}, '{"url":"/content/images/test.png"}'];
     }, delay);
 };
 
@@ -99,7 +99,7 @@ describe('Integration: Component: gh-file-uploader', function () {
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
 
         expect(uploadSuccess.calledOnce).to.be.true;
-        expect(uploadSuccess.firstCall.args[0]).to.equal('/content/images/test.png');
+        expect(uploadSuccess.firstCall.args[0]).to.eql({url: '/content/images/test.png'});
     });
 
     it('doesn\'t fire uploadSuccess action on failed upload', async function () {
@@ -313,7 +313,7 @@ describe('Integration: Component: gh-file-uploader', function () {
         await settled();
 
         expect(uploadSuccess.calledOnce).to.be.true;
-        expect(uploadSuccess.firstCall.args[0]).to.equal('/content/images/test.png');
+        expect(uploadSuccess.firstCall.args[0]).to.eql({url: '/content/images/test.png'});
     });
 
     it('validates extension by default', async function () {

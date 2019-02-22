@@ -2,6 +2,7 @@ import Component from '@ember/component';
 import EmberObject from '@ember/object';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {all, task} from 'ember-concurrency';
+import {get} from '@ember/object';
 import {isArray as isEmberArray} from '@ember/array';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
@@ -239,11 +240,10 @@ export default Component.extend({
             tracker.update({loaded: file.size, total: file.size});
             this._updateProgress();
 
-            // TODO: is it safe to assume we'll only get a url back?
-            let uploadUrl = JSON.parse(response);
+            let uploadResponse = JSON.parse(response);
             let result = {
                 fileName: file.name,
-                url: uploadUrl
+                url: get(uploadResponse, 'url')
             };
 
             this.get('uploadUrls')[index] = result;
