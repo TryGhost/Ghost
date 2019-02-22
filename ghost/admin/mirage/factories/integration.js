@@ -6,6 +6,7 @@ export default Factory.extend({
     slug() { return this.name.toLowerCase().replace(' ', '-'); },
     description: null,
     iconImage: null,
+    type: 'custom',
 
     createdAt() { return moment.utc().format(); },
     createdBy: 1,
