@@ -22,34 +22,34 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
-    it('redirects to team page when authenticated as contributor', async function () {
+    it('redirects to staff page when authenticated as contributor', async function () {
         let role = this.server.create('role', {name: 'Contributor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
         await visit('/settings/integrations/amp');
 
-        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
     });
 
-    it('redirects to team page when authenticated as author', async function () {
+    it('redirects to staff page when authenticated as author', async function () {
         let role = this.server.create('role', {name: 'Author'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
         await visit('/settings/integrations/amp');
 
-        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
     });
 
-    it('redirects to team page when authenticated as editor', async function () {
+    it('redirects to staff page when authenticated as editor', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
         await visit('/settings/integrations/amp');
 
-        expect(currentURL(), 'currentURL').to.equal('/team');
+        expect(currentURL(), 'currentURL').to.equal('/staff');
     });
 
     describe('when logged in', function () {
@@ -110,14 +110,14 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
 
             expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox after click').to.be.false;
 
-            await visit('/team');
+            await visit('/staff');
 
             expect(findAll('.fullscreen-modal').length, 'unsaved changes modal exists').to.equal(1);
 
             // Leave without saving
             await click('.fullscreen-modal [data-test-leave-button]');
 
-            expect(currentURL(), 'currentURL after leave without saving').to.equal('/team');
+            expect(currentURL(), 'currentURL after leave without saving').to.equal('/staff');
 
             await visit('/settings/integrations/amp');
 

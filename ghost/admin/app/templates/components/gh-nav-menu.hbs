@@ -9,9 +9,10 @@
     {{/dropdown.trigger}}
     {{#dropdown.content class="gh-nav-menu-dropdown"}}
         <ul class="dropdown-menu dropdown-triangle-top" role="menu" {{action dropdown.actions.close on="click" preventDefault=false}}>
+            <li role="presentation"><a class="dropdown-item" href="{{config.blogUrl}}/" target="_blank" tabindex="-1">{{svg-jar "view-site"}} View site</a></li>
             <li role="presentation">{{#link-to "about" classNames="dropdown-item" role="menuitem" tabindex="-1" data-test-nav="about"}}{{svg-jar "store"}} About Ghost{{/link-to}}</li>
             <li class="divider"></li>
-            <li role="presentation">{{#link-to "team.user" session.user.slug classNames="dropdown-item" role="menuitem" tabindex="-1" data-test-nav="user-profile"}}{{svg-jar "user-circle"}} Your Profile{{/link-to}}</li>
+            <li role="presentation">{{#link-to "staff.user" session.user.slug classNames="dropdown-item" role="menuitem" tabindex="-1" data-test-nav="user-profile"}}{{svg-jar "user-circle"}} Your Profile{{/link-to}}</li>
             <li role="presentation"><a class="dropdown-item" role="menuitem" tabindex="-1" href="https://docs.ghost.org/" target="_blank">{{svg-jar "ambulance"}} Support Center</a></li>
             <li role="presentation"><a class="dropdown-item" role="menuitem" tabindex="-1" href="https://twitter.com/intent/tweet?text=%40TryGhost+Hi%21+Can+you+help+me+with+&related=TryGhost" target="_blank" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">{{svg-jar "twitter"}} Tweet @TryGhost!</a></li>
             <li role="presentation"><a class="dropdown-item" role="menuitem" tabindex="-1" href="https://docs.ghost.org/faq/using-ghost/" target="_blank">{{svg-jar "book-open"}} How to Use Ghost</a></li>
@@ -40,8 +41,8 @@
         {{gh-search-input class="gh-nav-search-input"}}
     </section>
     <ul class="gh-nav-list gh-nav-main">
-        <li>{{#link-to "editor.new" "post" data-test-nav="new-post"}}{{svg-jar "pen"}}New post{{/link-to}}</li>
-        <li>
+        <li class="relative">
+            {{#link-to "editor.new" "post" classNames="gh-nav-new-post" alt="New story" data-test-nav="new-story"}}<span>{{svg-jar "add-stroke"}}</span>{{/link-to}}
             {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
             {{#if (eq router.currentRouteName "posts.index")}}
                 {{#link-to "posts" (query-params type=null author=null tag=null order=null) classNames="active" data-test-nav="posts"}}{{svg-jar "content"}}Posts{{/link-to}}
@@ -52,15 +53,15 @@
         <li>
             {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
             {{#if (eq router.currentRouteName "pages.index")}}
-                {{#link-to "pages" (query-params type=null author=null tag=null order=null) classNames="active" data-test-nav="pages"}}{{svg-jar "content"}}Pages{{/link-to}}
+                {{#link-to "pages" (query-params type=null author=null tag=null order=null) classNames="active" data-test-nav="pages"}}{{svg-jar "pages"}}Pages{{/link-to}}
             {{else}}
-                {{#link-to "pages" data-test-nav="pages"}}{{svg-jar "content"}}Pages{{/link-to}}
+                {{#link-to "pages" data-test-nav="pages"}}{{svg-jar "pages"}}Pages{{/link-to}}
             {{/if}}
         </li>
-        <li>{{#link-to "team" data-test-nav="team"}}{{svg-jar "account-group"}}Team{{/link-to}}</li>
         {{#if (and config.enableDeveloperExperiments (gh-user-can-admin session.user))}}
-            <li>{{#link-to "members" current-when="members member" data-test-nav="members"}}{{svg-jar "email"}}Members{{/link-to}}</li>
+            <li>{{#link-to "members" current-when="members member" data-test-nav="members"}}{{svg-jar "members"}}Members{{/link-to}}</li>
         {{/if}}
+        <li>{{#link-to "staff" data-test-nav="staff"}}{{svg-jar "staff"}}Staff{{/link-to}}</li>
         {{#if (and feature.subscribers (gh-user-can-admin session.user))}}
             <li>{{#link-to "subscribers" data-test-nav="subscribers"}}{{svg-jar "email"}}Subscribers{{/link-to}}</li>
         {{/if}}
@@ -69,11 +70,11 @@
         <ul class="gh-nav-list gh-nav-settings">
             <li class="gh-nav-list-h">Settings</li>
             <li>{{#link-to "settings.general" data-test-nav="settings"}}{{svg-jar "settings"}}General{{/link-to}}</li>
-            <li>{{#link-to "settings.design" data-test-nav="design"}}{{svg-jar "compass"}}Design{{/link-to}}</li>
+            <li>{{#link-to "settings.design" data-test-nav="design"}}{{svg-jar "paintbrush"}}Design{{/link-to}}</li>
             <li>{{#link-to "settings.tags" data-test-nav="tags"}}{{svg-jar "tag"}}Tags{{/link-to}}</li>
             <li>{{#link-to "settings.code-injection" data-test-nav="code-injection"}}{{svg-jar "brackets"}}Code injection{{/link-to}}</li>
-            <li>{{#link-to "settings.integrations" current-when=isIntegrationRoute data-test-nav="integrations"}}{{svg-jar "box"}}Integrations{{/link-to}}</li>
-            <li>{{#link-to "settings.labs" data-test-nav="labs"}}{{svg-jar "wrench-double"}}Labs{{/link-to}}</li>
+            <li>{{#link-to "settings.integrations" current-when=isIntegrationRoute data-test-nav="integrations"}}{{svg-jar "modules"}}Integrations{{/link-to}}</li>
+            <li>{{#link-to "settings.labs" data-test-nav="labs"}}{{svg-jar "labs"}}Labs{{/link-to}}</li>
         </ul>
     {{/if}}
 
@@ -95,7 +96,7 @@
 
 </section>
 <footer class="gh-nav-foot">
-    <a class="gh-nav-foot-sitelink" href="{{config.blogUrl}}/" target="_blank">View site {{svg-jar "external"}}</a>
+    <a class="gh-nav-foot-sitelink" href="{{config.blogUrl}}/" target="_blank">{{svg-jar "view-site"}} View site</a>
 </footer>
 
 {{gh-tour-item "getting-started"
