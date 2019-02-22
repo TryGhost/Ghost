@@ -34,23 +34,35 @@ function setDefaultOrder(frame) {
     }
 }
 
+/**
+ * CASE:
+ *
+ * - posts endpoint only returns posts, not pages
+ * - we have to enforce the filter
+ *
+ * @TODO: https://github.com/TryGhost/Ghost/issues/10268
+ */
+const forcePageFilter = (frame) => {
+    if (frame.options.filter) {
+        frame.options.filter = `(${frame.options.filter})+page:false`;
+    } else {
+        frame.options.filter = 'page:false';
+    }
+};
+
+const forceStatusFilter = (frame) => {
+    if (!frame.options.filter) {
+        frame.options.filter = 'status:[draft,published,scheduled]';
+    } else if (!frame.options.filter.match(/status:/)) {
+        frame.options.filter = `(${frame.options.filter})+status:[draft,published,scheduled]`;
+    }
+};
+
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
 
-        /**
-         * CASE:
-         *
-         * - posts endpoint only returns posts, not pages
-         * - we have to enforce the filter
-         *
-         * @TODO: https://github.com/TryGhost/Ghost/issues/10268
-         */
-        if (frame.options.filter) {
-            frame.options.filter = `(${frame.options.filter})+page:false`;
-        } else {
-            frame.options.filter = 'page:false';
-        }
+        forcePageFilter(frame);
 
         /**
          * ## current cases:
@@ -71,10 +83,7 @@ module.exports = {
         }
 
         if (!localUtils.isContentAPI(frame)) {
-            // @TODO: remove when we drop v0.1
-            if (!frame.options.filter || !frame.options.filter.match(/status:/)) {
-                frame.options.status = 'all';
-            }
+            forceStatusFilter(frame);
         }
 
         debug(frame.options);
@@ -83,7 +92,7 @@ module.exports = {
     read(apiConfig, frame) {
         debug('read');
 
-        frame.data.page = false;
+        forcePageFilter(frame);
 
         /**
          * ## current cases:
@@ -104,16 +113,13 @@ module.exports = {
         }
 
         if (!localUtils.isContentAPI(frame)) {
-            // @TODO: remove when we drop v0.1
-            if (!frame.options.filter || !frame.options.filter.match(/status:/)) {
-                frame.data.status = 'all';
-            }
+            forceStatusFilter(frame);
         }
 
         debug(frame.options);
     },
 
-    add(apiConfig, frame) {
+    add(apiConfig, frame, options = {add: true}) {
         debug('add');
 
         if (_.get(frame,'options.source')) {
@@ -126,15 +132,17 @@ module.exports = {
 
         frame.data.posts[0] = url.forPost(Object.assign({}, frame.data.posts[0]), frame.options);
 
-        // @NOTE: force storing post
-        frame.data.posts[0].page = false;
+        // @NOTE: force adding post
+        if (options.add) {
+            frame.data.posts[0].page = false;
+        }
     },
 
     edit(apiConfig, frame) {
-        this.add(apiConfig, frame);
+        this.add(apiConfig, frame, {add: false});
 
-        // @NOTE: force that you cannot update pages via posts endpoint
-        frame.options.page = false;
+        forceStatusFilter(frame);
+        forcePageFilter(frame);
     },
 
     destroy(apiConfig, frame) {

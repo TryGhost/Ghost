@@ -146,6 +146,18 @@ describe('Public API', function () {
             });
     });
 
+    it('read post with filter', function () {
+        return request
+            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/?client_id=ghost-admin&client_secret=not_available&filter=slug:test`))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                // proofs that "filter" does not work for v0.1
+                localUtils.API.checkResponse(res.body.posts[0], 'post');
+            });
+    });
+
     it('browse posts with inverse filters', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available&filter=tag:-[bacon,pollo,getting-started]&include=tags'))
             .expect('Content-Type', /json/)
