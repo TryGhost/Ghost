@@ -30,7 +30,7 @@ describe('Upload API', function () {
 
     it('Can\'t import fail without file', function () {
         return request
-            .post(localUtils.API.getApiQuery('uploads'))
+            .post(localUtils.API.getApiQuery('images'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -38,7 +38,7 @@ describe('Upload API', function () {
     });
 
     it('Can\'t import with unsupported file', function (done) {
-        request.post(localUtils.API.getApiQuery('uploads'))
+        request.post(localUtils.API.getApiQuery('images'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .attach('uploadimage', path.join(__dirname, '/../../../../utils/fixtures/csv/single-column-with-header.csv'))
@@ -53,7 +53,7 @@ describe('Upload API', function () {
     });
 
     it('Can\'t upload incorrect extension', function (done) {
-        request.post(localUtils.API.getApiQuery('uploads'))
+        request.post(localUtils.API.getApiQuery('images'))
             .set('Origin', config.get('url'))
             .set('content-type', 'image/png')
             .expect('Content-Type', /json/)
@@ -69,7 +69,7 @@ describe('Upload API', function () {
     });
 
     it('Can\'t import if profile image is not square', function (done) {
-        request.post(localUtils.API.getApiQuery('uploads/profile-image'))
+        request.post(localUtils.API.getApiQuery('images/profile-image'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .attach('uploadimage', path.join(__dirname, '/../../../../utils/fixtures/images/favicon_not_square.png'))

@@ -29,7 +29,7 @@ describe('Upload API', function () {
     });
 
     it('Can upload a png', function (done) {
-        request.post(localUtils.API.getApiQuery('uploads'))
+        request.post(localUtils.API.getApiQuery('images'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.png'))
@@ -47,7 +47,7 @@ describe('Upload API', function () {
     });
 
     it('Can upload a jpg', function (done) {
-        request.post(localUtils.API.getApiQuery('uploads'))
+        request.post(localUtils.API.getApiQuery('images'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghosticon.jpg'))
@@ -65,7 +65,7 @@ describe('Upload API', function () {
     });
 
     it('Can upload a gif', function (done) {
-        request.post(localUtils.API.getApiQuery('uploads'))
+        request.post(localUtils.API.getApiQuery('images'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat.gif'))
@@ -83,7 +83,7 @@ describe('Upload API', function () {
     });
 
     it('Can upload a square profile image', function (done) {
-        request.post(localUtils.API.getApiQuery('uploads/profile-image'))
+        request.post(localUtils.API.getApiQuery('images/profile-image'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat_square.gif'))
