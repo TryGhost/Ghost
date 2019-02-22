@@ -1,7 +1,7 @@
 import hbs from 'htmlbars-inline-precompile';
-import {click, find, render, settled, triggerEvent} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {find, render, settled} from '@ember/test-helpers';
 import {setupRenderingTest} from 'ember-mocha';
 
 // NOTE: If the browser window is not focused/visible CodeMirror (or Chrome?) will
