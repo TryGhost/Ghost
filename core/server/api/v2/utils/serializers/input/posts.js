@@ -136,6 +136,27 @@ module.exports = {
         if (options.add) {
             frame.data.posts[0].page = false;
         }
+
+        // CASE: Transform short to long format
+        if (frame.data.posts[0].authors) {
+            frame.data.posts[0].authors.forEach((author, index) => {
+                if (_.isString(author)) {
+                    frame.data.posts[0].authors[index] = {
+                        email: author
+                    };
+                }
+            });
+        }
+
+        if (frame.data.posts[0].tags) {
+            frame.data.posts[0].tags.forEach((tag, index) => {
+                if (_.isString(tag)) {
+                    frame.data.posts[0].tags[index] = {
+                        name: tag
+                    };
+                }
+            });
+        }
     },
 
     edit(apiConfig, frame) {
