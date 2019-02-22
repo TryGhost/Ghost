@@ -25,7 +25,7 @@
 
     function isTokenExpired(token) {
         try {
-            const [header, claims, signature] = token.split('.');
+            const [header, claims, signature] = token.split('.'); // eslint-disable-line no-unused-vars
 
             const parsedClaims = JSON.parse(atob(claims.replace('+', '-').replace('/', '_')));
 
