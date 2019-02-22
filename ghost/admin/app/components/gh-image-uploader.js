@@ -7,6 +7,7 @@ import {
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
 import {computed} from '@ember/object';
+import {get} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
@@ -245,7 +246,7 @@ export default Component.extend({
                 return xhr;
             }
         }).then((response) => {
-            let url = JSON.parse(response);
+            let url = get(JSON.parse(response), 'url');
             this._uploadSuccess(url);
         }).catch((error) => {
             this._uploadFailed(error);
