@@ -395,7 +395,8 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     data: {
                         posts: [
                             {
-                                authors: ['email1', 'email2']
+                                authors: ['email1', 'email2'],
+                                updated_at: new Date().toISOString()
                             }
                         ]
                     }
@@ -410,7 +411,8 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     data: {
                         posts: [
                             {
-                                authors: ['email1', {email: 'email'}]
+                                authors: ['email1', {email: 'email'}],
+                                updated_at: new Date().toISOString()
                             }
                         ]
                     }
