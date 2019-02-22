@@ -74,10 +74,6 @@
     fill: color-mod(var(--darkgrey) lightness(+20%));
 }
 
-.dropdown-menu svg path {
-    stroke: color-mod(var(--darkgrey) lightness(+20%));
-}
-
 @media (max-width: 500px) {
     .dropdown-menu > li > a,
     .dropdown-menu > li > button {
@@ -101,6 +97,13 @@
     background: color-mod(var(--blue) alpha(-85%));
     color: var(--darkgrey);
     text-decoration: none;
+}
+
+.dropdown-menu > li > a:hover svg,
+.dropdown-menu > li > a:focus svg,
+.dropdown-menu > li > button:hover svg,
+.dropdown-menu > li > button:focus svg {
+    fill: var(--darkgrey);
 }
 
 /* Active */

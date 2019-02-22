@@ -142,14 +142,6 @@ input:focus,
     color: var(--darkgrey);
 }
 
-.gh-nav-list svg {
-    fill: var(--darkgrey);
-}
-
-.gh-nav-list svg g {
-    stroke: var(--darkgrey);
-}
-
 .gh-main,
 .gh-unsplash-window {
     background: #263238;

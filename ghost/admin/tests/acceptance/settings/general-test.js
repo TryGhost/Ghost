@@ -22,34 +22,34 @@ describe('Acceptance: Settings - General', function () {
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
-    it('redirects to team page when authenticated as contributor', async function () {
+    it('redirects to staff page when authenticated as contributor', async function () {
         let role = this.server.create('role', {name: 'Contributor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
         await visit('/settings/general');
 
-        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
     });
 
-    it('redirects to team page when authenticated as author', async function () {
+    it('redirects to staff page when authenticated as author', async function () {
         let role = this.server.create('role', {name: 'Author'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
         await visit('/settings/general');
 
-        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
     });
 
-    it('redirects to team page when authenticated as editor', async function () {
+    it('redirects to staff page when authenticated as editor', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
         await visit('/settings/general');
 
-        expect(currentURL(), 'currentURL').to.equal('/team');
+        expect(currentURL(), 'currentURL').to.equal('/staff');
     });
 
     describe('when logged in', function () {
@@ -478,14 +478,14 @@ describe('Acceptance: Settings - General', function () {
                 'private blog checkbox'
             ).to.be.true;
 
-            await visit('/settings/team');
+            await visit('/settings/staff');
 
             expect(findAll('.fullscreen-modal').length, 'modal exists').to.equal(1);
 
             // Leave without saving
             await click('.fullscreen-modal [data-test-leave-button]');
 
-            expect(currentURL(), 'currentURL').to.equal('/settings/team');
+            expect(currentURL(), 'currentURL').to.equal('/settings/staff');
 
             await visit('/settings/general');
 

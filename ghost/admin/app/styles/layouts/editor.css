@@ -78,11 +78,13 @@
 .post-settings svg {
     width: 16px;
     height: 16px;
+}
+
+.post-settings svg {
     fill: var(--midgrey);
 }
 
-.post-settings:hover svg,
-.post-settings.active svg {
+.post-settings:hover svg {
     fill: var(--darkgrey);
 }
 

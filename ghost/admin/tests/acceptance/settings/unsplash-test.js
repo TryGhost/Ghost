@@ -22,34 +22,34 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
-    it('redirects to team page when authenticated as contributor', async function () {
+    it('redirects to staff page when authenticated as contributor', async function () {
         let role = this.server.create('role', {name: 'Contributor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
         await visit('/settings/integrations/unsplash');
 
-        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
     });
 
-    it('redirects to team page when authenticated as author', async function () {
+    it('redirects to staff page when authenticated as author', async function () {
         let role = this.server.create('role', {name: 'Author'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
         await visit('/settings/integrations/unsplash');
 
-        expect(currentURL(), 'currentURL').to.equal('/team/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
     });
 
-    it('redirects to team page when authenticated as editor', async function () {
+    it('redirects to staff page when authenticated as editor', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
         await visit('/settings/integrations/unsplash');
 
-        expect(currentURL(), 'currentURL').to.equal('/team');
+        expect(currentURL(), 'currentURL').to.equal('/staff');
     });
 
     describe('when logged in', function () {

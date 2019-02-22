@@ -7,7 +7,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     infinity: service(),
     session: service(),
 
-    titleToken: 'Team',
+    titleToken: 'Staff',
     classNames: ['view-team'],
 
     model() {
