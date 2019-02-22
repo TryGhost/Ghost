@@ -8,6 +8,52 @@
     </header>
 
     <section class="view-container">
+        <div class="pt1">
+            <h2 class="f7 fw4 midgrey">Overview</h2>
+        </div>
 
+        <div class="flex flex-column mb10 ba br3 b--whitegrey">
+            <div class="flex flex-row pa5">
+                <GhMemberAvatar class="w20 h20 mr4" @initialsClass="f-subheadline" @member={{member}} />
+                <div class="flex flex-column justify-center">
+                    <h3 class="ma0 pa0">{{member.name}}</h3>
+                    <span class="db">
+                        <a class="midlightgrey" href="mailto:{{member.email}}">
+                            {{member.email}}
+                        </a>
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex flex-row bt b--whitegrey bg-whitegrey-l2">
+                <div class="flex flex-column flex-grow-1 pa5 br b--whitegrey">
+                    <span class="db ttu f8 midlightgrey">Member since</span>
+                    <span class="db f5">{{moment-format member.createdAt "MMMM Do"}}</span>
+                    <span class="db f8 midlightgrey">({{moment-to-now member.createdAt hideAffix=true}})</span>
+                </div>
+                <div class="flex flex-column flex-grow-1 pa5">
+                    <span class="db ttu f8 midlightgrey">Current plan</span>
+                    <span class="db f5">-</span>
+                    <span class="db f8 midlightgrey"></span>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="pb1 bb b--whitegrey f7 fw4 midgrey">Danger zone</h2>
+        <button
+            type="button"
+            class="gh-btn gh-btn-red gh-btn-icon"
+            {{action (toggle "showDeleteMemberModal" this)}}
+            data-test-button="delete-member"
+        >
+            <span>Delete member</span>
+        </button>
     </section>
 </section>
+
+{{#if showDeleteMemberModal}}
+    {{gh-fullscreen-modal "delete-member"
+        model=(hash member=member onSuccess=(action "finaliseDeletion"))
+        close=(action (toggle "showDeleteMemberModal" this))
+        modifier="action wide"}}
+{{/if}}

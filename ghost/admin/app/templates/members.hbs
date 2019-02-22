@@ -5,7 +5,14 @@
 
     <section class="view-container h-100">
         <div class="flex justify-between items-center pt1">
-            <h2 class="f7 fw4 midgrey">All members ({{this.meta.pagination.total}})</h2>
+            <h2 class="f7 fw4 midgrey">
+                All members
+                {{#if this.fetchMembers.lastSuccessful}}
+                    ({{this.meta.pagination.total}})
+                {{else}}
+                    (...)
+                {{/if}}
+            </h2>
         </div>
 
         {{#if this.members}}

@@ -16,6 +16,7 @@ export default Component.extend({
     tagName: '',
 
     member: null,
+    initialsClass: 'f6 fw3',
 
     backgroundStyle: computed('member.name', function () {
         let name = this.member.name;
