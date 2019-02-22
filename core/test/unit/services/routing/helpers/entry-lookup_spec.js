@@ -273,7 +273,7 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
         describe('static pages', function () {
             const routerOptions = {
                 permalinks: '/:slug/',
-                query: {controller: 'pages', resource: 'pages'}
+                query: {controller: 'pagesPublic', resource: 'pages'}
             };
 
             let pages;
@@ -299,7 +299,7 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
                     };
                 });
 
-                sinon.stub(api.v2, 'pages').get(() => {
+                sinon.stub(api.v2, 'pagesPublic').get(() => {
                     return {
                         read: pagesReadStub
                     };
@@ -350,7 +350,7 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
                     };
                 });
 
-                sinon.stub(api.v2, 'pages').get(() => {
+                sinon.stub(api.v2, 'pagesPublic').get(() => {
                     return {
                         read: pagesReadStub
                     };

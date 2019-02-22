@@ -1288,7 +1288,7 @@ describe('UNIT: services/settings/validate', function () {
                             data: {
                                 query: {
                                     home: {
-                                        controller: 'pages',
+                                        controller: 'pagesPublic',
                                         resource: 'pages',
                                         type: 'read',
                                         options: {
@@ -1399,7 +1399,7 @@ describe('UNIT: services/settings/validate', function () {
                             data: {
                                 query: {
                                     food: {
-                                        controller: 'posts',
+                                        controller: 'postsPublic',
                                         resource: 'posts',
                                         type: 'browse',
                                         options: {}
@@ -1415,7 +1415,7 @@ describe('UNIT: services/settings/validate', function () {
                             data: {
                                 query: {
                                     posts: {
-                                        controller: 'posts',
+                                        controller: 'postsPublic',
                                         resource: 'posts',
                                         type: 'read',
                                         options: {
@@ -1454,7 +1454,7 @@ describe('UNIT: services/settings/validate', function () {
                             data: {
                                 query: {
                                     gym: {
-                                        controller: 'posts',
+                                        controller: 'postsPublic',
                                         resource: 'posts',
                                         type: 'read',
                                         options: {

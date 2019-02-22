@@ -1,11 +1,11 @@
 
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "posts",
-    "title": "posts",
-    "description": "Base posts definitions",
+    "$id": "pages",
+    "title": "pages",
+    "description": "Base pages definitions",
     "definitions": {
-        "post": {
+        "page": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -104,21 +104,21 @@
                     "maxLength": 100
                 },
                 "authors": {
-                    "$ref": "#/definitions/post-authors"
+                    "$ref": "#/definitions/page-authors"
                 },
                 "tags": {
-                    "$ref": "#/definitions/post-tags"
+                    "$ref": "#/definitions/page-tags"
                 },
                 "id": {
+                    "strip": true
+                },
+                "page": {
                     "strip": true
                 },
                 "author": {
                     "strip": true
                 },
                 "author_id": {
-                    "strip": true
-                },
-                "page": {
                     "strip": true
                 },
                 "created_at": {
@@ -135,8 +135,8 @@
                 }
             }
         },
-        "post-authors": {
-            "description": "Authors of the post",
+        "page-authors": {
+            "description": "Authors of the page",
             "type": "array",
             "items": {
                 "type": "object",
@@ -167,8 +167,8 @@
                 ]
             }
         },
-        "post-tags": {
-            "description": "Tags of the post",
+        "page-tags": {
+            "description": "Tags of the page",
             "type": "array",
             "items": {
                 "type": "object",
@@ -191,7 +191,7 @@
                     "parent_id": {
                         "strip": true
                     },
-                    "posts": {
+                    "pages": {
                         "strip": true
                     }
                 },
