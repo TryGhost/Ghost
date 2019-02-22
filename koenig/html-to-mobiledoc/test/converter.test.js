@@ -118,11 +118,14 @@ describe('Nested examples', function () {
         mobiledoc.sections[1].should.eql([1, 'p', [[0, [], 0, 'World']]]);
     });
 
-    it.skip('Can convert with whitespace', function () {
+    it('Can convert with whitespace', function () {
         const mobiledoc = converter
             .toMobiledoc(`
                 <div>
                 <p>Hello</p>
+                <ul>
+                    <li>Big</li>
+                </ul>
                 <div>
                     <p>World</p>
                 </div>
@@ -138,10 +141,12 @@ describe('Nested examples', function () {
 
         // Only version & sections are populated
         mobiledoc.version.should.eql('0.3.1');
-        mobiledoc.sections.should.be.an.Array().with.lengthOf(2);
+        mobiledoc.sections.should.be.an.Array().with.lengthOf(3);
         mobiledoc.sections[0].should.be.an.Array().with.lengthOf(3);
         mobiledoc.sections[0].should.eql([1, 'p', [[0, [], 0, 'Hello']]]);
         mobiledoc.sections[1].should.be.an.Array().with.lengthOf(3);
-        mobiledoc.sections[1].should.eql([1, 'p', [[0, [], 0, 'World']]]);
+        mobiledoc.sections[1].should.eql([3, 'ul', [[[0, [], 0, 'Big']]]]);
+        mobiledoc.sections[2].should.be.an.Array().with.lengthOf(3);
+        mobiledoc.sections[2].should.eql([1, 'p', [[0, [], 0, 'World']]]);
     });
 });
