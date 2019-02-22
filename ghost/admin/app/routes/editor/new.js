@@ -1,9 +1,9 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 
 export default AuthenticatedRoute.extend({
-    model() {
+    model(params) {
         return this.get('session.user').then(user => (
-            this.store.createRecord('post', {authors: [user]})
+            this.store.createRecord(params.type, {authors: [user]})
         ));
     },
 

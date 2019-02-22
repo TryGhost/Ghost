@@ -291,65 +291,6 @@ describe.skip('Unit: Component: post-settings-menu', function () {
         });
     });
 
-    describe('togglePage', function () {
-        it('should toggle the page property', function () {
-            let component = this.subject({
-                post: EmberObject.create({
-                    page: false,
-                    isNew: true
-                })
-            });
-
-            expect(component.get('post.page')).to.not.be.ok;
-
-            run(function () {
-                component.send('togglePage');
-
-                expect(component.get('post.page')).to.be.ok;
-            });
-        });
-
-        it('should not save the post if it is still new', function () {
-            let component = this.subject({
-                post: EmberObject.create({
-                    page: false,
-                    isNew: true,
-                    save() {
-                        this.incrementProperty('saved');
-                        return RSVP.resolve();
-                    }
-                })
-            });
-
-            run(function () {
-                component.send('togglePage');
-
-                expect(component.get('post.page')).to.be.ok;
-                expect(component.get('post.saved')).to.not.be.ok;
-            });
-        });
-
-        it('should save the post if it is not new', function () {
-            let component = this.subject({
-                post: EmberObject.create({
-                    page: false,
-                    isNew: false,
-                    save() {
-                        this.incrementProperty('saved');
-                        return RSVP.resolve();
-                    }
-                })
-            });
-
-            run(function () {
-                component.send('togglePage');
-
-                expect(component.get('post.page')).to.be.ok;
-                expect(component.get('post.saved')).to.equal(1);
-            });
-        });
-    });
-
     describe('toggleFeatured', function () {
         it('should toggle the featured property', function () {
             let component = this.subject({

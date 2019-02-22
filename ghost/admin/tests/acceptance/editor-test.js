@@ -23,7 +23,7 @@ describe('Acceptance: Editor', function () {
         this.server.create('post', {authors: [author]});
 
         await invalidateSession();
-        await visit('/editor/1');
+        await visit('/editor/post/1');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
@@ -34,9 +34,9 @@ describe('Acceptance: Editor', function () {
         this.server.create('post', {authors: [author]});
 
         await authenticateSession();
-        await visit('/editor/1');
+        await visit('/editor/post/1');
 
-        expect(currentURL(), 'currentURL').to.equal('/editor/1');
+        expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
     });
 
     it('does not redirect to team page when authenticated as author', async function () {
@@ -45,9 +45,9 @@ describe('Acceptance: Editor', function () {
         this.server.create('post', {authors: [author]});
 
         await authenticateSession();
-        await visit('/editor/1');
+        await visit('/editor/post/1');
 
-        expect(currentURL(), 'currentURL').to.equal('/editor/1');
+        expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
     });
 
     it('does not redirect to team page when authenticated as editor', async function () {
@@ -56,9 +56,9 @@ describe('Acceptance: Editor', function () {
         this.server.create('post', {authors: [author]});
 
         await authenticateSession();
-        await visit('/editor/1');
+        await visit('/editor/post/1');
 
-        expect(currentURL(), 'currentURL').to.equal('/editor/1');
+        expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
     });
 
     it('displays 404 when post does not exist', async function () {
@@ -66,10 +66,10 @@ describe('Acceptance: Editor', function () {
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
-        await visit('/editor/1');
+        await visit('/editor/post/1');
 
         expect(currentRouteName()).to.equal('error404');
-        expect(currentURL()).to.equal('/editor/1');
+        expect(currentURL()).to.equal('/editor/post/1');
     });
 
     it('when logged in as a contributor, renders a save button instead of a publish menu & hides tags input', async function () {
@@ -80,9 +80,9 @@ describe('Acceptance: Editor', function () {
         await authenticateSession();
 
         // post id 1 is a draft, checking for draft behaviour now
-        await visit('/editor/1');
+        await visit('/editor/post/1');
 
-        expect(currentURL(), 'currentURL').to.equal('/editor/1');
+        expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
 
         // Expect publish menu to not exist
         expect(
@@ -100,7 +100,7 @@ describe('Acceptance: Editor', function () {
         ).to.not.exist;
 
         // post id 2 is published, we should be redirected to index
-        await visit('/editor/2');
+        await visit('/editor/post/2');
 
         expect(currentURL(), 'currentURL').to.equal('/');
     });
@@ -121,10 +121,10 @@ describe('Acceptance: Editor', function () {
             let futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
 
             // post id 1 is a draft, checking for draft behaviour now
-            await visit('/editor/1');
+            await visit('/editor/post/1');
 
             expect(currentURL(), 'currentURL')
-                .to.equal('/editor/1');
+                .to.equal('/editor/post/1');
 
             // open post settings menu
             await click('[data-test-psm-trigger]');
@@ -235,9 +235,9 @@ describe('Acceptance: Editor', function () {
             ).to.equal('Unpublish');
 
             // post id 2 is a published post, checking for published post behaviour now
-            await visit('/editor/2');
+            await visit('/editor/post/2');
 
-            expect(currentURL(), 'currentURL').to.equal('/editor/2');
+            expect(currentURL(), 'currentURL').to.equal('/editor/post/2');
             expect(find('[data-test-date-time-picker-date-input]').value).to.equal('12/19/2015');
             expect(find('[data-test-date-time-picker-time-input]').value).to.equal('16:25');
 
@@ -280,10 +280,10 @@ describe('Acceptance: Editor', function () {
                 .to.equal('(GMT +12:00) International Date Line West');
 
             // and now go back to the editor
-            await visit('/editor/2');
+            await visit('/editor/post/2');
 
             expect(currentURL(), 'currentURL in editor')
-                .to.equal('/editor/2');
+                .to.equal('/editor/post/2');
 
             expect(
                 find('[data-test-date-time-picker-date-input]').value,
@@ -436,7 +436,7 @@ describe('Acceptance: Editor', function () {
             let post = this.server.create('post', 1, {authors: [author], status: 'draft'});
             let plusTenMin = moment().utc().add(10, 'minutes');
 
-            await visit(`/editor/${post.id}`);
+            await visit(`/editor/post/${post.id}`);
 
             await click('[data-test-publishmenu-trigger]');
             await click('[data-test-publishmenu-scheduled-option]');
@@ -461,10 +461,10 @@ describe('Acceptance: Editor', function () {
             this.server.create('post', {authors: [author]});
 
             // post id 1 is a draft, checking for draft behaviour now
-            await visit('/editor/1');
+            await visit('/editor/post/1');
 
             expect(currentURL(), 'currentURL')
-                .to.equal('/editor/1');
+                .to.equal('/editor/post/1');
 
             await fillIn('[data-test-editor-title-input]', Array(260).join('a'));
             await click('[data-test-publishmenu-trigger]');
@@ -486,10 +486,10 @@ describe('Acceptance: Editor', function () {
         //     this.server.createList('post', 1);
         //
         //     // post id 1 is a draft, checking for draft behaviour now
-        //     await visit('/editor/1');
+        //     await visit('/editor/post/1');
         //
         //     expect(currentURL(), 'currentURL')
-        //         .to.equal('/editor/1');
+        //         .to.equal('/editor/post/1');
         //
         //     await titleRendered();
         //
@@ -508,10 +508,10 @@ describe('Acceptance: Editor', function () {
         //     this.server.createList('post', 1);
         //
         //     // post id 1 is a draft, checking for draft behaviour now
-        //     await visit('/editor/1');
+        //     await visit('/editor/post/1');
         //
         //     expect(currentURL(), 'currentURL')
-        //         .to.equal('/editor/1');
+        //         .to.equal('/editor/post/1');
         //
         //     await titleRendered();
         //
@@ -529,10 +529,10 @@ describe('Acceptance: Editor', function () {
             this.server.create('setting', {activeTimezone: 'Europe/Dublin'});
             clock.restore();
 
-            await visit('/editor/1');
+            await visit('/editor/post/1');
 
             expect(currentURL(), 'currentURL')
-                .to.equal('/editor/1');
+                .to.equal('/editor/post/1');
             expect(find('[data-test-date-time-picker-date-input]').value, 'scheduled date')
                 .to.equal(compareDateString);
             expect(find('[data-test-date-time-picker-time-input]').value, 'scheduled time')
@@ -552,10 +552,10 @@ describe('Acceptance: Editor', function () {
             this.server.create('user', {name: 'Waldo', roles: [authorRole]});
             this.server.create('post', {authors: [user1]});
 
-            await visit('/editor/1');
+            await visit('/editor/post/1');
 
             expect(currentURL(), 'currentURL')
-                .to.equal('/editor/1');
+                .to.equal('/editor/post/1');
 
             await click('button.post-settings');
 
@@ -586,7 +586,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 currentURL(),
                 'url on initial visit'
-            ).to.equal('/editor');
+            ).to.equal('/editor/post');
 
             await click('[data-test-editor-title-input]');
             await blur('[data-test-editor-title-input]');
@@ -599,13 +599,13 @@ describe('Acceptance: Editor', function () {
             expect(
                 currentURL(),
                 'url after autosave'
-            ).to.equal('/editor/1');
+            ).to.equal('/editor/post/1');
         });
 
         it('saves post settings fields', async function () {
             let post = this.server.create('post', {authors: [author]});
 
-            await visit(`/editor/${post.id}`);
+            await visit(`/editor/post/${post.id}`);
 
             // TODO: implement tests for other fields
 

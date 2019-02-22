@@ -62,7 +62,7 @@ export default Component.extend({
         this._super(...arguments);
 
         // re-register the / text input handler if the editor changes such as
-        // when a "New story" is clicked from the sidebar or a different post
+        // when a "New post" is clicked from the sidebar or a different post
         // is loaded via search
         if (this.editor !== this._lastEditor) {
             this.editor.onTextInput({

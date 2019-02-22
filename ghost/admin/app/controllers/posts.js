@@ -19,9 +19,6 @@ const TYPES = [{
 }, {
     name: 'Featured posts',
     value: 'featured'
-}, {
-    name: 'Pages',
-    value: 'page'
 }];
 
 const ORDERS = [{
@@ -137,7 +134,7 @@ export default Controller.extend({
         },
 
         openEditor(post) {
-            this.transitionToRoute('editor.edit', post.get('id'));
+            this.transitionToRoute('editor.edit', 'post', post.get('id'));
         }
     }
 });

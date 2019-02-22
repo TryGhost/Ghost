@@ -18,8 +18,7 @@ describe('Acceptance: Content', function () {
     });
 
     describe('as admin', function () {
-        let admin, editor,
-            publishedPost, scheduledPost, draftPost, publishedPage, authorPost;
+        let admin, editor, publishedPost, scheduledPost, draftPost, authorPost;
 
         beforeEach(async function () {
             let adminRole = this.server.create('role', {name: 'Administrator'});
@@ -30,8 +29,10 @@ describe('Acceptance: Content', function () {
             publishedPost = this.server.create('post', {authors: [admin], status: 'published', title: 'Published Post'});
             scheduledPost = this.server.create('post', {authors: [admin], status: 'scheduled', title: 'Scheduled Post'});
             draftPost = this.server.create('post', {authors: [admin], status: 'draft', title: 'Draft Post'});
-            publishedPage = this.server.create('post', {authors: [admin], status: 'published', page: true, title: 'Published Page'});
             authorPost = this.server.create('post', {authors: [editor], status: 'published', title: 'Editor Published Post'});
+
+            // pages shouldn't appear in the list
+            this.server.create('page', {authors: [admin], status: 'published', title: 'Published Page'});
 
             return await authenticateSession();
         });
@@ -40,7 +41,7 @@ describe('Acceptance: Content', function () {
             await visit('/');
             // Not checking request here as it won't be the last request made
             // Displays all posts + pages
-            expect(findAll('[data-test-post-id]').length, 'all posts count').to.equal(5);
+            expect(findAll('[data-test-post-id]').length, 'all posts count').to.equal(4);
 
             // show draft posts
             await selectChoose('[data-test-type-select]', 'Draft posts');
@@ -48,7 +49,6 @@ describe('Acceptance: Content', function () {
             // API request is correct
             let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.filter, '"drafts" request status filter').to.have.string('status:draft');
-            expect(lastRequest.queryParams.filter, '"drafts" request page filter').to.have.string('page:false');
             // Displays draft post
             expect(findAll('[data-test-post-id]').length, 'drafts count').to.equal(1);
             expect(find(`[data-test-post-id="${draftPost.id}"]`), 'draft post').to.exist;
@@ -59,7 +59,6 @@ describe('Acceptance: Content', function () {
             // API request is correct
             [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
-            expect(lastRequest.queryParams.filter, '"published" request page filter').to.have.string('page:false');
             // Displays three published posts + pages
             expect(findAll('[data-test-post-id]').length, 'published count').to.equal(2);
             expect(find(`[data-test-post-id="${publishedPost.id}"]`), 'admin published post').to.exist;
@@ -71,21 +70,9 @@ describe('Acceptance: Content', function () {
             // API request is correct
             [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
-            expect(lastRequest.queryParams.filter, '"scheduled" request page filter').to.have.string('page:false');
             // Displays scheduled post
             expect(findAll('[data-test-post-id]').length, 'scheduled count').to.equal(1);
             expect(find(`[data-test-post-id="${scheduledPost.id}"]`), 'scheduled post').to.exist;
-
-            // show pages
-            await selectChoose('[data-test-type-select]', 'Pages');
-
-            // API request is correct
-            [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter, '"pages" request status filter').to.have.string('status:[draft,scheduled,published]');
-            expect(lastRequest.queryParams.filter, '"pages" request page filter').to.have.string('page:true');
-            // Displays page
-            expect(findAll('[data-test-post-id]').length, 'pages count').to.equal(1);
-            expect(find(`[data-test-post-id="${publishedPage.id}"]`), 'page post').to.exist;
 
             // show all posts
             await selectChoose('[data-test-type-select]', 'All posts');
@@ -93,7 +80,6 @@ describe('Acceptance: Content', function () {
             // API request is correct
             [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.filter, '"all" request status filter').to.have.string('status:[draft,scheduled,published]');
-            expect(lastRequest.queryParams.filter, '"all" request page filter').to.have.string('page:[true,false]');
 
             // show all posts by editor
             await selectChoose('[data-test-author-select]', editor.name);
@@ -101,7 +87,6 @@ describe('Acceptance: Content', function () {
             // API request is correct
             [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.filter, '"editor" request status filter').to.have.string('status:[draft,scheduled,published]');
-            expect(lastRequest.queryParams.filter, '"editor" request page filter').to.have.string('page:[true,false]');
             expect(lastRequest.queryParams.filter, '"editor" request filter param').to.have.string(`authors:${editor.slug}`);
 
             // Displays editor post
@@ -114,7 +99,7 @@ describe('Acceptance: Content', function () {
             // Double-click on a post opens editor
             await triggerEvent(`[data-test-post-id="${authorPost.id}"]`, 'dblclick');
 
-            expect(currentURL(), 'url after double-click').to.equal(`/editor/${authorPost.id}`);
+            expect(currentURL(), 'url after double-click').to.equal(`/editor/post/${authorPost.id}`);
         });
 
         // TODO: skipped due to consistently random failures on Travis
