@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
 import {alias} from '@ember/object/computed';
+import {get} from '@ember/object';
 import {isArray as isEmberArray} from '@ember/array';
 import {
     isVersionMismatchError
@@ -98,7 +99,7 @@ export default Controller.extend({
     _sendImage: task(function* () {
         let formData = new FormData();
         let imageFile = this.get('profileImage');
-        let uploadUrl = this.get('ghostPaths.url').api('uploads');
+        let uploadUrl = this.get('ghostPaths.url').api('images');
 
         if (imageFile) {
             formData.append('uploadimage', imageFile, imageFile.name);
@@ -111,7 +112,7 @@ export default Controller.extend({
                 dataType: 'text'
             });
 
-            let imageUrl = JSON.parse(response);
+            let imageUrl = get(JSON.parse(response), 'url');
             let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
 
             user.profile_image = imageUrl;

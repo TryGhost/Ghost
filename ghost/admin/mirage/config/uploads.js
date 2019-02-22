@@ -8,7 +8,9 @@ const fileUploadResponse = function (db, {requestBody}) {
         month = `0${month}`;
     }
 
-    return `"/content/images/${year}/${month}/${file.name}"`;
+    return {
+        url: `/content/images/${year}/${month}/${file.name}`
+    };
 };
 
 export default function mockUploads(server) {

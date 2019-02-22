@@ -30,7 +30,7 @@ const sessionStub = Service.extend({
 
 const stubSuccessfulUpload = function (server, delay = 0) {
     server.post('/ghost/api/v2/admin/images/', function () {
-        return [200, {'Content-Type': 'application/json'}, '"/content/images/test.png"'];
+        return [200, {'Content-Type': 'application/json'}, '{"url":"/content/images/test.png"}'];
     }, delay);
 };
 
