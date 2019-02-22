@@ -179,7 +179,7 @@
     overflow: hidden;
     margin-top: 32px;
     padding: 10px 20px;
-    color: color-mod(var(--midgrey) l(-10%) s(+5%));
+    color:  color-mod(var(--midgrey) l(+20%) s(+5%));
     text-overflow: ellipsis;
     text-transform: uppercase;
     white-space: nowrap;
@@ -193,7 +193,7 @@
     display: flex;
     align-items: center;
     padding: 7px 20px;
-    color:  color-mod(var(--midgrey) l(+5%));
+    color: color-mod(var(--midgrey) l(-10%) s(+5%));
     opacity: 0.9;
     transition: none;
 }
@@ -278,7 +278,7 @@
     text-align: center;
     font-size: 1.4rem;
     line-height: 1.6em;
-    color:  color-mod(var(--midgrey) l(+5%));
+    color: color-mod(var(--midgrey) l(-10%) s(+5%));
     padding: 7px 10px 7px 16px;
     margin: 20px 6px 12px;
     transition: color .3s;
