@@ -701,11 +701,11 @@ Post = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['columns', 'importing', 'withRelated', 'require'],
+                findOne: ['columns', 'importing', 'withRelated', 'require', 'filter'],
                 findPage: ['status', 'staticPages'],
                 findAll: ['columns', 'filter'],
                 destroy: ['destroyAll', 'destroyBy'],
-                edit: ['page']
+                edit: ['filter']
             };
 
         // The post model additionally supports having a formats option
@@ -753,10 +753,11 @@ Post = ghostBookshelf.Model.extend({
      * @extends ghostBookshelf.Model.findOne to handle post status
      * **See:** [ghostBookshelf.Model.findOne](base.js.html#Find%20One)
      */
-    findOne: function findOne(data, options) {
-        data = _.defaults(data || {}, {
-            status: 'published'
-        });
+    findOne: function findOne(data = {}, options = {}) {
+        // @TODO: remove when we drop v0.1
+        if (!options.filter && !data.status) {
+            data.status = 'published';
+        }
 
         if (data.status === 'all') {
             delete data.status;

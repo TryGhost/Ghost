@@ -139,4 +139,16 @@ describe('Posts', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(404);
     });
+
+    it('can read post with fields', function () {
+        return request
+            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/?key=${validKey}&fields=title,slug`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res)=> {
+                localUtils.API.checkResponse(res.body.posts[0], 'post', null, null, ['id', 'title', 'slug']);
+            });
+    });
 });

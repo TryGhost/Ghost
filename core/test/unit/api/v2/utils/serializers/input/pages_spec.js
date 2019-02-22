@@ -71,37 +71,92 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
     });
 
     describe('read', function () {
-        it('default', function () {
+        it('content api default', function () {
             const apiConfig = {};
             const frame = {
                 options: {
                     context: {}
                 },
-                data: {
-                    status: 'all'
-                }
+                data: {}
             };
 
             serializers.input.pages.read(apiConfig, frame);
-            frame.data.status.should.eql('all');
-            frame.data.page.should.eql(true);
+            frame.options.filter.should.eql('page:true');
         });
 
-        it('overrides page', function () {
+        it('content api default', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
-                    context: {}
+                    context: {
+                        user: 0,
+                        api_key: {
+                            id: 1,
+                            type: 'content'
+                        },
+                    }
                 },
-                data: {
-                    status: 'all',
-                    page: false
-                }
+                data: {}
             };
 
             serializers.input.pages.read(apiConfig, frame);
-            frame.data.status.should.eql('all');
-            frame.data.page.should.eql(true);
+            frame.options.filter.should.eql('page:true');
+        });
+
+        it('admin api default', function () {
+            const apiConfig = {};
+            const frame = {
+                apiType: 'admin',
+                options: {
+                    context: {
+                        user: 0,
+                        api_key: {
+                            id: 1,
+                            type: 'admin'
+                        },
+                    }
+                },
+                data: {}
+            };
+
+            serializers.input.pages.read(apiConfig, frame);
+            frame.options.filter.should.eql('(page:true)+status:[draft,published,scheduled]');
+        });
+
+        it('custom page filter', function () {
+            const apiConfig = {};
+            const frame = {
+                options: {
+                    filter: 'page:false',
+                    context: {}
+                },
+                data: {}
+            };
+
+            serializers.input.pages.read(apiConfig, frame);
+            frame.options.filter.should.eql('(page:false)+page:true');
+        });
+
+        it('custom status filter', function () {
+            const apiConfig = {};
+            const frame = {
+                apiType: 'admin',
+                options: {
+                    filter: 'status:draft',
+                    context: {
+                        user: 0,
+                        api_key: {
+                            id: 1,
+                            type: 'admin'
+                        },
+                    }
+                },
+                data: {}
+            };
+
+            serializers.input.pages.read(apiConfig, frame);
+            frame.options.filter.should.eql('(status:draft)+page:true');
         });
 
         it('remove mobiledoc option from formats', function () {

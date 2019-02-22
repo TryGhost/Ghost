@@ -917,9 +917,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Model)} Single Model
      */
     findOne: function findOne(data, unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'findOne');
+        const options = this.filterOptions(unfilteredOptions, 'findOne');
         data = this.filterData(data);
-        return this.forge(data).fetch(options);
+        const model = this.forge(data);
+
+        // @NOTE: The API layer decides if this option is allowed
+        if (options.filter) {
+            model.applyDefaultAndCustomFilters(options);
+        }
+
+        return model.fetch(options);
     },
 
     /**
@@ -936,16 +943,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     edit: function edit(data, unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'edit');
         const id = options.id;
-        let model;
-
-        if (options.hasOwnProperty('page')) {
-            model = this.forge({id: id, page: options.page});
-            delete options.page;
-        } else {
-            model = this.forge({id: id});
-        }
+        const model = this.forge({id: id});
 
         data = this.filterData(data);
+
+        // @NOTE: The API layer decides if this option is allowed
+        if (options.filter) {
+            model.applyDefaultAndCustomFilters(options);
+        }
 
         // We allow you to disable timestamps when run migration, so that the posts `updated_at` value is the same
         if (options.importing) {
