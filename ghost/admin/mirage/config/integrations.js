@@ -9,6 +9,9 @@ export default function mockIntegrations(server) {
         let body = JSON.parse(requestBody);
         let [params] = body.integrations;
 
+        // all integrations created via the API have a type of 'custom'
+        params.type = 'custom';
+
         if (!params.name) {
             return new Response(422, {}, {errors: [{
                 errorType: 'ValidationError',
