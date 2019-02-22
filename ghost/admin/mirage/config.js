@@ -4,6 +4,7 @@ import mockConfiguration from './config/configuration';
 import mockIntegrations from './config/integrations';
 import mockInvites from './config/invites';
 import mockMembers from './config/members';
+import mockPages from './config/pages';
 import mockPosts from './config/posts';
 import mockRoles from './config/roles';
 import mockSettings from './config/settings';
@@ -57,6 +58,7 @@ export function testConfig() {
     mockIntegrations(this);
     mockInvites(this);
     mockMembers(this);
+    mockPages(this);
     mockPosts(this);
     mockRoles(this);
     mockSettings(this);

@@ -8,9 +8,9 @@
             <div class="flex items-center pe-auto">
                 {{#if ui.isFullScreen}}
                     <div class="{{ui-text "ts"}} h9 br b--lightgrey pl3 pr4 flex items-center br2 br--left {{unless infoMessage "bg-white"}}">
-                        {{#link-to "posts" classNames="blue link fw4 flex items-center" data-test-link="stories"}}
+                        {{#link-to (pluralize post.displayName) classNames="blue link fw4 flex items-center" data-test-link=(pluralize post.displayName)}}
                             {{svg-jar "arrow-left" class="w3 fill-blue mr1 nudge-right--2"}}
-                            Stories
+                            {{capitalize (pluralize post.displayName)}}
                         {{/link-to}}
                     </div>
                 {{/if}}
@@ -23,7 +23,7 @@
                     </span>
                 {{#gh-scheduled-post-countdown post=post as |post countdown|}}
                     <time datetime="{{post.publishedAtUTC}}" class="green f8 ml5" data-test-schedule-countdown>
-                        Post will go live {{countdown}}.
+                        {{capitalize post.displayName}} will go live {{countdown}}.
                     </time>
                 {{/gh-scheduled-post-countdown}}
                 </div>
@@ -71,11 +71,11 @@
         --}}
         {{gh-koenig-editor
             title=(readonly post.titleScratch)
-            titlePlaceholder="Story Title"
+            titlePlaceholder=(concat (capitalize post.displayName) " Title")
             onTitleChange=(action "updateTitleScratch")
             onTitleBlur=(action (perform saveTitle))
             body=(readonly post.scratch)
-            bodyPlaceholder="Begin writing your story..."
+            bodyPlaceholder=(concat "Begin writing your " post.displayName "...")
             bodyAutofocus=shouldFocusEditor
             onBodyChange=(action "updateScratch")
             headerOffset=editor.headerHeight

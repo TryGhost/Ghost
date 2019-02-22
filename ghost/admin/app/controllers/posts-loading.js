@@ -1,8 +1,8 @@
-/* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller, {inject as controller} from '@ember/controller';
 import {readOnly} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
+/* eslint-disable ghost/ember/alias-model-in-controller */
 export default Controller.extend({
 
     postsController: controller('posts'),

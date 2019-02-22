@@ -60,7 +60,9 @@ describe('Integration: Component: gh-psm-template-select', function () {
     it('disables template selector if slug matches post template', async function () {
         this.set('post', {
             slug: 'one',
-            page: false
+            constructor: {
+                modelName: 'post'
+            }
         });
 
         await render(hbs`{{gh-psm-template-select post=post}}`);
@@ -73,7 +75,9 @@ describe('Integration: Component: gh-psm-template-select', function () {
     it('disables template selector if slug matches page template', async function () {
         this.set('post', {
             slug: 'about',
-            page: true
+            constructor: {
+                modelName: 'page'
+            }
         });
 
         await render(hbs`{{gh-psm-template-select post=post}}`);

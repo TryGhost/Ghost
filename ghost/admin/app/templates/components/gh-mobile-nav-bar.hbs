@@ -1,8 +1,8 @@
-{{#link-to "editor.new" data-test-mobile-nav="new-story"}}{{svg-jar "pen"}}New story{{/link-to}}
+{{#link-to "editor.new" "post" data-test-mobile-nav="new-post"}}{{svg-jar "pen"}}New post{{/link-to}}
 {{#if (eq router.currentRouteName "posts.index")}}
-    {{#link-to "posts" (query-params type=null) classNames="active" data-test-mobile-nav="stories"}}{{svg-jar "content"}}Stories{{/link-to}}
+    {{#link-to "posts" (query-params type=null) classNames="active" data-test-mobile-nav="posts"}}{{svg-jar "content"}}Posts{{/link-to}}
 {{else}}
-    {{#link-to "posts"}}{{svg-jar "content" data-test-mobile-nav="stories"}}Content{{/link-to}}
+    {{#link-to "posts"}}{{svg-jar "content" data-test-mobile-nav="posts"}}Posts{{/link-to}}
 {{/if}}
 {{#link-to "team" classNames="gh-nav-main-users" data-test-mobile-nav="team"}}{{svg-jar "account-group"}}Team{{/link-to}}
 <div class="gh-mobile-nav-bar-more" {{action "openMobileMenu" target=ui data-test-mobile-nav="more"}}>{{svg-jar "icon" class="icon-gh"}}More</div>

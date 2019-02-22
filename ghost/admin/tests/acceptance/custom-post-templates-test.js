@@ -63,7 +63,7 @@ describe('Acceptance: Custom Post Templates', function () {
         it('can change selected template', async function () {
             let post = this.server.create('post', {customTemplate: 'custom-news-bulletin.hbs'});
 
-            await visit('/editor/1');
+            await visit('/editor/post/1');
             await click('[data-test-psm-trigger]');
 
             // template form should be shown
@@ -109,7 +109,7 @@ describe('Acceptance: Custom Post Templates', function () {
 
             this.server.create('post', {customTemplate: 'custom-news-bulletin.hbs'});
 
-            await visit('/editor/1');
+            await visit('/editor/post/1');
             await click('[data-test-psm-trigger]');
 
             expect(themeRequests().length, 'after first open').to.equal(1);
@@ -137,7 +137,7 @@ describe('Acceptance: Custom Post Templates', function () {
         it('doesn\'t show template selector', async function () {
             this.server.create('post', {customTemplate: 'custom-news-bulletin.hbs'});
 
-            await visit('/editor/1');
+            await visit('/editor/post/1');
             await click('[data-test-psm-trigger]');
 
             // template form should be shown

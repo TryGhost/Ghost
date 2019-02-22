@@ -1,18 +1,19 @@
 <section class="gh-canvas">
     <header class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>Your posts</h2>
+        <h2 class="gh-canvas-title" data-test-screen-title>Your pages</h2>
         <section class="view-actions">
-            {{#link-to "editor.new" "post" class="gh-btn gh-btn-green" data-test-new-post-button=true}}<span>New post</span>{{/link-to}}
+            {{#link-to "editor.new" "page" class="gh-btn gh-btn-green" data-test-new-page-button=true}}<span>New page</span>{{/link-to}}
         </section>
     </header>
+
     <div class="gh-contentfilter">
         <div class="gh-contentfilter-left">
-            {{#unless session.user.isContributor}}
             {{#power-select
+                placeholder="All pages"
                 selected=selectedType
                 options=availableTypes
-                searchEnabled=false
-                onchange=(action "changeType")
+                searchField="name"
+                onchange=(action (mut k))
                 tagName="div"
                 classNames="gh-contentfilter-menu gh-contentfilter-type"
                 triggerClass="gh-contentfilter-menu-trigger"
@@ -23,19 +24,18 @@
             }}
                 {{type.name}}
             {{/power-select}}
-            {{/unless}}
 
             {{#unless session.user.isAuthorOrContributor}}
             {{#power-select
+                placeholder="All authors"
                 selected=selectedAuthor
                 options=availableAuthors
                 searchField="name"
-                onchange=(action "changeAuthor")
+                onchange=(action (mut k))
                 tagName="div"
                 classNames="gh-contentfilter-menu gh-contentfilter-author"
                 triggerClass="gh-contentfilter-menu-trigger"
                 dropdownClass="gh-contentfilter-menu-dropdown"
-                searchPlaceholder="Search authors"
                 matchTriggerWidth=false
                 data-test-author-select=true
                 as |author|
@@ -44,34 +44,31 @@
             {{/power-select}}
             {{/unless}}
 
-            {{#unless session.user.isContributor}}
             {{#power-select
+                placeholder="All tags"
                 selected=selectedTag
                 options=availableTags
                 searchField="name"
-                onchange=(action "changeTag")
+                onchange=(action (mut k))
                 tagName="div"
                 classNames="gh-contentfilter-menu gh-contentfilter-tag"
                 triggerClass="gh-contentfilter-menu-trigger"
                 dropdownClass="gh-contentfilter-menu-dropdown"
                 searchPlaceholder="Search tags"
                 matchTriggerWidth=false
-                optionsComponent="power-select-vertical-collection-options"
                 data-test-tag-select=true
                 as |tag|
             }}
                 {{tag.name}}
             {{/power-select}}
-            {{/unless}}
         </div>
-
         <div class="gh-contentfilter-right">
             Sort by:
             {{#power-select
                 selected=selectedOrder
                 options=availableOrders
                 searchEnabled=false
-                onchange=(action "changeOrder")
+                onchange=(action (mut k))
                 tagName="div"
                 classNames="gh-contentfilter-menu gh-contentfilter-sort"
                 triggerClass="gh-contentfilter-menu-trigger"
@@ -86,33 +83,7 @@
         </div>
     </div>
 
-    <section class="content-list">
-        <ol class="posts-list">
-            {{#each postsInfinityModel as |post|}}
-                {{gh-posts-list-item
-                    post=post
-                    onDoubleClick=(action "openEditor")
-                    data-test-post-id=post.id}}
-            {{else}}
-                <li class="no-posts-box">
-                    <div class="no-posts">
-                        {{#if showingAll}}
-                            <h3>You haven't written any posts yet!</h3>
-                            {{#link-to "editor.new" "post"}}<button type="button" class="gh-btn gh-btn-green gh-btn-lg"><span>Write a new Post</span></button>{{/link-to}}
-                        {{else}}
-                            <h3>No posts match the current filter</h3>
-                            {{#link-to "posts.index" (query-params type=null author=null tag=null)}}<button type="button" class="gh-btn gh-btn-lg"><span>Show all posts</span></button>{{/link-to}}
-                        {{/if}}
-                    </div>
-                </li>
-            {{/each}}
-        </ol>
-
-        {{gh-infinity-loader
-            infinityModel=postsInfinityModel
-            scrollable=".gh-main"
-            triggerOffset=1000}}
-    </section>
-
-    {{outlet}}
+    <div class="gh-content">
+        {{gh-loading-spinner}}
+    </div>
 </section>

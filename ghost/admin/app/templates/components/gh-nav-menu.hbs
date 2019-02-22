@@ -40,13 +40,21 @@
         {{gh-search-input class="gh-nav-search-input"}}
     </section>
     <ul class="gh-nav-list gh-nav-main">
-        <li>{{#link-to "editor.new" data-test-nav="new-story"}}{{svg-jar "pen"}}New story{{/link-to}}</li>
+        <li>{{#link-to "editor.new" "post" data-test-nav="new-post"}}{{svg-jar "pen"}}New post{{/link-to}}</li>
         <li>
             {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
             {{#if (eq router.currentRouteName "posts.index")}}
-                {{#link-to "posts" (query-params type=null author=null tag=null order=null) classNames="active" data-test-nav="stories"}}{{svg-jar "content"}}Stories{{/link-to}}
+                {{#link-to "posts" (query-params type=null author=null tag=null order=null) classNames="active" data-test-nav="posts"}}{{svg-jar "content"}}Posts{{/link-to}}
             {{else}}
-                {{#link-to "posts" data-test-nav="stories"}}{{svg-jar "content"}}Stories{{/link-to}}
+                {{#link-to "posts" data-test-nav="posts"}}{{svg-jar "content"}}Posts{{/link-to}}
+            {{/if}}
+        </li>
+        <li>
+            {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
+            {{#if (eq router.currentRouteName "pages.index")}}
+                {{#link-to "pages" (query-params type=null author=null tag=null order=null) classNames="active" data-test-nav="pages"}}{{svg-jar "content"}}Pages{{/link-to}}
+            {{else}}
+                {{#link-to "pages" data-test-nav="pages"}}{{svg-jar "content"}}Pages{{/link-to}}
             {{/if}}
         </li>
         <li>{{#link-to "team" data-test-nav="team"}}{{svg-jar "account-group"}}Team{{/link-to}}</li>

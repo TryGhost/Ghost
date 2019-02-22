@@ -31,7 +31,7 @@ export default Component.extend({
 
     matchedSlugTemplate: computed('post.{page,slug}', 'activeTheme.slugTemplates.[]', function () {
         let slug = this.get('post.slug');
-        let type = this.get('post.page') ? 'page' : 'post';
+        let type = this.post.constructor.modelName;
 
         let [matchedTemplate] = this.get('activeTheme.slugTemplates').filter(function (template) {
             return template.for.includes(type) && template.slug === slug;

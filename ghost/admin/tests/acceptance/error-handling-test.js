@@ -45,7 +45,7 @@ describe('Acceptance: Error Handling', function () {
                 expect(find('.gh-alert').textContent).to.match(/refresh/);
 
                 // try navigating back to the content list
-                await click('[data-test-link="stories"]');
+                await click('[data-test-link="posts"]');
 
                 expect(currentRouteName()).to.equal('editor.edit');
             });
@@ -123,7 +123,7 @@ describe('Acceptance: Error Handling', function () {
             this.server.put('/posts/1/', htmlErrorResponse);
             this.server.create('post');
 
-            await visit('/editor/1');
+            await visit('/editor/post/1');
             await click('[data-test-publishmenu-trigger]');
             await click('[data-test-publishmenu-save]');
 

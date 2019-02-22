@@ -1,4 +1,5 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import {pluralize} from 'ember-inflector';
 
 export default AuthenticatedRoute.extend({
     beforeModel(transition) {
@@ -17,11 +18,10 @@ export default AuthenticatedRoute.extend({
         let query = {
             id: params.post_id,
             status: 'all',
-            filter: 'page:[true,false]',
             formats: 'mobiledoc,plaintext'
         };
 
-        return this.store.query('post', query)
+        return this.store.query(params.type, query)
             .then(records => records.get('firstObject'));
     },
 
@@ -32,15 +32,24 @@ export default AuthenticatedRoute.extend({
         this._super(...arguments);
 
         return this.get('session.user').then((user) => {
+            let returnRoute = `${pluralize(post.constructor.modelName)}.index`;
+
             if (user.get('isAuthorOrContributor') && !post.isAuthoredByUser(user)) {
-                return this.replaceWith('posts.index');
+                return this.replaceWith(returnRoute);
             }
 
             // If the post is not a draft and user is contributor, redirect to index
             if (user.get('isContributor') && !post.get('isDraft')) {
-                return this.replaceWith('posts.index');
+                return this.replaceWith(returnRoute);
             }
         });
+    },
+
+    serialize(model) {
+        return {
+            type: model.constructor.modelName,
+            post_id: model.id
+        };
     },
 
     // there's no specific controller for this route, instead all editor
