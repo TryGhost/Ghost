@@ -1,8 +1,8 @@
 const models = require('../../models');
 const common = require('../../lib/common');
 const urlService = require('../../services/url');
-const allowedIncludes = ['author', 'tags', 'authors', 'authors.roles'];
-const unsafeAttrs = ['author_id', 'status', 'authors'];
+const allowedIncludes = ['tags', 'authors', 'authors.roles'];
+const unsafeAttrs = ['status', 'authors'];
 
 module.exports = {
     docName: 'posts',
@@ -12,7 +12,6 @@ module.exports = {
             'filter',
             'fields',
             'formats',
-            'status',
             'limit',
             'order',
             'page',
@@ -41,7 +40,6 @@ module.exports = {
         options: [
             'include',
             'fields',
-            'status',
             'formats',
             'debug',
             'absolute_urls'
@@ -49,7 +47,6 @@ module.exports = {
         data: [
             'id',
             'slug',
-            'status',
             'uuid'
         ],
         validation: {

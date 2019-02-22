@@ -102,7 +102,6 @@ describe('DB API', () => {
                         let jsonResponse = res.body;
                         let results = jsonResponse.posts;
                         jsonResponse.posts.should.have.length(7);
-                        _.filter(results, {page: false, status: 'published'}).length.should.equal(7);
                     });
             });
     });
@@ -118,7 +117,6 @@ describe('DB API', () => {
                 let jsonResponse = res.body;
                 let results = jsonResponse.posts;
                 jsonResponse.posts.should.have.length(7);
-                _.filter(results, {page: false, status: 'published'}).length.should.equal(7);
             })
             .then(() => {
                 return request.delete(localUtils.API.getApiQuery('db/'))

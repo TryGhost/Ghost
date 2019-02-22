@@ -43,19 +43,19 @@ describe('Posts API', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(11);
+                jsonResponse.posts.should.have.length(13);
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
                 // Ensure default order
-                jsonResponse.posts[0].slug.should.eql('welcome');
-                jsonResponse.posts[10].slug.should.eql('html-ipsum');
+                jsonResponse.posts[0].slug.should.eql('scheduled-post');
+                jsonResponse.posts[12].slug.should.eql('html-ipsum');
 
                 // Absolute urls by default
-                jsonResponse.posts[0].url.should.eql(`${config.get('url')}/welcome/`);
-                jsonResponse.posts[9].feature_image.should.eql(`${config.get('url')}/content/images/2018/hey.jpg`);
+                jsonResponse.posts[0].url.should.eql(`${config.get('url')}/404/`);
+                jsonResponse.posts[2].url.should.eql(`${config.get('url')}/welcome/`);
+                jsonResponse.posts[11].feature_image.should.eql(`${config.get('url')}/content/images/2018/hey.jpg`);
 
                 done();
             });
@@ -80,7 +80,6 @@ describe('Posts API', function () {
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
 
                 // ensure order works
                 jsonResponse.posts[0].slug.should.eql('apps-integrations');
@@ -104,7 +103,7 @@ describe('Posts API', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(11);
+                jsonResponse.posts.should.have.length(13);
                 localUtils.API.checkResponse(
                     jsonResponse.posts[0],
                     'post',
@@ -113,17 +112,18 @@ describe('Posts API', function () {
 
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
 
-                jsonResponse.posts[0].tags.length.should.eql(1);
-                jsonResponse.posts[0].authors.length.should.eql(1);
-                jsonResponse.posts[0].tags[0].url.should.eql(`${config.get('url')}/tag/getting-started/`);
-                jsonResponse.posts[0].authors[0].url.should.eql(`${config.get('url')}/author/ghost/`);
+                jsonResponse.posts[0].tags.length.should.eql(0);
+                jsonResponse.posts[2].tags.length.should.eql(1);
+                jsonResponse.posts[2].authors.length.should.eql(1);
+                jsonResponse.posts[2].tags[0].url.should.eql(`${config.get('url')}/tag/getting-started/`);
+                jsonResponse.posts[2].authors[0].url.should.eql(`${config.get('url')}/author/ghost/`);
 
                 done();
             });
     });
 
     it('Can filter posts', function (done) {
-        request.get(localUtils.API.getApiQuery('posts/?filter=page:[false,true]&status=all'))
+        request.get(localUtils.API.getApiQuery('posts/?filter=featured:true'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -137,9 +137,29 @@ describe('Posts API', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(15);
+                jsonResponse.posts.should.have.length(2);
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                done();
+            });
+    });
+
+    it('Cannot receive pages', function (done) {
+        request.get(localUtils.API.getApiQuery('posts/?filter=page:true'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse.posts);
+                localUtils.API.checkResponse(jsonResponse, 'posts');
+                jsonResponse.posts.should.have.length(0);
                 done();
             });
     });
@@ -178,9 +198,9 @@ describe('Posts API', function () {
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
-                jsonResponse.posts[0].page.should.not.be.ok();
+
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+
                 testUtils.API.isISO8601(jsonResponse.posts[0].created_at).should.be.true();
                 // Tags aren't included by default
                 should.not.exist(jsonResponse.posts[0].tags);
@@ -205,9 +225,9 @@ describe('Posts API', function () {
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 jsonResponse.posts[0].slug.should.equal('welcome');
-                jsonResponse.posts[0].page.should.not.be.ok();
+
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
+
                 // Tags aren't included by default
                 should.not.exist(jsonResponse.posts[0].tags);
                 done();
@@ -232,8 +252,6 @@ describe('Posts API', function () {
                 should.exist(jsonResponse.posts);
 
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['tags', 'authors']);
-
-                jsonResponse.posts[0].page.should.not.be.ok();
 
                 jsonResponse.posts[0].authors[0].should.be.an.Object();
                 localUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user', ['url']);
@@ -289,7 +307,7 @@ describe('Posts API', function () {
         };
 
         return request
-            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[3].id}/?status=all`))
+            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[3].id}/`))
             .set('Origin', config.get('url'))
             .expect(200)
             .then((res) => {
@@ -313,7 +331,7 @@ describe('Posts API', function () {
         };
 
         return request
-            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[1].id}/?status=all`))
+            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[1].id}/?`))
             .set('Origin', config.get('url'))
             .expect(200)
             .then((res) => {
@@ -343,5 +361,27 @@ describe('Posts API', function () {
                 res.body.should.be.empty();
                 res.headers['x-cache-invalidate'].should.eql('/*');
             });
+    });
+
+    it('Cannot get post via pages endpoint', function () {
+        return request.get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[3].id}/`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(404);
+    });
+
+    it('Cannot update post via pages endpoint', function () {
+        const post = {
+            title: 'fails',
+            updated_at: new Date().toISOString()
+        };
+
+        return request.put(localUtils.API.getApiQuery('pages/' + testUtils.DataGenerator.Content.posts[3].id))
+            .set('Origin', config.get('url'))
+            .send({pages: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(404);
     });
 });

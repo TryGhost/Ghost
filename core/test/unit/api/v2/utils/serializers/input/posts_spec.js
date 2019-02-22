@@ -35,7 +35,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            should.equal(frame.options.filter, undefined);
+            should.equal(frame.options.filter, 'page:false');
         });
 
         it('combine filters', function () {
@@ -178,28 +178,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            should.not.exist(frame.data.page);
-        });
-
-        it('with non public request it does not override data.page', function () {
-            const apiConfig = {};
-            const frame = {
-                apiType: 'admin',
-                options: {
-                    context: {
-                        api_key: {
-                            id: 1,
-                            type: 'admin'
-                        }
-                    }
-                },
-                data: {
-                    page: true
-                }
-            };
-
-            serializers.input.posts.read(apiConfig, frame);
-            frame.data.page.should.eql(true);
+            should.equal(frame.data.page, false);
         });
 
         it('remove mobiledoc option from formats', function () {
@@ -382,6 +361,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 const apiConfig = {};
                 const mobiledoc = '{"version":"0.3.1","atoms":[],"cards":[],"sections":[]}';
                 const frame = {
+                    options: {},
                     data: {
                         posts: [
                             {

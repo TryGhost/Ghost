@@ -3,6 +3,10 @@ module.exports = {
         return require('./posts');
     },
 
+    get pages() {
+        return require('./pages');
+    },
+
     get invites() {
         return require('./invites');
     },

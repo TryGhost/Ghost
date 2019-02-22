@@ -19,6 +19,10 @@ module.exports = {
         return require('./session');
     },
 
+    get pagesPublic() {
+        return shared.pipeline(require('./pages-public'), localUtils);
+    },
+
     get pages() {
         return shared.pipeline(require('./pages'), localUtils);
     },
@@ -41,6 +45,10 @@ module.exports = {
 
     get posts() {
         return shared.pipeline(require('./posts'), localUtils);
+    },
+
+    get postsPublic() {
+        return shared.pipeline(require('./posts-public'), localUtils);
     },
 
     get invites() {

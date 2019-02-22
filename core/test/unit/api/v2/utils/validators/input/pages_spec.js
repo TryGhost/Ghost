@@ -5,14 +5,14 @@ const Promise = require('bluebird');
 const common = require('../../../../../../../server/lib/common');
 const validators = require('../../../../../../../server/api/v2/utils/validators');
 
-describe('Unit: v2/utils/validators/input/posts', function () {
+describe('Unit: v2/utils/validators/input/pages', function () {
     afterEach(function () {
         sinon.restore();
     });
 
     describe('add', function () {
         const apiConfig = {
-            docName: 'posts'
+            docName: 'pages'
         };
 
         describe('required fields', function () {
@@ -22,14 +22,14 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     data: {}
                 };
 
-                return validators.input.posts.add(apiConfig, frame)
+                return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.ValidationError).should.be.true();
                     });
             });
 
-            it('should fail with no posts', function () {
+            it('should fail with no pages', function () {
                 const frame = {
                     options: {},
                     data: {
@@ -37,38 +37,38 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     }
                 };
 
-                return validators.input.posts.add(apiConfig, frame)
+                return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.ValidationError).should.be.true();
                     });
             });
 
-            it('should fail with no posts in array', function () {
+            it('should fail with no pages in array', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: []
+                        pages: []
                     }
                 };
 
-                return validators.input.posts.add(apiConfig, frame)
+                return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.ValidationError).should.be.true();
                     });
             });
 
-            it('should fail with more than post', function () {
+            it('should fail with more than page', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [],
+                        pages: [],
                         tags: []
                     }
                 };
 
-                return validators.input.posts.add(apiConfig, frame)
+                return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.ValidationError).should.be.true();
@@ -79,13 +79,13 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [{
+                        pages: [{
                             what: 'a fail'
                         }],
                     }
                 };
 
-                return validators.input.posts.add(apiConfig, frame)
+                return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.ValidationError).should.be.true();
@@ -96,21 +96,21 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [{
+                        pages: [{
                             title: 'pass',
                             authors: [{id: 'correct'}]
                         }],
                     }
                 };
 
-                return validators.input.posts.add(apiConfig, frame);
+                return validators.input.pages.add(apiConfig, frame);
             });
 
             it('should remove `strip`able fields and leave regular fields', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [{
+                        pages: [{
                             title: 'pass',
                             authors: [{id: 'correct'}],
                             id: 'strip me',
@@ -122,15 +122,15 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     }
                 };
 
-                let result = validators.input.posts.add(apiConfig, frame);
+                let result = validators.input.pages.add(apiConfig, frame);
 
-                should.exist(frame.data.posts[0].title);
-                should.exist(frame.data.posts[0].authors);
-                should.not.exist(frame.data.posts[0].id);
-                should.not.exist(frame.data.posts[0].created_at);
-                should.not.exist(frame.data.posts[0].created_by);
-                should.not.exist(frame.data.posts[0].updated_by);
-                should.not.exist(frame.data.posts[0].published_by);
+                should.exist(frame.data.pages[0].title);
+                should.exist(frame.data.pages[0].authors);
+                should.not.exist(frame.data.pages[0].id);
+                should.not.exist(frame.data.pages[0].created_at);
+                should.not.exist(frame.data.pages[0].created_by);
+                should.not.exist(frame.data.pages[0].updated_by);
+                should.not.exist(frame.data.pages[0].published_by);
 
                 return result;
             });
@@ -155,21 +155,21 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     const badValues = fieldMap[key];
 
                     const checks = badValues.map((value) => {
-                        const post = {};
-                        post[key] = value;
+                        const page = {};
+                        page[key] = value;
 
                         if (key !== 'title') {
-                            post.title = 'abc';
+                            page.title = 'abc';
                         }
 
                         const frame = {
                             options: {},
                             data: {
-                                posts: [post]
+                                pages: [page]
                             }
                         };
 
-                        return validators.input.posts.add(apiConfig, frame)
+                        return validators.input.pages.add(apiConfig, frame)
                             .then(Promise.reject)
                             .catch((err) => {
                                 (err instanceof common.errors.ValidationError).should.be.true();
@@ -186,7 +186,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [
+                        pages: [
                             {
                                 title: 'cool',
                                 authors: {}
@@ -195,7 +195,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     }
                 };
 
-                return validators.input.posts.add(apiConfig, frame)
+                return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.ValidationError).should.be.true();
@@ -206,7 +206,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [
+                        pages: [
                             {
                                 title: 'cool',
                                 authors: [{
@@ -217,7 +217,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     }
                 };
 
-                return validators.input.posts.add(apiConfig, frame)
+                return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.ValidationError).should.be.true();
@@ -228,7 +228,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [
+                        pages: [
                             {
                                 title: 'cool',
                                 authors: [{
@@ -240,14 +240,14 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     }
                 };
 
-                return validators.input.posts.add(apiConfig, frame);
+                return validators.input.pages.add(apiConfig, frame);
             });
         });
     });
 
     describe('edit', function () {
         const apiConfig = {
-            docName: 'posts'
+            docName: 'pages'
         };
 
         describe('required fields', function () {
@@ -257,14 +257,14 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     data: {}
                 };
 
-                return validators.input.posts.edit(apiConfig, frame)
+                return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.ValidationError).should.be.true();
                     });
             });
 
-            it('should fail with no posts', function () {
+            it('should fail with no pages', function () {
                 const frame = {
                     options: {},
                     data: {
@@ -272,23 +272,23 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     }
                 };
 
-                return validators.input.posts.edit(apiConfig, frame)
+                return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.ValidationError).should.be.true();
                     });
             });
 
-            it('should fail with more than post', function () {
+            it('should fail with more than page', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [],
+                        pages: [],
                         tags: []
                     }
                 };
 
-                return validators.input.posts.edit(apiConfig, frame)
+                return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.ValidationError).should.be.true();
@@ -299,14 +299,14 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [{
+                        pages: [{
                             title: 'pass',
                             updated_at: new Date().toISOString()
                         }],
                     }
                 };
 
-                return validators.input.posts.edit(apiConfig, frame);
+                return validators.input.pages.edit(apiConfig, frame);
             });
         });
 
@@ -315,7 +315,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [
+                        pages: [
                             {
                                 title: 'cool',
                                 authors: {}
@@ -324,7 +324,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     }
                 };
 
-                return validators.input.posts.edit(apiConfig, frame)
+                return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.ValidationError).should.be.true();
@@ -335,7 +335,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [
+                        pages: [
                             {
                                 title: 'cool',
                                 authors: [{
@@ -346,7 +346,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     }
                 };
 
-                return validators.input.posts.edit(apiConfig, frame)
+                return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
                         (err instanceof common.errors.ValidationError).should.be.true();
@@ -357,7 +357,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [
+                        pages: [
                             {
                                 title: 'cool',
                                 updated_at: new Date().toISOString(),
@@ -370,14 +370,14 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     }
                 };
 
-                return validators.input.posts.edit(apiConfig, frame);
+                return validators.input.pages.edit(apiConfig, frame);
             });
 
             it('should pass without authors', function () {
                 const frame = {
                     options: {},
                     data: {
-                        posts: [
+                        pages: [
                             {
                                 title: 'cool',
                                 updated_at: new Date().toISOString()
@@ -386,7 +386,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     }
                 };
 
-                return validators.input.posts.edit(apiConfig, frame);
+                return validators.input.pages.edit(apiConfig, frame);
             });
         });
     });

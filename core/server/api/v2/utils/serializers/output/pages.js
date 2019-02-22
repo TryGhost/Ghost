@@ -5,6 +5,11 @@ module.exports = {
     all(models, apiConfig, frame) {
         debug('all');
 
+        // CASE: e.g. destroy returns null
+        if (!models) {
+            return;
+        }
+
         if (models.meta) {
             frame.response = {
                 pages: models.data.map(model => mapper.mapPost(model, frame)),

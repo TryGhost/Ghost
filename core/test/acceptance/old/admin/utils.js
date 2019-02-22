@@ -7,6 +7,7 @@ const API_URL = '/ghost/api/v2/admin/';
 const expectedProperties = {
     // API top level
     posts: ['posts', 'meta'],
+    pages: ['pages', 'meta'],
     tags: ['tags', 'meta'],
     users: ['users', 'meta'],
     settings: ['settings', 'meta'],
@@ -27,9 +28,22 @@ const expectedProperties = {
         .without('mobiledoc', 'plaintext')
         .without('visibility')
         .without('locale')
+        .without('page')
         // always returns computed properties: url, comment_id, primary_tag, primary_author
         .without('author_id').concat('url', 'primary_tag', 'primary_author')
     ,
+
+    page: _(schema.posts)
+        .keys()
+        // by default we only return html
+        .without('mobiledoc', 'plaintext')
+        .without('visibility')
+        .without('locale')
+        .without('page')
+        // always returns computed properties: url, comment_id, primary_tag, primary_author
+        .without('author_id').concat('url', 'primary_tag', 'primary_author')
+    ,
+
     user: _(schema.users)
         .keys()
         .without('visibility')

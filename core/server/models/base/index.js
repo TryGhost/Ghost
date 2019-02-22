@@ -936,7 +936,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     edit: function edit(data, unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'edit');
         const id = options.id;
-        const model = this.forge({id: id});
+        let model;
+
+        if (options.hasOwnProperty('page')) {
+            model = this.forge({id: id, page: options.page});
+            delete options.page;
+        } else {
+            model = this.forge({id: id});
+        }
 
         data = this.filterData(data);
 
@@ -945,12 +952,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             model.hasTimestamps = false;
         }
 
-        return model.fetch(options).then(function then(object) {
-            if (object) {
-                options.method = 'update';
-                return object.save(data, options);
-            }
-        });
+        return model
+            .fetch(options)
+            .then((object) => {
+                if (object) {
+                    options.method = 'update';
+                    return object.save(data, options);
+                }
+
+                throw new common.errors.NotFoundError();
+            });
     },
 
     /**
@@ -987,6 +998,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     destroy: function destroy(unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'destroy');
+
         if (!options.destroyBy) {
             options.destroyBy = {
                 id: options.id

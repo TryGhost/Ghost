@@ -43,7 +43,7 @@ describe('Posts API', function () {
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(11);
+                    jsonResponse.posts.should.have.length(13);
 
                     localUtils.API.checkResponse(
                         jsonResponse.posts[0],
@@ -74,7 +74,8 @@ describe('Posts API', function () {
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(11);
+                    jsonResponse.posts.should.have.length(13);
+
                     localUtils.API.checkResponse(
                         jsonResponse.posts[0],
                         'post',

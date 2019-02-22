@@ -98,6 +98,8 @@ const post = (attrs, frame) => {
         if (attrs.og_description === '') {
             attrs.og_description = null;
         }
+    } else {
+        delete attrs.page;
     }
 
     delete attrs.locale;

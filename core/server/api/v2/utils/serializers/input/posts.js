@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:posts');
 const url = require('./utils/url');
-const utils = require('../../index');
+const localUtils = require('../../index');
 const labs = require('../../../../../services/labs');
 const converters = require('../../../../../lib/mobiledoc/converters');
 
@@ -39,26 +39,26 @@ module.exports = {
         debug('browse');
 
         /**
+         * CASE:
+         *
+         * - posts endpoint only returns posts, not pages
+         * - we have to enforce the filter
+         *
+         * @TODO: https://github.com/TryGhost/Ghost/issues/10268
+         */
+        if (frame.options.filter) {
+            frame.options.filter = `(${frame.options.filter})+page:false`;
+        } else {
+            frame.options.filter = 'page:false';
+        }
+
+        /**
          * ## current cases:
          * - context object is empty (functional call, content api access)
          * - api_key.type == 'content' ? content api access
          * - user exists? admin api access
          */
-        if (utils.isContentAPI(frame)) {
-            /**
-             * CASE:
-             *
-             * - the content api endpoints for posts should only return non page type resources
-             * - we have to enforce the filter
-             *
-             * @TODO: https://github.com/TryGhost/Ghost/issues/10268
-             */
-            if (frame.options.filter) {
-                frame.options.filter = `(${frame.options.filter})+page:false`;
-            } else {
-                frame.options.filter = 'page:false';
-            }
-
+        if (localUtils.isContentAPI(frame)) {
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
 
@@ -70,11 +70,20 @@ module.exports = {
             setDefaultOrder(frame);
         }
 
+        if (!localUtils.isContentAPI(frame)) {
+            // @TODO: remove when we drop v0.1
+            if (!frame.options.filter || !frame.options.filter.match(/status:/)) {
+                frame.options.status = 'all';
+            }
+        }
+
         debug(frame.options);
     },
 
     read(apiConfig, frame) {
         debug('read');
+
+        frame.data.page = false;
 
         /**
          * ## current cases:
@@ -82,10 +91,10 @@ module.exports = {
          * - api_key.type == 'content' ? content api access
          * - user exists? admin api access
          */
-        if (utils.isContentAPI(frame)) {
-            frame.data.page = false;
+        if (localUtils.isContentAPI(frame)) {
             // CASE: the content api endpoint for posts should not return mobiledoc
             removeMobiledocFormat(frame);
+
             if (labs.isSet('members')) {
                 // CASE: Members needs to have the tags to check if its allowed access
                 includeTags(frame);
@@ -94,20 +103,18 @@ module.exports = {
             setDefaultOrder(frame);
         }
 
+        if (!localUtils.isContentAPI(frame)) {
+            // @TODO: remove when we drop v0.1
+            if (!frame.options.filter || !frame.options.filter.match(/status:/)) {
+                frame.data.status = 'all';
+            }
+        }
+
         debug(frame.options);
     },
 
     add(apiConfig, frame) {
         debug('add');
-        /**
-         * Convert author property to author_id to match the name in the database.
-         *
-         * @deprecated: `author`, might be removed in Ghost 3.0
-         */
-        if (frame.data.posts[0].hasOwnProperty('author')) {
-            frame.data.posts[0].author_id = frame.data.posts[0].author;
-            delete frame.data.posts[0].author;
-        }
 
         if (_.get(frame,'options.source')) {
             const html = frame.data.posts[0].html;
@@ -118,9 +125,22 @@ module.exports = {
         }
 
         frame.data.posts[0] = url.forPost(Object.assign({}, frame.data.posts[0]), frame.options);
+
+        // @NOTE: force storing post
+        frame.data.posts[0].page = false;
     },
 
     edit(apiConfig, frame) {
         this.add(apiConfig, frame);
+
+        // @NOTE: force that you cannot update pages via posts endpoint
+        frame.options.page = false;
+    },
+
+    destroy(apiConfig, frame) {
+        frame.options.destroyBy = {
+            id: frame.options.id,
+            page: false
+        };
     }
 };

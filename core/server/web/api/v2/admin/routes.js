@@ -32,6 +32,14 @@ module.exports = function apiRoutes() {
     router.put('/posts/:id', mw.authAdminApi, http(apiv2.posts.edit));
     router.del('/posts/:id', mw.authAdminApi, http(apiv2.posts.destroy));
 
+    // ## Pages
+    router.get('/pages', mw.authAdminApi, http(apiv2.pages.browse));
+    router.post('/pages', mw.authAdminApi, http(apiv2.pages.add));
+    router.get('/pages/:id', mw.authAdminApi, http(apiv2.pages.read));
+    router.get('/pages/slug/:slug', mw.authAdminApi, http(apiv2.pages.read));
+    router.put('/pages/:id', mw.authAdminApi, http(apiv2.pages.edit));
+    router.del('/pages/:id', mw.authAdminApi, http(apiv2.pages.destroy));
+
     // # Integrations
 
     router.get('/integrations', mw.authAdminApi, http(apiv2.integrations.browse));
