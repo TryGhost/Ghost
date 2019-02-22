@@ -25,23 +25,35 @@ function setDefaultOrder(frame) {
     }
 }
 
+/**
+ * CASE:
+ *
+ * - the content api endpoints for pages forces the model layer to return static pages only
+ * - we have to enforce the filter
+ *
+ * @TODO: https://github.com/TryGhost/Ghost/issues/10268
+ */
+const forcePageFilter = (frame) => {
+    if (frame.options.filter) {
+        frame.options.filter = `(${frame.options.filter})+page:true`;
+    } else {
+        frame.options.filter = 'page:true';
+    }
+};
+
+const forceStatusFilter = (frame) => {
+    if (!frame.options.filter) {
+        frame.options.filter = 'status:[draft,published,scheduled]';
+    } else if (!frame.options.filter.match(/status:/)) {
+        frame.options.filter = `(${frame.options.filter})+status:[draft,published,scheduled]`;
+    }
+};
+
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
 
-        /**
-         * CASE:
-         *
-         * - the content api endpoints for pages forces the model layer to return static pages only
-         * - we have to enforce the filter
-         *
-         * @TODO: https://github.com/TryGhost/Ghost/issues/10268
-         */
-        if (frame.options.filter) {
-            frame.options.filter = `(${frame.options.filter})+page:true`;
-        } else {
-            frame.options.filter = 'page:true';
-        }
+        forcePageFilter(frame);
 
         if (localUtils.isContentAPI(frame)) {
             removeMobiledocFormat(frame);
@@ -49,10 +61,7 @@ module.exports = {
         }
 
         if (!localUtils.isContentAPI(frame)) {
-            // @TODO: remove when we drop v0.1
-            if (!frame.options.filter || !frame.options.filter.match(/status:/)) {
-                frame.options.status = 'all';
-            }
+            forceStatusFilter(frame);
         }
 
         debug(frame.options);
@@ -61,7 +70,7 @@ module.exports = {
     read(apiConfig, frame) {
         debug('read');
 
-        frame.data.page = true;
+        forcePageFilter(frame);
 
         if (localUtils.isContentAPI(frame)) {
             removeMobiledocFormat(frame);
@@ -69,10 +78,7 @@ module.exports = {
         }
 
         if (!localUtils.isContentAPI(frame)) {
-            // @TODO: remove when we drop v0.1
-            if (!frame.options.filter || !frame.options.filter.match(/status:/)) {
-                frame.data.status = 'all';
-            }
+            forceStatusFilter(frame);
         }
 
         debug(frame.options);
@@ -100,8 +106,8 @@ module.exports = {
 
         debug('edit');
 
-        // @NOTE: force not being able to update a page via pages endpoint
-        frame.options.page = true;
+        forceStatusFilter(frame);
+        forcePageFilter(frame);
     },
 
     destroy(apiConfig, frame) {
