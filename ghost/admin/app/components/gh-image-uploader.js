@@ -44,7 +44,7 @@ export default Component.extend({
 
     _defaultAccept: IMAGE_MIME_TYPES,
     _defaultExtensions: IMAGE_EXTENSIONS,
-    _defaultUploadUrl: '/uploads/',
+    _defaultUploadUrl: '/images/',
     _showUnsplash: false,
 
     // Allowed actions
