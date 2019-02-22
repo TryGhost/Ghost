@@ -9,6 +9,7 @@ import PasswordResetSentPage from '../pages/PasswordResetSentPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
 import StripePaymentPage from '../pages/StripePaymentPage';
 import { IconClose } from '../components/icons';
+import StripeSubscribePage from '../pages/StripeSubscribePage';
 
 export default class Modal extends Component {
     constructor(props, context) {
@@ -55,7 +56,19 @@ export default class Modal extends Component {
         }
         return (
             <SignupPage error={error} hash="signup" handleSubmit={signup} handleClose={closeModal} />
-        )
+        );
+    }
+
+    renderUpgradePage(props, state) {
+        const { error, paymentConfig } = state;
+        const { members } = this.context;
+        const closeModal = () => this.close();
+        const createSubscription = (data) => this.handleAction(
+            members.createSubscription(data)
+        );
+        const stripeConfig = paymentConfig && paymentConfig.find(({adapter}) => adapter === 'stripe');
+        return <StripeSubscribePage frameLocation={props.frameLocation} stripeConfig={stripeConfig} error={error} hash="upgrade" handleSubmit={createSubscription} handleClose={closeModal}/>
+
     }
 
     render(props, state) {
@@ -83,6 +96,7 @@ export default class Modal extends Component {
                 <SigninPage error={error} hash="" handleSubmit={signup} />
                 <SigninPage error={error} hash="signin" handleSubmit={signin} />
                 {this.renderSignupPage({error, stripeConfig, members, signup, closeModal})}
+                {this.renderUpgradePage(props, state)}
                 <RequestPasswordResetPage error={error} hash="request-password-reset" handleSubmit={requestReset} />
                 <PasswordResetSentPage error={error} hash="password-reset-sent" handleSubmit={requestReset} />
                 <ResetPasswordPage error={error} hash="reset-password" handleSubmit={resetPassword} />
