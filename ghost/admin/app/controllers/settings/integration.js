@@ -11,11 +11,19 @@ import {task, timeout} from 'ember-concurrency';
 
 export default Controller.extend({
     config: service(),
+    ghostPaths: service(),
 
     imageExtensions: IMAGE_EXTENSIONS,
     imageMimeTypes: IMAGE_MIME_TYPES,
 
     integration: alias('model'),
+
+    apiUrl: computed(function () {
+        let origin = window.location.origin;
+        let subdir = this.ghostPaths.subdir;
+
+        return this.ghostPaths.url.join(origin, subdir);
+    }),
 
     allWebhooks: computed(function () {
         return this.store.peekAll('webhook');
@@ -127,21 +135,29 @@ export default Controller.extend({
     }),
 
     copyContentKey: task(function* () {
-        this._copyInputTextToClipboard('input#content_key');
+        this._copyTextToClipboard(this.integration.contentKey.secret);
         yield timeout(3000);
     }),
 
     copyAdminKey: task(function* () {
-        this._copyInputTextToClipboard('input#admin_key');
+        this._copyTextToClipboard(this.integration.adminKey.secret);
         yield timeout(3000);
     }),
 
-    _copyInputTextToClipboard(selector) {
-        let input = document.querySelector(selector);
-        input.disabled = false;
-        input.focus();
-        input.select();
+    copyApiUrl: task(function* () {
+        this._copyTextToClipboard(this.apiUrl);
+        yield timeout(3000);
+    }),
+
+    _copyTextToClipboard(text) {
+        let textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'absolute';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
         document.execCommand('copy');
-        input.disabled = true;
+        document.body.removeChild(textarea);
     }
 });
