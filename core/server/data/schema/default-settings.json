@@ -130,30 +130,7 @@
             "defaultValue": null
         },
         "members_subscription_settings": {
-            "defaultValue": {
-                "isPaid": false,
-                "paymentProcessors": [{
-                    "adapter": "stripe",
-                    "config": {
-                        "secret_token": "",
-                        "public_token": "",
-                        "plans": [
-                            {
-                                "name": "Monthly",
-                                "currency": "usd",
-                                "interval": "month",
-                                "amount": ""
-                            },
-                            {
-                                "name": "Yearly",
-                                "currency": "usd",
-                                "interval": "year",
-                                "amount": ""
-                            }
-                        ]
-                    }
-                }]
-            }
+            "defaultValue": "{\"isPaid\":false,\"paymentProcessors\":[{\"adapter\":\"stripe\",\"config\":{\"secret_token\":\"\",\"public_token\":\"\",\"plans\":[{\"name\":\"Monthly\",\"currency\":\"usd\",\"interval\":\"month\",\"amount\":\"\"},{\"name\":\"Yearly\",\"currency\":\"usd\",\"interval\":\"year\",\"amount\":\"\"}]}}]}"
         }
     }
 }
