@@ -1,4 +1,4 @@
-/* global window */
+/* global document window */
 var layer1 = require('@tryghost/members-layer1');
 
 module.exports = function layer2(options) {
@@ -50,6 +50,10 @@ module.exports = function layer2(options) {
         return openAuth('signin');
     }
 
+    function upgrade() {
+        return openAuth('upgrade');
+    }
+
     function getToken({audience}) {
         return members.getToken({audience});
     }
@@ -62,6 +66,7 @@ module.exports = function layer2(options) {
         getToken,
         signout,
         signin,
+        upgrade,
         resetPassword
     });
 };
