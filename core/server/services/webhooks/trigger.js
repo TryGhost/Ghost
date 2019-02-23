@@ -65,7 +65,7 @@ const response = {
 module.exports = (event, model) => {
     webhooks.getAll(event)
         .then((webhooks) => {
-            debug(`${webhooks.models.length} webhooks found.`);
+            debug(`${webhooks.models.length} webhooks found for ${event}.`);
 
             _.each(webhooks.models, (webhook) => {
                 const reqPayload = JSON.stringify(payload(webhook.get('event'), model));
