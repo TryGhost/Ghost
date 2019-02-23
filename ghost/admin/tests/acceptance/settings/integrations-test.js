@@ -307,14 +307,19 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             ).to.equal('');
 
             expect(
-                find('[data-test-input="content_key"]').value,
-                'content key input value'
-            ).to.equal('integration-1_content_key-12345');
+                find('[data-test-text="content-key"]'),
+                'content key text'
+            ).to.have.trimmed.text('integration-1_content_key-12345');
 
             expect(
-                find('[data-test-input="admin_key"]').value,
-                'admin key input value'
-            ).to.equal('integration-1_admin_key-12345');
+                find('[data-test-text="admin-key"]'),
+                'admin key text'
+            ).to.have.trimmed.text('integration-1_admin_key-12345');
+
+            expect(
+                find('[data-test-text="api-url"]'),
+                'api url text'
+            ).to.have.trimmed.text('http://localhost:4200/');
 
             // it can modify integration fields and has validation
 
