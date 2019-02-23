@@ -319,7 +319,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             expect(
                 find('[data-test-text="api-url"]'),
                 'api url text'
-            ).to.have.trimmed.text('http://localhost:4200/');
+            ).to.have.trimmed.text(`${window.location.origin}/`);
 
             // it can modify integration fields and has validation
 
