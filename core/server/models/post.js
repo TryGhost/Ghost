@@ -342,8 +342,9 @@ Post = ghostBookshelf.Model.extend({
             this.set('mobiledoc', JSON.stringify(converters.mobiledocConverter.blankStructure()));
         }
 
-        // render mobiledoc to HTML
-        if (this.hasChanged('mobiledoc') || !this.get('html')) {
+        // CASE: mobiledoc has changed, generate html
+        // CASE: html is null, but mobiledoc exists (only important for migrations & importing)
+        if (this.hasChanged('mobiledoc') || (!this.get('html') && (options.migrating || options.importing))) {
             try {
                 this.set('html', converters.mobiledocConverter.render(JSON.parse(this.get('mobiledoc'))));
             } catch (err) {
