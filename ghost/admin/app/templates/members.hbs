@@ -13,13 +13,19 @@
                     (Loading...)
                 {{/if}}
             </h2>
+            <div>
+                <GhTextInput
+                    placeholder="Search..."
+                    @value={{this.searchText}}
+                    @input={{action (mut this.searchText) value="target.value"}} />
+            </div>
         </div>
 
-        {{#if this.members}}
+        {{#if this.filteredMembers}}
             {{!-- members list, styles taken from .apps-grid --}}
             <div class="flex flex-row flex-wrap items-start ba br3 b--whitegrey mt2 mb10">
                 <VerticalCollection
-                    @items={{this.members}}
+                    @items={{this.filteredMembers}}
                     @key="id"
                     @containerSelector=".gh-main"
                     @estimateHeight=76
