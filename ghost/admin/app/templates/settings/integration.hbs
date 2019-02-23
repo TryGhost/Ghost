@@ -96,15 +96,15 @@
         <table class="ma0" style="table-layout: fixed">
             <tbody>
                 <tr class="bb b--lightgrey">
-                    <td class="pa4 pl5 w50 fw7">Content API Key</td>
+                    <td class="pa3 w50 fw7">Content API Key</td>
                     <td class="pa0 truncate">
-                        <div class="pa4 relative truncate {{unless copyContentKey.isRunning "hide-child"}}">
+                        <div class="pa3 relative truncate {{unless copyContentKey.isRunning "hide-child"}}">
                             <span class="midgrey">{{this.integration.contentKey.secret}}</span>
                             <div class="absolute top-1 right-1">
-                                <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--6 nudge-right--1">
-                                    <button type="button" {{action (perform copyContentKey)}} class="white fw4">
+                                <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--5">
+                                    <button type="button" {{action (perform copyContentKey)}} class="white fw4 flex items-center">
                                         {{#if copyContentKey.isRunning}}
-                                            {{svg-jar "check-circle" class="w3 v-mid"}} Copied
+                                            {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
                                         {{else}}
                                             Copy
                                         {{/if}}
@@ -116,15 +116,15 @@
                 </tr>
                 {{#if config.enableDeveloperExperiments}}
                 <tr class="bb b--lightgrey">
-                    <td class="pa4 pl5 w50 fw7">Admin API Key</td>
+                    <td class="pa3 w50 fw7">Admin API Key</td>
                     <td class="pa0">
-                        <div class="pa4 relative truncate {{unless copyAdminKey.isRunning "hide-child"}}">
+                        <div class="pa3 relative truncate {{unless copyAdminKey.isRunning "hide-child"}}">
                             <span class="midgrey">{{this.integration.adminKey.secret}}</span>
                             <div class="absolute top-1 right-2">
-                                <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--6 nudge-right--1">
-                                    <button type="button" {{action (perform copyAdminKey)}} class="white fw4">
+                                <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
+                                    <button type="button" {{action (perform copyAdminKey)}} class="white fw4 flex items-center">
                                         {{#if copyAdminKey.isRunning}}
-                                            {{svg-jar "check-circle" class="w3 v-mid"}} Copied
+                                            {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
                                         {{else}}
                                             Copy
                                         {{/if}}
@@ -136,15 +136,15 @@
                 </tr>
                 {{/if}}
                 <tr>
-                    <td class="pa4 pl5 w50 fw7">API URL</td>
+                    <td class="pa3 w50 fw7">API URL</td>
                     <td class="pa0 truncate">
-                        <div class="pa4 relative truncate {{unless copyApiUrl.isRunning "hide-child"}}">
+                        <div class="pa3 relative truncate {{unless copyApiUrl.isRunning "hide-child"}}">
                             <span class="midgrey">{{this.apiUrl}}</span>
                             <div class="absolute top-1 right-2">
-                                <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--6 nudge-right--1">
-                                    <button type="button" {{action (perform copyApiUrl)}} class="white fw4">
+                                <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
+                                    <button type="button" {{action (perform copyApiUrl)}} class="white fw4 flex items-center">
                                         {{#if copyApiUrl.isRunning}}
-                                            {{svg-jar "check-circle" class="w3 v-mid"}} Copied
+                                            {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
                                         {{else}}
                                             Copy
                                         {{/if}}
