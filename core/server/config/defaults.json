@@ -20,6 +20,7 @@
         "active": "SchedulingDefault"
     },
     "members": {
+        "contentApiAccess": [],
         "paymentProcessors": []
     },
     "logging": {

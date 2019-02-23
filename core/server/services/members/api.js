@@ -59,14 +59,6 @@ function validateMember({email, password}) {
     });
 }
 
-// @TODO this should check some config/settings and return Promise.reject by default
-function validateAudience({audience, origin}) {
-    if (audience === origin) {
-        return Promise.resolve();
-    }
-    return Promise.resolve();
-}
-
 const publicKey = settingsCache.get('members_public_key');
 const privateKey = settingsCache.get('members_private_key');
 const sessionSecret = settingsCache.get('members_session_secret');
@@ -78,6 +70,18 @@ const ssoOrigin = siteOrigin;
 let mailer;
 
 const membersConfig = config.get('members');
+
+function validateAudience({audience, origin}) {
+    if (audience === origin) {
+        return Promise.resolve();
+    }
+    if (audience === siteOrigin) {
+        if (membersConfig.contentApiAccess.includes(origin)) {
+            return Promise.resolve();
+        }
+    }
+    return Promise.reject();
+}
 
 function sendEmail(member, {token}) {
     if (!(mailer instanceof mail.GhostMailer)) {
