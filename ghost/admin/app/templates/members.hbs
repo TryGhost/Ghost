@@ -10,14 +10,14 @@
                 {{#if this.fetchMembers.lastSuccessful}}
                     ({{this.meta.pagination.total}})
                 {{else}}
-                    (...)
+                    (Loading...)
                 {{/if}}
             </h2>
         </div>
 
         {{#if this.members}}
             {{!-- members list, styles taken from .apps-grid --}}
-            <div class="flex flex-row flex-wrap items-start ba br3 b--whitegrey mt1">
+            <div class="flex flex-row flex-wrap items-start ba br3 b--whitegrey mt2 mb10">
                 <VerticalCollection
                     @items={{this.members}}
                     @key="id"
