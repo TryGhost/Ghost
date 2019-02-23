@@ -135,6 +135,12 @@
                 },
                 "url": {
                     "strip": true
+                },
+                "primary_tag": {
+                    "strip": true
+                },
+                "primary_author": {
+                    "strip": true
                 }
             }
         },
