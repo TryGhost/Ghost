@@ -99,7 +99,9 @@
                     <td class="pa3 w50 fw7">Content API Key</td>
                     <td class="pa0 truncate">
                         <div class="pa3 relative truncate {{unless copyContentKey.isRunning "hide-child"}}">
-                            <span class="midgrey">{{this.integration.contentKey.secret}}</span>
+                            <span class="midgrey" data-test-text="content-key">
+                                {{this.integration.contentKey.secret}}
+                            </span>
                             <div class="absolute top-1 right-1">
                                 <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--5">
                                     <button type="button" {{action (perform copyContentKey)}} class="white fw4 flex items-center">
@@ -119,7 +121,9 @@
                     <td class="pa3 w50 fw7">Admin API Key</td>
                     <td class="pa0">
                         <div class="pa3 relative truncate {{unless copyAdminKey.isRunning "hide-child"}}">
-                            <span class="midgrey">{{this.integration.adminKey.secret}}</span>
+                            <span class="midgrey" data-test-text="admin-key">
+                                {{this.integration.adminKey.secret}}
+                            </span>
                             <div class="absolute top-1 right-2">
                                 <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
                                     <button type="button" {{action (perform copyAdminKey)}} class="white fw4 flex items-center">
@@ -139,7 +143,9 @@
                     <td class="pa3 w50 fw7">API URL</td>
                     <td class="pa0 truncate">
                         <div class="pa3 relative truncate {{unless copyApiUrl.isRunning "hide-child"}}">
-                            <span class="midgrey">{{this.apiUrl}}</span>
+                            <span class="midgrey" data-test-text="api-url">
+                                {{this.apiUrl}}
+                            </span>
                             <div class="absolute top-1 right-2">
                                 <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
                                     <button type="button" {{action (perform copyApiUrl)}} class="white fw4 flex items-center">
