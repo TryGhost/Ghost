@@ -120,7 +120,7 @@ module.exports = {
         const JWT_OPTIONS = {
             algorithm: 'HS256',
             expiresIn: '5m',
-            audience: endpoint
+            audience: '/v2/admin/'
         };
 
         return jwt.sign(
