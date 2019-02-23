@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -8,11 +9,29 @@ export default Controller.extend({
 
     meta: null,
     members: null,
+    searchText: '',
 
     init() {
         this._super(...arguments);
         this.set('members', this.store.peekAll('member'));
     },
+
+    filteredMembers: computed('members.@each.{name,email}', 'searchText', function () {
+        let {members, searchText} = this;
+        searchText = searchText.toLowerCase();
+
+        let filtered = members.filter((member) => {
+            if (!searchText) {
+                return true;
+            }
+
+            let {name, email} = member;
+            return name.toLowerCase().indexOf(searchText) >= 0
+                || email.toLowerCase().indexOf(searchText) >= 0;
+        });
+
+        return filtered;
+    }),
 
     fetchMembers: task(function* () {
         let newFetchDate = new Date();
