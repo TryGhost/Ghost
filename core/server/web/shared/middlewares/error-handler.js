@@ -1,4 +1,5 @@
 const hbs = require('express-hbs');
+const _ = require('lodash');
 const debug = require('ghost-ignition').debug('error-handler');
 const config = require('../../../config');
 const common = require('../../../lib/common');
@@ -62,13 +63,72 @@ _private.prepareError = (err, req, res, next) => {
 };
 
 _private.JSONErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
-    // @TODO: jsonapi errors format (http://jsonapi.org/format/#error-objects)
     res.json({
         errors: [{
             message: err.message,
             context: err.context,
             errorType: err.errorType,
             errorDetails: err.errorDetails
+        }]
+    });
+};
+
+_private.prepareUserMessage = (err, res) => {
+    const userError = {
+        message: err.message,
+        context: err.context
+    };
+
+    const docName = _.get(res, 'frameOptions.docName');
+    const method = _.get(res, 'frameOptions.method');
+
+    if (docName && method) {
+        let action;
+
+        const actionMap = {
+            browse: 'list',
+            read: 'read',
+            add: 'save',
+            edit: 'edit',
+            destroy: 'delete'
+        };
+
+        if (common.i18n.doesTranslationKeyExist(`common.api.actions.${docName}.${method}`)) {
+            action = common.i18n.t(`common.api.actions.${docName}.${method}`);
+        } else if (Object.keys(actionMap).includes(method)) {
+            let resource = docName;
+
+            if (method !== 'browse') {
+                resource = resource.replace(/s$/, '');
+            }
+
+            action = `${actionMap[method]} ${resource}`;
+        }
+
+        if (action) {
+            if (err.context) {
+                userError.context = `${err.message} ${err.context}`;
+            }
+
+            userError.message = common.i18n.t(`errors.api.userMessages.${err.name}`, {action: action});
+        }
+    }
+
+    return userError;
+};
+
+_private.JSONErrorRendererV2 = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+    const userError = _private.prepareUserMessage(err, req);
+
+    res.json({
+        errors: [{
+            message: userError.message || null,
+            context: userError.context || null,
+            type: err.errorType || null,
+            details: err.errorDetails || null,
+            help: err.help || null,
+            code: err.code || null,
+            id: err.id || null
         }]
     });
 };
@@ -178,6 +238,13 @@ errorHandler.handleJSONResponse = [
     _private.prepareError,
     // Render the error using JSON format
     _private.JSONErrorRenderer
+];
+
+errorHandler.handleJSONResponseV2 = [
+    // Make sure the error can be served
+    _private.prepareError,
+    // Render the error using JSON format
+    _private.JSONErrorRendererV2
 ];
 
 errorHandler.handleHTMLResponse = [
