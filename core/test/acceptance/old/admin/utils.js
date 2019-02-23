@@ -115,12 +115,12 @@ module.exports = {
         return testUtils.API.doAuth(`${API_URL}session/`, ...args);
     },
 
-    getValidAdminToken(endpoint) {
+    getValidAdminToken(audience) {
         const jwt = require('jsonwebtoken');
         const JWT_OPTIONS = {
             algorithm: 'HS256',
             expiresIn: '5m',
-            audience: endpoint
+            audience: audience
         };
 
         return jwt.sign(
