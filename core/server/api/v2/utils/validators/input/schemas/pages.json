@@ -132,6 +132,9 @@
                 },
                 "published_by": {
                     "strip": true
+                },
+                "url": {
+                    "strip": true
                 }
             }
         },
