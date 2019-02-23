@@ -90,10 +90,13 @@ const authenticate = (req, res, next) => {
         // https://github.com/auth0/node-jsonwebtoken/issues/208#issuecomment-231861138
         const secret = Buffer.from(apiKey.get('secret'), 'hex');
 
+        // @TODO: Rework this so that we use HTTP verb + resource
         // ensure the token was meant for this endpoint
-        const options = Object.assign({
-            audience: req.originalUrl
-        }, JWT_OPTIONS);
+        //const options = Object.assign({
+        //    audience: req.originalUrl
+        //}, JWT_OPTIONS);
+        
+        const options = JWT_OPTIONS;
 
         try {
             jwt.verify(token, secret, options);
