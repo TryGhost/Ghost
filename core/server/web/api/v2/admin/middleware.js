@@ -20,7 +20,6 @@ const notImplemented = function (req, res, next) {
         themes: ['POST'],
         subscribers: ['GET', 'PUT', 'DELETE', 'POST'],
         configuration: ['GET'],
-        actions: ['GET'],
         webhooks: ['POST', 'DELETE']
     };
 
