@@ -69,7 +69,11 @@ const issuer = siteOrigin;
 const ssoOrigin = siteOrigin;
 let mailer;
 
-const membersConfig = config.get('members');
+const membersConfig = settingsCache.get('members_subscription_settings');
+
+if (!membersConfig.isPaid) {
+    membersConfig.paymentProcessors = [];
+}
 
 function validateAudience({audience, origin}) {
     if (audience === origin) {

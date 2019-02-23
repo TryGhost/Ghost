@@ -7,13 +7,13 @@ const config = require('../config');
 let labs = module.exports = {};
 
 labs.isSet = function isSet(flag) {
+    var labsConfig = settingsCache.get('labs');
     /**
      * TODO: Uses hard-check for members prototype, removed here when added to settings
      */
-    if (flag === 'members' && config.get('enableDeveloperExperiments')) {
+    if (flag === 'members' && config.get('enableDeveloperExperiments') && labsConfig && labsConfig[flag] && labsConfig[flag] === true) {
         return true;
     }
-    var labsConfig = settingsCache.get('labs');
     return labsConfig && labsConfig[flag] && labsConfig[flag] === true;
 };
 
