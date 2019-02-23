@@ -10,10 +10,14 @@ function reload(success) {
 }
 
 function show(el) {
-    el.style.display = 'block';
+    if (el) {
+        el.style.display = 'block';
+    }
 }
 function hide(el) {
-    el.style.display = 'none';
+    if (el) {
+        el.style.display = 'none';
+    }
 }
 
 const version = 'v2';
