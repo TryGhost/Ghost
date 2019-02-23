@@ -1,5 +1,5 @@
 <section class="gh-canvas">
-    <form {{action (perform "save") on="submit"}}>
+    <form class="mb15" {{action (perform "save") on="submit"}}>
         <header class="gh-canvas-header">
             <h2 class="gh-canvas-title" data-test-screen-title>
                 {{#link-to "settings.integrations" data-test-link="integrations-back"}}Integrations{{/link-to}}
@@ -92,70 +92,70 @@
         </div>
     </form>
 
-    <h4 class="mt15 midgrey f7 fw4 pb2 bb b--whitegrey">API Keys</h4>
-    <div class="flex flex-row mt5">
-        {{#with integration.contentKey as |contentKey|}}
-            {{#gh-validation-status-container class="flex flex-column w-100 mr5"}}
-                <div class="flex">
-                    <label for="content_key" class="flex-grow-1 darkgrey fw7 f8">
-                        Content API Key
-                    </label>
-                    <span class="db f8 midgrey">
-                        {{#if copyContentKey.isRunning}}
-                            Copied to clipboard
-                        {{else}}
-                            {{contentKey.lastSeenAtUTC}}
-                        {{/if}}
-                    </span>
-                </div>
-                <div class="relative hide-child mt1">
-                    <input id="content_key"
-                        class="w-100 pa3 bg-whitegrey-l2 midlightgrey ba b--whitegrey br3"
-                        type="text"
-                        value={{contentKey.secret}}
-                        disabled="true"
-                        data-test-input="content_key">
-
-                    <div class="absolute top-0 right-1">
-                        <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--6 nudge-right--1">
-                            <button type="button" {{action (perform copyContentKey)}} class="white fw4">Copy</button>
-                        </div>
-                    </div>
-                </div>
-            {{/gh-validation-status-container}}
-        {{/with}}
-        {{#if config.enableDeveloperExperiments}}
-            {{#with integration.adminKey as |adminKey|}}
-                {{#gh-validation-status-container class="flex flex-column w-100 ml3"}}
-                    <div class="flex">
-                        <label for="admin_key" class="flex-grow-1 darkgrey fw7 f8">
-                            Admin API Key
-                        </label>
-                        <span class="db f8 midgrey">
-                            {{#if copyAdminKey.isRunning}}
-                                Copied to clipboard
-                            {{else}}
-                                {{adminKey.lastSeenAtUTC}}
-                            {{/if}}
-                        </span>
-                    </div>
-                    <div class="relative hide-child mt1">
-                        <input id="admin_key"
-                            class="w-100 pa3 bg-whitegrey-l2 midlightgrey ba b--whitegrey br3"
-                            type="text"
-                            value={{adminKey.secret}}
-                            disabled="true"
-                            data-test-input="admin_key">
-
-                        <div class="absolute top-0 right-1">
-                            <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--6 nudge-right--1">
-                                <button type="button" {{action (perform copyAdminKey)}} class="white fw4">Copy</button>
+    <div class="m15 ba br3 b--lightgrey mt4">
+        <table class="ma0" style="table-layout: fixed">
+            <tbody>
+                <tr class="bb b--lightgrey">
+                    <td class="pa4 pl5 w50 fw7">Content API Key</td>
+                    <td class="pa0 truncate">
+                        <div class="pa4 relative truncate {{unless copyContentKey.isRunning "hide-child"}}">
+                            <span class="midgrey">{{this.integration.contentKey.secret}}</span>
+                            <div class="absolute top-1 right-1">
+                                <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--6 nudge-right--1">
+                                    <button type="button" {{action (perform copyContentKey)}} class="white fw4">
+                                        {{#if copyContentKey.isRunning}}
+                                            {{svg-jar "check-circle" class="w3 v-mid"}} Copied
+                                        {{else}}
+                                            Copy
+                                        {{/if}}
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                {{/gh-validation-status-container}}
-            {{/with}}
-        {{/if}}
+                    </td>
+                </tr>
+                {{#if config.enableDeveloperExperiments}}
+                <tr class="bb b--lightgrey">
+                    <td class="pa4 pl5 w50 fw7">Admin API Key</td>
+                    <td class="pa0">
+                        <div class="pa4 relative truncate {{unless copyAdminKey.isRunning "hide-child"}}">
+                            <span class="midgrey">{{this.integration.adminKey.secret}}</span>
+                            <div class="absolute top-1 right-2">
+                                <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--6 nudge-right--1">
+                                    <button type="button" {{action (perform copyAdminKey)}} class="white fw4">
+                                        {{#if copyAdminKey.isRunning}}
+                                            {{svg-jar "check-circle" class="w3 v-mid"}} Copied
+                                        {{else}}
+                                            Copy
+                                        {{/if}}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {{/if}}
+                <tr>
+                    <td class="pa4 pl5 w50 fw7">API URL</td>
+                    <td class="pa0 truncate">
+                        <div class="pa4 relative truncate {{unless copyApiUrl.isRunning "hide-child"}}">
+                            <span class="midgrey">{{this.apiUrl}}</span>
+                            <div class="absolute top-1 right-2">
+                                <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--6 nudge-right--1">
+                                    <button type="button" {{action (perform copyApiUrl)}} class="white fw4">
+                                        {{#if copyApiUrl.isRunning}}
+                                            {{svg-jar "check-circle" class="w3 v-mid"}} Copied
+                                        {{else}}
+                                            Copy
+                                        {{/if}}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
     <h4 class="mt15 midgrey f7 fw4">Webhooks</h4>
@@ -214,7 +214,7 @@
                         {{#link-to "settings.integration.webhooks.new" integration classNames="flex items-center"
                         data-test-link="add-webhook"}}
                         <div class="pa3 f7">
-                            {{svg-jar "add" class="w3 h3 fill-blue-d1"}} 
+                            {{svg-jar "add" class="w3 h3 fill-blue-d1"}}
                             <span class="ml1 blue">Add webhook</span>
                         </div>
                         {{/link-to}}
