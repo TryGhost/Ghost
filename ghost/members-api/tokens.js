@@ -17,6 +17,7 @@ module.exports = function ({
         }, privateKey, {
             algorithm: 'RS512',
             audience: aud,
+            expiresIn: '30m',
             issuer
         }));
     }
