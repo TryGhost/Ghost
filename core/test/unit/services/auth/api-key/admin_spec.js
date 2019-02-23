@@ -37,7 +37,7 @@ describe('Admin API Key Auth', function () {
         }, this.secret, {
             algorithm: 'HS256',
             expiresIn: '5m',
-            audience: '/test/',
+            audience: '/v2/admin/',
             issuer: this.fakeApiKey.id
         });
 
@@ -98,7 +98,7 @@ describe('Admin API Key Auth', function () {
         }, this.secret, {
             algorithm: 'HS256',
             expiresIn: '5m',
-            audience: '/test/',
+            audience: 'wrong audience',
             issuer: 'unknown'
         });
 
@@ -127,7 +127,7 @@ describe('Admin API Key Auth', function () {
         const token = jwt.sign(payload, this.secret, {
             algorithm: 'HS256',
             expiresIn: '5m',
-            audience: '/test/',
+            audience: '/v2/admin/',
             issuer: this.fakeApiKey.id
         });
 
@@ -157,7 +157,7 @@ describe('Admin API Key Auth', function () {
         const token = jwt.sign(payload, this.secret, {
             algorithm: 'HS256',
             expiresIn: '10m',
-            audience: '/test/',
+            audience: '/v2/admin/',
             issuer: this.fakeApiKey.id
         });
 
@@ -185,7 +185,7 @@ describe('Admin API Key Auth', function () {
         }, this.secret, {
             algorithm: 'HS256',
             expiresIn: '5m',
-            audience: '/test/',
+            audience: '/v2/admin/',
             issuer: this.fakeApiKey.id
         });
 

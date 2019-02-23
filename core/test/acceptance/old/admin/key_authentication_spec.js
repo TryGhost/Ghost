@@ -38,7 +38,7 @@ describe('Admin API key authentication', function () {
 
     it('Can access browse endpoint with correct token', function () {
         return request.get(localUtils.API.getApiQuery('posts/'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken(localUtils.API.getApiQuery('posts/'))}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v2/admin/')}`)
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
@@ -55,7 +55,7 @@ describe('Admin API key authentication', function () {
         return request
             .post(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken(localUtils.API.getApiQuery('posts/'))}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v2/admin/')}`)
             .send({
                 posts: [post]
             })

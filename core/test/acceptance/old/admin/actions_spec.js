@@ -110,7 +110,7 @@ describe('Actions API', function () {
                 return integrationRequest
                     .put(localUtils.API.getApiQuery(`posts/${postId}/`))
                     .set('Origin', config.get('url'))
-                    .set('Authorization', `Ghost ${localUtils.getValidAdminToken(localUtils.API.getApiQuery(`posts/${postId}/`))}`)
+                    .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v2/admin/')}`)
                     .send({
                         posts: [{
                             featured: true,
