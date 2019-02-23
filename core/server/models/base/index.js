@@ -173,8 +173,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * If the query runs in a txn, `_previousAttributes` will be empty.
      */
     emitChange: function (model, event, options) {
-        debug(model.tableName, event);
-
         const _emit = (ghostEvent, model) => {
             if (!model.wasChanged()) {
                 return;
