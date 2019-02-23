@@ -311,13 +311,13 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     onCreating: function onCreating(model, attr, options) {
         if (schema.tables[this.tableName].hasOwnProperty('created_by')) {
             if (!options.importing || (options.importing && !this.get('created_by'))) {
-                this.set('created_by', this.contextUser(options));
+                this.set('created_by', String(this.contextUser(options)));
             }
         }
 
         if (schema.tables[this.tableName].hasOwnProperty('updated_by')) {
             if (!options.importing) {
-                this.set('updated_by', this.contextUser(options));
+                this.set('updated_by', String(this.contextUser(options)));
             }
         }
 
@@ -377,7 +377,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         if (schema.tables[this.tableName].hasOwnProperty('updated_by')) {
             if (!options.importing && !options.migrating) {
-                this.set('updated_by', this.contextUser(options));
+                this.set('updated_by', String(this.contextUser(options)));
             }
         }
 
@@ -390,7 +390,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
             if (schema.tables[this.tableName].hasOwnProperty('created_by')) {
                 if (model.hasChanged('created_by')) {
-                    model.set('created_by', this.previous('created_by'));
+                    model.set('created_by', String(this.previous('created_by')));
                 }
             }
         }

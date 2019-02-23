@@ -388,12 +388,12 @@ Post = ghostBookshelf.Model.extend({
         if (newStatus === 'published' && this.hasChanged('status')) {
             // unless published_by is set and we're importing, set published_by to contextUser
             if (!(this.get('published_by') && options.importing)) {
-                this.set('published_by', this.contextUser(options));
+                this.set('published_by', String(this.contextUser(options)));
             }
         } else {
             // In any other case (except import), `published_by` should not be changed
             if (this.hasChanged('published_by') && !options.importing) {
-                this.set('published_by', this.previous('published_by') || null);
+                this.set('published_by', this.previous('published_by') ? String(this.previous('published_by')) : null);
             }
         }
 
