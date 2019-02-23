@@ -4,21 +4,25 @@
     </header>
 
     <section class="view-container h-100">
-        <div class="flex justify-between items-center pt1">
+
+        <div>
+            <GhTextInput placeholder="Search members..." @value={{this.searchText}}
+                @input={{action (mut this.searchText) value="target.value"}} />
+        </div>
+
+        <div class="flex justify-between items-center pt1 mt7">
             <h2 class="f7 fw4 midgrey">
-                All members
-                {{#if this.fetchMembers.lastSuccessful}}
-                    ({{this.meta.pagination.total}})
+                {{#if this.searchText}}
+                    Search result
                 {{else}}
-                    (Loading...)
+                    All members
+                    {{#if this.fetchMembers.lastSuccessful}}
+                        ({{this.meta.pagination.total}})
+                    {{else}}
+                        (Loading...)
+                    {{/if}}
                 {{/if}}
             </h2>
-            <div>
-                <GhTextInput
-                    placeholder="Search..."
-                    @value={{this.searchText}}
-                    @input={{action (mut this.searchText) value="target.value"}} />
-            </div>
         </div>
 
         {{#if this.filteredMembers}}
@@ -53,7 +57,7 @@
                     <GhLoadingSpinner />
                 </div>
             {{else}}
-                <p>No members found.</p>
+                <p class="mt2 pt10 bt b--whitegrey tc midlightgrey">No members found.</p>
             {{/if}}
         {{/if}}
     </section>
