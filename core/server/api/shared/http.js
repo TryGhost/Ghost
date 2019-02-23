@@ -79,7 +79,8 @@ const http = (apiImpl, apiType) => {
                 debug('json response');
                 res.json(result || {});
             })
-            .catch((err) => {
+            .catch(({err, docName, method}) => {
+                req.frameOptions = {docName, method};
                 next(err);
             });
     };

@@ -28,6 +28,11 @@
             },
             "clients": {
                 "clientNotFound": "Client not found"
+            },
+            "actions": {
+                "upload": {
+                    "image": "upload image"
+                }
             }
         }
     },
@@ -472,6 +477,29 @@
             "oembed": {
                 "noUrlProvided": "No url provided.",
                 "unknownProvider": "No provider found for supplied URL."
+            },
+            "userMessages": {
+                "InternalServerError": "Internal server error, cannot {action}.",
+                "IncorrectUsageError": "Incorrect usage error, cannot {action}.",
+                "NotFoundError": "Resource not found error, cannot {action}.",
+                "BadRequestError": "Request not understood error, cannot {action}.",
+                "UnauthorizedError": "Authorisation error, cannot {action}.",
+                "NoPermissionError": "Permission error, cannot {action}.",
+                "ValidationError": "Validation error, cannot {action}.",
+                "UnsupportedMediaTypeError": "Unsupported media error, cannot {action}.",
+                "TooManyRequestsError": "Too many requests error, cannot {action}.",
+                "MaintenanceError": "Server down for maintenance, cannot {action}.",
+                "MethodNotAllowedError": "Method not allowed, cannot {action}.",
+                "RequestEntityTooLargeError": "Request too large, cannot {action}.",
+                "TokenRevocationError": "Token is not available, cannot {action}.",
+                "VersionMismatchError": "Version mismatch error, cannot {action}.",
+                "DataExportError": "Error exporting content.",
+                "DataImportError": "Duplicated entry, cannot save {action}.",
+                "DatabaseVersionError": "Database version compatibility error, cannot {action}.",
+                "EmailError": "Error sending email!",
+                "ThemeValidationError": "Theme validation error, cannot {action}.",
+                "DisabledFeatureError": "Theme validation error, the {{{helperName}}} helper is not available. Cannot {action}.",
+                "UpdateCollisionError": "Saving failed! Someone else is editing this post."
             }
         },
         "data": {
