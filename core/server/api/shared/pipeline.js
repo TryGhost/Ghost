@@ -156,6 +156,9 @@ const pipeline = (apiController, apiUtils) => {
                 })
                 .then(() => {
                     return frame.response;
+                })
+                .catch((err) => {
+                    throw {err, docName, method};
                 });
         };
 
