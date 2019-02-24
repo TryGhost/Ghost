@@ -47,6 +47,7 @@ const forPost = (attrs, frame) => {
 
         if (!origInclude || !origInclude.includes('tags')) {
             delete attrs.tags;
+            attrs.primary_tag = null;
         }
     }
 
