@@ -75,8 +75,8 @@ module.exports = {
         return shared.pipeline(require('./members'), localUtils);
     },
 
-    get upload() {
-        return shared.pipeline(require('./upload'), localUtils);
+    get images() {
+        return shared.pipeline(require('./images'), localUtils);
     },
 
     get tags() {

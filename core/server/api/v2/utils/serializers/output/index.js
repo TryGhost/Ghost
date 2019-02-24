@@ -59,8 +59,8 @@ module.exports = {
         return require('./members');
     },
 
-    get upload() {
-        return require('./upload');
+    get images() {
+        return require('./images');
     },
 
     get tags() {

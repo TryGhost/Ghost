@@ -197,7 +197,7 @@ module.exports = function apiRoutes() {
         upload.single('uploadimage'),
         shared.middlewares.validation.upload({type: 'images'}),
         shared.middlewares.image.normalize,
-        http(apiv2.upload.image)
+        http(apiv2.images.upload)
     );
 
     router.post('/images/profile-image',
@@ -206,7 +206,7 @@ module.exports = function apiRoutes() {
         shared.middlewares.validation.upload({type: 'images'}),
         shared.middlewares.validation.profileImage,
         shared.middlewares.image.normalize,
-        http(apiv2.upload.image)
+        http(apiv2.images.upload)
     );
 
     router.post('/images/icon',
@@ -214,7 +214,7 @@ module.exports = function apiRoutes() {
         upload.single('uploadimage'),
         shared.middlewares.validation.upload({type: 'icons'}),
         shared.middlewares.validation.blogIcon(),
-        http(apiv2.upload.image)
+        http(apiv2.images.upload)
     );
 
     // ## Invites

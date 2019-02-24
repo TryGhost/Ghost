@@ -8,7 +8,7 @@ const config = require('../../../../server/config');
 
 const ghost = testUtils.startGhost;
 
-describe('Upload API', function () {
+describe('Images API', function () {
     const images = [];
     let request;
 

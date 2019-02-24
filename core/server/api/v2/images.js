@@ -1,8 +1,8 @@
 const storage = require('../../adapters/storage');
 
 module.exports = {
-    docName: 'upload',
-    image: {
+    docName: 'images',
+    upload: {
         statusCode: 201,
         permissions: false,
         query(frame) {
