@@ -2,7 +2,9 @@ const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:c
 
 module.exports = {
     all(data, apiConfig, frame) {
-        frame.response = data;
+        frame.response = {
+            config: data
+        };
 
         debug(frame.response);
     }
