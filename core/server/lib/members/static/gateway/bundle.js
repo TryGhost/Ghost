@@ -285,6 +285,17 @@
                 return window.parent.postMessage({event: 'signedout'}, origin);
             }
         }
+
+        if (/^members:token:aud:/.test(event.key)) {
+            if (newValue) {
+                return window.parent.postMessage({
+                    event: 'token',
+                    payload: {
+                        token: newValue
+                    }
+                }, origin);
+            }
+        }
     });
 
     window.addEventListener('message', function (event) {
