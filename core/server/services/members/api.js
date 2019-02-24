@@ -1,7 +1,10 @@
+const debug = require('ghost-ignition').debug('service:members:api');
+
 const url = require('url');
 const settingsCache = require('../settings/cache');
 const config = require('../../config');
 const MembersApi = require('../../lib/members');
+const common = require('../../lib/common');
 const models = require('../../models');
 const mail = require('../mail');
 
@@ -133,6 +136,23 @@ const api = MembersApi({
     updateMember,
     sendEmail
 });
+
+const updateSettingFromModel = function updateSettingFromModel(settingModel) {
+    if (settingModel.get('key') === 'members_subscription_settings') {
+        let membersConfig = settingsCache.get('members_subscription_settings');
+        if (!membersConfig.isPaid) {
+            membersConfig.paymentProcessors = [];
+        }
+        api.updateSubscription({
+            processors: membersConfig.paymentProcessors
+        });
+    }
+};
+
+// Bind to events to automatically keep up-to-date
+common.events.on('settings.edited', updateSettingFromModel);
+common.events.on('settings.added', updateSettingFromModel);
+common.events.on('settings.deleted', updateSettingFromModel);
 
 module.exports = api;
 module.exports.publicKey = publicKey;

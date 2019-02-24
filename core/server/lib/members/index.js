@@ -27,9 +27,9 @@ module.exports = function MembersApi({
 }) {
     const {encodeToken, decodeToken, getPublicKeys} = Tokens({privateKey, publicKey, issuer});
 
-    const subscriptions = new Subscriptions(paymentConfig);
+    let subscriptions = new Subscriptions(paymentConfig);
 
-    const users = Users({
+    let users = Users({
         subscriptions,
         createMember,
         updateMember,
@@ -207,6 +207,20 @@ module.exports = function MembersApi({
     httpHandler.staticRouter = staticRouter;
     httpHandler.apiRouter = apiRouter;
     httpHandler.memberUserObject = users;
+    httpHandler.updateSubscription = function (paymentConfig) {
+        subscriptions = new Subscriptions(paymentConfig);
+        users = Users({
+            subscriptions,
+            createMember,
+            updateMember,
+            getMember,
+            validateMember,
+            sendEmail,
+            encodeToken,
+            listMembers,
+            decodeToken
+        });
+    };
 
     return httpHandler;
 };
