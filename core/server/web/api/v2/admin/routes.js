@@ -24,8 +24,7 @@ module.exports = function apiRoutes() {
     router.get('/site', http(apiv2.site.read));
 
     // ## Configuration
-    router.get('/configuration', http(apiv2.configuration.read));
-    router.get('/configuration/:key', mw.authAdminApi, http(apiv2.configuration.read));
+    router.get('/config', mw.authAdminApi, http(apiv2.config.read));
 
     // ## Posts
     router.get('/posts', mw.authAdminApi, http(apiv2.posts.browse));

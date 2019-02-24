@@ -22,6 +22,8 @@ const expectedProperties = {
 
     action: ['id', 'resource_type', 'actor_type', 'event', 'created_at', 'actor'],
 
+    config: ['version', 'environment', 'database', 'mail', 'labs', 'clientExtensions', 'enableDeveloperExperiments'],
+
     post: _(schema.posts)
         .keys()
         // by default we only return mobildoc
