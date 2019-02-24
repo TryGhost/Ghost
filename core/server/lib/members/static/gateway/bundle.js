@@ -24,23 +24,29 @@
     }
 
     function isTokenExpired(token) {
+        const claims = getClaims(token);
+
+        const expiry = claims.exp * 1000;
+        const now = Date.now();
+
+        const nearFuture = now + (30 * 1000);
+
+        if (expiry > nearFuture) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function getClaims(token) {
         try {
             const [header, claims, signature] = token.split('.'); // eslint-disable-line no-unused-vars
 
             const parsedClaims = JSON.parse(atob(claims.replace('+', '-').replace('/', '_')));
 
-            const expiry = parsedClaims.exp * 1000;
-            const now = Date.now();
-
-            const nearFuture = now + (30 * 1000);
-
-            if (expiry > nearFuture) {
-                return true;
-            }
-
-            return false;
+            return parsedClaims;
         } catch (e) {
-            return true;
+            return null;
         }
     }
 
