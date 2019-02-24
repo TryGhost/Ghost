@@ -1,0 +1,32 @@
+/*
+
+   Media Query Extensions:
+     -ns = not-small
+     -m  = medium
+     -l  = large
+
+*/
+
+
+.tracked-1 { letter-spacing: .02rem; }
+.tracked-2 { letter-spacing: .04rem; }
+.tracked-3 { letter-spacing: .06rem; }
+
+
+@media (--breakpoint-not-small) {
+    .tracked-1-ns { letter-spacing: .02rem; }
+    .tracked-2-ns { letter-spacing: .04rem; }
+    .tracked-3-ns { letter-spacing: .06rem; }
+}
+
+@media (--breakpoint-medium) {
+    .tracked-1-m { letter-spacing: .02rem; }
+    .tracked-2-m { letter-spacing: .04rem; }
+    .tracked-3-m { letter-spacing: .06rem; }
+}
+
+@media (--breakpoint-large) {
+    .tracked-1-l { letter-spacing: .02rem; }
+    .tracked-2-l { letter-spacing: .04rem; }
+    .tracked-3-l { letter-spacing: .06rem; }
+}

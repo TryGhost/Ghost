@@ -1,8 +1,8 @@
 import Component from '@ember/component';
 import Key from 'mobiledoc-kit/utils/key';
+import kgStyle from '../helpers/kg-style';
 import layout from '../templates/components/koenig-caption-input';
 import {computed} from '@ember/object';
-import {kgStyle} from 'ember-cli-ghost-spirit/helpers/kg-style';
 import {run} from '@ember/runloop';
 
 export default Component.extend({
