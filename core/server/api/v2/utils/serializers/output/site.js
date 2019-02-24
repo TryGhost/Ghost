@@ -4,6 +4,8 @@ module.exports = {
     read(data, apiConfig, frame) {
         debug('read');
 
-        frame.response = data;
+        frame.response = {
+            site: data
+        };
     }
 };
