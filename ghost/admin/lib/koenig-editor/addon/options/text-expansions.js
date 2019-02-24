@@ -158,9 +158,10 @@ function registerInlineMarkdownTextExpansions(editor) {
             });
 
             // must be scheduled so that the toggle isn't reset automatically
-            run.schedule('actions', this, function () {
+            // by mobiledoc-kit re-setting state after the range is updated
+            run.later(this, function () {
                 editor.toggleMarkup('strong');
-            });
+            }, 10);
         }
     }
 
@@ -178,9 +179,10 @@ function registerInlineMarkdownTextExpansions(editor) {
             });
 
             // must be scheduled so that the toggle isn't reset automatically
-            run.schedule('actions', this, function () {
+            // by mobiledoc-kit re-setting state after the range is updated
+            run.later(this, function () {
                 editor.toggleMarkup('strong');
-            });
+            }, 10);
         }
     }
 
@@ -212,9 +214,10 @@ function registerInlineMarkdownTextExpansions(editor) {
             });
 
             // must be scheduled so that the toggle isn't reset automatically
-            run.schedule('actions', this, function () {
+            // by mobiledoc-kit re-setting state after the range is updated
+            run.later(this, function () {
                 editor.toggleMarkup('em');
-            });
+            }, 10);
         }
     }
 
@@ -232,9 +235,10 @@ function registerInlineMarkdownTextExpansions(editor) {
             });
 
             // must be scheduled so that the toggle isn't reset automatically
-            run.schedule('actions', this, function () {
+            // by mobiledoc-kit re-setting state after the range is updated
+            run.later(this, function () {
                 editor.toggleMarkup('em');
-            });
+            }, 10);
         }
     }
 
@@ -252,9 +256,10 @@ function registerInlineMarkdownTextExpansions(editor) {
             });
 
             // must be scheduled so that the toggle isn't reset automatically
-            run.schedule('actions', this, function () {
+            // by mobiledoc-kit re-setting state after the range is updated
+            run.later(this, function () {
                 editor.toggleMarkup('sub');
-            });
+            }, 10);
         }
     }
 
@@ -272,9 +277,10 @@ function registerInlineMarkdownTextExpansions(editor) {
             });
 
             // must be scheduled so that the toggle isn't reset automatically
-            run.schedule('actions', this, function () {
+            // by mobiledoc-kit re-setting state after the range is updated
+            run.later(this, function () {
                 editor.toggleMarkup('s');
-            });
+            }, 10);
         }
     }
 
@@ -292,9 +298,10 @@ function registerInlineMarkdownTextExpansions(editor) {
             });
 
             // must be scheduled so that the toggle isn't reset automatically
-            run.schedule('actions', this, function () {
+            // by mobiledoc-kit re-setting state after the range is updated
+            run.later(this, function () {
                 editor.toggleMarkup('code');
-            });
+            }, 10);
         }
     }
 
@@ -312,9 +319,10 @@ function registerInlineMarkdownTextExpansions(editor) {
             });
 
             // must be scheduled so that the toggle isn't reset automatically
-            run.schedule('actions', this, function () {
+            // by mobiledoc-kit re-setting state after the range is updated
+            run.later(this, function () {
                 editor.toggleMarkup('sup');
-            });
+            }, 10);
         }
     }
 
