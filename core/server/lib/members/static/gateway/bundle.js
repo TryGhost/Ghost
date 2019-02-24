@@ -92,10 +92,10 @@
 
     // @TODO this needs to be configurable
     const membersApi = location.pathname.replace(/\/members\/gateway\/?$/, '/ghost/api/v2/members');
-    function getToken({audience}) {
+    function getToken({audience, fresh}) {
         const storedToken = getStoredToken(audience);
 
-        if (storedToken) {
+        if (storedToken && !fresh) {
             return Promise.resolve(storedToken);
         }
 
