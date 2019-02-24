@@ -1,0 +1,15 @@
+/*
+
+  BOX-SHADOW
+
+  Media Query Extensions:
+   -ns = not-small
+   -m  = medium
+   -l  = large
+
+ */
+
+.shadow-1           { box-shadow: 0 0 1px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.03); }
+.shadow-1-strong    { box-shadow: 0 0 1px rgba(0,0,0,.15), 0 2px 4px rgba(0,0,0,.03); }
+.shadow-2           { box-shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08); }
+.shadow-3           { box-shadow: 0 0 1px rgba(0,0,0,.05), 0 8px 28px rgba(0,0,0,.12); }
