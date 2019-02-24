@@ -9,6 +9,13 @@ const Funnel = require('broccoli-funnel');
 const environment = EmberApp.env();
 const isProduction = environment === 'production';
 
+const postcssEasyImport = require('postcss-easy-import');
+const postcssCustomProperties = require('postcss-custom-properties');
+const postcssColorModFunction = require('postcss-color-mod-function');
+const postcssCustomMedia = require('postcss-custom-media');
+const autoprefixer = require('autoprefixer');
+const cssnano = require('cssnano');
+
 const assetLocation = function (fileName) {
     if (isProduction) {
         fileName = fileName.replace('.', '.min.');
@@ -136,6 +143,48 @@ module.exports = function (defaults) {
         nodeAssets: {
             codemirror: codemirrorAssets(),
             simplemde: simplemdeAssets()
+        },
+        postcssOptions: {
+            compile: {
+                enabled: true,
+                plugins: [
+                    {
+                        module: postcssEasyImport,
+                        options: {
+                            path: ['app/styles']
+                        }
+                    },
+                    {
+                        module: postcssCustomProperties,
+                        options: {
+                            preserve: false
+                        }
+                    },
+                    {
+                        module: postcssColorModFunction
+                    },
+                    {
+                        module: postcssCustomMedia
+                    },
+                    {
+                        module: autoprefixer
+                    },
+                    {
+                        module: cssnano,
+                        options: {
+                            zindex: false,
+                            // cssnano sometimes minifies animations incorrectly causing them to break
+                            // See: https://github.com/ben-eb/gulp-cssnano/issues/33#issuecomment-210518957
+                            reduceIdents: {
+                                keyframes: false
+                            },
+                            discardUnused: {
+                                keyframes: false
+                            }
+                        }
+                    }
+                ]
+            }
         },
         svgJar: {
             strategy: 'inline',

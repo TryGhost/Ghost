@@ -1,0 +1,922 @@
+/* Content Styles
+/*
+/* We use only margin-top to set the vertical spacings. The styles below
+/* set up the margin for content pairs (e.g. paragraph preceded by a heading).
+/* -------------------------------------------------------------------- */
+
+/* Global Koenig content styles
+/* -------------------------------------------------------------------- */
+.koenig-editor__editor {
+    font-family: var(--font-family);
+    font-size: 1.7rem;
+    font-weight: 200;
+    letter-spacing: 0.1px;
+    color: var(--darkgrey);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -moz-font-feature-settings: "liga" on;
+}
+
+.koenig-editor__editor.__has-no-content:after {
+    font-family: georgia,serif;
+    font-weight: 300;
+    letter-spacing: .02rem;
+    line-height: 1.6em;
+    font-size: 2rem;
+    color: var(--midgrey-l2);
+}
+
+.koenig-editor__editor video {
+    max-width: 100%;
+}
+
+/* Reset margins */
+
+.koenig-editor__editor p,
+.koenig-editor__editor h1,
+.koenig-editor__editor h2,
+.koenig-editor__editor h3,
+.koenig-editor__editor h4,
+.koenig-editor__editor h5,
+.koenig-editor__editor h6,
+.koenig-editor__editor blockquote {
+    margin: 1.6rem 0 0;
+    min-width: 100%;
+    max-width: 100%;
+}
+
+
+/* Heading
+/* -------------------------------------------------------------------- */
+
+.koenig-editor__editor h1,
+.koenig-editor__editor h2,
+.koenig-editor__editor h3,
+.koenig-editor__editor h4,
+.koenig-editor__editor h5,
+.koenig-editor__editor h6 {
+    font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+    font-weight: 700;
+}
+
+.koenig-editor__editor h1 {
+    font-size: 3.3rem;
+    line-height: 1.4em;
+    letter-spacing: .04rem;
+}
+
+.koenig-editor__editor h2 {
+    font-size: 2.8rem;
+    line-height: 1.4em;
+    letter-spacing: .04rem;
+}
+
+.koenig-editor__editor h3 {
+    font-size: 2.3rem;
+    line-height: 1.6em;
+    letter-spacing: .04rem;
+}
+
+.koenig-editor__editor h4 {
+    font-size: 2.0rem;
+    line-height: 1.4em;
+    letter-spacing: .04rem;
+}
+
+.koenig-editor__editor h5 {
+    font-size: 1.9rem;
+    line-height: 1.4em;
+    letter-spacing: .06rem;
+}
+
+.koenig-editor__editor h6 {
+    font-size: 1.75rem;
+    line-height: 1.6em;
+    letter-spacing: .04rem;
+}
+
+
+
+.koenig-editor__editor p + h1,
+.koenig-editor__editor p + h2,
+.koenig-editor__editor p + h3,
+.koenig-editor__editor p + h4,
+.koenig-editor__editor p + h5,
+.koenig-editor__editor p + h6,
+
+.koenig-editor__editor blockquote + h1,
+.koenig-editor__editor blockquote + h2,
+.koenig-editor__editor blockquote + h3,
+.koenig-editor__editor blockquote + h4,
+.koenig-editor__editor blockquote + h5,
+.koenig-editor__editor blockquote + h6,
+
+.koenig-editor__editor ul + h1,
+.koenig-editor__editor ul + h2,
+.koenig-editor__editor ul + h3,
+.koenig-editor__editor ul + h4,
+.koenig-editor__editor ul + h5,
+.koenig-editor__editor ul + h6,
+
+.koenig-editor__editor ol + h1,
+.koenig-editor__editor ol + h2,
+.koenig-editor__editor ol + h3,
+.koenig-editor__editor ol + h4,
+.koenig-editor__editor ol + h5,
+.koenig-editor__editor ol + h6 {
+    margin: 4.8rem 0 0;
+}
+
+/* Heading 1 vertical rhythm */
+
+.koenig-editor__editor h1 + h1 {
+    margin: 1.4rem 0 0;
+}
+
+.koenig-editor__editor h2 + h1,
+.koenig-editor__editor h3 + h1 {
+    margin: 1.0rem 0 0;
+}
+
+.koenig-editor__editor h4 + h1,
+.koenig-editor__editor h5 + h1 {
+    margin: 0.8rem 0 0;
+}
+
+.koenig-editor__editor h6 + h1 {
+    margin: 0.6rem 0 0;
+}
+
+.koenig-editor__editor div + h1 {
+    margin: 4.8rem 0 0;
+}
+
+
+/* Heading 2 */
+
+.koenig-editor__editor h1 + h2 {
+    margin: 1.6rem 0 0;
+}
+
+.koenig-editor__editor h2 + h2,
+.koenig-editor__editor h3 + h2,
+.koenig-editor__editor h4 + h2,
+.koenig-editor__editor h5 + h2 {
+    margin: 0.8rem 0 0;
+}
+
+.koenig-editor__editor h6 + h2 {
+    margin: 0.4rem 0 0;
+}
+
+.koenig-editor__editor div + h2 {
+    margin: 4.8rem 0 0;
+}
+
+
+/* Heading 3 - 6 (share common styles) */
+
+.koenig-editor__editor h1 + h3,
+.koenig-editor__editor h2 + h3,
+
+.koenig-editor__editor h1 + h4,
+.koenig-editor__editor h2 + h4,
+
+.koenig-editor__editor h1 + h5,
+.koenig-editor__editor h2 + h5,
+
+.koenig-editor__editor h1 + h6,
+.koenig-editor__editor h2 + h6 {
+    margin: 1.2rem 0 0;
+}
+
+.koenig-editor__editor h3 + h4 {
+    margin: 0.8rem 0 0;
+}
+
+.koenig-editor__editor h3 + h3,
+.koenig-editor__editor h4 + h3,
+.koenig-editor__editor h5 + h3,
+
+.koenig-editor__editor h4 + h4,
+.koenig-editor__editor h5 + h4,
+
+.koenig-editor__editor h3 + h5,
+.koenig-editor__editor h4 + h5,
+.koenig-editor__editor h5 + h5,
+
+.koenig-editor__editor h3 + h6,
+.koenig-editor__editor h4 + h6 {
+    margin: 0.8rem 0 0;
+}
+
+.koenig-editor__editor h5 + h6 {
+    margin: 0.4rem 0 0;
+}
+
+.koenig-editor__editor h6 + h3,
+.koenig-editor__editor h6 + h4,
+.koenig-editor__editor h6 + h5,
+.koenig-editor__editor h6 + h6 {
+    margin: 0.4rem 0 0;
+}
+
+.koenig-editor__editor div + h3,
+.koenig-editor__editor div + h4,
+.koenig-editor__editor div + h5,
+.koenig-editor__editor div + h6 {
+    margin: 2.8rem 0 0;
+}
+
+
+/* Paragraph
+/* -------------------------------------------------------------------- */
+
+.koenig-editor__editor p,
+.koenig-editor__editor blockquote,
+.koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor ol
+ {
+    font-family: georgia,serif;
+    font-weight: 300;
+    letter-spacing: .02rem;
+    line-height: 1.6em;
+    font-size: 2rem;
+}
+
+.koenig-editor__editor h1 + p {
+    margin: 1.2rem 0 0;
+}
+
+.koenig-editor__editor h2 + p {
+    margin: 0.8rem 0 0;
+}
+
+.koenig-editor__editor h3 + p,
+.koenig-editor__editor h4 + p,
+.koenig-editor__editor h5 + p,
+.koenig-editor__editor h6 + p {
+    margin: .8rem 0 0;
+}
+
+.koenig-editor__editor p + p,
+.koenig-editor__editor blockquote + p,
+.koenig-editor__editor ul + p,
+.koenig-editor__editor ol + p
+ {
+    margin: 3.2rem 0 0;
+}
+
+.koenig-editor__editor div + p { /* Mobiledoc cards can be addressed by their wrapper div element */
+    margin: 2.8rem 0 0;
+}
+
+
+/* Lists
+/* -------------------------------------------------------------------- */
+
+.koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor ol {
+    margin: 1.6rem 0 0;
+    padding: 0;
+    min-width: 100%;
+    max-width: 100%;
+}
+
+.koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar) li {
+    margin: 1.0rem 0 0 2.4rem;
+    padding: 0 0 0 0.6rem;
+    line-height: 3.2rem;
+}
+
+.koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar) li:first-child {
+    margin: 0 0 0 2.4rem;
+}
+
+.koenig-editor__editor ol li {
+    margin: 1.0rem 0 0 2.2rem;
+    padding: 0 0 0 0.8rem;
+    line-height: 3.2rem;
+}
+
+.koenig-editor__editor ol li:first-child {
+    margin: 0 0 0 2.2rem;
+}
+
+.koenig-editor__editor p + ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor p + ol,
+.koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar) + ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar) + ol,
+.koenig-editor__editor ol + ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor ol + ol,
+.koenig-editor__editor blockquote + ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor blockquote + ol {
+    margin: 3.2rem 0 0;
+}
+
+.koenig-editor__editor h1 + ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor h1 + ol,
+.koenig-editor__editor h2 + ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor h2 + ol {
+    margin: .8rem 0 0;
+}
+.koenig-editor__editor h3 + ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor h3 + ol,
+.koenig-editor__editor h4 + ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor h4 + ol,
+.koenig-editor__editor h5 + ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor h5 + ol,
+.koenig-editor__editor h6 + ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor h6 + ol {
+    margin: 1.2rem 0 0;
+}
+
+.koenig-editor__editor div + ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor div + ol {
+    margin: 2.8rem 0 0;
+}
+
+.koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar) ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar) ol,
+.koenig-editor__editor ol ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor ol ol {
+    margin: 1.0rem 0 2rem;
+}
+
+
+/* Cards in general
+/* -------------------------------------------------------------------- */
+
+.koenig-editor__editor > div {
+    line-height: 0;
+    min-width: 100%;
+}
+
+.koenig-editor__editor > div + div {
+    margin: 3.2rem 0 0;
+}
+
+.koenig-editor__editor > p + div,
+.koenig-editor__editor > blockquote + div,
+.koenig-editor__editor > ul + div,
+.koenig-editor__editor > ol + div {
+    margin: 3.2rem 0 0;
+}
+
+.koenig-editor__editor > h1 + div {
+    margin: 2.8rem 0 0;
+}
+
+.koenig-editor__editor > h2 + div,
+.koenig-editor__editor > h3 + div,
+.koenig-editor__editor > h4 + div,
+.koenig-editor__editor > h5 + div,
+.koenig-editor__editor > h6 + div {
+    margin: 1.6rem 0 0;
+}
+
+.koenig-editor__editor hr {
+    margin: 1.6rem 0;
+}
+
+
+/* Links
+/* -------------------------------------------------------------------- */
+
+.koenig-editor__editor a {
+    color: var(--darkgrey);
+    text-decoration: none;
+    box-shadow: 0 1px 0 var(--white), 0 2px 0 var(--blue);
+}
+
+
+/* Blockquote
+/* -------------------------------------------------------------------- */
+
+.koenig-editor__editor blockquote p {
+    margin: 0;
+}
+
+.koenig-editor__editor blockquote {
+    border-left: 0.25rem solid var(--blue);
+    padding-left: 2.0rem;
+    font-style: italic;
+}
+
+.koenig-editor__editor h1 + blockquote,
+.koenig-editor__editor h2 + blockquote {
+    margin: .8rem 0 0;
+}
+
+.koenig-editor__editor h3 + blockquote,
+.koenig-editor__editor h4 + blockquote,
+.koenig-editor__editor h5 + blockquote,
+.koenig-editor__editor h6 + blockquote {
+    margin: .4rem 0 0;
+}
+
+.koenig-editor__editor p + blockquote,
+.koenig-editor__editor blockquote + blockquote {
+    margin: 3.2rem 0 0;
+}
+
+
+/* Mobiledoc cards can be selected by their wrapper div element */
+.koenig-editor__editor div + blockquote {
+    margin: 2.8rem 0 0;
+}
+
+
+/* Code
+/* ------------------------------------------------------------------ */
+.koenig-card-html--editor .CodeMirror,
+.koenig-editor__editor code,
+.koenig-editor__editor pre {
+    font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
+    background: color-mod(var(--lightgrey) lightness(+4%));
+    border: 1px solid var(--lightgrey);
+}
+
+.koenig-editor__editor code {
+    border-radius: 2px;
+    color: var(--pink);
+    font-size: 1.65rem;
+    line-height: 1em;
+    padding: .4rem .4rem .2rem;
+    vertical-align: middle;
+    white-space: pre-wrap;
+}
+
+.koenig-editor__editor pre code {
+    border: none;
+    font-size: 1.6rem;
+    color: var(--pink);
+    padding: 0;
+}
+
+.koenig-editor__editor pre {
+    line-height: 1.4em;
+    padding: .8rem .8rem .4rem;
+    border-radius: .4rem;
+    font-size: 1.6rem;
+    overflow: auto;
+    white-space: pre;
+    width: 100%;
+    color: var(--darkgrey);
+}
+
+.koenig-editor__editor pre.js-embed-placeholder,
+.koenig-editor__editor pre.iframe-embed-placeholder {
+    margin: 0.4rem 0 !important;
+    color: var(--midgrey);
+}
+
+
+/* Markdown
+/* --------------------------------------------------------------- */
+
+/*
+  Resetting the default top margin of the redered markdown content. This is
+  needed because the top margin is applied to the card itself. It's the 2nd
+  child because there's an SVG at the first place.
+  NOTE: this is not too elegant.
+*/
+
+.koenig-card-markdown-rendered > :nth-child(2) {
+    margin: 0;
+}
+
+.koenig-card-markdown-rendered hr {
+    margin: 3.2rem 0 0;
+}
+
+.koenig-card-markdown-rendered hr + p {
+    margin: 3.2rem 0 0;
+}
+
+.koenig-editor .gh-markdown-editor pre {
+    border: none;
+    background: none;
+    white-space: normal;
+}
+
+.koenig-editor .gh-markdown-editor a {
+    box-shadow: none;
+}
+
+
+/* HTML editor
+/* --------------------------------------------------------------- */
+
+.koenig-card-html-rendered {
+    line-height: 1.8em;
+}
+
+.koenig-card-html-rendered > :first-child {
+    margin: 0;
+}
+
+.koenig-card-html--editor pre {
+    border: none;
+    background: none;
+    white-space: pre-line;
+    padding: 0 .8rem;
+    line-height: 1.4em;
+}
+
+.koenig-card-html--editor .CodeMirror {
+    border: none;
+    margin: 0 -8px;
+}
+
+.koenig-card-html--editor .CodeMirror-linenumber {
+    padding: 12px 3px 0 5px;
+    color: var(--midlightgrey-l2);
+}
+
+.koenig-card-html--editor .CodeMirror-gutters {
+    border: none;
+    background: none;
+}
+
+
+/* Images
+/* --------------------------------------------------------------- */
+
+.koenig-breakout-wide {
+    margin: auto calc(50% - 50vw - .8rem);
+    width: calc(65vw + 2px);
+    min-width: calc(100% + 18rem);
+    transform: translateX(calc(50vw - 50% + .8rem));
+}
+
+@media (min-width: 500px) and (max-width: 1080px) {
+    .koenig-breakout-wide {
+        min-width: calc(100% + 10rem);
+    }
+}
+
+@media (max-width: 500px) {
+    .koenig-breakout-wide {
+        min-width: calc(100% + 3.6rem);
+    }
+}
+
+.koenig-breakout-full {
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+}
+
+.mw-100vw.kg-image-full--sidebar {
+    max-width: calc(100vw - 280px);
+}
+
+/* Table
+/* --------------------------------------------------------------- */
+
+.koenig-editor__editor table {
+    font-size: 1.75rem;
+    margin: 0;
+    font-family: georgia,serif;
+    letter-spacing: .02rem;
+    line-height: 1.6em;
+}
+
+.koenig-editor__editor table tr td,
+.koenig-editor__editor table tr th {
+    vertical-align: top;
+    border-bottom: 1px solid var(--lightgrey);
+}
+
+/* Captions
+/* --------------------------------------------------------------- */
+
+/* override `.koenig-editor__editor p` by inheriting styles from parent figcaption classes */
+.koenig-editor__editor figcaption p {
+    margin: 0;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
+}
+
+.koenig-basic-html-input__editor code {
+    font-size: 1.4rem;
+}
+
+/*
+/* UI Styles
+/*
+/* Styles that extend Spirit classes.
+/* -------------------------------------------------------------------- */
+.kg-card-left-border {
+    border-left-color: var(--lightgrey);
+}
+
+.kg-card-hover:hover {
+    box-shadow: 0 0 0 1px var(--blue);
+}
+
+.kg-card-selected,
+.kg-card-selected:hover
+ {
+    box-shadow: 0 0 0 2px var(--blue);
+}
+
+/* Force a 16:10 aspect ratio */
+.kg-media-placeholder:before {
+    content: "";
+    float: left;
+    padding-bottom: 62.5%;
+}
+
+.kg-media-placeholder:after {
+    clear: left;
+    content: " ";
+    display: table;
+}
+
+.kg-image-button svg {
+  transform: scale(1.0);
+  transition: var(--animation-speed-normal) ease-out;
+  opacity: 0.85;
+}
+
+.kg-image-button:hover svg {
+  transform: scale(1.05);
+  opacity: 1.0;
+}
+
+.kg-placeholder-image-summer {
+    width: 152px;
+    height: 122px;
+}
+
+.kg-placeholder-gallery {
+    width: 141px;
+    height: 131px;
+}
+
+/* Link hover tooltip - override inherited styles from .koenig-editor__editor */
+.kg-link-toolbar a {
+    color: inherit;
+    -webkit-font-smoothing: initial;
+}
+
+/* Link input bar */
+.kg-link-input {
+    min-width: 225px; /* Same width as text toolbar */
+}
+
+.kg-input-bar-close {
+    position: absolute;
+    top: 22px;
+    right: 10px;
+    left: auto;
+    line-height: 1.2rem;
+    z-index: 100;
+    cursor: pointer;
+}
+
+.kg-input-bar:before,
+.kg-input-bar:after {
+    position: absolute;
+    top: 47px;
+    left: calc(50% - 8px);
+    width: 0;
+    content: "";
+    font-size: 0;
+    line-height: 0;
+}
+
+.kg-input-bar:before {
+    border-top: 9px solid var(--blue);
+    border-right: 9px solid transparent;
+    border-left: 9px solid transparent;
+}
+
+.kg-input-bar:after {
+    border-top: 8px solid var(--white);
+    border-right: 8px solid transparent;
+    border-left: 8px solid transparent;
+    margin-left: 1px;
+}
+
+/* Action bar styles */
+.kg-action-bar {
+    top: 8px;
+}
+
+.kg-action-bar a {
+    min-height: 34px;
+}
+
+.kg-action-bar:after {
+    position: absolute;
+    top: 40px;
+    left: calc(50% - 8px);
+    width: 0;
+    border-top: 8px solid var(--darkgrey-d1);
+    border-right: 8px solid transparent;
+    border-left: 8px solid transparent;
+    content: "";
+    font-size: 0;
+    line-height: 0;
+    transition: left ease 0.06s;
+}
+
+.kg-action-bar-divider {
+    width: 1px;
+}
+
+.kg-cardmenu-card-selected,
+.kg-cardmenu-card-hover:hover {
+    cursor: pointer;
+    background: var(--whitegrey-l1);
+}
+
+.kg-cardmenu-card-selected div {
+    color: var(--darkgrey);
+}
+
+/* Padded container housing title + editor canvas, scrollable content */
+.gh-koenig-editor-pane {
+    padding: 11vw 92px;
+}
+
+@media (min-width: 500px) and (max-width: 960px) {
+    .gh-koenig-editor-pane {
+        padding: 15vw 92px;
+    }
+}
+
+@media (max-width: 500px) {
+    .gh-koenig-editor-pane {
+        padding: 15vw 40px;
+    }
+}
+
+/* Use flex-grow to fill the available vertical space so clicks outside the
+   editor content can trigger focus */
+.gh-koenig-editor-pane .koenig-editor {
+    cursor: text;
+}
+
+.koenig-editor {
+    max-width: 760px;
+}
+
+/* ⨁ menu
+/* --------------------------------------------------------------- */
+.koenig-plus-menu-button {
+    margin: -2px 0 0 -66px;
+}
+
+.koenig-plus-menu-button:hover {
+    border-color: var(--darkgrey);
+}
+
+.koenig-plus-menu-button:hover svg path,
+.koenig-plus-menu-button:hover svg g {
+    stroke: var(--darkgrey);
+}
+
+
+@media (max-width: 1024px) {
+  .koenig-plus-menu-button {
+        right:10px;
+  }
+}
+
+
+/* Chrome has a bug with its scrollbars on this element which has been reported here: https://bugs.chromium.org/p/chromium/issues/detail?id=697381 */
+.koenig-cardmenu {
+    width: 272px;
+    max-height: 500px;
+    background-clip: padding-box;
+    z-index: 9999999; /* have to compete with codemirror */
+    left: -16px;
+}
+
+
+/* Cards
+/* --------------------------------------------------------------- */
+.koenig-card-click-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 400;
+}
+
+
+/* Codemirror overrides
+/* --------------------------------------------------------------- */
+.koenig-editor .CodeMirror pre {
+    white-space: pre;
+}
+
+.koenig-editor .CodeMirror-wrap pre {
+    white-space: pre-wrap;
+}
+
+.koenig-card-html--editor .CodeMirror {
+    min-height: 170px;
+    padding: 0;
+    overflow: auto;
+    background-color: #ffffff;
+}
+
+.koenig-card-html--editor .CodeMirror:hover {
+    cursor: text;
+}
+
+.koenig-card-html--editor .CodeMirror-scroll {
+    min-height: 170px;
+    overflow: hidden !important;
+    margin-right: 0;
+}
+
+.koenig-editor .gh-markdown-editor .CodeMirror {
+    min-height: 130px;
+    /* margin to account for absolutely positioned toolbar */
+    margin-bottom: 49px;
+}
+
+.koenig-editor .gh-markdown-editor .CodeMirror-scroll {
+    min-height: 130px;
+}
+
+
+/* 1.0 Markdown editor overrides
+/* --------------------------------------------------------------- */
+.koenig-editor .gh-markdown-editor {
+    position: static;
+    overflow: visible;
+    padding-top: 2px;
+}
+
+.koenig-editor .gh-markdown-editor .editor-toolbar {
+    display: flex;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-left: none;
+    border-right: none;
+    border-radius: 0 0 .4rem .4rem;
+    z-index: 9999;
+    background-color: #fff;
+    opacity: 1;
+    padding: 6px;
+    border-top: 1px solid #E5EFF5;
+}
+
+.koenig-editor .gh-markdown-editor .editor-toolbar .fa-check {
+    margin-left: auto;
+}
+
+.koenig-editor .gh-markdown-editor .editor-toolbar .separator:last-of-type {
+    display: none;
+}
+
+
+/* Mobiledoc-kit base styles
+/* NOTE: adapted from https://github.com/bustle/mobiledoc-kit/blob/master/src/css/mobiledoc-kit.css
+/* --------------------------------------------------------------- */
+
+.__mobiledoc-editor {
+    position: relative;
+    resize: none;
+    min-height: 1em;
+}
+
+.__mobiledoc-editor:focus {
+    outline: none;
+}
+
+.__mobiledoc-editor > * {
+    position: relative;
+}
+
+.__mobiledoc-editor i {
+    display: inline;
+}
+
+.__mobiledoc-card {
+    display: inline-block;
+    width: 100%;
+}
+
+.__mobiledoc-editor.__has-no-content:after {
+    min-width: 100%;
+    content: attr(data-placeholder);
+    cursor: text;
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: var(--midlightgrey);
+}

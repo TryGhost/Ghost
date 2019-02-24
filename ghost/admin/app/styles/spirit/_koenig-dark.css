@@ -1,0 +1,96 @@
+/* Koenig overrides for dark theme
+/* -------------------------------------------------------------------- */
+
+
+/* Action bar */
+
+.kg-card-left-border {
+    border-left-color: var(--lightgrey-d1);
+}
+
+.kg-action-bar {
+    background: var(--extra-darkgrey);
+    border: 1px solid var(--whitegrey);
+}
+
+.kg-action-bar:after {
+    border-top-color: var(--extra-darkgrey);
+}
+
+.kg-action-bar:before {
+    position: absolute;
+    top: 40px;
+    left: calc(50% - 10px);
+    width: 0;
+    border-top: 10px solid var(--whitegrey);
+    border-right: 10px solid transparent;
+    border-left: 10px solid transparent;
+    content: "";
+    font-size: 0;
+    line-height: 0;
+}
+
+.kg-action-bar-divider {
+    background: var(--lightgrey);
+}
+
+.kg-action-bar .fill-white g,
+.kg-action-bar .fill-white path {
+    fill: var(--darkgrey);
+}
+
+
+/* Card menu */
+.koenig-cardmenu {
+    background: var(--extra-darkgrey);
+    box-shadow: 0 0 0 1px rgba(99,114,130,.16), 0 8px 16px rgba(27,39,51,.08);
+}
+
+.kg-cardmenu-card-hover div {
+    color: var(--middarkgrey-l1);
+}
+
+.kg-cardmenu-card-selected,
+.kg-cardmenu-card-hover:hover {
+    background: var(--whitegrey);
+}
+
+.kg-card-type-codepen g,
+.kg-card-type-codepen svg,
+.kg-card-type-unsplash g,
+.kg-card-type-unsplash svg {
+    fill: var(--darkgrey);
+}
+
+
+/* Card styles */
+
+.koenig-editor__editor pre {
+    border: none;
+}
+
+.koenig-editor .gh-markdown-editor .editor-toolbar {
+    background: color-mod(var(--whitegrey) l(-2%) s(+2%));
+    border-top-color: var(--whitegrey-d2);
+}
+
+.koenig-card-html--editor .CodeMirror {
+    background: var(--white);
+}
+
+.kg-input-bar:after {
+    border-top-color: var(--lightgrey);
+}
+
+.kg-link-toolbar {
+    background: var(--lightgrey);
+}
+
+.kg-link-toolbar a {
+    color: var(--middarkgrey);
+}
+
+.kg-link-toolbar svg g,
+.kg-link-toolbar svg path {
+    fill: var(--middarkgrey);
+}

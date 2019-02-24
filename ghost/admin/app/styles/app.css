@@ -4,7 +4,7 @@
     includes normalize v7 so must come first to avoid clobbering
     our old non-Spirit classes
 */
-@import "spirit/spirit-product.css";
+@import "spirit/spirit.css";
 
 /* Patterns: Groups of Styles
 /* ---------------------------------------------------------- */
