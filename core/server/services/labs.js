@@ -11,8 +11,8 @@ labs.isSet = function isSet(flag) {
     /**
      * TODO: Uses hard-check for members prototype, removed here when added to settings
      */
-    if (flag === 'members' && config.get('enableDeveloperExperiments') && labsConfig && labsConfig[flag] && labsConfig[flag] === true) {
-        return true;
+    if (flag === 'members') {
+        return config.get('enableDeveloperExperiments') && labsConfig && labsConfig[flag] && labsConfig[flag] === true;
     }
     return labsConfig && labsConfig[flag] && labsConfig[flag] === true;
 };
