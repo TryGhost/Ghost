@@ -139,7 +139,6 @@ describe('Posts API', function () {
                     should.not.exist(res.headers['x-cache-invalidate']);
                     should.exist(res.body.posts);
                     should.exist(res.body.posts[0].published_at);
-                    localUtils.API.checkResponse(res.body.posts[0], 'post');
                 });
         });
 
@@ -161,8 +160,6 @@ describe('Posts API', function () {
                 .then((res) => {
                     // @NOTE: you cannot modify these fields above manually, that's why the resource won't change.
                     should.not.exist(res.headers['x-cache-invalidate']);
-
-                    localUtils.API.checkResponse(res.body.posts[0], 'post');
 
                     return models.Post.findOne({
                         id: res.body.posts[0].id

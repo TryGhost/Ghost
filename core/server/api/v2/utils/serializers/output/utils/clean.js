@@ -100,6 +100,14 @@ const post = (attrs, frame) => {
         }
     } else {
         delete attrs.page;
+
+        if (!attrs.tags) {
+            delete attrs.primary_tag;
+        }
+
+        if (!attrs.authors) {
+            delete attrs.primary_author;
+        }
     }
 
     delete attrs.locale;
