@@ -58,7 +58,7 @@ export default class StripeSubscriptionPage extends Component {
             <div class="gm-plan">
                 <input type="radio" id={id} name="radio-group" value={id} defaultChecked={id === selectedPlanId} />
                 <label for={id}>
-                    <span class="gm-amount">{`$${amount}`}</span>
+                    <span class="gm-amount">{`$${amount/100}`}</span>
                     <span class="gm-interval">{`${interval}`}</span>
                 </label>
             </div>
