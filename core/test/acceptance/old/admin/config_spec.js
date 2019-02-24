@@ -26,10 +26,10 @@ describe('Config API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
             .then((res) => {
-                localUtils.API.checkResponse(res.body, 'config');
+                localUtils.API.checkResponse(res.body.config, 'config');
 
                 // full version
-                res.body.version.should.match(/\d+\.\d+\.\d+/);
+                res.body.config.version.should.match(/\d+\.\d+\.\d+/);
             });
     });
 });
