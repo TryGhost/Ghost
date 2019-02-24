@@ -45,7 +45,7 @@ describe('Pages API', function () {
                 localUtils.API.checkResponse(jsonResponse, 'pages');
                 jsonResponse.pages.should.have.length(2);
 
-                localUtils.API.checkResponse(jsonResponse.pages[0], 'page');
+                localUtils.API.checkResponse(jsonResponse.pages[0], 'page', null, ['primary_tag', 'primary_author']);
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.pages[0].featured).should.eql(true);
 
@@ -72,7 +72,7 @@ describe('Pages API', function () {
             .expect(201)
             .then((res) => {
                 res.body.pages.length.should.eql(1);
-                localUtils.API.checkResponse(res.body.pages[0], 'page');
+                localUtils.API.checkResponse(res.body.pages[0], 'page', null, ['primary_tag', 'primary_author']);
                 should.exist(res.headers['x-cache-invalidate']);
 
                 return models.Post.findOne({
@@ -108,7 +108,7 @@ describe('Pages API', function () {
             })
             .then((res) => {
                 should.exist(res.headers['x-cache-invalidate']);
-                localUtils.API.checkResponse(res.body.pages[0], 'page');
+                localUtils.API.checkResponse(res.body.pages[0], 'page', null, ['primary_tag', 'primary_author']);
 
                 return models.Post.findOne({
                     id: res.body.pages[0].id
