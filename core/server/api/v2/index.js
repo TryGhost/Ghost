@@ -123,6 +123,10 @@ module.exports = {
         return shared.pipeline(require('./actions'), localUtils);
     },
 
+    get site() {
+        return shared.pipeline(require('./site'), localUtils);
+    },
+
     get serializers() {
         return require('./utils/serializers');
     }

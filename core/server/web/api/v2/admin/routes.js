@@ -20,6 +20,9 @@ module.exports = function apiRoutes() {
 
     const http = apiImpl => apiv2.http(apiImpl, 'admin');
 
+    // ## Public
+    router.get('/site', http(apiv2.site.read));
+
     // ## Configuration
     router.get('/configuration', http(apiv2.configuration.read));
     router.get('/configuration/:key', mw.authAdminApi, http(apiv2.configuration.read));

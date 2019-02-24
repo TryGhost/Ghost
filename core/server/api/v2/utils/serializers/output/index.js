@@ -93,5 +93,9 @@ module.exports = {
 
     get actions() {
         return require('./actions');
+    },
+
+    get site() {
+        return require('./site');
     }
 };
