@@ -44,7 +44,7 @@ describe('Posts API', function () {
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
                 jsonResponse.posts.should.have.length(13);
-                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['primary_tag', 'primary_author']);
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
 
@@ -77,7 +77,7 @@ describe('Posts API', function () {
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
                 jsonResponse.posts.should.have.length(3);
-                localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html']);
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['mobiledoc', 'plaintext'], ['html', 'primary_tag', 'primary_author']);
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
 
@@ -138,7 +138,7 @@ describe('Posts API', function () {
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse, 'posts');
                 jsonResponse.posts.should.have.length(2);
-                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['primary_tag', 'primary_author']);
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 done();
             });
@@ -196,7 +196,7 @@ describe('Posts API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.posts);
-                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['primary_tag', 'primary_author']);
                 jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
 
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -223,7 +223,7 @@ describe('Posts API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.posts);
-                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['primary_tag', 'primary_author']);
                 jsonResponse.posts[0].slug.should.equal('welcome');
 
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -282,7 +282,7 @@ describe('Posts API', function () {
             .expect(201)
             .then((res) => {
                 res.body.posts.length.should.eql(1);
-                localUtils.API.checkResponse(res.body.posts[0], 'post');
+                localUtils.API.checkResponse(res.body.posts[0], 'post', null, ['primary_tag', 'primary_author']);
                 should.not.exist(res.headers['x-cache-invalidate']);
 
                 return models.Post.findOne({
