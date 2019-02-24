@@ -83,8 +83,8 @@ module.exports = {
         return require('./authors');
     },
 
-    get configuration() {
-        return require('./configuration');
+    get config() {
+        return require('./config');
     },
 
     get themes() {

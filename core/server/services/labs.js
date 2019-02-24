@@ -13,8 +13,13 @@ labs.isSet = function isSet(flag) {
     if (flag === 'members' && config.get('enableDeveloperExperiments')) {
         return true;
     }
+
     var labsConfig = settingsCache.get('labs');
     return labsConfig && labsConfig[flag] && labsConfig[flag] === true;
+};
+
+labs.getAll = () => {
+    return settingsCache.get('labs');
 };
 
 labs.enabledHelper = function enabledHelper(options, callback) {

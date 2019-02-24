@@ -107,8 +107,8 @@ module.exports = {
         return shared.pipeline(require('./authors'), localUtils);
     },
 
-    get configuration() {
-        return shared.pipeline(require('./configuration'), localUtils);
+    get config() {
+        return shared.pipeline(require('./config'), localUtils);
     },
 
     get publicSettings() {
