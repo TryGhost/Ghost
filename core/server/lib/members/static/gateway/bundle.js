@@ -286,11 +286,13 @@
             }
         }
 
-        if (/^members:token:aud:/.test(event.key)) {
+        const [isTokenChange, audience] = event.key.match(/^members:token:aud:\(.*\)$/) || [null];
+        if (isTokenChange) {
             if (newValue) {
                 return window.parent.postMessage({
                     event: 'token',
                     payload: {
+                        audience,
                         token: newValue
                     }
                 }, origin);
