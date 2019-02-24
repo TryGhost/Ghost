@@ -77,6 +77,21 @@
         if (!storedTokenKeys.includes(tokenKey)) {
             storage.setItem('members:tokens', JSON.stringify(storedTokenKeys.concat(tokenKey)));
         }
+
+        function prefetchToken() {
+            getToken({audience, fresh: true}).then(() => {
+                window.removeEventListener('unload', prefetchToken);
+            }).catch(() => {
+                window.removeEventListener('unload', prefetchToken);
+            });
+        }
+
+        const {exp} = getClaims(token);
+        const expiry = exp * 1000;
+        const now = Date.now();
+
+        window.addEventListener('unload', prefetchToken); // CASE: refresh a token on navigation, incase it expires whilst navigating
+        setTimeout(prefetchToken, now - expiry - 30000); // CASE: refetch a token 30 seconds before it is due to expire.
     }
 
     function clearStorage() {
