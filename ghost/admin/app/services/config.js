@@ -1,6 +1,5 @@
 import Ember from 'ember';
 import Service, {inject as service} from '@ember/service';
-import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
 
 // ember-cli-shims doesn't export _ProxyMixin
