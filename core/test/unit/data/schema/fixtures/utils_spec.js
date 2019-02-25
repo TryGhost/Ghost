@@ -156,13 +156,13 @@ describe('Migration Fixture Utils', function () {
                 // Permissions & Roles
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();
-                dataMethodStub.filter.callCount.should.eql(61);
+                dataMethodStub.filter.callCount.should.eql(63);
                 dataMethodStub.find.callCount.should.eql(5);
-                baseUtilAttachStub.callCount.should.eql(61);
+                baseUtilAttachStub.callCount.should.eql(63);
 
-                fromItem.related.callCount.should.eql(61);
-                fromItem.findWhere.callCount.should.eql(61);
-                toItem[0].get.callCount.should.eql(122);
+                fromItem.related.callCount.should.eql(63);
+                fromItem.findWhere.callCount.should.eql(63);
+                toItem[0].get.callCount.should.eql(126);
 
                 done();
             }).catch(done);
