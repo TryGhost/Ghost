@@ -17,6 +17,12 @@ function processQuery(query, locals) {
         });
     }
 
+    Object.assign(query.options, {
+        context: {
+            members: locals.member
+        }
+    });
+
     // Return a promise for the api query
     return api[query.controller][query.type](query.options);
 }

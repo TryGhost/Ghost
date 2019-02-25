@@ -8,6 +8,7 @@ const apps = require('../../services/apps');
 const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
 const urlService = require('../../services/url');
+const members = require('../../services/auth/members');
 const sitemapHandler = require('../../data/xml/sitemap/handler');
 const themeMiddleware = require('../../services/themes').middleware;
 const siteRoutes = require('./routes');
@@ -69,6 +70,19 @@ module.exports = function setupSiteApp(options = {}) {
     require('../../helpers').loadCoreHelpers();
     debug('Helpers done');
 
+    // Set req.member & res.locals.member if a cookie is set
+    siteApp.use(members.authenticateMembersToken);
+    siteApp.use(function (req, res, next) {
+        res.locals.member = req.member;
+        next();
+    });
+    siteApp.use(function (err, req, res, next) {
+        if (err.name === 'UnauthorizedError') {
+            return next();
+        }
+        next(err);
+    });
+
     // Theme middleware
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
     // At this point the active theme object is already updated, so we have the right path, so it can probably
@@ -105,8 +119,16 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(shared.middlewares.prettyUrls);
 
     // ### Caching
-    // Site frontend is cacheable
-    siteApp.use(shared.middlewares.cacheControl('public'));
+    // Site frontend is cacheable UNLESS request made by a member
+    const publicCacheControl = shared.middlewares.cacheControl('public');
+    const privateCacheControl = shared.middlewares.cacheControl('private');
+    siteApp.use(function (req, res, next) {
+        if (req.member) {
+            return privateCacheControl(req, res, next);
+        } else {
+            return publicCacheControl(req, res, next);
+        }
+    });
 
     // Fetch the frontend client into res.locals
     siteApp.use(shared.middlewares.frontendClient);
