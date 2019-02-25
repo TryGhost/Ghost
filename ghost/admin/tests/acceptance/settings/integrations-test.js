@@ -153,8 +153,8 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
 
     describe('custom integrations', function () {
         beforeEach(async function () {
-            this.server.loadFixtures('configurations');
-            let config = this.server.schema.configurations.first();
+            this.server.loadFixtures('configs');
+            let config = this.server.schema.configs.first();
             config.update({
                 enableDeveloperExperiments: true
             });

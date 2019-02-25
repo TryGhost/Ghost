@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
 import {computed} from '@ember/object';
 
@@ -17,21 +18,31 @@ export default Service.extend(_ProxyMixin, {
     },
 
     fetch() {
-        let configUrl = this.get('ghostPaths.url').api('configuration');
+        let siteUrl = this.ghostPaths.url.api('site');
+        let configUrl = this.ghostPaths.url.api('config');
 
-        return this.get('ajax').request(configUrl).then((publicConfig) => {
-            // normalize blogUrl to non-trailing-slash
-            let [{blogUrl}] = publicConfig.configuration;
-            publicConfig.configuration[0].blogUrl = blogUrl.replace(/\/$/, '');
+        return RSVP.all([
+            this.ajax.request(siteUrl).then(({site}) => {
+                // normalize url to non-trailing-slash
+                site.blogUrl = site.url.replace(/\/$/, '');
+                site.blogTitle = site.title;
+                delete site.url;
+                delete site.title;
 
-            this.set('content', publicConfig.configuration[0]);
+                Object.assign(this.content, site);
+            }),
+            this.ajax.request(configUrl).then(({config}) => {
+                Object.assign(this.content, config);
+            })
+        ]).then(() => {
+            this.notifyPropertyChange('content');
         });
     },
 
     availableTimezones: computed(function () {
-        let timezonesUrl = this.get('ghostPaths.url').api('configuration', 'timezones');
+        let timezonesUrl = this.ghostPaths.url.api('configuration', 'timezones');
 
-        return this.get('ajax').request(timezonesUrl).then((configTimezones) => {
+        return this.ajax.request(timezonesUrl).then((configTimezones) => {
             let [timezonesObj] = configTimezones.configuration;
 
             timezonesObj = timezonesObj.timezones;

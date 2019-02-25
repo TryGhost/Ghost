@@ -31,8 +31,8 @@ describe('Acceptance: Members', function () {
 
     describe('as admin', function () {
         beforeEach(async function () {
-            this.server.loadFixtures('configurations');
-            let config = this.server.schema.configurations.first();
+            this.server.loadFixtures('configs');
+            let config = this.server.schema.configs.first();
             config.update({enableDeveloperExperiments: true});
 
             let role = this.server.create('role', {name: 'Administrator'});
@@ -42,7 +42,7 @@ describe('Acceptance: Members', function () {
         });
 
         it('redirects to posts if developer experiments is disabled', async function () {
-            let config = this.server.schema.configurations.first();
+            let config = this.server.schema.configs.first();
             config.update({enableDeveloperExperiments: false});
 
             await visit('/members');
