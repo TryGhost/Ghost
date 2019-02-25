@@ -11,6 +11,10 @@ module.exports = (event, model) => {
     if (Object.keys(model.attributes).length) {
         let frame = {options: {previous: false, context: {user: true}}};
 
+        if (['posts', 'pages'].includes(docName)) {
+            frame.options.formats = ['mobiledoc', 'html', 'plaintext'];
+        }
+
         ops.push(() => {
             return api.shared
                 .serializers
