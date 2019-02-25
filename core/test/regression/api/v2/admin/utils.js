@@ -25,8 +25,10 @@ const expectedProperties = {
         .without('visibility')
         .without('locale')
         .without('page')
-        // always returns computed properties: url, comment_id, primary_tag, primary_author
-        .without('author_id').concat('url', 'primary_tag', 'primary_author')
+        .without('author_id')
+        // always returns computed properties
+        .concat('url', 'primary_tag', 'primary_author', 'excerpt')
+        .concat('authors', 'tags')
     ,
     user: _(schema.users)
         .keys()
