@@ -6,6 +6,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
         it('default', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     context: {}
                 },
@@ -18,6 +19,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
         it('combine filters', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     filter: 'status:published+tag:eins',
                     context: {}
@@ -31,6 +33,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
         it('combine filters', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     filter: 'page:false+tag:eins',
                     context: {}
@@ -44,6 +47,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
         it('combine filters', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     filter: 'page:false',
                     context: {}
@@ -57,6 +61,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
         it('remove mobiledoc option from formats', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     formats: ['html', 'mobiledoc', 'plaintext'],
                     context: {}
@@ -74,6 +79,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
         it('content api default', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     context: {}
                 },
@@ -127,6 +133,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
         it('custom page filter', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     filter: 'page:false',
                     context: {}
@@ -162,6 +169,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
         it('remove mobiledoc option from formats', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     formats: ['html', 'mobiledoc', 'plaintext'],
                     context: {}
@@ -184,6 +192,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             const apiConfig = {};
 
             const frame = {
+                apiType: 'content',
                 options: {},
                 data: {
                     pages: [
@@ -206,6 +215,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             const apiConfig = {};
 
             const frame = {
+                apiType: 'content',
                 options: {},
                 data: {
                     pages: [

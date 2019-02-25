@@ -8,7 +8,7 @@ module.exports = function apiRoutes() {
 
     router.options('*', cors());
 
-    const http = apiImpl => apiv2.http(apiImpl, 'content');
+    const http = apiv2.http;
 
     // ## Posts
     router.get('/posts', mw.authenticatePublic, http(apiv2.postsPublic.browse));

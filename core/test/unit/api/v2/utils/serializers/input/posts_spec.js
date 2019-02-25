@@ -121,6 +121,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('remove mobiledoc option from formats', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     formats: ['html', 'mobiledoc', 'plaintext'],
                     context: {}
@@ -203,6 +204,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
         it('remove mobiledoc option from formats', function () {
             const apiConfig = {};
             const frame = {
+                apiType: 'content',
                 options: {
                     formats: ['html', 'mobiledoc', 'plaintext'],
                     context: {}
