@@ -122,6 +122,14 @@ module.exports = function setupSiteApp(options = {}) {
     // Site frontend is cacheable
     siteApp.use(shared.middlewares.cacheControl('public'));
 
+    // Members do not get any cached content
+    const privateCacheControl = shared.middlewares.cacheControl('private');
+    siteApp.use(function (req, res, next) {
+        if (req.member) {
+            return privateCacheControl(req, res, next);
+        }
+    });
+
     // Fetch the frontend client into res.locals
     siteApp.use(shared.middlewares.frontendClient);
 
