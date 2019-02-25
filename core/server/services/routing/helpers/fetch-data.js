@@ -50,6 +50,8 @@ function processQuery(query, slugParam, locals) {
         query.options[name] = _.isString(option) ? option.replace(/%s/g, slugParam) : option;
     });
 
+    query.options.context = {member: locals.member};
+
     // Return a promise for the api query
     return api[query.controller][query.type](query.options);
 }

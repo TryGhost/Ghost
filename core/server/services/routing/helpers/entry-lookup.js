@@ -36,7 +36,7 @@ function entryLookup(postUrl, routerOptions, locals) {
      * @deprecated: `author`, will be removed in Ghost 3.0
      */
     return api[routerOptions.query.controller]
-        .read(_.extend(_.pick(params, 'slug', 'id'), {include: 'author,authors,tags'}))
+        .read(_.extend(_.pick(params, 'slug', 'id'), {include: 'author,authors,tags', context: {member: locals.member}}))
         .then(function then(result) {
             const entry = result[routerOptions.query.resource][0];
 
