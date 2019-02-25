@@ -41,10 +41,9 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
             const frame = {
                 options: {
                     withRelated: ['tags', 'authors'],
-                    context: {
-                        public: true
-                    }
-                }
+                    context: {}
+                },
+                apiType: 'content'
             };
 
             const post = postModel(testUtils.DataGenerator.forKnex.createPost({
@@ -120,9 +119,7 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
         it('calls utils', () => {
             const frame = {
                 options: {
-                    context: {
-                        public: true
-                    }
+                    context: {}
                 },
             };
 
