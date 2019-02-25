@@ -129,7 +129,7 @@ module.exports = function apiRoutes() {
 
     router.post('/themes/upload',
         mw.authAdminApi,
-        upload.single('theme'),
+        upload.single('file'),
         shared.middlewares.validation.upload({type: 'themes'}),
         http(apiv2.themes.upload)
     );
