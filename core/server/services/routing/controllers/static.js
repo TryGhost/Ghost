@@ -30,8 +30,6 @@ function processQuery(query, locals) {
 module.exports = function staticController(req, res, next) {
     debug('staticController', res.routerOptions);
 
-    res.locals.member = req.member;
-
     let props = {};
 
     _.each(res.routerOptions.data, function (query, name) {

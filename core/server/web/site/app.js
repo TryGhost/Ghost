@@ -112,8 +112,12 @@ module.exports = function setupSiteApp(options = {}) {
     // Fetch the frontend client into res.locals
     siteApp.use(shared.middlewares.frontendClient);
 
-    // Set req.member if a cookie is set
+    // Set req.member & res.locals.member if a cookie is set
     siteApp.use(members.authenticateMembersToken);
+    siteApp.use(function (req, res, next) {
+        res.locals.member = req.member;
+        next();
+    });
     siteApp.use(function (err, req, res, next) {
         if (err.name === 'UnauthorizedError') {
             return next();
