@@ -119,14 +119,14 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(shared.middlewares.prettyUrls);
 
     // ### Caching
-    // Site frontend is cacheable
-    siteApp.use(shared.middlewares.cacheControl('public'));
-
-    // Members do not get any cached content
+    // Site frontend is cacheable UNLESS request made by a member
+    const publicCacheControl = shared.middlewares.cacheControl('public');
     const privateCacheControl = shared.middlewares.cacheControl('private');
     siteApp.use(function (req, res, next) {
         if (req.member) {
             return privateCacheControl(req, res, next);
+        } else {
+            return publicCacheControl(req, res, next);
         }
     });
 
