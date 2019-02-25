@@ -12,6 +12,18 @@ function removeMobiledocFormat(frame) {
     }
 }
 
+function defaultRelations(frame) {
+    if (frame.options.withRelated) {
+        return;
+    }
+
+    if (frame.options.columns && !frame.options.withRelated) {
+        return false;
+    }
+
+    frame.options.withRelated = ['tags', 'authors', 'authors.roles'];
+}
+
 function setDefaultOrder(frame) {
     let includesOrderedRelations = false;
 
@@ -71,6 +83,7 @@ module.exports = {
         if (!localUtils.isContentAPI(frame)) {
             forceStatusFilter(frame);
             defaultFormat(frame);
+            defaultRelations(frame);
         }
 
         debug(frame.options);
@@ -89,6 +102,7 @@ module.exports = {
         if (!localUtils.isContentAPI(frame)) {
             forceStatusFilter(frame);
             defaultFormat(frame);
+            defaultRelations(frame);
         }
 
         debug(frame.options);
@@ -134,6 +148,7 @@ module.exports = {
         }
 
         defaultFormat(frame);
+        defaultRelations(frame);
     },
 
     edit(apiConfig, frame) {
@@ -152,5 +167,6 @@ module.exports = {
         };
 
         defaultFormat(frame);
+        defaultRelations(frame);
     }
 };
