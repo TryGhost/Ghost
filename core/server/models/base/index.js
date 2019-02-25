@@ -173,7 +173,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * If the query runs in a txn, `_previousAttributes` will be empty.
      */
     emitChange: function (model, event, options) {
-        const _emit = (ghostEvent, model) => {
+        const _emit = (ghostEvent, model, opts) => {
             if (!model.wasChanged()) {
                 return;
             }
@@ -181,7 +181,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             debug(model.tableName, ghostEvent);
 
             // @NOTE: Internal Ghost events. These are very granular e.g. post.published
-            common.events.emit(ghostEvent, model, _.omit(options, 'transacting'));
+            common.events.emit(ghostEvent, model, opts);
         };
 
         if (!options.transacting) {
@@ -203,15 +203,21 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                     return;
                 }
 
-                _.each(this.ghostEvents, (ghostEvent) => {
-                    _emit(ghostEvent, model, options);
+                _.each(this.ghostEvents, (obj) => {
+                    _emit(obj.event, model, obj.options);
                 });
 
                 delete model.ghostEvents;
             });
         }
 
-        model.ghostEvents.push(event);
+        model.ghostEvents.push({
+            event: event,
+            options: {
+                importing: options.importing,
+                context: options.context
+            }
+        });
     },
 
     // Bookshelf `initialize` - declare a constructor-like method for model creation
