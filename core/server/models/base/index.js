@@ -599,18 +599,20 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         const options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'toJSON');
         options.omitPivot = true;
 
+        // CASE: get JSON of previous attrs
         if (options.previous) {
-            const attrs = {};
-            const relations = {};
+            const clonedModel = _.cloneDeep(this);
+            clonedModel.attributes = this._previousAttributes;
 
-            if (this._previousRelations) {
-                _.each(Object.keys(this._previousRelations), (key) => {
-                    relations[key] = this._previousRelations[key].toJSON();
+            if (this.relationships) {
+                this.relationships.forEach((relation) => {
+                    if (this._previousRelations && this._previousRelations.hasOwnProperty(relation)) {
+                        clonedModel.related(relation).models = this._previousRelations[relation].models;
+                    }
                 });
             }
 
-            Object.assign(attrs, this._previousAttributes, relations);
-            return attrs;
+            return proto.toJSON.call(clonedModel, options);
         }
 
         return proto.toJSON.call(this, options);
