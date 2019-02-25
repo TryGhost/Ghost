@@ -108,7 +108,15 @@ describe('Posts API', function () {
                     var jsonResponse = res.body;
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.errors);
-                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
+                    testUtils.API.checkResponseValue(jsonResponse.errors[0], [
+                        'message',
+                        'context',
+                        'type',
+                        'details',
+                        'help',
+                        'code',
+                        'id'
+                    ]);
                     done();
                 });
         });
@@ -190,7 +198,15 @@ describe('Posts API', function () {
                     should.not.exist(res.headers['x-cache-invalidate']);
                     should.exist(res.body);
                     should.exist(res.body.errors);
-                    testUtils.API.checkResponseValue(res.body.errors[0], ['message', 'errorType']);
+                    testUtils.API.checkResponseValue(res.body.errors[0], [
+                        'message',
+                        'context',
+                        'type',
+                        'details',
+                        'help',
+                        'code',
+                        'id'
+                    ]);
                 });
         });
     });

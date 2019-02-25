@@ -104,7 +104,7 @@ describe('DB API', () => {
             .expect(403)
             .then(res => {
                 should.exist(res.body.errors);
-                res.body.errors[0].errorType.should.eql('NoPermissionError');
+                res.body.errors[0].type.should.eql('NoPermissionError');
                 fsStub.called.should.eql(false);
             });
     });
@@ -118,7 +118,7 @@ describe('DB API', () => {
             .expect(401)
             .then(res => {
                 should.exist(res.body.errors);
-                res.body.errors[0].errorType.should.eql('UnauthorizedError');
+                res.body.errors[0].type.should.eql('UnauthorizedError');
                 fsStub.called.should.eql(false);
             });
     });
