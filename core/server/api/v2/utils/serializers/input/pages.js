@@ -25,6 +25,14 @@ function setDefaultOrder(frame) {
     }
 }
 
+function defaultFormat(frame) {
+    if (frame.options.formats) {
+        return;
+    }
+
+    frame.options.formats = 'mobiledoc';
+}
+
 /**
  * CASE:
  *
@@ -62,6 +70,7 @@ module.exports = {
 
         if (!localUtils.isContentAPI(frame)) {
             forceStatusFilter(frame);
+            defaultFormat(frame);
         }
 
         debug(frame.options);
@@ -79,6 +88,7 @@ module.exports = {
 
         if (!localUtils.isContentAPI(frame)) {
             forceStatusFilter(frame);
+            defaultFormat(frame);
         }
 
         debug(frame.options);
@@ -122,6 +132,8 @@ module.exports = {
                 }
             });
         }
+
+        defaultFormat(frame);
     },
 
     edit(apiConfig, frame) {
@@ -138,5 +150,7 @@ module.exports = {
             id: frame.options.id,
             page: true
         };
+
+        defaultFormat(frame);
     }
 };
