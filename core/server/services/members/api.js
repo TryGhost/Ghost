@@ -60,6 +60,43 @@ function validateMember({email, password}) {
     });
 }
 
+function parseMembersSettings() {
+    let membersSettings = settingsCache.get('members_subscription_settings');
+    if (!membersSettings) {
+        membersSettings = {
+            isPaid: false,
+            paymentProcessors: [{
+                adapter: 'stripe',
+                config: {
+                    secret_token: '',
+                    public_token: '',
+                    product: {
+                        name: 'Ghost Subscription'
+                    },
+                    plans: [
+                        {
+                            name: 'Monthly',
+                            currency: 'usd',
+                            interval: 'month',
+                            amount: ''
+                        },
+                        {
+                            name: 'Yearly',
+                            currency: 'usd',
+                            interval: 'year',
+                            amount: ''
+                        }
+                    ]
+                }
+            }]
+        };
+    }
+    if (!membersSettings.isPaid) {
+        membersSettings.paymentProcessors = [];
+    }
+    return membersSettings;
+}
+
 const publicKey = settingsCache.get('members_public_key');
 const privateKey = settingsCache.get('members_private_key');
 const sessionSecret = settingsCache.get('members_session_secret');
@@ -71,11 +108,7 @@ const ssoOrigin = siteOrigin;
 let mailer;
 
 const membersConfig = config.get('members');
-const membersSettings = settingsCache.get('members_subscription_settings');
-
-if (!membersSettings.isPaid) {
-    membersSettings.paymentProcessors = [];
-}
+const membersSettings = parseMembersSettings();
 
 function validateAudience({audience, origin}) {
     if (audience === origin) {
@@ -138,13 +171,7 @@ const api = MembersApi({
 
 const updateSettingFromModel = function updateSettingFromModel(settingModel) {
     if (settingModel.get('key') === 'members_subscription_settings') {
-        let membersSettings = settingsCache.get('members_subscription_settings');
-        if (!membersSettings) {
-            return;
-        }
-        if (!membersSettings.isPaid) {
-            membersSettings.paymentProcessors = [];
-        }
+        let membersSettings = parseMembersSettings();
         api.reconfigureSettings({
             processors: membersSettings.paymentProcessors
         });
