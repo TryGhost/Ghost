@@ -178,7 +178,6 @@ export default Controller.extend(ValidationEngine, {
         // fetch settings and private config for synchronous access before transitioning
         let fetchSettingsAndConfig = RSVP.all([
             this.get('settings').fetch(),
-            this.get('config').fetchPrivate()
         ]);
 
         if (this.get('profileImage')) {
