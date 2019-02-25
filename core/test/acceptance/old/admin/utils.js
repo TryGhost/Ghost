@@ -33,6 +33,8 @@ const expectedProperties = {
         .without('author_id')
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
+        // returned by default
+        .concat('tags', 'authors')
     ,
 
     page: _(schema.posts)
@@ -46,6 +48,8 @@ const expectedProperties = {
         .without('author_id')
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
+        // returned by default
+        .concat('tags', 'authors')
     ,
 
     user: _(schema.users)
