@@ -9,7 +9,7 @@ module.exports = function ({
     const keyStore = jose.JWK.createKeyStore();
     const keyStoreReady = keyStore.add(privateKey, 'pem');
 
-    function encodeToken({sub, aud = issuer, plans, exp = Math.floor(Date.now() / 1000 + (60 * 60))}) {
+    function encodeToken({sub, aud = issuer, plans, exp}) {
         return keyStoreReady.then(jwk => jwt.sign({
             sub,
             exp,

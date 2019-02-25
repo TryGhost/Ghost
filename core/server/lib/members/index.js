@@ -69,7 +69,7 @@ module.exports = function MembersApi({
             .then(member => encodeToken({
                 sub: member.id,
                 plans: member.subscriptions.map(sub => sub.plan),
-                exp: member.subscriptions.map(sub => sub.validUntil).reduce(Math.min),
+                exp: member.subscriptions.map(sub => sub.validUntil).reduce(Math.min, 60 * 60 * 24 * 30),
                 aud: audience
             }))
             .then(token => res.end(token))
