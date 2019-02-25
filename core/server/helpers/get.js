@@ -31,7 +31,7 @@ const RESOURCES = {
         resource: 'tags'
     },
     users: {
-        alias: 'authors',
+        alias: 'authorsPublic',
         resource: 'users'
     },
     pages: {
@@ -39,7 +39,7 @@ const RESOURCES = {
         resource: 'posts'
     },
     authors: {
-        alias: 'authors'
+        alias: 'authorsPublic'
     }
 };
 
