@@ -5,7 +5,8 @@ const common = require('../../../../../lib/common');
 
 const validate = (schema, definitions, data) => {
     const ajv = new Ajv({
-        allErrors: true
+        allErrors: true,
+        useDefaults: true
     });
 
     stripKeyword(ajv);
