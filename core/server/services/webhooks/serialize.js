@@ -9,13 +9,14 @@ module.exports = (event, model) => {
     const ops = [];
 
     if (Object.keys(model.attributes).length) {
-        let frame = {options: {previous: false, context: {user: true}}};
-
-        if (['posts', 'pages'].includes(docName)) {
-            frame.options.formats = ['mobiledoc', 'html', 'plaintext'];
-        }
-
         ops.push(() => {
+            let frame = {options: {previous: false, context: {user: true}}};
+
+            if (['posts', 'pages'].includes(docName)) {
+                frame.options.formats = ['mobiledoc', 'html', 'plaintext'];
+                frame.options.withRelated = ['tags', 'authors'];
+            }
+
             return api.shared
                 .serializers
                 .handle
@@ -33,6 +34,11 @@ module.exports = (event, model) => {
     if (Object.keys(model._previousAttributes).length) {
         ops.push(() => {
             const frame = {options: {previous: true, context: {user: true}}};
+
+            if (['posts', 'pages'].includes(docName)) {
+                frame.options.formats = ['mobiledoc', 'html', 'plaintext'];
+                frame.options.withRelated = ['tags', 'authors'];
+            }
 
             return api.shared
                 .serializers
