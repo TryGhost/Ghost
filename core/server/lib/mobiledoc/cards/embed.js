@@ -1,4 +1,6 @@
-module.exports = {
+const createCard = require('../create-card');
+
+module.exports = createCard({
     name: 'embed',
     type: 'dom',
     render(opts) {
@@ -23,4 +25,4 @@ module.exports = {
 
         return figure;
     }
-};
+});

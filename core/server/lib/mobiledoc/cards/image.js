@@ -1,4 +1,6 @@
-module.exports = {
+const createCard = require('../create-card');
+
+module.exports = createCard({
     name: 'image',
     type: 'dom',
     render(opts) {
@@ -38,4 +40,4 @@ module.exports = {
 
         return figure;
     }
-};
+});
