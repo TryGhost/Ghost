@@ -67,6 +67,6 @@ describe('Embed card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-embed-card">Testing<figcaption><strong>Caption</strong></figcaption></figure>');
+        serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-embed-card kg-card-hascaption">Testing<figcaption><strong>Caption</strong></figcaption></figure>');
     });
 });
