@@ -91,24 +91,24 @@
     mkdirp "0.5.0"
     yauzl "2.4.1"
 
-"@tryghost/html-to-mobiledoc@0.2.3":
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.2.3.tgz#14036bc458d2d63612f26dc8517416c0638fb0be"
-  integrity sha512-yGDI+UVgIaoIKWMdkOQR8tiWhUtr4FCl31pnom+TkwIvsY/+D+n431IDscmi8+cdvnwZsfWf4f7TnjdCa8MG4g==
+"@tryghost/html-to-mobiledoc@0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.2.4.tgz#cafbb673a52ae9539ae29e491252dcee46a4ee1a"
+  integrity sha512-a6FfOEIZq8s+NSN70Re6UVHkZWFhdG9H3ArVDa2lsh2c6qRlx7QYkL3k/YKXlOZ0eMkmUmLO0PNdi03W4YdEqA==
   dependencies:
-    "@tryghost/kg-parser-plugins" "^0.2.1"
-    "@tryghost/mobiledoc-kit" "0.11.1-ghost.6"
+    "@tryghost/kg-parser-plugins" "^0.2.2"
+    "@tryghost/mobiledoc-kit" "0.11.1-ghost.7"
     jsdom "13.2.0"
 
-"@tryghost/kg-parser-plugins@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-0.2.1.tgz#b2b083cc34b4af063238831e461320113406dfcb"
-  integrity sha512-KskTWd0brSkVL+cH5AzYemufUXBDZh09l7YTMFOs78qVn9a9o4UyYkE2wfl9X2iumVa06oVqR4z9jXxWZb+diw==
+"@tryghost/kg-parser-plugins@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-0.2.2.tgz#ae5415025f6fe68c756f5d26da002adceb587bd0"
+  integrity sha512-l+JHOLkpyjsrbEbXmthMKX4v/ZWqtg2LqRwxLFhZl4nbJ78IepLb6fSlG4uxJoKIKjvWOQzuGMfw+ffQ7M2aBw==
 
-"@tryghost/mobiledoc-kit@0.11.1-ghost.6":
-  version "0.11.1-ghost.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.1-ghost.6.tgz#539bad1d26f8885a066d24295d1e28f03408d3ec"
-  integrity sha512-ZtFy0Jjmb7IUOAv0HlkxO1B/tgB/tgYf07KyB1DptEwyidP/g/QxBK+hGDxhfKMrJnDT5FhvAx98gXmsy730Pw==
+"@tryghost/mobiledoc-kit@0.11.1-ghost.7":
+  version "0.11.1-ghost.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.1-ghost.7.tgz#79b9ef018dc8c8829864e30602079ea7f4ef3cb6"
+  integrity sha512-kz2HDZ1V+GUYz+x08gVPFtcc1+96vwEGf7rfoR0wA+XYaCU31gdNgSi5zldk6Cs9a3uUJolHYdME+BUNwlVjVQ==
   dependencies:
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
