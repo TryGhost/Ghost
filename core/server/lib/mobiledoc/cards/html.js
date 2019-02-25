@@ -1,4 +1,6 @@
-module.exports = {
+const createCard = require('../create-card');
+
+module.exports = createCard({
     name: 'html',
     type: 'dom',
     render(opts) {
@@ -10,4 +12,4 @@ module.exports = {
         // avoids parsing/rendering of potentially broken or unsupported HTML
         return opts.env.dom.createRawHTMLSection(opts.payload.html);
     }
-};
+});
