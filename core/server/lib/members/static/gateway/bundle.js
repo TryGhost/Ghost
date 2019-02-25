@@ -58,6 +58,8 @@
         const tokenKey = 'members:token:aud:' + audience;
         const storedToken = storage.getItem(tokenKey);
         if (isTokenExpired(storedToken)) {
+            const storedTokenKeys = getStoredTokenKeys();
+            storage.setItem('members:tokens', JSON.stringify(storedTokenKeys.filter(key => key !== tokenKey)));
             storage.removeItem(tokenKey);
             return null;
         }
