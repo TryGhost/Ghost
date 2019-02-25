@@ -29,73 +29,76 @@ describe('Images API', function () {
     });
 
     it('Can upload a png', function (done) {
-        request.post(localUtils.API.getApiQuery('images'))
+        request.post(localUtils.API.getApiQuery('images/upload'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.png'))
+            .field('purpose', 'image')
+            .field('ref', 'https://ghost.org/ghost-logo.png')
+            .attach('file', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.png'))
             .expect(201)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
 
-                res.body.url.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/ghost-logo.png`));
-
-                images.push(res.body.url.replace(config.get('url'), ''));
+                res.body.images[0].url.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/ghost-logo.png`));
+                res.body.images[0].ref.should.equal('https://ghost.org/ghost-logo.png');
+                images.push(res.body.images[0].url.replace(config.get('url'), ''));
                 done();
             });
     });
 
     it('Can upload a jpg', function (done) {
-        request.post(localUtils.API.getApiQuery('images'))
+        request.post(localUtils.API.getApiQuery('images/upload'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/ghosticon.jpg'))
+            .attach('file', path.join(__dirname, '/../../../utils/fixtures/images/ghosticon.jpg'))
             .expect(201)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
 
-                res.body.url.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/ghosticon.jpg`));
+                res.body.images[0].url.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/ghosticon.jpg`));
+                should(res.body.images[0].ref).equal(null);
 
-                images.push(res.body.url.replace(config.get('url'), ''));
+                images.push(res.body.images[0].url.replace(config.get('url'), ''));
                 done();
             });
     });
 
     it('Can upload a gif', function (done) {
-        request.post(localUtils.API.getApiQuery('images'))
+        request.post(localUtils.API.getApiQuery('images/upload'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat.gif'))
+            .attach('file', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat.gif'))
             .expect(201)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
 
-                res.body.url.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/loadingcat.gif`));
+                res.body.images[0].url.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/loadingcat.gif`));
 
-                images.push(res.body.url.replace(config.get('url'), ''));
+                images.push(res.body.images[0].url.replace(config.get('url'), ''));
                 done();
             });
     });
 
     it('Can upload a square profile image', function (done) {
-        request.post(localUtils.API.getApiQuery('images/profile-image'))
+        request.post(localUtils.API.getApiQuery('images/upload'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .attach('uploadimage', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat_square.gif'))
+            .attach('file', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat_square.gif'))
             .expect(201)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
 
-                res.body.url.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/loadingcat_square.gif`));
+                res.body.images[0].url.should.match(new RegExp(`${config.get('url')}/content/images/\\d+/\\d+/loadingcat_square.gif`));
 
-                images.push(res.body.url.replace(config.get('url'), ''));
+                images.push(res.body.images[0].url.replace(config.get('url'), ''));
                 done();
             });
     });
