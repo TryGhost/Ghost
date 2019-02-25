@@ -24,23 +24,33 @@
     }
 
     function isTokenExpired(token) {
+        const claims = getClaims(token);
+
+        if (!claims) {
+            return true;
+        }
+
+        const expiry = claims.exp * 1000;
+        const now = Date.now();
+
+        const nearFuture = now + (30 * 1000);
+
+        if (expiry < nearFuture) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function getClaims(token) {
         try {
             const [header, claims, signature] = token.split('.'); // eslint-disable-line no-unused-vars
 
             const parsedClaims = JSON.parse(atob(claims.replace('+', '-').replace('/', '_')));
 
-            const expiry = parsedClaims.exp * 1000;
-            const now = Date.now();
-
-            const nearFuture = now + (30 * 1000);
-
-            if (expiry > nearFuture) {
-                return true;
-            }
-
-            return false;
+            return parsedClaims;
         } catch (e) {
-            return true;
+            return null;
         }
     }
 
@@ -48,6 +58,8 @@
         const tokenKey = 'members:token:aud:' + audience;
         const storedToken = storage.getItem(tokenKey);
         if (isTokenExpired(storedToken)) {
+            const storedTokenKeys = getStoredTokenKeys();
+            storage.setItem('members:tokens', JSON.stringify(storedTokenKeys.filter(key => key !== tokenKey)));
             storage.removeItem(tokenKey);
             return null;
         }
@@ -86,10 +98,10 @@
 
     // @TODO this needs to be configurable
     const membersApi = location.pathname.replace(/\/members\/gateway\/?$/, '/ghost/api/v2/members');
-    function getToken({audience}) {
+    function getToken({audience, fresh}) {
         const storedToken = getStoredToken(audience);
 
-        if (storedToken) {
+        if (storedToken && !fresh) {
             return Promise.resolve(storedToken);
         }
 
@@ -123,10 +135,9 @@
         if (storage.getItem('signedin')) {
             window.parent.postMessage({event: 'signedin'}, origin);
         } else {
-            window.parent.postMessage({event: 'signedout'}, origin);
+            getToken({audience: origin, fresh: true});
         }
 
-        getToken({audience: origin});
         return Promise.resolve();
     });
 
