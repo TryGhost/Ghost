@@ -67,8 +67,6 @@ export default AuthenticatedRoute.extend({
                 queryParams.order = params.order;
             }
 
-            queryParams.formats = 'mobiledoc,plaintext';
-
             let perPage = this.perPage;
             let paginationSettings = assign({perPage, startingPage: 1}, paginationParams, queryParams);
 

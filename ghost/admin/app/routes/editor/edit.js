@@ -17,8 +17,7 @@ export default AuthenticatedRoute.extend({
     model(params) {
         let query = {
             id: params.post_id,
-            status: 'all',
-            formats: 'mobiledoc,plaintext'
+            status: 'all'
         };
 
         return this.store.query(params.type, query)
