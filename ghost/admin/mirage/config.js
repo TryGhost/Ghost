@@ -1,6 +1,6 @@
 import mockApiKeys from './config/api-keys';
 import mockAuthentication from './config/authentication';
-import mockConfiguration from './config/configuration';
+import mockConfig from './config/config';
 import mockIntegrations from './config/integrations';
 import mockInvites from './config/invites';
 import mockMembers from './config/members';
@@ -8,6 +8,7 @@ import mockPages from './config/pages';
 import mockPosts from './config/posts';
 import mockRoles from './config/roles';
 import mockSettings from './config/settings';
+import mockSite from './config/site';
 import mockSlugs from './config/slugs';
 import mockSubscribers from './config/subscribers';
 import mockTags from './config/tags';
@@ -54,7 +55,7 @@ export function testConfig() {
 
     mockApiKeys(this);
     mockAuthentication(this);
-    mockConfiguration(this);
+    mockConfig(this);
     mockIntegrations(this);
     mockInvites(this);
     mockMembers(this);
@@ -62,6 +63,7 @@ export function testConfig() {
     mockPosts(this);
     mockRoles(this);
     mockSettings(this);
+    mockSite(this);
     mockSlugs(this);
     mockSubscribers(this);
     mockTags(this);

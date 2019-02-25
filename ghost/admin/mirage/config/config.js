@@ -1,13 +1,13 @@
 import {isEmpty} from '@ember/utils';
 
-export default function mockConfiguration(server) {
-    server.get('/configuration/', function ({db}) {
-        if (isEmpty(db.configurations)) {
-            server.loadFixtures('configurations');
+export default function mockConfig(server) {
+    server.get('/config/', function ({db}) {
+        if (isEmpty(db.configs)) {
+            server.loadFixtures('configs');
         }
 
         return {
-            configuration: [db.configurations.find(1)]
+            config: db.configs.find(1)
         };
     });
 
