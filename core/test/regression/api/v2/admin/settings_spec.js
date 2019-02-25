@@ -64,7 +64,15 @@ describe('Settings API', function () {
                 var jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.errors);
-                testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
+                testUtils.API.checkResponseValue(jsonResponse.errors[0], [
+                    'message',
+                    'context',
+                    'type',
+                    'details',
+                    'help',
+                    'code',
+                    'id'
+                ]);
                 done();
             });
     });
@@ -120,7 +128,15 @@ describe('Settings API', function () {
                         jsonResponse = res.body;
                         should.not.exist(res.headers['x-cache-invalidate']);
                         should.exist(jsonResponse.errors);
-                        testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
+                        testUtils.API.checkResponseValue(jsonResponse.errors[0], [
+                            'message',
+                            'context',
+                            'type',
+                            'details',
+                            'help',
+                            'code',
+                            'id'
+                        ]);
                         done();
                     });
             });
