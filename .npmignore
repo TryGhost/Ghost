@@ -15,7 +15,7 @@ content/images/**
 content/logs/**
 !content/logs/README.md
 content/themes/**
-!content/themes/casper/**
+!content/themes/ppd/**
 node_modules/**
 core/server/lib/members/static/auth/node_modules/**
 **/*.db*
