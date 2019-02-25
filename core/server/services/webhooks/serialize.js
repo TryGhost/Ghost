@@ -44,7 +44,7 @@ module.exports = (event, model) => {
         });
     }
 
-    sequence(ops)
+    return sequence(ops)
         .then((results) => {
             const current = results[0];
             const previous = results[1];
