@@ -46,10 +46,6 @@ const mapPost = (model, frame) => {
                 jsonModel.tags = jsonModel.tags.map(tag => mapTag(tag, frame));
             }
 
-            if (relation === 'author' && jsonModel.author) {
-                jsonModel.author = mapUser(jsonModel.author, frame);
-            }
-
             if (relation === 'authors' && jsonModel.authors) {
                 jsonModel.authors = jsonModel.authors.map(author => mapUser(author, frame));
             }
