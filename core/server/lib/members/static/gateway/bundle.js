@@ -99,16 +99,6 @@
         setTimeout(prefetchToken, expiry - now - 30000); // CASE: refetch a token 30 seconds before it is due to expire.
     }
 
-    function checkStoredTokens() {
-        const storedTokenKeys = getStoredTokenKeys();
-
-        storedTokenKeys.forEach(function (key) {
-            const storedToken = storage.getItem(key);
-
-            setupTokenPrefetching(storedToken);
-        });
-    }
-
     function clearStorage() {
         storage.removeItem('signedin');
         const storedTokenKeys = getStoredTokenKeys();
@@ -159,10 +149,9 @@
         if (storage.getItem('signedin')) {
             window.parent.postMessage({event: 'signedin'}, origin);
         } else {
-            window.parent.postMessage({event: 'signedout'}, origin);
+            getToken({audience: origin});
         }
 
-        checkStoredTokens();
         return Promise.resolve();
     });
 
