@@ -14,7 +14,7 @@ describe('Themes API', function () {
 
     const uploadTheme = (options) => {
         const themePath = options.themePath;
-        const fieldName = options.fieldName || 'theme';
+        const fieldName = 'file';
         const request = options.request || ownerRequest;
 
         return request
