@@ -72,7 +72,10 @@ describe('Pages API', function () {
             .expect(201)
             .then((res) => {
                 res.body.pages.length.should.eql(1);
-                localUtils.API.checkResponse(res.body.pages[0], 'page', null, ['primary_tag', 'primary_author']);
+
+                // @NOTE: we do not return "excerpt" if custom_excerpt or plaintext is empty
+                // @NOTE: we do not return primary_* if null
+                localUtils.API.checkResponse(res.body.pages[0], 'page', null, ['primary_tag', 'primary_author', 'excerpt']);
                 should.exist(res.headers['x-cache-invalidate']);
 
                 return models.Post.findOne({

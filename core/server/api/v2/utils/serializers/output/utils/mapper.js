@@ -32,9 +32,9 @@ const mapPost = (model, frame) => {
     if (utils.isContentAPI(frame)) {
         date.forPost(jsonModel);
         members.forPost(jsonModel, frame);
-        extraAttrs.forPost(frame, model, jsonModel);
     }
 
+    extraAttrs.forPost(frame, model, jsonModel);
     clean.post(jsonModel, frame);
 
     if (frame.options && frame.options.withRelated) {
