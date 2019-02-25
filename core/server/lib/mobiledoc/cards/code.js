@@ -1,4 +1,6 @@
-module.exports = {
+const createCard = require('../create-card');
+
+module.exports = createCard({
     name: 'code',
     type: 'dom',
     render(opts) {
@@ -21,4 +23,4 @@ module.exports = {
 
         return pre;
     }
-};
+});

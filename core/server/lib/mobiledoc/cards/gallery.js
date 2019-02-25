@@ -1,5 +1,3 @@
-const MAX_IMG_PER_ROW = 3;
-
 /**
  * <figure class="kg-gallery-card kg-width-wide">
  *   <div class="kg-gallery-container>
@@ -17,7 +15,11 @@ const MAX_IMG_PER_ROW = 3;
  * </figure>
  */
 
-module.exports = {
+const createCard = require('../create-card');
+
+const MAX_IMG_PER_ROW = 3;
+
+module.exports = createCard({
     name: 'gallery',
     type: 'dom',
     render(opts) {
@@ -107,4 +109,4 @@ module.exports = {
 
         return figure;
     }
-};
+});

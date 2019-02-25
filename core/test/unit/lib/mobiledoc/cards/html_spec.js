@@ -14,7 +14,7 @@ describe('HTML card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<h1>HEADING</h1><p>PARAGRAPH</p>');
+        serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: html--><h1>HEADING</h1><p>PARAGRAPH</p><!--kg-card-end: html-->');
     });
 
     it('Plain content renders', function () {
@@ -27,7 +27,7 @@ describe('HTML card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('CONTENT');
+        serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: html-->CONTENT<!--kg-card-end: html-->');
     });
 
     it('Invalid HTML returns', function () {
@@ -40,7 +40,7 @@ describe('HTML card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<h1>HEADING<');
+        serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: html--><h1>HEADING<<!--kg-card-end: html-->');
     });
 
     it('Renders nothing when payload is undefined', function () {
@@ -53,6 +53,6 @@ describe('HTML card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('');
+        serializer.serialize(card.render(opts)).should.eql('');
     });
 });
