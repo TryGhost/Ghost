@@ -139,6 +139,9 @@ const api = MembersApi({
 const updateSettingFromModel = function updateSettingFromModel(settingModel) {
     if (settingModel.get('key') === 'members_subscription_settings') {
         let membersSettings = settingsCache.get('members_subscription_settings');
+        if (!membersSettings) {
+            return;
+        }
         if (!membersSettings.isPaid) {
             membersSettings.paymentProcessors = [];
         }
@@ -150,8 +153,6 @@ const updateSettingFromModel = function updateSettingFromModel(settingModel) {
 
 // Bind to events to automatically keep subscription info up-to-date from settings
 common.events.on('settings.edited', updateSettingFromModel);
-common.events.on('settings.added', updateSettingFromModel);
-common.events.on('settings.deleted', updateSettingFromModel);
 
 module.exports = api;
 module.exports.publicKey = publicKey;
