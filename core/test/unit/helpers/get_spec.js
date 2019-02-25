@@ -311,7 +311,7 @@ describe('{{#get}} helper', function () {
         beforeEach(function () {
             locals = {root: {_locals: {apiVersion: 'v2'}}};
 
-            browseUsersStub = sinon.stub(api["v2"], 'authors').get(() => {
+            browseUsersStub = sinon.stub(api["v2"], 'authorsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({authors: [], meta: meta})
                 };
@@ -344,7 +344,7 @@ describe('{{#get}} helper', function () {
         beforeEach(function () {
             locals = {root: {_locals: {apiVersion: 'v2'}}};
 
-            browseUsersStub = sinon.stub(api["v2"], 'authors').get(() => {
+            browseUsersStub = sinon.stub(api["v2"], 'authorsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({authors: [], meta: meta})
                 };

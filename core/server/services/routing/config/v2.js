@@ -10,7 +10,7 @@ module.exports.QUERY = {
         }
     },
     author: {
-        controller: 'authors',
+        controller: 'authorsPublic',
         type: 'read',
         resource: 'authors',
         options: {

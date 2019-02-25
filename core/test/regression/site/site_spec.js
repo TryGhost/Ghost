@@ -2982,7 +2982,7 @@ describe('Integration - Web - Site', function () {
                                 data: {
                                     query: {
                                         joe: {
-                                            controller: 'authors',
+                                            controller: 'authorsPublic',
                                             resource: 'authors',
                                             type: 'read',
                                             options: {
@@ -3007,7 +3007,7 @@ describe('Integration - Web - Site', function () {
                                 data: {
                                     query: {
                                         tag: {
-                                            controller: 'authors',
+                                            controller: 'authorsPublic',
                                             resource: 'authors',
                                             type: 'read',
                                             options: {

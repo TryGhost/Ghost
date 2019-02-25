@@ -1202,7 +1202,7 @@ describe('UNIT: services/settings/validate', function () {
                             data: {
                                 query: {
                                     author: {
-                                        controller: 'authors',
+                                        controller: 'authorsPublic',
                                         resource: 'authors',
                                         type: 'read',
                                         options: {
@@ -1267,7 +1267,7 @@ describe('UNIT: services/settings/validate', function () {
                             data: {
                                 query: {
                                     author: {
-                                        controller: 'authors',
+                                        controller: 'authorsPublic',
                                         resource: 'authors',
                                         type: 'read',
                                         options: {
@@ -1433,7 +1433,7 @@ describe('UNIT: services/settings/validate', function () {
                             data: {
                                 query: {
                                     people: {
-                                        controller: 'authors',
+                                        controller: 'authorsPublic',
                                         resource: 'authors',
                                         type: 'read',
                                         options: {
