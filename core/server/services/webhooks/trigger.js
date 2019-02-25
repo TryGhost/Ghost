@@ -70,7 +70,6 @@ module.exports = (event, model) => {
             _.each(webhooks.models, (webhook) => {
                 payload(webhook.get('event'), model)
                     .then((payload) => {
-                        console.log(payload);
                         const reqPayload = JSON.stringify(payload);
                         const url = webhook.get('target_url');
                         const opts = {
