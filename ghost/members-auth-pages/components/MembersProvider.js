@@ -48,7 +48,6 @@ export default class MembersProvider extends Component {
             return this.ready.then(() => {
                 return new Promise((resolve, reject) => {
                     this.gateway.call(method, options, (err, successful) => {
-                        console.log({method, options, err, successful});
                         if (err || !successful) {
                             reject(err || !successful);
                         }
