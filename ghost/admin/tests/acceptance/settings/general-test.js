@@ -130,7 +130,7 @@ describe('Acceptance: Settings - General', function () {
             ).to.not.exist;
 
             // failed upload shows error
-            this.server.post('/images/icon/', function () {
+            this.server.post('/images/upload/', function () {
                 return {
                     errors: [{
                         errorType: 'ValidationError',

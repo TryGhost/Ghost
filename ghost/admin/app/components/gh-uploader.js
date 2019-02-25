@@ -3,7 +3,7 @@ import EmberObject from '@ember/object';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {all, task} from 'ember-concurrency';
 import {get} from '@ember/object';
-import {isArray as isEmberArray} from '@ember/array';
+import {isArray} from '@ember/array';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -51,7 +51,9 @@ export default Component.extend({
     accept: '',
     extensions: '',
     files: null,
-    paramName: 'uploadimage', // TODO: is this the best default?
+    paramName: 'file',
+    paramsHash: null,
+    resourceName: 'images',
     uploadUrl: null,
 
     // Interal attributes
@@ -62,7 +64,7 @@ export default Component.extend({
     uploadUrls: null, // [{filename: 'x', url: 'y'}],
 
     // Private
-    _defaultUploadUrl: '/images/',
+    _defaultUploadUrl: '/images/upload/',
     _files: null,
     _uploadTrackers: null,
 
@@ -83,6 +85,10 @@ export default Component.extend({
         this.set('errors', []);
         this.set('uploadUrls', []);
         this._uploadTrackers = [];
+
+        if (!this.paramsHash) {
+            this.set('paramsHash', {purpose: 'image'});
+        }
     },
 
     didReceiveAttrs() {
@@ -169,7 +175,7 @@ export default Component.extend({
             return true;
         }
 
-        if (!isEmberArray(extensions)) {
+        if (!isArray(extensions)) {
             extensions = extensions.split(',');
         }
 
@@ -240,10 +246,27 @@ export default Component.extend({
             tracker.update({loaded: file.size, total: file.size});
             this._updateProgress();
 
-            let uploadResponse = JSON.parse(response);
+            let uploadResponse;
+            let responseUrl;
+
+            try {
+                uploadResponse = JSON.parse(response);
+            } catch (e) {
+                if (!(e instanceof SyntaxError)) {
+                    throw e;
+                }
+            }
+
+            if (uploadResponse) {
+                let resource = get(uploadResponse, this.resourceName);
+                if (resource && isArray(resource) && resource[0]) {
+                    responseUrl = get(resource[0], 'url');
+                }
+            }
+
             let result = {
-                fileName: file.name,
-                url: get(uploadResponse, 'url')
+                url: responseUrl,
+                fileName: file.name
             };
 
             this.get('uploadUrls')[index] = result;
@@ -274,6 +297,11 @@ export default Component.extend({
     _getFormData(file) {
         let formData = new FormData();
         formData.append(this.get('paramName'), file, file.name);
+
+        Object.keys(this.paramsHash || {}).forEach((key) => {
+            formData.append(key, this.paramsHash[key]);
+        });
+
         return formData;
     },
 
