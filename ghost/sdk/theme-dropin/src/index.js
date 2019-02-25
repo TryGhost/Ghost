@@ -1,7 +1,8 @@
-/* global window document */
-const DomReady = require('domready');
-const GhostContentApi = require('@tryghost/content-api');
+/* global window document atob */
+const domready = require('domready');
 const layer2 = require('@tryghost/members-layer2');
+
+domready(setupMembersListeners);
 
 function reload(success) {
     if (success) {
@@ -9,21 +10,9 @@ function reload(success) {
     }
 }
 
-function show(el) {
-    if (el) {
-        el.style.display = 'block';
-    }
-}
-function hide(el) {
-    if (el) {
-        el.style.display = 'none';
-    }
-}
-
-const version = 'v2';
-
-DomReady(function () {
+function setupMembersListeners() {
     const members = layer2({membersUrl: window.membersUrl});
+    const tokenAudience = new URL(window.location.href).origin;
 
     const [hashMatch, hash, query] = window.location.hash.match(/^#([^?]+)\??(.*)$/) || [];
 
@@ -39,42 +28,60 @@ DomReady(function () {
         }
     }
 
-    const membersContentElements = Array.from(document.querySelectorAll('[data-members-content]'));
+    const signinEls = document.querySelectorAll('[data-members-signin]');
+    const upgradeEls = document.querySelectorAll('[data-members-upgrade]');
+    const signoutEls = document.querySelectorAll('[data-members-signout]');
 
-    const signinBtn = document.querySelector('[data-members-signin]');
-    const signinCta = document.querySelector('[data-members-signin-cta]');
-    const upgradeCta = document.querySelector('[data-members-upgrade-cta]');
-    const signoutBtn = document.querySelector('[data-members-signout]');
+    function setCookie(token) {
+        const claims = getClaims(token);
+        const expiry = new Date(claims.exp * 1000);
+        document.cookie = 'member=' + token + ';Path=/;expires=' + expiry.toUTCString();
+    }
 
-    const showForbidden = document.querySelector('[data-members-show-forbidden]');
-    const showUnauthorized = document.querySelector('[data-members-show-unauthorized]');
-
-    hide(showForbidden);
-    hide(showUnauthorized);
+    function removeCookie() {
+        document.cookie = 'member=null;Path=/;max-age=0';
+    }
 
     members.on('signedin', function () {
-        show(signoutBtn);
-        show(upgradeCta);
-        hide(signinCta);
-        hide(signinBtn);
+        const currentCookies = document.cookie;
+        const [hasCurrentToken, currentToken] = currentCookies.match(/member=([a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]*)/) || [null]; // eslint-disable-line no-unused-vars
+
+        if (currentToken && isTokenExpired(currentToken)) {
+            return members.signout();
+        }
+
+        members.getToken({
+            audience: tokenAudience
+        }).then(function (token) {
+            setCookie(token);
+        });
     });
 
     members.on('signedout', function () {
-        show(signinBtn);
-        show(signinCta);
-        hide(upgradeCta);
-        hide(signoutBtn);
+        removeCookie();
     });
 
     function signout(event) {
         event.preventDefault();
         members.signout()
+            .then(() => {
+                removeCookie();
+                return true;
+            })
             .then(reload);
     }
 
     function signin(event) {
         event.preventDefault();
         members.signin()
+            .then(() => {
+                return members.getToken({
+                    audience: tokenAudience
+                }).then(function (token) {
+                    setCookie(token);
+                    return true;
+                });
+            })
             .then(reload);
     }
 
@@ -84,37 +91,44 @@ DomReady(function () {
             .then(reload);
     }
 
-    signoutBtn.addEventListener('click', signout);
-    signinBtn.addEventListener('click', signin);
-    signinCta.addEventListener('click', signin);
-    upgradeCta.addEventListener('click', upgrade);
+    for (let el of signinEls) {
+        el.addEventListener('click', signin);
+    }
 
-    membersContentElements.forEach(function (element) {
-        const resourceType = element.getAttribute('data-members-resource-type');
-        const resourceId = element.getAttribute('data-members-resource-id');
-        const host = element.getAttribute('data-members-content-host');
+    for (let el of upgradeEls) {
+        el.addEventListener('click', upgrade);
+    }
 
-        const api = GhostContentApi({
-            host,
-            version
-        });
+    for (let el of signoutEls) {
+        el.addEventListener('click', signout);
+    }
+}
 
-        const audience = new URL(host).origin;
-        members.getToken({audience}).then((token) => {
-            if (!token) {
-                show(showUnauthorized);
-                return;
-            }
+function isTokenExpired(token) {
+    const claims = getClaims(token);
 
-            api[resourceType].read({id: resourceId}, {}, token).then(({html}) => {
-                if (html) {
-                    element.innerHTML = html;
-                } else {
-                    show(showForbidden);
-                }
-            }).catch((err) => {
-                element.innerHTML = err.message;
-            });
-        });
-    });
-});
+    if (!claims) {
+        return true;
+    }
+
+    const expiry = claims.exp * 1000;
+    const now = Date.now();
+
+    if (expiry < now) {
+        return true;
+    }
+
+    return false;
+}
+
+function getClaims(token) {
+    try {
+        const [header, claims, signature] = token.split('.'); // eslint-disable-line no-unused-vars
+
+        const parsedClaims = JSON.parse(atob(claims.replace('+', '-').replace('/', '_')));
+
+        return parsedClaims;
+    } catch (e) {
+        return null;
+    }
+}
