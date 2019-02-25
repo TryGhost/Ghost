@@ -70,6 +70,19 @@ module.exports = function setupSiteApp(options = {}) {
     require('../../helpers').loadCoreHelpers();
     debug('Helpers done');
 
+    // Set req.member & res.locals.member if a cookie is set
+    siteApp.use(members.authenticateMembersToken);
+    siteApp.use(function (req, res, next) {
+        res.locals.member = req.member;
+        next();
+    });
+    siteApp.use(function (err, req, res, next) {
+        if (err.name === 'UnauthorizedError') {
+            return next();
+        }
+        next(err);
+    });
+
     // Theme middleware
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
     // At this point the active theme object is already updated, so we have the right path, so it can probably
@@ -111,19 +124,6 @@ module.exports = function setupSiteApp(options = {}) {
 
     // Fetch the frontend client into res.locals
     siteApp.use(shared.middlewares.frontendClient);
-
-    // Set req.member & res.locals.member if a cookie is set
-    siteApp.use(members.authenticateMembersToken);
-    siteApp.use(function (req, res, next) {
-        res.locals.member = req.member;
-        next();
-    });
-    siteApp.use(function (err, req, res, next) {
-        if (err.name === 'UnauthorizedError') {
-            return next();
-        }
-        next(err);
-    });
 
     debug('General middleware done');
 
