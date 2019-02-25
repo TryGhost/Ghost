@@ -57,15 +57,23 @@ describe('Integration: Service: config', function () {
     });
 
     it('normalizes blogUrl to non-trailing-slash', function (done) {
-        let stubBlogUrl = function stubBlogUrl(blogUrl) {
-            server.get('/ghost/api/v2/admin/configuration/', function () {
+        let stubBlogUrl = function stubBlogUrl(url) {
+            server.get('/ghost/api/v2/admin/config/', function () {
+                return [
+                    200,
+                    {'Content-Type': 'application/json'},
+                    JSON.stringify({})
+                ];
+            });
+
+            server.get('/ghost/api/v2/admin/site/', function () {
                 return [
                     200,
                     {'Content-Type': 'application/json'},
                     JSON.stringify({
-                        configuration: [{
-                            blogUrl
-                        }]
+                        site: {
+                            url
+                        }
                     })
                 ];
             });
