@@ -1,0 +1,8 @@
+
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "images.upload",
+    "title": "images.upload",
+    "description": "Schema for images.upload",
+    "$ref": "images#/definitions/image"
+}
