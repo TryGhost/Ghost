@@ -37,6 +37,8 @@ module.exports = function channelController(req, res, next) {
         }
     }
 
+    res.locals.member = req.member;
+
     return helpers.fetchData(pathOptions, res.routerOptions, res.locals)
         .then(function handleResult(result) {
             // CASE: requested page is greater than number of pages we have
