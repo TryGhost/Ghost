@@ -150,8 +150,8 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected', 61);
-                result.should.have.property('done', 61);
+                result.should.have.property('expected', 63);
+                result.should.have.property('done', 63);
 
                 // Permissions & Roles
                 permsAllStub.calledOnce.should.be.true();
