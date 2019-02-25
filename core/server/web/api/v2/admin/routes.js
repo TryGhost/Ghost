@@ -192,28 +192,11 @@ module.exports = function apiRoutes() {
     router.get('/authentication/setup', api.http(api.authentication.isSetup));
 
     // ## Images
-    router.post('/images',
+    router.post('/images/upload',
         mw.authAdminApi,
-        upload.single('uploadimage'),
+        upload.single('file'),
         shared.middlewares.validation.upload({type: 'images'}),
         shared.middlewares.image.normalize,
-        http(apiv2.images.upload)
-    );
-
-    router.post('/images/profile-image',
-        mw.authAdminApi,
-        upload.single('uploadimage'),
-        shared.middlewares.validation.upload({type: 'images'}),
-        shared.middlewares.validation.profileImage,
-        shared.middlewares.image.normalize,
-        http(apiv2.images.upload)
-    );
-
-    router.post('/images/icon',
-        mw.authAdminApi,
-        upload.single('uploadimage'),
-        shared.middlewares.validation.upload({type: 'icons'}),
-        shared.middlewares.validation.blogIcon(),
         http(apiv2.images.upload)
     );
 

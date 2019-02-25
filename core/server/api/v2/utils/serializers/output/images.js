@@ -6,7 +6,10 @@ module.exports = {
         debug('upload');
 
         return frame.response = {
-            url: mapper.mapImage(path)
+            images: [{
+                url: mapper.mapImage(path),
+                ref: frame.data.ref || null
+            }]
         };
     }
 };

@@ -108,6 +108,8 @@ _private.prepareUserMessage = (err, res) => {
         if (action) {
             if (err.context) {
                 userError.context = `${err.message} ${err.context}`;
+            } else {
+                userError.context = err.message;
             }
 
             userError.message = common.i18n.t(`errors.api.userMessages.${err.name}`, {action: action});

@@ -21,5 +21,9 @@ module.exports = {
 
     get users() {
         return require('./users');
+    },
+
+    get images() {
+        return require('./images');
     }
 };
