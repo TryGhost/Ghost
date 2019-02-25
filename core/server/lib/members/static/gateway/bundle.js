@@ -135,7 +135,7 @@
         if (storage.getItem('signedin')) {
             window.parent.postMessage({event: 'signedin'}, origin);
         } else {
-            getToken({audience: origin});
+            getToken({audience: origin, fresh: true});
         }
 
         return Promise.resolve();
