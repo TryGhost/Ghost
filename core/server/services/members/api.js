@@ -1,5 +1,3 @@
-const debug = require('ghost-ignition').debug('service:members:api');
-
 const url = require('url');
 const settingsCache = require('../settings/cache');
 const config = require('../../config');
@@ -149,7 +147,7 @@ const updateSettingFromModel = function updateSettingFromModel(settingModel) {
     }
 };
 
-// Bind to events to automatically keep up-to-date
+// Bind to events to automatically keep subscription info up-to-date from settings
 common.events.on('settings.edited', updateSettingFromModel);
 common.events.on('settings.added', updateSettingFromModel);
 common.events.on('settings.deleted', updateSettingFromModel);
