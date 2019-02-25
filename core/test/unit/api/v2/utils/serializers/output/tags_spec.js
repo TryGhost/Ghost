@@ -23,9 +23,7 @@ describe('Unit: v2/utils/serializers/output/tags', () => {
         const apiConfig = {};
         const frame = {
             options: {
-                context: {
-                    public: true
-                }
+                context: {}
             }
         };
 
@@ -41,9 +39,7 @@ describe('Unit: v2/utils/serializers/output/tags', () => {
         const apiConfig = {};
         const frame = {
             options: {
-                context: {
-                    public: true
-                }
+                context: {}
             }
         };
 
