@@ -35,7 +35,7 @@
 
         const nearFuture = now + (30 * 1000);
 
-        if (expiry > nearFuture) {
+        if (expiry < nearFuture) {
             return true;
         }
 
