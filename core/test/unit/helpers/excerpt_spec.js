@@ -43,6 +43,18 @@ describe('{{excerpt}} Helper', function () {
         rendered.string.should.equal(expected);
     });
 
+    it('should put space in text between paragraphs', function () {
+        var html = '<p>Testing.</p><p>Space before this text.</p>',
+            expected = 'Testing. Space before this text.',
+            rendered = helpers.excerpt.call({
+                html: html,
+                custom_excerpt: ''
+            });
+
+        should.exist(rendered);
+        rendered.string.should.equal(expected);
+    });
+
     it('strips inline and bottom footnotes', function () {
         var html = '<p>Testing<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup> a very short post with a single footnote.</p>\n' +
                 '<div class="footnotes"><ol><li class="footnote" id="fn:1"><p><a href="https://ghost.org">https://ghost.org</a> <a href="#fnref:1" title="return to article">↩</a></p></li></ol></div>',
