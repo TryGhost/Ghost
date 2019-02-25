@@ -103,10 +103,6 @@ module.exports = {
         return shared.pipeline(require('./slack'), localUtils);
     },
 
-    get authors() {
-        return shared.pipeline(require('./authors'), localUtils);
-    },
-
     get config() {
         return shared.pipeline(require('./config'), localUtils);
     },
@@ -121,6 +117,10 @@ module.exports = {
 
     get actions() {
         return shared.pipeline(require('./actions'), localUtils);
+    },
+
+    get authorsPublic() {
+        return shared.pipeline(require('./authors-public'), localUtils, 'content');
     },
 
     get site() {
