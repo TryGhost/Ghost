@@ -29,14 +29,6 @@ export default Service.extend(_ProxyMixin, {
         });
     },
 
-    fetchPrivate() {
-        let privateConfigUrl = this.get('ghostPaths.url').api('configuration', 'private');
-
-        return this.get('ajax').request(privateConfigUrl).then((privateConfig) => {
-            assign(this.get('content'), privateConfig.configuration[0]);
-        });
-    },
-
     availableTimezones: computed(function () {
         let timezonesUrl = this.get('ghostPaths.url').api('configuration', 'timezones');
 

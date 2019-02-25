@@ -55,7 +55,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
 
             let featurePromise = this.get('feature').fetch();
             let settingsPromise = this.get('settings').fetch();
-            let privateConfigPromise = this.get('config').fetchPrivate();
             let tourPromise = this.get('tour').fetchViewed();
 
             // return the feature/settings load promises so that we block until
@@ -63,7 +62,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             return RSVP.all([
                 featurePromise,
                 settingsPromise,
-                privateConfigPromise,
                 tourPromise
             ]).then((results) => {
                 this._appLoaded = true;
