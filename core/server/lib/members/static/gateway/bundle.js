@@ -83,20 +83,6 @@
         if (!storedTokenKeys.includes(tokenKey)) {
             storage.setItem('members:tokens', JSON.stringify(storedTokenKeys.concat(tokenKey)));
         }
-
-        setupTokenPrefetching(token);
-    }
-
-    function setupTokenPrefetching(token) {
-        const {exp, aud} = getClaims(token);
-        const expiry = exp * 1000;
-        const now = Date.now();
-
-        function prefetchToken() {
-            getToken({audience: aud, fresh: true});
-        }
-
-        setTimeout(prefetchToken, expiry - now - 30000); // CASE: refetch a token 30 seconds before it is due to expire.
     }
 
     function clearStorage() {
