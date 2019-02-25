@@ -26,6 +26,10 @@
     function isTokenExpired(token) {
         const claims = getClaims(token);
 
+        if (!claims) {
+            return true;
+        }
+
         const expiry = claims.exp * 1000;
         const now = Date.now();
 
