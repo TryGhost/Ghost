@@ -80,7 +80,11 @@ export default class Modal extends Component {
 
         const signin = (data) => this.handleAction(members.signin(data));
         const signup = (data) => this.handleAction(members.signup(data));
-        const requestReset = (data) => this.handleAction(members.requestPasswordReset(data));
+        const requestReset = (data) => members.requestPasswordReset(data).then((success) => {
+            window.location.hash = 'password-reset-sent';
+        }, (error) => {
+            this.setState({ error });
+        });
         const resetPassword = (data) => this.handleAction(members.resetPassword(data));
         const stripeConfig = paymentConfig && paymentConfig.find(({ adapter }) => adapter === 'stripe');
 
