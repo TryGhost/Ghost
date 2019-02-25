@@ -1763,7 +1763,7 @@ describe('Integration - Web - Site', function () {
             });
 
             beforeEach(function () {
-                const postsAPI = require('../../../server/api/v2/posts');
+                const postsAPI = require('../../../server/api/v2/posts-public');
                 configUtils.set('url', 'http://example.com');
                 postSpy = sinon.spy(postsAPI.browse, 'query');
             });
@@ -3027,7 +3027,7 @@ describe('Integration - Web - Site', function () {
                                 data: {
                                     query: {
                                         post: {
-                                            controller: 'posts',
+                                            controller: 'postsPublic',
                                             resource: 'posts',
                                             type: 'read',
                                             options: {
