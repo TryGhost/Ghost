@@ -77,7 +77,7 @@ describe('Unit - services/routing/controllers/static', function () {
 
     it('no extra data to fetch', function (done) {
         helpers.renderer.callsFake(function () {
-            helpers.formatResponse.entries.withArgs({}).calledOnce.should.be.true();
+            helpers.formatResponse.entries.calledOnce.should.be.true();
             api.tags.read.called.should.be.false();
             helpers.secure.called.should.be.false();
             done();
@@ -98,11 +98,11 @@ describe('Unit - services/routing/controllers/static', function () {
             }
         };
 
-        api.tags.read.withArgs({slug: 'bacon'}).resolves({tags: [{slug: 'bacon'}]});
+        api.tags.read.resolves({tags: [{slug: 'bacon'}]});
 
         helpers.renderer.callsFake(function () {
-            api.tags.read.withArgs({slug: 'bacon'}).called.should.be.true();
-            helpers.formatResponse.entries.withArgs({data: {tag: [{slug: 'bacon'}]}}).calledOnce.should.be.true();
+            api.tags.read.called.should.be.true();
+            helpers.formatResponse.entries.calledOnce.should.be.true();
             helpers.secure.calledOnce.should.be.true();
             done();
         });
