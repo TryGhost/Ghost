@@ -114,6 +114,12 @@ module.exports = function setupSiteApp(options = {}) {
 
     // Set req.member if a cookie is set
     siteApp.use(members.authenticateMembersToken);
+    siteApp.use(function (err, req, res, next) {
+        if (err.name === 'UnauthorizedError') {
+            return next();
+        }
+        next(err);
+    });
 
     debug('General middleware done');
 
