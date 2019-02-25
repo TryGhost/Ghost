@@ -24,8 +24,8 @@ const expectedProperties = {
 
     post: _(schema.posts)
         .keys()
-        // by default we only return html
-        .without('mobiledoc', 'plaintext')
+        // by default we only return mobildoc
+        .without('html', 'plaintext')
         .without('visibility')
         .without('locale')
         .without('page')
@@ -35,8 +35,8 @@ const expectedProperties = {
 
     page: _(schema.posts)
         .keys()
-        // by default we only return html
-        .without('mobiledoc', 'plaintext')
+        // by default we only return mobildoc
+        .without('html', 'plaintext')
         .without('visibility')
         .without('locale')
         .without('page')
