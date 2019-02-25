@@ -207,7 +207,7 @@ module.exports = function MembersApi({
     httpHandler.staticRouter = staticRouter;
     httpHandler.apiRouter = apiRouter;
     httpHandler.memberUserObject = users;
-    httpHandler.updateSubscription = function (paymentConfig) {
+    httpHandler.reconfigureSettings = function (paymentConfig) {
         subscriptions = new Subscriptions(paymentConfig);
         users = Users({
             subscriptions,

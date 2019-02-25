@@ -70,10 +70,11 @@ const issuer = siteOrigin;
 const ssoOrigin = siteOrigin;
 let mailer;
 
-const membersConfig = settingsCache.get('members_subscription_settings');
+const membersConfig = config.get('members');
+const membersSettings = settingsCache.get('members_subscription_settings');
 
-if (!membersConfig.isPaid) {
-    membersConfig.paymentProcessors = [];
+if (!membersSettings.isPaid) {
+    membersSettings.paymentProcessors = [];
 }
 
 function validateAudience({audience, origin}) {
@@ -124,7 +125,7 @@ const api = MembersApi({
         ssoOrigin
     },
     paymentConfig: {
-        processors: membersConfig.paymentProcessors
+        processors: membersSettings.paymentProcessors
     },
     validateAudience,
     createMember,
@@ -137,12 +138,12 @@ const api = MembersApi({
 
 const updateSettingFromModel = function updateSettingFromModel(settingModel) {
     if (settingModel.get('key') === 'members_subscription_settings') {
-        let membersConfig = settingsCache.get('members_subscription_settings');
-        if (!membersConfig.isPaid) {
-            membersConfig.paymentProcessors = [];
+        let membersSettings = settingsCache.get('members_subscription_settings');
+        if (!membersSettings.isPaid) {
+            membersSettings.paymentProcessors = [];
         }
-        api.updateSubscription({
-            processors: membersConfig.paymentProcessors
+        api.reconfigureSettings({
+            processors: membersSettings.paymentProcessors
         });
     }
 };
@@ -154,4 +155,3 @@ common.events.on('settings.deleted', updateSettingFromModel);
 
 module.exports = api;
 module.exports.publicKey = publicKey;
-module.exports.paymentConfigured = !!membersConfig.paymentProcessors.length;
