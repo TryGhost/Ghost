@@ -14,7 +14,7 @@ module.exports = {
                 environment: config.get('env'),
                 database: config.get('database').client,
                 mail: isPlainObject(config.get('mail')) ? config.get('mail').transport : '',
-
+                useGravatar: !config.isPrivacyDisabled('useGravatar'),
                 labs: labs.getAll(),
                 clientExtensions: config.get('clientExtensions') || {},
                 enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false
