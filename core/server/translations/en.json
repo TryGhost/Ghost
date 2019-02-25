@@ -30,8 +30,8 @@
                 "clientNotFound": "Client not found"
             },
             "actions": {
-                "upload": {
-                    "image": "upload image"
+                "images": {
+                    "upload": "upload image"
                 }
             }
         }
