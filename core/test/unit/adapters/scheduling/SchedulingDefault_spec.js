@@ -224,16 +224,11 @@ describe('Scheduling Default Adapter', function () {
                 extra: {
                     httpMethod: 'GET'
                 }
+            }).then(() => {
+                wasPinged.should.be.true();
+                should.not.exist(reqQuery.force);
+                server.close(done);
             });
-
-            (function retry() {
-                if (wasPinged) {
-                    should.not.exist(reqQuery.force);
-                    return server.close(done);
-                }
-
-                setTimeout(retry, 100);
-            })();
         });
 
         it('pingUrl (PUT, and detect publish in the past)', function (done) {
@@ -258,16 +253,11 @@ describe('Scheduling Default Adapter', function () {
                 extra: {
                     httpMethod: 'PUT'
                 }
+            }).then(() => {
+                wasPinged.should.be.true();
+                should.exist(reqBody.force);
+                server.close(done);
             });
-
-            (function retry() {
-                if (wasPinged) {
-                    should.exist(reqBody.force);
-                    return server.close(done);
-                }
-
-                setTimeout(retry, 100);
-            })();
         });
 
         it('pingUrl (GET, and detect publish in the past)', function (done) {
@@ -290,16 +280,11 @@ describe('Scheduling Default Adapter', function () {
                 extra: {
                     httpMethod: 'GET'
                 }
+            }).then(() => {
+                wasPinged.should.be.true();
+                should.exist(reqQuery.force);
+                server.close(done);
             });
-
-            (function retry() {
-                if (wasPinged) {
-                    should.exist(reqQuery.force);
-                    return server.close(done);
-                }
-
-                setTimeout(retry, 100);
-            })();
         });
 
         it('pingUrl, but blog returns 503', function (done) {
