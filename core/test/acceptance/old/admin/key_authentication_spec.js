@@ -44,16 +44,13 @@ describe('Admin API key authentication', function () {
             .expect(200);
     });
 
-    it('Can access add endpoint with correct token', function () {
+    it('Can create post', function () {
         const post = {
-            authors: [{
-                id: testUtils.DataGenerator.Content.users[0].id
-            }],
             title: 'Post created with api_key'
         };
 
         return request
-            .post(localUtils.API.getApiQuery('posts/'))
+            .post(localUtils.API.getApiQuery('posts/?include=authors'))
             .set('Origin', config.get('url'))
             .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v2/admin/')}`)
             .send({
@@ -61,6 +58,10 @@ describe('Admin API key authentication', function () {
             })
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201);
+            .expect(201)
+            .then((res) => {
+                // falls back to owner user
+                res.body.posts[0].authors.length.should.eql(1);
+            });
     });
 });
