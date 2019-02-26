@@ -1,7 +1,8 @@
 const _ = require('lodash'),
     Promise = require('bluebird'),
     debug = require('ghost-ignition').debug('services:routing:controllers:static'),
-    helpers = require('../helpers');
+    helpers = require('../helpers'),
+    config = require('../../../config');
 
 function processQuery(query, locals) {
     const api = require('../../../api')[locals.apiVersion];
@@ -17,11 +18,13 @@ function processQuery(query, locals) {
         });
     }
 
-    Object.assign(query.options, {
-        context: {
-            members: locals.member
-        }
-    });
+    if (config.get('enableDeveloperExperiments')) {
+        Object.assign(query.options, {
+            context: {
+                members: locals.member
+            }
+        });
+    }
 
     // Return a promise for the api query
     return api[query.controller][query.type](query.options);
