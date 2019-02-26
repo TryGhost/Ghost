@@ -30,6 +30,7 @@
     "@ember/optional-features": "0.7.0",
     "@html-next/vertical-collection": "1.0.0-beta.12",
     "@tryghost/mobiledoc-kit": "0.11.1-ghost.6",
+    "@tryghost/timezone-data": "0.1.1",
     "autoprefixer": "9.4.8",
     "blueimp-md5": "2.10.0",
     "broccoli-asset-rev": "3.0.0",

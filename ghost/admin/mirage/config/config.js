@@ -21,16 +21,4 @@ export default function mockConfig(server) {
             config: db.configs.find(1)
         };
     });
-
-    server.get('/configuration/timezones/', function ({db}) {
-        if (isEmpty(db.timezones)) {
-            server.loadFixtures('timezones');
-        }
-
-        return {
-            configuration: [{
-                timezones: db.timezones
-            }]
-        };
-    });
 }

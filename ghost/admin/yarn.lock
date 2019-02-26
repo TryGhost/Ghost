@@ -713,6 +713,11 @@
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
 
+"@tryghost/timezone-data@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.1.1.tgz#4ae120de518f6d5b81d16177bbc7fcd159d5c925"
+  integrity sha512-6cJHmh7PkhRYgzi46xS37HGR4uZ/pCmfzsATZFZP3BtP16PpgOfH0J3D0Q8wP1GM0C7OTRKhtyqfUaLS/RkSJA==
+
 "@types/acorn@^4.0.3":
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/@types/acorn/-/acorn-4.0.4.tgz#b3ee72dcd81d1daeea03fed67d7ca7c2574c313b"
