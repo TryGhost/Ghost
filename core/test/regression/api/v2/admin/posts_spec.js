@@ -113,6 +113,7 @@ describe('Posts API', function () {
                         'context',
                         'type',
                         'details',
+                        'property',
                         'help',
                         'code',
                         'id'
@@ -203,6 +204,7 @@ describe('Posts API', function () {
                         'context',
                         'type',
                         'details',
+                        'property',
                         'help',
                         'code',
                         'id'
