@@ -29,13 +29,13 @@ const sessionStub = Service.extend({
 });
 
 const stubSuccessfulUpload = function (server, delay = 0) {
-    server.post('/ghost/api/v2/admin/images/', function () {
-        return [200, {'Content-Type': 'application/json'}, '{"url":"/content/images/test.png"}'];
+    server.post('/ghost/api/v2/admin/images/upload/', function () {
+        return [200, {'Content-Type': 'application/json'}, '{"images": [{"url":"/content/images/test.png"}]}'];
     }, delay);
 };
 
 const stubFailedUpload = function (server, code, error, delay = 0) {
-    server.post('/ghost/api/v2/admin/images/', function () {
+    server.post('/ghost/api/v2/admin/images/upload/', function () {
         return [code, {'Content-Type': 'application/json'}, JSON.stringify({
             errors: [{
                 errorType: error,
@@ -84,7 +84,7 @@ describe('Integration: Component: gh-image-uploader', function () {
         await fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
         expect(server.handledRequests.length).to.equal(1);
-        expect(server.handledRequests[0].url).to.equal('/ghost/api/v2/admin/images/');
+        expect(server.handledRequests[0].url).to.equal('/ghost/api/v2/admin/images/upload/');
         expect(server.handledRequests[0].requestHeaders.Authorization).to.be.undefined;
     });
 
@@ -183,7 +183,7 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('handles file too large error directly from the web server', async function () {
-        server.post('/ghost/api/v2/admin/images/', function () {
+        server.post('/ghost/api/v2/admin/images/upload/', function () {
             return [413, {}, ''];
         });
         await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
@@ -203,7 +203,7 @@ describe('Integration: Component: gh-image-uploader', function () {
     });
 
     it('handles unknown failure', async function () {
-        server.post('/ghost/api/v2/admin/images/', function () {
+        server.post('/ghost/api/v2/admin/images/upload/', function () {
             return [500, {'Content-Type': 'application/json'}, ''];
         });
         await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
