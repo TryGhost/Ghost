@@ -9,6 +9,7 @@ const {_ProxyMixin} = Ember;
 export default Service.extend(_ProxyMixin, {
     ajax: service(),
     ghostPaths: service(),
+    session: service(),
 
     content: null,
 
@@ -18,23 +19,37 @@ export default Service.extend(_ProxyMixin, {
     },
 
     fetch() {
+        let promises = [];
+
+        promises.push(this.fetchUnauthenticated());
+
+        if (this.session.isAuthenticated) {
+            promises.push(this.fetchAuthenticated());
+        }
+
+        return RSVP.all(promises);
+    },
+
+    fetchUnauthenticated() {
         let siteUrl = this.ghostPaths.url.api('site');
+        return this.ajax.request(siteUrl).then(({site}) => {
+            // normalize url to non-trailing-slash
+            site.blogUrl = site.url.replace(/\/$/, '');
+            site.blogTitle = site.title;
+            delete site.url;
+            delete site.title;
+
+            Object.assign(this.content, site);
+        }).then(() => {
+            this.notifyPropertyChange('content');
+        });
+    },
+
+    fetchAuthenticated() {
         let configUrl = this.ghostPaths.url.api('config');
-
-        return RSVP.all([
-            this.ajax.request(siteUrl).then(({site}) => {
-                // normalize url to non-trailing-slash
-                site.blogUrl = site.url.replace(/\/$/, '');
-                site.blogTitle = site.title;
-                delete site.url;
-                delete site.title;
-
-                Object.assign(this.content, site);
-            }),
-            this.ajax.request(configUrl).then(({config}) => {
-                Object.assign(this.content, config);
-            })
-        ]).then(() => {
+        return this.ajax.request(configUrl).then(({config}) => {
+            Object.assign(this.content, config);
+        }).then(() => {
             this.notifyPropertyChange('content');
         });
     },
