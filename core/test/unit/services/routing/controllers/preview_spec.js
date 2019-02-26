@@ -74,7 +74,8 @@ describe('Unit - services/routing/controllers/preview', function () {
             sinon.stub(api.posts, 'read').withArgs({
                 uuid: req.params.uuid,
                 status: 'all',
-                include: 'author,authors,tags'
+                include: 'author,authors,tags',
+                formats: 'html'
             }).callsFake(function () {
                 return Promise.resolve(apiResponse);
             });
@@ -194,7 +195,8 @@ describe('Unit - services/routing/controllers/preview', function () {
             previewStub.withArgs({
                 uuid: req.params.uuid,
                 status: 'all',
-                include: 'author,authors,tags'
+                include: 'author,authors,tags',
+                formats: 'html'
             }).resolves(apiResponse);
 
             sinon.stub(api.v2, 'preview').get(() => {
