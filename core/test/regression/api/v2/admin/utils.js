@@ -104,15 +104,14 @@ module.exports = {
     getValidAdminToken(endpoint) {
         const jwt = require('jsonwebtoken');
         const JWT_OPTIONS = {
+            keyid: testUtils.DataGenerator.Content.api_keys[0].id,
             algorithm: 'HS256',
             expiresIn: '5m',
             audience: endpoint
         };
 
         return jwt.sign(
-            {
-                kid: testUtils.DataGenerator.Content.api_keys[0].id
-            },
+            {},
             Buffer.from(testUtils.DataGenerator.Content.api_keys[0].secret, 'hex'),
             JWT_OPTIONS
         );
