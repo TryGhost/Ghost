@@ -198,6 +198,13 @@ describe('Database Migration (special functions)', function () {
             // Actions
             permissions[64].name.should.eql('Browse Actions');
             permissions[64].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
+
+            // Members
+            permissions[65].name.should.eql('Browse Members');
+            permissions[66].name.should.eql('Read Members');
+            permissions[67].name.should.eql('Edit Members');
+            permissions[68].name.should.eql('Add Members');
+            permissions[69].name.should.eql('Delete Members');
         });
 
         describe('Populate', function () {
@@ -262,7 +269,7 @@ describe('Database Migration (special functions)', function () {
                     result.roles.at(5).get('name').should.eql('Admin Integration');
 
                     // Permissions
-                    result.permissions.length.should.eql(65);
+                    result.permissions.length.should.eql(70);
                     result.permissions.toJSON().should.be.CompletePermissions();
                 });
             });
