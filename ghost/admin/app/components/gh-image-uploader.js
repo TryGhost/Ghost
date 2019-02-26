@@ -9,6 +9,7 @@ import {
 import {computed} from '@ember/object';
 import {get} from '@ember/object';
 import {htmlSafe} from '@ember/string';
+import {isArray} from '@ember/array';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
@@ -16,6 +17,7 @@ import {inject as service} from '@ember/service';
 
 export const IMAGE_MIME_TYPES = 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml';
 export const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
+export const IMAGE_PARAMS = {purpose: 'image'};
 
 export default Component.extend({
     ajax: service(),
@@ -34,6 +36,9 @@ export default Component.extend({
     accept: '',
     extensions: null,
     uploadUrl: null,
+    paramName: 'file',
+    paramsHash: null,
+    resourceName: 'images',
     validate: null,
     allowUnsplash: false,
 
@@ -45,7 +50,8 @@ export default Component.extend({
 
     _defaultAccept: IMAGE_MIME_TYPES,
     _defaultExtensions: IMAGE_EXTENSIONS,
-    _defaultUploadUrl: '/images/',
+    _defaultUploadUrl: '/images/upload/',
+    _defaultParamsHash: IMAGE_PARAMS,
     _showUnsplash: false,
 
     // Allowed actions
@@ -62,7 +68,11 @@ export default Component.extend({
         let file = this.get('file');
         let formData = new FormData();
 
-        formData.append('uploadimage', file);
+        formData.append(this.paramName, file);
+
+        Object.keys(this.paramsHash || {}).forEach((key) => {
+            formData.append(key, this.paramsHash[key]);
+        });
 
         return formData;
     }),
@@ -97,6 +107,9 @@ export default Component.extend({
         }
         if (!this.get('uploadUrl')) {
             this.set('uploadUrl', this.get('_defaultUploadUrl'));
+        }
+        if (!this.paramsHash) {
+            this.set('paramsHash', this._defaultParamsHash);
         }
     },
 
@@ -192,10 +205,28 @@ export default Component.extend({
     },
 
     _uploadSuccess(response) {
-        this.set('url', response);
+        let uploadResponse;
+        let responseUrl;
+
+        try {
+            uploadResponse = JSON.parse(response);
+        } catch (e) {
+            if (!(e instanceof SyntaxError)) {
+                throw e;
+            }
+        }
+
+        if (uploadResponse) {
+            let resource = get(uploadResponse, this.resourceName);
+            if (resource && isArray(resource) && resource[0]) {
+                responseUrl = get(resource[0], 'url');
+            }
+        }
+
+        this.set('url', responseUrl);
         this.send('saveUrl');
         this.send('reset');
-        this.uploadSuccess(response);
+        this.uploadSuccess(responseUrl);
     },
 
     _uploadFailed(error) {
@@ -246,8 +277,7 @@ export default Component.extend({
                 return xhr;
             }
         }).then((response) => {
-            let url = get(JSON.parse(response), 'url');
-            this._uploadSuccess(url);
+            this._uploadSuccess(response);
         }).catch((error) => {
             this._uploadFailed(error);
         }).finally(() => {

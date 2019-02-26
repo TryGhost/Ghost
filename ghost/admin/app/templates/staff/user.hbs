@@ -111,7 +111,7 @@
               <button type="button" {{action "toggleUploadImageModal"}} class="edit-user-image">Edit Picture</button>
               {{#if showUploadImageModal}}
                   {{gh-fullscreen-modal "upload-image"
-                                        model=(hash model=user imageProperty="profileImage" uploadUrl="/images/profile-image")
+                                        model=(hash model=user imageProperty="profileImage" paramsHash=(hash purpose="profile_image"))
                                         close=(action "toggleUploadImageModal")
                                         modifier="action wide"}}
               {{/if}}
