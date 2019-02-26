@@ -4,6 +4,7 @@
  */
 const _ = require('lodash');
 const Promise = require('bluebird');
+const config = require('../../../config');
 
 // The default settings for a default post query
 const queryDefaults = {
@@ -50,8 +51,9 @@ function processQuery(query, slugParam, locals) {
         query.options[name] = _.isString(option) ? option.replace(/%s/g, slugParam) : option;
     });
 
-    query.options.context = {member: locals.member};
-
+    if (config.get('enableDeveloperExperiments')) {
+        query.options.context = {member: locals.member};
+    }
     // Return a promise for the api query
     return api[query.controller][query.type](query.options);
 }
