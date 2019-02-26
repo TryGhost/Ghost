@@ -5,10 +5,10 @@
     <section class="view-container">
         <section class="gh-env-details">
             <ul class="gh-env-list">
-                <li class="gh-env-list-version"><strong>Version</strong> {{about.version}}</li>
-                <li><strong>Environment</strong> {{about.environment}}</li>
-                <li class="gh-env-list-database-type"><strong>Database</strong> {{about.database}}</li>
-                <li><strong>Mail</strong> {{#if about.mail}}{{about.mail}}{{else}}Native{{/if}}</li>
+                <li class="gh-env-list-version"><strong>Version</strong> {{config.version}}</li>
+                <li><strong>Environment</strong> {{config.environment}}</li>
+                <li class="gh-env-list-database-type"><strong>Database</strong> {{config.database}}</li>
+                <li><strong>Mail</strong> {{#if config.mail}}{{config.mail}}{{else}}Native{{/if}}</li>
             </ul>
             <div class="gh-env-help">
                 <a class="gh-btn" href="https://docs.ghost.org" target="_blank"><span>User Documentation</span></a>
