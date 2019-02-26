@@ -29,5 +29,6 @@ export default Model.extend(ValidationEngine, {
         defaultValue() {
             return {isActive: true};
         }
-    })
+    }),
+    membersSubscriptionSettings: attr('string')
 });

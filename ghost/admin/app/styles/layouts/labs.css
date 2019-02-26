@@ -1,0 +1,70 @@
+.gh-labs-price-label input {
+    padding-right: 96px;
+}
+
+.gh-labs-price-label input::-webkit-outer-spin-button, .gh-labs-price-label input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.gh-labs-price-label input[type=number] {
+    -moz-appearance: textfield;
+    /* Firefox */
+}
+
+.gh-labs-price-label::after {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    color: var(--midlightgrey);
+}
+
+.gh-labs-monthly-price::after {
+    content: "USD/month";
+}
+
+.gh-labs-yearly-price::after {
+    content: "USD/year";
+}
+
+.gh-labs-toggle-wrapper {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-radius: 5px;
+}
+
+.gh-btn-labs-toggle {
+    border: none;
+    display: flex;
+    align-items: center;
+    color: var(--blue);
+}
+
+.gh-btn-labs-toggle svg {
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+}
+
+.gh-btn-labs-toggle svg path {
+    stroke: var(--blue);
+}
+
+.gh-labs-members-radio {
+    cursor: pointer;
+    margin: 0 8px;
+}
+
+.gh-labs-members-radio.active {
+    background: color-mod(var(--blue) alpha(6%));
+    border-color: var(--blue);
+}
+
+.gh-labs-disabled .gh-setting-content, .gh-labs-disabled .gh-setting-action {
+    opacity: 0.25;
+}
+
+.gh-labs-disabled .for-checkbox label {
+    cursor: default;
+}

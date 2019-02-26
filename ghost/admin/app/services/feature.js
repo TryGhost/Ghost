@@ -52,6 +52,7 @@ export default Service.extend({
 
     publicAPI: feature('publicAPI'),
     subscribers: feature('subscribers'),
+    members: feature('members'),
     nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
 
     _user: null,
