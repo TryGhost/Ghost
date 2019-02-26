@@ -141,6 +141,12 @@
                 },
                 "primary_author": {
                     "strip": true
+                },
+                "excerpt": {
+                    "strip": true
+                },
+                "plaintext": {
+                    "strip": true
                 }
             }
         },
