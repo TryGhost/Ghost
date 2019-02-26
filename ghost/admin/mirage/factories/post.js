@@ -18,6 +18,7 @@ export default Factory.extend({
     ogDescription: null,
     ogImage: null,
     ogTitle: null,
+    excerpt(i) { return `Excerpt for post ${i}.`; },
     plaintext(i) { return `Plaintext for post ${i}.`; },
     publishedAt: '2015-12-19T16:25:07.000Z',
     publishedBy: 1,

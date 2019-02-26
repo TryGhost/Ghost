@@ -34,10 +34,6 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
 
         // Properties that exist on the model but we don't want sent in the payload
         delete json.uuid;
-        // Server-side-generated fields
-        // TODO: remove once the API has protection against overriding auto generation
-        delete json.html;
-        delete json.plaintext;
         // Inserted locally as a convenience.
         delete json.author_id;
         // Read-only virtual property.
