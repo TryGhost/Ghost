@@ -69,6 +69,7 @@ describe('Settings API', function () {
                     'context',
                     'type',
                     'details',
+                    'property',
                     'help',
                     'code',
                     'id'
@@ -133,6 +134,7 @@ describe('Settings API', function () {
                             'context',
                             'type',
                             'details',
+                            'property',
                             'help',
                             'code',
                             'id'

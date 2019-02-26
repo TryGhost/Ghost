@@ -63,6 +63,7 @@ describe('User API', function () {
                             'context',
                             'type',
                             'details',
+                            'property',
                             'help',
                             'code',
                             'id'
@@ -92,6 +93,7 @@ describe('User API', function () {
                             'context',
                             'type',
                             'details',
+                            'property',
                             'help',
                             'code',
                             'id'
