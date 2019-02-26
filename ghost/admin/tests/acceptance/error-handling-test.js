@@ -67,7 +67,7 @@ describe('Acceptance: Error Handling', function () {
             });
 
             it('displays alert and aborts the transition when an ember-ajax error is thrown whilst navigating', async function () {
-                this.server.get('/configuration/timezones/', versionMismatchResponse);
+                this.server.get('/settings/', versionMismatchResponse);
 
                 await visit('/settings/tags');
                 await click('[data-test-nav="settings"]');
