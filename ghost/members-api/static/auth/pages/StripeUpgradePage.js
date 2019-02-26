@@ -3,12 +3,12 @@ import { Component } from 'react';
 import FormHeader from '../components/FormHeader';
 import FormSubmit from '../components/FormSubmit';
 import FormHeaderCTA from '../components/FormHeaderCTA';
+import { IconClose } from '../components/icons';
 import NameInput from '../components/NameInput';
 import EmailInput from '../components/EmailInput';
 import PasswordInput from '../components/PasswordInput';
 import CheckoutForm from '../components/CheckoutForm';
 import Form from '../components/Form';
-
 
 class PaymentForm extends Component {
 
@@ -30,14 +30,12 @@ class PaymentForm extends Component {
         });
     };
 
-    render() {
+    render({frameLocation}) {
         return (
-            <Form bindTo="request-password-reset" onSubmit={(data) => this.handleSubmit(data)}>
-                <NameInput bindTo="name" />
-                <EmailInput bindTo="email" />
-                <PasswordInput bindTo="password" />
+            <Form onSubmit={(data) => this.handleSubmit(data)}>
                 <CheckoutForm />
-                <FormSubmit label="Confirm payment" />
+
+                <FormSubmit label="Confirm Payment" />
             </Form>
         );
     }
@@ -45,7 +43,7 @@ class PaymentForm extends Component {
 
 const PaymentFormWrapped = injectStripe(PaymentForm);
 
-export default class StripePaymentPage extends Component {
+export default class StripeSubscriptionPage extends Component {
     constructor(props) {
         super(props);
         this.plans = props.stripeConfig.config.plans || [];
@@ -56,14 +54,15 @@ export default class StripePaymentPage extends Component {
 
     renderPlan({ currency, amount, id, interval, name }) {
         const selectedPlanId = this.state.selectedPlan ? this.state.selectedPlan.id : "";
+        const dollarAmount = (amount / 100);
         return (
-            <div class="gm-plan">
-                <input type="radio" id={id} name="radio-group" value={id} defaultChecked={id === selectedPlanId} />
-                <label for={id}>
-                    <span class="gm-amount">{`$${amount}`}</span>
-                    <span class="gm-interval">{`${interval}`}</span>
-                </label>
-            </div>
+            <label for={ id }>
+                <div className={ (selectedPlanId === id ? "gm-plan selected" : "gm-plan") }>
+                    <input type="radio" id={ id } name="radio-group" value={ id } defaultChecked={ id === selectedPlanId } />
+                    <span className="gm-amount">{ `$${dollarAmount}` }</span>
+                    <span className="gm-interval"><span className="gm-currency">{ `${currency}` }</span> { `${interval}` }</span>
+                </div>
+            </label>
         )
     }
 
@@ -76,7 +75,7 @@ export default class StripePaymentPage extends Component {
 
     renderPlans(plans) {
         return (
-            <div className="gm-plans" onChange={(e) => this.changePlan(e)}>
+            <div className="mt3" onChange={(e) => this.changePlan(e)}>
                 {
                     plans.map((plan) => this.renderPlan(plan))
                 }
@@ -87,13 +86,7 @@ export default class StripePaymentPage extends Component {
     renderPlansSection() {
         return (
             <div className="gm-plans-container">
-                <div className="gm-publication-info">
-                    <div className="gm-logo"></div>
-                    <div className="gm-publication-name">
-                        <h2>Expensive Publication</h2>
-                        <span>Subscription</span>
-                    </div>
-                </div>
+                <h2 className="gm-form-section">Billing period</h2>
                 {this.renderPlans(this.plans)}
             </div>
         )
@@ -102,18 +95,21 @@ export default class StripePaymentPage extends Component {
     render({ error, handleSubmit, stripeConfig }) {
         const publicKey = stripeConfig.config.publicKey || '';
         return (
-            <div className="flex">
+            <div class="gm-upgrade-page">
                 <div className="gm-modal-form gm-subscribe-form">
-                    <FormHeader title="Subscribe" error={error} errorText="Unable to confirm payment">
-                        <FormHeaderCTA title="Already a member?" label="Log in" hash="#signin" />
-                    </FormHeader>
-                    <StripeProvider apiKey={publicKey}>
-                        <Elements>
-                            <PaymentFormWrapped handleSubmit={handleSubmit} publicKey={publicKey} selectedPlan={this.state.selectedPlan} />
-                        </Elements>
-                    </StripeProvider>
+                    <FormHeader title="Upgrade" error={error} errorText="Unable to confirm payment" />
+                    <div className="flex flex-column justfiy-stretch mt7">
+                        { this.renderPlansSection() }
+                        <div className="mt4 nb3">
+                            <h2 className="gm-form-section">Card details</h2>
+                        </div>
+                        <StripeProvider apiKey={publicKey}>
+                            <Elements>
+                                <PaymentFormWrapped handleSubmit={handleSubmit} publicKey={publicKey} selectedPlan={this.state.selectedPlan} />
+                            </Elements>
+                        </StripeProvider>
+                    </div>
                 </div>
-                {this.renderPlansSection()}
             </div>
         )
     }
