@@ -6,7 +6,7 @@ html {
 
 html, body {
     font-family: var(--default-font);
-    color: var(--black);
+    color: var(--white);
 }
 
 body {
@@ -22,15 +22,13 @@ p {
 h1 {
     margin: 0;
     padding: 0;
-    color: var(--grey-d3);
-    font-size: var(--text-2xl);
-    font-weight: 700;
+    font-size: var(--text-3xl);
+    font-weight: 500;
 }
 
 h4 {
     margin: 0;
     padding: 0;
-    color: var(--grey-d3);
     font-size: var(--text-base);
 }
 
@@ -57,10 +55,28 @@ a:hover {
 .gm-logo {
     width: 44px;
     height: 44px;
-    border-radius: 8px;
     flex-shrink: 0;
     margin: 0 auto;
-    background: #343F44 url('../assets/images/ghost-logo.svg') center center no-repeat;
+}
+
+.gm-modal-header {
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    display: flex;
+    align-items: center;
+}
+
+.gm-modal-header .gm-logo {
+    width: 38px;
+    height: 38px;
+    margin: 0 12px 0 0;
+}
+
+.gm-modal-header h2 {
+    font-size: var(--text-l);
+    color: var(--grey-l1);
+    font-weight: 400;
 }
 
 .gm-auth-header,
@@ -72,21 +88,33 @@ a:hover {
 }
 
 .gm-auth-header h1 {
-    font-size: var(--text-2xl);
+    font-size: var(--text-3xl);
+    font-weight: 500;
+    color: var(--white);
+    white-space: nowrap;
 }
 
-.gm-auth-header h4,
-.gm-auth-footer h4 {
+.gm-auth-footer {
+    margin: 24px 0 0;
+}
+
+.gm-auth-cta {
+    margin: 5px 0 0;
+    font-size: var(--text-s);
+    display: flex;
+    align-items: center;
+}
+
+.gm-auth-cta h4 {
     font-weight: normal;
     font-size: var(--text-s);
     letter-spacing: 0.4px;
+    color: var(--grey-d1);
 }
 
-.gm-auth-header a,
-.gm-auth-footer a {
+.gm-auth-cta a {
     display: flex;
     align-items: center;
-    font-size: var(--text-s);
     letter-spacing: 0.4px;
     padding: 8px;
     margin: -8px -8px -8px -2px;
@@ -95,30 +123,25 @@ a:hover {
     white-space: nowrap;
 }
 
-.gm-auth-header a:hover,
-.gm-auth-footer a:hover {
+.gm-auth-cta a:hover {
     color: var(--blue-d3);
 }
 
-.gm-auth-header a svg {
+.gm-auth-cta a svg {
     width: 12px;
     height: 12px;
     margin: 0 0 0 4px;
 }
 
-.gm-auth-header a svg g,
-.gm-auth-header a svg path {
+.gm-auth-cta a svg g,
+.gm-auth-cta a svg path {
     fill: var(--blue);
     transition: fill var(--animation-speed-f1) ease-in-out;
 }
 
-.gm-auth-header a:hover svg g,
-.gm-auth-header a:hover svg path {
+.gm-auth-cta a:hover svg g,
+.gm-auth-cta a:hover svg path {
     fill: var(--blue-d3);
-}
-
-.gm-auth-footer {
-    margin: 24px 0 0;
 }
 
 .gm-forgot-link {
@@ -126,28 +149,90 @@ a:hover {
     top: 14px;
     right: 14px;
     z-index: 9999;
-    font-size: var(--text-s);
     letter-spacing: 0.4px;
 }
 
 .gm-reset-sent {
-    margin: 24px 0 0;
-    background: color-mod(var(--green) a(0.2));
-    border-radius: 4px;
-    color: color-mod(var(--green) l(-30%) s(+8%));
-    padding: 12px 14px 14px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    color: var(--grey-l1);
+    font-size: var(--text-base);
 }
 
 /* Custom forms */
+.gm-form-section {
+    margin: 0;
+    padding: 0;
+    font-size: var(--text-l);
+    font-weight: 400;
+    color: var(--grey-d1);
+}
 
 .gm-floating-input .gm-forgot-input {
     padding-right: 60px;
 }
 
+.gm-modal-form {
+    width: 350px;
+}
+
 @media (max-width: 440px) {
+    .gm-modal-form {
+        width: 100%;
+        /* margin-top: 60px; */
+    }
+
     h4 {
         display: none;
     }
+}
+
+/* Pages */
+@keyframes fadeInPage {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+@keyframes fadeOutPage {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
+
+@keyframes showPlans {
+    from {left: -280px;}
+    to {left: 40px;}
+}
+
+@keyframes showPlansContainer {
+    from {width: 0px;}
+    to {width: 380px;}
+}
+
+@keyframes showPlansDivider {
+    from {margin-left: -1px; opacity: 0;}
+    to {margin-left: 40px; opacity: 0.3;}
+}
+
+
+/* Subscribe page */
+.gm-signin-page,
+.gm-signup-page,
+.gm-subscribe-page,
+.gm-reset-pwd-page {
+    animation: fadeInPage 0.6s ease 1;
+}
+
+.gm-subscribe-header {
+    display: flex;
+    width: 340px;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.gm-subscribe-form-wrapper {
+    display: flex;
+    justify-content: stretch;
 }
 
 .gm-subscribe-form {
@@ -155,56 +240,86 @@ a:hover {
 }
 
 .gm-plans-container {
-    background: var(--grey-l3);
-    border-left: 1px solid var(--grey-l2);
-    padding: 48px;
-    min-width: 240px;
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
+    padding: 0;
+    width: 0px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    justify-items: start;
+    animation: showPlansContainer 0.6s ease 0.1s forwards;
+}
+
+.gm-upgrade-page .gm-plans-container {
+    width: 100%;
+    justify-content: stretch;
+    flex-direction: column;
+    animation: none;
+    margin-top: -4px;
+}
+
+.gm-plans-divider {
+    background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 20%,rgba(255,255,255,1) 80%,rgba(255,255,255,0) 100%);
+    width: 1px;
+    margin-left: -1px;
+    opacity: 0;
+    animation: showPlansDivider 0.6s ease 0.1s forwards;
+}
+
+.gm-signin-page .gm-publication-name h2 {
+    margin: 0;
+    font-size: var(--text-2xl);
+    font-weight: 400;
+    text-align: center;
+}
+
+.gm-plans-container .gm-publication-name {
+    margin: 0 0 0 12px;
+    flex-grow: 1;
 }
 
 .gm-plans-container .gm-publication-info {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    margin: 92px 0 0;
+    margin: 0 0 24px;
 }
 
-.gm-publication-name {
-    margin: 0 0 0 12px;
-    flex-grow: 1;
-}
-
-.gm-publication-name h2 {
+.gm-plans-container .gm-publication-name h2 {
     padding: 0;
     margin: 0;
     font-size: var(--text-l);
-    color: var(--grey-d3);
+    color: var(--white);
     word-wrap: none;
     white-space: nowrap;
+    font-weight: 400;
 }
 
-.gm-publication-name span {
+.gm-plans-container .gm-publication-name span {
     color: var(--grey-d1);
     font-size: var(--text-s);
 }
 
 .gm-plans {
-    border: 1px solid var(--grey-l1);
-    border-radius: 8px;
-    margin: 26px 0 0;
+    width: 270px;
+    margin: 70px 0 0;
+    position: absolute;
+    top: -5px;
+    left: -270px;
+    animation: showPlans 0.75s ease 0.25s forwards;
 }
 
 .gm-plan {
     display: flex;
     align-items: center;
-    padding: 13px 16px;
-    border-bottom: 1px solid var(--grey-l1);
-    margin: 0;
+    padding: 13px 18px;
+    border: 1px solid var(--grey-d3);
+    margin: 0 0 20px 0;
+    border-radius: 8px;
 }
 
-.gm-plan:last-child {
-    border-bottom: none;
+.gm-plan.selected {
+    background: color-mod(var(--blue) alpha(15%));
+    border: 1px solid color-mod(var(--blue) alpha(80%));
 }
 
 .gm-plan input[type="radio"] {
@@ -222,7 +337,7 @@ a:hover {
     font-size: var(--text-s);
     color: var(--grey-d1);
     padding: 0 0 0 9px;
-    margin: 0 0 0 6px;
+    margin: 8px 0 0 6px;
 }
 
 .gm-plan .gm-interval::before {
@@ -237,16 +352,80 @@ a:hover {
     transform: rotate(25deg);
 }
 
+.gm-plan .gm-currency {
+    text-transform: uppercase;
+}
+
+@media (max-width: 440px) {
+    .gm-subscribe-form-wrapper {
+        flex-direction: column;
+        justify-content: start;
+    }
+
+    .gm-subscribe-form {
+        order: 2;
+        width: 100%;
+    }
+
+    .gm-plans-divider {
+        display: none;
+    }
+
+    .gm-plans-container {
+        order: 1;
+        width: 100%;
+        animation: none;
+    }
+
+    .gm-plans {
+        position: relative;
+        top: unset;
+        left: unset;
+        animation: none;
+        width: 100%;
+    }
+
+    .gm-plans .gm-publication-info {
+        display: none;
+    }
+
+    .gm-auth-header {
+        margin-top: 70px;
+    }
+}
+
+.gm-powered-by {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 32px;
+}
+
+.gm-powered-by a {
+    display: flex;
+    align-items: center;
+}
+
+.gm-powered-by svg {
+    height: 18px;
+    width: 72px;
+}
+
+.gm-powered-by span {
+    display: inline-block;
+    margin-left: 6px;
+    margin-bottom: 1px;
+    color: var(--grey-d2);
+}
+
 /**
  * The CSS shown here will not be introduced in the Quickstart guide, but shows
  * how you can use CSS to style your Element's container.
  */
 .StripeElement {
-    font-size: var(--text-s);
     color: var(--grey-d3);
     border: none;
-    border-radius: 4px;
-    border: 1px solid var(--grey-l1);
+    border-radius: 0 0 6px 6px;
     -webkit-appearance: none;
     box-sizing: border-box;
     background: var(--white);
@@ -255,23 +434,21 @@ a:hover {
     transition: border var(--animation-speed-f1) ease-in-out;
     letter-spacing: 0.2px;
     line-height: 18px;
-    padding: 14px 12px 14px 10px;
-}
-
-.StripeElement:hover {
-    border: 1px solid var(--grey);
+    padding: 16px 12px 16px 10px;
 }
 
 .StripeElement--focus {
-    border: 1px solid color-mod(var(--blue) a(0.8));
-    box-shadow: 0 0 6px rgba(62, 176, 239, 0.3), 0 0 0px 40px #FFF inset;
+    /* box-shadow: 0 0 6px rgba(62, 176, 239, 0.3), 0 0 0px 40px #FFF inset; */
 }
 
 .StripeElement--invalid {
-    border: 1px solid color-mod(var(--red) a(0.8));
-    background: color-mod(var(--red) a(0.02))
+    background: #FEEBE6;
 }
 
 .StripeElement--webkit-autofill {
     background-color: #fefde5 !important;
+}
+
+.gm-upgrade-page .StripeElement {
+    border-radius: 6px;
 }
