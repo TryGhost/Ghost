@@ -29,6 +29,7 @@ const validate = (schema, definitions, data) => {
             message: common.i18n.t('notices.data.validation.index.schemaValidationFailed', {
                 key: key
             }),
+            property: key,
             errorDetails: validation.errors
         }));
     }

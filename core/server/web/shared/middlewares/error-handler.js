@@ -128,6 +128,7 @@ _private.JSONErrorRendererV2 = (err, req, res, next) => { // eslint-disable-line
             context: userError.context || null,
             type: err.errorType || null,
             details: err.errorDetails || null,
+            property: err.property || null,
             help: err.help || null,
             code: err.code || null,
             id: err.id || null
