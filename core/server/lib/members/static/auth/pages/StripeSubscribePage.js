@@ -3,12 +3,12 @@ import { Component } from 'react';
 import FormHeader from '../components/FormHeader';
 import FormSubmit from '../components/FormSubmit';
 import FormHeaderCTA from '../components/FormHeaderCTA';
-import { IconClose } from '../components/icons';
 import NameInput from '../components/NameInput';
 import EmailInput from '../components/EmailInput';
 import PasswordInput from '../components/PasswordInput';
 import CheckoutForm from '../components/CheckoutForm';
 import Form from '../components/Form';
+
 
 class PaymentForm extends Component {
 
@@ -30,12 +30,18 @@ class PaymentForm extends Component {
         });
     };
 
-    render({frameLocation}) {
-        return (
-            <Form onSubmit={(data) => this.handleSubmit(data)}>
-                <CheckoutForm />
+    onClick = () => {
+        this.props.stripe.createToken({ name: name });
+    }
 
-                <FormSubmit label="Confirm Payment" />
+    render() {
+        return (
+            <Form bindTo="request-password-reset" onSubmit={(data) => this.handleSubmit(data)}>
+                <NameInput bindTo="name" className="first" />
+                <EmailInput bindTo="email" />
+                <PasswordInput bindTo="password" />
+                <CheckoutForm />
+                <FormSubmit label="Confirm payment" onClick={() => this.onClick()}/>
             </Form>
         );
     }
@@ -43,7 +49,7 @@ class PaymentForm extends Component {
 
 const PaymentFormWrapped = injectStripe(PaymentForm);
 
-export default class StripeSubscriptionPage extends Component {
+export default class StripePaymentPage extends Component {
     constructor(props) {
         super(props);
         this.plans = props.stripeConfig.config.plans || [];
@@ -54,14 +60,15 @@ export default class StripeSubscriptionPage extends Component {
 
     renderPlan({ currency, amount, id, interval, name }) {
         const selectedPlanId = this.state.selectedPlan ? this.state.selectedPlan.id : "";
+        const dollarAmount = (amount / 100);
         return (
-            <div class="gm-plan">
-                <input type="radio" id={id} name="radio-group" value={id} defaultChecked={id === selectedPlanId} />
-                <label for={id}>
-                    <span class="gm-amount">{`$${amount}`}</span>
-                    <span class="gm-interval">{`${interval}`}</span>
-                </label>
-            </div>
+            <label for={ id }>
+                <div className={ (selectedPlanId === id ? "gm-plan selected" : "gm-plan") }>
+                    <input type="radio" id={id} name="radio-group" value={id} defaultChecked={id === selectedPlanId} />
+                    <span className="gm-amount">{`$${dollarAmount}`}</span>
+                    <span className="gm-interval"><span className="gm-currency">{ `${currency}` }</span> {`${interval}`}</span>
+                </div>
+            </label>
         )
     }
 
@@ -72,9 +79,16 @@ export default class StripeSubscriptionPage extends Component {
         })
     }
 
-    renderPlans(plans) {
+    renderPlans(plans, title, iconStyle) {
         return (
-            <div onChange={(e) => this.changePlan(e)}>
+            <div className="gm-plans" onChange={(e) => this.changePlan(e)}>
+                <div className="gm-publication-info">
+                    <div className="gm-logo" style={iconStyle}></div>
+                    <div className="gm-publication-name">
+                        <h2>{title}</h2>
+                        <span>Subscription</span>
+                    </div>
+                </div>
                 {
                     plans.map((plan) => this.renderPlan(plan))
                 }
@@ -82,36 +96,39 @@ export default class StripeSubscriptionPage extends Component {
         );
     }
 
-    renderPlansSection() {
+    renderPlansSection(title, iconStyle) {
         return (
             <div className="gm-plans-container">
-                <div className="gm-publication-info">
-                    <div className="gm-logo"></div>
-                    <div className="gm-publication-name">
-                        <h2>Expensive Publication</h2>
-                        <span>Subscription</span>
-                    </div>
-                </div>
-                {this.renderPlans(this.plans)}
+                {this.renderPlans(this.plans, title, iconStyle)}
             </div>
         )
     }
 
-    render({ error, handleSubmit, stripeConfig }) {
+    render({ error, handleSubmit, stripeConfig, siteConfig }) {
         const publicKey = stripeConfig.config.publicKey || '';
+        let iconUrl = siteConfig && siteConfig.icon;
+        let title = (siteConfig && siteConfig.title) || "Ghost Publication";
+        let iconStyle = iconUrl ? {
+            backgroundImage: `url(${iconUrl})`,
+            backgroundSize: `44px`
+        } : {};
         return (
-            <div className="flex">
-                <div className="gm-modal-form gm-subscribe-form">
-                    <FormHeader title="Subscribe" error={error} errorText="Unable to confirm payment">
-                        <FormHeaderCTA title="Already a member?" label="Log in" hash="#signin" />
-                    </FormHeader>
-                    <StripeProvider apiKey={publicKey}>
-                        <Elements>
-                            <PaymentFormWrapped handleSubmit={handleSubmit} publicKey={publicKey} selectedPlan={this.state.selectedPlan} />
-                        </Elements>
-                    </StripeProvider>
+            <div class="gm-subscribe-page">
+                <div className="gm-subscribe-form-wrapper">
+                    <div className="gm-modal-form gm-subscribe-form">
+                        <FormHeader title="Subscribe" error={ error } errorText={ error } />
+                        <StripeProvider apiKey={publicKey}>
+                            <Elements>
+                                <PaymentFormWrapped handleSubmit={handleSubmit} publicKey={publicKey} selectedPlan={this.state.selectedPlan} />
+                            </Elements>
+                        </StripeProvider>
+                        <div className="flex justify-center mt4">
+                            <FormHeaderCTA title="Already a member?" label="Log in" hash="#signin" />
+                        </div>
+                    </div>
+                    <div class="gm-plans-divider"></div>
+                    {this.renderPlansSection(title, iconStyle)}
                 </div>
-                {this.renderPlansSection()}
             </div>
         )
     }
