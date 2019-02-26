@@ -60,12 +60,12 @@ const authenticate = (req, res, next) => {
         }));
     }
 
-    const apiKeyId = decoded.payload.kid;
+    const apiKeyId = decoded.header.kid;
 
     if (!apiKeyId) {
         return next(new common.errors.BadRequestError({
-            message: common.i18n.t('errors.middleware.auth.adminApiKeyMissing'),
-            code: 'MISSING_ADMIN_API_KEY'
+            message: common.i18n.t('errors.middleware.auth.adminApiKidMissing'),
+            code: 'MISSING_ADMIN_API_KID'
         }));
     }
 
