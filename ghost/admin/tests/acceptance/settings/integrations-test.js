@@ -448,7 +448,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             expect(row.querySelector('[data-test-text="name"]').textContent)
                 .to.have.string('First webhook');
             expect(row.querySelector('[data-test-text="event"]').textContent)
-                .to.have.string('Site Changed (rebuild)');
+                .to.have.string('Site changed (rebuild)');
             expect(row.querySelector('[data-test-text="targetUrl"]').textContent)
                 .to.have.string('https://example.com/first-webhook');
             expect(row.querySelector('[data-test-text="last-triggered"]').textContent)
