@@ -1065,10 +1065,10 @@ describe('Integration: Importer', function () {
                     posts.length.should.eql(2);
 
                     posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]]}');
-                    posts[0].html.should.eql('<h2 id="postcontent">Post Content</h2>\n<figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image"></figure>');
+                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><!--kg-card-begin: image--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image"></figure><!--kg-card-end: image-->');
 
                     posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"cardName":"markdown","markdown":"# Post Content"}]],"sections":[[10,0],[10,1]]}');
-                    posts[1].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image"></figure><h1 id="postcontent">Post Content</h1>\n');
+                    posts[1].html.should.eql('<!--kg-card-begin: image--><figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image"></figure><!--kg-card-end: image--><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
                 });
         });
     });
@@ -1382,7 +1382,7 @@ describe('1.0', function () {
                     const posts = result[0].data.map((model) => model.toJSON(options));
 
                     posts.length.should.eql(1);
-                    posts[0].html.should.eql('<h2 id="markdown">markdown</h2>\n');
+                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="markdown">markdown</h2>\n<!--kg-card-end: markdown-->');
                     posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## markdown"}]],"sections":[[10,0]]}');
                 });
         });
@@ -1407,7 +1407,7 @@ describe('1.0', function () {
                     const posts = result[0].data.map((model) => model.toJSON(options));
 
                     posts.length.should.eql(1);
-                    posts[0].html.should.eql('<h1 id="thisismypostcontent">This is my post content</h1>\n');
+                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h1 id="thisismypostcontent">This is my post content</h1>\n<!--kg-card-end: markdown-->');
                     posts[0].mobiledoc.should.eql(exportData.data.posts[0].mobiledoc);
                 });
         });
@@ -1471,10 +1471,10 @@ describe('1.0', function () {
                     posts.length.should.eql(2);
 
                     posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]]}');
-                    posts[0].html.should.eql('<h2 id="postcontent">Post Content</h2>\n<figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image"></figure>');
+                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><!--kg-card-begin: image--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image"></figure><!--kg-card-end: image-->');
 
                     posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"cardName":"markdown","markdown":"# Post Content"}]],"sections":[[10,0],[10,1]]}');
-                    posts[1].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image"></figure><h1 id="postcontent">Post Content</h1>\n');
+                    posts[1].html.should.eql('<!--kg-card-begin: image--><figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image"></figure><!--kg-card-end: image--><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
                 });
         });
     });
