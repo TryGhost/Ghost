@@ -4,7 +4,7 @@ const config = require('../config');
 const compress = require('compression');
 const netjet = require('netjet');
 const shared = require('./shared');
-const labs = require('../services/labs');
+const labs = require('./shared/middlewares/labs');
 const membersService = require('../services/members');
 
 module.exports = function setupParentApp(options = {}) {
@@ -49,9 +49,7 @@ module.exports = function setupParentApp(options = {}) {
     parentApp.use('/ghost', require('./admin')());
 
     // MEMBERS
-    if (labs.isSet('members')) {
-        parentApp.use('/members', membersService.api.staticRouter);
-    }
+    parentApp.use('/members', labs.members, membersService.api.staticRouter);
 
     // BLOG
     parentApp.use(require('./site')(options));
