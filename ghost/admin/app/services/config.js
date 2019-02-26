@@ -1,6 +1,7 @@
 import Ember from 'ember';
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
+import timezoneData from '@tryghost/timezone-data';
 import {computed} from '@ember/object';
 
 // ember-cli-shims doesn't export _ProxyMixin
@@ -55,15 +56,7 @@ export default Service.extend(_ProxyMixin, {
     },
 
     availableTimezones: computed(function () {
-        let timezonesUrl = this.ghostPaths.url.api('configuration', 'timezones');
-
-        return this.ajax.request(timezonesUrl).then((configTimezones) => {
-            let [timezonesObj] = configTimezones.configuration;
-
-            timezonesObj = timezonesObj.timezones;
-
-            return timezonesObj;
-        });
+        return RSVP.resolve(timezoneData);
     }),
 
     blogDomain: computed('blogUrl', function () {
