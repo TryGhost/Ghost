@@ -72,7 +72,7 @@ export default class Form extends Component {
         }
         const data = state.data;
         return (
-            <div className="flex flex-column mt3">
+            <div className="flex flex-column mt7">
                 <form className="gm-signup-form" onSubmit={this.wrapSubmit(onSubmit, children, data)} noValidate>
                     { this.wrapChildren(children, data, onInput) }
                 </form>

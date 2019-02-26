@@ -1,8 +1,17 @@
-const labs = require('../labs');
+const config = require('../../config/index.js');
+const common = require('../../lib/common');
+
 module.exports = {
     get api() {
-        if (!labs.isSet('members')) {
-            return {};
+        if (!config.get('enableDeveloperExperiments')) {
+            return {
+                apiRouter: function (req, res, next) {
+                    return next(new common.errors.NotFoundError());
+                },
+                staticRouter: function (req, res, next) {
+                    return next(new common.errors.NotFoundError());
+                }
+            };
         }
         return require('./api');
     }
