@@ -14,9 +14,9 @@ const notImplemented = function (req, res, next) {
         site: ['GET'],
         posts: ['GET', 'PUT', 'DELETE', 'POST'],
         pages: ['GET', 'PUT', 'DELETE', 'POST'],
-        tags: ['GET', 'PUT', 'DELETE', 'POST'],
         images: ['POST'],
         // @NOTE: experimental
+        tags: ['GET', 'PUT', 'DELETE', 'POST'],
         users: ['GET'],
         themes: ['POST'],
         subscribers: ['GET', 'PUT', 'DELETE', 'POST'],
