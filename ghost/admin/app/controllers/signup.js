@@ -49,7 +49,7 @@ export default Controller.extend({
 
             try {
                 yield this._authenticateWithPassword();
-                yield this.get('_sendImage').perform();
+                yield this._sendImage.perform();
             } catch (error) {
                 notifications.showAPIError(error, {key: 'signup.complete'});
             }
@@ -99,10 +99,11 @@ export default Controller.extend({
     _sendImage: task(function* () {
         let formData = new FormData();
         let imageFile = this.get('profileImage');
-        let uploadUrl = this.get('ghostPaths.url').api('images');
+        let uploadUrl = this.get('ghostPaths.url').api('images', 'upload');
 
         if (imageFile) {
-            formData.append('uploadimage', imageFile, imageFile.name);
+            formData.append('file', imageFile, imageFile.name);
+            formData.append('purpose', 'profile_image');
 
             let user = yield this.get('session.user');
             let response = yield this.get('ajax').post(uploadUrl, {
@@ -112,16 +113,12 @@ export default Controller.extend({
                 dataType: 'text'
             });
 
-            let imageUrl = get(JSON.parse(response), 'url');
-            let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
+            let [image] = get(JSON.parse(response), 'images');
+            let imageUrl = image.url;
 
-            user.profile_image = imageUrl;
+            user.set('profileImage', imageUrl);
 
-            return yield this.get('ajax').put(usersUrl, {
-                data: {
-                    users: [user]
-                }
-            });
+            return yield user.save();
         }
     })
 });
