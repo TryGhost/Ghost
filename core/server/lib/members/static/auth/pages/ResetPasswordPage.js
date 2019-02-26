@@ -14,7 +14,7 @@ export default ({ error, frameLocation, handleSubmit }) => (
     <div className="gm-modal-form">
         <FormHeader title="Reset password" error={error} errorText="Unable to reset password" />
         <Form includeData={getTokenData(frameLocation)} onSubmit={handleSubmit}>
-            <PasswordInput bindTo="password" />
+            <PasswordInput bindTo="password" className="single" />
             <FormSubmit label="Set password" />
         </Form>
     </div>

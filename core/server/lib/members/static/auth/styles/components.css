@@ -12,7 +12,7 @@
     height: 100vh;
     position: fixed;
     overflow-y: scroll;
-    background: rgba(10, 17, 23, 0.9);
+    background: linear-gradient(45deg, rgba(13,25,40,0.96) 0%,rgba(0,0,0,0.96) 100%);
     animation: fadeInOverlay 0.2s ease 1 forwards;
 }
 
@@ -21,28 +21,19 @@
 }
 
 .gm-page-overlay.close .gm-modal {
-    animation: closeModal 0.5s ease-in 1 forwards;
+    animation: closeModal 0.4s ease-in-out 1 forwards;
 }
 
 .gm-modal-container {
     position: relative;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 25vh;
     display: flex;
 }
 
 .gm-modal {
     position: relative;
-    background: white;
     margin: 0 auto;
-    border-radius: 8px;
-    box-shadow: var(--box-shadow-base);
     animation: openModal 0.6s ease 1 forwards;
-}
-
-.gm-modal-form {
-    width: 300px;
-    padding: 48px;
 }
 
 .gm-modal-close {
@@ -51,6 +42,14 @@
     right: 8px;
     display: block;
     padding: 8px;
+    z-index: 9999;
+    padding: 20px;
+    cursor: pointer;
+}
+
+.gm-modal-close svg {
+    width: 32px;
+    height: 32px;
 }
 
 .gm-modal-close svg path {
@@ -72,35 +71,25 @@
     to {opacity: 0;}
 }
 
-@keyframes openModal { /* Safari and Chrome */
+@keyframes openModal {
     0% {
-        opacity: 0;
-        transform: translateY(25px) scale(0.85);
-    }
-
-    40% {
-        opacity: 1.0;
-        transform: translateY(-8px) scale(1.04);
+        /* opacity: 0; */
+        transform: scale(1.1);
     }
 
     100% {
-        transform: translateY(0) scale(1.0);
+        /* opacity: 1.0; */
+        transform: scale(1.0);
     }
 }
 
-@keyframes closeModal { /* Safari and Chrome */
-    0% {
-        transform: translateY(0);
+@keyframes closeModal {
+    90% {
+        opacity: 0;
+        transform: scale(0.95);
     }
-
-    40% {
-        opacity: 1.0;
-        transform: translateY(-8px);
-    }
-
     100% {
         opacity: 0;
-        transform: translateY(85px);
     }
 }
 
@@ -110,7 +99,7 @@
         padding: 0;
         top: 0;
         transform: none;
-        height: 100vh;
+        min-height: 100vh;
     }
 
     .gm-modal {
@@ -121,7 +110,7 @@
     }
 
     .gm-page-overlay {
-        background: rgba(10, 17, 23, 0.0);
+        background: linear-gradient(45deg, rgba(13,25,40,0.96) 0%,rgba(0,0,0,0.96) 100%);
     }
 
     @keyframes openModal {
@@ -163,8 +152,8 @@ button {
     text-align: center;
     cursor: pointer;
     white-space: nowrap;
-    padding: 13px 16px 14px;
-    border-radius: 4px;
+    padding: 15px 16px 16px;
+    border-radius: 6px;
     outline: none;
     transition: all var(--animation-speed-f1) ease-in-out;
     position: relative;
@@ -231,107 +220,87 @@ select:-webkit-autofill:active {
 ::-moz-placeholder,
 :-ms-input-placeholder,
 :-moz-placeholder {
-    color: var(--grey);
+    color: var(--grey-d1);
 }
 
 .gm-form-element {
-    margin: 24px 0 0;
     position: relative;
 }
 
 .gm-input {
     position: relative;
+    border-bottom: 1px solid var(--grey-l1);
+}
+
+.gm-input.last,
+.gm-input.single {
+    border-bottom: none;
+}
+
+.gm-input.first input {
+    border-radius: 6px 6px 0 0;
+}
+
+.gm-input.last input {
+    border-radius: 0 0 6px 6px;
+}
+
+.gm-input.single input {
+    border-radius: 6px;
 }
 
 .gm-input input {
-    font-size: var(--text-s);
+    font-size: var(--text-base);
     color: var(--grey-d3);
     border: none;
-    border-radius: 4px;
-    border: 1px solid var(--grey-l1);
     -webkit-appearance: none;
     box-sizing: border-box;
     background: var(--white);
     width: 100%;
     outline: none;
-    transition: border var(--animation-speed-f1) ease-in-out;
-    padding: 12px 14px 12px 38px; /* 1px bottom padding fixes jump that's caused by the border change */
+    padding: 15px 14px 15px 38px;
     letter-spacing: 0.2px;
     vertical-align: middle;
     line-height: 18px;
 }
 
-.gm-input input:hover {
-    border: 1px solid var(--grey);
-}
-
-.gm-input input.gm-error {
-    border: 1px solid color-mod(var(--red) a(0.8));
-    background: color-mod(var(--red) a(0.02))
-}
-
 .gm-input input:focus {
-    border: 1px solid color-mod(var(--blue) a(0.8));
-    box-shadow: 0 0 6px rgba(62, 176, 239, 0.3), 0 0 0px 40px #FFF inset;
+
 }
 
-.gm-input label {
-    display: flex;
-    align-items: center;
-    position: absolute;
-    font-size: var(--text-s);
-    padding: 0 0 2px 0;
-    width: 100%;
-    top: 14px;
-    left: 38px;
-    color: var(--grey);
-    transition: all var(--animation-speed-base) ease-in-out;
-    pointer-events: none;
-    letter-spacing: 0.4px;
-    font-weight: 400;
-}
-
-.gm-input input:hover + label {
-    color: var(--grey-d1);
-}
-
-.gm-input input.gm-input-filled + label,
-.gm-input input:focus + label {
-    opacity: 0;
-    transition-delay: 0s;
-}
-
-.gm-input input.gm-error + label {
-    color: color-mod(var(--red) a(0.5));
-}
-
-.gm-input label i svg {
+.gm-input i svg {
     width: 16px;
     height: 16px;
 }
 
-.gm-input label i svg path,
 .gm-input i svg path {
-    stroke: var(--grey);
+    stroke: var(--grey-d1);
     transition: stroke var(--animation-speed-base) ease-in-out;
 }
 
-.gm-input input:hover + label + i svg path {
-    stroke: var(--grey-d1);
+.gm-input input.gm-error {
+    background: #FEEBE6;
+    box-shadow: 0 0 1px rgba(255, 0, 0, 1); 
 }
 
-.gm-input input.gm-error + label + i svg path {
+.gm-input input.gm-error + i svg path {
     stroke: color-mod(var(--red) a(0.5));
 }
 
-.gm-input input.gm-input-filled + label + i svg path,
-.gm-input input:focus + label + i svg path {
+.gm-input input.gm-error::-webkit-input-placeholder,
+.gm-input input.gm-error::-moz-placeholder,
+.gm-input input.gm-error:-ms-input-placeholder,
+.gm-input input.gm-error:-moz-placeholder {
+    color: color-mod(var(--red) a(0.75));
+}
+
+.gm-input input.gm-input-filled + i svg path {
     stroke: var(--grey-d2);
 }
 
 .gm-input i {
     position: absolute;
-    top: 14px;
+    top: 16px;
     left: 14px;
     opacity: 1.0;
     transition: all var(--animation-speed-base) ease-in-out;
@@ -377,13 +346,12 @@ select:-webkit-autofill:active {
 }
 
 .gm-form-errortext {
-    color: var(--red);
-    font-size: var(--text-s);
+    color: #FF7254;
     letter-spacing: 0.4px;
-    margin: 40px -2px -12px;
-    background: color-mod(var(--red) a(0.08));
-    padding: 11px 14px;
-    font-weight: 500;
+    margin: 24px -2px 0px;
+    border: 1px solid color-mod(var(--red) a(0.4));
+    padding: 13px 14px;
+    font-weight: 400;
     display: flex;
     justify-content: center;
     align-items: start;
@@ -396,4 +364,8 @@ select:-webkit-autofill:active {
 
 .gm-form-errortext i {
     margin: 1px 8px 0 0;
+}
+
+.gm-form-errortext i svg path {
+    stroke: #FF7254;
 }

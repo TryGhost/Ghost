@@ -22,9 +22,8 @@ function hideMembersOnlyContent(attrs, frame) {
         return BLOCK_CONTENT;
     }
 
-    const planRequired = membersService.api.paymentConfigured;
     const memberHasPlan = !!(frame.original.context.member.plans || []).length;
-    if (!planRequired) {
+    if (!membersService.api.isPaymentConfigured()) {
         return PERMIT_CONTENT;
     }
     if (memberHasPlan) {

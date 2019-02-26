@@ -23,13 +23,14 @@ module.exports = function MembersApi({
     updateMember,
     getMember,
     listMembers,
-    sendEmail
+    sendEmail,
+    siteConfig
 }) {
     const {encodeToken, decodeToken, getPublicKeys} = Tokens({privateKey, publicKey, issuer});
 
-    const subscriptions = new Subscriptions(paymentConfig);
+    let subscriptions = new Subscriptions(paymentConfig);
 
-    const users = Users({
+    let users = Users({
         subscriptions,
         createMember,
         updateMember,
@@ -86,7 +87,10 @@ module.exports = function MembersApi({
                     return subscriptions.getPublicConfig(adapter);
                 }));
             })
-            .then(data => res.json(data))
+            .then(data => res.json({
+                paymentConfig: data,
+                siteConfig: siteConfig
+            }))
             .catch(handleError(500, res));
     });
 
@@ -211,6 +215,21 @@ module.exports = function MembersApi({
     httpHandler.staticRouter = staticRouter;
     httpHandler.apiRouter = apiRouter;
     httpHandler.memberUserObject = users;
+    httpHandler.reconfigureSettings = function (data) {
+        subscriptions = new Subscriptions(data.paymentConfig);
+        users = Users({
+            subscriptions,
+            createMember,
+            updateMember,
+            getMember,
+            validateMember,
+            sendEmail,
+            encodeToken,
+            listMembers,
+            decodeToken
+        });
+        siteConfig = data.siteConfig;
+    };
 
     return httpHandler;
 };
