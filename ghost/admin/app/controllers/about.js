@@ -1,12 +1,11 @@
 import Controller from '@ember/controller';
 import {computed} from '@ember/object';
-import {readOnly} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
+/* eslint-disable ghost/ember/alias-model-in-controller */
 export default Controller.extend({
+    config: service(),
     upgradeStatus: service(),
-
-    about: readOnly('model'),
 
     copyrightYear: computed(function () {
         let date = new Date();
