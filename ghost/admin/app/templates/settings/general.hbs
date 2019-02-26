@@ -95,7 +95,6 @@
         <div class="gh-setting" data-test-setting="icon">
             {{#gh-uploader
                 extensions=iconExtensions
-                uploadUrl="/images/upload/"
                 paramsHash=(hash purpose="icon")
                 onComplete=(action "imageUploaded" "icon")
                 as |uploader|
