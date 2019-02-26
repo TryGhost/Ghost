@@ -396,6 +396,31 @@
                     "name": "Browse Actions",
                     "action_type": "browse",
                     "object_type": "action"
+                },
+                {
+                    "name": "Browse Members",
+                    "action_type": "browse",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Read Members",
+                    "action_type": "read",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Edit Members",
+                    "action_type": "edit",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Add Members",
+                    "action_type": "add",
+                    "object_type": "member"
+                },
+                {
+                    "name": "Delete Members",
+                    "action_type": "destroy",
+                    "object_type": "member"
                 }
             ]
         },
@@ -577,7 +602,8 @@
                     "webhook": "all",
                     "integration": "all",
                     "api_key": "all",
-                    "action": "all"
+                    "action": "all",
+                    "members": "all"
                 },
                 "Admin Integration": {
                     "mail": "all",
@@ -594,7 +620,8 @@
                     "invite": "all",
                     "redirect": "all",
                     "webhook": "all",
-                    "action": "all"
+                    "action": "all",
+                    "members": "all"
                 },
                 "Editor": {
                     "post": "all",
