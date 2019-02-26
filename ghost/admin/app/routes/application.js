@@ -43,7 +43,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     routeAfterAuthentication: 'posts',
 
     beforeModel() {
-        return this.get('config').fetch();
+        return this.get('config').fetchUnauthenticated();
     },
 
     afterModel(model, transition) {
@@ -53,6 +53,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             this.set('appLoadTransition', transition);
             transition.send('loadServerNotifications');
 
+            let configPromise = this.get('config').fetchAuthenticated();
             let featurePromise = this.get('feature').fetch();
             let settingsPromise = this.get('settings').fetch();
             let tourPromise = this.get('tour').fetchViewed();
@@ -60,6 +61,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             // return the feature/settings load promises so that we block until
             // they are loaded to enable synchronous access everywhere
             return RSVP.all([
+                configPromise,
                 featurePromise,
                 settingsPromise,
                 tourPromise
