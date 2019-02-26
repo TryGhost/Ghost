@@ -14,7 +14,8 @@ function processQuery(query, locals) {
     //       We override the `include` property for now, because the full data set is required anyway.
     if (_.get(query, 'resource') === 'posts') {
         _.extend(query.options, {
-            include: 'author,authors,tags'
+            include: 'author,authors,tags',
+            formats: 'html'
         });
     }
 

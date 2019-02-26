@@ -37,7 +37,8 @@ function entryLookup(postUrl, routerOptions, locals) {
      * @deprecated: `author`, will be removed in Ghost 3.0
      */
     let options = {
-        include: 'author,authors,tags'
+        include: 'author,authors,tags',
+        formats: 'html'
     };
     if (config.get('enableDeveloperExperiments')) {
         options.context = {member: locals.member};
