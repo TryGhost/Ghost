@@ -31,8 +31,8 @@ export default Component.extend({
         return authors.map(author => author.get('name') || author.get('email')).join(', ');
     }),
 
-    subText: computed('post.{plaintext,customExcerpt,metaDescription}', function () {
-        let text = this.get('post.plaintext') || '';
+    subText: computed('post.{excerpt,customExcerpt,metaDescription}', function () {
+        let text = this.get('post.excerpt') || '';
         let customExcerpt = this.get('post.customExcerpt');
         let metaDescription = this.get('post.metaDescription');
 
