@@ -86,9 +86,10 @@ export default Controller.extend(ValidationEngine, {
     _sendImage(user) {
         let formData = new FormData();
         let imageFile = this.get('profileImage');
-        let uploadUrl = this.get('ghostPaths.url').api('images');
+        let uploadUrl = this.get('ghostPaths.url').api('images', 'upload');
 
-        formData.append('uploadimage', imageFile, imageFile.name);
+        formData.append('file', imageFile, imageFile.name);
+        formData.append('purpose', 'profile_image');
 
         return this.get('ajax').post(uploadUrl, {
             data: formData,
@@ -96,7 +97,8 @@ export default Controller.extend(ValidationEngine, {
             contentType: false,
             dataType: 'text'
         }).then((response) => {
-            let imageUrl = get(JSON.parse(response), 'url');
+            let [image] = get(JSON.parse(response), 'images');
+            let imageUrl = image.url;
             let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
             user.profile_image = imageUrl;
 
