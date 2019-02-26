@@ -102,15 +102,130 @@
                 <div class="for-checkbox">{{gh-feature-flag "nightShift"}}</div>
             </div>
         </div>
-        <div class="gh-setting">
+        <div class="gh-setting {{if feature.members "gh-labs-disabled"}}">
             <div class="gh-setting-content">
                 <div class="gh-setting-title">Subscribers</div>
-                <div class="gh-setting-desc">Collect email addresses from your readers, more info in <a href="https://docs.ghost.org/faq/enable-subscribers-feature/">the docs</a></div>
+                <div class="gh-setting-desc">Collect email addresses from your readers, more info in <a
+                        href="https://docs.ghost.org/faq/enable-subscribers-feature/">the docs</a></div>
             </div>
             <div class="gh-setting-action">
-                <div class="for-checkbox">{{gh-feature-flag "subscribers"}}</div>
+                {{#if feature.members}}
+                    <div class="for-checkbox">{{gh-feature-flag "subscribers" "disabled"}}</div>
+                {{else}}
+                    <div class="for-checkbox">{{gh-feature-flag "subscribers" }}</div>
+                {{/if}}
             </div>
         </div>
+        {{#if config.enableDeveloperExperiments}}
+            <div class="gh-setting">
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Members</div>
+                    <div class="gh-setting-desc">Enable free or paid member registration. Restrict content by using <span class="dib blue ba br2 b--blue pa1 pt0 pb0 tag-token--internal">#members</span> hashtag on posts</div>
+
+                    {{#liquid-if feature.labs.members class="nr20"}}
+
+                        <button type="button" class="gh-btn gh-btn-labs-toggle" {{action "toggleMemberConfig" ""}}>
+                            {{#if showMemberConfig}}
+                                {{svg-jar "arrow-down-small"}}
+                            {{else}}
+                                {{svg-jar "arrow-right-small"}}
+                            {{/if}}
+                            Configure
+                        </button>
+
+                        {{#liquid-if showMemberConfig}}
+                            <div class="flex nl2 nr2 mt5">
+                                <div class="gh-publishmenu-radio {{if (eq subscriptionSettings.isPaid false) "active"}} flex-auto w-50 ba br4 b--whitegrey pa5 gh-labs-members-radio"
+                                    {{action "setSubscriptionSettings" "isPaid" false on="click"}}>
+                                    <div class="gh-publishmenu-radio-button"></div>
+                                    <div class="gh-publishmenu-radio-content">
+                                        <div class="gh-publishmenu-radio-label f3"><span class="fw6 f7 darkgrey">Free</span></div>
+                                        <div class="gh-publishmenu-radio-desc">Access to members-only posts require free user registration</div>
+                                    </div>
+                                </div>
+                                <div class="gh-publishmenu-radio {{if (eq subscriptionSettings.isPaid true) "active"}} flex-auto w-50 ba br4 b--whitegrey pa5 ml2 gh-labs-members-radio">
+                                    <div class="gh-publishmenu-radio-button" {{action "setSubscriptionSettings" "isPaid" true on="click"}}></div>
+                                    <div class="gh-publishmenu-radio-content">
+                                        <div {{action "setSubscriptionSettings" "isPaid" true on="click"}}>
+                                            <div class="gh-publishmenu-radio-label"><span class="fw6 f7 darkgrey">Paid</span></div>
+                                            <div class="gh-publishmenu-radio-desc">Set up paid subscriptions using Stripe</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{#liquid-if (eq subscriptionSettings.isPaid true)}}
+
+                            <div class="ba br4 b--whitegrey pa5 mt5 bg-whitegrey-l2">
+                                <div class="flex flex-column">
+                                    <div class="flex">
+                                        <div class="w-50 mr2">
+                                            <label class="fw6">Stripe publishable API key</label>
+                                            {{gh-text-input
+                                                value=(readonly subscriptionSettings.stripeConfig.public_token)
+                                                input=(action "setSubscriptionSettings" "public_token")
+                                                class="mt1"
+                                                placeholder="pk_..."
+                                            }}
+                                        </div>
+                                        <div class="w-50 ml2">
+                                            <label class="fw6">Stripe secret API key</label>
+                                            {{gh-text-input
+                                                value=(readonly subscriptionSettings.stripeConfig.secret_token)
+                                                input=(action "setSubscriptionSettings" "secret_token")
+                                                class="mt1"
+                                                placeholder="sk_..."
+                                            }}
+                                        </div>
+                                    </div>
+                                    <a href="https://stripe.com/docs/keys" target="_blank" class="mt1 self-end fw3">How to find Stripe API keys</a>
+                                </div>
+
+                                <div class="mt4 flex nb5">
+                                    <div class="w-50 mr2">
+                                        {{#gh-form-group}}
+                                        <label class="fw6">Monthly price</label>
+                                        <div class="mt1 relative gh-labs-price-label gh-labs-monthly-price">
+                                            {{gh-text-input
+                                                value=(readonly subscriptionSettings.stripeConfig.plans.monthly.dollarAmount)
+                                                type="number"
+                                                input=(action "setSubscriptionSettings" "month")
+                                            }}
+                                        </div>
+                                        {{/gh-form-group}}
+                                    </div>
+                                    <div class="w-50 ml2">
+                                        {{#gh-form-group class="description-container"}}
+                                        <label class="fw6">Yearly price</label>
+                                        <div class="mt1 relative gh-labs-price-label gh-labs-yearly-price">
+                                            {{gh-text-input
+                                                value=(readonly subscriptionSettings.stripeConfig.plans.yearly.dollarAmount)
+                                                type="number"
+                                                input=(action "setSubscriptionSettings" "year")
+                                            }}
+                                        </div>
+                                        {{/gh-form-group}}
+                                    </div>
+                                </div>
+                            </div>
+                            {{/liquid-if}}
+
+                            <div class="mb5 mt5">
+                                {{gh-task-button "Save"
+                                    task=saveSettings
+                                    successText="Saved"
+                                    runningText="Saving"
+                                    class="gh-btn gh-btn-blue gh-btn-icon"
+                                }}
+                            </div>
+                        {{/liquid-if}}
+                    {{/liquid-if}}
+                </div>
+                <div class="gh-setting-action">
+                    <div class="for-checkbox">{{gh-feature-flag "members"}}</div>
+                </div>
+            </div>
+        {{/if}}
         <div class="gh-setting">
             {{#gh-uploader
                 extensions=jsonExtension

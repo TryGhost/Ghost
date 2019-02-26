@@ -1,5 +1,6 @@
 import Component from '@ember/component';
-import {computed} from '@ember/object';
+import {computed, defineProperty} from '@ember/object';
+import {readOnly} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 const FeatureFlagComponent = Component.extend({
@@ -7,14 +8,21 @@ const FeatureFlagComponent = Component.extend({
 
     tagName: 'label',
     classNames: 'checkbox',
-    attributeBindings: ['for'],
-    _flagValue: null,
-
+    attributeBindings: ['for', 'disabled'],
+    disabled: computed('_disabled', function () {
+        if (this.get('_disabled')) {
+            return true;
+        }
+        return false;
+    }),
     value: computed('_flagValue', {
         get() {
             return this.get('_flagValue');
         },
         set(key, value) {
+            if (this.get('flag') === 'members' && value === true) {
+                this.set(`feature.subscribers`, false);
+            }
             return this.set(`feature.${this.get('flag')}`, value);
         }
     }),
@@ -30,12 +38,14 @@ const FeatureFlagComponent = Component.extend({
     init() {
         this._super(...arguments);
 
-        this.set('_flagValue', this.get(`feature.${this.get('flag')}`));
+        defineProperty(this, '_flagValue', readOnly(`feature.${this.get('flag')}`), function () {
+            return this.get(`feature.${this.get('flag')}`);
+        });
     }
 });
 
 FeatureFlagComponent.reopenClass({
-    positionalParams: ['flag']
+    positionalParams: ['flag', '_disabled']
 });
 
 export default FeatureFlagComponent;
