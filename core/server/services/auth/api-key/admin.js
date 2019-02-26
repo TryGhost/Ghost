@@ -60,7 +60,7 @@ const authenticate = (req, res, next) => {
         }));
     }
 
-    const apiKeyId = decoded.payload.kid;
+    const apiKeyId = decoded.header.kid;
 
     if (!apiKeyId) {
         return next(new common.errors.BadRequestError({
