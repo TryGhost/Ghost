@@ -1052,6 +1052,14 @@ module.exports = {
             cacheStub.withArgs('permalinks').returns('/:slug/');
             cacheStub.withArgs('labs').returns({publicAPI: true});
 
+            if (options.amp) {
+                cacheStub.withArgs('amp').returns(true);
+            }
+
+            if (options.apps) {
+                cacheStub.withArgs('active_apps').returns([]);
+            }
+
             sandbox.stub(api.clients, 'read').returns(Promise.resolve({
                 clients: [
                     {slug: 'ghost-frontend', secret: 'a1bcde23cfe5', status: 'enabled'}
