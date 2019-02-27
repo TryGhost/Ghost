@@ -39,10 +39,12 @@ function entryLookup(postUrl, routerOptions, locals) {
     let options = {
         include: 'author,authors,tags'
     };
+
     if (config.get('enableDeveloperExperiments')) {
         options.context = {member: locals.member};
     }
-    return api[routerOptions.query.controller]
+
+    return (api[routerOptions.query.controller] || api[routerOptions.query.resource])
         .read(_.extend(_.pick(params, 'slug', 'id'), options))
         .then(function then(result) {
             const entry = result[routerOptions.query.resource][0];
