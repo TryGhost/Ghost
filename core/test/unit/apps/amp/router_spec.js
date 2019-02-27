@@ -122,7 +122,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
-            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'posts', resource: 'posts'}})
+            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
                 .resolves({
                     entry: post
                 });
@@ -139,7 +139,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
-            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'posts', resource: 'posts'}}).resolves({
+            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}}).resolves({
                 entry: post
             });
 
@@ -154,7 +154,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
-            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'posts', resource: 'posts'}})
+            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
                 .rejects(new common.errors.NotFoundError());
 
             ampController.getPostData(req, res, function (err) {
