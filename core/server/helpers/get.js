@@ -163,6 +163,7 @@ get = function get(resource, options) {
     // Parse the options we're going to pass to the API
     apiOptions = parseOptions(ghostGlobals, this, apiOptions);
 
+    // @TODO: get helper should make an HTTP request to the Content API {version}
     return api[apiVersion][controller][action](apiOptions).then(function success(result) {
         var blockParams;
 
