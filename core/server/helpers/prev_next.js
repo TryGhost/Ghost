@@ -53,7 +53,10 @@ fetch = function fetch(options, data) {
     const apiOptions = buildApiOptions(options, this);
     const apiVersion = data.root._locals.apiVersion;
 
-    return api[apiVersion].posts
+    // @TODO: prev_next helper should make an HTTP request to the Content API {version}
+    const controller = api[apiVersion].postsPublic || api[apiVersion].posts;
+
+    return controller
         .browse(apiOptions)
         .then(function handleSuccess(result) {
             var related = result.posts[0];
