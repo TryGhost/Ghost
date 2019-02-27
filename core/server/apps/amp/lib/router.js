@@ -64,7 +64,7 @@ function getPostData(req, res, next) {
     }
 
     // @NOTE: amp is not supported for static pages
-    // @TODO: AMP should make an HTTP request to the Content API {version}
+    // @TODO: https://github.com/TryGhost/Ghost/issues/10548
     helpers.entryLookup(urlWithoutSubdirectoryWithoutAmp, {permalinks, query: {controller: 'postsPublic', resource: 'posts'}}, res.locals)
         .then((result) => {
             if (result && result.entry) {
