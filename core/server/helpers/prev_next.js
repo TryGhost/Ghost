@@ -53,7 +53,7 @@ fetch = function fetch(options, data) {
     const apiOptions = buildApiOptions(options, this);
     const apiVersion = data.root._locals.apiVersion;
 
-    // @TODO: prev_next helper should make an HTTP request to the Content API {version}
+    // @TODO: https://github.com/TryGhost/Ghost/issues/10548
     const controller = api[apiVersion].postsPublic || api[apiVersion].posts;
 
     return controller
