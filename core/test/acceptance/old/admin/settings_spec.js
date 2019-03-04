@@ -60,7 +60,7 @@ describe('Settings API', function () {
     });
 
     it('Can read a setting', function (done) {
-        request.get(localUtils.API.getApiQuery('settings/title/'))
+        request.get(localUtils.API.getApiQuery('settings/ghost_head/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -71,13 +71,15 @@ describe('Settings API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
 
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.settings);
 
+                jsonResponse.settings.length.should.eql(1);
+
                 testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
-                jsonResponse.settings[0].key.should.eql('title');
+                jsonResponse.settings[0].key.should.eql('ghost_head');
                 testUtils.API.isISO8601(jsonResponse.settings[0].created_at).should.be.true();
                 done();
             });
@@ -102,7 +104,7 @@ describe('Settings API', function () {
                                 value: changedValue
                             },
                             {
-                                key: 'ghost_head',
+                                key: 'codeinjection_head',
                                 value: null
                             },
                             {
@@ -133,10 +135,19 @@ describe('Settings API', function () {
                         const putBody = res.body;
                         res.headers['x-cache-invalidate'].should.eql('/*');
                         should.exist(putBody);
+
+                        putBody.settings[0].key.should.eql('title');
                         putBody.settings[0].value.should.eql(JSON.stringify(changedValue));
+
+                        putBody.settings[1].key.should.eql('codeinjection_head');
                         should.equal(putBody.settings[1].value, null);
+
+                        putBody.settings[2].key.should.eql('navigation');
                         should.equal(putBody.settings[2].value, JSON.stringify({label: 'label1'}));
+
+                        putBody.settings[3].key.should.eql('slack');
                         should.equal(putBody.settings[3].value, JSON.stringify({username: 'username'}));
+
                         localUtils.API.checkResponse(putBody, 'settings');
                         done();
                     });
