@@ -55,9 +55,9 @@ const mapPost = (model, frame) => {
     return jsonModel;
 };
 
-const mapSettings = (attrs) => {
+const mapSettings = (attrs, frame) => {
     url.forSettings(attrs);
-    extraAttrs.forSettings(attrs);
+    extraAttrs.forSettings(attrs, frame);
     return attrs;
 };
 
