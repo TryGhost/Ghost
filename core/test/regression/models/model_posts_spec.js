@@ -507,6 +507,33 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
+            it('converts html to plaintext if html is null', function (done) {
+                var postId = testUtils.DataGenerator.Content.posts[0].id;
+
+                models.Post.findOne({id: postId}).then(function (results) {
+                    should.exist(results);
+                    results.attributes.html.should.match(/HTML Ipsum Presents/);
+                    should.exist(results.attributes.plaintext);
+                    return models.Post.edit({updated_at: results.attributes.updated_at}, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+
+                    edited.attributes.html.should.match(/HTML Ipsum Presents/);
+                    edited.attributes.plaintext.should.match(/HTML Ipsum Presents/);
+                    return edited;
+                }).then(function (edited) {
+                    return models.Post.edit({
+                        mobiledoc: DataGenerator.markdownToMobiledoc(''),
+                        updated_at: edited.attributes.updated_at
+                    }, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    should.not.exist(edited.attributes.html);
+                    should.not.exist(edited.attributes.plaintext);
+                    done();
+                }).catch(done);
+            });
+
             it('can publish draft post', function (done) {
                 var postId = testUtils.DataGenerator.Content.posts[3].id;
 
