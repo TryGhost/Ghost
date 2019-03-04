@@ -7,9 +7,10 @@ module.exports = {
             frame.data = {settings: [{key: frame.data, value: frame.options}]};
         }
 
-        // prepare data
+        // CASE: transform objects/arrays into string (we store stringified objects in the db)
+        // @TODO: This belongs into the model layer?
         frame.data.settings.forEach((setting) => {
-            if (!_.isString(setting.value)) {
+            if (_.isObject(setting.value)) {
                 setting.value = JSON.stringify(setting.value);
             }
         });

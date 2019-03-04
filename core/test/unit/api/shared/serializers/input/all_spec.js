@@ -78,28 +78,4 @@ describe('Unit: v2/utils/serializers/input/all', function () {
             });
         });
     });
-
-    describe('add', function () {
-        it('removes null values', function () {
-            const frame = {
-                data: {
-                    posts: [{
-                        a: null,
-                        b: true,
-                        c: null
-                    }]
-                }
-            };
-
-            const apiConfig = {
-                docName: 'posts'
-            };
-
-            shared.serializers.input.all.add(apiConfig, frame);
-
-            should.not.exist(frame.data.posts[0].a);
-            should.exist(frame.data.posts[0].b);
-            should.not.exist(frame.data.posts[0].c);
-        });
-    });
 });
