@@ -12,6 +12,6 @@ export default Model.extend({
     updatedBy: attr('number'),
 
     lowerCaseName: computed('name', function () {
-        return this.get('name').toLocaleLowerCase();
+        return (this.name || '').toLocaleLowerCase();
     })
 });
