@@ -368,7 +368,7 @@ Post = ghostBookshelf.Model.extend({
             // CASE: html is e.g. <p></p>
             // @NOTE: Otherwise we will always update the resource to `plaintext: ''` and Bookshelf thinks that this
             //        value was modified.
-            if (plaintext) {
+            if (plaintext || plaintext !== this.get('plaintext')) {
                 this.set('plaintext', plaintext);
             }
         }
