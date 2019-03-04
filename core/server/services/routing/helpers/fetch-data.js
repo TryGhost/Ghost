@@ -105,10 +105,12 @@ function fetchData(pathOptions, routerOptions, locals) {
                 response.data = {};
 
                 _.each(routerOptions.data, function (config, name) {
+                    response.data[name] = results[name][config.resource];
+
                     if (config.type === 'browse') {
-                        response.data[name] = results[name];
-                    } else {
-                        response.data[name] = results[name][config.resource];
+                        response.data[name].meta = results[name].meta;
+                        // @TODO remove in v3
+                        response.data[name][config.resource] = results[name][config.resource];
                     }
                 });
             }
