@@ -40,9 +40,10 @@ export default Controller.extend({
     canAssignRoles: or('currentUser.isAdmin', 'currentUser.isOwner'),
     canChangeEmail: not('isAdminUserOnOwnerProfile'),
     canChangePassword: not('isAdminUserOnOwnerProfile'),
-    canMakeOwner: and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin'),
+    canMakeOwner: and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin', 'isNotSuspended'),
     isAdminUserOnOwnerProfile: and('currentUser.isAdmin', 'user.isOwner'),
     isNotOwnersProfile: not('user.isOwner'),
+    isNotSuspended: not('user.isSuspended'),
     rolesDropdownIsVisible: and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
     userActionsAreVisible: or('deleteUserActionIsVisible', 'canMakeOwner'),
 
