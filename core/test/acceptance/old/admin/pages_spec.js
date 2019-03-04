@@ -73,9 +73,7 @@ describe('Pages API', function () {
             .then((res) => {
                 res.body.pages.length.should.eql(1);
 
-                // @NOTE: we do not return "excerpt" if custom_excerpt or plaintext is empty
-                // @NOTE: we do not return primary_* if null
-                localUtils.API.checkResponse(res.body.pages[0], 'page', null, ['excerpt']);
+                localUtils.API.checkResponse(res.body.pages[0], 'page');
                 should.exist(res.headers['x-cache-invalidate']);
 
                 return models.Post.findOne({
