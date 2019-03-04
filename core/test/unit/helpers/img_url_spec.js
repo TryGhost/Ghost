@@ -39,6 +39,12 @@ describe('{{image}} helper', function () {
         logWarnStub.called.should.be.false();
     });
 
+    it('should NOT output absolute url of image if the option is "false" ', function () {
+        var rendered = helpers.img_url('/content/images/image-relative-url.png', {hash: {absolute: 'false'}});
+        should.exist(rendered);
+        rendered.should.equal('/content/images/image-relative-url.png');
+    });
+
     it('should output author url', function () {
         var rendered = helpers.img_url('/content/images/author-image-relative-url.png', {});
         should.exist(rendered);
