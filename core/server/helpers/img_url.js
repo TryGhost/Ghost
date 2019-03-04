@@ -19,7 +19,7 @@ module.exports = function imgUrl(attr, options) {
         return;
     }
 
-    const absolute = options && options.hash && options.hash.absolute;
+    const absolute = options && options.hash && options.hash.absolute && options.hash.absolute !== 'false';
 
     const size = options && options.hash && options.hash.size;
     const imageSizes = options && options.data && options.data.config && options.data.config.image_sizes;

@@ -9,7 +9,7 @@ var proxy = require('./proxy'),
     getMetaDataUrl = proxy.metaData.getMetaDataUrl;
 
 module.exports = function url(options) {
-    var absolute = options && options.hash.absolute,
+    var absolute = options && options.hash.absolute && options.hash.absolute !== 'false',
         outputUrl = getMetaDataUrl(this, absolute);
 
     outputUrl = encodeURI(decodeURI(outputUrl));
