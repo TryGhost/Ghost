@@ -28,27 +28,24 @@ describe('Unit: api/shared/serializers/handle', function () {
 
         it('ensure serializers are called with apiConfig and frame', function () {
             const allStub = sinon.stub();
-            const addStub = sinon.stub();
             sinon.stub(shared.serializers.input.all, 'all').get(() => allStub);
-            sinon.stub(shared.serializers.input.all, 'add').get(() => addStub);
 
             const apiSerializers = {
                 all: sinon.stub().resolves(),
                 posts: {
                     all: sinon.stub().resolves(),
-                    add: sinon.stub().resolves()
+                    browse: sinon.stub().resolves()
                 }
             };
 
-            const apiConfig = {docName: 'posts', method: 'add'};
+            const apiConfig = {docName: 'posts', method: 'browse'};
             const frame = {};
 
             const stubsToCheck = [
                 allStub,
-                addStub,
                 apiSerializers.all,
                 apiSerializers.posts.all,
-                apiSerializers.posts.add
+                apiSerializers.posts.browse
             ];
 
             return shared.serializers.handle.input(apiConfig, apiSerializers, frame)

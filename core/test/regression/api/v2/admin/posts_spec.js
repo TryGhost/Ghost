@@ -144,8 +144,8 @@ describe('Posts API', function () {
                         .expect(200);
                 })
                 .then((res) => {
-                    // @NOTE: you cannot modify published_at manually, that's why the resource won't change.
-                    should.not.exist(res.headers['x-cache-invalidate']);
+                    // @NOTE: if you set published_at to null and the post is published, we set it to NOW in model layer
+                    should.exist(res.headers['x-cache-invalidate']);
                     should.exist(res.body.posts);
                     should.exist(res.body.posts[0].published_at);
                 });

@@ -97,7 +97,22 @@ describe('Settings API', function () {
                     changedValue = [],
                     settingToChange = {
                         settings: [
-                            {key: 'title', value: changedValue}
+                            {
+                                key: 'title',
+                                value: changedValue
+                            },
+                            {
+                                key: 'ghost_head',
+                                value: null
+                            },
+                            {
+                                key: 'navigation',
+                                value: {label: 'label1'}
+                            },
+                            {
+                                key: 'slack',
+                                value: JSON.stringify({username: 'username'})
+                            }
                         ]
                     };
 
@@ -115,10 +130,13 @@ describe('Settings API', function () {
                             return done(err);
                         }
 
-                        var putBody = res.body;
+                        const putBody = res.body;
                         res.headers['x-cache-invalidate'].should.eql('/*');
                         should.exist(putBody);
                         putBody.settings[0].value.should.eql(JSON.stringify(changedValue));
+                        should.equal(putBody.settings[1].value, null);
+                        should.equal(putBody.settings[2].value, JSON.stringify({label: 'label1'}));
+                        should.equal(putBody.settings[3].value, JSON.stringify({username: 'username'}));
                         localUtils.API.checkResponse(putBody, 'settings');
                         done();
                     });
