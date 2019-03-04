@@ -98,6 +98,8 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             result.data.featured.should.not.have.properties('data');
 
             result.posts.length.should.eql(posts.length);
+            result.data.featured.length.should.eql(posts.length);
+            // @TODO v3 will deprecate this style (featured.posts)
             result.data.featured.posts.length.should.eql(posts.length);
 
             api.posts.browse.calledTwice.should.be.true();
@@ -133,6 +135,8 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             result.data.featured.should.not.have.properties('data');
 
             result.posts.length.should.eql(posts.length);
+            result.data.featured.length.should.eql(posts.length);
+            // @TODO v3 will deprecate this style (featured.posts)
             result.data.featured.posts.length.should.eql(posts.length);
 
             api.posts.browse.calledTwice.should.be.true();
