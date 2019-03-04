@@ -8,6 +8,8 @@ module.exports.forPost = (frame, model, attrs) => {
 
             if (plaintext) {
                 attrs.excerpt = plaintext.substring(0, 500);
+            } else {
+                attrs.excerpt = null;
             }
         } else {
             attrs.excerpt = attrs.custom_excerpt;

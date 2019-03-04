@@ -33,5 +33,17 @@ describe('Unit: v2/utils/serializers/output/utils/extra-attrs', () => {
 
             attrs.excerpt.should.eql(new Array(501).join('A'));
         });
+
+        it('has excerpt when plaintext is null', () => {
+            model.get.withArgs('plaintext').returns(null);
+
+            const attrs = {};
+
+            extraAttrsUtil.forPost(frame, model, attrs);
+            model.get.called.should.be.true();
+
+            attrs.should.have.property('excerpt');
+            (attrs.excerpt === null).should.be.true();
+        });
     });
 });
