@@ -41,7 +41,7 @@ class Frame {
         this.options.context = this.original.context;
 
         if (this.original.body && Object.keys(this.original.body).length) {
-            this.data = this.original.body;
+            this.data = _.cloneDeep(this.original.body);
         } else {
             if (apiConfig.data) {
                 if (typeof apiConfig.data === 'function') {
