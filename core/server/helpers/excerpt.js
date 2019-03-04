@@ -21,7 +21,11 @@ var proxy = require('./proxy'),
  */
 module.exports = function excerpt(options) {
     var truncateOptions = (options || {}).hash || {},
-        excerptText = this.custom_excerpt ? String(this.custom_excerpt) : String(this.html);
+        excerptText = this.custom_excerpt
+            ? String(this.custom_excerpt)
+            : this.html
+                ? String(this.html)
+                : '';
 
     truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
     _.keys(truncateOptions).map(function (key) {
