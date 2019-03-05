@@ -54,8 +54,10 @@ const forUser = (id, attrs) => {
     return attrs;
 };
 
-const forTag = (id, attrs) => {
-    attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
+const forTag = (id, attrs, options) => {
+    if (!options.columns || (options.columns && options.columns.includes('url'))) {
+        attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
+    }
 
     if (attrs.feature_image) {
         attrs.feature_image = urlService.utils.urlFor('image', {image: attrs.feature_image}, true);
