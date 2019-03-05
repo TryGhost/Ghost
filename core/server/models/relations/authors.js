@@ -242,7 +242,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             ops.push(() => {
                 return ghostBookshelf
                     .model('User')
-                    .getOwnerUser(Object.assign({columns: ['id']}, _.pick(options, 'transacting')))
+                    .getOwnerUser(Object.assign({}, _.pick(options, 'transacting')))
                     .then((_ownerUser) => {
                         ownerUser = _ownerUser;
                     });
