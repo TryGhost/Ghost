@@ -5,6 +5,7 @@ const common = require('../../lib/common');
 const session = require('./session');
 const apiKeyAuth = require('./api-key');
 const members = require('./members');
+const labs = require('../labs');
 
 const authenticate = {
     // ### Authenticate Client Middleware
@@ -36,6 +37,14 @@ const authenticate = {
 
         if (req.query && req.query.client_secret) {
             req.body.client_secret = req.query.client_secret;
+        }
+
+        if (labs.isSet('publicAPI') !== true) {
+            return next(new common.errors.NoPermissionError({
+                message: common.i18n.t('errors.middleware.auth.publicAPIDisabled.error'),
+                context: common.i18n.t('errors.middleware.auth.publicAPIDisabled.context'),
+                help: common.i18n.t('errors.middleware.auth.forInformationRead', {url: 'https://docs.ghost.org/api/content/'})
+            }));
         }
 
         if (!req.body.client_id || !req.body.client_secret) {
