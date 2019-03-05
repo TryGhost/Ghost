@@ -7,7 +7,7 @@ export default Helper.extend({
     settings: service(),
 
     compute([timeago], {draft, scheduled, published}) {
-        assert(timeago, 'You must pass a time to the gh-format-post-time helper');
+        assert('You must pass a time to the gh-format-post-time helper', timeago);
 
         if (draft) {
             // No special handling for drafts, just use moment.from

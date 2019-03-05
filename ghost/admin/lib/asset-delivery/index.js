@@ -37,15 +37,15 @@ module.exports = {
         fs.ensureDirSync(assetsOut);
 
         if (fs.existsSync(results.directory + '/index.min.html')) {
-            fs.copySync(results.directory + '/index.min.html', `${templateOutDir}/default-prod.html`, {overwrite: true});
+            fs.copySync(results.directory + '/index.min.html', `${templateOutDir}/default-prod.html`, {overwrite: true, dereference: true});
         } else {
-            fs.copySync(results.directory + '/index.html', `${templateOutDir}/default.html`, {overwrite: true});
+            fs.copySync(results.directory + '/index.html', `${templateOutDir}/default.html`, {overwrite: true, dereference: true});
         }
 
         assets.forEach(function (relativePath) {
             if (relativePath.slice(-1) === '/') { return; }
 
-            fs.copySync(assetsIn + '/' + relativePath, assetsOut + '/' + relativePath, {overwrite: true});
+            fs.copySync(assetsIn + '/' + relativePath, assetsOut + '/' + relativePath, {overwrite: true, dereference: true});
         });
     }
 };
