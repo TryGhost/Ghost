@@ -47,13 +47,13 @@ module.exports.forSettings = (attrs, frame) => {
 
         // CASE: edit
         if (frame.original.body && frame.original.body.settings) {
-            frame.original.body.settings.forEach((setting, index) => {
+            frame.original.body.settings.forEach((setting) => {
                 if (setting.key === 'codeinjection_head') {
-                    attrs[index].key = 'codeinjection_head';
-                }
-
-                if (setting.key === 'codeinjection_foot') {
-                    attrs[index].key = 'codeinjection_foot';
+                    const target = _.find(attrs, {key: 'ghost_head'});
+                    target.key = 'codeinjection_head';
+                } else if (setting.key === 'codeinjection_foot') {
+                    const target = _.find(attrs, {key: 'ghost_foot'});
+                    target.key = 'codeinjection_foot';
                 }
             });
 
