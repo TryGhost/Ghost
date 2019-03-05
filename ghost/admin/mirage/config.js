@@ -33,7 +33,7 @@ export default function () {
     // this.put('/posts/:id/', versionMismatchResponse);
     // mockTags(this);
     // this.loadFixtures('settings');
-    mockMembers(this);
+    //mockMembers(this);
 
     // keep this line, it allows all other API requests to hit the real server
     this.passthrough();
