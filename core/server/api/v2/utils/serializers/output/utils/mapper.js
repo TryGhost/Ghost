@@ -18,7 +18,7 @@ const mapUser = (model, frame) => {
 const mapTag = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
-    url.forTag(model.id, jsonModel);
+    url.forTag(model.id, jsonModel, frame.options);
     clean.tag(jsonModel, frame);
 
     return jsonModel;
