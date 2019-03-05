@@ -58,7 +58,7 @@
                 {{#link-to "pages" data-test-nav="pages"}}{{svg-jar "pages"}}Pages{{/link-to}}
             {{/if}}
         </li>
-        {{#if (and config.enableDeveloperExperiments (gh-user-can-admin session.user))}}
+        {{#if (and feature.members (gh-user-can-admin session.user))}}
             <li>{{#link-to "members" current-when="members member" data-test-nav="members"}}{{svg-jar "members"}}Members{{/link-to}}</li>
         {{/if}}
         <li>{{#link-to "staff" data-test-nav="staff"}}{{svg-jar "staff"}}Staff{{/link-to}}</li>
