@@ -8,7 +8,7 @@ const extraAttrs = require('./extra-attrs');
 const mapUser = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
-    url.forUser(model.id, jsonModel);
+    url.forUser(model.id, jsonModel, frame.options);
 
     clean.author(jsonModel, frame);
 

@@ -75,7 +75,7 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
             urlUtil.forUser.callCount.should.equal(1);
 
             urlUtil.forTag.getCall(0).args.should.eql(['id3', {id: 'id3', feature_image: 'value'}, frame.options]);
-            urlUtil.forUser.getCall(0).args.should.eql(['id4', {name: 'Ghosty', id: 'id4'}]);
+            urlUtil.forUser.getCall(0).args.should.eql(['id4', {name: 'Ghosty', id: 'id4'}, frame.options]);
         });
     });
 
@@ -103,7 +103,7 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
             mapper.mapUser(user, frame);
 
             urlUtil.forUser.callCount.should.equal(1);
-            urlUtil.forUser.getCall(0).args.should.eql(['id1', user]);
+            urlUtil.forUser.getCall(0).args.should.eql(['id1', user, frame.options]);
         });
     });
 

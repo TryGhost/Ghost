@@ -687,7 +687,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         case 'edit':
             return baseOptions.concat(extraOptions, ['id', 'require']);
         case 'findOne':
-            return baseOptions.concat(extraOptions, ['require']);
+            return baseOptions.concat(extraOptions, ['columns', 'require']);
         case 'findAll':
             return baseOptions.concat(extraOptions, ['columns']);
         case 'findPage':

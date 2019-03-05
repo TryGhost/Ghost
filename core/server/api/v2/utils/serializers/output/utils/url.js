@@ -40,8 +40,10 @@ const forPost = (id, attrs, options) => {
     return attrs;
 };
 
-const forUser = (id, attrs) => {
-    attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
+const forUser = (id, attrs, options) => {
+    if (!options.columns || (options.columns && options.columns.includes('url'))) {
+        attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
+    }
 
     if (attrs.profile_image) {
         attrs.profile_image = urlService.utils.urlFor('image', {image: attrs.profile_image}, true);
