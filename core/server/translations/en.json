@@ -74,6 +74,10 @@
                 "versionMismatch": "Client request for {clientVersion} does not match server version {serverVersion}."
             },
             "auth": {
+                "publicAPIDisabled": {
+                    "error": "Permission error! Public API is disabled.",
+                    "context": "Please enable the deprecated v0.1 Public API or switch to using the v2 Content API."
+                },
                 "clientAuthenticationFailed": "Client Authentication Failed",
                 "clientCredentialsNotProvided": "Client credentials were not provided",
                 "clientCredentialsNotValid": "Client credentials were not valid",
