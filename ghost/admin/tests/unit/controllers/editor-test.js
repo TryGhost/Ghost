@@ -1,5 +1,6 @@
 import EmberObject from '@ember/object';
 import RSVP from 'rsvp';
+import {defineProperty} from '@ember/object';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {settled} from '@ember/test-helpers';
@@ -59,7 +60,7 @@ describe('Unit: Controller: editor', function () {
             let {controller} = this;
 
             controller.set('target', {send() {}});
-            controller.set('generateSlug', task(function * () {
+            defineProperty(controller, 'generateSlug', task(function * () {
                 this.set('post.slug', 'test-slug');
                 yield RSVP.resolve();
             }));
@@ -79,7 +80,7 @@ describe('Unit: Controller: editor', function () {
             let {controller} = this;
 
             controller.set('target', {send() {}});
-            controller.set('generateSlug', task(function * () {
+            defineProperty(controller, 'generateSlug', task(function * () {
                 this.set('post.slug', 'test-slug');
                 yield RSVP.resolve();
             }));
@@ -100,7 +101,7 @@ describe('Unit: Controller: editor', function () {
             let {controller} = this;
 
             controller.set('target', {send() {}});
-            controller.set('generateSlug', task(function * () {
+            defineProperty(controller, 'generateSlug', task(function * () {
                 expect(false, 'generateSlug should not be called').to.equal(true);
                 yield RSVP.resolve();
             }));
@@ -124,7 +125,7 @@ describe('Unit: Controller: editor', function () {
             let {controller} = this;
 
             controller.set('target', {send() {}});
-            controller.set('generateSlug', task(function * () {
+            defineProperty(controller, 'generateSlug', task(function * () {
                 expect(false, 'generateSlug should not be called').to.equal(true);
                 yield RSVP.resolve();
             }));
