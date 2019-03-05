@@ -932,6 +932,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             model.applyDefaultAndCustomFilters(options);
         }
 
+        // Ensure only valid fields/columns are added to query
+        if (options.columns) {
+            options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
+        }
+
         return model.fetch(options);
     },
 
