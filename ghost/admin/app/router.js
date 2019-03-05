@@ -29,17 +29,17 @@ Router.map(function () {
     this.route('signout');
     this.route('signup', {path: '/signup/:token'});
     this.route('reset', {path: '/reset/:token'});
-    this.route('about', {path: '/about'});
+    this.route('about');
 
     this.route('posts', {path: '/'}, function () {});
-    this.route('pages', {path: '/pages'}, function () {});
+    this.route('pages', function () {});
 
     this.route('editor', function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
     });
 
-    this.route('staff', {path: '/staff'}, function () {
+    this.route('staff', function () {
         this.route('user', {path: ':user_slug'});
     });
 

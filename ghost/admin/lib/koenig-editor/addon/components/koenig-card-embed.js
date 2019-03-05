@@ -1,7 +1,7 @@
+/* global noframe */
 import Component from '@ember/component';
 import countWords, {stripTags} from '../utils/count-words';
 import layout from '../templates/components/koenig-card-embed';
-import noframe from 'noframe.js';
 import {NO_CURSOR_MOVEMENT} from './koenig-editor';
 import {computed} from '@ember/object';
 import {isBlank} from '@ember/utils';
