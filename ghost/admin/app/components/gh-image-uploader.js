@@ -65,7 +65,7 @@ export default Component.extend({
     // TODO: this wouldn't be necessary if the server could accept direct
     // file uploads
     formData: computed('file', function () {
-        let file = this.get('file');
+        let file = this.file;
         let formData = new FormData();
 
         formData.append(this.paramName, file);
@@ -78,13 +78,13 @@ export default Component.extend({
     }),
 
     description: computed('text', 'altText', function () {
-        let altText = this.get('altText');
+        let altText = this.altText;
 
-        return this.get('text') || (altText ? `Upload image of "${altText}"` : 'Upload an image');
+        return this.text || (altText ? `Upload image of "${altText}"` : 'Upload an image');
     }),
 
     progressStyle: computed('uploadPercentage', function () {
-        let percentage = this.get('uploadPercentage');
+        let percentage = this.uploadPercentage;
         let width = '';
 
         if (percentage > 0) {
@@ -99,14 +99,14 @@ export default Component.extend({
     init() {
         this._super(...arguments);
 
-        if (!this.get('accept')) {
-            this.set('accept', this.get('_defaultAccept'));
+        if (!this.accept) {
+            this.set('accept', this._defaultAccept);
         }
-        if (!this.get('extensions')) {
-            this.set('extensions', this.get('_defaultExtensions'));
+        if (!this.extensions) {
+            this.set('extensions', this._defaultExtensions);
         }
-        if (!this.get('uploadUrl')) {
-            this.set('uploadUrl', this.get('_defaultUploadUrl'));
+        if (!this.uploadUrl) {
+            this.set('uploadUrl', this._defaultUploadUrl);
         }
         if (!this.paramsHash) {
             this.set('paramsHash', this._defaultParamsHash);
@@ -114,7 +114,7 @@ export default Component.extend({
     },
 
     didReceiveAttrs() {
-        let image = this.get('image');
+        let image = this.image;
         this.set('url', image);
     },
 
@@ -157,7 +157,7 @@ export default Component.extend({
         },
 
         saveUrl() {
-            let url = this.get('url');
+            let url = this.url;
             this.update(url);
         }
     },
@@ -233,11 +233,11 @@ export default Component.extend({
         let message;
 
         if (isVersionMismatchError(error)) {
-            this.get('notifications').showAPIError(error);
+            this.notifications.showAPIError(error);
         }
 
         if (isUnsupportedMediaTypeError(error)) {
-            let validExtensions = this.get('extensions').join(', .').toUpperCase();
+            let validExtensions = this.extensions.join(', .').toUpperCase();
             validExtensions = `.${validExtensions}`;
 
             message = `The image type you uploaded is not supported. Please use ${validExtensions}`;
@@ -254,9 +254,9 @@ export default Component.extend({
     },
 
     generateRequest() {
-        let ajax = this.get('ajax');
-        let formData = this.get('formData');
-        let uploadUrl = this.get('uploadUrl');
+        let ajax = this.ajax;
+        let formData = this.formData;
+        let uploadUrl = this.uploadUrl;
         // CASE: we want to upload an icon and we have to POST it to a different endpoint, expecially for icons
         let url = `${ghostPaths().apiRoot}${uploadUrl}`;
 
@@ -294,7 +294,7 @@ export default Component.extend({
     },
 
     _defaultValidator(file) {
-        let extensions = this.get('extensions');
+        let extensions = this.extensions;
         let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
 
         if (!isEmberArray(extensions)) {

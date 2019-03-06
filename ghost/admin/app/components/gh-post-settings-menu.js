@@ -49,7 +49,7 @@ export default Component.extend(SettingsMenuMixin, {
     }),
 
     seoDescription: computed('post.scratch', 'metaDescriptionScratch', function () {
-        let metaDescription = this.get('metaDescriptionScratch') || '';
+        let metaDescription = this.metaDescriptionScratch || '';
         let mobiledoc = this.get('post.scratch');
         let [markdownCard] = mobiledoc.cards;
         let markdown = markdownCard && markdownCard[1] && markdownCard[1].markdown;
@@ -90,13 +90,13 @@ export default Component.extend(SettingsMenuMixin, {
         // can add throbbers only when the animation has finished
         // TODO: use liquid-fire to handle PSM slide-in and replace tabs manager
         // with something more ember-like
-        if (this.get('showSettingsMenu') && !this._showSettingsMenu) {
-            this.get('showThrobbers').perform();
+        if (this.showSettingsMenu && !this._showSettingsMenu) {
+            this.showThrobbers.perform();
         }
 
         // fired when menu is closed
-        if (!this.get('showSettingsMenu') && this._showSettingsMenu) {
-            let post = this.get('post');
+        if (!this.showSettingsMenu && this._showSettingsMenu) {
+            let post = this.post;
             let errors = post.get('errors');
 
             // reset the publish date if it has an error
@@ -109,7 +109,7 @@ export default Component.extend(SettingsMenuMixin, {
             this.set('_showThrobbers', false);
         }
 
-        this._showSettingsMenu = this.get('showSettingsMenu');
+        this._showSettingsMenu = this.showSettingsMenu;
     },
 
     actions: {
@@ -130,7 +130,7 @@ export default Component.extend(SettingsMenuMixin, {
             this._super(...arguments);
 
             this.set('subview', null);
-            this.get('showThrobbers').perform();
+            this.showThrobbers.perform();
         },
 
         discardEnter() {
@@ -146,9 +146,9 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('savePost').perform().catch((error) => {
+            this.savePost.perform().catch((error) => {
                 this.showError(error);
-                this.get('post').rollbackAttributes();
+                this.post.rollbackAttributes();
             });
         },
 
@@ -156,16 +156,16 @@ export default Component.extend(SettingsMenuMixin, {
          * triggered by user manually changing slug
          */
         updateSlug(newSlug) {
-            return this.get('updateSlug')
+            return this.updateSlug
                 .perform(newSlug)
                 .catch((error) => {
                     this.showError(error);
-                    this.get('post').rollbackAttributes();
+                    this.post.rollbackAttributes();
                 });
         },
 
         setPublishedAtBlogDate(date) {
-            let post = this.get('post');
+            let post = this.post;
             let dateString = moment(date).format('YYYY-MM-DD');
 
             post.get('errors').remove('publishedAtBlogDate');
@@ -174,12 +174,12 @@ export default Component.extend(SettingsMenuMixin, {
                 post.validate({property: 'publishedAtBlog'});
             } else {
                 post.set('publishedAtBlogDate', dateString);
-                return this.get('savePost').perform();
+                return this.savePost.perform();
             }
         },
 
         setPublishedAtBlogTime(time) {
-            let post = this.get('post');
+            let post = this.post;
 
             post.get('errors').remove('publishedAtBlogDate');
 
@@ -187,12 +187,12 @@ export default Component.extend(SettingsMenuMixin, {
                 post.validate({property: 'publishedAtBlog'});
             } else {
                 post.set('publishedAtBlogTime', time);
-                return this.get('savePost').perform();
+                return this.savePost.perform();
             }
         },
 
         setCustomExcerpt(excerpt) {
-            let post = this.get('post');
+            let post = this.post;
             let currentExcerpt = post.get('customExcerpt');
 
             if (excerpt === currentExcerpt) {
@@ -201,11 +201,11 @@ export default Component.extend(SettingsMenuMixin, {
 
             post.set('customExcerpt', excerpt);
 
-            return post.validate({property: 'customExcerpt'}).then(() => this.get('savePost').perform());
+            return post.validate({property: 'customExcerpt'}).then(() => this.savePost.perform());
         },
 
         setHeaderInjection(code) {
-            let post = this.get('post');
+            let post = this.post;
             let currentCode = post.get('codeinjectionHead');
 
             if (code === currentCode) {
@@ -214,11 +214,11 @@ export default Component.extend(SettingsMenuMixin, {
 
             post.set('codeinjectionHead', code);
 
-            return post.validate({property: 'codeinjectionHead'}).then(() => this.get('savePost').perform());
+            return post.validate({property: 'codeinjectionHead'}).then(() => this.savePost.perform());
         },
 
         setFooterInjection(code) {
-            let post = this.get('post');
+            let post = this.post;
             let currentCode = post.get('codeinjectionFoot');
 
             if (code === currentCode) {
@@ -227,12 +227,12 @@ export default Component.extend(SettingsMenuMixin, {
 
             post.set('codeinjectionFoot', code);
 
-            return post.validate({property: 'codeinjectionFoot'}).then(() => this.get('savePost').perform());
+            return post.validate({property: 'codeinjectionFoot'}).then(() => this.savePost.perform());
         },
 
         setMetaTitle(metaTitle) {
             // Grab the post and current stored meta title
-            let post = this.get('post');
+            let post = this.post;
             let currentTitle = post.get('metaTitle');
 
             // If the title entered matches the stored meta title, do nothing
@@ -249,13 +249,13 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.get('savePost').perform();
+                return this.savePost.perform();
             });
         },
 
         setMetaDescription(metaDescription) {
             // Grab the post and current stored meta description
-            let post = this.get('post');
+            let post = this.post;
             let currentDescription = post.get('metaDescription');
 
             // If the title entered matches the stored meta title, do nothing
@@ -272,13 +272,13 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.get('savePost').perform();
+                return this.savePost.perform();
             });
         },
 
         setOgTitle(ogTitle) {
             // Grab the post and current stored facebook title
-            let post = this.get('post');
+            let post = this.post;
             let currentTitle = post.get('ogTitle');
 
             // If the title entered matches the stored facebook title, do nothing
@@ -295,13 +295,13 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.get('savePost').perform();
+                return this.savePost.perform();
             });
         },
 
         setOgDescription(ogDescription) {
             // Grab the post and current stored facebook description
-            let post = this.get('post');
+            let post = this.post;
             let currentDescription = post.get('ogDescription');
 
             // If the title entered matches the stored facebook description, do nothing
@@ -318,13 +318,13 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.get('savePost').perform();
+                return this.savePost.perform();
             });
         },
 
         setTwitterTitle(twitterTitle) {
             // Grab the post and current stored twitter title
-            let post = this.get('post');
+            let post = this.post;
             let currentTitle = post.get('twitterTitle');
 
             // If the title entered matches the stored twitter title, do nothing
@@ -341,13 +341,13 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.get('savePost').perform();
+                return this.savePost.perform();
             });
         },
 
         setTwitterDescription(twitterDescription) {
             // Grab the post and current stored twitter description
-            let post = this.get('post');
+            let post = this.post;
             let currentDescription = post.get('twitterDescription');
 
             // If the description entered matches the stored twitter description, do nothing
@@ -364,7 +364,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.get('savePost').perform();
+                return this.savePost.perform();
             });
         },
 
@@ -375,9 +375,9 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('savePost').perform().catch((error) => {
+            this.savePost.perform().catch((error) => {
                 this.showError(error);
-                this.get('post').rollbackAttributes();
+                this.post.rollbackAttributes();
             });
         },
 
@@ -388,9 +388,9 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('savePost').perform().catch((error) => {
+            this.savePost.perform().catch((error) => {
                 this.showError(error);
-                this.get('post').rollbackAttributes();
+                this.post.rollbackAttributes();
             });
         },
 
@@ -401,9 +401,9 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('savePost').perform().catch((error) => {
+            this.savePost.perform().catch((error) => {
                 this.showError(error);
-                this.get('post').rollbackAttributes();
+                this.post.rollbackAttributes();
             });
         },
 
@@ -414,9 +414,9 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('savePost').perform().catch((error) => {
+            this.savePost.perform().catch((error) => {
                 this.showError(error);
-                this.get('post').rollbackAttributes();
+                this.post.rollbackAttributes();
             });
         },
 
@@ -427,9 +427,9 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('savePost').perform().catch((error) => {
+            this.savePost.perform().catch((error) => {
                 this.showError(error);
-                this.get('post').rollbackAttributes();
+                this.post.rollbackAttributes();
             });
         },
 
@@ -440,14 +440,14 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('savePost').perform().catch((error) => {
+            this.savePost.perform().catch((error) => {
                 this.showError(error);
-                this.get('post').rollbackAttributes();
+                this.post.rollbackAttributes();
             });
         },
 
         changeAuthors(newAuthors) {
-            let post = this.get('post');
+            let post = this.post;
 
             // return if nothing changed
             if (newAuthors.mapBy('id').join() === post.get('authors').mapBy('id').join()) {
@@ -462,15 +462,15 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('savePost').perform().catch((error) => {
+            this.savePost.perform().catch((error) => {
                 this.showError(error);
                 post.rollbackAttributes();
             });
         },
 
         deletePost() {
-            if (this.get('deletePost')) {
-                this.get('deletePost')();
+            if (this.deletePost) {
+                this.deletePost();
             }
         }
     },
@@ -483,7 +483,7 @@ export default Component.extend(SettingsMenuMixin, {
     showError(error) {
         // TODO: remove null check once ValidationEngine has been removed
         if (error) {
-            this.get('notifications').showAPIError(error);
+            this.notifications.showAPIError(error);
         }
     }
 });

@@ -51,19 +51,19 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
     actions: {
         save() {
             this._blurAndScheduleAction(function () {
-                this.get('controller').send('save');
+                this.controller.send('save');
             });
         },
 
         publish() {
             this._blurAndScheduleAction(function () {
-                this.get('controller').send('setSaveType', 'publish');
-                this.get('controller').send('save');
+                this.controller.send('setSaveType', 'publish');
+                this.controller.send('save');
             });
         },
 
         authorizationFailed() {
-            this.get('controller').send('toggleReAuthenticateModal');
+            this.controller.send('toggleReAuthenticateModal');
         },
 
         redirectToContentScreen() {
@@ -77,7 +77,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
                 return this._super(...arguments);
             }
 
-            this.get('controller').willTransition(transition);
+            this.controller.willTransition(transition);
         }
     },
 

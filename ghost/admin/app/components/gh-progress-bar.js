@@ -14,7 +14,7 @@ export default Component.extend({
     didReceiveAttrs() {
         this._super(...arguments);
 
-        let percentage = this.get('percentage');
+        let percentage = this.percentage;
         let width = (percentage > 0) ? `${percentage}%` : '0';
 
         this.set('progressStyle', htmlSafe(`width: ${width}`));

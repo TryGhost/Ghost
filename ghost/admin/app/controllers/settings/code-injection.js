@@ -9,13 +9,13 @@ export default Controller.extend({
 
     actions: {
         save() {
-            this.get('save').perform();
+            this.save.perform();
         },
 
         toggleLeaveSettingsModal(transition) {
-            let leaveTransition = this.get('leaveSettingsTransition');
+            let leaveTransition = this.leaveSettingsTransition;
 
-            if (!transition && this.get('showLeaveSettingsModal')) {
+            if (!transition && this.showLeaveSettingsModal) {
                 this.set('leaveSettingsTransition', null);
                 this.set('showLeaveSettingsModal', false);
                 return;
@@ -37,11 +37,11 @@ export default Controller.extend({
         },
 
         leaveSettings() {
-            let transition = this.get('leaveSettingsTransition');
-            let settings = this.get('settings');
+            let transition = this.leaveSettingsTransition;
+            let settings = this.settings;
 
             if (!transition) {
-                this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+                this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
                 return;
             }
 
@@ -54,10 +54,10 @@ export default Controller.extend({
     },
 
     save: task(function* () {
-        let notifications = this.get('notifications');
+        let notifications = this.notifications;
 
         try {
-            return yield this.get('settings').save();
+            return yield this.settings.save();
         } catch (error) {
             notifications.showAPIError(error, {key: 'code-injection.save'});
             throw error;

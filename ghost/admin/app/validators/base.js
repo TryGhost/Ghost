@@ -26,13 +26,13 @@ export default EmberObject.extend({
         if (prop && this[prop]) {
             this[prop](model);
         } else {
-            this.get('properties').forEach((property) => {
+            this.properties.forEach((property) => {
                 if (this[property]) {
                     this[property](model);
                 }
             });
         }
-        return this.get('passed');
+        return this.passed;
     },
 
     invalidate() {

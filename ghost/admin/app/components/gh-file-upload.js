@@ -15,7 +15,7 @@ export default Component.extend({
 
     actions: {
         upload() {
-            if (!this.get('uploadButtonDisabled') && this._file) {
+            if (!this.uploadButtonDisabled && this._file) {
                 this.onUpload(this._file);
             }
 
@@ -23,7 +23,7 @@ export default Component.extend({
             this.set('uploadButtonDisabled', true);
 
             // Reset form
-            if (this.get('shouldResetForm')) {
+            if (this.shouldResetForm) {
                 this.$().closest('form')[0].reset();
             }
         }

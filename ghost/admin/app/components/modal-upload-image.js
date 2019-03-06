@@ -31,7 +31,7 @@ export default ModalComponent.extend({
     }),
 
     didReceiveAttrs() {
-        let image = this.get('image');
+        let image = this.image;
         this.set('url', image);
         this.set('newUrl', image);
     },
@@ -48,7 +48,7 @@ export default ModalComponent.extend({
         },
 
         confirm() {
-            this.get('uploadImage').perform();
+            this.uploadImage.perform();
         },
 
         isUploading() {
@@ -88,9 +88,9 @@ export default ModalComponent.extend({
 
     uploadImage: task(function* () {
         let model = this.get('model.model');
-        let newUrl = this.get('newUrl');
+        let newUrl = this.newUrl;
         let result = this._validateUrl(newUrl);
-        let notifications = this.get('notifications');
+        let notifications = this.notifications;
 
         if (result === true) {
             this.set('image', newUrl);

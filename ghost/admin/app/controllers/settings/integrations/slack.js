@@ -25,7 +25,7 @@ export default Controller.extend({
 
     actions: {
         save() {
-            this.get('save').perform();
+            this.save.perform();
         },
 
         updateURL(value) {
@@ -41,9 +41,9 @@ export default Controller.extend({
         },
 
         triggerDirtyState() {
-            let slack = this.get('slackSettings');
-            let slackArray = this.get('slackArray');
-            let settings = this.get('settings');
+            let slack = this.slackSettings;
+            let slackArray = this.slackArray;
+            let settings = this.settings;
 
             // Hack to trigger the `isDirty` state on the settings model by setting a new Array
             // for slack rather that replacing the existing one which would still point to the
@@ -53,9 +53,9 @@ export default Controller.extend({
         },
 
         toggleLeaveSettingsModal(transition) {
-            let leaveTransition = this.get('leaveSettingsTransition');
+            let leaveTransition = this.leaveSettingsTransition;
 
-            if (!transition && this.get('showLeaveSettingsModal')) {
+            if (!transition && this.showLeaveSettingsModal) {
                 this.set('leaveSettingsTransition', null);
                 this.set('showLeaveSettingsModal', false);
                 return;
@@ -77,12 +77,12 @@ export default Controller.extend({
         },
 
         leaveSettings() {
-            let transition = this.get('leaveSettingsTransition');
-            let settings = this.get('settings');
-            let slackArray = this.get('slackArray');
+            let transition = this.leaveSettingsTransition;
+            let settings = this.settings;
+            let slackArray = this.slackArray;
 
             if (!transition) {
-                this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+                this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
                 return;
             }
 
@@ -95,9 +95,9 @@ export default Controller.extend({
     },
 
     save: task(function* () {
-        let slack = this.get('slackSettings');
-        let settings = this.get('settings');
-        let slackArray = this.get('slackArray');
+        let slack = this.slackSettings;
+        let settings = this.settings;
+        let slackArray = this.slackArray;
 
         try {
             yield slack.validate();
@@ -107,19 +107,19 @@ export default Controller.extend({
             return yield settings.save();
         } catch (error) {
             if (error) {
-                this.get('notifications').showAPIError(error);
+                this.notifications.showAPIError(error);
                 throw error;
             }
         }
     }).drop(),
 
     sendTestNotification: task(function* () {
-        let notifications = this.get('notifications');
+        let notifications = this.notifications;
         let slackApi = this.get('ghostPaths.url').api('slack', 'test');
 
         try {
-            yield this.get('save').perform();
-            yield this.get('ajax').post(slackApi);
+            yield this.save.perform();
+            yield this.ajax.post(slackApi);
             notifications.showNotification('Check your Slack channel for the test message!', {type: 'info', key: 'slack-test.send.success'});
             return true;
         } catch (error) {

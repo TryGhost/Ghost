@@ -2,7 +2,7 @@ import Route from '@ember/routing/route';
 
 export default Route.extend({
     model() {
-        return this.get('store').createRecord('subscriber');
+        return this.store.createRecord('subscriber');
     },
 
     setupController(controller, model) {

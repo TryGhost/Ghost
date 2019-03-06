@@ -150,7 +150,7 @@ export default Model.extend(Comparable, ValidationEngine, {
 
     previewUrl: computed('uuid', 'ghostPaths.url', 'config.blogUrl', function () {
         let blogUrl = this.get('config.blogUrl');
-        let uuid = this.get('uuid');
+        let uuid = this.uuid;
         // routeKeywords.preview: 'p'
         let previewKeyword = 'p';
         // New posts don't have a preview
@@ -163,9 +163,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     // check every second to see if we're past the scheduled time
     // will only re-compute if this property is being observed elsewhere
     pastScheduledTime: computed('isScheduled', 'publishedAtUTC', 'clock.second', function () {
-        if (this.get('isScheduled')) {
+        if (this.isScheduled) {
             let now = moment.utc();
-            let publishedAtUTC = this.get('publishedAtUTC') || now;
+            let publishedAtUTC = this.publishedAtUTC || now;
             let pastScheduledTime = publishedAtUTC.diff(now, 'hours', true) < 0;
 
             // force a recompute
@@ -189,9 +189,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     }),
 
     _getPublishedAtBlogTZ() {
-        let publishedAtUTC = this.get('publishedAtUTC');
-        let publishedAtBlogDate = this.get('publishedAtBlogDate');
-        let publishedAtBlogTime = this.get('publishedAtBlogTime');
+        let publishedAtUTC = this.publishedAtUTC;
+        let publishedAtBlogDate = this.publishedAtBlogDate;
+        let publishedAtBlogTime = this.publishedAtBlogTime;
         let blogTimezone = this.get('settings.activeTimezone');
 
         if (!publishedAtUTC && isBlank(publishedAtBlogDate) && isBlank(publishedAtBlogTime)) {
@@ -220,14 +220,14 @@ export default Model.extend(Comparable, ValidationEngine, {
 
             return publishedAtBlog;
         } else {
-            return moment.tz(this.get('publishedAtUTC'), blogTimezone);
+            return moment.tz(this.publishedAtUTC, blogTimezone);
         }
     },
 
     // TODO: is there a better way to handle this?
     // eslint-disable-next-line ghost/ember/no-observers
     _setPublishedAtBlogTZ: observer('publishedAtUTC', 'settings.activeTimezone', function () {
-        let publishedAtUTC = this.get('publishedAtUTC');
+        let publishedAtUTC = this.publishedAtUTC;
         this._setPublishedAtBlogStrings(publishedAtUTC);
     }).on('init'),
 
@@ -249,7 +249,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     // when returned from the server with ids.
     // https://github.com/emberjs/data/issues/1829
     updateTags() {
-        let tags = this.get('tags');
+        let tags = this.tags;
         let oldTags = tags.filterBy('id', null);
 
         tags.removeObjects(oldTags);
@@ -257,7 +257,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     },
 
     isAuthoredByUser(user) {
-        return this.get('authors').includes(user);
+        return this.authors.includes(user);
     },
 
     // a custom sort function is needed in order to sort the posts list the same way the server would:
@@ -311,7 +311,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     // the publishedAtBlog{Date/Time} strings are set separately so they can be
     // validated, grab that time if it exists and set the publishedAtUTC
     beforeSave() {
-        let publishedAtBlogTZ = this.get('publishedAtBlogTZ');
+        let publishedAtBlogTZ = this.publishedAtBlogTZ;
         let publishedAtUTC = publishedAtBlogTZ ? publishedAtBlogTZ.utc() : null;
         this.set('publishedAtUTC', publishedAtUTC);
     }

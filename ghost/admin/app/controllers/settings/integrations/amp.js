@@ -18,13 +18,13 @@ export default Controller.extend({
         },
 
         save() {
-            this.get('save').perform();
+            this.save.perform();
         },
 
         toggleLeaveSettingsModal(transition) {
-            let leaveTransition = this.get('leaveSettingsTransition');
+            let leaveTransition = this.leaveSettingsTransition;
 
-            if (!transition && this.get('showLeaveSettingsModal')) {
+            if (!transition && this.showLeaveSettingsModal) {
                 this.set('leaveSettingsTransition', null);
                 this.set('showLeaveSettingsModal', false);
                 return;
@@ -46,11 +46,11 @@ export default Controller.extend({
         },
 
         leaveSettings() {
-            let transition = this.get('leaveSettingsTransition');
-            let settings = this.get('settings');
+            let transition = this.leaveSettingsTransition;
+            let settings = this.settings;
 
             if (!transition) {
-                this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+                this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
                 return;
             }
 
@@ -62,15 +62,15 @@ export default Controller.extend({
     },
 
     save: task(function* () {
-        let amp = this.get('ampSettings');
-        let settings = this.get('settings');
+        let amp = this.ampSettings;
+        let settings = this.settings;
 
         settings.set('amp', amp);
 
         try {
             return yield settings.save();
         } catch (error) {
-            this.get('notifications').showAPIError(error);
+            this.notifications.showAPIError(error);
             throw error;
         }
     }).drop()

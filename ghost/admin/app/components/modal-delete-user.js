@@ -10,7 +10,7 @@ export default ModalComponent.extend({
 
     actions: {
         confirm() {
-            this.get('deleteUser').perform();
+            this.deleteUser.perform();
         }
     },
 

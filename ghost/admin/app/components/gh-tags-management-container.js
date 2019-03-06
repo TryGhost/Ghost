@@ -17,9 +17,9 @@ export default Component.extend({
     isEmpty: equal('tags.length', 0),
 
     displaySettingsPane: computed('isEmpty', 'selectedTag', 'isMobile', function () {
-        let isEmpty = this.get('isEmpty');
-        let selectedTag = this.get('selectedTag');
-        let isMobile = this.get('isMobile');
+        let isEmpty = this.isEmpty;
+        let selectedTag = this.selectedTag;
+        let isMobile = this.isMobile;
 
         // always display settings pane for blank-slate on mobile
         if (isMobile && isEmpty) {
@@ -37,17 +37,17 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
-        this.get('mediaQueries').on('change', this, this._fireMobileChangeActions);
+        this.mediaQueries.on('change', this, this._fireMobileChangeActions);
     },
 
     willDestroyElement() {
         this._super(...arguments);
-        this.get('mediaQueries').off('change', this, this._fireMobileChangeActions);
+        this.mediaQueries.off('change', this, this._fireMobileChangeActions);
     },
 
     _fireMobileChangeActions(key, value) {
         if (key === 'maxWidth600') {
-            let leftMobileAction = this.get('leftMobile');
+            let leftMobileAction = this.leftMobile;
 
             this.set('isMobile', value);
 

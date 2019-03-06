@@ -11,12 +11,12 @@ export default ModalComponent.extend({
 
     actions: {
         confirm() {
-            this.get('deletePost').perform();
+            this.deletePost.perform();
         }
     },
 
     _deletePost() {
-        let post = this.get('post');
+        let post = this.post;
 
         // definitely want to clear the data store and post of any unsaved,
         // client-generated tags
@@ -27,16 +27,16 @@ export default ModalComponent.extend({
 
     _success() {
         // clear any previous error messages
-        this.get('notifications').closeAlerts('post.delete');
+        this.notifications.closeAlerts('post.delete');
 
         // trigger the success action
-        if (this.get('onSuccess')) {
-            this.get('onSuccess')();
+        if (this.onSuccess) {
+            this.onSuccess();
         }
     },
 
     _failure(error) {
-        this.get('notifications').showAPIError(error, {key: 'post.delete.failed'});
+        this.notifications.showAPIError(error, {key: 'post.delete.failed'});
     },
 
     deletePost: task(function* () {

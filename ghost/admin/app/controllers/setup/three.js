@@ -26,8 +26,8 @@ export default Controller.extend({
     ownerEmail: alias('two.email'),
 
     usersArray: computed('users', function () {
-        let errors = this.get('errors');
-        let users = this.get('users').split('\n').filter(function (email) {
+        let errors = this.errors;
+        let users = this.users.split('\n').filter(function (email) {
             return email.trim().length > 0;
         });
 
@@ -42,23 +42,23 @@ export default Controller.extend({
     }),
 
     validUsersArray: computed('usersArray', 'ownerEmail', function () {
-        let ownerEmail = this.get('ownerEmail');
+        let ownerEmail = this.ownerEmail;
 
-        return this.get('usersArray').filter(function (user) {
+        return this.usersArray.filter(function (user) {
             return validator.isEmail(user || '') && user !== ownerEmail;
         });
     }),
 
     invalidUsersArray: computed('usersArray', 'ownerEmail', function () {
-        let ownerEmail = this.get('ownerEmail');
+        let ownerEmail = this.ownerEmail;
 
-        return this.get('usersArray').reject(user => validator.isEmail(user || '') || user === ownerEmail);
+        return this.usersArray.reject(user => validator.isEmail(user || '') || user === ownerEmail);
     }),
 
     validationResult: computed('invalidUsersArray', function () {
         let errors = [];
 
-        this.get('invalidUsersArray').forEach((user) => {
+        this.invalidUsersArray.forEach((user) => {
             errors.push({
                 user,
                 error: 'email'
@@ -67,7 +67,7 @@ export default Controller.extend({
 
         if (errors.length === 0) {
             // ensure we aren't highlighting fields when everything is fine
-            this.get('errors').clear();
+            this.errors.clear();
             return true;
         } else {
             return errors;
@@ -76,8 +76,8 @@ export default Controller.extend({
 
     buttonText: computed('errors.users', 'validUsersArray', 'invalidUsersArray', function () {
         let usersError = this.get('errors.users.firstObject.message');
-        let validNum = this.get('validUsersArray').length;
-        let invalidNum = this.get('invalidUsersArray').length;
+        let validNum = this.validUsersArray.length;
+        let invalidNum = this.invalidUsersArray.length;
         let userCount;
 
         if (usersError && usersError.match(/no users/i)) {
@@ -100,7 +100,7 @@ export default Controller.extend({
     }),
 
     buttonClass: computed('validationResult', 'usersArray.length', function () {
-        if (this.get('validationResult') === true && this.get('usersArray.length') > 0) {
+        if (this.validationResult === true && this.get('usersArray.length') > 0) {
             return 'gh-btn-green';
         } else {
             return 'gh-btn-minor';
@@ -117,7 +117,7 @@ export default Controller.extend({
         },
 
         invite() {
-            this.get('invite').perform();
+            this.invite.perform();
         },
 
         skipInvite() {
@@ -127,14 +127,14 @@ export default Controller.extend({
     },
 
     validate() {
-        let errors = this.get('errors');
-        let validationResult = this.get('validationResult');
+        let errors = this.errors;
+        let validationResult = this.validationResult;
         let property = 'users';
 
         errors.clear();
 
         // If property isn't in the `hasValidated` array, add it to mark that this field can show a validation result
-        this.get('hasValidated').addObject(property);
+        this.hasValidated.addObject(property);
 
         if (validationResult === true) {
             return true;
@@ -159,17 +159,17 @@ export default Controller.extend({
     },
 
     invite: task(function* () {
-        let users = this.get('validUsersArray');
+        let users = this.validUsersArray;
 
         if (this.validate() && users.length > 0) {
             this._hasTransitioned = false;
 
-            this.get('_slowSubmissionTimeout').perform();
+            this._slowSubmissionTimeout.perform();
 
-            let authorRole = yield this.get('authorRole');
+            let authorRole = yield this.authorRole;
             let invites = yield this._saveInvites(authorRole);
 
-            this.get('_slowSubmissionTimeout').cancelAll();
+            this._slowSubmissionTimeout.cancelAll();
 
             this._showNotifications(invites);
 
@@ -178,7 +178,7 @@ export default Controller.extend({
                 this._transitionAfterSubmission();
             });
         } else if (users.length === 0) {
-            this.get('errors').add('users', 'No users to invite');
+            this.errors.add('users', 'No users to invite');
         }
     }).drop(),
 
@@ -188,7 +188,7 @@ export default Controller.extend({
     }).drop(),
 
     _saveInvites(authorRole) {
-        let users = this.get('validUsersArray');
+        let users = this.validUsersArray;
 
         return RSVP.Promise.all(
             users.map((user) => {
@@ -210,7 +210,7 @@ export default Controller.extend({
     },
 
     _showNotifications(invites) {
-        let notifications = this.get('notifications');
+        let notifications = this.notifications;
         let erroredEmails = [];
         let successCount = 0;
         let invitationsString, message;

@@ -7,7 +7,7 @@ export default EmberPowerSelectMultipleTrigger.extend({
 
     actions: {
         chooseOption(option) {
-            this.get('select').actions.choose(option);
+            this.select.actions.choose(option);
         },
 
         handleOptionMouseDown(event) {
@@ -31,13 +31,13 @@ export default EmberPowerSelectMultipleTrigger.extend({
             // update EPS' selected value directly. We have to create a copy
             // after sorting in order to force the onchange action to be triggered
             let selectedCopy = this.select.selected.slice();
-            this.get('select').actions.select(selectedCopy);
+            this.select.actions.select(selectedCopy);
         },
 
         // copied directly from EPS, the default behaviour of stopping propagation
         // of keydown events prevents our shortcuts from being triggered
         onKeydown(e) {
-            let {onKeydown, select} = this.getProperties('onKeydown', 'select');
+            let {onKeydown, select} = this;
             if (onKeydown && onKeydown(e) === false) {
                 e.stopPropagation();
                 return false;
@@ -47,11 +47,11 @@ export default EmberPowerSelectMultipleTrigger.extend({
                 if (isBlank(e.target.value)) {
                     let lastSelection = select.selected[select.selected.length - 1];
                     if (lastSelection) {
-                        select.actions.select(this.get('buildSelection')(lastSelection, select), e);
+                        select.actions.select(this.buildSelection(lastSelection, select), e);
                         if (typeof lastSelection === 'string') {
                             select.actions.search(lastSelection);
                         } else {
-                            let searchField = this.get('searchField');
+                            let searchField = this.searchField;
                             assert('`{{power-select-multiple}}` requires a `searchField` when the options are not strings to remove options using backspace', searchField);
                             select.actions.search(get(lastSelection, searchField));
                         }

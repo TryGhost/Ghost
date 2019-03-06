@@ -38,11 +38,11 @@ export default Controller.extend({
 
     actions: {
         save() {
-            this.get('save').perform();
+            this.save.perform();
         },
 
         addNavItem() {
-            let newNavItem = this.get('newNavItem');
+            let newNavItem = this.newNavItem;
 
             // If the url sent through is blank (user never edited the url)
             if (newNavItem.get('url') === '') {
@@ -86,9 +86,9 @@ export default Controller.extend({
         },
 
         toggleLeaveSettingsModal(transition) {
-            let leaveTransition = this.get('leaveSettingsTransition');
+            let leaveTransition = this.leaveSettingsTransition;
 
-            if (!transition && this.get('showLeaveSettingsModal')) {
+            if (!transition && this.showLeaveSettingsModal) {
                 this.set('leaveSettingsTransition', null);
                 this.set('showLeaveSettingsModal', false);
                 return;
@@ -110,11 +110,11 @@ export default Controller.extend({
         },
 
         leaveSettings() {
-            let transition = this.get('leaveSettingsTransition');
-            let settings = this.get('settings');
+            let transition = this.leaveSettingsTransition;
+            let settings = this.settings;
 
             if (!transition) {
-                this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+                this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
                 return;
             }
 
@@ -139,7 +139,7 @@ export default Controller.extend({
                     this.set('showThemeWarningsModal', true);
                 }
 
-                if (this.get('themeErrors') || this.get('themeWarnings')) {
+                if (this.themeErrors || this.themeWarnings) {
                     let message = `${themeName} activated successfully but some warnings/errors were detected.
                                    You are still able to use and activate the theme. Here is your report...`;
                     this.set('message', message);
@@ -210,8 +210,8 @@ export default Controller.extend({
 
     save: task(function* () {
         let navItems = this.get('settings.navigation');
-        let newNavItem = this.get('newNavItem');
-        let notifications = this.get('notifications');
+        let newNavItem = this.newNavItem;
+        let notifications = this.notifications;
         let validationPromises = [];
 
         if (!newNavItem.get('isBlank')) {
@@ -225,7 +225,7 @@ export default Controller.extend({
         try {
             yield RSVP.all(validationPromises);
             this.set('dirtyAttributes', false);
-            return yield this.get('settings').save();
+            return yield this.settings.save();
         } catch (error) {
             if (error) {
                 notifications.showAPIError(error);
@@ -236,7 +236,7 @@ export default Controller.extend({
 
     addNewNavItem() {
         let navItems = this.get('settings.navigation');
-        let newNavItem = this.get('newNavItem');
+        let newNavItem = this.newNavItem;
 
         newNavItem.set('isNew', false);
         navItems.pushObject(newNavItem);
@@ -246,7 +246,7 @@ export default Controller.extend({
     },
 
     _deleteTheme() {
-        let theme = this.get('store').peekRecord('theme', this.get('themeToDelete').name);
+        let theme = this.store.peekRecord('theme', this.themeToDelete.name);
 
         if (!theme) {
             return;
@@ -258,7 +258,7 @@ export default Controller.extend({
             // attempt to update the deleted record
             theme.unloadRecord();
         }).catch((error) => {
-            this.get('notifications').showAPIError(error);
+            this.notifications.showAPIError(error);
         });
     }
 });

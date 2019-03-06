@@ -13,11 +13,11 @@ export default Component.extend(ValidationStateMixin, {
     classNameBindings: ['errorClass'],
 
     errorClass: computed('property', 'hasError', 'hasValidated.[]', function () {
-        let hasValidated = this.get('hasValidated');
-        let property = this.get('property');
+        let hasValidated = this.hasValidated;
+        let property = this.property;
 
         if (hasValidated && hasValidated.includes(property)) {
-            return this.get('hasError') ? 'error' : 'success';
+            return this.hasError ? 'error' : 'success';
         } else {
             return '';
         }

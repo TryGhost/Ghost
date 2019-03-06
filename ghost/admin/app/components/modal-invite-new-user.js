@@ -32,7 +32,7 @@ export default ModalComponent.extend(ValidationEngine, {
         this._super(...arguments);
         // TODO: this should not be needed, ValidationEngine acts as a
         // singleton and so it's errors and hasValidated state stick around
-        this.get('errors').clear();
+        this.errors.clear();
         this.set('hasValidated', emberA());
     },
 
@@ -43,33 +43,33 @@ export default ModalComponent.extend(ValidationEngine, {
         },
 
         confirm() {
-            this.get('sendInvitation').perform();
+            this.sendInvitation.perform();
         }
     },
 
     validate() {
-        let email = this.get('email');
+        let email = this.email;
 
         // TODO: either the validator should check the email's existence or
         // the API should return an appropriate error when attempting to save
         return new Promise((resolve, reject) => this._super().then(() => RSVP.hash({
-            users: this.get('store').findAll('user', {reload: true}),
-            invites: this.get('store').findAll('invite', {reload: true})
+            users: this.store.findAll('user', {reload: true}),
+            invites: this.store.findAll('invite', {reload: true})
         }).then((data) => {
             let existingUser = data.users.findBy('email', email);
             let existingInvite = data.invites.findBy('email', email);
 
             if (existingUser || existingInvite) {
-                this.get('errors').clear('email');
+                this.errors.clear('email');
                 if (existingUser) {
-                    this.get('errors').add('email', 'A user with that email address already exists.');
+                    this.errors.add('email', 'A user with that email address already exists.');
                 } else {
-                    this.get('errors').add('email', 'A user with that email address was already invited.');
+                    this.errors.add('email', 'A user with that email address was already invited.');
                 }
 
                 // TODO: this shouldn't be needed, ValidationEngine doesn't mark
                 // properties as validated when validating an entire object
-                this.get('hasValidated').addObject('email');
+                this.hasValidated.addObject('email');
                 reject();
             } else {
                 resolve();
@@ -77,34 +77,34 @@ export default ModalComponent.extend(ValidationEngine, {
         }), () => {
             // TODO: this shouldn't be needed, ValidationEngine doesn't mark
             // properties as validated when validating an entire object
-            this.get('hasValidated').addObject('email');
+            this.hasValidated.addObject('email');
             reject();
         }));
     },
 
     fetchRoles: task(function * () {
-        let roles = yield this.get('store').query('role', {permissions: 'assign'});
+        let roles = yield this.store.query('role', {permissions: 'assign'});
         let authorRole = roles.findBy('name', 'Author');
 
         this.set('roles', roles);
         this.set('authorRole', authorRole);
 
-        if (!this.get('role')) {
+        if (!this.role) {
             this.set('role', authorRole);
         }
     }),
 
     sendInvitation: task(function* () {
-        let email = this.get('email');
-        let role = this.get('role');
-        let notifications = this.get('notifications');
+        let email = this.email;
+        let role = this.role;
+        let notifications = this.notifications;
         let notificationText = `Invitation sent! (${email})`;
         let invite;
 
         try {
             yield this.validate();
 
-            invite = this.get('store').createRecord('invite', {
+            invite = this.store.createRecord('invite', {
                 email,
                 role
             });

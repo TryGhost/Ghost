@@ -17,17 +17,17 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     },
 
     model() {
-        return this.get('settings').reload();
+        return this.settings.reload();
     },
 
     actions: {
         save() {
-            this.get('controller').send('save');
+            this.controller.send('save');
         },
 
         willTransition(transition) {
-            let controller = this.get('controller');
-            let settings = this.get('settings');
+            let controller = this.controller;
+            let settings = this.settings;
             let modelIsDirty = settings.get('hasDirtyAttributes');
 
             if (modelIsDirty) {

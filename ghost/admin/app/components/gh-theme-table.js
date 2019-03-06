@@ -7,7 +7,7 @@ export default Component.extend({
     themes: null,
 
     sortedThemes: computed('themes.@each.active', function () {
-        let themes = get(this, 'themes').map((t) => {
+        let themes = this.themes.map((t) => {
             let theme = {};
             let themePackage = get(t, 'package');
 

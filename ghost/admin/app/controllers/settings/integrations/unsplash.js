@@ -16,11 +16,11 @@ export default Controller.extend({
 
     actions: {
         save() {
-            this.get('save').perform();
+            this.save.perform();
         },
 
         update(value) {
-            if (!this.get('dirtyAttributes')) {
+            if (!this.dirtyAttributes) {
                 this.set('rollbackValue', this.get('unsplashSettings.isActive'));
             }
             this.set('unsplashSettings.isActive', value);
@@ -28,9 +28,9 @@ export default Controller.extend({
         },
 
         toggleLeaveSettingsModal(transition) {
-            let leaveTransition = this.get('leaveSettingsTransition');
+            let leaveTransition = this.leaveSettingsTransition;
 
-            if (!transition && this.get('showLeaveSettingsModal')) {
+            if (!transition && this.showLeaveSettingsModal) {
                 this.set('leaveSettingsTransition', null);
                 this.set('showLeaveSettingsModal', false);
                 return;
@@ -52,15 +52,15 @@ export default Controller.extend({
         },
 
         leaveSettings() {
-            let transition = this.get('leaveSettingsTransition');
+            let transition = this.leaveSettingsTransition;
 
             if (!transition) {
-                this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+                this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
                 return;
             }
 
             // roll back changes on model props
-            this.set('unsplashSettings.isActive', this.get('rollbackValue'));
+            this.set('unsplashSettings.isActive', this.rollbackValue);
             this.set('dirtyAttributes', false);
             this.set('rollbackValue', null);
 
@@ -69,8 +69,8 @@ export default Controller.extend({
     },
 
     save: task(function* () {
-        let unsplash = this.get('unsplashSettings');
-        let settings = this.get('settings');
+        let unsplash = this.unsplashSettings;
+        let settings = this.settings;
 
         try {
             settings.set('unsplash', unsplash);
@@ -79,7 +79,7 @@ export default Controller.extend({
             return yield settings.save();
         } catch (error) {
             if (error) {
-                this.get('notifications').showAPIError(error);
+                this.notifications.showAPIError(error);
                 throw error;
             }
         }

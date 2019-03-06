@@ -38,7 +38,7 @@ export default Controller.extend({
 
     signup: task(function* () {
         let setupProperties = ['name', 'email', 'password', 'token'];
-        let notifications = this.get('notifications');
+        let notifications = this.notifications;
 
         this.set('flowErrors', '');
         this.get('signupDetails.hasValidated').addObjects(setupProperties);
@@ -73,9 +73,9 @@ export default Controller.extend({
 
     _completeInvitation() {
         let authUrl = this.get('ghostPaths.url').api('authentication', 'invitation');
-        let signupDetails = this.get('signupDetails');
+        let signupDetails = this.signupDetails;
 
-        return this.get('ajax').post(authUrl, {
+        return this.ajax.post(authUrl, {
             dataType: 'json',
             data: {
                 invitation: [{
@@ -92,13 +92,13 @@ export default Controller.extend({
         let email = this.get('signupDetails.email');
         let password = this.get('signupDetails.password');
 
-        return this.get('session')
+        return this.session
             .authenticate('authenticator:cookie', email, password);
     },
 
     _sendImage: task(function* () {
         let formData = new FormData();
-        let imageFile = this.get('profileImage');
+        let imageFile = this.profileImage;
         let uploadUrl = this.get('ghostPaths.url').api('images', 'upload');
 
         if (imageFile) {
@@ -106,7 +106,7 @@ export default Controller.extend({
             formData.append('purpose', 'profile_image');
 
             let user = yield this.get('session.user');
-            let response = yield this.get('ajax').post(uploadUrl, {
+            let response = yield this.ajax.post(uploadUrl, {
                 data: formData,
                 processData: false,
                 contentType: false,

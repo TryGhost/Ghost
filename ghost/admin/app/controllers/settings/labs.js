@@ -84,7 +84,7 @@ export default Controller.extend({
     actions: {
         onUpload(file) {
             let formData = new FormData();
-            let notifications = this.get('notifications');
+            let notifications = this.notifications;
             let currentUserId = this.get('session.user.id');
             let dbUrl = this.get('ghostPaths.url').api('db');
 
@@ -95,7 +95,7 @@ export default Controller.extend({
             return this._validate(file).then(() => {
                 formData.append('importfile', file);
 
-                return this.get('ajax').post(dbUrl, {
+                return this.ajax.post(dbUrl, {
                     data: formData,
                     dataType: 'json',
                     cache: false,
@@ -103,7 +103,7 @@ export default Controller.extend({
                     processData: false
                 });
             }).then((response) => {
-                let store = this.get('store');
+                let store = this.store;
 
                 this.set('importSuccessful', true);
 
@@ -126,9 +126,9 @@ export default Controller.extend({
                     notifications.showNotification('Import successful.', {key: 'import.upload.success'});
 
                     // reload settings
-                    return this.get('settings').reload().then((settings) => {
-                        this.get('feature').fetch();
-                        this.get('config').set('blogTitle', settings.get('title'));
+                    return this.settings.reload().then((settings) => {
+                        this.feature.fetch();
+                        this.config.set('blogTitle', settings.get('title'));
                     });
                 });
             }).catch((response) => {
@@ -187,7 +187,7 @@ export default Controller.extend({
             });
             let stripeConfig = stripeProcessor.config;
             stripeConfig.product = {
-                name: this.get('settings').get('title')
+                name: this.settings.get('title')
             };
             if (key === 'isPaid') {
                 subscriptionSettings.isPaid = event;
@@ -219,7 +219,7 @@ export default Controller.extend({
                         secret_token: '',
                         public_token: '',
                         product: {
-                            name: this.get('settings').get('title')
+                            name: this.settings.get('title')
                         },
                         plans: [
                             {
@@ -273,7 +273,7 @@ export default Controller.extend({
             });
         }
 
-        let accept = this.get('importMimeType');
+        let accept = this.importMimeType;
 
         if (!isBlank(accept) && file && accept.indexOf(file.type) === -1) {
             return RSVP.reject(new UnsupportedMediaTypeError());
@@ -283,11 +283,11 @@ export default Controller.extend({
     },
 
     sendTestEmail: task(function* () {
-        let notifications = this.get('notifications');
+        let notifications = this.notifications;
         let emailUrl = this.get('ghostPaths.url').api('mail', 'test');
 
         try {
-            yield this.get('ajax').post(emailUrl);
+            yield this.ajax.post(emailUrl);
             notifications.showAlert('Check your email for the test message.', {type: 'info', key: 'test-email.send.success'});
             return true;
         } catch (error) {
@@ -297,7 +297,7 @@ export default Controller.extend({
 
     saveSettings: task(function* () {
         try {
-            return yield this.get('settings').save();
+            return yield this.settings.save();
         } catch (error) {
             throw error;
         }

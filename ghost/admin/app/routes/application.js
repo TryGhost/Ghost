@@ -43,7 +43,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     routeAfterAuthentication: 'posts',
 
     beforeModel() {
-        return this.get('config').fetchUnauthenticated();
+        return this.config.fetchUnauthenticated();
     },
 
     afterModel(model, transition) {
@@ -53,10 +53,10 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             this.set('appLoadTransition', transition);
             transition.send('loadServerNotifications');
 
-            let configPromise = this.get('config').fetchAuthenticated();
-            let featurePromise = this.get('feature').fetch();
-            let settingsPromise = this.get('settings').fetch();
-            let tourPromise = this.get('tour').fetchViewed();
+            let configPromise = this.config.fetchAuthenticated();
+            let featurePromise = this.feature.fetch();
+            let settingsPromise = this.settings.fetch();
+            let tourPromise = this.tour.fetchViewed();
 
             // return the feature/settings load promises so that we block until
             // they are loaded to enable synchronous access everywhere
@@ -76,7 +76,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
 
     actions: {
         closeMenus() {
-            this.get('ui').closeMenus();
+            this.ui.closeMenus();
         },
 
         didTransition() {
@@ -85,7 +85,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         },
 
         signedIn() {
-            this.get('notifications').clearAll();
+            this.notifications.clearAll();
             this.send('loadServerNotifications', true);
         },
 
@@ -100,9 +100,9 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                         this.store.findAll('notification', {reload: true}).then((serverNotifications) => {
                             serverNotifications.forEach((notification) => {
                                 if (notification.get('top') || notification.get('custom')) {
-                                    this.get('notifications').handleNotification(notification, isDelayed);
+                                    this.notifications.handleNotification(notification, isDelayed);
                                 } else {
-                                    this.get('upgradeStatus').handleUpgradeNotification(notification);
+                                    this.upgradeStatus.handleUpgradeNotification(notification);
                                 }
                             });
                         });
@@ -126,7 +126,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 }
 
                 let routeInfo = transition.handlerInfos[transition.handlerInfos.length - 1];
-                let router = this.get('router');
+                let router = this.router;
                 let params = [];
 
                 for (let key of Object.keys(routeInfo.params)) {
@@ -146,7 +146,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                     transition.abort();
                 }
 
-                this.get('upgradeStatus').requireUpgrade();
+                this.upgradeStatus.requireUpgrade();
 
                 if (this._appLoaded) {
                     return false;
@@ -158,7 +158,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                     transition.abort();
                 }
 
-                this.get('upgradeStatus').maintenanceAlert();
+                this.upgradeStatus.maintenanceAlert();
 
                 if (this._appLoaded) {
                     return false;
@@ -166,7 +166,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             }
 
             if (isAjaxError(error) || error && error.payload && isEmberArray(error.payload.errors)) {
-                this.get('notifications').showAPIError(error);
+                this.notifications.showAPIError(error);
                 // don't show the 500 page if we weren't navigating
                 if (!transition) {
                     return false;
@@ -197,7 +197,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     },
 
     sessionInvalidated() {
-        let transition = this.get('appLoadTransition');
+        let transition = this.appLoadTransition;
 
         if (transition) {
             transition.send('authorizationFailed');

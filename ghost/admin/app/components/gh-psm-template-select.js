@@ -41,7 +41,7 @@ export default Component.extend({
     }),
 
     selectedTemplate: computed('post.customTemplate', 'customTemplates.[]', function () {
-        let templates = this.get('customTemplates');
+        let templates = this.customTemplates;
         let filename = this.get('post.customTemplate');
 
         return templates.findBy('filename', filename);
@@ -50,7 +50,7 @@ export default Component.extend({
     // hooks
     didInsertElement() {
         this._super(...arguments);
-        this.get('loadActiveTheme').perform();
+        this.loadActiveTheme.perform();
     },
 
     actions: {
@@ -61,7 +61,7 @@ export default Component.extend({
 
     // tasks
     loadActiveTheme: task(function* () {
-        let store = this.get('store');
+        let store = this.store;
         let themes = yield store.peekAll('theme');
 
         if (isEmpty(themes)) {
