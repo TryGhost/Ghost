@@ -42,6 +42,13 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
 
     routeAfterAuthentication: 'posts',
 
+    init() {
+        this._super(...arguments);
+        this.router.on('routeDidChange', () => {
+            this.notifications.displayDelayed();
+        });
+    },
+
     beforeModel() {
         return this.config.fetchUnauthenticated();
     },
