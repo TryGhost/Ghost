@@ -120,6 +120,21 @@ describe('Auth', function () {
         auth.authorize.requiresAuthorizedUser(req, res, next);
     });
 
+    it('should error with client auth and no user when public API is disabled', function (done) {
+        sinon.stub(labs, 'isSet').withArgs('publicAPI').returns(false);
+
+        req.user = false;
+        res.status = {};
+
+        const next = function next(err) {
+            err.statusCode.should.eql(403);
+            (err instanceof common.errors.NoPermissionError).should.eql(true);
+            done();
+        };
+
+        auth.authorize.requiresAuthorizedUserPublicAPI(req, res, next);
+    });
+
     describe('User Authentication', function () {
         it('should authenticate user', function (done) {
             req.headers = {};
@@ -204,10 +219,6 @@ describe('Auth', function () {
     });
 
     describe('Client Authentication', function () {
-        beforeEach(function () {
-            sinon.stub(labs, 'isSet').withArgs('publicAPI').returns(true);
-        });
-
         it('shouldn\'t require authorized client with bearer token', function (done) {
             req.headers = {};
             req.headers.authorization = 'Bearer ' + token;
@@ -347,25 +358,6 @@ describe('Auth', function () {
             next.called.should.be.true();
             next.calledWith(null, client).should.be.true();
             done();
-        });
-
-        it('shouldn\'t authenticate when publicAPI is disabled', function (done) {
-            labs.isSet.restore();
-            sinon.stub(labs, 'isSet').withArgs('publicAPI').returns(false);
-
-            req.body = {};
-            req.body.client_id = testClient;
-            req.body.client_secret = testSecret;
-            req.headers = {};
-
-            var next = function next(err) {
-                err.statusCode.should.eql(403);
-                (err instanceof common.errors.NoPermissionError).should.eql(true);
-                done();
-            };
-
-            registerSuccessfulClientPasswordStrategy();
-            auth.authenticate.authenticateClient(req, res, next);
         });
 
         it('shouldn\'t authenticate when error', function (done) {

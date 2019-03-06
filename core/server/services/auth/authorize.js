@@ -23,7 +23,9 @@ const authorize = {
                 return next();
             } else {
                 return next(new common.errors.NoPermissionError({
-                    message: common.i18n.t('errors.middleware.auth.pleaseSignIn')
+                    message: common.i18n.t('errors.middleware.auth.publicAPIDisabled.error'),
+                    context: common.i18n.t('errors.middleware.auth.publicAPIDisabled.context'),
+                    help: common.i18n.t('errors.middleware.auth.forInformationRead', {url: 'https://docs.ghost.org/api/content/'})
                 }));
             }
         }
