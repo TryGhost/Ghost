@@ -143,4 +143,51 @@ describe('Settings API', function () {
                     });
             });
     });
+
+    it('Will transform "1"', function (done) {
+        request.get(localUtils.API.getApiQuery('settings/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                const jsonResponse = res.body,
+                    settingToChange = {
+                        settings: [
+                            {
+                                key: 'is_private',
+                                value: '1'
+                            }
+                        ]
+                    };
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.settings);
+
+                request.put(localUtils.API.getApiQuery('settings/'))
+                    .set('Origin', config.get('url'))
+                    .send(settingToChange)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        const putBody = res.body;
+                        res.headers['x-cache-invalidate'].should.eql('/*');
+                        should.exist(putBody);
+
+                        putBody.settings[0].key.should.eql('is_private');
+                        putBody.settings[0].value.should.eql(true);
+
+                        localUtils.API.checkResponse(putBody, 'settings');
+                        done();
+                    });
+            });
+    });
 });

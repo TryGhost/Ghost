@@ -98,6 +98,27 @@ Settings = ghostBookshelf.Model.extend({
             .then(function then() {
                 return validation.validateSettings(getDefaultSettings(), self);
             });
+    },
+
+    parse() {
+        const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
+
+        // transform "0" to false
+        // transform "false" to false
+        // transform "null" to null
+        if (attrs.value === '0' || attrs.value === '1') {
+            attrs.value = !!+attrs.value;
+        }
+
+        if (attrs.value === 'false' || attrs.value === 'true') {
+            attrs.value = JSON.parse(attrs.value);
+        }
+
+        if (attrs.value === 'null') {
+            attrs.value = null;
+        }
+
+        return attrs;
     }
 }, {
     findOne: function (data, options) {

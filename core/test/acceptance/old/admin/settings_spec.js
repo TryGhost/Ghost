@@ -114,6 +114,10 @@ describe('Settings API', function () {
                             {
                                 key: 'slack',
                                 value: JSON.stringify({username: 'username'})
+                            },
+                            {
+                                key: 'is_private',
+                                value: false
                             }
                         ]
                     };
@@ -147,6 +151,9 @@ describe('Settings API', function () {
 
                         putBody.settings[3].key.should.eql('slack');
                         should.equal(putBody.settings[3].value, JSON.stringify({username: 'username'}));
+
+                        putBody.settings[4].key.should.eql('is_private');
+                        should.equal(putBody.settings[4].value, false);
 
                         localUtils.API.checkResponse(putBody, 'settings');
                         done();
