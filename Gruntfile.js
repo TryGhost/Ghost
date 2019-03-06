@@ -198,6 +198,12 @@ const configureGrunt = function (grunt) {
                     }
                 },
                 stderr: function (chunk) {
+                    // ember-data 3.6.0-3.7.0 outputs a "Circular dependency" warning which we want to ignore
+                    // TODO: remove after upgrading to ember-data 3.8.0 which already filters the output
+                    if (chunk.indexOf('Circular dependency') > -1) {
+                        return;
+                    }
+
                     hasBuiltClient = true;
                     grunt.log.error(chunk);
                 }
