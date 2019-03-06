@@ -215,7 +215,10 @@ const configureGrunt = function (grunt) {
                     var upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
                     grunt.log.writeln('Pulling down the latest master from ' + upstream);
                     return `
-                        if ! git diff --exit-code --quiet; then
+                        git submodule sync
+                        git submodule update
+
+                        if ! git diff --exit-code --quiet --ignore-submodules=untracked; then
                             echo "Working directory is not clean, do you have uncommited changes? Please commit, stash or discard changes to continue."
                             exit 1
                         fi
