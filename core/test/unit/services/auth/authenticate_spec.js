@@ -349,25 +349,6 @@ describe('Auth', function () {
             done();
         });
 
-        it('shouldn\'t authenticate when publicAPI is disabled', function (done) {
-            labs.isSet.restore();
-            sinon.stub(labs, 'isSet').withArgs('publicAPI').returns(false);
-
-            req.body = {};
-            req.body.client_id = testClient;
-            req.body.client_secret = testSecret;
-            req.headers = {};
-
-            var next = function next(err) {
-                err.statusCode.should.eql(403);
-                (err instanceof common.errors.NoPermissionError).should.eql(true);
-                done();
-            };
-
-            registerSuccessfulClientPasswordStrategy();
-            auth.authenticate.authenticateClient(req, res, next);
-        });
-
         it('shouldn\'t authenticate when error', function (done) {
             req.body = {};
             req.body.client_id = testClient;
