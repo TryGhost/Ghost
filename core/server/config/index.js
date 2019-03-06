@@ -48,8 +48,9 @@ _private.loadNconf = function loadNconf(options) {
 
     nconf.sanitizeDatabaseProperties();
     nconf.makePathsAbsolute(nconf.get('paths'), 'paths');
-    nconf.makePathsAbsolute(nconf.get('database:connection'), 'database:connection');
-
+    if (nconf.get('database:client') === 'sqlite3') {
+        nconf.makePathsAbsolute(nconf.get('database:connection'), 'database:connection');
+    }
     /**
      * Check if the URL in config has a protocol
      */
