@@ -38,7 +38,7 @@ module.exports = {
                             common.logging.warn(new common.errors.ThemeValidationError({
                                 errorType: 'ThemeWorksButHasErrors',
                                 message: common.i18n.t('errors.middleware.themehandler.themeHasErrors', {theme: activeThemeName}),
-                                errorDetails: JSON.stringify(checkedTheme.results.error, null, '\t')
+                                errorDetails: checkedTheme.results.error
                             }));
                         }
 
@@ -49,7 +49,7 @@ module.exports = {
                         if (err.errorDetails) {
                             common.logging.error(new common.errors.ThemeValidationError({
                                 message: common.i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}),
-                                errorDetails: JSON.stringify(err.errorDetails, null, '\t')
+                                errorDetails: err.errorDetails
                             }));
                         }
 
