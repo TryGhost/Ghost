@@ -30,7 +30,7 @@ export default Controller.extend(ValidationEngine, {
 
     actions: {
         setup() {
-            this.get('setup').perform();
+            this.setup.perform();
         },
 
         preValidate(model) {
@@ -54,16 +54,16 @@ export default Controller.extend(ValidationEngine, {
         this.set('session.skipAuthSuccessHandler', true);
 
         try {
-            let authResult = yield this.get('session')
+            let authResult = yield this.session
                 .authenticate(authStrategy, ...authentication);
 
-            this.get('errors').remove('session');
+            this.errors.remove('session');
 
             return authResult;
         } catch (error) {
             if (error && error.payload && error.payload.errors) {
                 if (isVersionMismatchError(error)) {
-                    return this.get('notifications').showAPIError(error);
+                    return this.notifications.showAPIError(error);
                 }
 
                 error.payload.errors.forEach((err) => {
@@ -73,7 +73,7 @@ export default Controller.extend(ValidationEngine, {
                 this.set('flowErrors', error.payload.errors[0].message.string);
             } else {
                 // Connection errors don't return proper status message, only req.body
-                this.get('notifications').showAlert('There was a problem on the server.', {type: 'error', key: 'session.authenticate.failed'});
+                this.notifications.showAlert('There was a problem on the server.', {type: 'error', key: 'session.authenticate.failed'});
             }
         }
     }),
@@ -85,13 +85,13 @@ export default Controller.extend(ValidationEngine, {
      */
     _sendImage(user) {
         let formData = new FormData();
-        let imageFile = this.get('profileImage');
+        let imageFile = this.profileImage;
         let uploadUrl = this.get('ghostPaths.url').api('images', 'upload');
 
         formData.append('file', imageFile, imageFile.name);
         formData.append('purpose', 'profile_image');
 
-        return this.get('ajax').post(uploadUrl, {
+        return this.ajax.post(uploadUrl, {
             data: formData,
             processData: false,
             contentType: false,
@@ -102,7 +102,7 @@ export default Controller.extend(ValidationEngine, {
             let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
             user.profile_image = imageUrl;
 
-            return this.get('ajax').put(usersUrl, {
+            return this.ajax.put(usersUrl, {
                 data: {
                     users: [user]
                 }
@@ -113,17 +113,17 @@ export default Controller.extend(ValidationEngine, {
     _passwordSetup() {
         let setupProperties = ['blogTitle', 'name', 'email', 'password'];
         let data = this.getProperties(setupProperties);
-        let config = this.get('config');
-        let method = this.get('blogCreated') ? 'put' : 'post';
+        let config = this.config;
+        let method = this.blogCreated ? 'put' : 'post';
 
         this.set('flowErrors', '');
 
-        this.get('hasValidated').addObjects(setupProperties);
+        this.hasValidated.addObjects(setupProperties);
 
         return this.validate().then(() => {
             let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');
 
-            return this.get('ajax')[method](authUrl, {
+            return this.ajax[method](authUrl, {
                 data: {
                     setup: [{
                         name: data.name,
@@ -143,7 +143,7 @@ export default Controller.extend(ValidationEngine, {
                 // Don't call the success handler, otherwise we will be redirected to admin
                 this.set('session.skipAuthSuccessHandler', true);
 
-                return this.get('session').authenticate('authenticator:cookie', this.get('email'), this.get('password')).then(() => {
+                return this.session.authenticate('authenticator:cookie', this.email, this.password).then(() => {
                     this.set('blogCreated', true);
                     return this._afterAuthentication(result);
                 }).catch((error) => {
@@ -163,7 +163,7 @@ export default Controller.extend(ValidationEngine, {
         if (isInvalidError(resp)) {
             this.set('flowErrors', resp.payload.errors[0].message);
         } else {
-            this.get('notifications').showAPIError(resp, {key: 'setup.blog-details'});
+            this.notifications.showAPIError(resp, {key: 'setup.blog-details'});
         }
     },
 
@@ -172,22 +172,22 @@ export default Controller.extend(ValidationEngine, {
             this.set('flowErrors', error.payload.errors[0].message);
         } else {
             // Connection errors don't return proper status message, only req.body
-            this.get('notifications').showAlert('There was a problem on the server.', {type: 'error', key: 'setup.authenticate.failed'});
+            this.notifications.showAlert('There was a problem on the server.', {type: 'error', key: 'setup.authenticate.failed'});
         }
     },
 
     _afterAuthentication(result) {
         // fetch settings and private config for synchronous access before transitioning
         let fetchSettingsAndConfig = RSVP.all([
-            this.get('settings').fetch()
+            this.settings.fetch()
         ]);
 
-        if (this.get('profileImage')) {
+        if (this.profileImage) {
             return this._sendImage(result.users[0])
                 .then(() => (fetchSettingsAndConfig))
                 .then(() => (this.transitionToRoute('setup.three')))
                 .catch((resp) => {
-                    this.get('notifications').showAPIError(resp, {key: 'setup.blog-details'});
+                    this.notifications.showAPIError(resp, {key: 'setup.blog-details'});
                 });
         } else {
             return fetchSettingsAndConfig.then(() => this.transitionToRoute('setup.three'));

@@ -56,9 +56,9 @@ export default Service.extend({
         }
 
         if (!delayed) {
-            this.get('content').pushObject(message);
+            this.content.pushObject(message);
         } else {
-            this.get('delayedNotifications').pushObject(message);
+            this.delayedNotifications.pushObject(message);
         }
     },
 
@@ -94,9 +94,9 @@ export default Service.extend({
     showAPIError(resp, options) {
         // handle "global" errors
         if (isVersionMismatchError(resp)) {
-            return this.get('upgradeStatus').requireUpgrade();
+            return this.upgradeStatus.requireUpgrade();
         } else if (isMaintenanceError(resp)) {
-            return this.get('upgradeStatus').maintenanceAlert();
+            return this.upgradeStatus.maintenanceAlert();
         }
 
         // loop over ember-ajax errors object
@@ -140,13 +140,13 @@ export default Service.extend({
 
     displayDelayed() {
         this.delayedNotifications.forEach((message) => {
-            this.get('content').pushObject(message);
+            this.content.pushObject(message);
         });
         this.delayedNotifications = [];
     },
 
     closeNotification(notification) {
-        let content = this.get('content');
+        let content = this.content;
 
         if (typeof notification.toJSON === 'function') {
             notification.deleteRecord();
@@ -167,7 +167,7 @@ export default Service.extend({
     },
 
     clearAll() {
-        this.get('content').clear();
+        this.content.clear();
     },
 
     _removeItems(status, key) {
@@ -178,14 +178,14 @@ export default Service.extend({
             let escapedKeyBase = keyBase.replace('.', '\\.');
             let keyRegex = new RegExp(`^${escapedKeyBase}`);
 
-            this.set('content', this.get('content').reject((item) => {
+            this.set('content', this.content.reject((item) => {
                 let itemKey = get(item, 'key');
                 let itemStatus = get(item, 'status');
 
                 return itemStatus === status && (itemKey && itemKey.match(keyRegex));
             }));
         } else {
-            this.set('content', this.get('content').rejectBy('status', status));
+            this.set('content', this.content.rejectBy('status', status));
         }
     },
 

@@ -19,6 +19,6 @@ export default Component.extend({
     classNames: ['content-cover'],
 
     click() {
-        this.get('ui').closeMenus();
+        this.ui.closeMenus();
     }
 });

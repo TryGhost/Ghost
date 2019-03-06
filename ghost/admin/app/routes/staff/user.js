@@ -42,9 +42,9 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         },
 
         willTransition(transition) {
-            let controller = this.get('controller');
-            let user = controller.get('user');
-            let dirtyAttributes = controller.get('dirtyAttributes');
+            let controller = this.controller;
+            let user = controller.user;
+            let dirtyAttributes = controller.dirtyAttributes;
             let modelIsDirty = user.get('hasDirtyAttributes');
 
             // always reset the password properties on the user model when leaving

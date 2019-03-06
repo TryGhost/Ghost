@@ -28,7 +28,7 @@ export default Model.extend({
 
         let inviteUrl = this.get('ghostPaths.url').api('invites');
 
-        return this.get('ajax').post(inviteUrl, {
+        return this.ajax.post(inviteUrl, {
             data: JSON.stringify({invites: [inviteData]}),
             contentType: 'application/json'
         });

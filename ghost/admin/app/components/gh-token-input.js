@@ -30,7 +30,7 @@ export default Component.extend({
     triggerComponent: 'gh-token-input/trigger',
 
     optionsWithoutSelected: computed('options.[]', 'selected.[]', function () {
-        return this.get('optionsWithoutSelectedTask').perform();
+        return this.optionsWithoutSelectedTask.perform();
     }),
 
     actions: {
@@ -41,7 +41,7 @@ export default Component.extend({
                 let lastSelection = select.selected[select.selected.length - 1];
 
                 if (lastSelection) {
-                    this.get('onchange')(select.selected.slice(0, -1), select);
+                    this.onchange(select.selected.slice(0, -1), select);
                     select.actions.search('');
                     select.actions.open(event);
                 }
@@ -65,40 +65,40 @@ export default Component.extend({
         onfocus() {
             key.setScope('gh-token-input');
 
-            if (this.get('onfocus')) {
-                this.get('onfocus')(...arguments);
+            if (this.onfocus) {
+                this.onfocus(...arguments);
             }
         },
 
         onblur() {
             key.setScope('default');
 
-            if (this.get('onblur')) {
-                this.get('onblur')(...arguments);
+            if (this.onblur) {
+                this.onblur(...arguments);
             }
         }
     },
 
     optionsWithoutSelectedTask: task(function* () {
-        let options = yield this.get('options');
-        let selected = yield this.get('selected');
+        let options = yield this.options;
+        let selected = yield this.selected;
         return options.filter(o => !selected.includes(o));
     }),
 
     shouldShowCreateOption(term, options) {
-        if (!this.get('allowCreation')) {
+        if (!this.allowCreation) {
             return false;
         }
 
-        if (this.get('showCreateWhen')) {
-            return this.get('showCreateWhen')(term, options);
+        if (this.showCreateWhen) {
+            return this.showCreateWhen(term, options);
         } else {
             return this.hideCreateOptionOnSameTerm(term, options);
         }
     },
 
     hideCreateOptionOnSameTerm(term, options) {
-        let searchField = this.get('searchField');
+        let searchField = this.searchField;
         let existingOption = options.findBy(searchField, term);
         return !existingOption;
     },
@@ -110,17 +110,17 @@ export default Component.extend({
     },
 
     searchAndSuggest(term, select) {
-        return this.get('searchAndSuggestTask').perform(term, select);
+        return this.searchAndSuggestTask.perform(term, select);
     },
 
     searchAndSuggestTask: task(function* (term, select) {
-        let newOptions = (yield this.get('optionsWithoutSelected')).toArray();
+        let newOptions = (yield this.optionsWithoutSelected).toArray();
 
         if (term.length === 0) {
             return newOptions;
         }
 
-        let searchAction = this.get('search');
+        let searchAction = this.search;
         if (searchAction) {
             let results = yield searchAction(term, select);
 
@@ -153,9 +153,9 @@ export default Component.extend({
         let suggestion = selection.find(option => option.__isSuggestion__);
 
         if (suggestion) {
-            this.get('oncreate')(suggestion.__value__, select);
+            this.oncreate(suggestion.__value__, select);
         } else {
-            this.get('onchange')(selection, select);
+            this.onchange(selection, select);
         }
 
         // clear select search
@@ -164,8 +164,8 @@ export default Component.extend({
 
     filter(options, searchText) {
         let matcher;
-        if (this.get('searchField')) {
-            matcher = (option, text) => this.matcher(get(option, this.get('searchField')), text);
+        if (this.searchField) {
+            matcher = (option, text) => this.matcher(get(option, this.searchField), text);
         } else {
             matcher = (option, text) => this.matcher(option, text);
         }
@@ -181,7 +181,7 @@ export default Component.extend({
     },
 
     buildSuggestionLabel(term) {
-        let buildSuggestion = this.get('buildSuggestion');
+        let buildSuggestion = this.buildSuggestion;
         if (buildSuggestion) {
             return buildSuggestion(term);
         }

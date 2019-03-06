@@ -34,18 +34,18 @@ export default Controller.extend(ValidationEngine, {
 
     actions: {
         authenticate() {
-            this.get('validateAndAuthenticate').perform();
+            this.validateAndAuthenticate.perform();
         }
     },
 
     authenticate: task(function* (authStrategy, authentication) {
         try {
-            let authResult = yield this.get('session')
+            let authResult = yield this.session
                 .authenticate(authStrategy, ...authentication);
             let promises = [];
 
-            promises.pushObject(this.get('settings').fetch());
-            promises.pushObject(this.get('config').fetchAuthenticated());
+            promises.pushObject(this.settings.fetch());
+            promises.pushObject(this.config.fetchAuthenticated());
 
             // fetch settings and private config for synchronous access
             yield RSVP.all(promises);
@@ -53,7 +53,7 @@ export default Controller.extend(ValidationEngine, {
             return authResult;
         } catch (error) {
             if (isVersionMismatchError(error)) {
-                return this.get('notifications').showAPIError(error);
+                return this.notifications.showAPIError(error);
             }
 
             if (error && error.payload && error.payload.errors) {
@@ -73,7 +73,7 @@ export default Controller.extend(ValidationEngine, {
                 }
             } else {
                 // Connection errors don't return proper status message, only req.body
-                this.get('notifications').showAlert(
+                this.notifications.showAlert(
                     'There was a problem on the server.',
                     {type: 'error', key: 'session.authenticate.failed'}
                 );
@@ -82,7 +82,7 @@ export default Controller.extend(ValidationEngine, {
     }).drop(),
 
     validateAndAuthenticate: task(function* () {
-        let signin = this.get('signin');
+        let signin = this.signin;
         let authStrategy = 'authenticator:cookie';
 
         this.set('flowErrors', '');
@@ -91,11 +91,11 @@ export default Controller.extend(ValidationEngine, {
         $('#login').find('input').trigger('change');
 
         // This is a bit dirty, but there's no other way to ensure the properties are set as well as 'signin'
-        this.get('hasValidated').addObjects(this.authProperties);
+        this.hasValidated.addObjects(this.authProperties);
 
         try {
             yield this.validate({property: 'signin'});
-            return yield this.get('authenticate')
+            return yield this.authenticate
                 .perform(authStrategy, [signin.get('identification'), signin.get('password')]);
         } catch (error) {
             this.set('flowErrors', 'Please fill out the form to sign in.');
@@ -105,15 +105,15 @@ export default Controller.extend(ValidationEngine, {
     forgotten: task(function* () {
         let email = this.get('signin.identification');
         let forgottenUrl = this.get('ghostPaths.url').api('authentication', 'passwordreset');
-        let notifications = this.get('notifications');
+        let notifications = this.notifications;
 
         this.set('flowErrors', '');
         // This is a bit dirty, but there's no other way to ensure the properties are set as well as 'forgotPassword'
-        this.get('hasValidated').addObject('identification');
+        this.hasValidated.addObject('identification');
 
         try {
             yield this.validate({property: 'forgotPassword'});
-            yield this.get('ajax').post(forgottenUrl, {data: {passwordreset: [{email}]}});
+            yield this.ajax.post(forgottenUrl, {data: {passwordreset: [{email}]}});
             notifications.showAlert(
                 'Please check your email for instructions.',
                 {type: 'info', key: 'forgot-password.send.success'}

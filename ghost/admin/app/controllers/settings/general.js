@@ -44,7 +44,7 @@ export default Controller.extend({
 
     actions: {
         save() {
-            this.get('save').perform();
+            this.save.perform();
         },
 
         setTimezone(timezone) {
@@ -53,7 +53,7 @@ export default Controller.extend({
 
         removeImage(image) {
             // setting `null` here will error as the server treats it as "null"
-            this.get('settings').set(image, '');
+            this.settings.set(image, '');
         },
 
         /**
@@ -79,12 +79,12 @@ export default Controller.extend({
          */
         imageUploaded(property, results) {
             if (results[0]) {
-                return this.get('settings').set(property, results[0].url);
+                return this.settings.set(property, results[0].url);
             }
         },
 
         toggleIsPrivate(isPrivate) {
-            let settings = this.get('settings');
+            let settings = this.settings;
 
             settings.set('isPrivate', isPrivate);
             settings.get('errors').remove('password');
@@ -102,9 +102,9 @@ export default Controller.extend({
         },
 
         toggleLeaveSettingsModal(transition) {
-            let leaveTransition = this.get('leaveSettingsTransition');
+            let leaveTransition = this.leaveSettingsTransition;
 
-            if (!transition && this.get('showLeaveSettingsModal')) {
+            if (!transition && this.showLeaveSettingsModal) {
                 this.set('leaveSettingsTransition', null);
                 this.set('showLeaveSettingsModal', false);
                 return;
@@ -126,11 +126,11 @@ export default Controller.extend({
         },
 
         leaveSettings() {
-            let transition = this.get('leaveSettingsTransition');
-            let settings = this.get('settings');
+            let transition = this.leaveSettingsTransition;
+            let settings = this.settings;
 
             if (!transition) {
-                this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+                this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
                 return;
             }
 
@@ -141,7 +141,7 @@ export default Controller.extend({
         },
 
         validateFacebookUrl() {
-            let newUrl = this.get('_scratchFacebook');
+            let newUrl = this._scratchFacebook;
             let oldUrl = this.get('settings.facebook');
             let errMessage = '';
 
@@ -197,7 +197,7 @@ export default Controller.extend({
         },
 
         validateTwitterUrl() {
-            let newUrl = this.get('_scratchTwitter');
+            let newUrl = this._scratchTwitter;
             let oldUrl = this.get('settings.twitter');
             let errMessage = '';
 
@@ -253,23 +253,23 @@ export default Controller.extend({
     },
 
     _deleteTheme() {
-        let theme = this.get('store').peekRecord('theme', this.get('themeToDelete').name);
+        let theme = this.store.peekRecord('theme', this.themeToDelete.name);
 
         if (!theme) {
             return;
         }
 
         return theme.destroyRecord().catch((error) => {
-            this.get('notifications').showAPIError(error);
+            this.notifications.showAPIError(error);
         });
     },
 
     save: task(function* () {
-        let notifications = this.get('notifications');
-        let config = this.get('config');
+        let notifications = this.notifications;
+        let config = this.config;
 
         try {
-            let settings = yield this.get('settings').save();
+            let settings = yield this.settings.save();
             config.set('blogTitle', settings.get('title'));
 
             // this forces the document title to recompute after

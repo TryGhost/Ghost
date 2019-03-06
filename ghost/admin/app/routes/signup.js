@@ -21,7 +21,7 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
 
     beforeModel() {
         if (this.get('session.isAuthenticated')) {
-            this.get('notifications').showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true, key: 'signup.create.already-authenticated'});
+            this.notifications.showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true, key: 'signup.create.already-authenticated'});
         }
 
         this._super(...arguments);
@@ -38,7 +38,7 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
 
         return new Promise((resolve) => {
             if (!re.test(params.token)) {
-                this.get('notifications').showAlert('Invalid token.', {type: 'error', delayed: true, key: 'signup.create.invalid-token'});
+                this.notifications.showAlert('Invalid token.', {type: 'error', delayed: true, key: 'signup.create.invalid-token'});
 
                 return resolve(this.transitionTo('signin'));
             }
@@ -55,14 +55,14 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
 
             let authUrl = this.get('ghostPaths.url').api('authentication', 'invitation');
 
-            return this.get('ajax').request(authUrl, {
+            return this.ajax.request(authUrl, {
                 dataType: 'json',
                 data: {
                     email
                 }
             }).then((response) => {
                 if (response && response.invitation && response.invitation[0].valid === false) {
-                    this.get('notifications').showAlert('The invitation does not exist or is no longer valid.', {type: 'warn', delayed: true, key: 'signup.create.invalid-invitation'});
+                    this.notifications.showAlert('The invitation does not exist or is no longer valid.', {type: 'warn', delayed: true, key: 'signup.create.invalid-invitation'});
 
                     return resolve(this.transitionTo('signin'));
                 }

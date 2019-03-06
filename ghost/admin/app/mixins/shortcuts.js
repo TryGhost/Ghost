@@ -46,7 +46,7 @@ key.setScope('default');
 export default Mixin.create({
 
     registerShortcuts() {
-        let shortcuts = this.get('shortcuts');
+        let shortcuts = this.shortcuts;
 
         Object.keys(shortcuts).forEach((shortcut) => {
             let scope = shortcuts[shortcut].scope || 'default';
@@ -69,7 +69,7 @@ export default Mixin.create({
     },
 
     removeShortcuts() {
-        let shortcuts = this.get('shortcuts');
+        let shortcuts = this.shortcuts;
 
         Object.keys(shortcuts).forEach((shortcut) => {
             let scope = shortcuts[shortcut].scope || 'default';

@@ -54,7 +54,7 @@ export default Component.extend({
     },
 
     _setIconStyle() {
-        let icon = this.get('icon');
+        let icon = this.icon;
 
         if (icon === this._icon) {
             return;

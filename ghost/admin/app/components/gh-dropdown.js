@@ -21,11 +21,11 @@ export default Component.extend(DropdownMixin, {
 
     // Managed the toggle between the fade-in and fade-out classes
     fadeIn: computed('isOpen', 'closing', function () {
-        return this.get('isOpen') && !this.get('closing');
+        return this.isOpen && !this.closing;
     }),
 
     didInsertElement() {
-        let dropdownService = this.get('dropdown');
+        let dropdownService = this.dropdown;
 
         this._super(...arguments);
 
@@ -34,7 +34,7 @@ export default Component.extend(DropdownMixin, {
     },
 
     willDestroyElement() {
-        let dropdownService = this.get('dropdown');
+        let dropdownService = this.dropdown;
 
         this._super(...arguments);
 
@@ -51,14 +51,14 @@ export default Component.extend(DropdownMixin, {
     close() {
         this.set('closing', true);
 
-        if (this.get('button')) {
+        if (this.button) {
             this.set('button.isOpen', false);
         }
 
         this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', (event) => {
             if (event.originalEvent.animationName === 'fade-out') {
                 run(this, function () {
-                    if (this.get('closing')) {
+                    if (this.closing) {
                         this.set('isOpen', false);
                         this.set('closing', false);
                     }
@@ -69,11 +69,11 @@ export default Component.extend(DropdownMixin, {
 
     // Called by the dropdown service when any dropdown button is clicked.
     toggle(options) {
-        let isClosing = this.get('closing');
-        let isOpen = this.get('isOpen');
-        let name = this.get('name');
+        let isClosing = this.closing;
+        let isOpen = this.isOpen;
+        let name = this.name;
         let targetDropdownName = options.target;
-        let button = this.get('button');
+        let button = this.button;
 
         if (name === targetDropdownName && (!isOpen || isClosing)) {
             if (!button) {
@@ -89,7 +89,7 @@ export default Component.extend(DropdownMixin, {
     click(event) {
         this._super(event);
 
-        if (this.get('closeOnClick')) {
+        if (this.closeOnClick) {
             return this.close();
         }
     }

@@ -22,15 +22,15 @@ export default ModalComponent.extend(ValidationEngine, {
 
     actions: {
         confirm() {
-            this.get('reauthenticate').perform();
+            this.reauthenticate.perform();
         }
     },
 
     _authenticate() {
-        let session = this.get('session');
+        let session = this.session;
         let authStrategy = 'authenticator:cookie';
-        let identification = this.get('identification');
-        let password = this.get('password');
+        let identification = this.identification;
+        let password = this.password;
 
         session.set('skipAuthSuccessHandler', true);
 
@@ -50,24 +50,24 @@ export default ModalComponent.extend(ValidationEngine, {
         this.set('authenticationError', null);
 
         return this.validate({property: 'signin'}).then(() => this._authenticate().then(() => {
-            this.get('notifications').closeAlerts();
+            this.notifications.closeAlerts();
             this.send('closeModal');
             return true;
         }).catch((error) => {
             if (error && error.payload && error.payload.errors) {
                 error.payload.errors.forEach((err) => {
                     if (isVersionMismatchError(err)) {
-                        return this.get('notifications').showAPIError(error);
+                        return this.notifications.showAPIError(error);
                     }
                     err.message = htmlSafe(err.context || err.message);
                 });
 
-                this.get('errors').add('password', 'Incorrect password');
-                this.get('hasValidated').pushObject('password');
+                this.errors.add('password', 'Incorrect password');
+                this.hasValidated.pushObject('password');
                 this.set('authenticationError', error.payload.errors[0].message);
             }
         }), () => {
-            this.get('hasValidated').pushObject('password');
+            this.hasValidated.pushObject('password');
             return false;
         });
     },

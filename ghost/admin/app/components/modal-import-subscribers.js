@@ -35,7 +35,7 @@ export default ModalComponent.extend({
         },
 
         closeModal() {
-            if (!this.get('closeDisabled')) {
+            if (!this.closeDisabled) {
                 this._super(...arguments);
             }
         }

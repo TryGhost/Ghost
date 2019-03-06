@@ -19,7 +19,7 @@ export default Component.extend({
                 }
             }
 
-            this.get('select').actions.search(term);
+            this.select.actions.search(term);
         },
 
         focusInput() {
@@ -31,7 +31,7 @@ export default Component.extend({
         },
 
         handleKeydown(e) {
-            let select = this.get('select');
+            let select = this.select;
 
             // TODO: remove keycode check once EPS is updated to 1.0
             if (!select.isOpen || e.keyCode === 32) {

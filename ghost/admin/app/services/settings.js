@@ -26,7 +26,7 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
     // save we have problems with the missing settings being removed or reset
     _loadSettings() {
         if (!this._loadingPromise) {
-            this._loadingPromise = this.get('store')
+            this._loadingPromise = this.store
                 .queryRecord('setting', {type: 'blog,theme,private,members'})
                 .then((settings) => {
                     this._loadingPromise = null;
@@ -38,7 +38,7 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
     },
 
     fetch() {
-        if (!this.get('content')) {
+        if (!this.content) {
             return this.reload();
         } else {
             return RSVP.resolve(this);
@@ -54,7 +54,7 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
     },
 
     save() {
-        let settings = this.get('content');
+        let settings = this.content;
 
         if (!settings) {
             return false;
@@ -67,10 +67,10 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
     },
 
     rollbackAttributes() {
-        return this.get('content').rollbackAttributes();
+        return this.content.rollbackAttributes();
     },
     
     changedAttributes() {
-        return this.get('content').changedAttributes();
+        return this.content.changedAttributes();
     }
 });

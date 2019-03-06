@@ -11,7 +11,7 @@ export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
 
     beforeModel() {
         if (this.get('session.isAuthenticated')) {
-            this.get('notifications').showAlert('You can\'t reset your password while you\'re signed in.', {type: 'warn', delayed: true, key: 'password.reset.signed-in'});
+            this.notifications.showAlert('You can\'t reset your password while you\'re signed in.', {type: 'warn', delayed: true, key: 'password.reset.signed-in'});
         }
 
         this._super(...arguments);

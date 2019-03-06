@@ -5,7 +5,7 @@ import {run} from '@ember/runloop';
 // mixin used for routes that need to set a css className on the body tag
 export default Mixin.create({
     activate() {
-        let cssClasses = this.get('classNames');
+        let cssClasses = this.classNames;
 
         this._super(...arguments);
 
@@ -19,7 +19,7 @@ export default Mixin.create({
     },
 
     deactivate() {
-        let cssClasses = this.get('classNames');
+        let cssClasses = this.classNames;
 
         this._super(...arguments);
 

@@ -89,8 +89,8 @@ const GhTourItemComponent = Component.extend({
 
     isMobile: reads('mediaQueries.isMobile'),
     isVisible: computed('isMobile', '_throbber', function () {
-        let isMobile = this.get('isMobile');
-        let hasThrobber = !isBlank(this.get('_throbber'));
+        let isMobile = this.isMobile;
+        let hasThrobber = !isBlank(this._throbber);
 
         return !isMobile && hasThrobber;
     }),
@@ -105,14 +105,14 @@ const GhTourItemComponent = Component.extend({
         this._handleOptOut = run.bind(this, this._remove);
         this._handleViewed = run.bind(this, this._removeIfViewed);
 
-        this.get('tour').on('optOut', this._handleOptOut);
-        this.get('tour').on('viewed', this._handleViewed);
+        this.tour.on('optOut', this._handleOptOut);
+        this.tour.on('viewed', this._handleViewed);
     },
 
     didReceiveAttrs() {
-        let throbberId = this.get('throbberId');
-        let throbber = this.get('tour').activeThrobber(throbberId);
-        let triangleClass = this.get('popoverTriangleClass');
+        let throbberId = this.throbberId;
+        let throbber = this.tour.activeThrobber(throbberId);
+        let triangleClass = this.popoverTriangleClass;
         let popoverPositions = triangleClassPositions[triangleClass];
 
         this._throbber = throbber;
@@ -122,8 +122,8 @@ const GhTourItemComponent = Component.extend({
     },
 
     willDestroyElement() {
-        this.get('tour').off('optOut', this._handleOptOut);
-        this.get('tour').off('viewed', this._handleViewed);
+        this.tour.off('optOut', this._handleOptOut);
+        this.tour.off('viewed', this._handleViewed);
         this._super(...arguments);
     },
 
@@ -137,21 +137,21 @@ const GhTourItemComponent = Component.extend({
         },
 
         markAsViewed() {
-            let throbberId = this.get('throbberId');
-            this.get('tour').markThrobberAsViewed(throbberId);
+            let throbberId = this.throbberId;
+            this.tour.markThrobberAsViewed(throbberId);
             this.set('_throbber', null);
             this._close();
         },
 
         optOut() {
-            this.get('tour').optOut();
+            this.tour.optOut();
             this.set('_throbber', null);
             this._close();
         }
     },
 
     _removeIfViewed(id) {
-        if (id === this.get('throbberId')) {
+        if (id === this.throbberId) {
             this._remove();
         }
     },

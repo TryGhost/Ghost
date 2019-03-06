@@ -30,14 +30,14 @@ const CmEditorComponent = Component.extend({
     _value: boundOneWay('value'), // make sure a value exists
 
     didReceiveAttrs() {
-        if (this.get('_value') === null || undefined) {
+        if (this._value === null || undefined) {
             this.set('_value', '');
         }
     },
 
     didInsertElement() {
         this._super(...arguments);
-        this.get('initCodeMirror').perform();
+        this.initCodeMirror.perform();
     },
 
     willDestroyElement() {
@@ -60,7 +60,7 @@ const CmEditorComponent = Component.extend({
     },
 
     initCodeMirror: task(function* () {
-        let loader = this.get('lazyLoader');
+        let loader = this.lazyLoader;
         yield loader.loadScript('codemirror', 'assets/codemirror/codemirror.js');
 
         scheduleOnce('afterRender', this, this._initCodeMirror);
@@ -68,7 +68,7 @@ const CmEditorComponent = Component.extend({
 
     _initCodeMirror() {
         let options = this.getProperties('lineNumbers', 'lineWrapping', 'indentUnit', 'mode', 'theme', 'autofocus');
-        assign(options, {value: this.get('_value')});
+        assign(options, {value: this._value});
 
         let textarea = this.element.querySelector('textarea');
         if (textarea && textarea === document.activeElement) {
@@ -105,7 +105,7 @@ const CmEditorComponent = Component.extend({
 
     _focus(codeMirror, event) {
         this.set('isFocused', true);
-        once(this, this.get('focus-in'), codeMirror.getValue(), codeMirror, event);
+        once(this, this['focus-in'], codeMirror.getValue(), codeMirror, event);
     },
 
     _blur(/* codeMirror, event */) {

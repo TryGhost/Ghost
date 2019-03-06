@@ -16,13 +16,13 @@ export default ModalComponent.extend({
         },
 
         confirm() {
-            this.get('addSubscriber').perform();
+            this.addSubscriber.perform();
         }
     },
 
     addSubscriber: task(function* () {
         try {
-            yield this.get('confirm')();
+            yield this.confirm();
             this.send('closeModal');
         } catch (error) {
             // TODO: server-side validation errors should be serialized

@@ -17,7 +17,7 @@ export default Mixin.create({
     stopEnterKeyDownPropagation: false,
 
     autofocus: computed(function () {
-        if (this.get('shouldFocus')) {
+        if (this.shouldFocus) {
             return (this.userAgent.os.isIOS) ? false : 'autofocus';
         }
 
@@ -30,7 +30,7 @@ export default Mixin.create({
     },
 
     click(event) {
-        if (this.get('selectOnClick')) {
+        if (this.selectOnClick) {
             event.currentTarget.select();
         }
     },
@@ -39,7 +39,7 @@ export default Mixin.create({
         // stop event propagation when pressing "enter"
         // most useful in the case when undesired (global) keyboard shortcuts
         // are getting triggered while interacting with this particular input element.
-        if (event.keyCode === 13 && this.get('stopEnterKeyDownPropagation')) {
+        if (event.keyCode === 13 && this.stopEnterKeyDownPropagation) {
             event.stopPropagation();
 
             return true;
@@ -75,7 +75,7 @@ export default Mixin.create({
     _focus() {
         // Until mobile safari has better support
         // for focusing, we just ignore it
-        if (this.get('shouldFocus') && !this.userAgent.os.isIOS) {
+        if (this.shouldFocus && !this.userAgent.os.isIOS) {
             this.element.focus();
         }
     },

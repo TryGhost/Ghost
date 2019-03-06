@@ -23,7 +23,7 @@ const TrimFocusInputComponent = GhostTextInput.extend({
         this.element.value = value;
         this._elementValueDidChange(event);
 
-        let inputMethod = this.get('input');
+        let inputMethod = this.input;
         if (inputMethod) {
             inputMethod(event);
         }

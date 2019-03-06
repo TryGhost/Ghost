@@ -34,8 +34,8 @@ export default Component.extend({
 
     actions: {
         resend() {
-            let invite = this.get('invite');
-            let notifications = this.get('notifications');
+            let invite = this.invite;
+            let notifications = this.notifications;
 
             this.set('isSending', true);
             invite.resend().then((result) => {
@@ -44,7 +44,7 @@ export default Component.extend({
                 // the server deletes the old record and creates a new one when
                 // resending so we need to update the store accordingly
                 invite.unloadRecord();
-                this.get('store').pushPayload('invite', result);
+                this.store.pushPayload('invite', result);
 
                 // If sending the invitation email fails, the API will still return a status of 201
                 // but the invite's status in the response object will be 'invited-pending'.
@@ -61,9 +61,9 @@ export default Component.extend({
         },
 
         revoke() {
-            let invite = this.get('invite');
+            let invite = this.invite;
             let email = invite.get('email');
-            let notifications = this.get('notifications');
+            let notifications = this.notifications;
 
             // reload the invite to get the most up-to-date information
             invite.reload().then(() => {
@@ -76,7 +76,7 @@ export default Component.extend({
             }).catch((error) => {
                 if (isNotFoundError(error)) {
                     // if the invite no longer exists, then show a warning and reload the route
-                    let action = this.get('reload');
+                    let action = this.reload;
                     if (action) {
                         action();
                     }

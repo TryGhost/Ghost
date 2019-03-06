@@ -16,7 +16,7 @@ export default Service.extend({
 
         url = this.get('ghostPaths.url').api('slugs', slugType, encodeURIComponent(textToSlugify));
 
-        return this.get('ajax').request(url).then((response) => {
+        return this.ajax.request(url).then((response) => {
             let [firstSlug] = response.slugs;
             let {slug} = firstSlug;
 

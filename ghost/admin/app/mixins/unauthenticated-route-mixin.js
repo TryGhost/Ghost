@@ -13,7 +13,7 @@ export default Mixin.create({
         let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');
 
         // check the state of the setup process via the API
-        return this.get('ajax').request(authUrl).then((result) => {
+        return this.ajax.request(authUrl).then((result) => {
             let [setup] = result.setup;
 
             if (setup.status !== true) {
@@ -22,8 +22,8 @@ export default Mixin.create({
                 // NOTE: this is the same as ESA's UnauthenticatedRouteMixin,
                 // adding that mixin to this and calling _super wasn't calling
                 // the ESA mixin's beforeModel method
-                if (this.get('session').get('isAuthenticated')) {
-                    let routeIfAlreadyAuthenticated = this.get('routeIfAlreadyAuthenticated');
+                if (this.session.get('isAuthenticated')) {
+                    let routeIfAlreadyAuthenticated = this.routeIfAlreadyAuthenticated;
 
                     return this.transitionTo(routeIfAlreadyAuthenticated);
                 } else {
