@@ -131,6 +131,10 @@ export default Service.extend({
             msg = resp.message;
         }
 
+        if (!isBlank(get(resp, 'context'))) {
+            msg = `${msg} ${get(resp, 'context')}`;
+        }
+
         this.showAlert(msg, options);
     },
 

@@ -251,6 +251,24 @@ describe('Unit: Service: notifications', function () {
         expect(get(notification, 'key')).to.equal('api-error');
     });
 
+    it('#showAPIError adds error context to message if available', function () {
+        let notifications = this.subject();
+        let error = new AjaxError({errors: [{
+            message: 'Authorization Error.',
+            context: 'Please sign in.'
+        }]});
+
+        run(() => {
+            notifications.showAPIError(error);
+        });
+
+        let alert = notifications.get('alerts.firstObject');
+        expect(get(alert, 'message')).to.equal('Authorization Error. Please sign in.');
+        expect(get(alert, 'status')).to.equal('alert');
+        expect(get(alert, 'type')).to.equal('error');
+        expect(get(alert, 'key')).to.equal('api-error');
+    });
+
     it('#displayDelayed moves delayed notifications into content', function () {
         let notifications = this.subject();
 
