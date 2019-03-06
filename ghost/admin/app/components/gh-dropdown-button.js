@@ -15,9 +15,9 @@ export default Component.extend(DropdownMixin, {
     // Notify dropdown service this dropdown should be toggled
     click(event) {
         this._super(event);
-        this.get('dropdown').toggleDropdown(this.get('dropdownName'), this);
+        this.dropdown.toggleDropdown(this.dropdownName, this);
 
-        if (this.get('tagName') === 'a') {
+        if (this.tagName === 'a') {
             return false;
         }
     }

@@ -54,7 +54,7 @@ export default Component.extend({
         this._super(...arguments);
 
         if (this.get('config.useGravatar')) {
-            this.get('setGravatar').perform();
+            this.setGravatar.perform();
         }
     },
 
@@ -119,12 +119,12 @@ export default Component.extend({
     },
 
     setGravatar: task(function* () {
-        yield timeout(this.get('debounce'));
+        yield timeout(this.debounce);
 
-        let email = this.get('email');
+        let email = this.email;
 
         if (validator.isEmail(email || '')) {
-            let size = this.get('size');
+            let size = this.size;
             let gravatarUrl = `//www.gravatar.com/avatar/${md5(email)}?s=${size}&d=404`;
 
             try {
@@ -158,7 +158,7 @@ export default Component.extend({
         let fileName = data.files[0].name;
 
         if ((/\.(gif|jpe?g|png|svg?z)$/i).test(fileName)) {
-            let action = this.get('setImage');
+            let action = this.setImage;
             if (action) {
                 action(data);
             }

@@ -9,11 +9,11 @@ export default BasicDropdown.extend({
 
     didInsertElement() {
         this._super(...arguments);
-        this.get('dropdown').on('close', this, this.close);
+        this.dropdown.on('close', this, this.close);
     },
 
     willDestroyElement() {
         this._super(...arguments);
-        this.get('dropdown').off('close');
+        this.dropdown.off('close');
     }
 });

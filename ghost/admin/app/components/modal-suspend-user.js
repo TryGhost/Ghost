@@ -10,7 +10,7 @@ export default ModalComponent.extend({
 
     actions: {
         confirm() {
-            return this.get('suspendUser').perform();
+            return this.suspendUser.perform();
         }
     },
 

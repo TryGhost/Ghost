@@ -52,7 +52,7 @@ export default Component.extend({
     actions: {
         toggleFullScreen(isFullScreen) {
             this.set('isFullScreen', isFullScreen);
-            this.get('ui').set('isFullScreen', isFullScreen);
+            this.ui.set('isFullScreen', isFullScreen);
             run.scheduleOnce('afterRender', this, this._setHeaderClass);
         },
 
@@ -90,7 +90,7 @@ export default Component.extend({
 
         this._editorTitleElement = editorTitle;
 
-        if (this.get('isSplitScreen')) {
+        if (this.isSplitScreen) {
             this.set('headerClass', smallHeaderClass);
             return;
         }

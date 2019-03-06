@@ -13,11 +13,11 @@ export default DraggableObject.extend({
     internal: readOnly('content.isInternal'),
 
     primary: computed('idx', 'internal', function () {
-        return !this.get('internal') && this.get('idx') === 0;
+        return !this.internal && this.idx === 0;
     }),
 
     title: computed('internal', function () {
-        if (this.get('internal')) {
+        if (this.internal) {
             return `Internal tag`;
         }
     })

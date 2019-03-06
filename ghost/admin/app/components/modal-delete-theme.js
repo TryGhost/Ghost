@@ -11,7 +11,7 @@ export default ModalComponent.extend({
 
     actions: {
         confirm() {
-            this.get('deleteTheme').perform();
+            this.deleteTheme.perform();
         }
     },
 

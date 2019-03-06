@@ -9,15 +9,15 @@ export default SessionService.extend({
     tour: service(),
 
     user: computed(function () {
-        return this.get('dataStore').queryRecord('user', {id: 'me'});
+        return this.dataStore.queryRecord('user', {id: 'me'});
     }),
 
     authenticate() {
         return this._super(...arguments).then((authResult) => {
             // TODO: remove duplication with application.afterModel
             let preloadPromises = [
-                this.get('feature').fetch(),
-                this.get('tour').fetchViewed()
+                this.feature.fetch(),
+                this.tour.fetchViewed()
             ];
 
             return RSVP.all(preloadPromises).then(() => authResult);

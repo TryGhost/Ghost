@@ -28,7 +28,7 @@ export default Controller.extend({
     },
 
     _saveTagProperty(propKey, newValue) {
-        let tag = this.get('tag');
+        let tag = this.tag;
         let isNewTag = tag.get('isNew');
         let currentValue = tag.get(propKey);
 
@@ -61,13 +61,13 @@ export default Controller.extend({
             }
         }).catch((error) => {
             if (error) {
-                this.get('notifications').showAPIError(error, {key: 'tag.save'});
+                this.notifications.showAPIError(error, {key: 'tag.save'});
             }
         });
     },
 
     _deleteTag() {
-        let tag = this.get('tag');
+        let tag = this.tag;
 
         return tag.destroyRecord().then(() => {
             this._deleteTagSuccess();
@@ -85,6 +85,6 @@ export default Controller.extend({
     },
 
     _deleteTagFailure(error) {
-        this.get('notifications').showAPIError(error, {key: 'tag.delete'});
+        this.notifications.showAPIError(error, {key: 'tag.delete'});
     }
 });

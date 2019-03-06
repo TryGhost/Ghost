@@ -34,7 +34,7 @@ export default Component.extend({
 
         this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', (event) => {
             if (event.originalEvent.animationName === 'fade-out') {
-                this.get('notifications').closeNotification(this.get('message'));
+                this.notifications.closeNotification(this.message);
             }
         });
     },
@@ -46,7 +46,7 @@ export default Component.extend({
 
     actions: {
         closeNotification() {
-            this.get('notifications').closeNotification(this.get('message'));
+            this.notifications.closeNotification(this.message);
         }
     }
 });

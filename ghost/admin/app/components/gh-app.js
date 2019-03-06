@@ -8,7 +8,7 @@ export default Component.extend({
 
     didReceiveAttrs() {
         this._super(...arguments);
-        let showSettingsMenu = this.get('showSettingsMenu');
+        let showSettingsMenu = this.showSettingsMenu;
 
         $('body').toggleClass('settings-menu-expanded', showSettingsMenu);
     }

@@ -40,12 +40,12 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     actions: {
         save() {
-            this.get('controller').send('save');
+            this.controller.send('save');
         },
 
         willTransition(transition) {
-            let controller = this.get('controller');
-            let modelIsDirty = controller.get('dirtyAttributes');
+            let controller = this.controller;
+            let modelIsDirty = controller.dirtyAttributes;
 
             if (modelIsDirty) {
                 transition.abort();

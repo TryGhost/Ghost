@@ -42,12 +42,12 @@ export default ModalComponent.extend({
     }),
 
     fileThemeName: computed('file', function () {
-        let file = this.get('file');
+        let file = this.file;
         return file.name.replace(/\.zip$/, '');
     }),
 
     canActivateTheme: computed('theme', function () {
-        let theme = this.get('theme');
+        let theme = this.theme;
         return theme && !theme.get('active');
     }),
 
@@ -62,12 +62,12 @@ export default ModalComponent.extend({
         validateTheme(file) {
             let themeName = file.name.replace(/\.zip$/, '').replace(/[^\w@.]/gi, '-').toLowerCase();
 
-            let currentThemeNames = this.get('currentThemeNames');
+            let currentThemeNames = this.currentThemeNames;
 
             this.set('file', file);
 
             let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
-            let extensions = this.get('extensions');
+            let extensions = this.extensions;
 
             if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
                 return new UnsupportedMediaTypeError();
@@ -92,7 +92,7 @@ export default ModalComponent.extend({
             // we need to schedule afterRender so that the upload component is
             // displayed again in order to subscribe/respond to the event bus
             run.schedule('afterRender', this, function () {
-                this.get('eventBus').publish('themeUploader:upload', this.get('file'));
+                this.eventBus.publish('themeUploader:upload', this.file);
             });
         },
 
@@ -105,9 +105,9 @@ export default ModalComponent.extend({
         },
 
         uploadSuccess(response) {
-            this.get('store').pushPayload(response);
+            this.store.pushPayload(response);
 
-            let theme = this.get('store').peekRecord('theme', response.themes[0].name);
+            let theme = this.store.peekRecord('theme', response.themes[0].name);
 
             this.set('theme', theme);
 
@@ -155,12 +155,12 @@ export default ModalComponent.extend({
         },
 
         activate() {
-            this.get('model.activate')(this.get('theme'));
+            this.get('model.activate')(this.theme);
             this.closeModal();
         },
 
         closeModal() {
-            if (!this.get('closeDisabled')) {
+            if (!this.closeDisabled) {
                 this._super(...arguments);
             }
         },

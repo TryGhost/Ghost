@@ -14,7 +14,7 @@ export default Service.extend({
     isSideNavHidden: or('isFullScreen', 'isMobile'),
 
     closeMenus() {
-        this.get('dropdown').closeDropdowns();
+        this.dropdown.closeDropdowns();
         this.setProperties({
             showSettingsMenu: false,
             showMobileMenu: false

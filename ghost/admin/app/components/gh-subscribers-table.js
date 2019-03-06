@@ -7,9 +7,9 @@ export default Component.extend({
 
     actions: {
         onScrolledToBottom() {
-            let loadNextPage = this.get('loadNextPage');
+            let loadNextPage = this.loadNextPage;
 
-            if (!this.get('isLoading')) {
+            if (!this.isLoading) {
                 loadNextPage();
             }
         }

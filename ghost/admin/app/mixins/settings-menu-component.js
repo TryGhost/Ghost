@@ -10,7 +10,7 @@ export default Mixin.create({
         },
         set(key, value) {
             // Not viewing a subview if we can't even see the PSM
-            if (!this.get('showSettingsMenu')) {
+            if (!this.showSettingsMenu) {
                 return false;
             }
             return value;

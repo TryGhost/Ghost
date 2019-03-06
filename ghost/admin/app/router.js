@@ -12,7 +12,7 @@ const Router = EmberRouter.extend({
     notifications: service(),
 
     displayDelayedNotifications: on('didTransition', function () {
-        this.get('notifications').displayDelayed();
+        this.notifications.displayDelayed();
     })
 });
 

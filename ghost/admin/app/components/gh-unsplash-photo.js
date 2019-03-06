@@ -26,7 +26,7 @@ export default Component.extend({
     containerStyle: computed('photo.color', 'zoomed', function () {
         let styles = [];
         let ratio = this.get('photo.ratio');
-        let zoomed = this.get('zoomed');
+        let zoomed = this.zoomed;
 
         styles.push(`background-color: ${this.get('photo.color')}`);
 
@@ -81,7 +81,7 @@ export default Component.extend({
         select(event) {
             event.preventDefault();
             event.stopPropagation();
-            this.select(this.get('photo'));
+            this.select(this.photo);
         },
 
         zoom(event) {
@@ -90,7 +90,7 @@ export default Component.extend({
             // only zoom when it wasn't one of the child links clicked
             if (!$target.is('a') && $target.closest('a').hasClass('gh-unsplash-photo')) {
                 event.preventDefault();
-                this.zoom(this.get('photo'));
+                this.zoom(this.photo);
             }
 
             // don't propagate otherwise we can trigger the closeZoom action on the overlay

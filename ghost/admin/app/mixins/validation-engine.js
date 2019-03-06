@@ -87,13 +87,13 @@ export default Mixin.create({
             model = opts.model;
         } else if (this instanceof Model) {
             model = this;
-        } else if (this.get('model')) {
-            model = this.get('model');
+        } else if (this.model) {
+            model = this.model;
         }
 
-        type = this.get('validationType') || model.get('validationType');
+        type = this.validationType || model.get('validationType');
         validator = this.get(`validators.${type}`) || model.get(`validators.${type}`);
-        hasValidated = this.get('hasValidated');
+        hasValidated = this.hasValidated;
 
         opts.validationType = type;
 
@@ -132,7 +132,7 @@ export default Mixin.create({
         // model.destroyRecord() calls model.save() behind the scenes.
         // in that case, we don't need validation checks or error propagation,
         // because the model itself is being destroyed.
-        if (this.get('isDeleted')) {
+        if (this.isDeleted) {
             return this._super(...arguments);
         }
 

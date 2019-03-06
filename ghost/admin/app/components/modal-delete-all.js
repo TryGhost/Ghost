@@ -11,26 +11,26 @@ export default ModalComponent.extend({
 
     actions: {
         confirm() {
-            this.get('deleteAll').perform();
+            this.deleteAll.perform();
         }
     },
 
     _deleteAll() {
         let deleteUrl = this.get('ghostPaths.url').api('db');
-        return this.get('ajax').del(deleteUrl);
+        return this.ajax.del(deleteUrl);
     },
 
     _unloadData() {
-        this.get('store').unloadAll('post');
-        this.get('store').unloadAll('tag');
+        this.store.unloadAll('post');
+        this.store.unloadAll('tag');
     },
 
     _showSuccess() {
-        this.get('notifications').showAlert('All content deleted from database.', {type: 'success', key: 'all-content.delete.success'});
+        this.notifications.showAlert('All content deleted from database.', {type: 'success', key: 'all-content.delete.success'});
     },
 
     _showFailure(error) {
-        this.get('notifications').showAPIError(error, {key: 'all-content.delete'});
+        this.notifications.showAPIError(error, {key: 'all-content.delete'});
     },
 
     deleteAll: task(function* () {

@@ -15,7 +15,7 @@ export default ModalComponent.extend({
 
     actions: {
         confirm() {
-            this.get('deleteTag').perform();
+            this.deleteTag.perform();
         }
     },
 

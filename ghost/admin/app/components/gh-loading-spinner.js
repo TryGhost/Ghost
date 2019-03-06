@@ -10,11 +10,11 @@ export default Component.extend({
     slowLoadTimeout: 200,
 
     didInsertElement() {
-        this.get('startSpinnerTimeout').perform();
+        this.startSpinnerTimeout.perform();
     },
 
     startSpinnerTimeout: task(function* () {
-        yield timeout(this.get('slowLoadTimeout'));
+        yield timeout(this.slowLoadTimeout);
         this.set('showSpinner', true);
     })
 });

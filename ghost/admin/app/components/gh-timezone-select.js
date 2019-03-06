@@ -18,16 +18,16 @@ export default Component.extend({
     availableTimezoneNames: mapBy('availableTimezones', 'name'),
 
     hasTimezoneOverride: computed('activeTimezone', 'availableTimezoneNames', function () {
-        let activeTimezone = this.get('activeTimezone');
-        let availableTimezoneNames = this.get('availableTimezoneNames');
+        let activeTimezone = this.activeTimezone;
+        let availableTimezoneNames = this.availableTimezoneNames;
 
         return !availableTimezoneNames.includes(activeTimezone);
     }),
 
     selectedTimezone: computed('activeTimezone', 'availableTimezones', 'hasTimezoneOverride', function () {
-        let hasTimezoneOverride = this.get('hasTimezoneOverride');
-        let activeTimezone = this.get('activeTimezone');
-        let availableTimezones = this.get('availableTimezones');
+        let hasTimezoneOverride = this.hasTimezoneOverride;
+        let activeTimezone = this.activeTimezone;
+        let availableTimezones = this.availableTimezones;
 
         if (hasTimezoneOverride) {
             return {name: '', label: ''};
@@ -39,8 +39,8 @@ export default Component.extend({
     }),
 
     selectableTimezones: computed('availableTimezones', 'hasTimezoneOverride', function () {
-        let hasTimezoneOverride = this.get('hasTimezoneOverride');
-        let availableTimezones = this.get('availableTimezones');
+        let hasTimezoneOverride = this.hasTimezoneOverride;
+        let availableTimezones = this.availableTimezones;
 
         if (hasTimezoneOverride) {
             return [{name: '', label: ''}, ...availableTimezones];
@@ -50,8 +50,8 @@ export default Component.extend({
     }),
 
     localTime: computed('hasTimezoneOverride', 'activeTimezone', 'selectedTimezone', 'clock.second', function () {
-        let hasTimezoneOverride = this.get('hasTimezoneOverride');
-        let timezone = hasTimezoneOverride ? this.get('activeTimezone') : this.get('selectedTimezone.name');
+        let hasTimezoneOverride = this.hasTimezoneOverride;
+        let timezone = hasTimezoneOverride ? this.activeTimezone : this.get('selectedTimezone.name');
 
         this.get('clock.second');
         return timezone ? moment().tz(timezone).format('HH:mm:ss') : moment().utc().format('HH:mm:ss');

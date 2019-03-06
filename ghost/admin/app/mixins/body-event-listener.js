@@ -32,11 +32,11 @@ export default Mixin.create({
 
         this._clickHandler = event => this.bodyClick(event);
 
-        return $(this.get('bodyElementSelector')).on('click', this._clickHandler);
+        return $(this.bodyElementSelector).on('click', this._clickHandler);
     },
 
     _removeDocumentHandlers() {
-        $(this.get('bodyElementSelector')).off('click', this._clickHandler);
+        $(this.bodyElementSelector).off('click', this._clickHandler);
         this._clickHandler = null;
     },
 

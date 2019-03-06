@@ -53,8 +53,8 @@ export default Controller.extend({
     }),
 
     deleteUserActionIsVisible: computed('currentUser', 'canAssignRoles', 'user', function () {
-        if ((this.get('canAssignRoles') && this.get('isNotOwnProfile') && !this.get('user.isOwner'))
-            || (this.get('currentUser.isEditor') && (this.get('isNotOwnProfile')
+        if ((this.canAssignRoles && this.isNotOwnProfile && !this.get('user.isOwner'))
+            || (this.get('currentUser.isEditor') && (this.isNotOwnProfile
             || this.get('user.isAuthorOrContributor')))) {
             return true;
         }
@@ -70,7 +70,7 @@ export default Controller.extend({
 
     actions: {
         changeRole(newRole) {
-            this.get('user').set('role', newRole);
+            this.user.set('role', newRole);
             this.set('dirtyAttributes', true);
         },
 
@@ -83,35 +83,35 @@ export default Controller.extend({
         },
 
         toggleDeleteUserModal() {
-            if (this.get('deleteUserActionIsVisible')) {
+            if (this.deleteUserActionIsVisible) {
                 this.toggleProperty('showDeleteUserModal');
             }
         },
 
         suspendUser() {
-            this.get('user').set('status', 'inactive');
-            return this.get('save').perform();
+            this.user.set('status', 'inactive');
+            return this.save.perform();
         },
 
         toggleSuspendUserModal() {
-            if (this.get('deleteUserActionIsVisible')) {
+            if (this.deleteUserActionIsVisible) {
                 this.toggleProperty('showSuspendUserModal');
             }
         },
 
         unsuspendUser() {
-            this.get('user').set('status', 'active');
-            return this.get('save').perform();
+            this.user.set('status', 'active');
+            return this.save.perform();
         },
 
         toggleUnsuspendUserModal() {
-            if (this.get('deleteUserActionIsVisible')) {
+            if (this.deleteUserActionIsVisible) {
                 this.toggleProperty('showUnsuspendUserModal');
             }
         },
 
         validateFacebookUrl() {
-            let newUrl = this.get('_scratchFacebook');
+            let newUrl = this._scratchFacebook;
             let oldUrl = this.get('user.facebook');
             let errMessage = '';
 
@@ -167,7 +167,7 @@ export default Controller.extend({
         },
 
         validateTwitterUrl() {
-            let newUrl = this.get('_scratchTwitter');
+            let newUrl = this._scratchTwitter;
             let oldUrl = this.get('user.twitter');
             let errMessage = '';
 
@@ -222,12 +222,12 @@ export default Controller.extend({
         },
 
         transferOwnership() {
-            let user = this.get('user');
+            let user = this.user;
             let url = this.get('ghostPaths.url').api('users', 'owner');
 
-            this.get('dropdown').closeDropdowns();
+            this.dropdown.closeDropdowns();
 
-            return this.get('ajax').put(url, {
+            return this.ajax.put(url, {
                 data: {
                     owner: [{
                         id: user.get('id')
@@ -245,16 +245,16 @@ export default Controller.extend({
                     });
                 }
 
-                this.get('notifications').showAlert(`Ownership successfully transferred to ${user.get('name')}`, {type: 'success', key: 'owner.transfer.success'});
+                this.notifications.showAlert(`Ownership successfully transferred to ${user.get('name')}`, {type: 'success', key: 'owner.transfer.success'});
             }).catch((error) => {
-                this.get('notifications').showAPIError(error, {key: 'owner.transfer'});
+                this.notifications.showAPIError(error, {key: 'owner.transfer'});
             });
         },
 
         toggleLeaveSettingsModal(transition) {
-            let leaveTransition = this.get('leaveSettingsTransition');
+            let leaveTransition = this.leaveSettingsTransition;
 
-            if (!transition && this.get('showLeaveSettingsModal')) {
+            if (!transition && this.showLeaveSettingsModal) {
                 this.set('leaveSettingsTransition', null);
                 this.set('showLeaveSettingsModal', false);
                 return;
@@ -276,18 +276,18 @@ export default Controller.extend({
         },
 
         leaveSettings() {
-            let transition = this.get('leaveSettingsTransition');
-            let user = this.get('user');
+            let transition = this.leaveSettingsTransition;
+            let user = this.user;
 
             if (!transition) {
-                this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+                this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
                 return;
             }
 
             // roll back changes on user props
             user.rollbackAttributes();
             // roll back the slugValue property
-            if (this.get('dirtyAttributes')) {
+            if (this.dirtyAttributes) {
                 this.set('slugValue', user.get('slug'));
                 this.set('dirtyAttributes', false);
             }
@@ -296,7 +296,7 @@ export default Controller.extend({
         },
 
         toggleTransferOwnerModal() {
-            if (this.get('canMakeOwner')) {
+            if (this.canMakeOwner) {
                 this.toggleProperty('showTransferOwnerModal');
             }
         },
@@ -331,20 +331,20 @@ export default Controller.extend({
     },
 
     _deleteUser() {
-        if (this.get('deleteUserActionIsVisible')) {
-            let user = this.get('user');
+        if (this.deleteUserActionIsVisible) {
+            let user = this.user;
             return user.destroyRecord();
         }
     },
 
     _deleteUserSuccess() {
-        this.get('notifications').closeAlerts('user.delete');
+        this.notifications.closeAlerts('user.delete');
         this.store.unloadAll('post');
         this.transitionToRoute('staff');
     },
 
     _deleteUserFailure() {
-        this.get('notifications').showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
+        this.notifications.showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
     },
 
     updateSlug: task(function* (newSlug) {
@@ -360,7 +360,7 @@ export default Controller.extend({
             return true;
         }
 
-        let serverSlug = yield this.get('slugGenerator').generateSlug('user', newSlug);
+        let serverSlug = yield this.slugGenerator.generateSlug('user', newSlug);
 
         // If after getting the sanitized and unique slug back from the API
         // we end up with a slug that matches the existing slug, abort the change
@@ -395,8 +395,8 @@ export default Controller.extend({
     }).group('saveHandlers'),
 
     save: task(function* () {
-        let user = this.get('user');
-        let slugValue = this.get('slugValue');
+        let user = this.user;
+        let slugValue = this.slugValue;
         let slugChanged;
 
         if (user.get('slug') !== slugValue) {
@@ -420,14 +420,14 @@ export default Controller.extend({
             }
 
             this.set('dirtyAttributes', false);
-            this.get('notifications').closeAlerts('user.update');
+            this.notifications.closeAlerts('user.update');
 
             return user;
         } catch (error) {
             // validation engine returns undefined so we have to check
             // before treating the failure as an API error
             if (error) {
-                this.get('notifications').showAPIError(error, {key: 'user.update'});
+                this.notifications.showAPIError(error, {key: 'user.update'});
             }
         }
     }).group('saveHandlers')

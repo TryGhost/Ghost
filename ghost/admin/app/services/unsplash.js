@@ -34,7 +34,7 @@ export default Service.extend({
 
     loadNew() {
         this._reset();
-        return this.get('_loadNew').perform();
+        return this._loadNew.perform();
     },
 
     loadNextPage() {
@@ -43,12 +43,12 @@ export default Service.extend({
             return;
         }
 
-        if (isEmpty(this.get('photos'))) {
-            return this.get('_loadNew').perform();
+        if (isEmpty(this.photos)) {
+            return this._loadNew.perform();
         }
 
         if (this._pagination.next) {
-            return this.get('_loadNextPage').perform();
+            return this._loadNextPage.perform();
         }
 
         // TODO: return error?
@@ -56,7 +56,7 @@ export default Service.extend({
     },
 
     updateSearch(term) {
-        if (term === this.get('searchTerm')) {
+        if (term === this.searchTerm) {
             return;
         }
 
@@ -64,18 +64,18 @@ export default Service.extend({
         this._reset();
 
         if (term) {
-            return this.get('_search').perform(term);
+            return this._search.perform(term);
         } else {
-            return this.get('_loadNew').perform();
+            return this._loadNew.perform();
         }
     },
 
     retryLastRequest() {
-        return this.get('_retryLastRequest').perform();
+        return this._retryLastRequest.perform();
     },
 
     changeColumnCount(newColumnCount) {
-        if (newColumnCount !== this.get('columnCount')) {
+        if (newColumnCount !== this.columnCount) {
             this.set('columnCount', newColumnCount);
             this._resetColumns();
         }
@@ -128,7 +128,7 @@ export default Service.extend({
         photo.ratio = photo.height / photo.width;
 
         // add to general photo list
-        this.get('photos').pushObject(photo);
+        this.photos.pushObject(photo);
 
         // add to least populated column
         this._addPhotoToColumns(photo);
@@ -141,7 +141,7 @@ export default Service.extend({
         // use a fixed width when calculating height to compensate for different
         // overall image sizes
         this._columnHeights[columnIndex] += 300 * photo.ratio;
-        this.get('columns')[columnIndex].pushObject(photo);
+        this.columns[columnIndex].pushObject(photo);
     },
 
     _reset() {
@@ -155,7 +155,7 @@ export default Service.extend({
         let columnHeights = [];
 
         // pre-fill column arrays based on columnCount
-        for (let i = 0; i < this.get('columnCount'); i += 1) {
+        for (let i = 0; i < this.columnCount; i += 1) {
             columns[i] = [];
             columnHeights[i] = 0;
         }
@@ -163,8 +163,8 @@ export default Service.extend({
         this.set('columns', columns);
         this._columnHeights = columnHeights;
 
-        if (!isEmpty(this.get('photos'))) {
-            this.get('photos').forEach((photo) => {
+        if (!isEmpty(this.photos)) {
+            this.photos.forEach((photo) => {
                 this._addPhotoToColumns(photo);
             });
         }
@@ -183,7 +183,7 @@ export default Service.extend({
         // store the url so it can be retried if needed
         this._lastRequestUrl = url;
 
-        headers.Authorization = `Client-ID ${this.get('applicationId')}`;
+        headers.Authorization = `Client-ID ${this.applicationId}`;
         headers['Accept-Version'] = API_VERSION;
         headers['App-Pragma'] = 'no-cache';
         headers['X-Unsplash-Cache'] = true;
@@ -195,7 +195,7 @@ export default Service.extend({
             .then(response => this._addPhotosFromResponse(response))
             .catch(() => {
                 // if the error text isn't already set then we've get a connection error from `fetch`
-                if (!options.ignoreErrors && !this.get('error')) {
+                if (!options.ignoreErrors && !this.error) {
                     this.set('error', 'Uh-oh! Trouble reaching the Unsplash API, please check your connection');
                 }
             });

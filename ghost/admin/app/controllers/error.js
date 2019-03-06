@@ -12,7 +12,7 @@ export default Controller.extend({
     }),
 
     message: computed('error.statusText', function () {
-        if (this.get('code') === 404) {
+        if (this.code === 404) {
             return 'Page not found';
         }
 

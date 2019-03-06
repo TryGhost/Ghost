@@ -48,8 +48,8 @@ export default Component.extend({
     uploadFailed: () => {},
 
     formData: computed('file', function () {
-        let paramName = this.get('paramName');
-        let file = this.get('file');
+        let paramName = this.paramName;
+        let file = this.file;
         let formData = new FormData();
 
         formData.append(paramName, file);
@@ -58,7 +58,7 @@ export default Component.extend({
     }),
 
     progressStyle: computed('uploadPercentage', function () {
-        let percentage = this.get('uploadPercentage');
+        let percentage = this.uploadPercentage;
         let width = '';
 
         if (percentage > 0) {
@@ -74,13 +74,13 @@ export default Component.extend({
     // process can be triggered externally
     init() {
         this._super(...arguments);
-        let listenTo = this.get('listenTo');
+        let listenTo = this.listenTo;
 
         this.accept = this.accept || DEFAULTS.accept;
         this.extensions = this.extensions || DEFAULTS.extensions;
 
         if (listenTo) {
-            this.get('eventBus').subscribe(`${listenTo}:upload`, this, function (file) {
+            this.eventBus.subscribe(`${listenTo}:upload`, this, function (file) {
                 if (file) {
                     this.set('file', file);
                 }
@@ -91,20 +91,20 @@ export default Component.extend({
 
     didReceiveAttrs() {
         this._super(...arguments);
-        let accept = this.get('accept');
-        let extensions = this.get('extensions');
+        let accept = this.accept;
+        let extensions = this.extensions;
 
         this._accept = (!isBlank(accept) && !isEmberArray(accept)) ? accept.split(',') : accept;
         this._extensions = (!isBlank(extensions) && !isEmberArray(extensions)) ? extensions.split(',') : extensions;
     },
 
     willDestroyElement() {
-        let listenTo = this.get('listenTo');
+        let listenTo = this.listenTo;
 
         this._super(...arguments);
 
         if (listenTo) {
-            this.get('eventBus').unsubscribe(`${listenTo}:upload`);
+            this.eventBus.unsubscribe(`${listenTo}:upload`);
         }
     },
 
@@ -134,7 +134,7 @@ export default Component.extend({
         },
 
         upload() {
-            if (this.get('file')) {
+            if (this.file) {
                 this.generateRequest();
             }
         },
@@ -178,9 +178,9 @@ export default Component.extend({
     },
 
     generateRequest() {
-        let ajax = this.get('ajax');
-        let formData = this.get('formData');
-        let url = this.get('url');
+        let ajax = this.ajax;
+        let formData = this.formData;
+        let url = this.url;
 
         this.uploadStarted();
 
@@ -225,7 +225,7 @@ export default Component.extend({
         let message;
 
         if (isVersionMismatchError(error)) {
-            this.get('notifications').showAPIError(error);
+            this.notifications.showAPIError(error);
         }
 
         if (isUnsupportedMediaTypeError(error)) {

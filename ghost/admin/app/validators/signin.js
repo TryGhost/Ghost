@@ -10,7 +10,7 @@ export default BaseValidator.create({
         let id = model.get('identification');
 
         if (!isBlank(id) && !validator.isEmail(id)) {
-            model.get('errors').add('identification', this.get('invalidMessage'));
+            model.get('errors').add('identification', this.invalidMessage);
             this.invalidate();
         }
     },
@@ -27,7 +27,7 @@ export default BaseValidator.create({
         }
 
         if (!isBlank(id) && !validator.isEmail(id)) {
-            model.get('errors').add('identification', this.get('invalidMessage'));
+            model.get('errors').add('identification', this.invalidMessage);
             this.invalidate();
         }
 
@@ -43,7 +43,7 @@ export default BaseValidator.create({
         model.get('errors').clear();
 
         if (isBlank(id) || !validator.isEmail(id)) {
-            model.get('errors').add('identification', this.get('invalidMessage'));
+            model.get('errors').add('identification', this.invalidMessage);
             this.invalidate();
         }
     }

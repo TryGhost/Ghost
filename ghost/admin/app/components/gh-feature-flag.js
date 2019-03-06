@@ -10,36 +10,36 @@ const FeatureFlagComponent = Component.extend({
     classNames: 'checkbox',
     attributeBindings: ['for', 'disabled'],
     disabled: computed('_disabled', function () {
-        if (this.get('_disabled')) {
+        if (this._disabled) {
             return true;
         }
         return false;
     }),
     value: computed('_flagValue', {
         get() {
-            return this.get('_flagValue');
+            return this._flagValue;
         },
         set(key, value) {
-            if (this.get('flag') === 'members' && value === true) {
+            if (this.flag === 'members' && value === true) {
                 this.set(`feature.subscribers`, false);
             }
-            return this.set(`feature.${this.get('flag')}`, value);
+            return this.set(`feature.${this.flag}`, value);
         }
     }),
 
     for: computed('flag', function () {
-        return `labs-${this.get('flag')}`;
+        return `labs-${this.flag}`;
     }),
 
     name: computed('flag', function () {
-        return `labs[${this.get('flag')}]`;
+        return `labs[${this.flag}]`;
     }),
 
     init() {
         this._super(...arguments);
 
-        defineProperty(this, '_flagValue', readOnly(`feature.${this.get('flag')}`), function () {
-            return this.get(`feature.${this.get('flag')}`);
+        defineProperty(this, '_flagValue', readOnly(`feature.${this.flag}`), function () {
+            return this.get(`feature.${this.flag}`);
         });
     }
 });

@@ -25,13 +25,13 @@ export default Component.extend({
     hasError: or('dateError', 'timeError'),
 
     timezone: computed('blogTimezone', function () {
-        let blogTimezone = this.get('blogTimezone');
+        let blogTimezone = this.blogTimezone;
         return moment.utc().tz(blogTimezone).format('z');
     }),
 
     dateError: computed('errors.[]', 'dateErrorProperty', function () {
-        let errors = this.get('errors');
-        let property = this.get('dateErrorProperty');
+        let errors = this.errors;
+        let property = this.dateErrorProperty;
 
         if (errors && !isEmpty(errors.errorsFor(property))) {
             return errors.errorsFor(property).get('firstObject').message;
@@ -39,8 +39,8 @@ export default Component.extend({
     }),
 
     timeError: computed('errors.[]', 'timeErrorProperty', function () {
-        let errors = this.get('errors');
-        let property = this.get('timeErrorProperty');
+        let errors = this.errors;
+        let property = this.timeErrorProperty;
 
         if (errors && !isEmpty(errors.errorsFor(property))) {
             return errors.errorsFor(property).get('firstObject').message;
@@ -48,11 +48,11 @@ export default Component.extend({
     }),
 
     didReceiveAttrs() {
-        let date = this.get('date');
-        let time = this.get('time');
-        let minDate = this.get('minDate');
-        let maxDate = this.get('maxDate');
-        let blogTimezone = this.get('blogTimezone');
+        let date = this.date;
+        let time = this.time;
+        let minDate = this.minDate;
+        let maxDate = this.maxDate;
+        let blogTimezone = this.blogTimezone;
 
         if (!isBlank(date)) {
             this.set('_date', moment(date));
@@ -61,11 +61,11 @@ export default Component.extend({
         }
 
         if (isBlank(time)) {
-            this.set('_time', this.get('_date').format('HH:mm'));
+            this.set('_time', this._date.format('HH:mm'));
         } else {
-            this.set('_time', this.get('time'));
+            this.set('_time', this.time);
         }
-        this.set('_previousTime', this.get('_time'));
+        this.set('_previousTime', this._time);
 
         // unless min/max date is at midnight moment will diable that day
         if (minDate === 'now') {
@@ -89,11 +89,11 @@ export default Component.extend({
         // if date or time is set and the other property is blank set that too
         // so that we don't get "can't be blank" errors
         setDate(date) {
-            if (date !== this.get('_date')) {
-                this.get('setDate')(date);
+            if (date !== this._date) {
+                this.setDate(date);
 
-                if (isBlank(this.get('time'))) {
-                    this.get('setTime')(this.get('_time'));
+                if (isBlank(this.time)) {
+                    this.setTime(this._time);
                 }
             }
         },
@@ -103,12 +103,12 @@ export default Component.extend({
                 time = `0${time}`;
             }
 
-            if (time !== this.get('_previousTime')) {
-                this.get('setTime')(time);
+            if (time !== this._previousTime) {
+                this.setTime(time);
                 this.set('_previousTime', time);
 
-                if (isBlank(this.get('date'))) {
-                    this.get('setDate')(this.get('_date'));
+                if (isBlank(this.date)) {
+                    this.setDate(this._date);
                 }
             }
         }

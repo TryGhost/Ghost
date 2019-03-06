@@ -14,7 +14,7 @@ export default TextArea.extend(TextInputMixin, {
         this._super(...arguments);
 
         // trigger auto-expand any time the value changes
-        if (this.get('autoExpand')) {
+        if (this.autoExpand) {
             run.scheduleOnce('afterRender', this, this._autoExpand);
         }
     },
@@ -23,7 +23,7 @@ export default TextArea.extend(TextInputMixin, {
         this._super(...arguments);
 
         // disable the draggable resize element that browsers add to textareas
-        if (this.get('autoExpand')) {
+        if (this.autoExpand) {
             this.element.style.resize = 'none';
         }
     },
@@ -33,12 +33,12 @@ export default TextArea.extend(TextInputMixin, {
 
         // set up resize handler on element insert so that we can autoexpand
         // when the element container changes size
-        if (this.get('autoExpand')) {
+        if (this.autoExpand) {
             run.scheduleOnce('afterRender', this, this._setupAutoExpand);
         }
 
-        if (this.get('didCreateTextarea')) {
-            this.get('didCreateTextarea')(this.element);
+        if (this.didCreateTextarea) {
+            this.didCreateTextarea(this.element);
         }
     },
 
@@ -60,7 +60,7 @@ export default TextArea.extend(TextInputMixin, {
 
     _setupAutoExpand() {
         this._resizeCallback = run.bind(this, this._onResize);
-        this.get('resizeDetector').setup(this.get('autoExpand'), this._resizeCallback);
+        this.resizeDetector.setup(this.autoExpand, this._resizeCallback);
         this._autoExpand();
     },
 
@@ -69,6 +69,6 @@ export default TextArea.extend(TextInputMixin, {
     },
 
     _teardownAutoExpand() {
-        this.get('resizeDetector').teardown(this.get('autoExpand'), this._resizeCallback);
+        this.resizeDetector.teardown(this.autoExpand, this._resizeCallback);
     }
 });

@@ -57,12 +57,12 @@ export default Model.extend(ValidationEngine, {
     isAuthorOrContributor: or('isAuthor', 'isContributor'),
 
     isLoggedIn: computed('id', 'session.user.id', function () {
-        return this.get('id') === this.get('session.user.id');
+        return this.id === this.get('session.user.id');
     }),
 
     isActive: computed('status', function () {
         // TODO: review "locked" as an "active" status
-        return ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'].indexOf(this.get('status')) > -1;
+        return ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'].indexOf(this.status) > -1;
     }),
 
     isSuspended: equal('status', 'inactive'),
@@ -74,8 +74,8 @@ export default Model.extend(ValidationEngine, {
         },
         set(key, value) {
             // Only one role per user, so remove any old data.
-            this.get('roles').clear();
-            this.get('roles').pushObject(value);
+            this.roles.clear();
+            this.roles.pushObject(value);
 
             return value;
         }
@@ -96,7 +96,7 @@ export default Model.extend(ValidationEngine, {
     }),
 
     saveNewPassword: task(function* () {
-        let validation = this.get('isLoggedIn') ? 'ownPasswordChange' : 'passwordChange';
+        let validation = this.isLoggedIn ? 'ownPasswordChange' : 'passwordChange';
 
         try {
             yield this.validate({property: validation});
@@ -108,13 +108,13 @@ export default Model.extend(ValidationEngine, {
         try {
             let url = this.get('ghostPaths.url').api('users', 'password');
 
-            yield this.get('ajax').put(url, {
+            yield this.ajax.put(url, {
                 data: {
                     password: [{
-                        user_id: this.get('id'),
-                        oldPassword: this.get('password'),
-                        newPassword: this.get('newPassword'),
-                        ne2Password: this.get('ne2Password')
+                        user_id: this.id,
+                        oldPassword: this.password,
+                        newPassword: this.newPassword,
+                        ne2Password: this.ne2Password
                     }]
                 }
             });
@@ -125,16 +125,16 @@ export default Model.extend(ValidationEngine, {
                 ne2Password: ''
             });
 
-            this.get('notifications').showNotification('Password updated.', {type: 'success', key: 'user.change-password.success'});
+            this.notifications.showNotification('Password updated.', {type: 'success', key: 'user.change-password.success'});
 
             // clear errors manually for ne2password because validation
             // engine only clears the "validated proeprty"
             // TODO: clean up once we have a better validations library
-            this.get('errors').remove('ne2Password');
+            this.errors.remove('ne2Password');
 
             return true;
         } catch (error) {
-            this.get('notifications').showAPIError(error, {key: 'user.change-password'});
+            this.notifications.showAPIError(error, {key: 'user.change-password'});
         }
     }).drop()
 });

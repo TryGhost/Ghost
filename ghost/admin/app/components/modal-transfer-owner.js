@@ -9,7 +9,7 @@ export default ModalComponent.extend({
 
     actions: {
         confirm() {
-            this.get('transferOwnership').perform();
+            this.transferOwnership.perform();
         }
     },
 

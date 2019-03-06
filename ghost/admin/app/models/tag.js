@@ -28,11 +28,11 @@ export default Model.extend(ValidationEngine, {
 
     updateVisibility() {
         let internalRegex = /^#.?/;
-        this.set('visibility', internalRegex.test(this.get('name')) ? 'internal' : 'public');
+        this.set('visibility', internalRegex.test(this.name) ? 'internal' : 'public');
     },
 
     save() {
-        if (this.get('changedAttributes.name') && !this.get('isDeleted')) {
+        if (this.get('changedAttributes.name') && !this.isDeleted) {
             this.updateVisibility();
         }
         return this._super(...arguments);

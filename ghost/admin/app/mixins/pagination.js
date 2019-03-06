@@ -1,6 +1,6 @@
 import Mixin from '@ember/object/mixin';
 import RSVP from 'rsvp';
-// import {assign} from '@ember/polyfills';
+// import { assign } from '@ember/polyfills';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
@@ -51,18 +51,18 @@ export default Mixin.create({
     },
 
     reportLoadError(error) {
-        this.get('notifications').showAPIError(error, {key: 'pagination.load.failed'});
+        this.notifications.showAPIError(error, {key: 'pagination.load.failed'});
     },
 
     loadFirstPage(transition) {
-        let paginationSettings = this.get('paginationSettings');
-        let modelName = this.get('paginationModel');
+        let paginationSettings = this.paginationSettings;
+        let modelName = this.paginationModel;
 
         this.set('paginationSettings.page', 1);
 
         this.set('isLoading', true);
 
-        return this.get('store').query(modelName, paginationSettings).then((results) => {
+        return this.store.query(modelName, paginationSettings).then((results) => {
             this.set('paginationMeta', results.meta);
             return results;
         }).catch((error) => {
@@ -88,13 +88,13 @@ export default Mixin.create({
          * @return
          */
         loadNextPage() {
-            let store = this.get('store');
-            let modelName = this.get('paginationModel');
-            let metadata = this.get('paginationMeta');
+            let store = this.store;
+            let modelName = this.paginationModel;
+            let metadata = this.paginationMeta;
             let nextPage = metadata.pagination && metadata.pagination.next;
-            let paginationSettings = this.get('paginationSettings');
+            let paginationSettings = this.paginationSettings;
 
-            if (nextPage && !this.get('isLoading')) {
+            if (nextPage && !this.isLoading) {
                 this.set('isLoading', true);
                 this.set('paginationSettings.page', nextPage);
 

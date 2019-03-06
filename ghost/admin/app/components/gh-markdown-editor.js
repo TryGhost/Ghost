@@ -57,7 +57,7 @@ export default Component.extend(ShortcutsMixin, {
     onSplitScreenToggle() {},
 
     simpleMDEOptions: computed('options', function () {
-        let options = this.get('options') || {};
+        let options = this.options || {};
         let defaultOptions = {
             // use our Showdown config with sanitization for previews
             previewRender(markdown) {
@@ -142,19 +142,19 @@ export default Component.extend(ShortcutsMixin, {
 
         let toolbar = defaultOptions.toolbar;
 
-        if (!this.get('enableSideBySide')) {
+        if (!this.enableSideBySide) {
             let sideBySide = toolbar.findBy('name', 'side-by-side');
             let index = toolbar.indexOf(sideBySide);
             toolbar.splice(index, 1);
         }
 
-        if (!this.get('enablePreview')) {
+        if (!this.enablePreview) {
             let preview = toolbar.findBy('name', 'preview');
             let index = toolbar.indexOf(preview);
             toolbar.splice(index, 1);
         }
 
-        if (!this.get('enableHemingway')) {
+        if (!this.enableHemingway) {
             let hemingway = toolbar.findBy('name', 'hemingway');
             let index = toolbar.indexOf(hemingway);
             toolbar.splice(index, 1);
@@ -193,13 +193,13 @@ export default Component.extend(ShortcutsMixin, {
         shortcuts[`${ctrlOrCmd}+shift+i`] = {action: 'openImageFileDialog'};
         shortcuts['ctrl+alt+s'] = {action: 'toggleSpellcheck'};
 
-        if (this.get('enablePreview')) {
+        if (this.enablePreview) {
             shortcuts['ctrl+alt+r'] = {action: 'togglePreview'};
         }
-        if (this.get('enableSideBySide')) {
+        if (this.enableSideBySide) {
             shortcuts['ctrl+alt+p'] = {action: 'toggleSplitScreen'};
         }
-        if (this.get('enableHemingway')) {
+        if (this.enableHemingway) {
             shortcuts['ctrl+alt+h'] = {action: 'toggleHemingway'};
         }
 
@@ -210,7 +210,7 @@ export default Component.extend(ShortcutsMixin, {
     didReceiveAttrs() {
         this._super(...arguments);
 
-        let uploadedImageUrls = this.get('uploadedImageUrls');
+        let uploadedImageUrls = this.uploadedImageUrls;
         if (!isEmpty(uploadedImageUrls) && uploadedImageUrls !== this._uploadedImageUrls) {
             this._uploadedImageUrls = uploadedImageUrls;
 
@@ -224,16 +224,16 @@ export default Component.extend(ShortcutsMixin, {
         // focus the editor when the markdown value changes, this is necessary
         // because both the autofocus and markdown values can change without a
         // re-render, eg. navigating from edit->new
-        if (this.get('autofocus') && this._editor && this.get('markdown') !== this._editor.value()) {
+        if (this.autofocus && this._editor && this.markdown !== this._editor.value()) {
             this.send('focusEditor');
         }
 
         // use internal values to avoid updating bound values
-        if (!isEmpty(this.get('isFullScreen'))) {
-            this.set('_isFullScreen', this.get('isFullScreen'));
+        if (!isEmpty(this.isFullScreen)) {
+            this.set('_isFullScreen', this.isFullScreen);
         }
-        if (!isEmpty(this.get('isSplitScreen'))) {
-            this.set('_isSplitScreen', this.get('isSplitScreen'));
+        if (!isEmpty(this.isSplitScreen)) {
+            this.set('_isSplitScreen', this.isSplitScreen);
         }
 
         this._updateButtonState();
@@ -258,7 +258,7 @@ export default Component.extend(ShortcutsMixin, {
     },
 
     willDestroyElement() {
-        if (this.get('_isSplitScreen')) {
+        if (this._isSplitScreen) {
             this._disconnectSplitPreview();
         }
 
@@ -348,7 +348,7 @@ export default Component.extend(ShortcutsMixin, {
         },
 
         toggleUnsplash() {
-            if (this.get('_showUnsplash')) {
+            if (this._showUnsplash) {
                 return this.toggleProperty('_showUnsplash');
             }
 
@@ -378,20 +378,20 @@ export default Component.extend(ShortcutsMixin, {
         },
 
         toggleFullScreen() {
-            let isFullScreen = !this.get('_isFullScreen');
+            let isFullScreen = !this._isFullScreen;
 
             this.set('_isFullScreen', isFullScreen);
             this._updateButtonState();
             this.onFullScreenToggle(isFullScreen);
 
             // leave split screen when exiting full screen mode
-            if (!isFullScreen && this.get('_isSplitScreen')) {
+            if (!isFullScreen && this._isSplitScreen) {
                 this.send('toggleSplitScreen');
             }
         },
 
         toggleSplitScreen() {
-            let isSplitScreen = !this.get('_isSplitScreen');
+            let isSplitScreen = !this._isSplitScreen;
             let previewButton = this._editor.toolbarElements.preview;
 
             this.set('_isSplitScreen', isSplitScreen);
@@ -536,7 +536,7 @@ export default Component.extend(ShortcutsMixin, {
             let hemingwayButton = this._editor.toolbarElements.hemingway;
 
             if (sideBySideButton) {
-                if (this.get('_isSplitScreen')) {
+                if (this._isSplitScreen) {
                     sideBySideButton.classList.add('active');
                 } else {
                     sideBySideButton.classList.remove('active');
@@ -679,7 +679,7 @@ export default Component.extend(ShortcutsMixin, {
 
         cm.focus();
 
-        this.get('notifications').showNotification(
+        this.notifications.showNotification(
             htmlSafe(notificationText),
             {key: 'editor.hemingwaymode'}
         );

@@ -25,8 +25,8 @@ export default Controller.extend(PaginationMixin, {
     // getter/setter CP here so that we don't lose the dynamic order param
     paginationSettings: computed('order', 'direction', {
         get() {
-            let order = this.get('order');
-            let direction = this.get('direction');
+            let order = this.order;
+            let direction = this.direction;
 
             let currentSettings = this._paginationSettings || {
                 limit: 30
@@ -43,8 +43,8 @@ export default Controller.extend(PaginationMixin, {
     }),
 
     columns: computed('order', 'direction', function () {
-        let order = this.get('order');
-        let direction = this.get('direction');
+        let order = this.order;
+        let direction = this.direction;
 
         return [{
             label: 'Email Address',
@@ -82,7 +82,7 @@ export default Controller.extend(PaginationMixin, {
 
     actions: {
         loadFirstPage() {
-            let table = this.get('table');
+            let table = this.table;
 
             return this._super(...arguments).then((results) => {
                 table.addRows(results);
@@ -91,7 +91,7 @@ export default Controller.extend(PaginationMixin, {
         },
 
         loadNextPage() {
-            let table = this.get('table');
+            let table = this.table;
 
             return this._super(...arguments).then((results) => {
                 table.addRows(results);
@@ -100,7 +100,7 @@ export default Controller.extend(PaginationMixin, {
         },
 
         sortByColumn(column) {
-            let table = this.get('table');
+            let table = this.table;
 
             if (column.sorted) {
                 this.setProperties({
@@ -113,7 +113,7 @@ export default Controller.extend(PaginationMixin, {
         },
 
         addSubscriber(subscriber) {
-            this.get('table').insertRowAt(0, subscriber);
+            this.table.insertRowAt(0, subscriber);
             this.incrementProperty('total');
         },
 
@@ -122,11 +122,11 @@ export default Controller.extend(PaginationMixin, {
         },
 
         confirmDeleteSubscriber() {
-            let subscriber = this.get('subscriberToDelete');
+            let subscriber = this.subscriberToDelete;
 
             return subscriber.destroyRecord().then(() => {
                 this.set('subscriberToDelete', null);
-                this.get('table').removeRow(subscriber);
+                this.table.removeRow(subscriber);
                 this.decrementProperty('total');
             });
         },
@@ -136,7 +136,7 @@ export default Controller.extend(PaginationMixin, {
         },
 
         reset() {
-            this.get('table').setRows([]);
+            this.table.setRows([]);
             this.send('loadFirstPage');
         },
 
@@ -155,7 +155,7 @@ export default Controller.extend(PaginationMixin, {
     },
 
     initializeTable() {
-        this.set('table', new Table(this.get('columns'), this.get('subscribers')));
+        this.set('table', new Table(this.columns, this.subscribers));
     },
 
     // capture the total from the server any time we fetch a new page

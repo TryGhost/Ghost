@@ -20,8 +20,8 @@ export default Component.extend({
         let noSchemeBlogUrl = blogUrl.substr(blogUrl.indexOf('://') + 3);
 
         // Get the prefix and slug values
-        let prefix = this.get('prefix') ? `${this.get('prefix')}/` : '';
-        let slug = this.get('slug') ? `${this.get('slug')}/` : '';
+        let prefix = this.prefix ? `${this.prefix}/` : '';
+        let slug = this.slug ? `${this.slug}/` : '';
 
         // Join parts of the URL together with slashes
         let theUrl = `${noSchemeBlogUrl}/${prefix}${slug}`;

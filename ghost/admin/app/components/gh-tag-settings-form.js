@@ -39,9 +39,9 @@ export default Component.extend({
     }),
 
     seoTitle: computed('scratchName', 'scratchMetaTitle', function () {
-        let metaTitle = this.get('scratchMetaTitle') || '';
+        let metaTitle = this.scratchMetaTitle || '';
 
-        metaTitle = metaTitle.length > 0 ? metaTitle : this.get('scratchName');
+        metaTitle = metaTitle.length > 0 ? metaTitle : this.scratchName;
 
         if (metaTitle && metaTitle.length > 70) {
             metaTitle = metaTitle.substring(0, 70).trim();
@@ -54,7 +54,7 @@ export default Component.extend({
 
     seoURL: computed('scratchSlug', function () {
         let blogUrl = this.get('config.blogUrl');
-        let seoSlug = this.get('scratchSlug') || '';
+        let seoSlug = this.scratchSlug || '';
 
         let seoURL = `${blogUrl}/tag/${seoSlug}`;
 
@@ -73,9 +73,9 @@ export default Component.extend({
     }),
 
     seoDescription: computed('scratchDescription', 'scratchMetaDescription', function () {
-        let metaDescription = this.get('scratchMetaDescription') || '';
+        let metaDescription = this.scratchMetaDescription || '';
 
-        metaDescription = metaDescription.length > 0 ? metaDescription : this.get('scratchDescription');
+        metaDescription = metaDescription.length > 0 ? metaDescription : this.scratchDescription;
 
         if (metaDescription && metaDescription.length > 156) {
             metaDescription = metaDescription.substring(0, 156).trim();

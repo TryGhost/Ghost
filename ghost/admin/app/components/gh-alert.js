@@ -30,7 +30,7 @@ export default Component.extend({
 
     actions: {
         closeNotification() {
-            this.get('notifications').closeNotification(this.get('message'));
+            this.notifications.closeNotification(this.message);
         }
     }
 });

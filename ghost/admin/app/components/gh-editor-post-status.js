@@ -26,8 +26,8 @@ export default Component.extend({
     // we want to ensure that the "Saving..." message is shown for at least
     // a few seconds so that it's noticeable
     didReceiveAttrs() {
-        if (this.get('isSaving')) {
-            this.get('showSavingMessage').perform();
+        if (this.isSaving) {
+            this.showSavingMessage.perform();
         }
     },
 

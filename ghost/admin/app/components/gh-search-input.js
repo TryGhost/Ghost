@@ -9,12 +9,12 @@ import {task, timeout, waitForProperty} from 'ember-concurrency';
 
 export function computedGroup(category) {
     return computed('content', 'currentSearch', function () {
-        if (!this.get('currentSearch') || !this.get('content')) {
+        if (!this.currentSearch || !this.content) {
             return [];
         }
 
-        return this.get('content').filter((item) => {
-            let search = this.get('currentSearch').toString().toLowerCase();
+        return this.content.filter((item) => {
+            let search = this.currentSearch.toString().toLowerCase();
 
             return (item.category === category) && (item.title.toString().toLowerCase().indexOf(search) >= 0);
         });
@@ -41,20 +41,20 @@ export default Component.extend({
     groupedContent: computed('posts', 'pages', 'users', 'tags', function () {
         let groups = [];
 
-        if (!isEmpty(this.get('posts'))) {
-            groups.pushObject({groupName: 'Posts', options: this.get('posts')});
+        if (!isEmpty(this.posts)) {
+            groups.pushObject({groupName: 'Posts', options: this.posts});
         }
 
-        if (!isEmpty(this.get('pages'))) {
-            groups.pushObject({groupName: 'Pages', options: this.get('pages')});
+        if (!isEmpty(this.pages)) {
+            groups.pushObject({groupName: 'Pages', options: this.pages});
         }
 
-        if (!isEmpty(this.get('users'))) {
-            groups.pushObject({groupName: 'Users', options: this.get('users')});
+        if (!isEmpty(this.users)) {
+            groups.pushObject({groupName: 'Users', options: this.users});
         }
 
-        if (!isEmpty(this.get('tags'))) {
-            groups.pushObject({groupName: 'Tags', options: this.get('tags')});
+        if (!isEmpty(this.tags)) {
+            groups.pushObject({groupName: 'Tags', options: this.tags});
         }
 
         return groups;
@@ -73,22 +73,22 @@ export default Component.extend({
 
             if (selected.category === 'Posts') {
                 let id = selected.id.replace('post.', '');
-                this.get('router').transitionTo('editor.edit', 'post', id);
+                this.router.transitionTo('editor.edit', 'post', id);
             }
 
             if (selected.category === 'Pages') {
                 let id = selected.id.replace('page.', '');
-                this.get('router').transitionTo('editor.edit', 'page', id);
+                this.router.transitionTo('editor.edit', 'page', id);
             }
 
             if (selected.category === 'Users') {
                 let id = selected.id.replace('user.', '');
-                this.get('router').transitionTo('staff.user', id);
+                this.router.transitionTo('staff.user', id);
             }
 
             if (selected.category === 'Tags') {
                 let id = selected.id.replace('tag.', '');
-                this.get('router').transitionTo('settings.tags.tag', id);
+                this.router.transitionTo('settings.tags.tag', id);
             }
         },
 
@@ -123,13 +123,13 @@ export default Component.extend({
 
         // set dependent CP term and re-calculate CP
         this.set('currentSearch', term);
-        return this.get('groupedContent');
+        return this.groupedContent;
     }).restartable(),
 
     refreshContent: task(function* () {
         let promises = [];
         let now = new Date();
-        let contentExpiresAt = this.get('contentExpiresAt');
+        let contentExpiresAt = this.contentExpiresAt;
 
         if (contentExpiresAt > now) {
             return true;
@@ -148,75 +148,75 @@ export default Component.extend({
             console.error(error);
         }
 
-        let contentExpiry = this.get('contentExpiry');
+        let contentExpiry = this.contentExpiry;
         this.set('contentExpiresAt', new Date(now.getTime() + contentExpiry));
     }).drop(),
 
     _loadPosts() {
-        let store = this.get('store');
+        let store = this.store;
         let postsUrl = `${store.adapterFor('post').urlForQuery({}, 'post')}/`;
         let postsQuery = {fields: 'id,title,page', limit: 'all', status: 'all'};
-        let content = this.get('content');
+        let content = this.content;
 
-        return this.get('ajax').request(postsUrl, {data: postsQuery}).then((posts) => {
+        return this.ajax.request(postsUrl, {data: postsQuery}).then((posts) => {
             content.pushObjects(posts.posts.map(post => ({
                 id: `post.${post.id}`,
                 title: post.title,
                 category: 'Posts'
             })));
         }).catch((error) => {
-            this.get('notifications').showAPIError(error, {key: 'search.loadPosts.error'});
+            this.notifications.showAPIError(error, {key: 'search.loadPosts.error'});
         });
     },
 
     _loadPages() {
-        let store = this.get('store');
+        let store = this.store;
         let pagesUrl = `${store.adapterFor('page').urlForQuery({}, 'page')}/`;
         let pagesQuery = {fields: 'id,title,page', limit: 'all', status: 'all'};
-        let content = this.get('content');
+        let content = this.content;
 
-        return this.get('ajax').request(pagesUrl, {data: pagesQuery}).then((pages) => {
+        return this.ajax.request(pagesUrl, {data: pagesQuery}).then((pages) => {
             content.pushObjects(pages.pages.map(page => ({
                 id: `page.${page.id}`,
                 title: page.title,
                 category: 'Pages'
             })));
         }).catch((error) => {
-            this.get('notifications').showAPIError(error, {key: 'search.loadPosts.error'});
+            this.notifications.showAPIError(error, {key: 'search.loadPosts.error'});
         });
     },
 
     _loadUsers() {
-        let store = this.get('store');
+        let store = this.store;
         let usersUrl = `${store.adapterFor('user').urlForQuery({}, 'user')}/`;
         let usersQuery = {fields: 'name,slug', limit: 'all'};
-        let content = this.get('content');
+        let content = this.content;
 
-        return this.get('ajax').request(usersUrl, {data: usersQuery}).then((users) => {
+        return this.ajax.request(usersUrl, {data: usersQuery}).then((users) => {
             content.pushObjects(users.users.map(user => ({
                 id: `user.${user.slug}`,
                 title: user.name,
                 category: 'Users'
             })));
         }).catch((error) => {
-            this.get('notifications').showAPIError(error, {key: 'search.loadUsers.error'});
+            this.notifications.showAPIError(error, {key: 'search.loadUsers.error'});
         });
     },
 
     _loadTags() {
-        let store = this.get('store');
+        let store = this.store;
         let tagsUrl = `${store.adapterFor('tag').urlForQuery({}, 'tag')}/`;
         let tagsQuery = {fields: 'name,slug', limit: 'all'};
-        let content = this.get('content');
+        let content = this.content;
 
-        return this.get('ajax').request(tagsUrl, {data: tagsQuery}).then((tags) => {
+        return this.ajax.request(tagsUrl, {data: tagsQuery}).then((tags) => {
             content.pushObjects(tags.tags.map(tag => ({
                 id: `tag.${tag.slug}`,
                 title: tag.name,
                 category: 'Tags'
             })));
         }).catch((error) => {
-            this.get('notifications').showAPIError(error, {key: 'search.loadTags.error'});
+            this.notifications.showAPIError(error, {key: 'search.loadTags.error'});
         });
     },
 

@@ -20,7 +20,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     model() {
         return RSVP.hash({
-            settings: this.get('settings').reload(),
+            settings: this.settings.reload(),
             availableTimezones: this.get('config.availableTimezones')
         });
     },
@@ -33,16 +33,16 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     actions: {
         save() {
-            return this.get('controller').send('save');
+            return this.controller.send('save');
         },
 
         reloadSettings() {
-            return this.get('settings').reload();
+            return this.settings.reload();
         },
 
         willTransition(transition) {
-            let controller = this.get('controller');
-            let settings = this.get('settings');
+            let controller = this.controller;
+            let settings = this.settings;
             let settingsIsDirty = settings.get('hasDirtyAttributes');
 
             if (settingsIsDirty) {

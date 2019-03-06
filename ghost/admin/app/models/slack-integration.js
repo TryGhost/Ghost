@@ -11,7 +11,7 @@ export default EmberObject.extend(ValidationEngine, {
     validationType: 'slackIntegration',
 
     isActive: computed('url', function () {
-        let url = this.get('url');
+        let url = this.url;
         return !isBlank(url);
     })
 });

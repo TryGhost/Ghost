@@ -8,7 +8,7 @@ export default Component.extend(InViewportMixin, {
     registerElement() {},
 
     didInsertElement() {
-        let offset = this.get('triggerOffset') || {};
+        let offset = this.triggerOffset || {};
 
         // if triggerOffset is a number we use it for all dimensions
         if (typeof offset === 'number') {

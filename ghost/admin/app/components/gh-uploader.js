@@ -95,12 +95,12 @@ export default Component.extend({
         this._super(...arguments);
 
         // set up any defaults
-        if (!this.get('uploadUrl')) {
+        if (!this.uploadUrl) {
             this.set('uploadUrl', this._defaultUploadUrl);
         }
 
         // if we have new files, validate and start an upload
-        let files = this.get('files');
+        let files = this.files;
         this._setFiles(files);
     },
 
@@ -132,14 +132,14 @@ export default Component.extend({
 
             // we cancel early if any file fails client-side validation
             if (this._validate()) {
-                this.get('_uploadFiles').perform(files);
+                this._uploadFiles.perform(files);
             }
         }
     },
 
     _validate() {
-        let files = this.get('files');
-        let validate = this.get('validate') || this._defaultValidator.bind(this);
+        let files = this.files;
+        let validate = this.validate || this._defaultValidator.bind(this);
         let ok = [];
         let errors = [];
 
@@ -167,7 +167,7 @@ export default Component.extend({
     // we only check the file extension by default because IE doesn't always
     // expose the mime-type, we'll rely on the API for final validation
     _defaultValidator(file) {
-        let extensions = this.get('extensions');
+        let extensions = this.extensions;
         let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
 
         // if extensions is falsy exit early and accept all files
@@ -199,25 +199,25 @@ export default Component.extend({
             let file = files[i];
             let tracker = new UploadTracker({file});
 
-            this.get('_uploadTrackers').pushObject(tracker);
-            uploads.push(this.get('_uploadFile').perform(tracker, file, i));
+            this._uploadTrackers.pushObject(tracker);
+            uploads.push(this._uploadFile.perform(tracker, file, i));
         }
 
         // populates this.errors and this.uploadUrls
         yield all(uploads);
 
-        if (!isEmpty(this.get('errors'))) {
-            this.onFailed(this.get('errors'));
+        if (!isEmpty(this.errors)) {
+            this.onFailed(this.errors);
         }
 
-        this.onComplete(this.get('uploadUrls'));
+        this.onComplete(this.uploadUrls);
     }).drop(),
 
     // eslint-disable-next-line ghost/ember/order-in-components
     _uploadFile: task(function* (tracker, file, index) {
-        let ajax = this.get('ajax');
+        let ajax = this.ajax;
         let formData = this._getFormData(file);
-        let url = `${ghostPaths().apiRoot}${this.get('uploadUrl')}`;
+        let url = `${ghostPaths().apiRoot}${this.uploadUrl}`;
 
         try {
             this.onUploadStart(file);
@@ -269,7 +269,7 @@ export default Component.extend({
                 fileName: file.name
             };
 
-            this.get('uploadUrls')[index] = result;
+            this.uploadUrls[index] = result;
             this.onUploadSuccess(result);
 
             return true;
@@ -288,7 +288,7 @@ export default Component.extend({
             };
 
             // TODO: check for or expose known error types?
-            this.get('errors').pushObject(result);
+            this.errors.pushObject(result);
             this.onUploadFailure(result);
         }
     }).maxConcurrency(MAX_SIMULTANEOUS_UPLOADS).enqueue(),
@@ -296,7 +296,7 @@ export default Component.extend({
     // NOTE: this is necessary because the API doesn't accept direct file uploads
     _getFormData(file) {
         let formData = new FormData();
-        formData.append(this.get('paramName'), file, file.name);
+        formData.append(this.paramName, file, file.name);
 
         Object.keys(this.paramsHash || {}).forEach((key) => {
             formData.append(key, this.paramsHash[key]);

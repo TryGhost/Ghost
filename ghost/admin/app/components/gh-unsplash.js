@@ -45,12 +45,12 @@ export default Component.extend(ShortcutsMixin, {
     didInsertElement() {
         this._super(...arguments);
         this._resizeCallback = bind(this, this._handleResize);
-        this.get('resizeDetector').setup('[data-unsplash]', this._resizeCallback);
+        this.resizeDetector.setup('[data-unsplash]', this._resizeCallback);
         this.registerShortcuts();
     },
 
     willDestroyElement() {
-        this.get('resizeDetector').teardown('[data-unsplash]', this._resizeCallback);
+        this.resizeDetector.teardown('[data-unsplash]', this._resizeCallback);
         this.removeShortcuts();
         this.send('resetKeyScope');
         this._super(...arguments);
@@ -58,7 +58,7 @@ export default Component.extend(ShortcutsMixin, {
 
     actions: {
         loadNextPage() {
-            this.get('unsplash').loadNextPage();
+            this.unsplash.loadNextPage();
         },
 
         search(term) {
@@ -75,7 +75,7 @@ export default Component.extend(ShortcutsMixin, {
         },
 
         select(photo) {
-            this.get('unsplash').triggerDownload(photo);
+            this.unsplash.triggerDownload(photo);
 
             let selectParams = {
                 src: photo.urls.regular,
@@ -92,7 +92,7 @@ export default Component.extend(ShortcutsMixin, {
         },
 
         retry() {
-            this.get('unsplash').retryLastRequest();
+            this.unsplash.retryLastRequest();
         },
 
         setKeyScope() {
@@ -104,7 +104,7 @@ export default Component.extend(ShortcutsMixin, {
         },
 
         handleEscape() {
-            if (this.get('zoomedPhoto')) {
+            if (this.zoomedPhoto) {
                 return this.send('closeZoom');
             }
 
@@ -122,6 +122,6 @@ export default Component.extend(ShortcutsMixin, {
             columns = 2;
         }
 
-        this.get('unsplash').changeColumnCount(columns);
+        this.unsplash.changeColumnCount(columns);
     }
 });

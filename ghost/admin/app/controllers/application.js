@@ -21,7 +21,7 @@ export default Controller.extend({
             return false;
         }
 
-        return (this.get('currentPath') !== 'error404' || this.get('session.isAuthenticated'))
-                && !this.get('currentPath').match(/(signin|signup|setup|reset)/);
+        return (this.currentPath !== 'error404' || this.get('session.isAuthenticated'))
+                && !this.currentPath.match(/(signin|signup|setup|reset)/);
     })
 });

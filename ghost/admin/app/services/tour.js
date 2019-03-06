@@ -66,8 +66,8 @@ export default Service.extend(Evented, {
 
     _activeThrobbers: computed('viewed.[]', 'throbbers.[]', function () {
         // return throbbers that haven't been viewed
-        let viewed = this.get('viewed');
-        let throbbers = this.get('throbbers');
+        let viewed = this.viewed;
+        let throbbers = this.throbbers;
 
         return throbbers.reject(throbber => viewed.includes(throbber.id));
     }),
@@ -87,7 +87,7 @@ export default Service.extend(Evented, {
     // save the list of viewed throbbers to the server overwriting the
     // entire list
     syncViewed() {
-        let viewed = this.get('viewed');
+        let viewed = this.viewed;
 
         return this.get('session.user').then((user) => {
             user.set('tour', viewed);
@@ -99,14 +99,14 @@ export default Service.extend(Evented, {
     // returns throbber content for a given ID only if that throbber hasn't been
     // viewed. Used by the {{gh-tour-item}} component to determine visibility
     activeThrobber(id) {
-        let activeThrobbers = this.get('_activeThrobbers');
+        let activeThrobbers = this._activeThrobbers;
         return activeThrobbers.findBy('id', id);
     },
 
     // when a throbber is opened the component will call this method to mark
     // it as viewed and sync with the server. Always returns a promise
     markThrobberAsViewed(id) {
-        let viewed = this.get('viewed');
+        let viewed = this.viewed;
 
         if (!viewed.includes(id)) {
             viewed.pushObject(id);
@@ -121,7 +121,7 @@ export default Service.extend(Evented, {
     // single-source-of-truth and allowing future client updates to control when
     // new UI should be surfaced through tour items
     optOut() {
-        let allThrobberIds = this.get('throbbers').mapBy('id');
+        let allThrobberIds = this.throbbers.mapBy('id');
 
         this.set('viewed', allThrobberIds);
         this.trigger('optOut');

@@ -28,9 +28,9 @@ export default TextArea.extend({
     // https://github.com/sparksuite/simplemde-markdown-editor#configuration
     defaultOptions: computed(function () {
         return {
-            autofocus: this.get('autofocus'),
+            autofocus: this.autofocus,
             indentWithTabs: false,
-            placeholder: this.get('placeholder'),
+            placeholder: this.placeholder,
             tabSize: 4
         };
     }),
@@ -38,7 +38,7 @@ export default TextArea.extend({
     init() {
         this._super(...arguments);
 
-        if (isEmpty(this.get('options'))) {
+        if (isEmpty(this.options)) {
             this.set('options', {});
         }
     },
@@ -53,9 +53,9 @@ export default TextArea.extend({
 
         // compare values before forcing a content reset to avoid clobbering
         // the undo behaviour
-        if (this.get('value') !== this._editor.value()) {
+        if (this.value !== this._editor.value()) {
             let cursor = this._editor.codemirror.getDoc().getCursor();
-            this._editor.value(this.get('value'));
+            this._editor.value(this.value);
             this._editor.codemirror.getDoc().setCursor(cursor);
         }
     },
@@ -78,8 +78,8 @@ export default TextArea.extend({
 
         let editorOptions = assign(
             {element: document.getElementById(this.elementId)},
-            this.get('defaultOptions'),
-            this.get('options')
+            this.defaultOptions,
+            this.options
         );
 
         // disable spellchecker when testing so that the exterally loaded plugin
@@ -89,7 +89,7 @@ export default TextArea.extend({
         }
 
         this._editor = new SimpleMDE(editorOptions);
-        this._editor.value(this.get('value') || '');
+        this._editor.value(this.value || '');
 
         this._editor.codemirror.on('change', (instance, changeObj) => {
             // avoid a "modified x twice in a single render" error that occurs
@@ -107,7 +107,7 @@ export default TextArea.extend({
             this.onBlur();
         });
 
-        if (this.get('autofocus')) {
+        if (this.autofocus) {
             this._editor.codemirror.execCommand('goDocEnd');
         }
 

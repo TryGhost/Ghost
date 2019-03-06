@@ -79,7 +79,7 @@ export default Service.extend({
 
     fetch() {
         return RSVP.hash({
-            settings: this.get('settings').fetch(),
+            settings: this.settings.fetch(),
             user: this.get('session.user')
         }).then(({user}) => {
             this.set('_user', user);
@@ -112,7 +112,7 @@ export default Service.extend({
                 throw new EmberError(`Validation of the feature service ${options.user ? 'user' : 'settings'} model failed when updating ${serviceProperty}.`);
             }
 
-            this.get('notifications').showAPIError(error);
+            this.notifications.showAPIError(error);
 
             return this.get(`${serviceProperty}.${key}`);
         });
@@ -122,10 +122,10 @@ export default Service.extend({
         let nightShift = enabled;
 
         if (typeof nightShift === 'undefined') {
-            nightShift = enabled || this.get('nightShift');
+            nightShift = enabled || this.nightShift;
         }
 
-        return this.get('lazyLoader').loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
+        return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
             $('link[title=dark]').prop('disabled', !nightShift);
             $('link[title=light]').prop('disabled', nightShift);
         });

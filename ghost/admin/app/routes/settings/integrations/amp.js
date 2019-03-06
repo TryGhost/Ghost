@@ -19,11 +19,11 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     actions: {
         save() {
-            this.get('controller').send('save');
+            this.controller.send('save');
         },
 
         willTransition(transition) {
-            let controller = this.get('controller');
+            let controller = this.controller;
             let modelIsDirty = this.settings.get('hasDirtyAttributes');
 
             if (modelIsDirty) {

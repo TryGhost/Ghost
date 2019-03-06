@@ -40,11 +40,11 @@ export default AuthenticatedRoute.extend({
 
     actions: {
         addSubscriber(subscriber) {
-            this.get('controller').send('addSubscriber', subscriber);
+            this.controller.send('addSubscriber', subscriber);
         },
 
         reset() {
-            this.get('controller').send('reset');
+            this.controller.send('reset');
         }
     }
 });

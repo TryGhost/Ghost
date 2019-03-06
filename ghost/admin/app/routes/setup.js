@@ -24,7 +24,7 @@ export default Route.extend(styleBody, {
         let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');
 
         // check the state of the setup process via the API
-        return this.get('ajax').request(authUrl)
+        return this.ajax.request(authUrl)
             .then((result) => {
                 let [setup] = result.setup;
 

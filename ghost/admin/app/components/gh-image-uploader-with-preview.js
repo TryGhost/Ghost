@@ -6,28 +6,28 @@ export default Component.extend({
 
     actions: {
         update() {
-            let action = this.get('update');
+            let action = this.update;
             if (action) {
                 action(...arguments);
             }
         },
 
         uploadStarted() {
-            let action = this.get('uploadStarted');
+            let action = this.uploadStarted;
             if (action) {
                 action(...arguments);
             }
         },
 
         uploadFinished() {
-            let action = this.get('uploadFinished');
+            let action = this.uploadFinished;
             if (action) {
                 action(...arguments);
             }
         },
 
         remove() {
-            let action = this.get('remove');
+            let action = this.remove;
             if (action) {
                 action();
             }

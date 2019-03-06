@@ -18,7 +18,7 @@ export default Component.extend({
     updateAuthors() {},
 
     availableAuthorNames: computed('availableAuthors.@each.name', function () {
-        return this.get('availableAuthors').map(author => author.get('name').toLowerCase());
+        return this.availableAuthors.map(author => author.get('name').toLowerCase());
     }),
 
     init() {

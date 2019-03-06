@@ -14,19 +14,19 @@ export default Component.extend({
     'data-test-publishmenu-draft': true,
 
     didInsertElement() {
-        this.get('post').set('publishedAtBlogTZ', this.get('post.publishedAtUTC'));
+        this.post.set('publishedAtBlogTZ', this.get('post.publishedAtUTC'));
         this.send('setSaveType', 'publish');
     },
 
     actions: {
         setSaveType(type) {
-            if (this.get('saveType') !== type) {
+            if (this.saveType !== type) {
                 let hasDateError = !isEmpty(this.get('post.errors').errorsFor('publishedAtBlogDate'));
                 let hasTimeError = !isEmpty(this.get('post.errors').errorsFor('publishedAtBlogTime'));
                 let minDate = this._getMinDate();
 
                 this.set('_minDate', minDate);
-                this.get('setSaveType')(type);
+                this.setSaveType(type);
 
                 // when publish: switch to now to avoid validation errors
                 // when schedule: switch to last valid or new minimum scheduled date
@@ -37,21 +37,21 @@ export default Component.extend({
                         this._publishedAtBlogTZ = this.get('post.publishedAtUTC');
                     }
 
-                    this.get('post').set('publishedAtBlogTZ', this.get('post.publishedAtUTC'));
+                    this.post.set('publishedAtBlogTZ', this.get('post.publishedAtUTC'));
                 } else {
                     if (!this._publishedAtBlogTZ || moment(this._publishedAtBlogTZ).isBefore(minDate)) {
-                        this.get('post').set('publishedAtBlogTZ', minDate);
+                        this.post.set('publishedAtBlogTZ', minDate);
                     } else {
-                        this.get('post').set('publishedAtBlogTZ', this._publishedAtBlogTZ);
+                        this.post.set('publishedAtBlogTZ', this._publishedAtBlogTZ);
                     }
                 }
 
-                this.get('post').validate();
+                this.post.validate();
             }
         },
 
         setDate(date) {
-            let post = this.get('post');
+            let post = this.post;
             let dateString = moment(date).format('YYYY-MM-DD');
 
             post.set('publishedAtBlogDate', dateString);
@@ -59,7 +59,7 @@ export default Component.extend({
         },
 
         setTime(time) {
-            let post = this.get('post');
+            let post = this.post;
 
             post.set('publishedAtBlogTime', time);
             return post.validate();

@@ -46,17 +46,17 @@ export default Component.extend({
     }),
 
     didReceiveAttrs() {
-        if (this.get('active')) {
+        if (this.active) {
             this.scrollIntoView();
         }
     },
 
     click() {
-        this.onClick(this.get('post'));
+        this.onClick(this.post);
     },
 
     doubleClick() {
-        this.onDoubleClick(this.get('post'));
+        this.onDoubleClick(this.post);
     },
 
     scrollIntoView() {

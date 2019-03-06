@@ -11,7 +11,7 @@ export default Component.extend({
     count: '',
 
     didInsertElement() {
-        this.get('_poll').perform();
+        this._poll.perform();
     },
 
     _poll: task(function* () {
@@ -19,7 +19,7 @@ export default Component.extend({
         let pattern = /(-?\d+)(\d{3})/;
 
         try {
-            let data = yield this.get('ajax').request(url);
+            let data = yield this.ajax.request(url);
             let count = data.count.toString();
 
             while (pattern.test(count)) {
@@ -30,7 +30,7 @@ export default Component.extend({
 
             if (config.environment !== 'test') {
                 yield timeout(2000);
-                this.get('_poll').perform();
+                this._poll.perform();
             }
         } catch (e) {
             // no-op - we don't want to create noise for a failed download count

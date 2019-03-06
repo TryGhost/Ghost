@@ -21,8 +21,8 @@ export default Component.extend({
     isVisible: notEmpty('errors'),
 
     message: computed('errors.[]', 'property', function () {
-        let property = this.get('property');
-        let errors = this.get('errors');
+        let property = this.property;
+        let errors = this.errors;
         let messages = [];
         let index;
 

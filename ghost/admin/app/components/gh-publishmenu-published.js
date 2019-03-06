@@ -5,6 +5,6 @@ export default Component.extend({
     'data-test-publishmenu-published': true,
 
     didInsertElement() {
-        this.get('setSaveType')('publish');
+        this.setSaveType('publish');
     }
 });

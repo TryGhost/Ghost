@@ -50,19 +50,19 @@ const GhTaskButton = Component.extend({
     }),
 
     isIdleClass: computed('isIdle', function () {
-        if (this.get('isIdle')) {
-            return this.get('idleClass');
+        if (this.isIdle) {
+            return this.idleClass;
         }
     }),
 
     isRunningClass: computed('isRunning', function () {
-        if (this.get('isRunning')) {
-            return this.get('runningClass') || this.get('idleClass');
+        if (this.isRunning) {
+            return this.runningClass || this.idleClass;
         }
     }),
 
     isSuccess: computed('hasRun', 'isRunning', 'task.last.value', function () {
-        if (!this.get('hasRun') || this.get('isRunning')) {
+        if (!this.hasRun || this.isRunning) {
             return false;
         }
 
@@ -71,13 +71,13 @@ const GhTaskButton = Component.extend({
     }),
 
     isSuccessClass: computed('isSuccess', function () {
-        if (this.get('isSuccess')) {
-            return this.get('successClass');
+        if (this.isSuccess) {
+            return this.successClass;
         }
     }),
 
     isFailure: computed('hasRun', 'isRunning', 'isSuccess', 'task.last.error', function () {
-        if (!this.get('hasRun') || this.get('isRunning') || this.get('isSuccess')) {
+        if (!this.hasRun || this.isRunning || this.isSuccess) {
             return false;
         }
 
@@ -85,13 +85,13 @@ const GhTaskButton = Component.extend({
     }),
 
     isFailureClass: computed('isFailure', function () {
-        if (this.get('isFailure')) {
-            return this.get('failureClass');
+        if (this.isFailure) {
+            return this.failureClass;
         }
     }),
 
     isIdle: computed('isRunning', 'isSuccess', 'isFailure', function () {
-        return !this.get('isRunning') && !this.get('isSuccess') && !this.get('isFailure');
+        return !this.isRunning && !this.isSuccess && !this.isFailure;
     }),
 
     init() {
@@ -105,31 +105,31 @@ const GhTaskButton = Component.extend({
         // task directly
         if (this.defaultClick) {
             if (!this.isRunning) {
-                this.get('_restartAnimation').perform();
+                this._restartAnimation.perform();
             }
             return;
         }
 
         // do nothing if disabled externally
-        if (this.get('disabled')) {
+        if (this.disabled) {
             return false;
         }
 
-        let task = this.get('task');
+        let task = this.task;
         let taskName = this.get('task.name');
         let lastTaskName = this.get('task.last.task.name');
 
         // task-buttons are never disabled whilst running so that clicks when a
         // taskGroup is running don't get dropped BUT that means we need to check
         // here to avoid spamming actions from multiple clicks
-        if (this.get('isRunning') && taskName === lastTaskName) {
+        if (this.isRunning && taskName === lastTaskName) {
             return;
         }
 
         this.action();
         task.perform();
 
-        this.get('_restartAnimation').perform();
+        this._restartAnimation.perform();
 
         // prevent the click from bubbling and triggering form actions
         return false;
