@@ -64,4 +64,17 @@ describe('Admin API key authentication', function () {
                 res.body.posts[0].authors.length.should.eql(1);
             });
     });
+
+    it('Can read users', function () {
+        return request
+            .get(localUtils.API.getApiQuery('users/'))
+            .set('Origin', config.get('url'))
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v2/admin/')}`)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                localUtils.API.checkResponse(res.body.users[0], 'user');
+            });
+    });
 });

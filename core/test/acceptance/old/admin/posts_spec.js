@@ -249,7 +249,7 @@ describe('Posts API', function () {
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
 
                 jsonResponse.posts[0].authors[0].should.be.an.Object();
-                localUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user', ['url']);
+                localUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user');
 
                 jsonResponse.posts[0].tags[0].should.be.an.Object();
                 localUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag', ['url']);
