@@ -100,6 +100,17 @@ Settings = ghostBookshelf.Model.extend({
             });
     },
 
+    format() {
+        const attrs = ghostBookshelf.Model.prototype.format.apply(this, arguments);
+
+        // @NOTE: type TEXT will transform boolean to "0"
+        if (_.isBoolean(attrs.value)) {
+            attrs.value = attrs.value.toString();
+        }
+
+        return attrs;
+    },
+
     parse() {
         const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
 
