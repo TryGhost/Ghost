@@ -189,6 +189,10 @@
     background: #3fb0ef;
 }
 
+.ember-power-select-multiple-remove-btn {
+    padding: 2px 1px;
+}
+
 .ember-power-select-multiple-remove-btn:not(:hover) {
     opacity: 0.75;
 }
