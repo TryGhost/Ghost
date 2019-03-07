@@ -14,13 +14,20 @@ export default AuthenticatedRoute.extend({
         }
     },
 
-    model(params) {
+    model(params, transition) {
+        let {type: modelName, post_id} = params;
+
+        if (!['post', 'page'].includes(modelName)) {
+            let path = transition.intent.url.replace(/^\//, '');
+            return this.replaceWith('error404', {path, status: 404});
+        }
+
         let query = {
-            id: params.post_id,
+            id: post_id,
             status: 'all'
         };
 
-        return this.store.query(params.type, query)
+        return this.store.query(modelName, query)
             .then(records => records.get('firstObject'));
     },
 
