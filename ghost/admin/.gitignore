@@ -45,6 +45,7 @@ Session.vim
 /bower_components
 
 # misc
+./env*
 /connect.lock
 /coverage/
 /libpeerconnection.log
