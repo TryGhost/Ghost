@@ -1,9 +1,16 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 
 export default AuthenticatedRoute.extend({
-    model(params) {
+    model(params, transition) {
+        let {type: modelName} = params;
+
+        if (!['post','page'].includes(modelName)) {
+            let path = transition.intent.url.replace(/^\//, '');
+            return this.replaceWith('error404', {path, status: 404});
+        }
+
         return this.get('session.user').then(user => (
-            this.store.createRecord(params.type, {authors: [user]})
+            this.store.createRecord(modelName, {authors: [user]})
         ));
     },
 
