@@ -132,7 +132,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                     transition.abort();
                 }
 
-                let routeInfo = transition.handlerInfos[transition.handlerInfos.length - 1];
+                let routeInfo = transition.to;
                 let router = this.router;
                 let params = [];
 
