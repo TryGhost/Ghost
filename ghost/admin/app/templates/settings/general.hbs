@@ -103,7 +103,7 @@
                 <div class="gh-setting-title">Publication icon</div>
                 <div class="gh-setting-desc">A square, social icon used in the UI of your publication, at least 60x60px</div>
                 {{#each uploader.errors as |error|}}
-                    <div class="gh-setting-error" data-test-error="icon">{{error.message}}</div>
+                    <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
                 {{/each}}
             </div>
             <div class="gh-setting-action gh-setting-action-smallimg">
@@ -135,7 +135,7 @@
                 <div class="gh-setting-title">Publication logo</div>
                 <div class="gh-setting-desc">The primary logo for your brand displayed across your theme, should be transparent and at least 600px x 72px</div>
                 {{#each uploader.errors as |error|}}
-                    <div class="gh-setting-error" data-test-error="logo">{{error.message}}</div>
+                    <div class="gh-setting-error" data-test-error="logo">{{or error.context error.message}}</div>
                 {{/each}}
             </div>
             <div class="gh-setting-action gh-setting-action-smallimg">
@@ -167,7 +167,7 @@
                 <div class="gh-setting-title">Publication cover</div>
                 <div class="gh-setting-desc">An optional large background image for your site</div>
                 {{#each uploader.errors as |error|}}
-                    <div class="gh-setting-error" data-test-error="coverImage">{{error.message}}</div>
+                    <div class="gh-setting-error" data-test-error="coverImage">{{or error.context error.message}}</div>
                 {{/each}}
             </div>
             <div class="gh-setting-action gh-setting-action-largeimg">
