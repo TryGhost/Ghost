@@ -145,7 +145,7 @@
                     onTemplateSelect=(action (mut post.customTemplate))}}
 
                 {{#unless post.isNew}}
-                    <button type="button" class="gh-btn gh-btn-link gh-btn-icon settings-menu-delete-button" {{action "deletePost"}}><span>{{svg-jar "trash"}} Delete Post</span></button>
+                    <button type="button" class="gh-btn gh-btn-link gh-btn-icon settings-menu-delete-button" {{action "deletePost"}}><span>{{svg-jar "trash"}} Delete {{capitalize post.displayName}}</span></button>
                 {{/unless}}
 
                 </form>
@@ -357,7 +357,7 @@
                         <div class="settings-menu-content settings-menu-content-codeinjection">
                             <form {{action "discardEnter" on="submit"}}>
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="codeinjectionHead"}}
-                                    <label for="codeinjection-head">Post Header <code>\{{ghost_head}}</code></label>
+                                    <label for="codeinjection-head">{{capitalize post.displayName}} Header <code>\{{ghost_head}}</code></label>
                                     {{gh-cm-editor codeinjectionHeadScratch
                                         id="post-setting-codeinjection-head"
                                         class="post-setting-codeinjection"
@@ -370,7 +370,7 @@
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="codeinjectionFoot"}}
-                                    <label for="codeinjection-foot">Post Footer <code>\{{ghost_foot}}</code></label>
+                                    <label for="codeinjection-foot">{{capitalize post.displayName}} Footer <code>\{{ghost_foot}}</code></label>
                                     {{gh-cm-editor codeinjectionFootScratch
                                         id="post-setting-codeinjection-foot"
                                         class="post-setting-codeinjection"
