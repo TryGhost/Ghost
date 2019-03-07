@@ -275,7 +275,8 @@ export default Component.extend({
             return true;
         } catch (error) {
             // grab custom error message if present
-            let message = error.payload.errors && error.payload.errors[0].message;
+            let message = error.payload.errors && error.payload.errors[0].message || '';
+            let context = error.payload.errors && error.payload.errors[0].context || '';
 
             // fall back to EmberData/ember-ajax default message for error type
             if (!message) {
@@ -284,6 +285,7 @@ export default Component.extend({
 
             let result = {
                 message,
+                context,
                 fileName: file.name
             };
 
