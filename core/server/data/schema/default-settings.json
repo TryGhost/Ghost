@@ -56,7 +56,7 @@
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
-                "isIn": [["true", "false"]]
+                "isIn": [["true", "false", "0", "1"]]
             }
         },
         "permalinks": {
