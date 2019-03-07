@@ -69,12 +69,16 @@ class SettingsImporter extends BaseImporter {
                 obj.value = JSON.stringify([{url: ''}]);
             }
 
-            // CASE: export files might contain "0" or "1" for booleans
+            // CASE: export files might contain "0" or "1" for booleans. Model layer needs real booleans.
             // transform "0" to false
-            // transform "false" to false
-            // transform "null" to null
             if (obj.value === '0' || obj.value === '1') {
                 obj.value = !!+obj.value;
+            }
+
+            // CASE: export files might contain "false" or "true" for booleans. Model layer needs real booleans.
+            // transform "false" to false
+            if (obj.value === 'false' || obj.value === 'true') {
+                obj.value = obj.value === 'true';
             }
         });
 

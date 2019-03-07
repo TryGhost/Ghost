@@ -1,6 +1,8 @@
 const path = require('path');
 const _ = require('lodash');
+const os = require('os');
 const fs = require('fs-extra');
+const uuid = require('uuid');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
@@ -62,6 +64,47 @@ describe('DB API', () => {
                 should.exist(jsonResponse.db);
                 jsonResponse.db.should.have.length(1);
                 Object.keys(jsonResponse.db[0].data).length.should.eql(28);
+            });
+    });
+
+    it('can export & import', () => {
+        return request.put(localUtils.API.getApiQuery('settings/'))
+            .set('Origin', config.get('url'))
+            .send({
+                settings: [
+                    {
+                        key: 'is_private',
+                        value: true
+                    }
+                ]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then(() => {
+                return request.get(localUtils.API.getApiQuery('db/'))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect(200);
+            })
+            .then((res) => {
+                const jsonResponse = res.body;
+                should.exist(jsonResponse.db);
+
+                const exportFolder = path.join(os.tmpdir(), uuid.v1());
+                const exportPath = path.join(exportFolder, 'export.json');
+                fs.ensureDirSync(exportFolder);
+                fs.writeJSONSync(exportPath, jsonResponse);
+
+                return request.post(localUtils.API.getApiQuery('db/'))
+                    .set('Origin', config.get('url'))
+                    .set('Accept', 'application/json')
+                    .expect('Content-Type', /json/)
+                    .attach('importfile', exportPath)
+                    .expect(200);
+            })
+            .then((res) => {
+                res.body.problems.length.should.eql(3);
             });
     });
 
