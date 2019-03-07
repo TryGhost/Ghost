@@ -26,8 +26,14 @@ module.exports = {
                 setting.value = JSON.stringify(setting.value);
             }
 
+            // CASE: Ensure we won't forward strings, otherwise model events or model interactions can fail
             if (setting.value === '0' || setting.value === '1') {
                 setting.value = !!+setting.value;
+            }
+
+            // CASE: Ensure we won't forward strings, otherwise model events or model interactions can fail
+            if (setting.value === 'false' || setting.value === 'true') {
+                setting.value = setting.value === 'true';
             }
 
             if (setting.key === 'codeinjection_head') {
