@@ -68,6 +68,14 @@ class SettingsImporter extends BaseImporter {
             if (obj.key === 'slack') {
                 obj.value = JSON.stringify([{url: ''}]);
             }
+
+            // CASE: export files might contain "0" or "1" for booleans
+            // transform "0" to false
+            // transform "false" to false
+            // transform "null" to null
+            if (obj.value === '0' || obj.value === '1') {
+                obj.value = !!+obj.value;
+            }
         });
 
         return super.beforeImport();
