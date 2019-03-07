@@ -239,7 +239,7 @@
                 <div class="gh-setting-title">Redirects</div>
                 <div class="gh-setting-desc">Configure redirects for old or moved content, more info in <a href="https://docs.ghost.org/tutorials/implementing-redirects/">the docs</a></div>
                 {{#each uploader.errors as |error|}}
-                    <div class="gh-setting-error" data-test-error="redirects">{{error.message}}</div>
+                    <div class="gh-setting-error" data-test-error="redirects">{{or error.context error.message}}</div>
                 {{/each}}
             </div>
             <div class="gh-setting-action" style="display: flex; flex-direction: column">
@@ -284,7 +284,7 @@
                 <div class="gh-setting-title">Routes</div>
                 <div class="gh-setting-desc">Configure dynamic routing by modifying the routes.yaml file</div>
                 {{#each uploader.errors as |error|}}
-                    <div class="gh-setting-error" data-test-error="routes">{{error.message}}</div>
+                    <div class="gh-setting-error" data-test-error="routes">{{or error.context error.message}}</div>
                 {{/each}}
             </div>
             <div class="gh-setting-action" style="display: flex; flex-direction: column">
