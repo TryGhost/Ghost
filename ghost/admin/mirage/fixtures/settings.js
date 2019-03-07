@@ -51,16 +51,6 @@ export default [
         updated_by: 1
     },
     {
-        id: 7,
-        key: 'force_i18n',
-        value: 'true',
-        type: 'blog',
-        created_at: '2013-11-25T14:48:11.000Z',
-        created_by: 1,
-        updated_at: '2015-10-27T17:39:58.280Z',
-        updated_by: 1
-    },
-    {
         id: 10,
         created_at: '2015-09-11T09:44:30.809Z',
         created_by: 1,
