@@ -98,7 +98,7 @@
                 <tr class="bb b--lightgrey">
                     <td class="pa3 w50 fw7">Content API Key</td>
                     <td class="pa0 truncate">
-                        <div class="pa3 relative truncate {{unless copyContentKey.isRunning "hide-child"}}">
+                        <div class="pa3 relative truncate {{unless copyContentKey.isRunning "hide-child-instant"}}">
                             <span class="midgrey" data-test-text="content-key">
                                 {{this.integration.contentKey.secret}}
                             </span>
@@ -119,7 +119,7 @@
                 <tr class="bb b--lightgrey">
                     <td class="pa3 w50 fw7">Admin API Key</td>
                     <td class="pa0">
-                        <div class="pa3 relative truncate {{unless copyAdminKey.isRunning "hide-child"}}">
+                        <div class="pa3 relative truncate {{unless copyAdminKey.isRunning "hide-child-instant"}}">
                             <span class="midgrey" data-test-text="admin-key">
                                 {{this.integration.adminKey.secret}}
                             </span>
@@ -140,7 +140,7 @@
                 <tr>
                     <td class="pa3 w50 fw7">API URL</td>
                     <td class="pa0 truncate">
-                        <div class="pa3 relative truncate {{unless copyApiUrl.isRunning "hide-child"}}">
+                        <div class="pa3 relative truncate {{unless copyApiUrl.isRunning "hide-child-instant"}}">
                             <span class="midgrey" data-test-text="api-url">
                                 {{this.apiUrl}}
                             </span>
