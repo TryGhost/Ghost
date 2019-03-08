@@ -124,6 +124,15 @@
   transition: all var(--animation-speed-normal) ease-in;
 }
 
+.hide-child-instant .child {
+  opacity: 0;
+}
+.hide-child-instant:hover  .child,
+.hide-child-instant:focus  .child,
+.hide-child-instant:active .child {
+  opacity: 1;
+}
+
 .underline-hover:hover,
 .underline-hover:focus {
   text-decoration: underline;
