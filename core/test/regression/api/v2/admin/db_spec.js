@@ -68,6 +68,9 @@ describe('DB API', () => {
     });
 
     it('can export & import', () => {
+        const exportFolder = path.join(os.tmpdir(), uuid.v1());
+        const exportPath = path.join(exportFolder, 'export.json');
+
         return request.put(localUtils.API.getApiQuery('settings/'))
             .set('Origin', config.get('url'))
             .send({
@@ -91,8 +94,6 @@ describe('DB API', () => {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse.db);
 
-                const exportFolder = path.join(os.tmpdir(), uuid.v1());
-                const exportPath = path.join(exportFolder, 'export.json');
                 fs.ensureDirSync(exportFolder);
                 fs.writeJSONSync(exportPath, jsonResponse);
 
@@ -105,6 +106,7 @@ describe('DB API', () => {
             })
             .then((res) => {
                 res.body.problems.length.should.eql(3);
+                fs.removeSync(exportFolder);
             });
     });
 
