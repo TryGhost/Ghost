@@ -3,6 +3,7 @@
 const _ = require('lodash'),
     // (Less) dirty requires
     proxy = require('../../../../helpers/proxy'),
+    createFrame = proxy.hbs.handlebars.createFrame,
     templates = proxy.templates,
     urlService = proxy.urlService,
     SafeString = proxy.SafeString,
@@ -38,17 +39,18 @@ const subscribeScript = `
 
 // We use the name subscribe_form to match the helper for consistency:
 module.exports = function subscribe_form(options) { // eslint-disable-line camelcase
-    const root = options.data.root,
-        data = _.merge({}, options.hash, _.pick(root, params), {
-            // routeKeywords.subscribe: 'subscribe'
-            action: urlService.utils.urlJoin('/', urlService.utils.getSubdir(), 'subscribe/'),
-            script: new SafeString(subscribeScript),
-            hidden: new SafeString(
-                makeHidden('confirm') +
+    const root = options.data.root;
+
+    const context = _.merge({}, options.hash, _.pick(root, params), {
+        // routeKeywords.subscribe: 'subscribe'
+        action: urlService.utils.urlJoin('/', urlService.utils.getSubdir(), 'subscribe/'),
+        script: new SafeString(subscribeScript),
+        hidden: new SafeString(
+            makeHidden('confirm') +
                 makeHidden('location', root.subscribed_url ? `value=${root.subscribed_url}` : '') +
                 makeHidden('referrer', root.subscribed_referrer ? `value=${root.subscribed_referrer}` : '')
-            )
-        });
-
-    return templates.execute('subscribe_form', data, options);
+        )
+    });
+    const data = createFrame(options.data);
+    return templates.execute('subscribe_form', context, {data});
 };

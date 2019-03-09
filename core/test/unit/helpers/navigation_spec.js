@@ -197,8 +197,7 @@ describe('{{navigation}} helper with custom template', function () {
         optionsData = {
             data: {
                 blog: {
-                    navigation: [],
-                    title: 'Chaos is a ladder.'
+                    navigation: [{label: 'Foo', url: '/foo'}]
                 },
                 root: {
                     relativeUrl: ''
@@ -208,15 +207,33 @@ describe('{{navigation}} helper with custom template', function () {
     });
 
     it('can render one item and @blog title', function () {
-        var singleItem = {label: 'Foo', url: '/foo'},
-            testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
+        var testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
             rendered;
 
-        optionsData.data.blog.navigation = [singleItem];
+        // Set @blog.title
+        optionsData.data.blog.title = 'Chaos is a ladder.';
+
         rendered = helpers.navigation(optionsData);
 
         should.exist(rendered);
         rendered.string.should.containEql('Chaos is a ladder');
+        rendered.string.should.not.containEql('isHeader is set');
+        rendered.string.should.containEql(testUrl);
+        rendered.string.should.containEql('Foo');
+    });
+
+    it('can pass attributes through', function () {
+        var testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
+            rendered;
+
+        // Simulate {{navigation isHeader=true}}
+        optionsData.hash = {isHeader: true};
+
+        rendered = helpers.navigation(optionsData);
+
+        should.exist(rendered);
+        rendered.string.should.not.containEql('Chaos is a ladder');
+        rendered.string.should.containEql('isHeader is set');
         rendered.string.should.containEql(testUrl);
         rendered.string.should.containEql('Foo');
     });
