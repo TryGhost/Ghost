@@ -6,10 +6,15 @@ var proxy = require('./proxy'),
     _ = require('lodash'),
     errors = proxy.errors,
     i18n = proxy.i18n,
+    createFrame = proxy.hbs.handlebars.createFrame,
     templates = proxy.templates,
     pagination;
 
 pagination = function (options) {
+    options = options || {};
+    options.hash = options.hash || {};
+    options.data = options.data || {};
+
     if (!_.isObject(this.pagination) || _.isFunction(this.pagination)) {
         throw new errors.IncorrectUsageError({
             level: 'normal',
@@ -36,10 +41,10 @@ pagination = function (options) {
         !_.isNumber(this.pagination.total) || !_.isNumber(this.pagination.limit)) {
         throw new errors.IncorrectUsageError({message: i18n.t('warnings.helpers.pagination.valuesMustBeNumeric')});
     }
+    const context = _.merge({}, this, options.hash, this.pagination);
+    const data = createFrame(options.data);
 
-    var data = _.merge({}, this.pagination);
-
-    return templates.execute('pagination', data, options);
+    return templates.execute('pagination', context, {data});
 };
 
 module.exports = pagination;

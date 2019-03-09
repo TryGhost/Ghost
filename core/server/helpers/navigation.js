@@ -6,16 +6,20 @@ var proxy = require('./proxy'),
     string = require('../lib/security/string'),
     _ = require('lodash'),
     SafeString = proxy.SafeString,
+    createFrame = proxy.hbs.handlebars.createFrame,
     i18n = proxy.i18n,
     errors = proxy.errors,
     templates = proxy.templates;
 
 module.exports = function navigation(options) {
+    options = options || {};
+    options.hash = options.hash || {};
+    options.data = options.data || {};
+
     var navigationData = options.data.blog.navigation,
         currentUrl = options.data.root.relativeUrl,
         self = this,
-        output,
-        data;
+        output;
 
     if (!_.isObject(navigationData) || _.isFunction(navigationData)) {
         throw new errors.IncorrectUsageError({
@@ -71,8 +75,8 @@ module.exports = function navigation(options) {
         return out;
     });
 
-    data = _.merge({}, {navigation: output});
+    const context = _.merge({}, this, options.hash, {navigation: output});
+    const data = createFrame(options.data);
 
-    return templates.execute('navigation', data, options);
+    return templates.execute('navigation', context, {data});
 };
-

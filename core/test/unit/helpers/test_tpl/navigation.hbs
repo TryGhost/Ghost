@@ -1,5 +1,7 @@
 {{@blog.title}}
 
+{{#if isHeader}}isHeader is set{{/if}}
+
 {{#foreach navigation}}
     <a href="{{url absolute="true"}}">{{label}}</a>
 {{/foreach}}

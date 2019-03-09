@@ -144,5 +144,23 @@ describe('{{pagination}} helper with custom template', function () {
         // strip out carriage returns and compare.
         rendered.string.should.match(/Page 1 of 1/);
         rendered.string.should.containEql('Chaos is a ladder');
+        rendered.string.should.not.containEql('isHeader is set');
+    });
+
+    it('can pass attributes through', function () {
+        var rendered = helpers.pagination.call({
+            pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
+            tag: {slug: 'slug'}
+        }, {
+            hash: {isHeader: true},
+            data: {
+                blog: {}
+            }
+        });
+        should.exist(rendered);
+        // strip out carriage returns and compare.
+        rendered.string.should.match(/Page 1 of 1/);
+        rendered.string.should.not.containEql('Chaos is a ladder');
+        rendered.string.should.containEql('isHeader is set');
     });
 });
