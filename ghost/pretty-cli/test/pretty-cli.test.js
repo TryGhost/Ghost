@@ -28,5 +28,17 @@ describe('API', function () {
             'hintsError',
             'messages'
         ]);
+
+        prettyCLI.ui.should.be.an.Object();
+        prettyCLI.ui.log.should.be.a.Function();
+        prettyCLI.ui.log.should.have.properties([
+            'ok',
+            'trace',
+            'debug',
+            'info',
+            'warn',
+            'error',
+            'fatal'
+        ]);
     });
 });
