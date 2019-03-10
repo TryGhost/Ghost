@@ -1,0 +1,31 @@
+{
+  "name": "@tryghost/pretty-cli",
+  "version": "1.1.4",
+  "description": "A mini-module to style a sywac instance in a standard way",
+  "repository": "https://github.com/TryGhost/slimer/tree/master/packages/pretty-cli",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha ./test/**/*.test.js",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "mocha": "6.0.2",
+    "should": "13.2.3",
+    "sinon": "7.2.7"
+  },
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "sywac": "^1.2.1"
+  }
+}
