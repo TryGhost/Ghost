@@ -47,21 +47,6 @@ script: |
     yarn test
   fi
 
-after_success:
-  - |
-      if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "10" ]]; then
-          echo "Generate coverage..."
-          grunt coverage
-          npm install -g codeclimate-test-reporter
-          codeclimate-test-reporter < core/test/coverage/unit/lcov.info
-        else
-          echo "False DB and NODE_VERSION. No coverage generated."
-        fi
-      else
-        echo "This is a PR. No coverage generated."
-      fi
-
 after_failure: |
   if [ "${TRAVIS_EVENT_TYPE}" == "cron" ]; then
     curl -X POST --data-urlencode "payload={\"attachments\": [{\"color\": \"danger\", \"fallback\": \"Build Failure: $TRAVIS_JOB_WEB_URL\", \"title\": \"Build Failure\", \"text\": \"$TRAVIS_JOB_WEB_URL\"}]}" $SLACK_URL
