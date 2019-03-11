@@ -8,7 +8,7 @@ const should = require('should'),
     controllers = require('../../../../../server/services/routing/controllers'),
     helpers = require('../../../../../server/services/routing/helpers'),
     urlService = require('../../../../../server/services/url'),
-    EDITOR_URL = '/editor/';
+    EDITOR_URL = '/editor/post/';
 
 describe('Unit - services/routing/controllers/preview', function () {
     let secureStub, renderStub;
