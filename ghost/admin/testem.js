@@ -1,13 +1,20 @@
 /* eslint-env node */
 /* eslint-disable camelcase */
+
+const isCronBuild = process.env.TRAVIS_EVENT_TYPE === 'cron';
+
+let launch_in_ci = ['Chrome'];
+
+// we only test Firefox in nightly builds on CI to keep push/PR build times lower
+if (isCronBuild) {
+    launch_in_ci.push('Firefox');
+}
+
 module.exports = {
     framework: 'mocha',
     test_page: 'tests/index.html?hidepassed',
     disable_watching: true,
-    launch_in_ci: [
-        'Chrome',
-        'Firefox'
-    ],
+    launch_in_ci,
     launch_in_dev: [
         'Chrome',
         'Firefox'
