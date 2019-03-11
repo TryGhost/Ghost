@@ -49,7 +49,9 @@ script: |
     yarn ci
   fi
 
-after_failure: |
-  if [ "${TRAVIS_EVENT_TYPE}" == "cron" ]; then
-    curl -X POST --data-urlencode "payload={\"attachments\": [{\"color\": \"danger\", \"fallback\": \"Build Failure: $TRAVIS_JOB_WEB_URL\", \"title\": \"Build Failure\", \"text\": \"$TRAVIS_JOB_WEB_URL\"}]}" $SLACK_URL
-  fi
+notifications:
+  slack:
+    secure: iqURdUniayDtpj8twQIUi027jkFDMfoqyYv6rmmF7Nb1Y+XoLeQbUNv1EQEoGG+N7n9FnRXQe6TawyjCk+6qBQJoEI2O4xSpvtnC81nnX5EKbNVgT+tfBXH/bUaLtgY3Z3NfoeCmwR3fK3wOhgN9m3Il5YgXx7KJFAXxjnYrKUo=
+    on_success: change
+    on_failure: always
+    on_pull_requests: false
