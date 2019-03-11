@@ -15,7 +15,7 @@
                     "checkEmailForInstructions": "Check your email for further instructions.",
                     "passwordChanged": "Password changed successfully.",
                     "invitationAccepted": "Invitation accepted.",
-                    "yourNewGhostBlog": "Your New Ghost Blog"
+                    "yourNewGhostBlog": "Your New Ghost Site"
                 }
             },
             "mail": {
@@ -316,7 +316,7 @@
         },
         "updateCheck": {
             "checkingForUpdatesFailed": {
-                "error": "Checking for updates failed, your blog will continue to function.",
+                "error": "Checking for updates failed, your site will continue to function.",
                 "help": "If you get this error repeatedly, please seek help from {url}."
             },
             "unableToDecodeUpdateResponse": {
@@ -337,10 +337,10 @@
                 "noNameProvided": "No name provided.",
                 "invalidEmailReceived": "The server did not receive a valid email",
                 "setupAlreadyCompleted": "Setup has already been completed.",
-                "unableToSendWelcomeEmail": "Unable to send welcome email, your blog will continue to function.",
+                "unableToSendWelcomeEmail": "Unable to send welcome email, your site will continue to function.",
                 "checkEmailConfigInstructions": "Please see {url} for instructions on configuring email.",
                 "notLoggedIn": "You are not logged in.",
-                "notTheBlogOwner": "You are not the blog owner.",
+                "notTheBlogOwner": "You are not the site owner.",
                 "invalidTokenTypeHint": "Invalid token_type_hint given.",
                 "invalidTokenProvided": "Invalid token provided",
                 "tokenRevocationFailed": "Token revocation failed"
@@ -441,7 +441,7 @@
             },
             "icons": {
                 "missingFile": "Please select an icon.",
-                "invalidFile": "Blog icon must be a square .ico or .png file between 60px – 1,000px, under 100kb.",
+                "invalidFile": "Icon must be a square .ico or .png file between 60px – 1,000px, under 100kb.",
                 "couldNotGetSize": "Couldn/'t get icon dimensions"
             },
             "users": {
@@ -525,7 +525,7 @@
                 "index": {
                     "couldNotCleanUpFile": {
                         "error": "Import could not clean up file ",
-                        "context": "Your blog will continue to work as expected"
+                        "context": "Your site will continue to work as expected"
                     },
                     "unsupportedRoonExport": "Your zip file looks like an old format Roon export, please re-export your Roon blog and try again.",
                     "noContentToImport": "Zip did not include any content to import.",
@@ -546,7 +546,7 @@
         "services": {
             "ping": {
                 "requestFailed": {
-                    "error": "The {service} service was unable to send a ping request, your blog will continue to function.",
+                    "error": "The {service} service was unable to send a ping request, your site will continue to function.",
                     "help": "If you get this error repeatedly, please seek help on {url}."
                 }
             },
@@ -568,7 +568,7 @@
             "unknownErrorOccurred": "An unknown error occurred.",
             "unknownError": "Unknown Error",
             "unknownApiError": "Unknown API Error",
-            "databaseIsReadOnly": "Your database is in read only mode. Visitors can read your blog, but you can't log in or add posts.",
+            "databaseIsReadOnly": "Your database is in read only mode. Visitors can read your site, but you can't log in or add posts.",
             "checkDatabase": "Check your database file and make sure that file owner and permissions are correct.",
             "notEnoughPermission": "You do not have permission to perform this action",
             "errorWhilstRenderingError": "Error whilst rendering error page",
@@ -647,13 +647,13 @@
         "httpServer": {
             "cantTouchThis": "Can't touch this",
             "ghostIsRunning": "Ghost is running...",
-            "yourBlogIsAvailableOn": "Your blog is now available on {url}",
+            "yourBlogIsAvailableOn": "Your site is now available on {url}",
             "ctrlCToShutDown": "Ctrl+C to shut down",
             "ghostIsRunningIn": "Ghost is running in {env}...",
             "listeningOn": "Listening on: {host}:{port}",
             "urlConfiguredAs": "Url configured as: {url}",
             "ghostHasShutdown": "Ghost has shut down",
-            "yourBlogIsNowOffline": "Your blog is now offline",
+            "yourBlogIsNowOffline": "Your site is now offline",
             "ghostWasRunningFor": "Ghost was running for",
             "ghostIsClosingConnections": "Ghost is closing connections"
         },
