@@ -32,20 +32,19 @@ module.exports = function imgUrl(requestedImageUrl, options) {
         return;
     }
 
+    // CASE: if you pass an external image, there is nothing we want to do to it!
     const isInternalImage = detectInternalImage(requestedImageUrl);
+    if (!isInternalImage) {
+        return requestedImageUrl;
+    }
+
     const {requestedSize, imageSizes} = getImageSizeOptions(options);
     const absoluteUrlRequested = getAbsoluteOption(options);
 
-    function maybeGetImageWithSize(image) {
-        if (isInternalImage) {
-            return getImageWithSize(image, requestedSize, imageSizes);
-        }
-        return image;
-    }
-    const image = maybeGetImageWithSize(requestedImageUrl);
+    const image = getImageWithSize(requestedImageUrl, requestedSize, imageSizes);
 
     function maybeEnsureRelativePath(image) {
-        if (isInternalImage && !absoluteUrlRequested) {
+        if (!absoluteUrlRequested) {
             return urlService.utils.absoluteToRelative(image);
         }
         return image;
