@@ -53,6 +53,8 @@ describe('Acceptance: Members', function () {
         });
 
         it('shows sidebar link which navigates to members list', async function () {
+            await visit('/settings/labs');
+            await click('#labs-members');
             await visit('/');
 
             expect(find('[data-test-nav="members"]'), 'sidebar link')
