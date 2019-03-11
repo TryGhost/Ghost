@@ -43,6 +43,30 @@ describe('Url', function () {
         });
     });
 
+    describe('relativeToAbsolute', function () {
+        it('default', function () {
+            configUtils.set('url', 'http://myblog.com/');
+            urlService.utils.relativeToAbsolute('/test/').should.eql('http://myblog.com/test/');
+        });
+
+        it('with subdir', function () {
+            configUtils.set('url', 'http://myblog.com/blog/');
+            urlService.utils.relativeToAbsolute('/test/').should.eql('http://myblog.com/blog/test/');
+        });
+
+        it('should not convert absolute url', function () {
+            urlService.utils.relativeToAbsolute('http://anotherblog.com/blog/').should.eql('http://anotherblog.com/blog/');
+        });
+
+        it('should not convert absolute url', function () {
+            urlService.utils.relativeToAbsolute('http://anotherblog.com/blog/').should.eql('http://anotherblog.com/blog/');
+        });
+
+        it('should not convert schemeless url', function () {
+            urlService.utils.relativeToAbsolute('//anotherblog.com/blog/').should.eql('//anotherblog.com/blog/');
+        });
+    });
+
     describe('getProtectedSlugs', function () {
         it('defaults', function () {
             urlService.utils.getProtectedSlugs().should.eql(['ghost', 'rss', 'amp']);
