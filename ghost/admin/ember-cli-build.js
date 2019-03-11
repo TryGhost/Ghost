@@ -105,8 +105,14 @@ const simplemdeAssets = function () {
     return config;
 };
 
+let blacklist = [];
+if (process.env.CI) {
+    blacklist.push('ember-cli-eslint');
+}
+
 module.exports = function (defaults) {
     let app = new EmberApp(defaults, {
+        addons: {blacklist},
         'ember-cli-babel': {
             optional: ['es6.spec.symbols'],
             includePolyfill: false
