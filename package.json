@@ -23,12 +23,14 @@
   "scripts": {
     "start": "node index",
     "dev": "DEBUG=ghost:* grunt dev",
-    "test": "grunt validate --verbose",
-    "test:regression": "grunt test-regression --verbose",
+    "test": "grunt validate",
+    "ci": "grunt validate --verbose",
+    "ci:regression": "grunt test-regression --verbose",
     "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || true",
     "lint:server": "eslint --ignore-path .eslintignore 'core/server/**/*.js' 'core/*.js' '*.js'",
     "lint:test": "eslint -c core/test/.eslintrc.json --ignore-path core/test/.eslintignore 'core/test/**/*.js'",
     "lint": "yarn lint:server && yarn lint:test",
+    "posttest": "yarn lint",
     "fixmodulenotdefined": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../"
   },
   "engines": {
