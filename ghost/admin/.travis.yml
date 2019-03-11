@@ -35,7 +35,9 @@ script:
 after_success:
   - npm run coverage
 
-after_failure: |
-  if [ "${TRAVIS_EVENT_TYPE}" == "cron" ]; then
-    curl -X POST --data-urlencode "payload={\"attachments\": [{\"color\": \"danger\", \"fallback\": \"Build Failure: $TRAVIS_JOB_WEB_URL\", \"title\": \"Build Failure\", \"text\": \"$TRAVIS_JOB_WEB_URL\"}]}" $SLACK_URL
-  fi
+notifications:
+  slack:
+    secure: yGQL+LNBHaiMcXwq/3rECHBugDygtBRoXp0gJG9ortG+5H3LboRFzX4OGgRZ2XkaAQlq8Jp6q73aCy91uAHmNdfPyAfQl9Dx3/4DxAh2664jYCbMOdGA8qntmucegx61P6uPLtgIg3f19qVjwCl7t29/8s8rWQk6tGdwXSfCSgTv4MbY+N1gKFNBqXN6zsH+Aqs8VFGHl1/o4qfHCDd8OPJTE+tUa30S7+Iz+Orumm6MogaOt/b4DW2ADF7SI7RM2wgoubjtzvH68BMjZ2bCFI2U7PQEPwbQ9ilmPHInxaa5j75NvvNnRqa06z7Te0rPK1sq9o6/VKpl4tReLs8O6lGGGTgO4wfAnQsZP9OmovONfv1o8Op2Taqv1YdJf1yjg8dumJ6ImwY0xBSq9rTw7F0EYp06vK3aIIOkLv4hsYaVfRzjqIBJyHY/v9ujpDPcUMRQnjKWdjRAMplS+JJkafLl79WN5m4yGs785SMMm81PYtiLL8F7618zVrtxI4K2jQSQF+STK2s8MiWbsGcU6pXh7R5hE8yzLhhBCRNLKAOXerSaehram8+TDYtY0IInsJFlTChhxGALyIU2GbnjvGTMtBtCdDy9ufaPKhCgP+ZoX/T1EEqV6neuCeiIBYVhmEukD8NsXh7eiyJmlBU73LyHTonYiDsEEuKUzu0Hyk8=
+    on_success: change
+    on_failure: always
+    on_pull_requests: false
