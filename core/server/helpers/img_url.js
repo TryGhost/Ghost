@@ -56,6 +56,19 @@ function getImageSizeOptions(options) {
     };
 }
 
+function detectInternalImage(requestedImageUrl) {
+    const siteUrl = urlService.utils.getBlogUrl();
+    const isAbsoluteImage = /https?:\/\//.test(requestedImageUrl);
+    const isAbsoluteInternalImage = isAbsoluteImage && requestedImageUrl.startsWith(siteUrl);
+
+    // CASE: imagePath is a "protocol relative" url e.g. "//www.gravatar.com/ava..."
+    //       by resolving the the imagePath relative to the blog url, we can then
+    //       detect if the imagePath is external, or internal.
+    const isRelativeInternalImage = !isAbsoluteImage && url.resolve(siteUrl, requestedImageUrl).startsWith(siteUrl);
+
+    return isAbsoluteInternalImage || isRelativeInternalImage;
+}
+
 function getImageWithSize(imagePath, requestedSize, imageSizes) {
     if (!requestedSize) {
         return imagePath;
