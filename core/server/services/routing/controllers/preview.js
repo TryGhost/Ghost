@@ -24,8 +24,12 @@ module.exports = function previewController(req, res, next) {
             }
 
             if (req.params.options && req.params.options.toLowerCase() === 'edit') {
+                // @TODO: we don't know which resource type it is, because it's a generic preview handler
+                // @TODO: figure out how to solve better
+                const resourceType = post.page ? 'page' : 'post';
+
                 // CASE: last param of the url is /edit, redirect to admin
-                return urlService.utils.redirectToAdmin(302, res, '/editor/' + post.id);
+                return urlService.utils.redirectToAdmin(302, res, `/editor/${resourceType}/${post.id}`);
             } else if (req.params.options) {
                 // CASE: unknown options param detected, ignore
                 return next();

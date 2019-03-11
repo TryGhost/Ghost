@@ -31,7 +31,7 @@ module.exports = function entryController(req, res, next) {
             // CASE: last param is of url is /edit, redirect to admin
             if (lookup.isEditURL) {
                 debug('redirect. is edit url');
-                return urlService.utils.redirectToAdmin(302, res, '/editor/' + entry.id);
+                return urlService.utils.redirectToAdmin(302, res, `/editor/${res.routerOptions.resourceType.replace(/s$/, '')}/${entry.id}`);
             }
 
             /**

@@ -5,7 +5,7 @@ const should = require('should'),
     urlService = require('../../../../../server/services/url'),
     controllers = require('../../../../../server/services/routing/controllers'),
     helpers = require('../../../../../server/services/routing/helpers'),
-    EDITOR_URL = '/editor/';
+    EDITOR_URL = `/editor/post/`;
 
 describe('Unit - services/routing/controllers/entry', function () {
     let req, res, entryLookUpStub, secureStub, renderStub, post, page;
@@ -45,7 +45,9 @@ describe('Unit - services/routing/controllers/entry', function () {
         };
 
         res = {
-            routerOptions: {},
+            routerOptions: {
+                resourceType: 'posts'
+            },
             render: sinon.spy(),
             redirect: sinon.spy()
         };
@@ -125,7 +127,9 @@ describe('Unit - services/routing/controllers/entry', function () {
                 done();
             });
 
-            controllers.entry(req, res);
+            controllers.entry(req, res, (err) => {
+                done(err);
+            });
         });
 
         it('type of router !== type of resource', function (done) {
