@@ -16,6 +16,11 @@ const Integration = ghostBookshelf.Model.extend({
         };
     },
 
+    emitChange: function emitChange(event, options) {
+        const eventToTrigger = 'integration' + '.' + event;
+        ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
+    },
+
     add(data, options) {
         const addIntegration = () => {
             return ghostBookshelf.Model.add.call(this, data, options)
@@ -65,6 +70,12 @@ const Integration = ghostBookshelf.Model.extend({
                     this.set({slug});
                 });
         }
+    },
+
+    onCreated: function onCreated(model, response, options) {
+        ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+
+        model.emitChange('added', options);
     },
 
     permittedAttributes(...args) {
