@@ -127,7 +127,7 @@ describe('{{image}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('http://localhost:82832/content/images/size/w400/my-coole-img.jpg');
+            rendered.should.equal('/content/images/size/w400/my-coole-img.jpg');
         });
         it('should output the correct url for protocol relative urls', function () {
             var rendered = helpers.img_url('//website.com/whatever/my-coole-img.jpg', {
