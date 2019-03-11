@@ -32,10 +32,17 @@ module.exports = function imgUrl(attr, options) {
         return;
     }
 
+    const isInternalImage = detectInternalImage(attr);
     const {requestedSize, imageSizes} = getImageSizeOptions(options);
     const absoluteUrlRequested = getAbsoluteOption(options);
 
-    const image = getImageWithSize(attr, requestedSize, imageSizes);
+    function maybeGetImageWithSize(image) {
+        if (isInternalImage) {
+            return getImageWithSize(image, requestedSize, imageSizes);
+        }
+        return image;
+    }
+    const image = maybeGetImageWithSize(attr);
 
     return urlService.utils.urlFor('image', {image}, absoluteUrlRequested);
 };
@@ -72,20 +79,6 @@ function detectInternalImage(requestedImageUrl) {
 function getImageWithSize(imagePath, requestedSize, imageSizes) {
     if (!requestedSize) {
         return imagePath;
-    }
-
-    const blogUrl = urlService.utils.getBlogUrl();
-
-    if (/https?:\/\//.test(imagePath) && !imagePath.startsWith(blogUrl)) {
-        return imagePath;
-    } else {
-        // CASE: imagePath is a "protocol relative" url e.g. "//www.gravatar.com/ava..."
-        //       by resolving the the imagePath relative to the blog url, we can then
-        //       detect if the imagePath is external, or internal.
-        const resolvedUrl = url.resolve(blogUrl, imagePath);
-        if (!resolvedUrl.startsWith(blogUrl)) {
-            return imagePath;
-        }
     }
 
     if (!imageSizes || !imageSizes[requestedSize]) {
