@@ -3,7 +3,7 @@ dist: trusty
 
 language: node_js
 node_js:
-  - "8"
+  - "10"
 
 env:
   global:
@@ -12,13 +12,10 @@ env:
 
 branches:
   except:
-    - /^greenkeeper-.+$/
+    - /^renovate\//
 
 cache:
   yarn: true
-  directories:
-    - $HOME/.npm
-    - $HOME/.cache # includes bower's cache
 
 addons:
   firefox: "latest"
