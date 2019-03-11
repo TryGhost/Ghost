@@ -25,10 +25,6 @@ matrix:
       env: TEST_SUITE=lint
   fast_finish: true
 
-branches:
-  except:
-    - /^greenkeeper-.+$/
-
 before_install:
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
   - curl -sSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo -E apt-key add -
