@@ -44,7 +44,16 @@ module.exports = function imgUrl(requestedImageUrl, options) {
     }
     const image = maybeGetImageWithSize(requestedImageUrl);
 
-    return urlService.utils.urlFor('image', {image}, absoluteUrlRequested);
+    function maybeEnsureRelativePath(image) {
+        if (isInternalImage && !absoluteUrlRequested) {
+            return urlService.utils.absoluteToRelative(image);
+        }
+        return image;
+    }
+
+    return maybeEnsureRelativePath(
+        urlService.utils.urlFor('image', {image}, absoluteUrlRequested)
+    );
 };
 
 function getAbsoluteOption(options) {
