@@ -32,6 +32,13 @@ describe('{{image}} helper', function () {
         logWarnStub.called.should.be.false();
     });
 
+    it('should output relative url of image if the input is absolute', function () {
+        var rendered = helpers.img_url('http://localhost:82832/content/images/image-relative-url.png', {});
+        should.exist(rendered);
+        rendered.should.equal('/content/images/image-relative-url.png');
+        logWarnStub.called.should.be.false();
+    });
+
     it('should output absolute url of image if the option is present ', function () {
         var rendered = helpers.img_url('/content/images/image-relative-url.png', {hash: {absolute: 'true'}});
         should.exist(rendered);
@@ -120,7 +127,7 @@ describe('{{image}} helper', function () {
                 }
             });
             should.exist(rendered);
-            rendered.should.equal('http://localhost:82832/content/images/size/w400/my-coole-img.jpg');
+            rendered.should.equal('/content/images/size/w400/my-coole-img.jpg');
         });
         it('should output the correct url for protocol relative urls', function () {
             var rendered = helpers.img_url('//website.com/whatever/my-coole-img.jpg', {
