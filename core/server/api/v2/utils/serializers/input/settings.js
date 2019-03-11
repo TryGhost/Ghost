@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const url = require('./utils/url');
 
 module.exports = {
     read(apiConfig, frame) {
@@ -35,6 +36,10 @@ module.exports = {
 
             if (setting.key === 'codeinjection_foot') {
                 setting.key = 'ghost_foot';
+            }
+
+            if (['cover_image', 'icon', 'logo'].includes(setting.key)) {
+                setting = url.forSetting(setting);
             }
         });
     }
