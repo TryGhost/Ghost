@@ -88,11 +88,11 @@ fixtures = {
         });
     },
 
-    insertMultiAuthorPosts: function insertMultiAuthorPosts(max) {
+    insertMultiAuthorPosts: function insertMultiAuthorPosts() {
         let i, j, k = 0,
             posts = [];
 
-        max = max || 50;
+        const count = 25;
 
         // insert users of different roles
         return Promise.resolve(fixtures.createUsersWithRoles()).then(function () {
@@ -114,7 +114,7 @@ fixtures = {
             users = _.map(users, 'id');
 
             // Let's insert posts with random authors
-            for (i = 0; i < max; i += 1) {
+            for (i = 0; i < count; i += 1) {
                 const author = users[i % users.length];
                 posts.push(DataGenerator.forKnex.createGenericPost(k, null, null, author));
                 k = k + 1;
