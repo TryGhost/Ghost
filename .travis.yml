@@ -24,6 +24,10 @@ matrix:
     - node_js: "10"
       env: TEST_SUITE=lint
   fast_finish: true
+  
+branches:	
+  except:	
+    - /^renovate\/.+$/	
 
 before_install:
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
@@ -37,7 +41,7 @@ install:
   - if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi # fix sqlite caching issues
 
 script: |
-  if [ "${TRAVIS_EVENT_TYPE}" = "cron" ] && [ "${TEST_SUITE}" != "lint" ]; then
+  if [[ ( "$TRAVIS_PULL_REQUEST_BRANCH" =~ ^renovate  || "$TRAVIS_EVENT_TYPE" == "cron" ) &&  "$TEST_SUITE" != "lint" ]]; then
     yarn test:regression
   else
     yarn test
