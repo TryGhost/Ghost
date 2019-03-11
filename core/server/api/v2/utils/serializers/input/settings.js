@@ -26,6 +26,8 @@ module.exports = {
                 setting.value = JSON.stringify(setting.value);
             }
 
+            // @TODO: handle these transformations in a centralised API place (these rules should apply for ALL resources)
+
             // CASE: Ensure we won't forward strings, otherwise model events or model interactions can fail
             if (setting.value === '0' || setting.value === '1') {
                 setting.value = !!+setting.value;
