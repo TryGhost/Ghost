@@ -9,7 +9,6 @@ env:
   global:
     - MOZ_HEADLESS=1
     - JOBS=1 # See https://git.io/vdao3 for details.
-    - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
 
 branches:
   except:
@@ -35,3 +34,8 @@ script:
 
 after_success:
   - npm run coverage
+
+after_failure: |
+  if [ "${TRAVIS_EVENT_TYPE}" == "cron" ]; then
+    curl -X POST --data-urlencode "payload={\"attachments\": [{\"color\": \"danger\", \"fallback\": \"Build Failure: $TRAVIS_JOB_WEB_URL\", \"title\": \"Build Failure\", \"text\": \"$TRAVIS_JOB_WEB_URL\"}]}" $SLACK_URL
+  fi
