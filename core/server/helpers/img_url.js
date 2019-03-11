@@ -19,6 +19,19 @@ module.exports = function imgUrl(attr, options) {
         return;
     }
 
+    // CASE: if attribute is passed, but it is undefined, then the attribute was
+    // an unknown value, e.g. {{img_url feature_img}} and we also show a warning
+    if (attr === undefined) {
+        proxy.logging.warn(proxy.i18n.t('warnings.helpers.img_url.attrIsRequired'));
+        return;
+    }
+
+    // CASE: if you pass e.g. cover_image, but it is not set, then attr is null!
+    // in this case we don't show a warning
+    if (attr === null) {
+        return;
+    }
+
     const absolute = options && options.hash && options.hash.absolute && options.hash.absolute !== 'false';
 
     const size = options && options.hash && options.hash.size;
@@ -26,25 +39,10 @@ module.exports = function imgUrl(attr, options) {
 
     const image = getImageWithSize(attr, size, imageSizes);
 
-    // CASE: if attribute is passed, but it is undefined, then the attribute was
-    // an unknown value, e.g. {{img_url feature_img}} and we also show a warning
-    if (image === undefined) {
-        proxy.logging.warn(proxy.i18n.t('warnings.helpers.img_url.attrIsRequired'));
-        return;
-    }
-
-    if (image) {
-        return urlService.utils.urlFor('image', {image}, absolute);
-    }
-
-    // CASE: if you pass e.g. cover_image, but it is not set, then attr is null!
-    // in this case we don't show a warning
+    return urlService.utils.urlFor('image', {image}, absolute);
 };
 
 function getImageWithSize(imagePath, requestedSize, imageSizes) {
-    if (!imagePath) {
-        return imagePath;
-    }
     if (!requestedSize) {
         return imagePath;
     }
