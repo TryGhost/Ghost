@@ -473,12 +473,8 @@ const configureGrunt = function (grunt) {
     // **Main testing task**
     //
     // `grunt validate` will either run all tests or run linting
-    // `grunt validate` is called by `npm test` and is used by Travis.
-    grunt.registerTask('validate', 'Run tests or lint code', function () {
-        if (process.env.TEST_SUITE === 'lint') {
-            return grunt.task.run(['lint']);
-        }
-
+    // `grunt validate` is called by `yarn test` and is used by Travis.
+    grunt.registerTask('validate', 'Run tests', function () {
         grunt.task.run(['test-acceptance', 'test-unit']);
     });
 
