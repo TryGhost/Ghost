@@ -22,6 +22,10 @@ module.exports.init = function () {
         {
             event: 'theme.uploaded',
             name: 'Theme Uploaded'
+        },
+        {
+            event: 'integration.added',
+            name: 'Custom Integration Added'
         }
     ];
 
