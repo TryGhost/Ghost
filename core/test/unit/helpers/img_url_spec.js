@@ -32,6 +32,13 @@ describe('{{image}} helper', function () {
         logWarnStub.called.should.be.false();
     });
 
+    it('should output relative url of image if the input is absolute', function () {
+        var rendered = helpers.img_url('http://localhost:82832/content/images/image-relative-url.png', {});
+        should.exist(rendered);
+        rendered.should.equal('/content/images/image-relative-url.png');
+        logWarnStub.called.should.be.false();
+    });
+
     it('should output absolute url of image if the option is present ', function () {
         var rendered = helpers.img_url('/content/images/image-relative-url.png', {hash: {absolute: 'true'}});
         should.exist(rendered);
