@@ -41,7 +41,7 @@ install:
   - if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi # fix sqlite caching issues
 
 script: |
-  if [ "$TEST_SUITE" == "lint" ]
+  if [ "$TEST_SUITE" == "lint" ]; then
     yarn lint
   elif [[ "$TRAVIS_PULL_REQUEST_BRANCH" =~ ^renovate || "$TRAVIS_EVENT_TYPE" == "cron" ]]; then
     yarn ci:regression
