@@ -1,38 +1,29 @@
 dist: xenial
 language: node_js
-# When changing node version also update it on line 21
 node_js:
-  - "10"
-  - "8"
-  - "6"
-
+- '10'
+- '8'
+- '6'
 cache: yarn
-
 services:
-  - mysql
-
+- mysql
 env:
   matrix:
-    - DB=sqlite3 NODE_ENV=testing
-    - DB=mysql NODE_ENV=testing-mysql
-
+  - DB=sqlite3 NODE_ENV=testing
+  - DB=mysql NODE_ENV=testing-mysql
 matrix:
   include:
-    - node_js: "10"
-      env: TEST_SUITE=lint
+  - node_js: '10'
+    env: TEST_SUITE=lint
   fast_finish: true
-
 branches:
   except:
-    - /^renovate\/.+$/
-
+  - "/^renovate\\/.+$/"
 install:
-  - yarn
-
+- yarn
 before_script:
-  - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
-  - if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi # fix sqlite caching issues
-
+- if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
+- if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi
 script: |
   if [ "$TEST_SUITE" == "lint" ]; then
     yarn lint
@@ -41,10 +32,10 @@ script: |
   else
     yarn ci
   fi
-
 notifications:
   slack:
-    secure: iqURdUniayDtpj8twQIUi027jkFDMfoqyYv6rmmF7Nb1Y+XoLeQbUNv1EQEoGG+N7n9FnRXQe6TawyjCk+6qBQJoEI2O4xSpvtnC81nnX5EKbNVgT+tfBXH/bUaLtgY3Z3NfoeCmwR3fK3wOhgN9m3Il5YgXx7KJFAXxjnYrKUo=
-    on_success: change
+    rooms:
+      - secure: KzvGpf6RFHgQ3BkppKM4OejFjJYxH60KkDDShet0a0v+j/03HF5Nx0S0Vl9O/F2dPt2qWvblKb3j9EKgB7RsoFSdZuOk7ijA9Duvn+p9RrLom0C9JxOA3ob065WAGyE0OGRm1P5H98loX/L+6oOHC4/qqGKXgz6gUdBtZBn/yo8=
+    on_success: always
     on_failure: always
     on_pull_requests: false
