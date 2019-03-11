@@ -32,15 +32,29 @@ module.exports = function imgUrl(attr, options) {
         return;
     }
 
-    const absolute = options && options.hash && options.hash.absolute && options.hash.absolute !== 'false';
+    const {requestedSize, imageSizes} = getImageSizeOptions(options);
+    const absoluteUrlRequested = getAbsoluteOption(options);
 
-    const size = options && options.hash && options.hash.size;
+    const image = getImageWithSize(attr, requestedSize, imageSizes);
+
+    return urlService.utils.urlFor('image', {image}, absoluteUrlRequested);
+};
+
+function getAbsoluteOption(options) {
+    const absoluteOption = options && options.hash && options.hash.absolute;
+
+    return absoluteOption ? !!absoluteOption && absoluteOption !== 'false' : false;
+}
+
+function getImageSizeOptions(options) {
+    const requestedSize = options && options.hash && options.hash.size;
     const imageSizes = options && options.data && options.data.config && options.data.config.image_sizes;
 
-    const image = getImageWithSize(attr, size, imageSizes);
-
-    return urlService.utils.urlFor('image', {image}, absolute);
-};
+    return {
+        requestedSize,
+        imageSizes
+    };
+}
 
 function getImageWithSize(imagePath, requestedSize, imageSizes) {
     if (!requestedSize) {
