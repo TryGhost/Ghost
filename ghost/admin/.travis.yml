@@ -31,8 +31,7 @@ install:
   - yarn
 
 script:
-  - npm run lint:js
-  - COVERAGE=true npm test
+  - npm run lint:js && COVERAGE=true npm test
 
 after_success:
   - npm run coverage
