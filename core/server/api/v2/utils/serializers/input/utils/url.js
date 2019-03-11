@@ -84,6 +84,15 @@ const forTag = (attrs) => {
     return attrs;
 };
 
+const forSetting = (attrs) => {
+    if (attrs.value) {
+        attrs.value = handleImageUrl(attrs.value);
+    }
+
+    return attrs;
+};
+
 module.exports.forPost = forPost;
 module.exports.forUser = forUser;
 module.exports.forTag = forTag;
+module.exports.forSetting = forSetting;
