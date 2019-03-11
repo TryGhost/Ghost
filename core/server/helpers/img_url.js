@@ -8,6 +8,7 @@
 // `absolute` flag outputs absolute URL, else URL is relative.
 
 const url = require('url');
+const _ = require('lodash');
 const proxy = require('./proxy');
 const urlService = proxy.urlService;
 const STATIC_IMAGE_URL_PREFIX = `/${urlService.utils.STATIC_IMAGE_URL_PREFIX}`;
@@ -41,17 +42,25 @@ module.exports = function imgUrl(requestedImageUrl, options) {
     const {requestedSize, imageSizes} = getImageSizeOptions(options);
     const absoluteUrlRequested = getAbsoluteOption(options);
 
-    const image = getImageWithSize(requestedImageUrl, requestedSize, imageSizes);
-
-    function maybeEnsureRelativePath(image) {
-        if (!absoluteUrlRequested) {
-            return urlService.utils.absoluteToRelative(image);
-        }
-        return image;
+    function applyImageSizes(image) {
+        return getImageWithSize(image, requestedSize, imageSizes);
     }
 
+    function getImageUrl(image) {
+        return urlService.utils.urlFor('image', {image}, absoluteUrlRequested);
+    }
+
+    function ensureRelativePath(image) {
+        return urlService.utils.absoluteToRelative(image);
+    }
+
+    // CASE: only make paths relative if we didn't get a request for an absolute url
+    const maybeEnsureRelativePath = !absoluteUrlRequested ? ensureRelativePath : _.identity;
+
     return maybeEnsureRelativePath(
-        urlService.utils.urlFor('image', {image}, absoluteUrlRequested)
+        getImageUrl(
+            applyImageSizes(requestedImageUrl)
+        )
     );
 };
 
