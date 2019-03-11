@@ -1,20 +1,17 @@
+dist: xenial
 language: node_js
-# When changing node version also update it on lines 23 and 52.
+# When changing node version also update it on line 21
 node_js:
   - "10"
   - "8"
   - "6"
 
-sudo: false
+cache: yarn
 
-cache:
-  yarn: true
-  directories:
-    - node_modules
+services:
+  - mysql
 
 env:
-  global:
-    - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
   matrix:
     - DB=sqlite3 NODE_ENV=testing
     - DB=mysql NODE_ENV=testing-mysql
@@ -29,15 +26,11 @@ branches:
   except:
     - /^renovate\/.+$/
 
-before_install:
-  - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
-  - curl -sSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo -E apt-key add -
-  - echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee -a /etc/apt/sources.list >/dev/null
-  - sudo -E apt-get -yq update &>> ~/apt-get-update.log
-  - sudo -E apt-get -yq --no-install-suggests --no-install-recommends $TRAVIS_APT_OPTS install yarn
-
 install:
   - yarn
+
+before_script:
+  - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
   - if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi # fix sqlite caching issues
 
 script: |
