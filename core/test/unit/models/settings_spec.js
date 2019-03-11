@@ -29,7 +29,7 @@ describe('Unit: models/settings', function () {
             should.equal(returns.value, true);
 
             returns = setting.parse({key: 'something', value: 'null'});
-            should.equal(returns.value, null);
+            should.equal(returns.value, 'null');
         });
     });
 });
