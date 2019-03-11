@@ -15,6 +15,7 @@ export default AuthenticatedRoute.extend({
     },
 
     model(params, transition) {
+        // eslint-disable-next-line camelcase
         let {type: modelName, post_id} = params;
 
         if (!['post', 'page'].includes(modelName)) {
