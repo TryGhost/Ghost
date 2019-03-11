@@ -37,7 +37,7 @@ describe('getCanonicalUrl', function () {
     });
 
     it('should return canonical url field if present', function () {
-        const post = testUtils.DataGenerator.forKnex.createPost({canonical: 'https://example.com/canonical'});
+        const post = testUtils.DataGenerator.forKnex.createPost({canonical_url: 'https://example.com/canonical'});
 
         getCanonicalUrl({
             context: ['post'],

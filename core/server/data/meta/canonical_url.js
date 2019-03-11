@@ -4,8 +4,8 @@ const getUrl = require('./url');
 
 function getCanonicalUrl(data) {
     if ((_.includes(data.context, 'post') || _.includes(data.context, 'page'))
-        && data.post && data.post.canonical) {
-        return data.post.canonical;
+        && data.post && data.post.canonical_url) {
+        return data.post.canonical_url;
     }
 
     let url = urlService.utils.urlJoin(urlService.utils.urlFor('home', true), getUrl(data, false));

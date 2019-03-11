@@ -103,7 +103,7 @@
                     "type": ["string", "null"],
                     "maxLength": 100
                 },
-                "canonical": {
+                "canonical_url": {
                     "type": ["string", "null"],
                     "format": "uri-reference",
                     "maxLength": 2000

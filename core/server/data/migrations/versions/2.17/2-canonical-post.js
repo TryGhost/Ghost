@@ -2,7 +2,7 @@ const Promise = require('bluebird'),
     common = require('../../../../lib/common'),
     commands = require('../../../schema').commands,
     table = 'posts',
-    columns = ['canonical'],
+    columns = ['canonical_url'],
     _private = {};
 
 _private.handle = function handle(options) {
