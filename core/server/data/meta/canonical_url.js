@@ -1,8 +1,14 @@
-var urlService = require('../../services/url'),
-    getUrl = require('./url');
+const _ = require('lodash');
+const urlService = require('../../services/url');
+const getUrl = require('./url');
 
 function getCanonicalUrl(data) {
-    var url = urlService.utils.urlJoin(urlService.utils.urlFor('home', true), getUrl(data, false));
+    if ((_.includes(data.context, 'post') || _.includes(data.context, 'page'))
+        && data.post && data.post.canonical) {
+        return data.post.canonical;
+    }
+
+    let url = urlService.utils.urlJoin(urlService.utils.urlFor('home', true), getUrl(data, false));
 
     if (url.indexOf('/amp/')) {
         url = url.replace(/\/amp\/$/i, '/');
