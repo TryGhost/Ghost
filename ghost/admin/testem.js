@@ -14,6 +14,7 @@ module.exports = {
     framework: 'mocha',
     test_page: 'tests/index.html?hidepassed',
     disable_watching: true,
+    parallel: process.env.EMBER_EXAM_SPLIT_COUNT || 1,
     launch_in_ci,
     launch_in_dev: [
         'Chrome',
