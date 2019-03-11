@@ -12,27 +12,27 @@ const proxy = require('./proxy');
 const urlService = proxy.urlService;
 const STATIC_IMAGE_URL_PREFIX = `/${urlService.utils.STATIC_IMAGE_URL_PREFIX}`;
 
-module.exports = function imgUrl(attr, options) {
-    // CASE: if no attribute is passed, e.g. `{{img_url}}` we show a warning
+module.exports = function imgUrl(requestedImageUrl, options) {
+    // CASE: if no url is passed, e.g. `{{img_url}}` we show a warning
     if (arguments.length < 2) {
         proxy.logging.warn(proxy.i18n.t('warnings.helpers.img_url.attrIsRequired'));
         return;
     }
 
-    // CASE: if attribute is passed, but it is undefined, then the attribute was
+    // CASE: if url is passed, but it is undefined, then the attribute was
     // an unknown value, e.g. {{img_url feature_img}} and we also show a warning
-    if (attr === undefined) {
+    if (requestedImageUrl === undefined) {
         proxy.logging.warn(proxy.i18n.t('warnings.helpers.img_url.attrIsRequired'));
         return;
     }
 
-    // CASE: if you pass e.g. cover_image, but it is not set, then attr is null!
+    // CASE: if you pass e.g. cover_image, but it is not set, then requestedImageUrl is null!
     // in this case we don't show a warning
-    if (attr === null) {
+    if (requestedImageUrl === null) {
         return;
     }
 
-    const isInternalImage = detectInternalImage(attr);
+    const isInternalImage = detectInternalImage(requestedImageUrl);
     const {requestedSize, imageSizes} = getImageSizeOptions(options);
     const absoluteUrlRequested = getAbsoluteOption(options);
 
@@ -42,7 +42,7 @@ module.exports = function imgUrl(attr, options) {
         }
         return image;
     }
-    const image = maybeGetImageWithSize(attr);
+    const image = maybeGetImageWithSize(requestedImageUrl);
 
     return urlService.utils.urlFor('image', {image}, absoluteUrlRequested);
 };
