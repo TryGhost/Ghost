@@ -454,7 +454,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('.gh-alert').textContent,
                 'alert text after failed schedule'
-            ).to.match(/Saving failed: Error test/);
+            ).to.match(/Error test/);
         });
 
         it('handles title validation errors correctly', async function () {
