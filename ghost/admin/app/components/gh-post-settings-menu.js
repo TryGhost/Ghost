@@ -52,7 +52,7 @@ export default Component.extend(SettingsMenuMixin, {
     seoDescription: computed('post.scratch', 'metaDescriptionScratch', function () {
         let metaDescription = this.metaDescriptionScratch || '';
         let mobiledoc = this.get('post.scratch');
-        let [markdownCard] = mobiledoc.cards;
+        let [markdownCard] = (mobiledoc && mobiledoc.cards) || [];
         let markdown = markdownCard && markdownCard[1] && markdownCard[1].markdown;
         let placeholder;
 
