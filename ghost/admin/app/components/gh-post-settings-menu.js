@@ -26,6 +26,7 @@ export default Component.extend(SettingsMenuMixin, {
     _showSettingsMenu: false,
     _showThrobbers: false,
 
+    canonicalUrlScratch: alias('post.canonicalUrlScratch'),
     customExcerptScratch: alias('post.customExcerptScratch'),
     codeinjectionFootScratch: alias('post.codeinjectionFootScratch'),
     codeinjectionHeadScratch: alias('post.codeinjectionHeadScratch'),
@@ -70,17 +71,27 @@ export default Component.extend(SettingsMenuMixin, {
         return placeholder;
     }),
 
-    seoURL: computed('post.slug', 'config.blogUrl', function () {
+    seoURL: computed('post.{slug,canonicalUrl}', 'config.blogUrl', function () {
         let blogUrl = this.get('config.blogUrl');
-        let seoSlug = this.get('post.slug') ? this.get('post.slug') : '';
-        let seoURL = `${blogUrl}/${seoSlug}`;
+        let seoSlug = this.post.slug || '';
+        let canonicalUrl = this.post.canonicalUrl || '';
 
-        // only append a slash to the URL if the slug exists
-        if (seoSlug) {
-            seoURL += '/';
+        if (canonicalUrl) {
+            if (canonicalUrl.match(/^\//)) {
+                return `${blogUrl}${canonicalUrl}`;
+            } else {
+                return canonicalUrl;
+            }
+        } else {
+            let seoURL = `${blogUrl}/${seoSlug}`;
+
+            // only append a slash to the URL if the slug exists
+            if (seoSlug) {
+                seoURL += '/';
+            }
+
+            return seoURL;
         }
-
-        return seoURL;
     }),
 
     didReceiveAttrs() {
@@ -268,6 +279,29 @@ export default Component.extend(SettingsMenuMixin, {
 
             // Make sure the meta title is valid and if so, save it into the post
             return post.validate({property: 'metaDescription'}).then(() => {
+                if (post.get('isNew')) {
+                    return;
+                }
+
+                return this.savePost.perform();
+            });
+        },
+
+        setCanonicalUrl(value) {
+            // Grab the post and current stored meta description
+            let post = this.post;
+            let currentCanonicalUrl = post.canonicalUrl;
+
+            // If the value entered matches the stored value, do nothing
+            if (currentCanonicalUrl === value) {
+                return;
+            }
+
+            // If the value supplied is different, set it as the new value
+            post.set('canonicalUrl', value);
+
+            // Make sure the value is valid and if so, save it into the post
+            return post.validate({property: 'canonicalUrl'}).then(() => {
                 if (post.get('isNew')) {
                     return;
                 }

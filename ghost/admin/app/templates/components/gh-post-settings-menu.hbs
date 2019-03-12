@@ -194,6 +194,19 @@
                                     {{gh-error-message errors=post.errors property="meta-description"}}
                                 {{/gh-form-group}}
 
+                                {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="canonicalUrl"}}
+                                    <label for="canonicalUrl">Canonical URL</label>
+                                    {{gh-text-input
+                                        class="post-setting-canonicalUrl"
+                                        name="post-setting-canonicalUrl"
+                                        value=(readonly canonicalUrlScratch)
+                                        input=(action (mut canonicalUrlScratch) value="target.value")
+                                        focus-out=(action "setCanonicalUrl" canonicalUrlScratch)
+                                        stopEnterKeyDownPropagation="true"
+                                        data-test-field="canonicalUrl"}}
+                                    {{gh-error-message errors=post.errors property="canonicalUrl"}}
+                                {{/gh-form-group}}
+
                                 <div class="form-group">
                                     <label>Search Engine Result Preview</label>
                                     <div class="seo-preview">
