@@ -1,5 +1,5 @@
 import Service, {inject as service} from '@ember/service';
-import {dasherize} from '@ember/string';
+import {dasherize, htmlSafe} from '@ember/string';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 import {filter} from '@ember/object/computed';
 import {get, set} from '@ember/object';
@@ -43,7 +43,7 @@ export default Service.extend({
     handleNotification(message, delayed) {
         // If this is an alert message from the server, treat it as html safe
         if (typeof message.toJSON === 'function' && message.get('status') === 'alert') {
-            message.set('message', message.get('message').htmlSafe());
+            message.set('message', htmlSafe(message.get('message')));
         }
 
         if (!get(message, 'status')) {
@@ -54,6 +54,13 @@ export default Service.extend({
         if (get(message, 'key')) {
             this._removeItems(get(message, 'status'), get(message, 'key'));
         }
+
+        // close existing alerts/notifications which have the same text to avoid stacking
+        let newText = get(message, 'message').string || get(message, 'message');
+        this.set('content', this.content.reject((notification) => {
+            let existingText = get(notification, 'message').string || get(notification, 'message');
+            return existingText === newText;
+        }));
 
         if (!delayed) {
             this.content.pushObject(message);
