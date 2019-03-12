@@ -1,23 +1,18 @@
-sudo: required
-dist: trusty
+dist: xenial
 language: node_js
 node_js:
 - '10'
+cache: yarn
 env:
   global:
   - MOZ_HEADLESS=1
   - JOBS=1
 branches:
   except:
-  - "/^renovate\\//"
-cache:
-  yarn: true
+  - "/^renovate\\/.+$/"
 addons:
   firefox: latest
   chrome: stable
-before_install:
-- curl -o- -L https://yarnpkg.com/install.sh | bash
-- export PATH=$HOME/.yarn/bin:$PATH
 install:
 - yarn
 script:
