@@ -133,10 +133,19 @@ describe('{{body_class}} helper', function () {
             rendered.string.should.equal('post-template tag-foo tag-bar');
         });
 
-        it('a static page', function () {
+        it('v0.1: a static page', function () {
             var rendered = callBodyClassWithContext(
                 ['page'],
                 {relativeUrl: '/about', post: {page: true, slug: 'about'}}
+            );
+
+            rendered.string.should.equal('page-template page-about');
+        });
+
+        it('v2: a static page', function () {
+            var rendered = callBodyClassWithContext(
+                ['page'],
+                {relativeUrl: '/about', page: {page: true, slug: 'about'}}
             );
 
             rendered.string.should.equal('page-template page-about');
