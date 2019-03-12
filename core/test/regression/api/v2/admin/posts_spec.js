@@ -151,6 +151,32 @@ describe('Posts API', function () {
                 });
         });
 
+        it('canonical_url', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
+                .set('Origin', config.get('url'))
+                .expect(200)
+                .then((res) => {
+                    return request
+                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                canonical_url: `/canonical/url`,
+                                updated_at: res.body.posts[0].updated_at
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200);
+                })
+                .then((res) => {
+                    should.exist(res.body.posts);
+                    should.exist(res.body.posts[0].canonical_url);
+                    res.body.posts[0].canonical_url.should.equal(`${config.get('url')}/canonical/url`);
+                });
+        });
+
         it('update dates & x_by', function () {
             const post = {
                 created_by: ObjectId.generate(),

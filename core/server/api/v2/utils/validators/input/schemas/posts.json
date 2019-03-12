@@ -103,6 +103,11 @@
                     "type": ["string", "null"],
                     "maxLength": 100
                 },
+                "canonical_url": {
+                    "type": ["string", "null"],
+                    "format": "uri-reference",
+                    "maxLength": 2000
+                },
                 "authors": {
                     "$ref": "#/definitions/post-authors"
                 },

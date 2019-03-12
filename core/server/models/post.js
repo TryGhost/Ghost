@@ -572,6 +572,13 @@ Post = ghostBookshelf.Model.extend({
         // CASE: never expose the revisions
         delete attrs.mobiledoc_revisions;
 
+        // expose canonical_url only for API v2 calls
+        // NOTE: this can be removed when API v0.1 is dropped. A proper solution for field
+        //       differences on resources like this would be an introduction of API output schema
+        if (!_.get(unfilteredOptions, 'extraProperties', []).includes('canonical_url')) {
+            delete attrs.canonical_url;
+        }
+
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
             // ... attach a computed property of primary_tag which is the first tag if it is public, else null

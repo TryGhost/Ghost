@@ -23,7 +23,7 @@ describe('getCanonicalUrl', function () {
         sinon.restore();
     });
 
-    it('should return canonical url', function () {
+    it('should return default canonical url', function () {
         const post = testUtils.DataGenerator.forKnex.createPost();
 
         getUrlStub.withArgs(post, false).returns('/post-url/');
@@ -34,6 +34,17 @@ describe('getCanonicalUrl', function () {
         urlService.utils.urlJoin.calledOnce.should.be.true();
         urlService.utils.urlFor.calledOnce.should.be.true();
         getUrlStub.calledOnce.should.be.true();
+    });
+
+    it('should return canonical url field if present', function () {
+        const post = testUtils.DataGenerator.forKnex.createPost({canonical_url: 'https://example.com/canonical'});
+
+        getCanonicalUrl({
+            context: ['post'],
+            post: post
+        }).should.eql('https://example.com/canonical');
+
+        getUrlStub.called.should.equal(false);
     });
 
     it('should return canonical url for amp post without /amp/ in url', function () {

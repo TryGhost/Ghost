@@ -1,13 +1,26 @@
 const _ = require('lodash');
 const {absoluteToRelative, getBlogUrl, STATIC_IMAGE_URL_PREFIX} = require('../../../../../../services/url/utils');
 
+const handleCanonicalUrl = (url) => {
+    const blogDomain = getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+    const absolute = url.replace(/^http(s?):\/\//, '');
+
+    if (absolute.startsWith(blogDomain)) {
+        return absoluteToRelative(url, {withoutSubdirectory: true});
+    }
+
+    return url;
+};
+
 const handleImageUrl = (imageUrl) => {
     const blogDomain = getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     const imageUrlAbsolute = imageUrl.replace(/^http(s?):\/\//, '');
     const imagePathRe = new RegExp(`^${blogDomain}/${STATIC_IMAGE_URL_PREFIX}`);
+
     if (imagePathRe.test(imageUrlAbsolute)) {
         return absoluteToRelative(imageUrl);
     }
+
     return imageUrl;
 };
 
@@ -43,6 +56,10 @@ const forPost = (attrs, options) => {
 
     if (attrs.twitter_image) {
         attrs.twitter_image = handleImageUrl(attrs.twitter_image);
+    }
+
+    if (attrs.canonical_url) {
+        attrs.canonical_url = handleCanonicalUrl(attrs.canonical_url);
     }
 
     if (options && options.withRelated) {
