@@ -126,9 +126,20 @@ describe('getMetaDescription', function () {
         description.should.equal('Best AMP post ever!');
     });
 
-    it('should return data post meta description if on root context contains page', function () {
+    it('v0.1: should return data post meta description if on root context contains page', function () {
         var description = getMetaDescription({
             post: {
+                meta_description: 'Best page ever!'
+            }
+        }, {
+            context: ['page']
+        });
+        description.should.equal('Best page ever!');
+    });
+
+    it('v2: should return data page meta description if on root context contains page', function () {
+        var description = getMetaDescription({
+            page: {
                 meta_description: 'Best page ever!'
             }
         }, {
