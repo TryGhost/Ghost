@@ -27,7 +27,7 @@ const mapTag = (model, frame) => {
 
 const mapPost = (model, frame) => {
     const extendedOptions = Object.assign(_.cloneDeep(frame.options), {
-        extraFields: ['canonical_url']
+        extraProperties: ['canonical_url']
     });
 
     const jsonModel = model.toJSON(extendedOptions);

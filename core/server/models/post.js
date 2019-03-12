@@ -575,7 +575,7 @@ Post = ghostBookshelf.Model.extend({
         // expose canonical_url only for API v2 calls
         // NOTE: needs more generic solution that would allow to filter API version specific
         //       fields for each type of resource
-        if (!_.get(unfilteredOptions, 'extraFields', []).includes('canonical_url')) {
+        if (!_.get(unfilteredOptions, 'extraProperties', []).includes('canonical_url')) {
             delete attrs.canonical_url;
         }
 
