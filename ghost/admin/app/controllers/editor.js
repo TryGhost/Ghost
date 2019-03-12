@@ -36,8 +36,6 @@ PostModel.eachAttribute(function (name) {
     watchedProps.push(`post.${name}`);
 });
 
-// TODO: This has to be moved to the I18n localization file.
-// This structure is supposed to be close to the i18n-localization which will be used soon.
 const messageMap = {
     errors: {
         post: {
@@ -52,7 +50,7 @@ const messageMap = {
                 scheduled: 'Scheduling failed'
             },
             scheduled: {
-                scheduled: 'Updated failed',
+                scheduled: 'Update failed',
                 draft: 'Unscheduling failed',
                 published: 'Publish failed'
             }
@@ -785,7 +783,7 @@ export default Controller.extend({
             // TODO: remove this once validations are fixed
             errorMessage = error[0];
         } else if (error && error.payload && error.payload.errors && error.payload.errors[0].message) {
-            errorMessage = error.payload.errors[0].message;
+            return this.notifications.showAPIError(error, {key: 'post.save'});
         } else {
             errorMessage = 'Unknown Error';
         }
