@@ -460,11 +460,20 @@ function absoluteToRelative(urlToModify, options) {
     return relativePath;
 }
 
+function relativeToAbsolute(url) {
+    if (!url.startsWith('/') || url.startsWith('//')) {
+        return url;
+    }
+
+    return createUrl(url, true);
+}
+
 function deduplicateDoubleSlashes(url) {
     return url.replace(/\/\//g, '/');
 }
 
 module.exports.absoluteToRelative = absoluteToRelative;
+module.exports.relativeToAbsolute = relativeToAbsolute;
 module.exports.makeAbsoluteUrls = makeAbsoluteUrls;
 module.exports.getProtectedSlugs = getProtectedSlugs;
 module.exports.getSubdir = getSubdir;
