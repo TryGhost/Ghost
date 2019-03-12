@@ -26,7 +26,6 @@
     "bluebird": "^3.5.3",
     "emoji-regex": "^8.0.0",
     "execa": "^1.0.0",
-    "ghost-ignition": "^3.0.3",
     "lodash": "^4.17.11",
     "request": "^2.88.0",
     "request-promise": "^4.2.4"
