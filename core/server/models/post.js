@@ -573,8 +573,8 @@ Post = ghostBookshelf.Model.extend({
         delete attrs.mobiledoc_revisions;
 
         // expose canonical_url only for API v2 calls
-        // NOTE: needs more generic solution that would allow to filter API version specific
-        //       fields for each type of resource
+        // NOTE: this can be removed when API v0.1 is dropped. A proper solution for field
+        //       differences on resources like this would be an introduction of API output schema
         if (!_.get(unfilteredOptions, 'extraProperties', []).includes('canonical_url')) {
             delete attrs.canonical_url;
         }
