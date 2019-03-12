@@ -24,12 +24,27 @@ function getDescription(data, root, options) {
         description = data.author.meta_description || '';
     } else if (_.includes(context, 'tag') && data.tag) {
         description = data.tag.meta_description || '';
-    } else if ((_.includes(context, 'post') || _.includes(context, 'page')) && data.post) {
+    } else if (_.includes(context, 'post') && data.post) {
         if (options && options.property) {
             postSdDescription = options.property + '_description';
             description = data.post[postSdDescription] || '';
         } else {
             description = data.post.meta_description || '';
+        }
+    } else if (_.includes(context, 'page') && data.post) {
+        // @NOTE: v0.1
+        if (options && options.property) {
+            postSdDescription = options.property + '_description';
+            description = data.post[postSdDescription] || '';
+        } else {
+            description = data.post.meta_description || '';
+        }
+    } else if (_.includes(context, 'page') && data.page) {
+        if (options && options.property) {
+            postSdDescription = options.property + '_description';
+            description = data.page[postSdDescription] || '';
+        } else {
+            description = data.page.meta_description || '';
         }
     }
 
