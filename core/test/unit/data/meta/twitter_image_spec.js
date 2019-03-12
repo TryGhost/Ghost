@@ -38,6 +38,18 @@ describe('getTwitterImage', function () {
         twitterImageUrl.should.match(/\/content\/images\/my-special-twitter-image\.jpg$/);
     });
 
+    it('should return absolute url for Twitter image in post context', function () {
+        var twitterImageUrl = getTwitterImage({
+            context: ['news', 'post'],
+            post: {
+                feature_image: '/content/images/my-test-image.jpg',
+                twitter_image: '/content/images/my-special-twitter-image.jpg'
+            }
+        });
+        twitterImageUrl.should.not.equal('/content/images/my-special-twitter-image.jpg');
+        twitterImageUrl.should.match(/\/content\/images\/my-special-twitter-image\.jpg$/);
+    });
+
     it('should return absolute url for feature image in post context', function () {
         var twitterImageUrl = getTwitterImage({
             context: ['post'],
