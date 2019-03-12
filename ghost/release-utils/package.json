@@ -1,0 +1,34 @@
+{
+  "name": "@tryghost/release-utils",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost-Utils/tree/master/packages/release-utils",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "mocha": "6.0.2",
+    "should": "13.2.3",
+    "sinon": "7.2.7"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.3",
+    "emoji-regex": "^8.0.0",
+    "execa": "^1.0.0",
+    "ghost-ignition": "^3.0.3",
+    "lodash": "^4.17.11",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4"
+  }
+}
