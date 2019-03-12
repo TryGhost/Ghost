@@ -83,7 +83,7 @@ describe('Unit: Service: notifications', function () {
     // in order to cater for complex keys that are suitable for i18n
     // we split on the second period and treat the resulting base as
     // the key for duplicate checking
-    it('#showAlert clears duplicates', function () {
+    it('#showAlert clears duplicates using keys', function () {
         let notifications = this.subject();
 
         run(() => {
@@ -99,6 +99,17 @@ describe('Unit: Service: notifications', function () {
 
         expect(notifications.get('alerts.length')).to.equal(2);
         expect(notifications.get('alerts.lastObject.message')).to.equal('Duplicate with new message');
+    });
+
+    it('#showAlert clears duplicates using message text', function () {
+        let notifications = this.subject();
+
+        notifications.showAlert('Not duplicate');
+        notifications.showAlert('Duplicate', {key: 'duplicate'});
+        notifications.showAlert('Duplicate');
+
+        expect(notifications.get('alerts.length')).to.equal(2);
+        expect(notifications.get('alerts.lastObject.key')).to.not.exist;
     });
 
     it('#showNotification adds POJO notifications', function () {
