@@ -22,7 +22,7 @@ module.exports.up = (options) => {
     }, options);
 
     return fs.readdir(dataPath).then(function (files) {
-        return files
+        return files;
     }).catch(function () {
         common.logging.warn(`Error reading ${dataPath} whilst trying to ensure boolean settings are correct. Please double check your settings after this upgrade`);
         return [];
