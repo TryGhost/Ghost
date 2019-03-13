@@ -108,6 +108,7 @@ module.exports.uploadZip = (options = {}) => {
 
     return new Promise((resolve, reject) => {
         fs.createReadStream(options.zipPath)
+            .on('error', reject)
             .pipe(request.post(reqOptions, (err, res) => {
                 if (err) {
                     return reject(err);
