@@ -6,27 +6,31 @@
 // By default, authors are separated by commas.
 //
 // Note that the standard {{#each authors}} implementation is unaffected by this helper.
-const proxy = require('./proxy'),
-    _ = require('lodash'),
-    urlService = require('../services/url'),
-    SafeString = proxy.SafeString,
-    templates = proxy.templates,
-    models = proxy.models;
+const proxy = require('./proxy');
+const _ = require('lodash');
+const urlService = require('../services/url');
+const {SafeString, templates, models} = proxy;
 
-module.exports = function authors(options) {
-    options = options || {};
+module.exports = function authors(options = {}) {
     options.hash = options.hash || {};
 
-    const autolink = !(_.isString(options.hash.autolink) && options.hash.autolink === 'false'),
-        separator = _.isString(options.hash.separator) ? options.hash.separator : ', ',
-        prefix = _.isString(options.hash.prefix) ? options.hash.prefix : '',
-        suffix = _.isString(options.hash.suffix) ? options.hash.suffix : '',
-        limit = options.hash.limit ? parseInt(options.hash.limit, 10) : undefined,
-        visibilityArr = models.Base.Model.parseVisibilityString(options.hash.visibility);
+    let {
+        autolink,
+        separator = ', ',
+        prefix = '',
+        suffix = '',
+        limit,
+        visibility,
+        from = 1,
+        to
+    } = options.hash;
+    let output = '';
+    const visibilityArr = models.Base.Model.parseVisibilityString(visibility);
 
-    let output = '',
-        from = options.hash.from ? parseInt(options.hash.from, 10) : 1,
-        to = options.hash.to ? parseInt(options.hash.to, 10) : undefined;
+    autolink = !(_.isString(autolink) && autolink === 'false');
+    limit = limit ? parseInt(limit, 10) : limit;
+    from = from ? parseInt(from, 10) : from;
+    to = to ? parseInt(to, 10) : to;
 
     function createAuthorsList(authors) {
         function processAuthor(author) {
@@ -36,7 +40,7 @@ module.exports = function authors(options) {
             }) : _.escape(author.name);
         }
 
-        return models.Base.Model.filterByVisibility(authors, visibilityArr, !!options.hash.visibility, processAuthor);
+        return models.Base.Model.filterByVisibility(authors, visibilityArr, !!visibility, processAuthor);
     }
 
     if (this.authors && this.authors.length) {
