@@ -25,7 +25,7 @@ var _ = require('lodash'),
     exportFileName;
 
 exportFileName = function exportFileName(options) {
-    var datetime = (new Date()).toJSON().substring(0, 10),
+    var datetime = (new Date()).toJSON(),
         title = '';
 
     options = options || {};
