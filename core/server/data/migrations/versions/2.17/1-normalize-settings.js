@@ -24,7 +24,9 @@ module.exports.up = (options) => {
                 if (['is_private', 'force_i18n', 'amp'].includes(entry.key)) {
                     // @NOTE: sending false to db for type TEXT will transform to "0"
                     if ((entry.value === '0' || entry.value === '1')) {
-                        common.logging.info(`Normalize setting ${entry.key}`);
+                        const value = (!!+entry.value).toString();
+
+                        common.logging.info(`Setting ${entry.key} to ${value} because it was ${entry.value}`);
 
                         /**
                          * @NOTE: we have update raw data, because otherwise the `Settings.edit` fn will re-fetch the data
@@ -34,19 +36,33 @@ module.exports.up = (options) => {
                             .transacting('settings')
                             .where('key', entry.key)
                             .update({
-                                value: (!!+entry.value).toString()
+                                value: value
                             });
                     }
 
-                    // @NOTE: Something else is stored (any other value, set to false), normalize boolean fields
-                    if (entry.value !== 'false' && entry.value !== 'value') {
-                        common.logging.info(`Normalize setting ${entry.key}`);
+                    // @NOTE: null or undefined were obviously intended to be false
+                    if (entry.value === 'null' || entry.value === 'undefined') {
+                        const value = 'false';
+                        common.logging.info(`Setting ${entry.key} to ${value} because it was ${entry.value}`);
 
                         return localOptions
                             .transacting('settings')
                             .where('key', entry.key)
                             .update({
-                                value: 'false'
+                                value
+                            });
+                    }
+
+                    // @NOTE: Something other than true/false is stored, set to true, because that's how it would have behaved
+                    if (entry.value !== 'false' && entry.value !== 'true') {
+                        const value = 'true';
+                        common.logging.info(`Setting ${entry.key} to ${value} because it was ${entry.value}`);
+
+                        return localOptions
+                            .transacting('settings')
+                            .where('key', entry.key)
+                            .update({
+                                value
                             });
                     }
                 }
