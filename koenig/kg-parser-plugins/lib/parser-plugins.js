@@ -11,7 +11,7 @@
 // import {cleanBasicHtml} from 'koenig-editor/helpers/clean-basic-html';
 
 // mobiledoc by default ignores <BR> tags but we have a custom SoftReturn atom
-const brToSoftBreakAtom = (node, builder, {addMarkerable, nodeFinished}) => {
+export function brToSoftBreakAtom(node, builder, {addMarkerable, nodeFinished}) {
     if (node.nodeType !== 1 || node.tagName !== 'BR') {
         return;
     }
@@ -20,20 +20,20 @@ const brToSoftBreakAtom = (node, builder, {addMarkerable, nodeFinished}) => {
     addMarkerable(softReturn);
 
     nodeFinished();
-};
+}
 
 // leading newlines in text nodes will add a space to the beginning of the text
 // which doesn't render correctly if we're replacing <br> with SoftReturn atoms
 // after parsing text as markdown to html
-const removeLeadingNewline = (node) => {
+export function removeLeadingNewline(node) {
     if (node.nodeType !== 3 || node.nodeName !== '#text') {
         return;
     }
 
     node.nodeValue = node.nodeValue.replace(/^\n/, '');
-};
+}
 
-const figureToImageCard = (node, builder, {addSection, nodeFinished}) => {
+export function figureToImageCard(node, builder, {addSection, nodeFinished}) {
     if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
         return;
     }
@@ -71,7 +71,7 @@ const figureToImageCard = (node, builder, {addSection, nodeFinished}) => {
     nodeFinished();
 };
 
-const imgToCard = (node, builder, {addSection, nodeFinished}) => {
+export function imgToCard(node, builder, {addSection, nodeFinished}) {
     if (node.nodeType !== 1 || node.tagName !== 'IMG') {
         return;
     }
@@ -85,9 +85,9 @@ const imgToCard = (node, builder, {addSection, nodeFinished}) => {
     let cardSection = builder.createCardSection('image', payload);
     addSection(cardSection);
     nodeFinished();
-};
+}
 
-const hrToCard = (node, builder, {addSection, nodeFinished}) => {
+export function hrToCard(node, builder, {addSection, nodeFinished}) {
     if (node.nodeType !== 1 || node.tagName !== 'HR') {
         return;
     }
@@ -95,9 +95,9 @@ const hrToCard = (node, builder, {addSection, nodeFinished}) => {
     let cardSection = builder.createCardSection('hr');
     addSection(cardSection);
     nodeFinished();
-};
+}
 
-const preCodeToCard = (node, builder, {addSection, nodeFinished}) => {
+export function preCodeToCard(node, builder, {addSection, nodeFinished}) {
     if (node.nodeType !== 1 || node.tagName !== 'PRE') {
         return;
     }
@@ -110,9 +110,9 @@ const preCodeToCard = (node, builder, {addSection, nodeFinished}) => {
         addSection(cardSection);
         nodeFinished();
     }
-};
+}
 
-module.exports = [
+export default [
     brToSoftBreakAtom,
     removeLeadingNewline,
     figureToImageCard,
