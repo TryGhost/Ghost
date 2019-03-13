@@ -160,7 +160,7 @@ describe('Exporter', function () {
             exporter.fileName().then(function (result) {
                 should.exist(result);
                 settingsStub.calledOnce.should.be.true();
-                result.should.match(/^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$/);
+                result.should.match(/^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
             }).catch(done);
@@ -174,7 +174,7 @@ describe('Exporter', function () {
             exporter.fileName().then(function (result) {
                 should.exist(result);
                 settingsStub.calledOnce.should.be.true();
-                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$/);
+                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
             }).catch(done);
@@ -188,7 +188,7 @@ describe('Exporter', function () {
             exporter.fileName().then(function (result) {
                 should.exist(result);
                 settingsStub.calledOnce.should.be.true();
-                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$/);
+                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
             }).catch(done);
