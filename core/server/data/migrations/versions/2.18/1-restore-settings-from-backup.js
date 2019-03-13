@@ -38,10 +38,28 @@ module.exports.up = (options) => {
         return require(path.join(dataPath, mostRecentBackup));
     }).then(function (backup) {
         const settings = backup && backup.data && backup.data.settings;
+        const migrations = backup && backup.data && backup.data.migrations;
 
         if (!settings) {
             throw new Error('Could not read settings from backup file');
         }
+
+        if (!migrations || !migrations.length) {
+            common.logging.warn('Skipping migration. Not affected.');
+            return;
+        }
+
+        // NOTE: If we you have a backup file which has 2.16, but not 2.17, you are affected
+        // NOTE: We have corrected 2.17. If you jump form 2.16 to 2.18, you are good
+        const isAffected = _.find(migrations, {version: '2.16'}) &&
+            !_.find(migrations, {version: '2.17'});
+
+        if (!isAffected) {
+            common.logging.warn('Skipping migration. Not affected.');
+            return;
+        }
+
+        common.logging.warn('...is affected.');
 
         const relevantBackupSettings = settings.filter(function (entry) {
             return ['is_private', 'force_i18n', 'amp'].includes(entry.key);
