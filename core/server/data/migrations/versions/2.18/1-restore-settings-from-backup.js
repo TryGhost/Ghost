@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const common = require('../../../../lib/common');
+const settingsCache = require('../../../../services/settings/cache');
 const config = require('../../../../config');
 const fs = require('fs-extra');
 const path = require('path');
@@ -65,6 +66,7 @@ module.exports.up = (options) => {
                 return Promise.each(relevantLiveSettings, (liveSetting) => {
                     // @NOTE: Something else is stored (any other value, set to false), normalize boolean fields
                     const backupSetting = relevantBackupSettings[liveSetting.key];
+
                     if (liveSetting.value === 'false' && backupSetting.value === 'true') {
                         common.logging.info(`Reverting setting ${liveSetting.key}`);
 
@@ -73,8 +75,13 @@ module.exports.up = (options) => {
                             .where('key', liveSetting.key)
                             .update({
                                 value: backupSetting.value
+                            })
+                            .then(() => {
+                                // CASE: we have to update settings cache, because Ghost is able to run migrations on the same process
+                                settingsCache.set(liveSetting.key, {value: backupSetting.value === 'true'});
                             });
                     }
+
                     return Promise.resolve();
                 });
             });
