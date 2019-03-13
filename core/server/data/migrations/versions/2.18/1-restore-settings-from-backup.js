@@ -22,6 +22,11 @@ module.exports.up = (options) => {
     }, options);
 
     return fs.readdir(dataPath).then(function (files) {
+        return files;
+    }).catch(function () {
+        common.logging.warn(`Error reading ${dataPath} whilst trying to ensure boolean settings are correct. Please double check your settings after this upgrade`);
+        return [];
+    }).then(function (files) {
         const backups = files.filter(function (filename) {
             return backupFileRegex.test(filename);
         }).sort(function (a, b) {
@@ -40,7 +45,13 @@ module.exports.up = (options) => {
 
         common.logging.info(`Using backupfile ${path.join(dataPath, mostRecentBackup)}`);
 
-        const backup = require(path.join(dataPath, mostRecentBackup));
+        let backup;
+        try {
+            backup = require(path.join(dataPath, mostRecentBackup));
+        } catch (e) {
+            common.logging.warn(`Could not read ${path.join(dataPath, mostRecentBackup)} whilst trying to ensure boolean settings are correct. Please double check your settings after this upgrade`);
+            return;
+        }
         const settings = backup && backup.data && backup.data.settings;
         const migrations = backup && backup.data && backup.data.migrations;
 
