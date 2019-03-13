@@ -25,8 +25,6 @@ function getContextObject(data, context) {
     } else if (data[context]) {
         // @NOTE: This is confusing as hell. It tries to get data[['author']], which works, but coincidence?
         chosenContext = data[context];
-    } else {
-        chosenContext = blog;
     }
 
     // Super fallback.
