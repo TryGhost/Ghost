@@ -31,17 +31,22 @@ module.exports.up = (options) => {
             return dateB - dateA;
         });
 
+        if (backups.length === 0) {
+            common.logging.warn('No backup files found, skipping...');
+            return;
+        }
+
         const mostRecentBackup = backups[0];
 
         common.logging.info(`Using backupfile ${path.join(dataPath, mostRecentBackup)}`);
 
-        return require(path.join(dataPath, mostRecentBackup));
-    }).then(function (backup) {
+        const backup = require(path.join(dataPath, mostRecentBackup));
         const settings = backup && backup.data && backup.data.settings;
         const migrations = backup && backup.data && backup.data.migrations;
 
         if (!settings) {
-            throw new Error('Could not read settings from backup file');
+            common.logging.warn('Could not read settings from backup file, skipping...');
+            return;
         }
 
         if (!migrations || !migrations.length) {
