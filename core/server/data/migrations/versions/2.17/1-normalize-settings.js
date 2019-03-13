@@ -38,8 +38,8 @@ module.exports.up = (options) => {
                             });
                     }
 
-                    // @NOTE: Something else is stored (any other value, set to false), normalize boolean fields
-                    if (entry.value !== 'false' && entry.value !== 'value') {
+                    // @NOTE: Something other than true/false is stored, set to false
+                    if (entry.value !== 'false' && entry.value !== 'true') {
                         common.logging.info(`Normalize setting ${entry.key}`);
 
                         return localOptions
