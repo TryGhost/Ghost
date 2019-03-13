@@ -989,6 +989,11 @@ abortcontroller-polyfill@^1.1.9, abortcontroller-polyfill@^1.2.1:
   resolved "https://registry.yarnpkg.com/abortcontroller-polyfill/-/abortcontroller-polyfill-1.2.5.tgz#a091ba2d0ea7bae64d6a5f474089a6ab495cec2b"
   integrity sha512-vhu1mYi7ANQZE0K7BBjcOTQZWkH/mzyGVXFqCr05piYuKJQjWcD9Nu3qIM5B7qKSPzqRv+2cQOoCFv6eMP4w5Q==
 
+abortcontroller-polyfill@^1.2.5:
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/abortcontroller-polyfill/-/abortcontroller-polyfill-1.2.9.tgz#402311d2aac7e8e093ecb045726b45fdafd834fe"
+  integrity sha512-0goWhDrwoWtK6XCdFdzPtvHBmmQU91j3tULNL85MAnDuM7bNlzUDfmL5AZGL819L7pn9kra35HJGWG25UgRCBw==
+
 accepts@~1.3.4, accepts@~1.3.5:
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/accepts/-/accepts-1.3.5.tgz#eb777df6011723a3b14e8a72c0805c8e86746bd2"
@@ -4841,7 +4846,25 @@ ember-factory-for-polyfill@^1.3.1:
   dependencies:
     ember-cli-version-checker "^2.1.0"
 
-ember-fetch@6.4.0, "ember-fetch@^2.1.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0":
+ember-fetch@6.5.0:
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-6.5.0.tgz#efed80b3dd2259b52efce7498659e9125235bfb7"
+  integrity sha512-B9KSeeO3xDNMQ22JqNwbmgnOprBzc8kNVfQMtzkAmugMb2aCmBZohAlQlwUUX5ODz8fHq2xfuZXDHD81Dzb0vg==
+  dependencies:
+    abortcontroller-polyfill "^1.2.5"
+    broccoli-concat "^3.2.2"
+    broccoli-debug "^0.6.5"
+    broccoli-merge-trees "^3.0.0"
+    broccoli-rollup "^2.1.1"
+    broccoli-stew "^2.0.0"
+    broccoli-templater "^2.0.1"
+    calculate-cache-key-for-tree "^1.1.0"
+    caniuse-api "^3.0.0"
+    ember-cli-babel "^6.8.2"
+    node-fetch "^2.3.0"
+    whatwg-fetch "^3.0.0"
+
+"ember-fetch@^2.1.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0":
   version "6.4.0"
   resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-6.4.0.tgz#806b2acfbda07f3b0dd48a9fcdbc575c5519611d"
   integrity sha512-/GtJWQiUAAOX2HMGuLrWQMNWO9YRNH9+AiMzZYc5PrTHKdv+Ib5fciysz0+e97Dj9vyvF2mQa49mrosAPW9ziQ==
