@@ -26,7 +26,7 @@ module.exports.up = (options) => {
             const dateA = new Date(a.match(backupFileRegex)[1]);
             const dateB = new Date(b.match(backupFileRegex)[1]);
 
-            return dateA - dateB;
+            return dateB - dateA;
         });
 
         const mostRecentBackup = backups[0];
