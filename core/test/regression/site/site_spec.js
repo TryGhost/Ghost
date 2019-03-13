@@ -2625,10 +2625,28 @@ describe('Integration - Web - Site', function () {
                 });
             });
 
-            describe('collection with data key', function () {
+            describe('collection/routes with data key', function () {
                 before(function () {
                     sinon.stub(settingsService, 'get').returns({
-                        routes: {},
+                        routes: {
+                            '/my-page/': {
+                                data: {
+                                    query: {
+                                        page: {
+                                            controller: 'pagesPublic',
+                                            resource: 'pages',
+                                            type: 'read',
+                                            options: {
+                                                slug: 'static-page-test'
+                                            }
+                                        }
+                                    },
+                                    router: {
+                                        pages: [{redirect: true, slug: 'static-page-test'}]
+                                    }
+                                }
+                            }
+                        },
 
                         collections: {
                             '/food/': {
@@ -2751,6 +2769,20 @@ describe('Integration - Web - Site', function () {
                         secure: true,
                         method: 'GET',
                         url: '/categories/chorizo/',
+                        host: 'example.com'
+                    };
+
+                    return testUtils.mocks.express.invoke(app, req)
+                        .then(function (response) {
+                            response.statusCode.should.eql(200);
+                        });
+                });
+
+                it('serve my-page', function () {
+                    const req = {
+                        secure: true,
+                        method: 'GET',
+                        url: '/my-page/',
                         host: 'example.com'
                     };
 
