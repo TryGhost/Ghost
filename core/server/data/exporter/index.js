@@ -25,7 +25,7 @@ var _ = require('lodash'),
     exportFileName;
 
 exportFileName = function exportFileName(options) {
-    var datetime = (new Date()).toJSON(),
+    var datetime = require('moment')().format('YYYY-MM-DD-HH-mm-ss'),
         title = '';
 
     options = options || {};
