@@ -41,7 +41,7 @@ module.exports.up = (options) => {
                     }
 
                     // @NOTE: null or undefined were obviously intended to be false
-                    if (entry.value === 'null' || entry.value === 'undefined') {
+                    if (entry.value === null || entry.value === undefined || entry.value === 'null' || entry.value === 'undefined') {
                         const value = 'false';
                         common.logging.info(`Setting ${entry.key} to ${value} because it was ${entry.value}`);
 
