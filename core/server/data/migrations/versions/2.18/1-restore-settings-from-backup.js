@@ -29,11 +29,14 @@ module.exports.up = (options) => {
             return dateB - dateA;
         });
 
+        // CASE: One we _just_ made for the migration
         const mostRecentBackup = backups[0];
+        // CASE: The previous one from last migration
+        const secondMostRecentBackup = backups[1];
 
-        common.logging.info(`Using backupfile ${path.join(dataPath, mostRecentBackup)}`);
+        common.logging.info(`Using backupfile ${path.join(dataPath, secondMostRecentBackup)}`);
 
-        return require(path.join(dataPath, mostRecentBackup));
+        return require(path.join(dataPath, secondMostRecentBackup));
     }).then(function (backup) {
         const settings = backup && backup.data && backup.data.settings;
 
