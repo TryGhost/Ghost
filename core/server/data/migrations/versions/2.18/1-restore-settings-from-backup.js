@@ -54,15 +54,9 @@ module.exports.up = (options) => {
             return;
         }
         const settings = backup && backup.data && backup.data.settings;
-        const migrations = backup && backup.data && backup.data.migrations;
 
         if (!settings) {
             common.logging.warn('Could not read settings from backup file, skipping...');
-            return;
-        }
-
-        if (!migrations || !migrations.length) {
-            common.logging.warn('Skipping migration. Not affected.');
             return;
         }
 
