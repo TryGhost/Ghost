@@ -43,7 +43,7 @@
     "coveralls": "3.0.3",
     "csscomb": "4.2.0",
     "cssnano": "4.1.10",
-    "element-resize-detector": "^1.1.14",
+    "element-resize-detector": "1.1.15",
     "ember-ajax": "5.0.0",
     "ember-assign-helper": "0.2.0",
     "ember-auto-import": "1.2.21",
