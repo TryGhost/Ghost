@@ -3,6 +3,7 @@ const Promise = require('bluebird');
 const common = require('../../../../lib/common');
 const settingsCache = require('../../../../services/settings/cache');
 const config = require('../../../../config');
+const moment = require('moment');
 const fs = require('fs-extra');
 const path = require('path');
 
@@ -76,7 +77,16 @@ module.exports.up = (options) => {
                             })
                             .then(() => {
                                 // CASE: we have to update settings cache, because Ghost is able to run migrations on the same process
-                                settingsCache.set(liveSetting.key, {value: backupSetting.value === 'true'});
+                                settingsCache.set(liveSetting.key, {
+                                    id: backupSetting.id,
+                                    key: backupSetting.key,
+                                    type: backupSetting.type,
+                                    created_at: moment(backupSetting.created_at).startOf('seconds').toDate(),
+                                    updated_at: moment().startOf('seconds').toDate(),
+                                    updated_by: backupSetting.updated_by,
+                                    created_by: backupSetting.created_by,
+                                    value: backupSetting.value === 'true'
+                                });
                             });
                     }
 
