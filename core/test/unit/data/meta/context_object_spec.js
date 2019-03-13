@@ -46,6 +46,15 @@ describe('getContextObject', function () {
         contextObject.should.eql(data.post);
     });
 
+    it('should return page', function () {
+        data = {page: {id: 2}};
+        context = ['news', 'page'];
+        contextObject = getContextObject(data, context);
+
+        should.exist(contextObject);
+        contextObject.should.eql(data.page);
+    });
+
     describe('override blog', function () {
         before(function () {
             sinon.stub(settingsCache, 'get').callsFake(function (key) {
