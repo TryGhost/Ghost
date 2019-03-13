@@ -108,7 +108,7 @@ module.exports.uploadZip = (options = {}) => {
 
     return new Promise((resolve, reject) => {
         fs.createReadStream(options.zipPath)
-            .pipe(request.post(reqOptions), (err, res) => {
+            .pipe(request.post(reqOptions, (err, res) => {
                 if (err) {
                     return reject(err);
                 }
@@ -116,7 +116,7 @@ module.exports.uploadZip = (options = {}) => {
                 resolve({
                     downloadUrl: res.body.browser_download_url
                 });
-            });
+            }));
     });
 };
 
