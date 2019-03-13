@@ -18,7 +18,7 @@ module.exports.filterEmojiCommits = (content) => {
         obj[index] = line;
 
         const match = emojiRegex().exec(line);
-        return match && match.index !== 2;
+        return match && match.index === 2;
     });
 
     return content;
