@@ -29,6 +29,11 @@ function getContextObject(data, context) {
         chosenContext = blog;
     }
 
+    // Super fallback.
+    if (!chosenContext) {
+        chosenContext = blog;
+    }
+
     return chosenContext;
 }
 
