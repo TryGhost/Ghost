@@ -58,13 +58,11 @@ module.exports.up = (options) => {
                     return;
                 }
 
-                // @NOTE: ensure we only transform real boolean fields to ensure we won't modify any customer data
                 const relevantLiveSettings = response.filter(function (entry) {
                     return ['is_private', 'force_i18n', 'amp'].includes(entry.key);
                 });
 
                 return Promise.each(relevantLiveSettings, (liveSetting) => {
-                    // @NOTE: Something else is stored (any other value, set to false), normalize boolean fields
                     const backupSetting = relevantBackupSettings[liveSetting.key];
 
                     if (liveSetting.value === 'false' && backupSetting.value === 'true') {
