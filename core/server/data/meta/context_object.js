@@ -16,14 +16,19 @@ function getContextObject(data, context) {
     // @TODO: meta layer is very broken, it's really hard to understand what it's doing
     // The problem is that handlebars root object is structured differently. Sometimes the object is flat on data
     // and sometimes the object is part of a key e.g. data.post. This needs to be prepared at the very first stage and not in each helper.
-    if (_.includes(context, 'page') || _.includes(context, 'amp') && data.post) {
+    if ((_.includes(context, 'page') || _.includes(context, 'amp')) && data.post) {
         chosenContext = data.post;
     } else if (_.includes(context, 'post') && data.post) {
         chosenContext = data.post;
+    } else if (_.includes(context, 'page') && data.page) {
+        chosenContext = data.page;
     } else if (data[context]) {
         // @NOTE: This is confusing as hell. It tries to get data[['author']], which works, but coincidence?
         chosenContext = data[context];
-    } else {
+    }
+
+    // Super fallback.
+    if (!chosenContext) {
         chosenContext = blog;
     }
 
