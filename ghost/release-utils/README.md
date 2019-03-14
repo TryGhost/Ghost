@@ -79,7 +79,8 @@ releaseUtils
         gistUrl: String [optional],
         preRelease: Boolean [optional, Default: false],
         draft: Boolean [optional, Default: true],
-        filterEmojiCommits: Boolean [optional, Default: true]
+        filterEmojiCommits: Boolean [optional, Default: true],
+        content: Array [optional]
     });
     
 releaseUtils
