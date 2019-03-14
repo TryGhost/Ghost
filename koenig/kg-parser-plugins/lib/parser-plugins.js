@@ -11,8 +11,7 @@
 // import {cleanBasicHtml} from 'koenig-editor/helpers/clean-basic-html';
 
 // mobiledoc by default ignores <BR> tags but we have a custom SoftReturn atom
-function brToSoftBreakAtom(node, builder, { addMarkerable, nodeFinished }) {
-    console.log('NODE', node.tagName);
+function brToSoftBreakAtom(node, builder, {addMarkerable, nodeFinished}) {
     if (node.nodeType !== 1 || node.tagName !== 'BR') {
         return;
     }
@@ -70,7 +69,7 @@ function figureToImageCard(node, builder, {addSection, nodeFinished}) {
     let cardSection = builder.createCardSection('image', payload);
     addSection(cardSection);
     nodeFinished();
-};
+}
 
 function imgToCard(node, builder, {addSection, nodeFinished}) {
     if (node.nodeType !== 1 || node.tagName !== 'IMG') {
