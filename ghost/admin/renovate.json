@@ -3,7 +3,8 @@
     "config:base",
     "group:jsTestMonMajor",
     "group:linters",
-    ":maintainLockFilesWeekly"
+    ":maintainLockFilesWeekly",
+    "schedule:earlyMondays"
   ],
   "ignoreDeps": [
     "ember-drag-drop",
@@ -16,6 +17,10 @@
   "travis": { "enabled": true },
   "node": {
     "supportPolicy": ["lts_latest"]
+  },
+  "separateMinorPatch": true,
+  "patch": {
+    "automerge": true
   },
   "packageRules": [
     {
@@ -30,9 +35,5 @@
       "groupName": "css processors",
       "packagePatterns": ["^postcss", "^css", "autoprefixer"]
     }
-  ],
-  "separateMinorPatch": true,
-  "patch": {
-      "automerge": true
-  }
+  ]
 }
