@@ -1,0 +1,34 @@
+{
+  "name": "@tryghost/members-layer2",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost-SDKs/tree/master/packages/members/layer2",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "build:lib": "browserify -s Members index.js > build/members-layer2.lib.js",
+    "prebuild": "rm -rf build && mkdir build",
+    "build": "npm run build:lib && npm run build:drop-in",
+    "posttest": "yarn lint"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "browserify": "^16.2.3",
+    "eslint": "^5.9.0",
+    "mocha": "5.2.0",
+    "should": "13.2.3",
+    "sinon": "7.1.1"
+  },
+  "dependencies": {
+    "@tryghost/members-layer1": "file:../layer1",
+    "bluebird": "^3.5.3",
+    "document-ready": "^2.0.1",
+    "ghost-ignition": "^2.9.6",
+    "lodash": "^4.17.11"
+  }
+}
