@@ -3,7 +3,7 @@ const _ = require('lodash');
 
 const timestamp = /^[0-9]{10} /;
 const separator = /^\* /;
-const hash = /^\[[0-9a-f]{9}\]/;
+const hash = /^\[[0-9a-f]{0,10}\]/;
 const url = /^\(https?:\/\/[^)]+\) /;
 
 const getCommitMessageFromLine = line => line
@@ -21,6 +21,7 @@ module.exports.filterEmojiCommits = (content) => {
         const commitMessage = getCommitMessageFromLine(currentLine);
 
         const match = emojiRegex().exec(commitMessage);
+
         if (match && match.index === 0) {
             return emojiLines.concat(`* ${commitMessage}`);
         }
