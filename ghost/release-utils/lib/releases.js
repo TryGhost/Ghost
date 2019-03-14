@@ -1,5 +1,6 @@
 const fs = require('fs');
 const os = require('os');
+const _ = require('lodash');
 const Promise = require('bluebird');
 const requestPromise = require('request-promise');
 const request = require('request');
@@ -34,19 +35,28 @@ module.exports.create = (options = {}) => {
         filterEmojiCommits = options.filterEmojiCommits;
     }
 
-    let content = fs.readFileSync(options.changelogPath).toString('utf8').split(os.EOL);
+    let body = [];
+    let changelog = fs.readFileSync(options.changelogPath).toString('utf8').split(os.EOL);
 
-    if (filterEmojiCommits) {
-        content = localUtils.filterEmojiCommits(content);
+    // @NOTE: optional array of string lines, which we pre-pend
+    if (options.hasOwnProperty('content') && _.isArray(options.content)) {
+        body = body.concat(options.content);
     }
 
-    content = content.filter((item) => {
+    if (filterEmojiCommits) {
+        changelog = localUtils.filterEmojiCommits(changelog);
+    }
+
+    body = body.concat(changelog);
+
+    // CASE: clean before upload
+    body = body.filter((item) => {
         return item !== undefined;
     });
 
     if (options.gistUrl) {
-        content.push('');
-        content.push('You can see the [full change log](' + options.gistUrl + ') for the details of every change included in this release.');
+        body.push('');
+        body.push('You can see the [full change log](' + options.gistUrl + ') for the details of every change included in this release.');
     }
 
     const auth = 'Basic ' + new Buffer(options.github.username + ':' + options.github.token).toString('base64');
@@ -62,7 +72,7 @@ module.exports.create = (options = {}) => {
             tag_name: options.tagName,
             target_commitish: 'master',
             name: options.releaseName,
-            body: content.join(os.EOL),
+            body: body.join(os.EOL),
             draft: draft,
             prerelease: prerelease
         },
