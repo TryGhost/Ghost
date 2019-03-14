@@ -23,5 +23,14 @@ describe('Utils', function () {
 
             result.length.should.eql(1);
         });
+
+        it('emoji commits found: just another format', function () {
+            const result = lib.utils.filterEmojiCommits([
+                '* [f6f35ebcd](https://github.com/TryGhost/Ghost/commit/f6f35ebcd) Version bump to 2.17.1 - Name',
+                '* [f6f35ebcd](https://github.com/TryGhost/Ghost/commit/f6f35ebcd) 👻 Version bump to 2.17.1 - Name'
+            ]);
+
+            result.length.should.eql(1);
+        });
     });
 });
