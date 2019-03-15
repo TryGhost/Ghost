@@ -118,7 +118,7 @@ module.exports = function (defaults) {
             includePolyfill: false
         },
         'ember-composable-helpers': {
-            only: ['toggle']
+            only: ['optional', 'toggle']
         },
         outputPaths: {
             app: {
