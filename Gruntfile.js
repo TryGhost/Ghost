@@ -639,6 +639,7 @@ const configureGrunt = function (grunt) {
     grunt.registerTask('release',
         'Release task - creates a final built zip\n' +
         ' - Do our standard build steps \n' +
+        ' - Run all tests(acceptance + regression + unit) \n' +
         ' - Copy files to release-folder/#/#{version} directory\n' +
         ' - Clean out unnecessary files (travis, .git*, etc)\n' +
         ' - Zip files in release-folder to dist-folder/#{version} directory',
@@ -662,8 +663,14 @@ const configureGrunt = function (grunt) {
                     dest: 'core/server/web/admin/views/default.html'
                 }]
             });
-
-            grunt.task.run(['update_submodules:pinned', 'subgrunt:init', 'clean:built', 'clean:tmp', 'prod', 'clean:release', 'copy:admin_html', 'copy:release', 'compress:release']);
+            if (!grunt.option('skip-tests')) {
+                grunt.task.run(['update_submodules:pinned', 'subgrunt:init', 'test-all', 'clean:built', 'clean:tmp', 'prod', 'clean:release', 'copy:admin_html', 'copy:release', 'compress:release']);
+            } else {
+                grunt.log.writeln(chalk.red(
+                    chalk.bold('Skipping tests...')
+                ));
+                grunt.task.run(['update_submodules:pinned', 'subgrunt:init', 'clean:built', 'clean:tmp', 'prod', 'clean:release', 'copy:admin_html', 'copy:release', 'compress:release']);
+            }
         }
     );
 };
