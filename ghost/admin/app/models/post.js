@@ -190,6 +190,19 @@ export default Model.extend(Comparable, ValidationEngine, {
         }
     }),
 
+    save() {
+        // ensure that our scratch value used in the editor is kept in sync with
+        // what we get back from the API after saving - avoids issues which cause
+        // the editor to see a saved post as dirty and show a "are you sure" modal
+        return this._super(...arguments).then(() => {
+            if (JSON.stringify(this.mobiledoc) !== JSON.stringify(this.scratch)) {
+                this.set('scratch', this.mobiledoc);
+            }
+
+            return this;
+        });
+    },
+
     _getPublishedAtBlogTZ() {
         let publishedAtUTC = this.publishedAtUTC;
         let publishedAtBlogDate = this.publishedAtBlogDate;
