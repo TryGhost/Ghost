@@ -8,8 +8,6 @@
   ],
   "ignoreDeps": [
     "ember-drag-drop",
-    "ember-infinity",
-    "ember-in-viewport",
     "normalize.css",
     "validator"
   ],
