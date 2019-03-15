@@ -1,7 +1,9 @@
 <header class="modal-header" data-test-modal="webhook-form">
     <h1 data-test-text="title">{{if webhook.isNew "New" "Edit"}} webhook</h1>
 </header>
-<button class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}</button>
+<button class="close" href="" title="Close" {{action "closeModal"}} {{action (optional noop) on="mouseDown"}}>
+    {{svg-jar "close"}}
+</button>
 
 <div class="modal-body">
     <fieldset>
@@ -88,7 +90,13 @@
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} class="gh-btn" data-test-button="cancel-webhook">
+    <button
+        class="gh-btn"
+        {{action "closeModal"}}
+        {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+        {{action (optional noop) on="mouseDown"}}
+        data-test-button="cancel-webhook"
+    >
         <span>Cancel</span>
     </button>
     {{gh-task-button buttonText
