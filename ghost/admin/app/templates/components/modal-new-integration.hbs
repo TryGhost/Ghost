@@ -1,7 +1,10 @@
 <header class="modal-header" data-test-modal="new-integration">
     <h1>New custom integration</h1>
 </header>
-<button class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}</button>
+{{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+<button class="close" href="" title="Close" {{action "closeModal"}} {{action (optional noop) on="mouseDown"}}>
+    {{svg-jar "close"}}
+</button>
 
 <div class="modal-body">
     <fieldset>
@@ -24,7 +27,13 @@
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} class="gh-btn" data-test-button="cancel-new-integration">
+    <button
+        class="gh-btn"
+        {{action "closeModal"}}
+        {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+        {{action (optional noop) on="mouseDown"}}
+        data-test-button="cancel-new-integration"
+    >
         <span>Cancel</span>
     </button>
     {{gh-task-button "Create"
