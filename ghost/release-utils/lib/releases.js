@@ -49,6 +49,15 @@ module.exports.create = (options = {}) => {
 
     body = body.concat(changelog);
 
+    // @NOTE: Add casper changelog if present
+    if (options.hasOwnProperty('casper') && _.isObject(options.casper) && options.casper.changelogPath) {
+        let casperChangelog = fs.readFileSync(options.casper.changelogPath).toString('utf8').split(os.EOL);
+        casperChangelog = localUtils.filterEmojiCommits(casperChangelog);
+        body.push('');
+        body.push(`Casper (the default theme) has been upgraded to ${options.casper.version}:`);
+        body = body.concat(casperChangelog);
+    }
+
     // CASE: clean before upload
     body = body.filter((item) => {
         return item !== undefined;
