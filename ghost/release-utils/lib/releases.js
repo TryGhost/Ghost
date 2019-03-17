@@ -7,10 +7,30 @@ const request = require('request');
 
 const localUtils = require('./utils');
 
+function appendChangelog(options) {
+    let filterEmojiCommits = true;
+    let changelog = fs.readFileSync(options.changelogPath).toString('utf8').split(os.EOL);
+    let body = [];
+
+    if (options.hasOwnProperty('filterEmojiCommits')) {
+        filterEmojiCommits = options.filterEmojiCommits;
+    }
+    // @NOTE: optional array of string lines, which we pre-pend
+    if (options.hasOwnProperty('content') && _.isArray(options.content)) {
+        body = body.concat(options.content);
+    }
+
+    if (filterEmojiCommits) {
+        changelog = localUtils.filterEmojiCommits(changelog);
+    }
+
+    body = body.concat(changelog);
+    return body;
+}
+
 module.exports.create = (options = {}) => {
     let draft = true;
     let prerelease = false;
-    let filterEmojiCommits = true;
 
     localUtils.checkMissingOptions(options,
         'changelogPath',
@@ -31,31 +51,14 @@ module.exports.create = (options = {}) => {
         prerelease = options.prerelease;
     }
 
-    if (options.hasOwnProperty('filterEmojiCommits')) {
-        filterEmojiCommits = options.filterEmojiCommits;
-    }
-
     let body = [];
-    let changelog = fs.readFileSync(options.changelogPath).toString('utf8').split(os.EOL);
-
-    // @NOTE: optional array of string lines, which we pre-pend
-    if (options.hasOwnProperty('content') && _.isArray(options.content)) {
-        body = body.concat(options.content);
-    }
-
-    if (filterEmojiCommits) {
-        changelog = localUtils.filterEmojiCommits(changelog);
-    }
-
-    body = body.concat(changelog);
-
-    // @NOTE: Add casper changelog if present
-    if (options.hasOwnProperty('casper') && _.isObject(options.casper) && options.casper.changelogPath) {
-        let casperChangelog = fs.readFileSync(options.casper.changelogPath).toString('utf8').split(os.EOL);
-        casperChangelog = localUtils.filterEmojiCommits(casperChangelog);
-        body.push('');
-        body.push(`Casper (the default theme) has been upgraded to ${options.casper.version}:`);
-        body = body.concat(casperChangelog);
+    // CASE: changelogPath can be array of paths with content or single path
+    if (_.isArray(options.changelogPath)) {
+        options.changelogPath.forEach((changelogOptions) => {
+            body.concat(appendChangelog(changelogOptions));
+        });
+    } else {
+        body.concat(appendChangelog(options));
     }
 
     // CASE: clean before upload
