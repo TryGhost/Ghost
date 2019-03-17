@@ -75,14 +75,17 @@ releaseUtils
             username: String,
             token: String,
         },
-        changelogPath: String [Path on Disk],
+        changelogPath: String [Path on Disk] OR Array[{
+            changelogPath: String [Path on Disk],
+            content: Array [optional]
+        }],
         gistUrl: String [optional],
         preRelease: Boolean [optional, Default: false],
         draft: Boolean [optional, Default: true],
         filterEmojiCommits: Boolean [optional, Default: true],
         content: Array [optional]
     });
-    
+
 releaseUtils
     .releases
     .uploadZip({

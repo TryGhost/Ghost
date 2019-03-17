@@ -7,25 +7,25 @@ const request = require('request');
 
 const localUtils = require('./utils');
 
-function appendChangelog(options) {
+function getFinalChangelog(options) {
     let filterEmojiCommits = true;
     let changelog = fs.readFileSync(options.changelogPath).toString('utf8').split(os.EOL);
-    let body = [];
+    let finalChangelog = [];
 
     if (options.hasOwnProperty('filterEmojiCommits')) {
         filterEmojiCommits = options.filterEmojiCommits;
     }
     // @NOTE: optional array of string lines, which we pre-pend
     if (options.hasOwnProperty('content') && _.isArray(options.content)) {
-        body = body.concat(options.content);
+        finalChangelog = finalChangelog.concat(options.content);
     }
 
     if (filterEmojiCommits) {
         changelog = localUtils.filterEmojiCommits(changelog);
     }
 
-    body = body.concat(changelog);
-    return body;
+    finalChangelog = finalChangelog.concat(changelog);
+    return finalChangelog;
 }
 
 module.exports.create = (options = {}) => {
@@ -52,13 +52,14 @@ module.exports.create = (options = {}) => {
     }
 
     let body = [];
-    // CASE: changelogPath can be array of paths with content or single path
+    // CASE: changelogPath can be array of paths with content
     if (_.isArray(options.changelogPath)) {
-        options.changelogPath.forEach((changelogOptions) => {
-            body.concat(appendChangelog(changelogOptions));
+        options.changelogPath.forEach((opts) => {
+            body = body.concat(getFinalChangelog(opts));
         });
     } else {
-        body.concat(appendChangelog(options));
+        // CASE: changelogPath can be a single path(For backward compatibility)
+        body = body.concat(getFinalChangelog(options));
     }
 
     // CASE: clean before upload
