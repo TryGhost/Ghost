@@ -108,7 +108,8 @@ module.exports = {
         // Koenig keeps a blank paragraph at the end of a doc but we want to
         // make sure it doesn't get rendered
         let lastChild = rendered.result.lastChild;
-        if (lastChild && lastChild.tagName === 'P' && !lastChild.firstChild) {
+        if (lastChild && lastChild.tagName === 'P'
+            && !(lastChild.firstChild && lastChild.firstChild.nodeValue)) {
             rendered.result.removeChild(lastChild);
         }
 
