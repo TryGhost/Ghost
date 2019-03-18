@@ -18,6 +18,10 @@ module.exports = function content(options) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
+    if (this.html === null) {
+        this.html = '';
+    }
+
     if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
         return new SafeString(
             downsize(this.html, truncateOptions)
