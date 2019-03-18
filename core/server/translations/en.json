@@ -93,6 +93,7 @@
                 "adminApiKeyMissing": "Admin API Token missing kid header claim.",
                 "unknownAdminApiKey": "Unknown Admin API Key",
                 "unknownContentApiKey": "Unknown Content API Key",
+                "adminApiKidMissing": "Admin API kid missing.",
                 "invalidApiKeyType": "Invalid API Key type",
                 "invalidToken": "Invalid token",
                 "invalidTokenWithMessage": "Invalid token: {message}",
