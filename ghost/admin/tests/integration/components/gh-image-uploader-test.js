@@ -4,7 +4,7 @@ import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 import {UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
-import {click, find, findAll, render, settled, triggerEvent} from '@ember/test-helpers';
+import {click, find, findAll, render, settled, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {createFile, fileUpload} from '../../helpers/file-upload';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -254,14 +254,15 @@ describe('Integration: Component: gh-image-uploader', function () {
         await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
         fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
 
-        // after 75ms we should have had one progress event
-        run.later(this, function () {
-            expect(findAll('.progress .bar').length).to.equal(1);
-            let [, percentageWidth] = find('.progress .bar').getAttribute('style').match(/width: (\d+)%?/);
+        await waitFor('.progress .bar');
+
+        let progressBar = find('.progress .bar');
+
+        await waitUntil(function () {
+            let [, percentageWidth] = progressBar.getAttribute('style').match(/width: (\d+)%?/);
             percentageWidth = Number.parseInt(percentageWidth);
-            expect(percentageWidth).to.be.above(0);
-            expect(percentageWidth).to.be.below(100);
-        }, 75);
+            return percentageWidth > 0;
+        }, {timeout: 150});
 
         await settled();
     });
