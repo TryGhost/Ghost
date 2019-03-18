@@ -4,6 +4,14 @@ var should = require('should'),
     helpers = require('../../../server/helpers');
 
 describe('{{content}} helper', function () {
+    it('renders empty string when null', function () {
+        var html = null,
+            rendered = helpers.content.call({html: html});
+
+        should.exist(rendered);
+        rendered.string.should.equal('');
+    });
+
     it('can render content', function () {
         var html = 'Hello World',
             rendered = helpers.content.call({html: html});
