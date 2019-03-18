@@ -77,6 +77,36 @@ describe('Mobiledoc converter', function () {
             converter.render(mobiledoc, 2).should.eql('<p>Test</p>');
         });
 
+        it('removes single blank paragraph', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [1, 'p', []]
+                ]
+            };
+
+            converter.render(mobiledoc, 2).should.eql('');
+        });
+
+        it('removes single blank paragraph with empty content', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                markups: [],
+                atoms: [],
+                cards: [],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, '']
+                    ]]
+                ]
+            };
+
+            converter.render(mobiledoc, 2).should.eql('');
+        });
+
         it('adds id attributes to headings', function () {
             let mobiledoc = {
                 version: '0.3.1',
