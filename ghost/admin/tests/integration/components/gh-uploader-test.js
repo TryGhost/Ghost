@@ -5,7 +5,6 @@ import {click, find, findAll, render, settled, waitFor} from '@ember/test-helper
 import {createFile} from '../../helpers/file-upload';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {run} from '@ember/runloop';
 import {setupRenderingTest} from 'ember-mocha';
 
 const stubSuccessfulUpload = function (server, delay = 0) {
