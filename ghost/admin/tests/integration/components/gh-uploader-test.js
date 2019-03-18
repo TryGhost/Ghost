@@ -1,7 +1,7 @@
 import Pretender from 'pretender';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
-import {click, find, findAll, render, settled} from '@ember/test-helpers';
+import {click, find, findAll, render, settled, waitFor} from '@ember/test-helpers';
 import {createFile} from '../../helpers/file-upload';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -165,14 +165,12 @@ describe('Integration: Component: gh-uploader', function () {
             this.set('files', [createFile()]);
 
             // logs error because upload is in progress
-            run.later(() => {
-                this.set('files', [createFile()]);
-            }, 50);
+            this.set('files', [createFile()]);
+
+            await settled();
 
             // runs ok because original upload has finished
-            run.later(() => {
-                this.set('files', [createFile()]);
-            }, 200);
+            this.set('files', [createFile()]);
 
             await settled();
 
@@ -182,7 +180,7 @@ describe('Integration: Component: gh-uploader', function () {
         });
 
         it('yields isUploading whilst upload is in progress', async function () {
-            stubSuccessfulUpload(server, 200);
+            stubSuccessfulUpload(server, 100);
 
             await render(hbs`
             {{#gh-uploader files=files as |uploader|}}
@@ -193,17 +191,14 @@ describe('Integration: Component: gh-uploader', function () {
 
             this.set('files', [createFile(), createFile()]);
 
-            run.later(() => {
-                expect(find('.is-uploading-test')).to.exist;
-            }, 100);
-
+            await waitFor('.is-uploading-test', {timeout: 100});
             await settled();
 
             expect(find('.is-uploading-test')).to.not.exist;
         });
 
         it('yields progressBar component with total upload progress', async function () {
-            stubSuccessfulUpload(server, 200);
+            stubSuccessfulUpload(server, 100);
 
             await render(hbs`
             {{#gh-uploader files=files as |uploader|}}
@@ -212,17 +207,12 @@ describe('Integration: Component: gh-uploader', function () {
 
             this.set('files', [createFile(), createFile()]);
 
-            run.later(() => {
-                expect(find('[data-test-progress-bar]')).to.exist;
-                let progressWidth = parseInt(find('[data-test-progress-bar]').style.width);
-                expect(progressWidth).to.be.above(0);
-                expect(progressWidth).to.be.below(100);
-            }, 100);
-
+            await waitFor('[data-test-progress-bar]', {timeout: 100});
+            await waitFor('[data-test-progress-width^="5"]', {timeout: 100});
             await settled();
 
-            let progressWidth = parseInt(find('[data-test-progress-bar]').style.width);
-            expect(progressWidth).to.equal(100);
+            let finalProgressWidth = parseInt(find('[data-test-progress-bar]').style.width);
+            expect(finalProgressWidth, 'final progress width').to.equal(100);
         });
 
         it('yields files property', async function () {
@@ -249,16 +239,15 @@ describe('Integration: Component: gh-uploader', function () {
 
             await render(hbs`
             {{#gh-uploader files=files onCancel=(action cancelled) as |uploader|}}
-                <button class="cancel-button" {{action uploader.cancel}}>Cancel</button>
+                {{#if uploader.isUploading}}
+                    <button class="cancel-button" {{action uploader.cancel}}>Cancel</button>
+                {{/if}}
             {{/gh-uploader}}`);
 
             this.set('files', [createFile()]);
 
-            run.later(() => {
-                click('.cancel-button');
-            }, 50);
-
-            await settled();
+            await waitFor('.cancel-button');
+            await click('.cancel-button');
 
             expect(this.get('cancelled').calledOnce, 'onCancel triggered').to.be.true;
             expect(this.get('complete').notCalled, 'onComplete triggered').to.be.true;
