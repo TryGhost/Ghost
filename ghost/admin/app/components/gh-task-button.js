@@ -135,6 +135,14 @@ const GhTaskButton = Component.extend({
         return false;
     },
 
+    // mouseDown can be prevented, this is useful for situations where we want
+    // to avoid on-blur events triggering before the button click
+    mouseDown(event) {
+        if (this.disableMouseDown) {
+            event.preventDefault();
+        }
+    },
+
     // when local validation fails there's no transition from failed->running
     // so we want to restart the retry spinner animation to show something
     // has happened when the button is clicked
