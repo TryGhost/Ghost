@@ -54,8 +54,8 @@ module.exports = function layer2(options) {
         return openAuth('upgrade');
     }
 
-    function getToken({audience}) {
-        return members.getToken({audience});
+    function getToken({audience, fresh}) {
+        return members.getToken({audience, fresh});
     }
 
     function signout() {
