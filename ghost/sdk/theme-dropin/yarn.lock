@@ -540,8 +540,9 @@
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@sinonjs/samsam/-/samsam-2.1.2.tgz#16947fce5f57258d01f1688fdc32723093c55d3f"
 
-"@tryghost/content-api@file:../../content-api":
-  version "1.0.0"
+"@tryghost/content-api@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/content-api/-/content-api-1.2.0.tgz#a99cef197cf0e2c08417d6f2062bea29fd2d066a"
   dependencies:
     axios "0.18.0"
     ghost-ignition "^2.9.6"
@@ -553,7 +554,7 @@
     ghost-ignition "^2.9.6"
     lodash "^4.17.11"
 
-"@tryghost/members-layer1@../layer1", "@tryghost/members-layer1@file:../layer1":
+"@tryghost/members-layer1@file:../layer1":
   version "0.0.0"
   dependencies:
     "@tryghost/members-layer0" "file:../../../../../../../.cache/yarn/v2/npm-@tryghost/layer0"
