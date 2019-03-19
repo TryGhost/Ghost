@@ -76,7 +76,8 @@ function setupMembersListeners() {
         members.signin()
             .then(() => {
                 return members.getToken({
-                    audience: tokenAudience
+                    audience: tokenAudience,
+                    fresh: true
                 }).then(function (token) {
                     setCookie(token);
                     return true;
