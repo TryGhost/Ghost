@@ -1359,10 +1359,10 @@ describe('1.0', function () {
                     const posts = result[0].data.map((model) => model.toJSON(options));
 
                     posts.length.should.eql(2);
-                    posts[0].html.should.eql('<p></p>');
+                    should(posts[0].html).eql(null);
                     posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
 
-                    posts[1].html.should.eql('<p></p>');
+                    should(posts[1].html).eql(null);
                     posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
                 });
         });
@@ -1388,7 +1388,7 @@ describe('1.0', function () {
                     const posts = result[0].data.map((model) => model.toJSON(options));
 
                     posts.length.should.eql(1);
-                    posts[0].html.should.eql('<p></p>');
+                    should(posts[0].html).eql(null);
                     posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
                 });
         });
@@ -1414,7 +1414,7 @@ describe('1.0', function () {
                     const posts = result[0].data.map((model) => model.toJSON(options));
 
                     posts.length.should.eql(1);
-                    posts[0].html.should.eql('<p></p>');
+                    should(posts[0].html).eql(null);
                     posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
                 });
         });
