@@ -88,6 +88,15 @@ function setupMembersListeners() {
     function upgrade(event) {
         event.preventDefault();
         members.upgrade()
+            .then(() => {
+                return members.getToken({
+                    audience: tokenAudience,
+                    fresh: true
+                }).then(function (token) {
+                    setCookie(token);
+                    return true;
+                });
+            })
             .then(reload);
     }
 
