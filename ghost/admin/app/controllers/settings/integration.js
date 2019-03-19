@@ -21,8 +21,9 @@ export default Controller.extend({
     apiUrl: computed(function () {
         let origin = window.location.origin;
         let subdir = this.ghostPaths.subdir;
+        let url = this.ghostPaths.url.join(origin, subdir);
 
-        return this.ghostPaths.url.join(origin, subdir);
+        return url.replace(/\/$/, '');
     }),
 
     allWebhooks: computed(function () {
