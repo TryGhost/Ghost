@@ -19,8 +19,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@tryghost/content-api": "file:../../content-api",
-    "@tryghost/members-layer1": "../layer1",
+    "@tryghost/content-api": "^1.2.0",
+    "@tryghost/members-layer1": "file:../layer1",
     "@tryghost/members-layer2": "file:../layer2",
     "domready": "^1.0.8",
     "ghost-ignition": "^2.9.6",
