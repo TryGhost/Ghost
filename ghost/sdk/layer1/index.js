@@ -22,7 +22,7 @@ module.exports = function layer1(options) {
         });
         return init(gateway).then(function () {
             return gateway;
-        })
+        });
     });
 
     function getToken({audience}) {
@@ -54,7 +54,7 @@ module.exports = function layer1(options) {
     }
 
     return members;
-}
+};
 
 function gatewayFn(method, opts = {}) {
     return function (gateway) {
@@ -66,7 +66,7 @@ function gatewayFn(method, opts = {}) {
                 resolve(res);
             });
         });
-    }
+    };
 }
 
 function loadFrame(src, container = document.body) {
