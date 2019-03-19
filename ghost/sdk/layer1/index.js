@@ -25,8 +25,8 @@ module.exports = function layer1(options) {
         });
     });
 
-    function getToken({audience}) {
-        return loadGateway.then(gatewayFn('getToken', {audience}));
+    function getToken({audience, fresh}) {
+        return loadGateway.then(gatewayFn('getToken', {audience, fresh}));
     }
 
     function signout() {
