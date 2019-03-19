@@ -17,7 +17,7 @@ export const AVAILABLE_EVENTS = [
     // GROUPNAME: Pages
     {event: 'page.added', name: 'Page created', group: 'Pages'},
     {event: 'page.deleted', name: 'Page deleted', group: 'Pages'},
-    {event: 'page.edited', name: 'Page udpated', group: 'Pages'},
+    {event: 'page.edited', name: 'Page updated', group: 'Pages'},
     {event: 'page.published', name: 'Page published', group: 'Pages'},
     {event: 'page.published.edited', name: 'Published page updated', group: 'Pages'},
     {event: 'page.unpublished', name: 'Page unpublished', group: 'Pages'},
