@@ -30,7 +30,7 @@ describe('Unit: v2/utils/serializers/output/utils/url', () => {
                 feature_image: 'value',
             }));
 
-            urlUtil.forPost(post.id, post, {});
+            urlUtil.forPost(post.id, post, {options: {}});
 
             post.hasOwnProperty('url').should.be.true();
 
