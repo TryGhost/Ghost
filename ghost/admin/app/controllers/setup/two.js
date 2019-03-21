@@ -143,7 +143,7 @@ export default Controller.extend(ValidationEngine, {
                 // Don't call the success handler, otherwise we will be redirected to admin
                 this.set('session.skipAuthSuccessHandler', true);
 
-                return this.session.authenticate('authenticator:cookie', this.email, this.password).then(() => {
+                return this.session.authenticate('authenticator:cookie', data.email, data.password).then(() => {
                     this.set('blogCreated', true);
                     return this._afterAuthentication(result);
                 }).catch((error) => {
@@ -161,7 +161,8 @@ export default Controller.extend(ValidationEngine, {
 
     _handleSaveError(resp) {
         if (isInvalidError(resp)) {
-            this.set('flowErrors', resp.payload.errors[0].message);
+            let [error] = resp.payload.errors;
+            this.set('flowErrors', `${error.message} ${error.context}`);
         } else {
             this.notifications.showAPIError(resp, {key: 'setup.blog-details'});
         }
@@ -169,7 +170,8 @@ export default Controller.extend(ValidationEngine, {
 
     _handleAuthenticationError(error) {
         if (error && error.payload && error.payload.errors) {
-            this.set('flowErrors', error.payload.errors[0].message);
+            let [apiError] = error.payload.errors;
+            this.set('flowErrors', `${apiError.message} ${apiError.context}`);
         } else {
             // Connection errors don't return proper status message, only req.body
             this.notifications.showAlert('There was a problem on the server.', {type: 'error', key: 'setup.authenticate.failed'});
