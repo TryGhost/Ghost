@@ -242,10 +242,6 @@
     background: var(--purple);
 }
 
-.td-cta-marketplace .td-cta-icon svg path {
-    stroke: #fff;
-}
-
 .td-cta-docs .td-cta-icon {
     background: var(--blue);
 }
