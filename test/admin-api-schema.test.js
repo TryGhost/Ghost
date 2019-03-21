@@ -95,4 +95,21 @@ describe('Admin API Schema', function () {
             validation.errorDetails[0].message.match('posts');
         });
     });
+
+    describe('strip keyword', function () {
+        it('strips property', function () {
+            const schema = require(`./fixtures/strip-schema`);
+
+            const data = {
+                name: 'Strip me',
+                age: 20
+            };
+
+            const validation = adminApiSchema.validate(schema, null, data);
+
+            should(validation).equal(undefined);
+            should(data.age).equal(20);
+            should(data.name).equal(undefined);
+        });
+    });
 });
