@@ -1,15 +1,15 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "strip",
-    "title": "strip",
-    "type": "object",
-    "required": ["age"],
-    "properties": {
-        "name": {
-          "strip": true
-        },
-        "age": {
-            "type": "integer"
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "strip",
+  "title": "strip",
+  "type": "object",
+  "required": ["age"],
+  "properties": {
+    "name": {
+      "strip": true
+    },
+    "age": {
+      "type": "integer"
     }
+  }
 }
