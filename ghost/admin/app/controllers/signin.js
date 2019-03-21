@@ -134,7 +134,7 @@ export default Controller.extend(ValidationEngine, {
 
                 this.set('flowErrors', message);
 
-                if (message.match(/no user with that email/)) {
+                if (message.match(/no user|not found/)) {
                     this.get('signin.errors').add('identification', '');
                 }
             } else {
