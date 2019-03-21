@@ -122,7 +122,7 @@ export default Controller.extend({
 
         skipInvite() {
             this.send('loadServerNotifications');
-            this.transitionToRoute('posts.index');
+            this.transitionToRoute('home');
         }
     },
 
@@ -154,7 +154,7 @@ export default Controller.extend({
     _transitionAfterSubmission() {
         if (!this._hasTransitioned) {
             this._hasTransitioned = true;
-            this.transitionToRoute('posts.index');
+            this.transitionToRoute('home');
         }
     },
 

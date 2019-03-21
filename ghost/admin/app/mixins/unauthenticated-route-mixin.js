@@ -7,7 +7,7 @@ export default Mixin.create({
     ghostPaths: service(),
     session: service(),
 
-    routeIfAlreadyAuthenticated: 'posts',
+    routeIfAlreadyAuthenticated: 'home',
 
     beforeModel() {
         let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');

@@ -40,7 +40,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
 
     shortcuts,
 
-    routeAfterAuthentication: 'posts',
+    routeAfterAuthentication: 'home',
 
     init() {
         this._super(...arguments);

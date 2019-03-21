@@ -48,7 +48,7 @@ export default Service.extend(Evented, {
         this.throbbers = [{
             id: 'getting-started',
             title: 'Getting started with Ghost',
-            message: `This is your admin area! You'll find all of your content, users and settings right here. You can come back any time by visiting <a href="${adminUrl}" target="_blank">${adminDisplayUrl}</a>`
+            message: `Welcome to Ghost Admin! From here you can browse your site, manage your content, and edit your settings.<br><br>You can always login to Ghost Admin by visiting <a href="${adminUrl}" target="_blank">${adminDisplayUrl}</a>`
         }, {
             id: 'using-the-editor',
             title: 'Using the Ghost editor',

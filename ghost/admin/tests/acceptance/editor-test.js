@@ -102,7 +102,7 @@ describe('Acceptance: Editor', function () {
         // post id 2 is published, we should be redirected to index
         await visit('/editor/post/2');
 
-        expect(currentURL(), 'currentURL').to.equal('/');
+        expect(currentURL(), 'currentURL').to.equal('/posts');
     });
 
     describe('when logged in', function () {

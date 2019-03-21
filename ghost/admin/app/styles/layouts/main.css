@@ -47,7 +47,7 @@
 .gh-nav {
     position: relative;
     z-index: 800;
-    flex: 0 0 296px;
+    flex: 0 0 312px;
     display: flex;
     flex-direction: column;
     min-width: 0; /* TODO: This is a bullshit Firefox hack */
@@ -60,7 +60,7 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    padding: 25px 20px;
+    padding: 24px;
     cursor: pointer;
     outline: none;
 }
@@ -122,13 +122,16 @@
 }
 
 .gh-nav-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     flex-grow: 1;
     overflow-y: auto;
 }
 
 .gh-nav-search {
     position: relative;
-    margin: 0 20px 15px;
+    margin: 0 24px 15px;
 }
 
 .gh-nav-search .ember-power-select-trigger {
@@ -173,13 +176,14 @@
 
 .gh-nav-list li {
     margin: 0;
+    padding: 0;
 }
 
 .gh-nav-list .gh-nav-list-h {
     overflow: hidden;
     margin-top: 32px;
-    padding: 10px 20px;
-    color:  color-mod(var(--midgrey) l(+20%) s(+5%));
+    padding: 10px 24px;
+    color:  color-mod(var(--darkgrey));
     text-overflow: ellipsis;
     text-transform: uppercase;
     white-space: nowrap;
@@ -192,7 +196,7 @@
 .gh-nav-list a {
     display: flex;
     align-items: center;
-    padding: 7px 20px;
+    padding: 7px 24px;
     color: color-mod(var(--midgrey) l(-10%) s(+5%));
     opacity: 0.9;
     transition: none;
@@ -232,7 +236,7 @@
     z-index: 999;
     padding: 6px;
     margin: 0;
-    right: 17px;
+    right: 22px;
 }
 
 .gh-nav-list .gh-nav-new-post span {
@@ -270,48 +274,45 @@
     stroke: var(--white);
 }
 
-/* Left navbar footer */
-.gh-nav-foot-sitelink {
-    display: flex;
-    align-items: center;
-    height: 32px;
-    text-align: center;
-    font-size: 1.4rem;
-    line-height: 1.6em;
-    color: color-mod(var(--midgrey) l(-10%) s(+5%));
-    padding: 7px 10px 7px 16px;
-    margin: 20px 6px 12px;
-    transition: color .3s;
+.gh-nav-list .gh-nav-nightshift {
+    position: absolute;
+    z-index: 999;
+    padding: 6px;
+    margin: 0;
+    right: 20px;
 }
 
-.gh-nav-foot-sitelink:hover {
-    color: var(--blue);
+.gh-nav-list .gh-nav-nightshift span svg {
+    margin-right: 0;
+    width: 20px;
+    height: 20px;
 }
 
-@media (max-width: 500px) {
-    .gh-nav-foot-sitelink {
-        height: 56px;
-    }
-}
-
-.gh-nav-foot-sitelink svg {
-    width: 16px;
-    margin-right: 8px;
-}
-
-.gh-nav-foot-sitelink svg g,
-.gh-nav-foot-sitelink svg path
-{
+.gh-nav-list .gh-nav-nightshift span svg path {
     fill: color-mod(var(--midgrey) l(+5%));
-    transition: fill .3s;
 }
 
-.gh-nav-foot-sitelink:hover svg g,
-.gh-nav-foot-sitelink:hover svg path
-{
-    fill: color-mod(var(--blue) l(+5%));
+.gh-nav-list a.gh-nav-nightshift:hover,
+.gh-nav-list a.gh-nav-nightshift.active {
+    background: none;
 }
 
+.gh-nav-list .gh-nav-nightshift:hover span svg path {
+    fill: color-mod(var(--blue) l(-3%) s(+5%));
+}
+
+.gh-nav-main {
+    margin-top: -10px;
+}
+
+.gh-nav-manage .gh-nav-list-h {
+    margin-top: 20px;
+}
+
+.gh-nav-labs {
+    margin-bottom: 20px;
+    padding: 0;
+}
 
 /* Mobile Nav Menu (Slides out)
 /* ---------------------------------------------------------- */
