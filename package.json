@@ -1,0 +1,31 @@
+{
+  "name": "@tryghost/admin-api-schema",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost-SDKs/tree/master/packages/admin-api-schema",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "mocha": "6.0.2",
+    "should": "13.2.3",
+    "sinon": "7.3.0"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.3",
+    "ghost-ignition": "^3.0.4",
+    "lodash": "^4.17.11"
+  }
+}
