@@ -35,6 +35,12 @@ export default Component.extend({
         return re.test(this.router.currentRouteName);
     }),
 
+    // HACK: {{link-to}} should be doing this automatically but there appears to
+    // be a bug in Ember that's preventing it from working immediately after login
+    isOnSite: computed('router.currentRouteName', function () {
+        return this.router.currentRouteName === 'site';
+    }),
+
     // the menu has a rendering issue (#8307) when the the world is reloaded
     // during an import which we have worked around by not binding the icon
     // style directly. However we still need to keep track of changing icons
