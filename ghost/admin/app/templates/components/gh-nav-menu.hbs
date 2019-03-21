@@ -42,7 +42,9 @@
             {{gh-search-input class="gh-nav-search-input"}}
         </section>
         <ul class="gh-nav-list gh-nav-main">
-            <li>{{#link-to "site" data-test-nav="site"}}{{svg-jar "view-site-embed"}}View site{{/link-to}}</li>
+            <li {{action "transitionToOrRefreshSite" on="click"}}>
+                {{#link-to "site" data-test-nav="site" preventDefault=false}}{{svg-jar "view-site-embed"}}View site{{/link-to}}
+            </li>
         </ul>
         <ul class="gh-nav-list gh-nav-manage">
             <li class="gh-nav-list-h">Manage</li>

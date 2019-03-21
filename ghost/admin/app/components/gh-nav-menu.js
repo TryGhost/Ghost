@@ -1,6 +1,7 @@
 import Component from '@ember/component';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import {computed} from '@ember/object';
+import {getOwner} from '@ember/application';
 import {htmlSafe} from '@ember/string';
 import {inject as service} from '@ember/service';
 
@@ -8,7 +9,7 @@ export default Component.extend({
     config: service(),
     feature: service(),
     ghostPaths: service(),
-    router: service('router'),
+    router: service(),
     session: service(),
     ui: service(),
 
@@ -40,6 +41,17 @@ export default Component.extend({
     // so that we can refresh when a new icon is uploaded
     didReceiveAttrs() {
         this._setIconStyle();
+    },
+
+    actions: {
+        transitionToOrRefreshSite() {
+            let {currentRouteName} = this.router;
+            if (currentRouteName === 'site') {
+                getOwner(this).lookup(`route:${currentRouteName}`).refresh();
+            } else {
+                this.router.transitionTo('site');
+            }
+        }
     },
 
     // equivalent to "left: auto; right: -20px"
