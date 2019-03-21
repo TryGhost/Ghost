@@ -12,7 +12,7 @@
     "posttest": "yarn lint"
   },
   "files": [
-    "schema/*"
+    "v2/*"
   ],
   "publishConfig": {
     "access": "public"
