@@ -35,7 +35,7 @@ describe('Acceptance: Error Handling', function () {
                 // mock the post save endpoint to return version mismatch
                 this.server.put('/posts/:id', versionMismatchResponse);
 
-                await visit('/');
+                await visit('/posts');
                 await click('.posts-list li:nth-of-type(2) a'); // select second post
                 await click('[data-test-publishmenu-trigger]');
                 await click('[data-test-publishmenu-save]'); // "Save post"
@@ -51,7 +51,7 @@ describe('Acceptance: Error Handling', function () {
             });
 
             it('displays alert and aborts the transition when navigating', async function () {
-                await visit('/');
+                await visit('/posts');
 
                 // mock the tags endpoint to return version mismatch
                 this.server.get('/tags/', versionMismatchResponse);

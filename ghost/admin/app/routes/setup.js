@@ -18,7 +18,7 @@ export default Route.extend(styleBody, {
         this._super(...arguments);
 
         if (this.get('session.isAuthenticated')) {
-            return this.transitionTo('posts');
+            return this.transitionTo('home');
         }
 
         let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');

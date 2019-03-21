@@ -26,7 +26,7 @@ describe('Acceptance: Subscribers', function () {
         await authenticateSession();
         await visit('/subscribers');
 
-        expect(currentURL()).to.equal('/');
+        expect(currentURL()).to.equal('/site');
         expect(find('[data-test-nav="subscribers"]'), 'sidebar link')
             .to.not.exist;
     });
@@ -38,7 +38,7 @@ describe('Acceptance: Subscribers', function () {
         await authenticateSession();
         await visit('/subscribers');
 
-        expect(currentURL()).to.equal('/');
+        expect(currentURL()).to.equal('/site');
         expect(find('[data-test-nav="subscribers"]'), 'sidebar link')
             .to.not.exist;
     });
@@ -50,7 +50,7 @@ describe('Acceptance: Subscribers', function () {
         await authenticateSession();
         await visit('/subscribers');
 
-        expect(currentURL()).to.equal('/');
+        expect(currentURL()).to.equal('/site');
         expect(find('[data-test-nav="subscribers"]'), 'sidebar link')
             .to.not.exist;
     });

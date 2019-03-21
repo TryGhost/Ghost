@@ -19,7 +19,7 @@ export default AuthenticatedRoute.extend({
             let {user, subscribers} = hash;
 
             if (!subscribers || !user.isOwnerOrAdmin) {
-                return this.transitionTo('posts');
+                return this.transitionTo('home');
             }
         });
     },

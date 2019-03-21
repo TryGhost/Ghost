@@ -24,7 +24,7 @@ describe('Acceptance: Members', function () {
         await authenticateSession();
         await visit('/members');
 
-        expect(currentURL()).to.equal('/');
+        expect(currentURL()).to.equal('/site');
         expect(find('[data-test-nav="members"]'), 'sidebar link')
             .to.not.exist;
     });
@@ -41,13 +41,13 @@ describe('Acceptance: Members', function () {
             return await authenticateSession();
         });
 
-        it('redirects to posts if developer experiments is disabled', async function () {
+        it('redirects to home if developer experiments is disabled', async function () {
             let config = this.server.schema.configs.first();
             config.update({enableDeveloperExperiments: false});
 
             await visit('/members');
 
-            expect(currentURL()).to.equal('/');
+            expect(currentURL()).to.equal('/site');
             expect(find('[data-test-nav="members"]'), 'sidebar link')
                 .to.not.exist;
         });

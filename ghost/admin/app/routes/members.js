@@ -14,12 +14,12 @@ export default AuthenticatedRoute.extend({
         this._super(...arguments);
 
         if (!this.config.get('enableDeveloperExperiments')) {
-            return this.transitionTo('posts');
+            return this.transitionTo('home');
         }
 
         return this.session.user.then((user) => {
             if (!user.isOwnerOrAdmin) {
-                return this.transitionTo('posts');
+                return this.transitionTo('home');
             }
         });
     },

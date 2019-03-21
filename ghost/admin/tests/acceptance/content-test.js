@@ -12,7 +12,7 @@ describe('Acceptance: Content', function () {
 
     it('redirects to signin when not authenticated', async function () {
         await invalidateSession();
-        await visit('/');
+        await visit('/posts');
 
         expect(currentURL()).to.equal('/signin');
     });
@@ -38,7 +38,7 @@ describe('Acceptance: Content', function () {
         });
 
         it('displays and filters posts', async function () {
-            await visit('/');
+            await visit('/posts');
             // Not checking request here as it won't be the last request made
             // Displays all posts + pages
             expect(findAll('[data-test-post-id]').length, 'all posts count').to.equal(4);
@@ -110,7 +110,7 @@ describe('Acceptance: Content', function () {
             this.server.create('tag', {name: 'Z - Last', slug: 'last'});
             this.server.create('tag', {name: 'A - First', slug: 'first'});
 
-            await visit('/');
+            await visit('/posts');
             await clickTrigger('[data-test-tag-select]');
 
             let options = findAll('.ember-power-select-option');
@@ -139,7 +139,7 @@ describe('Acceptance: Content', function () {
         });
 
         it('only fetches the author\'s posts', async function () {
-            await visit('/');
+            await visit('/posts');
             // trigger a filter request so we can grab the posts API request easily
             await selectChoose('[data-test-type-select]', 'Published posts');
 
@@ -171,7 +171,7 @@ describe('Acceptance: Content', function () {
         });
 
         it('only fetches the contributor\'s draft posts', async function () {
-            await visit('/');
+            await visit('/posts');
 
             // Ensure the type, tag, and author selectors don't exist
             expect(find('[data-test-type-select]'), 'type selector').to.not.exist;
