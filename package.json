@@ -4,7 +4,7 @@
   "repository": "https://github.com/TryGhost/Ghost-SDKs/tree/master/packages/admin-api-schema",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
