@@ -162,7 +162,7 @@ export default Controller.extend(ValidationEngine, {
     _handleSaveError(resp) {
         if (isInvalidError(resp)) {
             let [error] = resp.payload.errors;
-            this.set('flowErrors', `${error.message} ${error.context}`);
+            this.set('flowErrors', [error.message, error.context].join(' '));
         } else {
             this.notifications.showAPIError(resp, {key: 'setup.blog-details'});
         }
@@ -171,7 +171,7 @@ export default Controller.extend(ValidationEngine, {
     _handleAuthenticationError(error) {
         if (error && error.payload && error.payload.errors) {
             let [apiError] = error.payload.errors;
-            this.set('flowErrors', `${apiError.message} ${apiError.context}`);
+            this.set('flowErrors', [apiError.message, apiError.context].join(' '));
         } else {
             // Connection errors don't return proper status message, only req.body
             this.notifications.showAlert('There was a problem on the server.', {type: 'error', key: 'setup.authenticate.failed'});
