@@ -43,7 +43,7 @@
         </section>
         <ul class="gh-nav-list gh-nav-main">
             <li {{action "transitionToOrRefreshSite" on="click"}}>
-                {{#link-to "site" data-test-nav="site" preventDefault=false}}{{svg-jar "view-site-embed"}}View site{{/link-to}}
+                {{#link-to "site" data-test-nav="site" current-when=isOnSite preventDefault=false}}{{svg-jar "view-site-embed"}}View site{{/link-to}}
             </li>
         </ul>
         <ul class="gh-nav-list gh-nav-manage">
