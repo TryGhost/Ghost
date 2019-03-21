@@ -50,7 +50,7 @@ describe('Pages API', function () {
                 _.isBoolean(jsonResponse.pages[0].featured).should.eql(true);
 
                 // Absolute urls by default
-                jsonResponse.pages[0].url.should.eql(`${config.get('url')}/404/`);
+                jsonResponse.pages[0].url.should.match(new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
                 jsonResponse.pages[1].url.should.eql(`${config.get('url')}/static-page-test/`);
 
                 done();
