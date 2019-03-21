@@ -53,7 +53,7 @@ describe('Posts API', function () {
                 jsonResponse.posts[12].slug.should.eql('html-ipsum');
 
                 // Absolute urls by default
-                jsonResponse.posts[0].url.should.eql(`${config.get('url')}/404/`);
+                jsonResponse.posts[0].url.should.match(new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
                 jsonResponse.posts[2].url.should.eql(`${config.get('url')}/welcome/`);
                 jsonResponse.posts[11].feature_image.should.eql(`${config.get('url')}/content/images/2018/hey.jpg`);
 
@@ -278,6 +278,7 @@ describe('Posts API', function () {
             .then((res) => {
                 res.body.posts.length.should.eql(1);
                 localUtils.API.checkResponse(res.body.posts[0], 'post');
+                res.body.posts[0].url.should.match(new RegExp(`${config.get('url')}/p/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`));
                 should.not.exist(res.headers['x-cache-invalidate']);
 
                 return models.Post.findOne({

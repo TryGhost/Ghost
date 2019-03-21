@@ -32,7 +32,7 @@ const mapPost = (model, frame) => {
 
     const jsonModel = model.toJSON(extendedOptions);
 
-    url.forPost(model.id, jsonModel, frame.options);
+    url.forPost(model.id, jsonModel, frame);
 
     if (utils.isContentAPI(frame)) {
         date.forPost(jsonModel);
