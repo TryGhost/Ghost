@@ -363,3 +363,11 @@ input:focus,
 .id-more img {
     filter: invert(100%);
 }
+
+.gh-nav-list a {
+    color: color-mod(var(--midgrey) l(+10%) s(-5%));
+}
+
+.gh-nav-list .gh-nav-nightshift span svg path {
+    fill: color-mod(var(--midgrey) l(-5%));
+}
