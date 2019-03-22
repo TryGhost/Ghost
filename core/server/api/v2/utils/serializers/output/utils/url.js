@@ -73,8 +73,8 @@ const forPost = (id, attrs, frame) => {
         if (matches) {
             matches.forEach((match) => {
                 // @NOTE: the utility will skip the match if it's already absolute
-                const relative = urlService.utils.relativeToAbsolute(match);
-                attrs.mobiledoc = attrs.mobiledoc.replace(new RegExp(match, 'g'), relative);
+                const absolute = urlService.utils.relativeToAbsolute(match);
+                attrs.mobiledoc = attrs.mobiledoc.replace(new RegExp(match, 'g'), absolute);
             });
         }
     }
