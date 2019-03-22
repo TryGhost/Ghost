@@ -64,7 +64,7 @@ const forPost = (id, attrs, frame) => {
         ).html();
     }
 
-    // CASE: we always need to return absolute urls for content urls
+    // CASE: we always need to return absolute urls for content urls, even in mobiledoc
     if (attrs.mobiledoc && !localUtils.isContentAPI(frame)) {
         const imagePathRe = new RegExp(`/${urlService.utils.STATIC_IMAGE_URL_PREFIX}`, 'g');
 
@@ -72,6 +72,7 @@ const forPost = (id, attrs, frame) => {
 
         if (matches) {
             matches.forEach((match) => {
+                // @NOTE: the utility will skip the match if it's already absolute
                 const relative = urlService.utils.relativeToAbsolute(match);
                 attrs.mobiledoc = attrs.mobiledoc.replace(new RegExp(match, 'g'), relative);
             });
