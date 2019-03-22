@@ -125,14 +125,14 @@ export default Component.extend({
             this.set('payload', {});
         }
 
+        let placeholders = ['summer', 'mountains', 'ufo-attack'];
+        this.set('placeholder', placeholders[Math.floor(Math.random() * placeholders.length)]);
+
         this.registerComponent(this);
     },
 
     didReceiveAttrs() {
         this._super(...arguments);
-
-        let placeholders = ['summer', 'mountains', 'ufo-attack'];
-        this.set('placeholder', placeholders[Math.floor(Math.random() * placeholders.length)]);
 
         // `payload.files` can be set if we have an externaly set image that
         // should be uploaded. Typical example would be from a paste or drag/drop
