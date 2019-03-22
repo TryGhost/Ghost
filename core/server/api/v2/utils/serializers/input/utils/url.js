@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const {absoluteToRelative, getBlogUrl, STATIC_IMAGE_URL_PREFIX} = require('../../../../../../services/url/utils');
 
 const handleCanonicalUrl = (url) => {
@@ -24,6 +23,7 @@ const handleImageUrl = (imageUrl) => {
     return imageUrl;
 };
 
+/*
 const handleContentUrls = (content) => {
     const blogDomain = getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     const imagePathRe = new RegExp(`(http(s?)://)?${blogDomain}/${STATIC_IMAGE_URL_PREFIX}`, 'g');
@@ -39,12 +39,20 @@ const handleContentUrls = (content) => {
 
     return content;
 };
+*/
 
 const forPost = (attrs, options) => {
-    // make all content image URLs relative, ref: https://github.com/TryGhost/Ghost/issues/10477
-    if (attrs.mobiledoc) {
-        attrs.mobiledoc = handleContentUrls(attrs.mobiledoc);
-    }
+    /**
+     * NOTE: make all content image URLs relative, ref: https://github.com/TryGhost/Ghost/issues/10477
+     *
+     *  if (attrs.mobiledoc) {
+     *    attrs.mobiledoc = handleContentUrls(attrs.mobiledoc);
+     *  }
+     *
+     *  @TODO: It's really hard to transform the links back from relative to absolute in mobiledoc.
+     *  We will store absolute urls for now. It's less error-prone than reg exing mobiledoc incorrectly.
+     *  Refs https://github.com/TryGhost/Ghost/issues/10477
+     */
 
     if (attrs.feature_image) {
         attrs.feature_image = handleImageUrl(attrs.feature_image);

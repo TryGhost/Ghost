@@ -251,7 +251,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"/content/images/2019/02/image.jpg"}]]}');
+                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"https://mysite.com/content/images/2019/02/image.jpg"}]]}');
             });
 
             it('when mobiledoc contains multiple absolute URLs to images with different protocols', function () {
@@ -280,7 +280,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"/content/images/2019/02/image.jpg"}],["image",{"src":"/content/images/2019/02/image.png"}]]');
+                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"https://mysite.com/content/images/2019/02/image.jpg"}],["image",{"src":"http://mysite.com/content/images/2019/02/image.png"}]]');
             });
 
             it('when blog url is without subdir', function () {
