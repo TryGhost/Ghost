@@ -64,6 +64,20 @@ const forPost = (id, attrs, frame) => {
         ).html();
     }
 
+    // CASE: we always need to return absolute urls for content urls
+    if (attrs.mobiledoc && !localUtils.isContentAPI(frame)) {
+        const imagePathRe = new RegExp(`/${urlService.utils.STATIC_IMAGE_URL_PREFIX}`, 'g');
+
+        const matches = _.uniq(attrs.mobiledoc.match(imagePathRe));
+
+        if (matches) {
+            matches.forEach((match) => {
+                const relative = urlService.utils.relativeToAbsolute(match);
+                attrs.mobiledoc = attrs.mobiledoc.replace(new RegExp(match, 'g'), relative);
+            });
+        }
+    }
+
     if (frame.options.columns && !frame.options.columns.includes('url')) {
         delete attrs.url;
     }
