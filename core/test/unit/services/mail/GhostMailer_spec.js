@@ -146,7 +146,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.send(mailDataNoServer).then(function () {
                 done(new Error('Error message not shown.'));
             }, function (error) {
-                error.message.should.eql('Failed to send email.');
+                error.message.should.startWith('Failed to send email.');
                 done();
             }).catch(done);
         });
