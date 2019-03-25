@@ -195,7 +195,7 @@ describe('Acceptance: Settings - Tags', function () {
 
             // it displays the new tag form
             expect(find('.tag-settings-pane h4').textContent, 'settings pane title')
-                .to.equal('New Tag');
+                .to.equal('New tag');
 
             // all fields start blank
             findAll('.tag-settings-pane input, .tag-settings-pane textarea').forEach(function (elem) {
@@ -204,7 +204,7 @@ describe('Acceptance: Settings - Tags', function () {
             });
 
             // save new tag
-            await fillIn('.tag-settings-pane input[name="name"]', 'New Tag');
+            await fillIn('.tag-settings-pane input[name="name"]', 'New tag');
             await blur('.tag-settings-pane input[name="name"]');
 
             // extra timeout needed for FF on Linux - sometimes it doesn't update
@@ -224,7 +224,7 @@ describe('Acceptance: Settings - Tags', function () {
             // new tag will be second in the list due to alphabetical sorting
             expect(findAll('.settings-tags .settings-tag')[1].querySelector('.tag-title').textContent.trim(), 'new tag list item title');
             expect(tag.querySelector('.tag-title').textContent, 'new tag list item title')
-                .to.equal('New Tag');
+                .to.equal('New tag');
             expect(find('a[href="/ghost/settings/tags/new-tag"]'), 'highlights new tag')
                 .to.have.class('active');
 
