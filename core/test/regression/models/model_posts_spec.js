@@ -192,17 +192,6 @@ describe('Post Model', function () {
                     }).catch(done);
                 });
 
-                it('can NOT findPage for a page that overflows the datatype', function (done) {
-                    models.Post.findPage({page: 5700000000055345439587894375457849375284932759842375894372589243758947325894375894275894275894725897432859724309})
-                        .then(function (paginationResult) {
-                            should.exist(paginationResult.meta);
-
-                            paginationResult.meta.pagination.page.should.be.a.Number();
-
-                            done();
-                        }).catch(done);
-                });
-
                 // @TODO: this test case fails for mysql currently if you run all regression tests, the test does not fail if you run this as a single test
                 describe.skip('with more posts/tags', function () {
                     beforeEach(function () {
