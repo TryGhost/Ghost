@@ -221,6 +221,7 @@
     background-size: cover;
     background-repeat: no-repeat;
     border-radius: 15%;
+    mix-blend-mode: multiply;
 }
 
 .apps-card-meta {
