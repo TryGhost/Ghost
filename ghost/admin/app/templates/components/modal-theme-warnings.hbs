@@ -1,9 +1,9 @@
 <header class="modal-header">
     <h1 data-test-theme-warnings-title>
-        {{#unless canActivate}}
-            {{title}}
+        {{#unless this.canActivate}}
+            {{this.title}}
         {{else}}
-            {{title}} with {{#if errors}}errors{{else}}warnings{{/if}}
+            {{this.title}} with {{#if this.errors}}errors{{else}}warnings{{/if}}
         {{/unless}}
     </h1>
 </header>
@@ -11,41 +11,36 @@
 
 <div class="modal-body">
     <ul class="theme-validation-errors" data-test-theme-warnings>
-        {{#if message}}
-            <li>
-                <p data-test-theme-warnings-message>{{message}}</p>
-            </li>
-        {{/if}}
-        {{#if fatalErrors}}
+        {{#if this.fatalErrors}}
             <div class="theme-validation-errordescription">
                 <h2 class="theme-validation-errortype fatal">Fatal Errors</h2>
                 <p><em>(Must-fix to activate theme)</em></p>
             </div>
         {{/if}}
-        {{#each fatalErrors as |error|}}
+        {{#each this.fatalErrors as |error|}}
             <li class="theme-validation-item">
                 {{gh-theme-error-li error=error}}
             </li>
         {{/each}}
 
-        {{#if errors}}
+        {{#if this.errors}}
             <div class="theme-validation-errordescription">
                 <h2 class="theme-validation-errortype">Errors</h2>
                 <p><em>(Very recommended to fix, functionality <span>could</span> be restricted)</em></p>
             </div>
         {{/if}}
-        {{#each errors as |error|}}
+        {{#each this.errors as |error|}}
             <li class="theme-validation-item">
                 {{gh-theme-error-li error=error}}
             </li>
         {{/each}}
 
-        {{#if warnings}}
+        {{#if (and this.warnings (or this.fatalErrors this.errors))}}
             <div class="theme-validation-errordescription">
                 <h2 class="theme-validation-errortype">Warnings</h2>
             </div>
         {{/if}}
-        {{#each warnings as |error|}}
+        {{#each this.warnings as |error|}}
             <li class="theme-validation-item">
                 {{gh-theme-error-li error=error}}
             </li>
@@ -56,6 +51,6 @@
 
 <div class="modal-footer">
     <button {{action "closeModal"}} class="gh-btn" data-test-modal-close-button>
-        <span>Close</span>
+        <span>Ok</span>
     </button>
 </div>
