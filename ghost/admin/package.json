@@ -100,7 +100,7 @@
     "fs-extra": "7.0.1",
     "glob": "7.1.3",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
-    "grunt": "1.0.3",
+    "grunt": "1.0.4",
     "grunt-shell": "3.0.1",
     "keymaster": "https://github.com/madrobby/keymaster.git",
     "liquid-fire": "0.29.5",
