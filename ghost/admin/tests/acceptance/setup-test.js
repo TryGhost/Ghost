@@ -151,7 +151,7 @@ describe('Acceptance: Setup', function () {
                     return new Response(422, {}, {
                         errors: [
                             {
-                                errorType: 'ValidationError',
+                                type: 'ValidationError',
                                 message: 'Server response message'
                             }
                         ]
@@ -198,7 +198,7 @@ describe('Acceptance: Setup', function () {
                 return new Response(401, {}, {
                     errors: [
                         {
-                            errorType: 'UnauthorizedError',
+                            type: 'UnauthorizedError',
                             message: 'Access Denied from url: unknown.com. Please use the url configured in config.js.'
                         }
                     ]
@@ -241,7 +241,7 @@ describe('Acceptance: Setup', function () {
                     return new Response(422, {}, {
                         errors: [
                             {
-                                errorType: 'ValidationError',
+                                type: 'ValidationError',
                                 message: 'Dummy validation error'
                             }
                         ]

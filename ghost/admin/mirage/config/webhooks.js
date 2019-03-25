@@ -11,7 +11,7 @@ export default function mockWebhooks(server) {
 
         if (!attrs.name) {
             errors.push({
-                errorType: 'ValidationError',
+                type: 'ValidationError',
                 message: 'Name is required',
                 property: 'name'
             });
@@ -19,7 +19,7 @@ export default function mockWebhooks(server) {
 
         if (!attrs.event) {
             errors.push({
-                errorType: 'ValidationError',
+                type: 'ValidationError',
                 message: 'Event is required',
                 property: 'event'
             });
@@ -27,7 +27,7 @@ export default function mockWebhooks(server) {
 
         if (!attrs.targetUrl) {
             errors.push({
-                errorType: 'ValidationError',
+                type: 'ValidationError',
                 message: 'Target URL is required',
                 property: 'target_url'
             });
@@ -35,7 +35,7 @@ export default function mockWebhooks(server) {
 
         if (attrs.name && (webhooks.findBy({name: attrs.name, integrationId: attrs.integrationId}) || attrs.name.match(/Duplicate/i))) {
             errors.push({
-                errorType: 'ValidationError',
+                type: 'ValidationError',
                 message: 'Name has already been used',
                 property: 'name'
             });
@@ -44,7 +44,7 @@ export default function mockWebhooks(server) {
         // TODO: check server-side validation
         if (webhooks.findBy({targetUrl: attrs.targetUrl, event: attrs.event})) {
             errors.push({
-                errorType: 'ValidationError',
+                type: 'ValidationError',
                 message: 'Target URL has already been used for this event',
                 property: 'target_url'
             });

@@ -59,7 +59,7 @@ export function paginateModelCollection(modelName, collection, page, limit) {
 export function maintenanceResponse() {
     return new Response(503, {}, {
         errors: [{
-            errorType: 'Maintenance'
+            type: 'Maintenance'
         }]
     });
 }
@@ -67,7 +67,7 @@ export function maintenanceResponse() {
 export function versionMismatchResponse() {
     return new Response(400, {}, {
         errors: [{
-            errorType: 'VersionMismatchError'
+            type: 'VersionMismatchError'
         }]
     });
 }

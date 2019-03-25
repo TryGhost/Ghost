@@ -97,7 +97,7 @@ export default function mockPages(server) {
 
         return page || new Response(404, {}, {
             errors: [{
-                errorType: 'NotFoundError',
+                type: 'NotFoundError',
                 message: 'Page not found.'
             }]
         });

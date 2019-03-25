@@ -51,7 +51,7 @@ describe('Acceptance: Authentication', function () {
             // return a 401 when attempting to retrieve users
             this.server.get('/users/', () => new Response(401, {}, {
                 errors: [
-                    {message: 'Access denied.', errorType: 'UnauthorizedError'}
+                    {message: 'Access denied.', type: 'UnauthorizedError'}
                 ]
             }));
 
@@ -116,7 +116,7 @@ describe('Acceptance: Authentication', function () {
                 if (attrs.mobiledoc.cards[0][1].markdown === 'Edited post body') {
                     return new Response(401, {}, {
                         errors: [
-                            {message: 'Access denied.', errorType: 'UnauthorizedError'}
+                            {message: 'Access denied.', type: 'UnauthorizedError'}
                         ]
                     });
                 } else {

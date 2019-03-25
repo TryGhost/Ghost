@@ -97,7 +97,7 @@ export default function mockPosts(server) {
 
         return post || new Response(404, {}, {
             errors: [{
-                errorType: 'NotFoundError',
+                type: 'NotFoundError',
                 message: 'Post not found.'
             }]
         });
