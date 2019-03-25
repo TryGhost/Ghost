@@ -149,7 +149,7 @@ export default Service.extend({
         this.delayedNotifications.forEach((message) => {
             this.content.pushObject(message);
         });
-        this.delayedNotifications = [];
+        this.set('delayedNotifications', []);
     },
 
     closeNotification(notification) {
