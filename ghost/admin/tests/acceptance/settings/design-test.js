@@ -293,8 +293,8 @@ describe('Acceptance: Settings - Design', function () {
                     errors: [
                         {
                             message: 'Theme is not compatible or contains errors.',
-                            errorType: 'ThemeValidationError',
-                            errorDetails: [
+                            type: 'ThemeValidationError',
+                            details: [
                                 {
                                     level: 'error',
                                     rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
@@ -491,8 +491,8 @@ describe('Acceptance: Settings - Design', function () {
                     errors: [
                         {
                             message: 'Theme is not compatible or contains errors.',
-                            errorType: 'ThemeValidationError',
-                            errorDetails: [
+                            type: 'ThemeValidationError',
+                            details: [
                                 {
                                     level: 'error',
                                     rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',

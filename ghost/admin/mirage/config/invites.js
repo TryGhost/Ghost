@@ -11,7 +11,7 @@ export default function mockInvites(server) {
 
         return invite || new Response(404, {}, {
             errors: [{
-                errorType: 'NotFoundError',
+                type: 'NotFoundError',
                 message: 'Invite not found.'
             }]
         });

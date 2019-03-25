@@ -98,7 +98,7 @@ describe('Acceptance: Settings - Integrations - Slack', function () {
                 return new Mirage.Response(422, {}, {
                     errors: [
                         {
-                            errorType: 'ValidationError',
+                            type: 'ValidationError',
                             message: 'Test error'
                         }
                     ]

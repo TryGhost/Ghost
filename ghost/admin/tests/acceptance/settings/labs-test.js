@@ -125,7 +125,7 @@ describe('Acceptance: Settings - Labs', function () {
             // failed upload
             this.server.post('/redirects/json/', {
                 errors: [{
-                    errorType: 'BadRequestError',
+                    type: 'BadRequestError',
                     message: 'Test failure message'
                 }]
             }, 400);
@@ -238,7 +238,7 @@ describe('Acceptance: Settings - Labs', function () {
             // failed upload
             this.server.post('/settings/routes/yaml/', {
                 errors: [{
-                    errorType: 'BadRequestError',
+                    type: 'BadRequestError',
                     message: 'Test failure message'
                 }]
             }, 400);

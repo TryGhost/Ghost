@@ -12,7 +12,7 @@ export default function mockSubscribers(server) {
         if (subscriber) {
             return new Response(422, {}, {
                 errors: [{
-                    errorType: 'ValidationError',
+                    type: 'ValidationError',
                     message: 'Email already exists.',
                     property: 'email'
                 }]
