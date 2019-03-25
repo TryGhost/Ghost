@@ -267,7 +267,7 @@ button, .btn-base {
 .traveler-1 {
     position: absolute;
     width: 24px;
-    height: 240px;
+    height: 270px;
     opacity: 0.0;
     top: 10px;
     left: 0;
@@ -292,7 +292,7 @@ button, .btn-base {
 .traveler-2 {
     position: absolute;
     width: 44px;
-    height: 240px;
+    height: 250px;
     opacity: 0.0;
     top: 10px;
     left: 406px;
