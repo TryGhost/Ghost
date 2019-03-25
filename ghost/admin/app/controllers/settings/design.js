@@ -17,12 +17,11 @@ export default Controller.extend({
     session: service(),
     settings: service(),
 
-    newNavItem: null,
-
     dirtyAttributes: false,
-
+    newNavItem: null,
     themes: null,
     themeToDelete: null,
+
     init() {
         this._super(...arguments);
         this.set('newNavItem', NavigationItem.create({isNew: true}));
@@ -127,8 +126,6 @@ export default Controller.extend({
 
         activateTheme(theme) {
             return theme.activate().then((theme) => {
-                let themeName = theme.get('name');
-
                 if (!isEmpty(theme.get('warnings'))) {
                     this.set('themeWarnings', theme.get('warnings'));
                     this.set('showThemeWarningsModal', true);
@@ -137,12 +134,6 @@ export default Controller.extend({
                 if (!isEmpty(theme.get('errors'))) {
                     this.set('themeErrors', theme.get('errors'));
                     this.set('showThemeWarningsModal', true);
-                }
-
-                if (this.themeErrors || this.themeWarnings) {
-                    let message = `${themeName} activated successfully but some warnings/errors were detected.
-                                   You are still able to use and activate the theme. Here is your report...`;
-                    this.set('message', message);
                 }
             }).catch((error) => {
                 if (isThemeValidationError(error)) {
