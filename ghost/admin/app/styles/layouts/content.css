@@ -163,6 +163,16 @@
     color: var(--darkgrey);
 }
 
+.gh-posts-placeholder {
+    width: 145px;
+    margin: -30px 0 15px;
+}
+
+.gh-pages-placeholder {
+    width: 136px;
+    margin: -30px 0 15px;
+}
+
 @media (max-width: 900px) {
     .gh-posts-list-item a {
         padding-right: 40px;
