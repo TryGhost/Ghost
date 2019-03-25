@@ -123,7 +123,7 @@ describe('Posts API', function () {
         });
     });
 
-    describe('edit', function () {
+    describe('Edit', function () {
         it('published_at = null', function () {
             return request
                 .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
@@ -238,7 +238,7 @@ describe('Posts API', function () {
         });
     });
 
-    describe('destroy', function () {
+    describe('Destroy', function () {
         it('non existent post', function () {
             return request
                 .del(localUtils.API.getApiQuery('posts/' + ObjectId.generate() + '/'))
