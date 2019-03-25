@@ -81,7 +81,7 @@ describe('Posts API', function () {
                         'post',
                         null,
                         null,
-                        ['mobiledoc', 'id', 'title', 'html', 'authors']
+                        ['mobiledoc', 'plaintext', 'id', 'title', 'html', 'authors', 'tags', 'primary_tag']
                     );
 
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
@@ -91,7 +91,7 @@ describe('Posts API', function () {
         });
     });
 
-    describe('read', function () {
+    describe('Read', function () {
         it('can\'t retrieve non existent post', function (done) {
             request.get(localUtils.API.getApiQuery(`posts/${ObjectId.generate()}/`))
                 .set('Origin', config.get('url'))
@@ -148,6 +148,35 @@ describe('Posts API', function () {
                     should.exist(res.headers['x-cache-invalidate']);
                     should.exist(res.body.posts);
                     should.exist(res.body.posts[0].published_at);
+                });
+        });
+
+        it('html to plaintext', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
+                .set('Origin', config.get('url'))
+                .expect(200)
+                .then((res) => {
+                    return request
+                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?source=html&formats=html,plaintext'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                html: '<p>HTML Ipsum presents</p>',
+                                updated_at: res.body.posts[0].updated_at
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200);
+                })
+                .then((res) => {
+                    return models.Post.findOne({
+                        id: res.body.posts[0].id
+                    }, testUtils.context.internal);
+                })
+                .then((model) => {
+                    model.get('plaintext').should.equal('HTML Ipsum presents');
                 });
         });
 
