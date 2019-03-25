@@ -371,3 +371,7 @@ input:focus,
 .gh-nav-list .gh-nav-nightshift span svg path {
     fill: color-mod(var(--midgrey) l(-5%));
 }
+
+.apps-card-app-icon {
+    mix-blend-mode: normal;
+}
