@@ -59,8 +59,8 @@ describe('Posts API', function () {
                 });
         });
 
-        it('fields combined with formats and include', function (done) {
-            request.get(localUtils.API.getApiQuery('posts/?formats=mobiledoc,html&fields=id,title&include=authors'))
+        it('combined fields, formats, include and non existing', function (done) {
+            request.get(localUtils.API.getApiQuery('posts/?formats=mobiledoc,html,plaintext&fields=id,title,primary_tag,doesnotexist&include=authors,tags'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)

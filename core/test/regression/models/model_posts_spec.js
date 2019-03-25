@@ -38,50 +38,6 @@ describe('Post Model', function () {
         sinon.stub(urlService, 'getUrlByResourceId').withArgs(testUtils.DataGenerator.Content.posts[0].id).returns('/html-ipsum/');
     });
 
-    function checkFirstPostData(firstPost, options) {
-        options = options || {};
-
-        should.not.exist(firstPost.author_id);
-        firstPost.author.should.be.an.Object();
-
-        if (options.withRelated && options.withRelated.indexOf('authors') !== -1) {
-            firstPost.authors.length.should.eql(1);
-            firstPost.authors[0].should.eql(firstPost.author);
-        }
-
-        firstPost.tags.should.be.an.Array();
-
-        firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
-        firstPost.created_at.should.be.an.instanceof(Date);
-        firstPost.created_by.should.be.an.Object();
-        firstPost.updated_by.should.be.an.Object();
-        firstPost.published_by.should.be.an.Object();
-        firstPost.created_by.name.should.equal(DataGenerator.Content.users[0].name);
-        firstPost.updated_by.name.should.equal(DataGenerator.Content.users[0].name);
-        firstPost.published_by.name.should.equal(DataGenerator.Content.users[0].name);
-        firstPost.tags[0].name.should.equal(DataGenerator.Content.tags[0].name);
-        firstPost.custom_excerpt.should.equal(DataGenerator.Content.posts[0].custom_excerpt);
-
-        if (options.formats) {
-            if (options.formats.indexOf('mobiledoc') !== -1) {
-                firstPost.mobiledoc.should.match(/HTML Ipsum Presents/);
-            }
-
-            if (options.formats.indexOf('html') !== -1) {
-                firstPost.html.should.match(/HTML Ipsum Presents/);
-            }
-
-            if (options.formats.indexOf('plaintext') !== -1) {
-                firstPost.plaintext.should.match(/HTML Ipsum Presents/);
-            }
-        } else {
-            firstPost.html.should.match(/HTML Ipsum Presents/);
-            should.equal(firstPost.plaintext, undefined);
-            should.equal(firstPost.mobiledoc, undefined);
-            should.equal(firstPost.amp, undefined);
-        }
-    }
-
     describe('Single author posts', function () {
         afterEach(function () {
             configUtils.restore();
@@ -99,99 +55,7 @@ describe('Post Model', function () {
                     });
             });
 
-            describe('findAll', function () {
-                it('can findAll, returning all related data', function (done) {
-                    var options = {withRelated: ['author', 'authors', 'tags', 'created_by', 'updated_by', 'published_by']};
-
-                    models.Post.findAll(options)
-                        .then(function (results) {
-                            should.exist(results);
-                            results.length.should.be.above(0);
-
-                            var posts = results.models.map(function (model) {
-                                return model.toJSON();
-                            }), firstPost = _.find(posts, {title: testUtils.DataGenerator.Content.posts[0].title});
-
-                            checkFirstPostData(firstPost, options);
-
-                            done();
-                        }).catch(done);
-                });
-
-                it('can findAll, use formats option', function (done) {
-                    var options = {
-                        formats: ['mobiledoc', 'plaintext'],
-                        withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']
-                    };
-
-                    models.Post.findAll(options)
-                        .then(function (results) {
-                            should.exist(results);
-                            results.length.should.be.above(0);
-
-                            var posts = results.models.map(function (model) {
-                                return model.toJSON(options);
-                            }), firstPost = _.find(posts, {title: testUtils.DataGenerator.Content.posts[0].title});
-
-                            checkFirstPostData(firstPost, options);
-
-                            done();
-                        }).catch(done);
-                });
-            });
-
             describe('findPage', function () {
-                it('can findPage, returning all related data', function (done) {
-                    models.Post.findPage({withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
-                        .then(function (results) {
-                            should.exist(results);
-
-                            results.meta.pagination.page.should.equal(1);
-                            results.meta.pagination.limit.should.equal(15);
-                            results.meta.pagination.pages.should.equal(1);
-                            results.data.length.should.equal(4);
-
-                            var firstPost = _.find(results.data, {attributes:{title: testUtils.DataGenerator.Content.posts[0].title}});
-                            checkFirstPostData(firstPost.toJSON());
-
-                            done();
-                        }).catch(done);
-                });
-
-                it('returns computed fields when columns are asked for explicitly', function (done) {
-                    const options = {
-                        columns: ['id', 'slug', 'primary_tag'],
-                        withRelated: 'tags'
-                    };
-
-                    models.Post.findPage(options).then(function (results) {
-                        should.exist(results);
-
-                        var post = _.find(results.data, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON(options);
-                        post.primary_tag.slug.should.equal('kitchen-sink');
-
-                        // If a computed property is inadvertently passed into a "fetch" operation,
-                        // there's a bug in bookshelf where the model will come back with it as
-                        // a column enclosed in quotes.
-                        should.not.exist(post['"primary_tag"']);
-
-                        done();
-                    }).catch(done);
-                });
-
-                it('ignores columns that do not exist', function (done) {
-                    models.Post.findPage({columns: ['id', 'slug', 'doesnotexist']}).then(function (results) {
-                        should.exist(results);
-
-                        var post = _.find(results.data, {attributes: {slug: testUtils.DataGenerator.Content.posts[0].slug}}).toJSON();
-                        post.id.should.equal(testUtils.DataGenerator.Content.posts[0].id);
-                        post.slug.should.equal('html-ipsum');
-                        should.not.exist(post.doesnotexist);
-
-                        done();
-                    }).catch(done);
-                });
-
                 // @TODO: this test case fails for mysql currently if you run all regression tests, the test does not fail if you run this as a single test
                 describe.skip('with more posts/tags', function () {
                     beforeEach(function () {
@@ -316,22 +180,6 @@ describe('Post Model', function () {
                             done();
                         }).catch(done);
                     });
-                });
-            });
-
-            describe('findOne', function () {
-                it('can findOne, returning all related data', function (done) {
-                    var firstPost;
-
-                    models.Post.findOne({}, {withRelated: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
-                        .then(function (result) {
-                            should.exist(result);
-                            firstPost = result.toJSON();
-
-                            checkFirstPostData(firstPost);
-
-                            done();
-                        }).catch(done);
                 });
             });
         });
