@@ -13,6 +13,9 @@ export default SessionService.extend({
     }),
 
     authenticate() {
+        // ensure any cached this.user value is removed and re-fetched
+        this.notifyPropertyChange('user');
+
         return this._super(...arguments).then((authResult) => {
             // TODO: remove duplication with application.afterModel
             let preloadPromises = [
