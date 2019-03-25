@@ -668,40 +668,6 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
-            it('can save a draft without setting published_by or published_at', function (done) {
-                var newPost = testUtils.DataGenerator.forModel.posts[2],
-                    postId;
-
-                models.Post.add(newPost, context).then(function (results) {
-                    var post;
-                    should.exist(results);
-                    post = results.toJSON();
-                    postId = post.id;
-
-                    post.status.should.equal('draft');
-                    should.not.exist(post.published_by);
-                    should.not.exist(post.published_at);
-
-                    // Test changing an unrelated property
-                    return models.Post.edit({title: 'Hello World'}, _.extend({}, context, {id: postId}));
-                }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('draft');
-                    should.not.exist(edited.attributes.published_by);
-                    should.not.exist(edited.attributes.published_at);
-
-                    // Test changing status and published_by on its own
-                    return models.Post.edit({published_by: 4}, _.extend({}, context, {id: postId}));
-                }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('draft');
-                    should.not.exist(edited.attributes.published_by);
-                    should.not.exist(edited.attributes.published_at);
-
-                    done();
-                }).catch(done);
-            });
-
             it('cannot override the published_by setting', function (done) {
                 var postId = testUtils.DataGenerator.Content.posts[3].id;
 
@@ -731,30 +697,6 @@ describe('Post Model', function () {
 
                     done();
                 }).catch(done);
-            });
-
-            it('send empty date', function (done) {
-                var postId = testUtils.DataGenerator.Content.posts[0].id;
-
-                models.Post
-                    .findOne({
-                        id: postId
-                    })
-                    .then(function (results) {
-                        var post;
-                        should.exist(results);
-                        post = results.toJSON();
-                        post.id.should.equal(postId);
-
-                        return models.Post.edit({created_at: ''}, _.extend({}, context, {id: postId}));
-                    })
-                    .then(function () {
-                        done(new Error('This test should fail.'));
-                    })
-                    .catch(function (err) {
-                        err.statusCode.should.eql(422);
-                        done();
-                    });
             });
         });
 
@@ -983,75 +925,6 @@ describe('Post Model', function () {
                     should.exist(eventsTriggered['post.scheduled']);
                     should.exist(eventsTriggered['user.attached']);
 
-                    done();
-                }).catch(done);
-            });
-
-            it('add scheduled page with published_at 10 minutes in future -> we expect success', function (done) {
-                models.Post.add({
-                    status: 'scheduled',
-                    page: 1,
-                    published_at: moment().add(10, 'minute'),
-                    title: 'scheduled 1',
-                    mobiledoc: markdownToMobiledoc('This is some content')
-                }, context).then(function (post) {
-                    should.exist(post);
-
-                    Object.keys(eventsTriggered).length.should.eql(3);
-                    should.exist(eventsTriggered['page.added']);
-                    should.exist(eventsTriggered['page.scheduled']);
-                    should.exist(eventsTriggered['user.attached']);
-
-                    done();
-                }).catch(done);
-            });
-
-            it('can add default title, if it\'s missing', function (done) {
-                models.Post.add({
-                    mobiledoc: markdownToMobiledoc('Content')
-                }, context).then(function (newPost) {
-                    should.exist(newPost);
-                    newPost.get('title').should.equal('(Untitled)');
-
-                    done();
-                }).catch(done);
-            });
-
-            it('can trim title', function (done) {
-                var untrimmedCreateTitle = '  test trimmed create title  ',
-                    untrimmedUpdateTitle = '  test trimmed update title  ',
-                    newPost = {
-                        title: untrimmedCreateTitle,
-                        mobiledoc: markdownToMobiledoc('Test content')
-                    };
-
-                models.Post.add(newPost, context).then(function (createdPost) {
-                    return models.Post.findOne({id: createdPost.id, status: 'all'});
-                }).then(function (createdPost) {
-                    should.exist(createdPost);
-                    createdPost.get('title').should.equal(untrimmedCreateTitle.trim());
-
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
-
-                    return createdPost.save({title: untrimmedUpdateTitle}, context);
-                }).then(function (updatedPost) {
-                    updatedPost.get('title').should.equal(untrimmedUpdateTitle.trim());
-
-                    Object.keys(eventsTriggered).length.should.eql(3);
-                    should.exist(eventsTriggered['post.edited']);
-
-                    done();
-                }).catch(done);
-            });
-
-            it('can strip invisible unicode from slug', function (done) {
-                models.Post.add({
-                    slug: 'abc\u0008',
-                }, context).then(function (newPost) {
-                    should.exist(newPost);
-                    newPost.get('slug').should.equal('abc');
                     done();
                 }).catch(done);
             });

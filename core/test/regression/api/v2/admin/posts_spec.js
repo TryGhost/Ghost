@@ -123,6 +123,27 @@ describe('Posts API', function () {
         });
     });
 
+    describe('Add', function () {
+        it('adds default title when it is missing', function () {
+            return request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: '',
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+            .then((res) => {
+                should.exist(res.body.posts);
+                should.exist(res.body.posts[0].title);
+                res.body.posts[0].title.should.equal('(Untitled)');
+            });
+        });
+    });
+
     describe('Edit', function () {
         it('published_at = null', function () {
             return request
@@ -263,6 +284,62 @@ describe('Posts API', function () {
                 })
                 .then((res) => {
                     should.exist(res.headers['x-cache-invalidate']);
+                });
+        });
+
+        it('trims title', function () {
+            const untrimmedTitle = '  test trimmed update title  ';
+
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
+                .set('Origin', config.get('url'))
+                .expect(200)
+                .then((res) => {
+                    return request
+                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                title: untrimmedTitle,
+                                updated_at: res.body.posts[0].updated_at
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200);
+                })
+                .then((res) => {
+                    should.exist(res.body.posts);
+                    should.exist(res.body.posts[0].title);
+                    res.body.posts[0].title.should.equal(untrimmedTitle.trim());
+                });
+        });
+
+        it('strips invisible unicode from slug', function () {
+            const slug = 'this-is\u0008-invisible';
+
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
+                .set('Origin', config.get('url'))
+                .expect(200)
+                .then((res) => {
+                    return request
+                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                slug: slug,
+                                updated_at: res.body.posts[0].updated_at
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200);
+                })
+                .then((res) => {
+                    should.exist(res.body.posts);
+                    should.exist(res.body.posts[0].slug);
+                    res.body.posts[0].slug.should.equal('this-is-invisible');
                 });
         });
     });
