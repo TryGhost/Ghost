@@ -135,6 +135,7 @@
     position: absolute;
     display: block;
     height: auto;
+    width: 100%;
 }
 
 /* Hover overlay */
