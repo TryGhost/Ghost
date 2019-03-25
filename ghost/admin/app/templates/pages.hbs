@@ -97,6 +97,7 @@
                 <li class="no-posts-box">
                     <div class="no-posts">
                         {{#if showingAll}}
+                            {{svg-jar "pages-placeholder" class="gh-pages-placeholder"}}
                             <h3>You haven't created any pages yet!</h3>
                             {{#link-to "editor.new" "page"}}<button type="button" class="gh-btn gh-btn-green gh-btn-lg"><span>Create a new page</span></button>{{/link-to}}
                         {{else}}
