@@ -133,7 +133,7 @@ describe('Acceptance: Settings - General', function () {
             this.server.post('/images/upload/', function () {
                 return {
                     errors: [{
-                        errorType: 'ValidationError',
+                        type: 'ValidationError',
                         message: 'Wrong icon size'
                     }]
                 };
@@ -202,7 +202,7 @@ describe('Acceptance: Settings - General', function () {
             this.server.post('/images/upload/', function () {
                 return {
                     errors: [{
-                        errorType: 'ValidationError',
+                        type: 'ValidationError',
                         message: 'Wrong logo size'
                     }]
                 };
@@ -271,7 +271,7 @@ describe('Acceptance: Settings - General', function () {
             this.server.post('/images/upload/', function () {
                 return {
                     errors: [{
-                        errorType: 'ValidationError',
+                        type: 'ValidationError',
                         message: 'Wrong coverImage size'
                     }]
                 };

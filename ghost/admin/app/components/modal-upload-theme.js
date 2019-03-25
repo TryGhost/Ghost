@@ -129,7 +129,7 @@ export default ModalComponent.extend({
 
         uploadFailed(error) {
             if (isThemeValidationError(error)) {
-                let errors = error.payload.errors[0].errorDetails;
+                let errors = error.payload.errors[0].details;
                 let fatalErrors = [];
                 let normalErrors = [];
 

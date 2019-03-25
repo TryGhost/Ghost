@@ -874,7 +874,7 @@ describe('Acceptance: Staff', function () {
 
         it('redirects to 404 when user does not exist', async function () {
             this.server.get('/users/slug/unknown/', function () {
-                return new Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'User not found.', errorType: 'NotFoundError'}]});
+                return new Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'User not found.', type: 'NotFoundError'}]});
             });
 
             errorOverride();
@@ -898,7 +898,7 @@ describe('Acceptance: Staff', function () {
             this.server.get('/invites/', function () {
                 return new Response(403, {}, {
                     errors: [{
-                        errorType: 'NoPermissionError',
+                        type: 'NoPermissionError',
                         message: 'You do not have permission to perform this action'
                     }]
                 });

@@ -9,7 +9,7 @@ export default function mockMembers(server) {
 
         return member || new Response(404, {}, {
             errors: [{
-                errorType: 'NotFoundError',
+                type: 'NotFoundError',
                 message: 'Member not found.'
             }]
         });

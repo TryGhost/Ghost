@@ -18,7 +18,7 @@ export default function mockAuthentication(server) {
                 errors: [
                     {
                         message: 'There is no user with that email address.',
-                        errorType: 'NotFoundError'
+                        type: 'NotFoundError'
                     }
                 ]
             });

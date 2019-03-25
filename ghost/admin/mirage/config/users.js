@@ -10,7 +10,7 @@ export default function mockUsers(server) {
             return user;
         } else {
             return new Response(404, {}, {errors: [
-                {message: 'Not found', errorType: 'NotFoundError'}
+                {message: 'Not found', type: 'NotFoundError'}
             ]});
         }
     });

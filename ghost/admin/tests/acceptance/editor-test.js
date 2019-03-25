@@ -427,7 +427,7 @@ describe('Acceptance: Editor', function () {
             this.server.put('/posts/:id/', function () {
                 return new Mirage.Response(422, {}, {
                     errors: [{
-                        errorType: 'ValidationError',
+                        type: 'ValidationError',
                         message: 'Error test'
                     }]
                 });

@@ -27,7 +27,7 @@ const stubFailedUpload = function (server, code, error, delay = 0) {
     server.post('/ghost/api/v2/admin/images/', function () {
         return [code, {'Content-Type': 'application/json'}, JSON.stringify({
             errors: [{
-                errorType: error,
+                type: error,
                 message: `Error: ${error}`
             }]
         })];

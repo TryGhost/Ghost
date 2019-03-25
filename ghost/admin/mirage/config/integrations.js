@@ -14,7 +14,7 @@ export default function mockIntegrations(server) {
 
         if (!params.name) {
             return new Response(422, {}, {errors: [{
-                errorType: 'ValidationError',
+                type: 'ValidationError',
                 message: 'Name is required',
                 property: 'name'
             }]});
@@ -22,7 +22,7 @@ export default function mockIntegrations(server) {
 
         if (integrations.findBy({name: params.name}) || params.name.match(/Duplicate/i)) {
             return new Response(422, {}, {errors: [{
-                errorType: 'ValidationError',
+                type: 'ValidationError',
                 message: 'Name has already been used',
                 property: 'name'
             }]});

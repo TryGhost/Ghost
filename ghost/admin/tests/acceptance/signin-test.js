@@ -43,7 +43,7 @@ describe('Acceptance: Signin', function () {
                 } else {
                     return new Response(401, {}, {
                         errors: [{
-                            errorType: 'UnauthorizedError',
+                            type: 'UnauthorizedError',
                             message: 'Invalid Password'
                         }]
                     });

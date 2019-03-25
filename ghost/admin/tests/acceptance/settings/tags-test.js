@@ -309,7 +309,7 @@ describe('Acceptance: Settings - Tags', function () {
 
         it('redirects to 404 when tag does not exist', async function () {
             this.server.get('/tags/slug/unknown/', function () {
-                return new Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'Tag not found.', errorType: 'NotFoundError'}]});
+                return new Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'Tag not found.', type: 'NotFoundError'}]});
             });
 
             errorOverride();

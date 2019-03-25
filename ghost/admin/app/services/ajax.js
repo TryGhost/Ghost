@@ -29,7 +29,7 @@ export function isVersionMismatchError(errorOrStatus, payload) {
     if (isAjaxError(errorOrStatus)) {
         return errorOrStatus instanceof VersionMismatchError;
     } else {
-        return get(payload || {}, 'errors.firstObject.errorType') === 'VersionMismatchError';
+        return get(payload || {}, 'errors.firstObject.type') === 'VersionMismatchError';
     }
 }
 
@@ -109,7 +109,7 @@ export function isThemeValidationError(errorOrStatus, payload) {
     if (isAjaxError(errorOrStatus)) {
         return errorOrStatus instanceof ThemeValidationError;
     } else {
-        return get(payload || {}, 'errors.firstObject.errorType') === 'ThemeValidationError';
+        return get(payload || {}, 'errors.firstObject.type') === 'ThemeValidationError';
     }
 }
 

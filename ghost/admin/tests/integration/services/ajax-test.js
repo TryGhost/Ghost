@@ -131,7 +131,7 @@ describe('Integration: Service: ajax', function () {
                 {'Content-Type': 'application/json'},
                 JSON.stringify({
                     errors: [{
-                        errorType: 'VersionMismatchError',
+                        type: 'VersionMismatchError',
                         statusCode: 400
                     }]
                 })
