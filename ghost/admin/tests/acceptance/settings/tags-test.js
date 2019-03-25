@@ -122,7 +122,7 @@ describe('Acceptance: Settings - Tags', function () {
 
             // it shows selected tag form
             expect(find('.tag-settings-pane h4').textContent, 'settings pane title')
-                .to.equal('Tag Settings');
+                .to.equal('Tag settings');
             expect(find('.tag-settings-pane input[name="name"]').value, 'loads correct tag into form')
                 .to.equal(tag1.name);
 

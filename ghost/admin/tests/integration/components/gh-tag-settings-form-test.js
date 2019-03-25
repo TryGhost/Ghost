@@ -56,10 +56,10 @@ describe('Integration: Component: gh-tag-settings-form', function () {
         await render(hbs`
             {{gh-tag-settings-form tag=tag setProperty=(action setProperty)}}
         `);
-        expect(find('.tag-settings-pane h4').textContent, 'existing tag title').to.equal('Tag Settings');
+        expect(find('.tag-settings-pane h4').textContent, 'existing tag title').to.equal('Tag settings');
 
         this.set('tag.isNew', true);
-        expect(find('.tag-settings-pane h4').textContent, 'new tag title').to.equal('New Tag');
+        expect(find('.tag-settings-pane h4').textContent, 'new tag title').to.equal('New tag');
     });
 
     it('renders main settings', async function () {
