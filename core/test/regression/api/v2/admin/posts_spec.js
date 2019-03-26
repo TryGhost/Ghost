@@ -59,8 +59,8 @@ describe('Posts API', function () {
                 });
         });
 
-        it('fields combined with formats and include', function (done) {
-            request.get(localUtils.API.getApiQuery('posts/?formats=mobiledoc,html&fields=id,title&include=authors'))
+        it('combined fields, formats, include and non existing', function (done) {
+            request.get(localUtils.API.getApiQuery('posts/?formats=mobiledoc,html,plaintext&fields=id,title,primary_tag,doesnotexist&include=authors,tags'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -81,7 +81,7 @@ describe('Posts API', function () {
                         'post',
                         null,
                         null,
-                        ['mobiledoc', 'id', 'title', 'html', 'authors']
+                        ['mobiledoc', 'plaintext', 'id', 'title', 'html', 'authors', 'tags', 'primary_tag']
                     );
 
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
@@ -91,7 +91,7 @@ describe('Posts API', function () {
         });
     });
 
-    describe('read', function () {
+    describe('Read', function () {
         it('can\'t retrieve non existent post', function (done) {
             request.get(localUtils.API.getApiQuery(`posts/${ObjectId.generate()}/`))
                 .set('Origin', config.get('url'))
@@ -123,7 +123,28 @@ describe('Posts API', function () {
         });
     });
 
-    describe('edit', function () {
+    describe('Add', function () {
+        it('adds default title when it is missing', function () {
+            return request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: '',
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+            .then((res) => {
+                should.exist(res.body.posts);
+                should.exist(res.body.posts[0].title);
+                res.body.posts[0].title.should.equal('(Untitled)');
+            });
+        });
+    });
+
+    describe('Edit', function () {
         it('published_at = null', function () {
             return request
                 .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
@@ -148,6 +169,35 @@ describe('Posts API', function () {
                     should.exist(res.headers['x-cache-invalidate']);
                     should.exist(res.body.posts);
                     should.exist(res.body.posts[0].published_at);
+                });
+        });
+
+        it('html to plaintext', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
+                .set('Origin', config.get('url'))
+                .expect(200)
+                .then((res) => {
+                    return request
+                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?source=html&formats=html,plaintext'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                html: '<p>HTML Ipsum presents</p>',
+                                updated_at: res.body.posts[0].updated_at
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200);
+                })
+                .then((res) => {
+                    return models.Post.findOne({
+                        id: res.body.posts[0].id
+                    }, testUtils.context.internal);
+                })
+                .then((model) => {
+                    model.get('plaintext').should.equal('HTML Ipsum presents');
                 });
         });
 
@@ -236,9 +286,65 @@ describe('Posts API', function () {
                     should.exist(res.headers['x-cache-invalidate']);
                 });
         });
+
+        it('trims title', function () {
+            const untrimmedTitle = '  test trimmed update title  ';
+
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
+                .set('Origin', config.get('url'))
+                .expect(200)
+                .then((res) => {
+                    return request
+                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                title: untrimmedTitle,
+                                updated_at: res.body.posts[0].updated_at
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200);
+                })
+                .then((res) => {
+                    should.exist(res.body.posts);
+                    should.exist(res.body.posts[0].title);
+                    res.body.posts[0].title.should.equal(untrimmedTitle.trim());
+                });
+        });
+
+        it('strips invisible unicode from slug', function () {
+            const slug = 'this-is\u0008-invisible';
+
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
+                .set('Origin', config.get('url'))
+                .expect(200)
+                .then((res) => {
+                    return request
+                        .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            posts: [{
+                                slug: slug,
+                                updated_at: res.body.posts[0].updated_at
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200);
+                })
+                .then((res) => {
+                    should.exist(res.body.posts);
+                    should.exist(res.body.posts[0].slug);
+                    res.body.posts[0].slug.should.equal('this-is-invisible');
+                });
+        });
     });
 
-    describe('destroy', function () {
+    describe('Destroy', function () {
         it('non existent post', function () {
             return request
                 .del(localUtils.API.getApiQuery('posts/' + ObjectId.generate() + '/'))
