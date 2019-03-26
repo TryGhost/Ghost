@@ -786,17 +786,6 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
-            it('can add, with title being a number', function (done) {
-                var newPost = testUtils.DataGenerator.forModel.posts[2];
-
-                newPost.title = 123;
-
-                models.Post.add(newPost, context).then(function (createdPost) {
-                    should.exist(createdPost);
-                    done();
-                }).catch(done);
-            });
-
             it('can add, with previous published_at date', function (done) {
                 var previousPublishedAtDate = new Date(2013, 8, 21, 12);
 
