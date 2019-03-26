@@ -208,17 +208,6 @@ describe('User Model', function run() {
             });
         });
 
-        it('can NOT findPage for a page that overflows the datatype', function (done) {
-            UserModel.findPage({page: 5700000000055345439587894375457849375284932759842375894372589243758947325894375894275894275894725897432859724309})
-                .then(function (paginationResult) {
-                    should.exist(paginationResult.meta);
-
-                    paginationResult.meta.pagination.page.should.be.a.Number();
-
-                    done();
-                }).catch(done);
-        });
-
         it('can findOne by role name', function () {
             return testUtils.fixtures.createExtraUsers().then(function () {
                 return Promise.join(UserModel.findOne({role: 'Owner'}), UserModel.findOne({role: 'Editor'}));
