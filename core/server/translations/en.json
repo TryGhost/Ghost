@@ -284,7 +284,8 @@
                 "userNotFound": "User not found",
                 "ownerNotFound": "Owner not found",
                 "onlyOwnerCanTransferOwnerRole": "Only owners are able to transfer the owner role.",
-                "onlyAdmCanBeAssignedOwnerRole": "Only administrators can be assigned the owner role."
+                "onlyAdmCanBeAssignedOwnerRole": "Only administrators can be assigned the owner role.",
+                "onlyActiveAdmCanBeAssignedOwnerRole": "Only active administrators can be assigned the owner role."
             },
             "api_key": {
                 "apiKeyNotFound": "API Key not found"
