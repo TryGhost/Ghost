@@ -42,5 +42,9 @@
     {
         "from": "^\\/Default-Sensitive",
         "to": "/redirected-default"
+    },
+    {
+        "from": "/external-url",
+        "to": "https://ghost.org"
     }
 ]
