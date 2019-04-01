@@ -95,7 +95,7 @@
     "ember-truth-helpers": "2.1.0",
     "ember-useragent": "0.9.0",
     "emberx-file-input": "1.2.1",
-    "eslint": "5.15.3",
+    "eslint": "5.16.0",
     "eslint-plugin-ghost": "0.2.0",
     "fs-extra": "7.0.1",
     "glob": "7.1.3",
