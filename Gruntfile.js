@@ -70,7 +70,8 @@ const configureGrunt = function (grunt) {
                     'content/themes/casper/assets/js/*.js'
                 ],
                 options: {
-                    livereload: true
+                    livereload: true,
+                    interval: 500
                 }
             },
             express: {
@@ -84,7 +85,8 @@ const configureGrunt = function (grunt) {
                 tasks: ['express:dev'],
                 options: {
                     spawn: false,
-                    livereload: true
+                    livereload: true,
+                    interval: 500
                 }
             }
         },
