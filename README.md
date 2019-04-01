@@ -16,7 +16,7 @@
     <a href="https://docs.ghost.org/">Documentation</a> |
     <a href="https://github.com/TryGhost/Ghost/blob/master/.github/CONTRIBUTING.md">Contributing</a> |
     <a href="https://opencollective.com/ghost">Donate</a> |
-    <a href="https://twitter.com/tryghost">Twitter</a>
+    <a href="https://twitter.com/ghost">Twitter</a>
     <br /><br />
     <a href="https://ghost.org">
         <img src="https://img.shields.io/badge/downloads-1.4M-brightgreen.svg" alt="Downloads" />
