@@ -9465,12 +9465,12 @@ postcss-convert-values@^4.0.1:
     postcss "^7.0.0"
     postcss-value-parser "^3.0.0"
 
-postcss-custom-media@7.0.7:
-  version "7.0.7"
-  resolved "https://registry.yarnpkg.com/postcss-custom-media/-/postcss-custom-media-7.0.7.tgz#bbc698ed3089ded61aad0f5bfb1fb48bf6969e73"
-  integrity sha512-bWPCdZKdH60wKOTG4HKEgxWnZVjAIVNOJDvi3lkuTa90xo/K0YHa2ZnlKLC5e2qF8qCcMQXt0yzQITBp8d0OFA==
+postcss-custom-media@7.0.8:
+  version "7.0.8"
+  resolved "https://registry.yarnpkg.com/postcss-custom-media/-/postcss-custom-media-7.0.8.tgz#fffd13ffeffad73621be5f387076a28b00294e0c"
+  integrity sha512-c9s5iX0Ge15o00HKbuRuTqNndsJUbaXdiNsksnVH8H4gdc+zbLzr/UasOwNG6CTDpLFekVY4672eWdiiWu2GUg==
   dependencies:
-    postcss "^7.0.5"
+    postcss "^7.0.14"
 
 postcss-custom-properties@8.0.9:
   version "8.0.9"
