@@ -673,6 +673,7 @@ describe('Frontend Routing', function () {
         });
     });
 
+    // TODO: convert to unit tests
     describe('Redirects (use redirects.json from test/utils/fixtures/data)', function () {
         var ghostServer;
 
@@ -919,6 +920,28 @@ describe('Frontend Routing', function () {
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/blog/expect-redirect');
+                        doEnd(done)(err, res);
+                    });
+            });
+        });
+
+        describe('external url redirect', function () {
+            it('with trailing slash', function (done) {
+                request.get('/external-url/')
+                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .end(function (err, res) {
+                        res.headers.location.should.eql('https://ghost.org/');
+                        doEnd(done)(err, res);
+                    });
+            });
+
+            it('without trailing slash', function (done) {
+                request.get('/external-url')
+                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .end(function (err, res) {
+                        res.headers.location.should.eql('https://ghost.org/');
                         doEnd(done)(err, res);
                     });
             });

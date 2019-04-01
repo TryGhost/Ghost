@@ -23,13 +23,6 @@ _private.registerRoutes = () => {
 
         redirects.forEach((redirect) => {
             /**
-             * Extract target info, such as hash.
-             * 
-             * Required to re-formulate the correct endpoint.
-             */
-            const parsedTo = url.parse(redirect.to);
-
-            /**
              * Detect case insensitive modifier when regex is enclosed by
              * / ... /i
              */
@@ -56,17 +49,18 @@ _private.registerRoutes = () => {
 
             debug('register', redirect.from);
             customRedirectsRouter.get(new RegExp(redirect.from, options), function (req, res) {
-                const maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0,
-                    parsedUrl = url.parse(req.originalUrl);
+                const maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0;
+                const fromURL = url.parse(req.originalUrl);
+                const toURL = url.parse(redirect.to);
+
+                toURL.pathname = fromURL.pathname.replace(new RegExp(redirect.from, options), toURL.pathname),
+                toURL.search = fromURL.search;
 
                 res.set({
                     'Cache-Control': `public, max-age=${maxAge}`
                 });
-                res.redirect(redirect.permanent ? 301 : 302, url.format({
-                    pathname: parsedUrl.pathname.replace(new RegExp(redirect.from, options), parsedTo.pathname),
-                    search: parsedUrl.search,
-                    hash: parsedTo.hash
-                }));
+
+                res.redirect(redirect.permanent ? 301 : 302, url.format(toURL));
             });
         });
     } catch (err) {
