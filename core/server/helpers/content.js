@@ -6,23 +6,26 @@
 //
 // Enables tag-safe truncation of content by characters or words.
 
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    downsize = require('downsize'),
-    SafeString = proxy.SafeString;
+const {SafeString} = require('./proxy');
+const downsize = require('downsize');
 
-module.exports = function content(options) {
-    var truncateOptions = (options || {}).hash || {};
-    truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
-    _.keys(truncateOptions).map(function (key) {
-        truncateOptions[key] = parseInt(truncateOptions[key], 10);
-    });
+module.exports = function content(options = {}) {
+    const hash = options.hash || {};
+    const truncateOptions = {};
+    let runTruncate = false;
+
+    for (const key of ['words', 'characters']) {
+        if (hash.hasOwnProperty(key)) {
+            runTruncate = true;
+            truncateOptions[key] = parseInt(hash[key], 10);
+        }
+    }
 
     if (this.html === null) {
         this.html = '';
     }
 
-    if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
+    if (runTruncate) {
         return new SafeString(
             downsize(this.html, truncateOptions)
         );
