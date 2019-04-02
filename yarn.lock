@@ -2361,9 +2361,9 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-ignition@2.9.2:
-  version "2.9.2"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.9.2.tgz#e68de88fa4a20fc09c833fe3278bdc20dca6d525"
+ghost-ignition@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.0.tgz#fed40b40cc71f83ed1ea74429ac8071df38fdf68"
   dependencies:
     bunyan "1.8.12"
     bunyan-loggly "^1.3.1"
@@ -2378,9 +2378,10 @@ ghost-ignition@2.9.2:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-ignition@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.0.tgz#fed40b40cc71f83ed1ea74429ac8071df38fdf68"
+ghost-ignition@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.2.tgz#a74480c337b917c9350ed0c34dfbd13cac24accd"
+  integrity sha512-plTyR1tTxv0uGzRkkyatsuhK/eYJaDlRAISd7DMc8l675yc0FH/A9ji6jjCtpP+00+Av5geKee6zpCVtH0uW8Q==
   dependencies:
     bunyan "1.8.12"
     bunyan-loggly "^1.3.1"
@@ -2740,9 +2741,10 @@ grunt@1.0.3:
     path-is-absolute "~1.0.0"
     rimraf "~2.6.2"
 
-gscan@2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.2.1.tgz#38bc8597f7579ab0a0b5b023cf59f71b43f567b0"
+gscan@2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.4.0.tgz#73d9873f4561c8b00366143f1bba17d865d09e0e"
+  integrity sha512-lTfYQdBEsJS6ZEc60p0CTzyYDXOU30XPqX3OI3dTLP9GtMgJSSvRaJoUz/yYb84pu441Hy4wnwpOuX1Y4cw66A==
   dependencies:
     "@tryghost/extract-zip" "1.6.6"
     bluebird "^3.4.6"
@@ -2751,12 +2753,13 @@ gscan@2.2.1:
     express "^4.16.2"
     express-hbs "^1.0.3"
     fs-extra "^0.26.2"
-    ghost-ignition "2.9.2"
+    ghost-ignition "3.0.2"
     glob "^7.0.5"
-    lodash "4.17.10"
+    lodash "^4.17.11"
     multer "^1.1.0"
     require-dir "^0.3.2"
     semver "^5.3.0"
+    upath "^1.1.0"
     uuid "^3.0.0"
     validator "^6.3.0"
 
@@ -3848,10 +3851,6 @@ lodash.union@^4.6.0:
 lodash.uniq@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
-
-lodash@4.17.10:
-  version "4.17.10"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
 lodash@4.17.11, lodash@^4.13.1, lodash@^4.14.2, lodash@^4.16.4, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.3.0, lodash@^4.7.0, lodash@^4.8.0, lodash@~4.17.10, lodash@~4.17.5:
   version "4.17.11"
@@ -6499,6 +6498,11 @@ unset-value@^1.0.0:
   dependencies:
     has-value "^0.3.1"
     isobject "^3.0.0"
+
+upath@^1.1.0:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/upath/-/upath-1.1.2.tgz#3db658600edaeeccbe6db5e684d67ee8c2acd068"
+  integrity sha512-kXpym8nmDmlCBr7nKdIx8P2jNBa+pBpIUFRnKJ4dr8htyYGJFokkr2ZvERRtUN+9SY+JqXouNgUPtv6JQva/2Q==
 
 uri-js@^4.2.2:
   version "4.2.2"
