@@ -8,7 +8,6 @@ const apps = require('../../services/apps');
 const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
 const urlService = require('../../services/url');
-const members = require('../../services/auth/members');
 const sitemapHandler = require('../../data/xml/sitemap/handler');
 const themeMiddleware = require('../../services/themes').middleware;
 const siteRoutes = require('./routes');
@@ -71,7 +70,6 @@ module.exports = function setupSiteApp(options = {}) {
     debug('Helpers done');
 
     // Set req.member & res.locals.member if a cookie is set
-    siteApp.use(members.authenticateMembersToken);
     siteApp.use(function (req, res, next) {
         res.locals.member = req.member;
         next();
