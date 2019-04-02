@@ -4351,6 +4351,16 @@ ember-cli-dependency-checker@3.1.0:
     resolve "^1.5.0"
     semver "^5.3.0"
 
+ember-cli-deprecation-workflow@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/ember-cli-deprecation-workflow/-/ember-cli-deprecation-workflow-1.0.1.tgz#3305a6879af7f074216a54963d92491c411ce7e0"
+  integrity sha512-tns8l4FLz8zmhmNRH7ywihs4XNTTuQysl+POYTpiyjb4zPNKv0cUJBCT/MklYFWBCo/5DcVzabhLODJZcScUfg==
+  dependencies:
+    broccoli-funnel "^2.0.1"
+    broccoli-merge-trees "^3.0.1"
+    broccoli-plugin "^1.3.1"
+    ember-debug-handlers-polyfill "^1.1.1"
+
 ember-cli-eslint@5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/ember-cli-eslint/-/ember-cli-eslint-5.1.0.tgz#acdb9b072911e04b07c313b610f514db4086d21a"
@@ -4805,6 +4815,11 @@ ember-data@3.8.0:
     semver "^5.6.0"
     silent-error "^1.1.1"
 
+ember-debug-handlers-polyfill@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/ember-debug-handlers-polyfill/-/ember-debug-handlers-polyfill-1.1.1.tgz#e9ae0a720271a834221179202367421b580002ef"
+  integrity sha512-lO7FBAqJjzbL+IjnWhVfQITypPOJmXdZngZR/Vdn513W4g/Q6Sjicao/mDzeDCb48Y70C4Facwk0LjdIpSZkRg==
+
 ember-drag-drop@0.4.8:
   version "0.4.8"
   resolved "https://registry.yarnpkg.com/ember-drag-drop/-/ember-drag-drop-0.4.8.tgz#59d0d89c30068abd3edcdec47f84edd26fa8ef02"
@@ -4933,7 +4948,6 @@ ember-lifeline@^3.0.1:
 
 "ember-light-table@https://github.com/kevinansfield/ember-light-table#bump-ember-in-viewport":
   version "1.13.2"
-  uid a757399504755ad8dde5cb4196576201881b93d4
   resolved "https://github.com/kevinansfield/ember-light-table#a757399504755ad8dde5cb4196576201881b93d4"
   dependencies:
     "@html-next/vertical-collection" "^1.0.0-beta.12"
@@ -6459,7 +6473,6 @@ gonzales-pe@^3.4.7:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  uid "275cb75249f038492094a499756a73719ae071fd"
   resolved "https://github.com/acburdine/google-caja-bower#275cb75249f038492094a499756a73719ae071fd"
 
 got@^8.0.1:
@@ -7582,7 +7595,6 @@ just-extend@^4.0.2:
 
 "keymaster@https://github.com/madrobby/keymaster.git":
   version "1.6.3"
-  uid f8f43ddafad663b505dc0908e72853bcf8daea49
   resolved "https://github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
 
 keyv@3.0.0:
@@ -10733,7 +10745,6 @@ simple-swizzle@^0.2.2:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  uid "7afb50dcdd63d3a1f6ccad682b70acbd7bc52eb9"
   resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#7afb50dcdd63d3a1f6ccad682b70acbd7bc52eb9"
 
 sinon@^7.1.1:
