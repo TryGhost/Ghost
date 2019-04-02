@@ -1,0 +1,28 @@
+{
+  "name": "members-ssr",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-ssr",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "lerna run lint",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "devDependencies": {
+    "mocha": "6.0.2",
+    "should": "13.2.3",
+    "sinon": "7.3.1"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.3",
+    "ghost-ignition": "^3.0.4",
+    "lodash": "^4.17.11"
+  }
+}
