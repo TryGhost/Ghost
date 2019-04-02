@@ -9,7 +9,8 @@
   "ignoreDeps": [
     "ember-drag-drop",
     "normalize.css",
-    "validator"
+    "validator",
+    "ember-exam"
   ],
   "ignorePaths": ["lib/koenig-editor/package.json"],
   "travis": { "enabled": true },
@@ -24,6 +25,10 @@
     {
       "groupName": "ember core",
       "packageNames": ["ember-source", "ember-cli", "ember-data"]
+    },
+    {
+      "groupName": "ember testing",
+      "packageNames": ["ember-mocha", "ember-exam", "testem"]
     },
     {
       "groupName": "ember addons",
