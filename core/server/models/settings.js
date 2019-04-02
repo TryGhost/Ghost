@@ -19,6 +19,7 @@ function parseDefaultSettings() {
         dynamicDefault = {
             db_hash: uuid.v4(),
             public_hash: crypto.randomBytes(15).toString('hex'),
+            // @TODO: session_secret would ideally be named "admin_session_secret"
             session_secret: crypto.randomBytes(32).toString('hex'),
             members_session_secret: crypto.randomBytes(32).toString('hex')
         };
