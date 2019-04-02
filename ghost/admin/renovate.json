@@ -32,7 +32,8 @@
     },
     {
       "groupName": "ember addons",
-      "packagePatterns": ["^ember", "^@ember", "^broccoli", "^liquid"]
+      "packagePatterns": ["^ember", "^@ember", "^broccoli", "^liquid"],
+      "excludePackageNames": ["ember-source", "ember-cli", "ember-data", "ember-mocha", "ember-exam"]
     },
     {
       "groupName": "css processors",
