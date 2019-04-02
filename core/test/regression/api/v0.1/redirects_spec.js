@@ -73,10 +73,10 @@ describe('Redirects API', function () {
 
                     res.headers['content-disposition'].should.eql('Attachment; filename="redirects.json"');
                     res.headers['content-type'].should.eql('application/json; charset=utf-8');
-                    res.headers['content-length'].should.eql('648');
+                    res.headers['content-length'].should.eql('698');
 
                     res.body.should.not.be.empty();
-                    res.body.length.should.equal(11);
+                    res.body.length.should.equal(12);
                     done();
                 });
         });
