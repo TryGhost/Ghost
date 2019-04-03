@@ -76,3 +76,7 @@ CHANGELOG.md
 
 # Coverage reports
 coverage.html
+
+#DevSpaces
+devspaces/buildspec.yml
+devspaces/*.zip

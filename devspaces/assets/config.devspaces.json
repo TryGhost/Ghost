@@ -1,0 +1,30 @@
+{
+    "url": "http://localhost:2368",
+    "server": {
+        "host": "0.0.0.0",
+        "port": 2368
+    },
+    "database": {
+        "client": "sqlite3",
+        "connection": {
+            "filename": "content/data/ghost-dev.db"
+        },
+        "debug": false
+    },
+    "paths": {
+        "contentPath": "content/"
+    },
+    "privacy": {
+        "useRpcPing": false,
+        "useUpdateCheck": true
+    },
+    "useMinFiles": false,
+    "caching": {
+        "theme": {
+            "maxAge": 0
+        },
+        "admin": {
+            "maxAge": 0
+        }
+    }
+}

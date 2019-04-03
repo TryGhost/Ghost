@@ -1,0 +1,30 @@
+--- # devspaces.yml
+name: ghost
+description:  Development environment for Ghost project
+
+# If you want to use a different Dockerfile for your DevSpace, provide the path
+# here.
+docker-file: Dockerfile
+
+# If you need additional files when building your Dockerfile, such as some
+# application binaries that your Dockerfile references, list the glob paths to
+# include here. They are relative to this devspaces.yml file.
+docker-build-includes: |
+  **/*
+
+environment-vars:
+    
+ports:
+  - protocol: http
+    port-number: 2368
+    description: HTTP port
+  - protocol: http
+    port-number: 4200
+    description: Ember Tests Port
+
+sync-ignore: |
+  .git
+  .idea
+  .DS_Store
+  .data
+  node_modules
