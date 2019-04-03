@@ -39,29 +39,16 @@ function ensureActiveTheme(req, res, next) {
     next();
 }
 
-// ### Update Template Data
-// Updates handlebars with the contextual data for the current request
-function updateTemplateData(req, res, next) {
+function updateGlobalTemplateOptions(req, res, next) {
     // Static information, same for every request unless the settings change
     // @TODO: bind this once and then update based on events?
     // @TODO: decouple theme layer from settings cache using the Content API
     const siteData = settingsCache.getPublic();
     const labsData = _.cloneDeep(settingsCache.get('labs'));
-    const themeData = {};
-
-    if (activeTheme.get()) {
-        themeData.posts_per_page = activeTheme.get().config('posts_per_page');
-        themeData.image_sizes = activeTheme.get().config('image_sizes');
-    }
-
-    // Request-specific information
-    // These things are super dependent on the request, so they need to be in middleware
-    // Serve the blog url without trailing slash
-    siteData.url = urlService.utils.urlFor('home', {secure: req.secure, trailingSlash: false}, true);
-
-    // Pass 'secure' flag to the view engine
-    // so that templates can choose to render https or http 'url', see url utility
-    res.locals.secure = req.secure;
+    const themeData = {
+        posts_per_page: activeTheme.get().config('posts_per_page'),
+        image_sizes: activeTheme.get().config('image_sizes')
+    };
 
     // @TODO: only do this if something changed?
     // @TODO: remove blog if we drop v0.1 (Ghost 3.0)
@@ -77,7 +64,34 @@ function updateTemplateData(req, res, next) {
     next();
 }
 
+function updateLocalTemplateData(req, res, next) {
+    // Pass 'secure' flag to the view engine
+    // so that templates can choose to render https or http 'url', see url utility
+    res.locals.secure = req.secure;
+
+    next();
+}
+
+function updateLocalTemplateOptions(req, res, next) {
+    const localTemplateOptions = hbs.getLocalTemplateOptions(res.locals);
+    const siteData = {
+        url: urlService.utils.urlFor('home', {secure: req.secure, trailingSlash: false}, true)
+    };
+
+    hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
+        data: {
+            member: req.member,
+            site: siteData,
+            blog: siteData
+        }
+    }));
+
+    next();
+}
+
 module.exports = [
     ensureActiveTheme,
-    updateTemplateData
+    updateGlobalTemplateOptions,
+    updateLocalTemplateData,
+    updateLocalTemplateOptions
 ];
