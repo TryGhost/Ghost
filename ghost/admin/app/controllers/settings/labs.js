@@ -26,7 +26,7 @@ const IMPORT_MIME_TYPES = [
 const JSON_EXTENSION = ['json'];
 const JSON_MIME_TYPE = ['application/json'];
 
-const YAML_EXTENSION = ['yml', 'yaml'];
+const YAML_EXTENSION = ['yaml'];
 const YAML_MIME_TYPE = [
     'text/vnd.yaml',
     'application/vnd.yaml',

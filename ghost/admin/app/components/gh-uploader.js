@@ -181,7 +181,7 @@ export default Component.extend({
 
         if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
             let validExtensions = `.${extensions.join(', .').toUpperCase()}`;
-            return `The image type you uploaded is not supported. Please use ${validExtensions}`;
+            return `The file type you uploaded is not supported. Please use ${validExtensions}`;
         }
 
         return true;
