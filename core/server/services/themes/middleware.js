@@ -1,17 +1,16 @@
-var _ = require('lodash'),
-    hbs = require('./engine'),
-    urlService = require('../url'),
-    config = require('../../config'),
-    common = require('../../lib/common'),
-    settingsCache = require('../settings/cache'),
-    activeTheme = require('./active'),
-    themeMiddleware = {};
+const _ = require('lodash');
+const hbs = require('./engine');
+const urlService = require('../url');
+const config = require('../../config');
+const common = require('../../lib/common');
+const settingsCache = require('../settings/cache');
+const activeTheme = require('./active');
 
 // ### Ensure Active Theme
 // Ensure there's a properly set & mounted active theme before attempting to serve a blog request
 // If there is no active theme, throw an error
 // Else, ensure the active theme is mounted
-themeMiddleware.ensureActiveTheme = function ensureActiveTheme(req, res, next) {
+function ensureActiveTheme(req, res, next) {
     // CASE: this means that the theme hasn't been loaded yet i.e. there is no active theme
     if (!activeTheme.get()) {
         // This is the one place we ACTUALLY throw an error for a missing theme as it's a request we cannot serve
@@ -38,17 +37,17 @@ themeMiddleware.ensureActiveTheme = function ensureActiveTheme(req, res, next) {
     }
 
     next();
-};
+}
 
 // ### Update Template Data
 // Updates handlebars with the contextual data for the current request
-themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next) {
+function updateTemplateData(req, res, next) {
     // Static information, same for every request unless the settings change
     // @TODO: bind this once and then update based on events?
     // @TODO: decouple theme layer from settings cache using the Content API
-    var siteData = settingsCache.getPublic(),
-        labsData = _.cloneDeep(settingsCache.get('labs')),
-        themeData = {};
+    const siteData = settingsCache.getPublic();
+    const labsData = _.cloneDeep(settingsCache.get('labs'));
+    const themeData = {};
 
     if (activeTheme.get()) {
         themeData.posts_per_page = activeTheme.get().config('posts_per_page');
@@ -71,15 +70,14 @@ themeMiddleware.updateTemplateData = function updateTemplateData(req, res, next)
             blog: siteData,
             site: siteData,
             labs: labsData,
-            config: themeData,
-            member: req.member
+            config: themeData
         }
     });
 
     next();
-};
+}
 
 module.exports = [
-    themeMiddleware.ensureActiveTheme,
-    themeMiddleware.updateTemplateData
+    ensureActiveTheme,
+    updateTemplateData
 ];
