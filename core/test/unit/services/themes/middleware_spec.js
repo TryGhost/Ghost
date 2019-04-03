@@ -1,208 +1,154 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    hbs = require('../../../../server/services/themes/engine'),
-    themes = require('../../../../server/services/themes'),
-    // is only exposed via themes.getActive()
-    activeTheme = require('../../../../server/services/themes/active'),
-    settingsCache = require('../../../../server/services/settings/cache'),
-    middleware = themes.middleware;
+const should = require('should');
+const sinon = require('sinon');
+const hbs = require('../../../../server/services/themes/engine');
+const themes = require('../../../../server/services/themes');
+// is only exposed via themes.getActive()
+const activeTheme = require('../../../../server/services/themes/active');
+const settingsCache = require('../../../../server/services/settings/cache');
+const middleware = themes.middleware;
 
-describe('Themes', function () {
+const sandbox = sinon.sandbox.create();
+
+function executeMiddleware(middleware, req, res, next) {
+    const [current, ...rest] = middleware;
+
+    current(req, res, function (err) {
+        if (err) {
+            return next(err);
+        }
+        if (!rest.length) {
+            return next();
+        }
+        return executeMiddleware(rest, req, res, next);
+    });
+}
+
+describe('Themes middleware', function () {
     afterEach(function () {
-        sinon.restore();
+        sandbox.restore();
     });
 
-    describe('Middleware', function () {
-        var req, res, blogApp, getActiveThemeStub, settingsCacheStub, settingPublicStub;
+    let req;
+    let res;
 
-        beforeEach(function () {
-            req = sinon.spy();
-            res = sinon.spy();
+    let fakeActiveTheme;
+    let fakeActiveThemeName;
+    let fakeSiteData;
+    let fakeLabsData;
 
-            blogApp = {test: 'obj'};
-            req.app = blogApp;
-            res.locals = {};
+    beforeEach(function () {
+        req = {app: {}};
+        res = {locals: {}};
 
-            getActiveThemeStub = sinon.stub(activeTheme, 'get');
-            settingsCacheStub = sinon.stub(settingsCache, 'get');
-            settingPublicStub = sinon.stub(settingsCache, 'getPublic').returns({});
+        fakeActiveTheme = {
+            config: sandbox.stub().returns(2),
+            mount: sandbox.stub()
+        };
+
+        fakeActiveThemeName = 'bacon-sensation';
+
+        fakeSiteData = {};
+
+        fakeLabsData = {
+            // labs data is deep cloned,
+            // if we want to compare it
+            // we will need some unique content
+            '@@REQUIRED@@': true
+        };
+
+        sandbox.stub(activeTheme, 'get')
+            .returns(fakeActiveTheme);
+
+        sandbox.stub(settingsCache, 'get')
+            .withArgs('labs').returns(fakeLabsData)
+            .withArgs('active_theme').returns(fakeActiveThemeName);
+
+        sandbox.stub(settingsCache, 'getPublic')
+            .returns(fakeSiteData);
+
+        sandbox.stub(hbs, 'updateTemplateOptions');
+    });
+
+    it('mounts active theme if not yet mounted', function (done) {
+        fakeActiveTheme.mounted = false;
+
+        executeMiddleware(middleware, req, res, function next(err) {
+            should.not.exist(err);
+
+            fakeActiveTheme.mount.called.should.be.true();
+            fakeActiveTheme.mount.calledWith(req.app).should.be.true();
+
+            done();
         });
+    });
 
-        describe('ensureActiveTheme', function () {
-            var ensureActiveTheme = middleware[0],
-                mountThemeSpy;
+    it('does not mounts the active theme if it is already mounted', function (done) {
+        fakeActiveTheme.mounted = true;
 
-            beforeEach(function () {
-                mountThemeSpy = sinon.spy();
-                settingsCacheStub.withArgs('active_theme').returns('casper');
-            });
+        executeMiddleware(middleware, req, res, function next(err) {
+            should.not.exist(err);
 
-            it('mounts active theme if not yet mounted', function (done) {
-                getActiveThemeStub.returns({
-                    mounted: false,
-                    mount: mountThemeSpy
-                });
+            fakeActiveTheme.mount.called.should.be.false();
 
-                ensureActiveTheme(req, res, function next(err) {
-                    // Did not throw an error
-                    should.not.exist(err);
-
-                    settingsCacheStub.called.should.be.false();
-                    getActiveThemeStub.called.should.be.true();
-                    mountThemeSpy.called.should.be.true();
-                    mountThemeSpy.calledWith(blogApp).should.be.true();
-
-                    done();
-                });
-            });
-
-            it('does not mounts the active theme if it is already mounted', function (done) {
-                getActiveThemeStub.returns({
-                    mounted: true,
-                    mount: mountThemeSpy
-                });
-
-                ensureActiveTheme(req, res, function next(err) {
-                    // Did not throw an error
-                    should.not.exist(err);
-
-                    settingsCacheStub.called.should.be.false();
-                    getActiveThemeStub.called.should.be.true();
-                    mountThemeSpy.called.should.be.false();
-
-                    done();
-                });
-            });
-
-            it('throws error if theme is missing', function (done) {
-                getActiveThemeStub.returns(undefined);
-
-                ensureActiveTheme(req, res, function next(err) {
-                    // Did throw an error
-                    should.exist(err);
-                    err.message.should.eql('The currently active theme "casper" is missing.');
-
-                    settingsCacheStub.calledWith('active_theme').should.be.true();
-                    getActiveThemeStub.called.should.be.true();
-                    mountThemeSpy.called.should.be.false();
-
-                    done();
-                });
-            });
+            done();
         });
+    });
 
-        describe('updateTemplateData', function () {
-            var updateTemplateData = middleware[1],
-                themeDataExpectedProps = ['posts_per_page', 'image_sizes'],
-                updateOptionsStub;
+    it('throws error if theme is missing', function (done) {
+        activeTheme.get.restore();
+        sandbox.stub(activeTheme, 'get')
+            .returns(undefined);
 
-            beforeEach(function () {
-                updateOptionsStub = sinon.stub(hbs, 'updateTemplateOptions');
+        executeMiddleware(middleware, req, res, function next(err) {
+            // Did throw an error
+            should.exist(err);
+            err.message.should.eql('The currently active theme "bacon-sensation" is missing.');
 
-                settingsCacheStub.withArgs('labs').returns({});
+            activeTheme.get.called.should.be.true();
+            fakeActiveTheme.mount.called.should.be.false();
 
-                getActiveThemeStub.returns({
-                    config: sinon.stub().returns(2)
-                });
-            });
+            done();
+        });
+    });
 
-            it('calls updateTemplateOptions with correct data', function (done) {
-                updateTemplateData(req, res, function next(err) {
-                    var templateOptions;
-                    should.not.exist(err);
+    it('calls updateTemplateOptions with correct data', function (done) {
+        const themeDataExpectedProps = ['posts_per_page', 'image_sizes'];
 
-                    updateOptionsStub.calledOnce.should.be.true();
-                    templateOptions = updateOptionsStub.firstCall.args[0];
-                    templateOptions.should.be.an.Object().with.property('data');
-                    templateOptions.data.should.be.an.Object().with.properties('blog', 'labs', 'config');
+        executeMiddleware(middleware, req, res, function next(err) {
+            should.not.exist(err);
 
-                    // Check Theme Config
-                    templateOptions.data.config.should.be.an.Object()
-                        .with.properties(themeDataExpectedProps)
-                        .and.size(themeDataExpectedProps.length);
-                    // posts per page should be set according to the stub
-                    templateOptions.data.config.posts_per_page.should.eql(2);
+            hbs.updateTemplateOptions.calledOnce.should.be.true();
+            const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+            const data = templateOptions.data;
 
-                    // Check blog config tried to call public settings
-                    settingPublicStub.calledOnce.should.be.true();
+            data.should.be.an.Object().with.properties('site', 'blog', 'labs', 'config');
 
-                    // url should be correct
-                    templateOptions.data.blog.url.should.eql('http://127.0.0.1:2369');
+            // Check Theme Config
+            data.config.should.be.an.Object()
+                .with.properties(themeDataExpectedProps)
+                .and.size(themeDataExpectedProps.length);
+            // posts per page should be set according to the stub
+            data.config.posts_per_page.should.eql(2);
 
-                    // Check labs config
-                    templateOptions.data.labs.should.be.an.Object();
+            // Check labs config
+            should.deepEqual(data.labs, fakeLabsData);
 
-                    // Check res.locals
-                    should.not.exist(res.locals.secure);
+            should.equal(data.site, fakeSiteData);
+            should.equal(data.blog, fakeSiteData);
 
-                    done();
-                });
-            });
+            done();
+        });
+    });
 
-            it('does not error if there is no active theme', function (done) {
-                getActiveThemeStub.returns(undefined);
+    it('Sets res.locals.secure to the value of req.secure', function (done) {
+        req.secure = Math.random() < 0.5;
 
-                updateTemplateData(req, res, function next(err) {
-                    var templateOptions;
-                    should.not.exist(err);
+        executeMiddleware(middleware, req, res, function next(err) {
+            should.not.exist(err);
 
-                    updateOptionsStub.calledOnce.should.be.true();
-                    templateOptions = updateOptionsStub.firstCall.args[0];
-                    templateOptions.should.be.an.Object().with.property('data');
-                    templateOptions.data.should.be.an.Object().with.properties('blog', 'labs', 'config');
+            should.equal(res.locals.secure, req.secure);
 
-                    // Check Theme Config
-                    templateOptions.data.config.should.be.an.Object();
-                    // posts per page should NOT be set as there's no active theme
-                    should.not.exist(templateOptions.data.config.posts_per_page);
-
-                    // Check blog config tried to call public settings
-                    settingPublicStub.calledOnce.should.be.true();
-
-                    // url should be correct
-                    templateOptions.data.blog.url.should.eql('http://127.0.0.1:2369');
-
-                    // Check labs config
-                    templateOptions.data.labs.should.be.an.Object();
-
-                    done();
-                });
-            });
-
-            it('calls updateTempalateOptions with correct info for secure context', function (done) {
-                req.secure = true;
-
-                updateTemplateData(req, res, function next(err) {
-                    var templateOptions;
-                    should.not.exist(err);
-
-                    updateOptionsStub.calledOnce.should.be.true();
-                    templateOptions = updateOptionsStub.firstCall.args[0];
-                    templateOptions.should.be.an.Object().with.property('data');
-                    templateOptions.data.should.be.an.Object().with.properties('blog', 'labs', 'config');
-
-                    // Check Theme Config
-                    templateOptions.data.config.should.be.an.Object()
-                        .with.properties(themeDataExpectedProps)
-                        .and.size(themeDataExpectedProps.length);
-                    // posts per page should be set according to the stub
-                    templateOptions.data.config.posts_per_page.should.eql(2);
-
-                    // Check blog config tried to call public settings
-                    settingPublicStub.calledOnce.should.be.true();
-                    // url should be correct HTTPS!
-                    templateOptions.data.blog.url.should.eql('https://127.0.0.1:2369');
-
-                    // Check labs config
-                    templateOptions.data.labs.should.be.an.Object();
-
-                    // Check res.locals
-                    should.exist(res.locals.secure);
-                    res.locals.secure.should.be.true();
-
-                    done();
-                });
-            });
+            done();
         });
     });
 });
