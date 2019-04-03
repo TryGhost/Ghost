@@ -80,7 +80,7 @@ class ActiveTheme {
     }
 
     updateTemplateOptions(options) {
-        engine._options.templateOptions = _.merge(engine._options.templateOptions, options);
+        engine.updateTemplateOptions(_.merge({}, engine.getTemplateOptions(), options));
     }
 
     config(key) {
