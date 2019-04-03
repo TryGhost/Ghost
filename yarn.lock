@@ -1918,7 +1918,17 @@ express-brute@1.0.1, express-brute@^1.0.0:
     long-timeout "~0.1.1"
     underscore "~1.8.3"
 
-express-hbs@1.0.5, express-hbs@^1.0.3:
+express-hbs@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-1.1.0.tgz#703c3855c30c8052c7d6f9df642d538404c492b5"
+  integrity sha512-4TQ8kwsMyiJ5yh3F5tWnAmYtYn4tHx7kjK42/Hlmq00/ekw6KMeRgK1INJtUK4QETJcQXiuTtwx68yNoNVAomQ==
+  dependencies:
+    handlebars "4.0.13"
+    js-beautify "1.6.8"
+    lodash "4.17.11"
+    readdirp "2.1.0"
+
+express-hbs@^1.0.3:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-1.0.5.tgz#6553b6bfcc55a965ee6161a6f374837f1eecea1f"
   dependencies:
