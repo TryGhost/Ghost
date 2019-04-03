@@ -21,7 +21,8 @@ function parseDefaultSettings() {
             public_hash: crypto.randomBytes(15).toString('hex'),
             // @TODO: session_secret would ideally be named "admin_session_secret"
             session_secret: crypto.randomBytes(32).toString('hex'),
-            members_session_secret: crypto.randomBytes(32).toString('hex')
+            members_session_secret: crypto.randomBytes(32).toString('hex'),
+            theme_session_secret: crypto.randomBytes(32).toString('hex')
         };
 
     const membersKeypair = keypair({
