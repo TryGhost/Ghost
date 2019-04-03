@@ -2,16 +2,12 @@
 // Usage: `{{#foreach data}}{{/foreach}}`
 //
 // Block helper designed for looping through posts
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    logging = proxy.logging,
-    i18n = proxy.i18n,
-    models = proxy.models,
-    hbsUtils = proxy.hbs.Utils,
-    createFrame = proxy.hbs.handlebars.createFrame;
+const _ = require('lodash');
+const {logging, i18n, models, hbs} = require('./proxy');
+const {Utils: hbsUtils, handlebars: {createFrame}} = hbs;
 
 function filterItemsByVisibility(items, options) {
-    var visibilityArr = models.Base.Model.parseVisibilityString(options.hash.visibility);
+    const visibilityArr = models.Base.Model.parseVisibilityString(options.hash.visibility);
 
     return models.Base.Model.filterByVisibility(items, visibilityArr, !!options.hash.visibility);
 }
@@ -29,16 +25,16 @@ module.exports = function foreach(items, options) {
     items = filterItemsByVisibility(items, options);
 
     // Initial values set based on parameters sent through. If nothing sent, set to defaults
-    var fn = options.fn,
-        inverse = options.inverse,
-        columns = options.hash.columns,
-        length = _.size(items),
-        limit = parseInt(options.hash.limit, 10) || length,
-        from = parseInt(options.hash.from, 10) || 1,
-        to = parseInt(options.hash.to, 10) || length,
-        output = '',
-        data,
-        contextPath;
+    const {fn, inverse, hash, data, ids} = options;
+    let {columns, limit, from, to} = hash;
+    let length = _.size(items);
+    let output = '';
+    let frame;
+    let contextPath;
+
+    limit = parseInt(limit, 10) || length;
+    from = parseInt(from, 10) || 1;
+    to = parseInt(to, 10) || length;
 
     // If a limit option was sent through (aka not equal to default (length))
     // and from plus limit is less than the length, set to to the from + limit
@@ -46,43 +42,43 @@ module.exports = function foreach(items, options) {
         to = (from - 1) + limit;
     }
 
-    if (options.data && options.ids) {
-        contextPath = hbsUtils.appendContextPath(options.data.contextPath, options.ids[0]) + '.';
+    if (data && ids) {
+        contextPath = hbsUtils.appendContextPath(data.contextPath, ids[0]) + '.';
     }
 
-    if (options.data) {
-        data = createFrame(options.data);
+    if (data) {
+        frame = createFrame(data);
     }
 
     function execIteration(field, index, last) {
-        if (data) {
-            data.key = field;
-            data.index = index;
-            data.number = index + 1;
-            data.first = index === from - 1; // From uses 1-indexed, but array uses 0-indexed
-            data.last = !!last;
-            data.even = index % 2 === 1;
-            data.odd = !data.even;
-            data.rowStart = index % columns === 0;
-            data.rowEnd = index % columns === (columns - 1);
+        if (frame) {
+            frame.key = field;
+            frame.index = index;
+            frame.number = index + 1;
+            frame.first = index === from - 1; // From uses 1-indexed, but array uses 0-indexed
+            frame.last = !!last;
+            frame.even = index % 2 === 1;
+            frame.odd = !frame.even;
+            frame.rowStart = index % columns === 0;
+            frame.rowEnd = index % columns === (columns - 1);
             if (contextPath) {
-                data.contextPath = contextPath + field;
+                frame.contextPath = contextPath + field;
             }
         }
 
         output = output + fn(items[field], {
-            data: data,
+            data: frame,
             blockParams: hbsUtils.blockParams([items[field], field], [contextPath + field, null])
         });
     }
 
     function iterateCollection(context) {
         // Context is all posts on the blog
-        var current = 1;
+        let current = 1;
 
         // For each post, if it is a post number that fits within the from and to
         // send the key to execIteration to set to be added to the page
-        _.each(context, function (item, key) {
+        _.each(context, (_, key) => {
             if (current < from) {
                 current += 1;
                 return;
@@ -91,6 +87,7 @@ module.exports = function foreach(items, options) {
             if (current <= to) {
                 execIteration(key, current - 1, current === to);
             }
+
             current += 1;
         });
     }
