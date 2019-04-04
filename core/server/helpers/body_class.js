@@ -7,7 +7,7 @@ const {SafeString} = require('./proxy');
 // We use the name body_class to match the helper for consistency
 module.exports = function body_class(options) { // eslint-disable-line camelcase
     let classes = [];
-    const context = options.data.root.context;
+    const context = options.data.root.context || [];
     const obj = this.post || this.page;
     const tags = obj && obj.tags ? obj.tags : [];
     const isPage = !!(obj && obj.page);
