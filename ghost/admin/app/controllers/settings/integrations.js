@@ -28,5 +28,25 @@ export default Controller.extend({
     // screen display
     fetchIntegrations: task(function* () {
         return yield this.store.findAll('integration');
-    })
+    }),
+
+    // used by individual integration routes' `model` hooks
+    integrationModelHook(prop, value, route, transition) {
+        let integration = this.store.peekAll('integration').findBy(prop, value);
+
+        if (integration) {
+            return integration;
+        }
+
+        return this.fetchIntegrations.perform().then((integrations) => {
+            let integration = integrations.findBy(prop, value);
+
+            if (!integration) {
+                let path = transition.intent.url.replace(/^\//, '');
+                return route.replaceWith('error404', {path, status: 404});
+            }
+
+            return integration;
+        });
+    }
 });
