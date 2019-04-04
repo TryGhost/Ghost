@@ -217,6 +217,12 @@ module.exports = function MembersApi({
     httpHandler.staticRouter = staticRouter;
     httpHandler.apiRouter = apiRouter;
     httpHandler.memberUserObject = users;
+    httpHandler.getPublicConfig = function () {
+        return Promise.resolve({
+            publicKey,
+            issuer
+        });
+    };
     httpHandler.reconfigureSettings = function (data) {
         subscriptions = new Subscriptions(data.paymentConfig);
         users = Users({
