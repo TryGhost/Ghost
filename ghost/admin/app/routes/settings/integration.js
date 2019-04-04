@@ -14,28 +14,12 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     },
 
     model(params, transition) {
-        let integration = this.store.peekRecord('integration', params.integration_id);
-
-        if (integration) {
-            return integration;
-        }
-
-        // integration is not already in the store so use the integrations controller
-        // to fetch all of them and pull out the one we're interested in. Using the
-        // integrations controller means it's possible to navigate back to the integrations
-        // screen without triggering a loading state
-        return this.controllerFor('settings.integrations')
-            .fetchIntegrations.perform()
-            .then((integrations) => {
-                let integration = integrations.findBy('id', params.integration_id);
-
-                if (!integration) {
-                    let path = transition.intent.url.replace(/^\//, '');
-                    return this.replaceWith('error404', {path, status: 404});
-                }
-
-                return integration;
-            });
+        // use the integrations controller to fetch all integrations and pick
+        // out the one we want. Allows navigation back to integrations screen
+        // without a loading state
+        return this
+            .controllerFor('settings.integrations')
+            .integrationModelHook('id', params.integration_id, this, transition);
     },
 
     actions: {
