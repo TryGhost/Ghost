@@ -163,7 +163,7 @@ function sendEmail(member, {token}) {
 
 const defaultBlogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : 'Publication';
 const blogIconUrl = blogIcon.getIconUrl();
-const api = MembersApi({
+const membersApiInstance = MembersApi({
     authConfig: {
         issuer,
         publicKey,
@@ -195,7 +195,7 @@ const updateSettingFromModel = function updateSettingFromModel(settingModel) {
         let membersSettings = parseMembersSettings();
         const defaultBlogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : 'Publication';
         const blogIconUrl = blogIcon.getIconUrl();
-        api.reconfigureSettings({
+        membersApiInstance.reconfigureSettings({
             paymentConfig: {
                 processors: membersSettings.paymentProcessors
             },
@@ -210,7 +210,7 @@ const updateSettingFromModel = function updateSettingFromModel(settingModel) {
 // Bind to events to automatically keep subscription info up-to-date from settings
 common.events.on('settings.edited', updateSettingFromModel);
 
-module.exports = api;
+module.exports = membersApiInstance;
 module.exports.publicKey = publicKey;
 module.exports.isPaymentConfigured = function () {
     let membersSettings = parseMembersSettings();

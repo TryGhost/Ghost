@@ -210,20 +210,19 @@ module.exports = function MembersApi({
         });
     });
 
-    function httpHandler(req, res, next) {
-        return router.handle(req, res, next);
-    }
+    const apiInstance = {
 
-    httpHandler.staticRouter = staticRouter;
-    httpHandler.apiRouter = apiRouter;
-    httpHandler.memberUserObject = users;
-    httpHandler.getPublicConfig = function () {
+    };
+    apiInstance.staticRouter = staticRouter;
+    apiInstance.apiRouter = apiRouter;
+    apiInstance.memberUserObject = users;
+    apiInstance.getPublicConfig = function () {
         return Promise.resolve({
             publicKey,
             issuer
         });
     };
-    httpHandler.reconfigureSettings = function (data) {
+    apiInstance.reconfigureSettings = function (data) {
         subscriptions = new Subscriptions(data.paymentConfig);
         users = Users({
             subscriptions,
@@ -239,5 +238,5 @@ module.exports = function MembersApi({
         siteConfig = data.siteConfig;
     };
 
-    return httpHandler;
+    return apiInstance;
 };
