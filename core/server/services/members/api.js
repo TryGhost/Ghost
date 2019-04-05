@@ -27,9 +27,8 @@ function updateMember(member, newData) {
     });
 }
 
-function getMember(data, options) {
-    options = options || {};
-    return models.Member.findOne(data, options).then((model) => {
+function getMember(data, options = {}) {
+    return models.Member.findOne(data, Object.assign({require: true}, options)).then((model) => {
         if (!model) {
             return null;
         }
