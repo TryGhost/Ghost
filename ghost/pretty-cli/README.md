@@ -32,6 +32,15 @@ prettyCLI
   .parseAndExit();
 ```
 
+Pretty CLI also provides a common UI interface, providing log functions to output coloured messages to the UI:
+
+```
+const ui = require('@tryghost/pretty-cli/ui');`
+
+ui.log.info('Done');
+ui.log.warn('Uh Oh', 'Something went wrong');
+```
+
 You can also grab a fresh instance of the api with `prettyCLI.Api.get()`.
 
 The style rules used are available at `prettyCLI.styles`.
