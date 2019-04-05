@@ -215,7 +215,7 @@ module.exports = function MembersApi({
     };
     apiInstance.staticRouter = staticRouter;
     apiInstance.apiRouter = apiRouter;
-    apiInstance.memberUserObject = users;
+    apiInstance.members = users;
     apiInstance.getPublicConfig = function () {
         return Promise.resolve({
             publicKey,
