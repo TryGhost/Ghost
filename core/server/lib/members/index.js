@@ -211,10 +211,9 @@ module.exports = function MembersApi({
     });
 
     const apiInstance = {
-
+        staticRouter,
+        apiRouter
     };
-    apiInstance.staticRouter = staticRouter;
-    apiInstance.apiRouter = apiRouter;
     apiInstance.members = users;
     apiInstance.getPublicConfig = function () {
         return Promise.resolve({
