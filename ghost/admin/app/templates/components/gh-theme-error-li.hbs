@@ -1,13 +1,16 @@
 <a href="" class="theme-validation-toggle-details" {{action "toggleDetails"}} data-test-toggle-details>
-    <h4 class="theme-validation-rule-text">
-        {{{error.rule}}}
-    </h4>
-    <div class="theme-validation-rule-icon">
-        {{#if showDetails}}
-            {{svg-jar "arrow-down"}}
-        {{else}}
-            {{svg-jar "arrow-right"}}
-        {{/if}}
+    <div class="theme-validation-type-label"></div>
+    <div class="flex items-center flex-auto">
+        <h4 class="theme-validation-rule-text">
+            {{{error.rule}}}
+        </h4>
+        <div class="theme-validation-rule-icon">
+            {{#if showDetails}}
+                {{svg-jar "arrow-down"}}
+            {{else}}
+                {{svg-jar "arrow-right"}}
+            {{/if}}
+        </div>
     </div>
 </a>
 

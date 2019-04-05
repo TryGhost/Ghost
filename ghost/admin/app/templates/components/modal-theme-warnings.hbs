@@ -1,52 +1,60 @@
-<header class="modal-header">
-    <h1 data-test-theme-warnings-title>
-        {{#unless this.canActivate}}
-            {{this.title}}
-        {{else}}
-            {{this.title}} with {{#if this.errors}}errors{{else}}warnings{{/if}}
-        {{/unless}}
-    </h1>
-</header>
-<a class="close" href="#" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+<div class="theme-validation-container">
+    <header class="modal-header">
+        <h1 data-test-theme-warnings-title>
+            {{#unless this.canActivate}}
+                {{this.title}}
+            {{else}}
+                {{this.title}} with {{#if this.errors}}errors{{else}}warnings{{/if}}
+            {{/unless}}
+        </h1>
+    </header>
+    <a class="close" href="#" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
-<div class="modal-body">
-    <ul class="theme-validation-errors" data-test-theme-warnings>
+    <div class="modal-body">
         {{#if this.fatalErrors}}
-            <div class="theme-validation-errordescription">
-                <h2 class="theme-validation-errortype fatal">Fatal Errors</h2>
-                <p><em>(Must-fix to activate theme)</em></p>
+            <div>
+                <h2 class="mb0 mt4 f5 fw6 red">Fatal Errors</h2>
+                <p class="mb2 red">Must-fix to activate theme</p>
             </div>
+            <ul class="pa0" data-test-theme-warnings>
+            {{#each this.fatalErrors as |error|}}
+                <li class="theme-validation-item theme-fatal-error">
+                    {{gh-theme-error-li error=error}}
+                </li>
+            {{/each}}
+            </ul>
         {{/if}}
-        {{#each this.fatalErrors as |error|}}
-            <li class="theme-validation-item">
-                {{gh-theme-error-li error=error}}
-            </li>
-        {{/each}}
 
         {{#if this.errors}}
-            <div class="theme-validation-errordescription">
-                <h2 class="theme-validation-errortype">Errors</h2>
-                <p><em>(Very recommended to fix, functionality <span>could</span> be restricted)</em></p>
+            <div>
+                <h2 class="mb0 mt4 f5 fw6">Errors</h2>
+                <p class="mb2">Highly recommended to fix, functionality <span>could</span> be restricted</p>
             </div>
+
+            <ul class="pa0" data-test-theme-warnings>
+            {{#each this.errors as |error|}}
+                <li class="theme-validation-item theme-error">
+                    {{gh-theme-error-li error=error}}
+                </li>
+            {{/each}}
+            </ul>
         {{/if}}
-        {{#each this.errors as |error|}}
-            <li class="theme-validation-item">
-                {{gh-theme-error-li error=error}}
-            </li>
-        {{/each}}
 
         {{#if (and this.warnings (or this.fatalErrors this.errors))}}
-            <div class="theme-validation-errordescription">
-                <h2 class="theme-validation-errortype">Warnings</h2>
+            <div>
+                <h2 class="mb0 mt4 f5 fw6">Warnings</h2>
             </div>
         {{/if}}
-        {{#each this.warnings as |error|}}
-            <li class="theme-validation-item">
-                {{gh-theme-error-li error=error}}
-            </li>
-        {{/each}}
-
-    </ul>
+        {{#if this.warnings}}
+            <ul class="pa0" data-test-theme-warnings>
+            {{#each this.warnings as |error|}}
+                <li class="theme-validation-item theme-warning">
+                    {{gh-theme-error-li error=error}}
+                </li>
+            {{/each}}
+            </ul>
+        {{/if}}
+    </div>
 </div>
 
 <div class="modal-footer">
