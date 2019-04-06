@@ -6,6 +6,7 @@
     {{#dd.content class="gh-publishmenu-dropdown"}}
         {{#if (eq displayState "published")}}
         {{gh-publishmenu-published
+            post=post
             saveType=saveType
             setSaveType=(action "setSaveType")}}
 
