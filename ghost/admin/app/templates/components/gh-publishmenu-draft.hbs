@@ -1,10 +1,10 @@
-<header class="gh-publishmenu-heading">Ready to publish your post?</header>
+<header class="gh-publishmenu-heading">Ready to publish your {{post.displayName}}?</header>
 <section class="gh-publishmenu-content">
     <div class="gh-publishmenu-radio {{if (eq saveType "publish") "active"}}" {{action "setSaveType" "publish" on="click"}}>
         <div class="gh-publishmenu-radio-button" data-test-publishmenu-published-option></div>
         <div class="gh-publishmenu-radio-content">
             <div class="gh-publishmenu-radio-label">Set it live now</div>
-            <div class="gh-publishmenu-radio-desc">Publish this post immediately</div>
+            <div class="gh-publishmenu-radio-desc">Publish this {{post.displayName}} immediately</div>
         </div>
     </div>
     <div class="gh-publishmenu-radio {{if (eq saveType "schedule") "active"}}" {{action "setSaveType" "schedule" on="click"}}>

@@ -10,7 +10,7 @@
             <div class="settings-menu-content">
                 {{gh-image-uploader-with-preview
                     image=post.featureImage
-                    text="Upload post image"
+                    text=(concat "Upload " post.displayName " image")
                     allowUnsplash=true
                     update=(action "setCoverImage")
                     remove=(action "clearCoverImage")
