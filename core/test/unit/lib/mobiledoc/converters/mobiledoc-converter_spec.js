@@ -107,6 +107,22 @@ describe('Mobiledoc converter', function () {
             converter.render(mobiledoc, 2).should.eql('');
         });
 
+        it('doesn\'t remove last paragraph if it has markups', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                markups: [['em']],
+                atoms: [],
+                cards: [],
+                sections: [
+                    [1, 'p', [
+                        [0, [0], 1, 'This should be kept']
+                    ]]
+                ]
+            };
+
+            converter.render(mobiledoc, 2).should.eql('<p><em>This should be kept</em></p>');
+        });
+
         it('adds id attributes to headings', function () {
             let mobiledoc = {
                 version: '0.3.1',
