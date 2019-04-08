@@ -66,4 +66,22 @@ module.exports = class PaymentProcessorService {
             return this._processors[metadata.adapter].getSubscription(member, metadata);
         });
     }
+
+    removeSubscription(member, metadata) {
+        if (!metadata.adapter) {
+            return Promise.reject(new Error('removeSubscription(member, { adapter }) requires an adapter'));
+        }
+        return this._ready.then(() => {
+            return this._processors[metadata.adapter].removeSubscription(member, metadata);
+        });
+    }
+
+    removeCustomer(member, metadata) {
+        if (!metadata.adapter) {
+            return Promise.reject(new Error('removeCustomer(member, { adapter }) requires an adapter'));
+        }
+        return this._ready.then(() => {
+            return this._processors[metadata.adapter].removeCustomer(member, metadata);
+        });
+    }
 };
