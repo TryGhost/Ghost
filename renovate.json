@@ -11,7 +11,7 @@
   "node": {
     "supportPolicy": ["lts"]
    },
-  "ignorePaths": ["core/server/lib/members"],
+  "ignorePaths": ["core/server/lib/members", "core/test"],
   "packageRules": [
     {
       "groupName": "grunt + plugins",
