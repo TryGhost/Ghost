@@ -15,7 +15,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "mocha": "6.0.2",
+    "mocha": "6.1.1",
     "should": "13.2.3",
     "sinon": "7.3.1"
   },
