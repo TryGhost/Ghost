@@ -65,7 +65,13 @@ class BaseSiteMapGenerator {
     }
 
     getLastModifiedForDatum(datum) {
-        return datum.updated_at || datum.published_at || datum.created_at;
+        if (datum.updated_at || datum.published_at || datum.created_at) {
+            const modifiedDate = datum.updated_at || datum.published_at || datum.created_at
+
+            return moment(new Date(modifiedDate))
+        } else {
+            return moment(new Date())
+        }
     }
 
     updateLastModified(datum) {
@@ -82,7 +88,7 @@ class BaseSiteMapGenerator {
         node = {
             url: [
                 {loc: url},
-                {lastmod: moment(this.getLastModifiedForDatum(datum)).toISOString()}
+                {lastmod: moment(this.getLastModifiedForDatum(datum), moment.ISO_8601).toISOString()}
             ]
         };
 
