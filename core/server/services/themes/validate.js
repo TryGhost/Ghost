@@ -37,7 +37,10 @@ checkTheme = function checkTheme(theme, isZip) {
                     _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
                         errors: checkedTheme.results.error
                     }
-                )
+                ),
+                // NOTE: needs to be removed but first has to be decoupled
+                //       from logic here: https://github.com/TryGhost/Ghost/blob/9810834/core/server/services/themes/index.js#L56-L57
+                context: checkedTheme
             }));
         }).catch(function (error) {
             return Promise.reject(error);
