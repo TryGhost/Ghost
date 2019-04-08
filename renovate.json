@@ -11,6 +11,7 @@
   "node": {
     "supportPolicy": ["lts"]
    },
+  "ignoreDeps": ["nodemailer"],
   "ignorePaths": ["core/server/lib/members", "core/test"],
   "packageRules": [
     {
