@@ -142,38 +142,6 @@ const configureGrunt = function (grunt) {
             single: {}
         },
 
-        // ### grunt-mocha-istanbul
-        // Configuration for the mocha test coverage generator
-        // `grunt coverage`.
-        mocha_istanbul: {
-            coverage: {
-                // they can also have coverage generated for them & the order doesn't matter
-                src: [
-                    'core/test/unit'
-                ],
-                options: {
-                    mask: '**/*_spec.js',
-                    coverageFolder: 'core/test/coverage/unit',
-                    mochaOptions: ['--timeout=15000', '--require', 'core/server/overrides', '--exit'],
-                    excludes: ['core/client', 'core/server/built']
-                }
-            },
-            coverage_all: {
-                src: [
-                    'core/test/acceptance',
-                    'core/test/regression',
-                    'core/test/unit'
-                ],
-                options: {
-                    coverageFolder: 'core/test/coverage/all',
-                    mask: '**/*_spec.js',
-                    mochaOptions: ['--timeout=15000', '--require', 'core/server/overrides', '--exit'],
-                    excludes: ['core/client', 'core/server/built']
-                }
-
-            }
-        },
-
         bgShell: {
             client: {
                 cmd: function () {
@@ -368,7 +336,7 @@ const configureGrunt = function (grunt) {
     // * [Building assets](#building%20assets):
     //     `grunt init`, `grunt` & `grunt prod` or live reload with `grunt dev`
     // * [Testing](#testing):
-    //     `grunt validate`, the `grunt test-*` sub-tasks or generate a coverage report with `grunt coverage`.
+    //     `grunt validate`, the `grunt test-*` sub-tasks.
 
     // ### Help
     // Run `grunt help` on the commandline to get a print out of the available tasks and details of
@@ -504,7 +472,6 @@ const configureGrunt = function (grunt) {
     // Unit tests are run with [mocha](http://mochajs.org/) using
     // [should](https://github.com/visionmedia/should.js) to describe the tests in a highly readable style.
     // Unit tests do **not** touch the database.
-    // A coverage report can be generated for these tests using the `grunt test-coverage` task.
     grunt.registerTask('test-unit', 'Run unit tests (mocha)',
         ['test-setup', 'mochacli:unit']
     );
@@ -515,16 +482,6 @@ const configureGrunt = function (grunt) {
 
     grunt.registerTask('test-acceptance', 'Run acceptance tests',
         ['test-setup', 'mochacli:acceptance']
-    );
-
-    // ### Coverage
-    // `grunt coverage` will generate a report for the code coverage.
-    grunt.registerTask('coverage', 'Generate unit tests coverage report',
-        ['test-setup', 'mocha_istanbul:coverage']
-    );
-
-    grunt.registerTask('coverage-all', 'Generate full coverage report',
-        ['test-setup', 'mocha_istanbul:coverage_all']
     );
 
     // #### Master Warning *(Utility Task)*
