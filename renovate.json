@@ -1,5 +1,21 @@
 {
   "extends": [
-    "config:base"
-  ]
+    "config:base",
+     "group:jsTestMonMajor",
+     "group:linters",
+     ":maintainLockFilesWeekly",
+     ":prHourlyLimitNone",
+     ":automergeMinor"
+  ],
+  "travis": { "enabled": true },
+  "node": {
+    "supportPolicy": ["lts"]
+   },
+  "ignorePaths": ["core/server/lib/members"],
+  "packageRules": [
+    {
+      "groupName": "grunt + plugins",
+      "packagePatterns": ["^grunt"]
+    }
+   ]
 }
