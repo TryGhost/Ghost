@@ -85,15 +85,6 @@ bower_components
 .bowerrc
 projectFilesBackup
 
-# vim-related
-[._]*.s[a-w][a-z]
-[._]s[a-w][a-z]
-*.un~
-Session.vim
-.netrwhist
-.vimrc
-*~
-
 # TernJS
 .tern-project
 
