@@ -65,7 +65,13 @@ class BaseSiteMapGenerator {
     }
 
     getLastModifiedForDatum(datum) {
-        return datum.updated_at || datum.published_at || datum.created_at;
+        if (datum.updated_at || datum.published_at || datum.created_at) {
+            const modifiedDate = datum.updated_at || datum.published_at || datum.created_at;
+
+            return moment(modifiedDate);
+        } else {
+            return moment();
+        }
     }
 
     updateLastModified(datum) {
