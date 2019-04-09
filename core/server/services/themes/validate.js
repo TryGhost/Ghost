@@ -1,7 +1,9 @@
-var Promise = require('bluebird'),
-    config = require('../../config'),
-    common = require('../../lib/common'),
-    checkTheme;
+const _ = require('lodash');
+const Promise = require('bluebird');
+const config = require('../../config');
+const common = require('../../lib/common');
+
+let checkTheme;
 
 checkTheme = function checkTheme(theme, isZip) {
     var checkPromise,
@@ -31,7 +33,13 @@ checkTheme = function checkTheme(theme, isZip) {
 
             return Promise.reject(new common.errors.ThemeValidationError({
                 message: common.i18n.t('errors.api.themes.invalidTheme'),
-                errorDetails: checkedTheme.results.error,
+                errorDetails: Object.assign(
+                    _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
+                        errors: checkedTheme.results.error
+                    }
+                ),
+                // NOTE: needs to be removed but first has to be decoupled
+                //       from logic here: https://github.com/TryGhost/Ghost/blob/9810834/core/server/services/themes/index.js#L56-L57
                 context: checkedTheme
             }));
         }).catch(function (error) {
