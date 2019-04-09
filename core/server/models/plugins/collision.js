@@ -63,10 +63,9 @@ module.exports = function (Bookshelf) {
                                     message: 'Saving failed! Someone else is editing this post.',
                                     code: 'UPDATE_COLLISION',
                                     level: 'critical',
-                                    context: {
+                                    errorDetails: {
                                         clientUpdatedAt: self.clientData.updated_at,
-                                        serverUpdatedAt: self.serverData.updated_at,
-                                        changed: changed
+                                        serverUpdatedAt: self.serverData.updated_at
                                     }
                                 }));
                             }
