@@ -9,8 +9,7 @@
   "ignoreDeps": [
     "ember-drag-drop",
     "normalize.css",
-    "validator",
-    "ember-exam"
+    "validator"
   ],
   "ignorePaths": ["lib/koenig-editor/package.json"],
   "travis": { "enabled": true },
