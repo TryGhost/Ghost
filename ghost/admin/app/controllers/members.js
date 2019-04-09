@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import moment from 'moment';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -41,7 +42,7 @@ export default Controller.extend({
             // fetch any records modified since last fetch
             results = yield this.store.query('member', {
                 limit: 'all',
-                filter: `updated_at:>='${this._lastFetchDate.toISOString()}'`
+                filter: `updated_at:>='${moment.utc(this._lastFetchDate).format('YYYY-MM-DD HH:mm:ss')}'`
             });
         } else {
             // fetch all records
