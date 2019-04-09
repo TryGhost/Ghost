@@ -27,7 +27,6 @@ module.exports = [
                 'twitter_title',
                 'twitter_description',
                 'custom_template',
-                'feature_image',
                 'locale'
             ],
             withRelated: ['tags', 'authors'],
@@ -68,7 +67,6 @@ module.exports = [
                 'twitter_title',
                 'twitter_description',
                 'custom_template',
-                'feature_image',
                 'locale',
                 'tags',
                 'authors',

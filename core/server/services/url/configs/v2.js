@@ -30,7 +30,6 @@ module.exports = [
                 'twitter_title',
                 'twitter_description',
                 'custom_template',
-                'feature_image',
                 'locale'
             ],
             withRelated: ['tags', 'authors'],
@@ -74,7 +73,6 @@ module.exports = [
                 'twitter_title',
                 'twitter_description',
                 'custom_template',
-                'feature_image',
                 'locale',
                 'tags',
                 'authors',
@@ -98,9 +96,7 @@ module.exports = [
                 'description',
                 'meta_title',
                 'meta_description',
-                'parent_id',
-                'created_at',
-                'updated_at'
+                'parent_id'
             ],
             filter: 'visibility:public',
             shouldHavePosts: {
