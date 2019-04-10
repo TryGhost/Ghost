@@ -1,4 +1,4 @@
-/* global window document atob */
+/* global window document atob fetch */
 const domready = require('domready');
 const layer2 = require('@tryghost/members-layer2');
 
@@ -33,15 +33,21 @@ function setupMembersListeners() {
     const signoutEls = document.querySelectorAll('[data-members-signout]');
 
     function setCookie(token) {
-        const claims = getClaims(token);
-        const expiry = new Date(claims.exp * 1000);
-        document.cookie = 'member=' + token + ';Path=/;expires=' + expiry.toUTCString();
-        return true;
+        return fetch('/members/ssr', {
+            method: 'post',
+            credentials: 'include',
+            body: token
+        }).then(function (res) {
+            return !!res.ok;
+        });
     }
 
     function removeCookie() {
-        document.cookie = 'member=null;Path=/;max-age=0';
-        return true;
+        return fetch('/members/ssr', {
+            method: 'delete'
+        }).then(function (res) {
+            return !!res.ok;
+        });
     }
 
     members.on('signedin', function () {
