@@ -81,6 +81,15 @@ module.exports = function setupSiteApp(options = {}) {
             res.end(err.message);
         });
     });
+    siteApp.del('/members/ssr', function (req, res) {
+        membersService.api.ssr.deleteSession(req, res).then(() => {
+            res.writeHead(204);
+            res.end();
+        }).catch((err) => {
+            res.writeHead(err.code || 500);
+            res.end(err.message);
+        });
+    });
     siteApp.use(function (req, res, next) {
         membersService.api.ssr.getMemberDataFromSession(req, res).then((member) => {
             console.log({member});
