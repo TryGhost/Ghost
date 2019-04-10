@@ -2,6 +2,7 @@ const url = require('url');
 const settingsCache = require('../settings/cache');
 const config = require('../../config');
 const MembersApi = require('../../lib/members');
+const MembersSSR = require('members-ssr');
 const common = require('../../lib/common');
 const models = require('../../models');
 const mail = require('../mail');
@@ -210,6 +211,11 @@ const updateSettingFromModel = function updateSettingFromModel(settingModel) {
 common.events.on('settings.edited', updateSettingFromModel);
 
 module.exports = membersApiInstance;
+module.exports.ssr = MembersSSR({
+    cookieSecure: false,
+    cookieKeys: ['fuckoff'],
+    membersApi: membersApiInstance
+});
 module.exports.publicKey = publicKey;
 module.exports.isPaymentConfigured = function () {
     let membersSettings = parseMembersSettings();
