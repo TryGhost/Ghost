@@ -36,10 +36,12 @@ function setupMembersListeners() {
         const claims = getClaims(token);
         const expiry = new Date(claims.exp * 1000);
         document.cookie = 'member=' + token + ';Path=/;expires=' + expiry.toUTCString();
+        return true;
     }
 
     function removeCookie() {
         document.cookie = 'member=null;Path=/;max-age=0';
+        return true;
     }
 
     members.on('signedin', function () {
@@ -65,8 +67,7 @@ function setupMembersListeners() {
         event.preventDefault();
         members.signout()
             .then(() => {
-                removeCookie();
-                return true;
+                return removeCookie();
             })
             .then(reload);
     }
@@ -79,8 +80,7 @@ function setupMembersListeners() {
                     audience: tokenAudience,
                     fresh: true
                 }).then(function (token) {
-                    setCookie(token);
-                    return true;
+                    return setCookie(token);
                 });
             })
             .then(reload);
@@ -94,8 +94,7 @@ function setupMembersListeners() {
                     audience: tokenAudience,
                     fresh: true
                 }).then(function (token) {
-                    setCookie(token);
-                    return true;
+                    return setCookie(token);
                 });
             })
             .then(reload);
