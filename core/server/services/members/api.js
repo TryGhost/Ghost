@@ -213,7 +213,7 @@ common.events.on('settings.edited', updateSettingFromModel);
 module.exports = membersApiInstance;
 module.exports.ssr = MembersSSR({
     cookieSecure: false,
-    cookieKeys: ['fuckoff'],
+    cookieKeys: [settingsCache.get('theme_session_secret')],
     membersApi: membersApiInstance
 });
 module.exports.isPaymentConfigured = function () {
