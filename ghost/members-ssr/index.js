@@ -86,17 +86,18 @@ module.exports = function create(options = EMPTY) {
     }, cookieConfig);
 
     const getMemberDataFromSession = wrapFn((req, res, {cookies}) => {
-        const token = cookies.get(cookieName, {
-            signed: true
-        });
-        if (!token) {
+        try {
+            const token = cookies.get(cookieName, {
+                signed: true
+            });
+            return verifyJwt(token).then((claims) => {
+                return membersApi.getMember(claims.sub, token);
+            });
+        } catch (e) {
             throw new BadRequestError({
                 message: `Cookie ${cookieName} not found`
             });
         }
-        return verifyJwt(token).then((claims) => {
-            return membersApi.getMember(claims.sub, token);
-        });
     }, cookieConfig);
 
     return {
