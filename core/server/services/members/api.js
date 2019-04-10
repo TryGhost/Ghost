@@ -216,7 +216,6 @@ module.exports.ssr = MembersSSR({
     cookieKeys: ['fuckoff'],
     membersApi: membersApiInstance
 });
-module.exports.publicKey = publicKey;
 module.exports.isPaymentConfigured = function () {
     let membersSettings = parseMembersSettings();
     return !!membersSettings.paymentProcessors.length;
