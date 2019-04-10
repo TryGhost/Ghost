@@ -10,6 +10,7 @@ const storage = require('../../adapters/storage');
 const urlService = require('../../services/url');
 const sitemapHandler = require('../../data/xml/sitemap/handler');
 const themeMiddleware = require('../../services/themes').middleware;
+const membersService = require('../../services/members');
 const siteRoutes = require('./routes');
 const shared = require('../shared');
 
@@ -69,7 +70,29 @@ module.exports = function setupSiteApp(options = {}) {
     require('../../helpers').loadCoreHelpers();
     debug('Helpers done');
 
+    // @TODO only loads this stuff if members is enabled
     // Set req.member & res.locals.member if a cookie is set
+    siteApp.post('/members/ssr', function (req, res) {
+        membersService.api.ssr.exchangeTokenForSession(req, res).then(() => {
+            res.writeHead(200);
+            res.end();
+        }).catch((err) => {
+            res.writeHead(err.code || 400);
+            res.end(err.message);
+        });
+    });
+    siteApp.use(function (req, res, next) {
+        membersService.api.ssr.getMemberDataFromSession(req, res).then((member) => {
+            console.log({member});
+            req.member = member;
+            next();
+        }).catch((err) => {
+            console.log(`Error!! ${err.message}`);
+            // @TODO log error?
+            req.member = null;
+            next();
+        });
+    });
     siteApp.use(function (req, res, next) {
         res.locals.member = req.member;
         next();
