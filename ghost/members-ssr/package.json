@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "bluebird": "^3.5.3",
+    "concat-stream": "^2.0.0",
     "cookies": "^0.7.3",
     "ghost-ignition": "^3.0.4",
     "jsonwebtoken": "^8.5.1",
