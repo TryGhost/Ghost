@@ -221,6 +221,11 @@ module.exports = function MembersApi({
             issuer
         });
     };
+    apiInstance.getMember = function (id, token) {
+        return decodeToken(token).then(() => {
+            return users.get({id});
+        });
+    };
     apiInstance.reconfigureSettings = function (data) {
         subscriptions = new Subscriptions(data.paymentConfig);
         users = Users({
