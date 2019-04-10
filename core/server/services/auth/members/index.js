@@ -24,7 +24,11 @@ module.exports = {
                 audience: siteOrigin,
                 issuer: siteOrigin,
                 algorithm: 'RS512',
-                secret: membersService.api.publicKey,
+                secret(req, payload, done) {
+                    membersService.getPublicConfig().then(({publicKey}) => {
+                        done(null, publicKey);
+                    }).catch(done);
+                },
                 getToken(req) {
                     if (!req.get('authorization')) {
                         return null;
