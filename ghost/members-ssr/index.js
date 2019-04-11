@@ -83,6 +83,16 @@ module.exports = function create(options = EMPTY) {
         });
     }, cookieConfig);
 
+    const deleteSession = wrapFn((req, res, {cookies}) => {
+        cookies.set(cookieName, {
+            signed: true,
+            httpOnly: true,
+            sameSite: 'lax',
+            maxAge: cookieMaxAge,
+            path: cookiePath
+        });
+    }, cookieConfig);
+
     const getMemberDataFromSession = wrapFn((req, res, {cookies}) => {
         try {
             const token = cookies.get(cookieName, {
@@ -100,6 +110,7 @@ module.exports = function create(options = EMPTY) {
 
     return {
         exchangeTokenForSession,
+        deleteSession,
         getMemberDataFromSession
     };
 };
