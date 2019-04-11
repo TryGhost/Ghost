@@ -12,7 +12,7 @@ function reload(success) {
 
 function setupMembersListeners() {
     const members = layer2({membersUrl: window.membersUrl});
-    const tokenAudience = new URL(window.location.href).origin;
+    const tokenAudience = new URL(window.location.href).origin + '/ghost/api/v2/members/';
 
     const [hashMatch, hash, query] = window.location.hash.match(/^#([^?]+)\??(.*)$/) || [];
 
