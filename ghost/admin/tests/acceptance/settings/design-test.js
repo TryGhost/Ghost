@@ -492,8 +492,11 @@ describe('Acceptance: Settings - Design', function () {
                         {
                             message: 'Theme is not compatible or contains errors.',
                             type: 'ThemeValidationError',
-                            details: [
-                                {
+                            details: {
+                                checkedVersion: '2.x',
+                                name: 'casper',
+                                version: '2.9.7',
+                                errors: [{
                                     level: 'error',
                                     rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
                                     details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.</p>',
@@ -502,9 +505,9 @@ describe('Acceptance: Settings - Design', function () {
                                             ref: '/assets/javascripts/ui.js'
                                         }
                                     ]
-                                },
-                                {
+                                }, {
                                     level: 'error',
+                                    fatal: true,
                                     rule: 'Templates must contain valid Handlebars.',
                                     failures: [
                                         {
@@ -516,8 +519,8 @@ describe('Acceptance: Settings - Design', function () {
                                             message: 'The partial index_meta could not be found'
                                         }
                                     ]
-                                }
-                            ]
+                                }]
+                            }
                         }
                     ]
                 });
@@ -533,14 +536,14 @@ describe('Acceptance: Settings - Design', function () {
             ).to.equal('Activation failed');
 
             expect(
-                find('[data-test-theme-warnings]').textContent,
+                find('[data-test-theme-fatal-errors]').textContent,
                 'top-level errors are displayed in activation errors'
             ).to.match(/Templates must contain valid Handlebars/);
 
-            await click('[data-test-toggle-details]');
+            await click('[data-test-theme-errors] [data-test-toggle-details]');
 
             expect(
-                find('.theme-validation-details').textContent,
+                find('[data-test-theme-errors] .theme-validation-details').textContent,
                 'top-level errors do not escape HTML in activation errors'
             ).to.match(/The listed files should be included using the {{asset}} helper/);
 
