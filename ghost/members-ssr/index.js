@@ -67,9 +67,9 @@ module.exports = function create(options = EMPTY) {
     const exchangeTokenForSession = wrapFn((req, res, {body, cookies}) => {
         const token = body;
         if (!body || typeof body !== 'string') {
-            throw new BadRequestError({
+            return Promise.reject(new BadRequestError({
                 message: 'Expected body containing JWT'
-            });
+            }));
         }
 
         return verifyJwt(token).then(() => {
@@ -92,9 +92,9 @@ module.exports = function create(options = EMPTY) {
                 return membersApi.getMember(claims.sub, token);
             });
         } catch (e) {
-            throw new BadRequestError({
+            return Promise.reject(new BadRequestError({
                 message: `Cookie ${cookieName} not found`
-            });
+            }));
         }
     }, cookieConfig);
 
