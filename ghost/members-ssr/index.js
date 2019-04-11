@@ -44,8 +44,6 @@ module.exports = function create(options = EMPTY) {
         throw new Error('Missing option cookieKeys');
     }
 
-    const audience = ['members-ssr'];
-
     const cookieConfig = {
         keys: [].concat(cookieKeys),
         secure: cookieSecure
@@ -56,7 +54,7 @@ module.exports = function create(options = EMPTY) {
             jwt.verify(token, publicKey, {
                 algorithms: ['RS512'],
                 issuer,
-                audience
+                audience: issuer
             }, (err, claims) => {
                 if (err) {
                     reject(new UnauthorizedError({err}));
