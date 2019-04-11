@@ -30,7 +30,7 @@ const server = require('http').createServer((req, res) => {
             res.writeHead(200);
             res.end();
         }).catch((err) => {
-            res.writeHead(err.code);
+            res.writeHead(err.statusCode);
             res.end(err.message);
         });
     } else {
@@ -40,7 +40,7 @@ const server = require('http').createServer((req, res) => {
             });
             res.end(JSON.stringify(member));
         }).catch((err) => {
-            res.writeHead(err.code);
+            res.writeHead(err.statusCode);
             res.end(err.message);
         });
     }
@@ -51,7 +51,7 @@ server.listen(0, '127.0.0.1', () => {
     const url = `http://${address}:${port}`;
     const token = jwt.sign({}, keys.private, {
         issuer: 'example.com',
-        audience: 'members-ssr',
+        audience: 'example.com',
         algorithm: 'RS512'
     });
 
