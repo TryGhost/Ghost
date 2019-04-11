@@ -16,7 +16,8 @@ const MembersSSR = require('./');
 
 const {
     exchangeTokenForSession,
-    getMemberDataFromSession
+    getMemberDataFromSession,
+    deleteSession
 } = MembersSSR({
     cookieMaxAge: 1000 * 60 * 60 * 24 * 184, // 184 days max cookie age (default)
     cookieSecure: true, // Secure cookie (default)
@@ -26,25 +27,29 @@ const {
     membersApi: membersApiInstance // Used to fetch data and verify tokens
 });
 
+const handleError = res => err => {
+    res.writeHead(err.statusCode);
+    res.end(err.message);
+};
+
 require('http').createServer((req, res) => {
     if (req.method.toLowerCase() === 'post') {
         exchangeTokenForSession(req, res).then(() => {
             res.writeHead(200);
             res.end();
-        }).catch((err) => {
-            res.writeHead(err.code);
-            res.end(err.message);
-        });
+        }).catch(handleError(res));
+    } else if (req.method.toLowerCase() === 'delete') {
+        deleteSession(req, res).then(() => {
+            res.writeHead(204);
+            res.end();
+        }).catch(handleError(res));
     } else {
         getMemberDataFromSession(req, res).then((member) => {
             res.writeHead(200, {
                 'Content-Type': 'application/json'
             });
             res.end(JSON.stringify(member));
-        }).catch((err) => {
-            res.writeHead(err.code);
-            res.end(err.message);
-        });
+        }).catch(handleError(res));
     }
 }).listen(3665);
 ```
