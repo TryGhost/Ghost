@@ -77,7 +77,7 @@ module.exports = function setupSiteApp(options = {}) {
             res.writeHead(200);
             res.end();
         }).catch((err) => {
-            res.writeHead(err.code || 400);
+            res.writeHead(err.statusCode);
             res.end(err.message);
         });
     });
@@ -86,7 +86,7 @@ module.exports = function setupSiteApp(options = {}) {
             res.writeHead(204);
             res.end();
         }).catch((err) => {
-            res.writeHead(err.code || 500);
+            res.writeHead(err.statusCode);
             res.end(err.message);
         });
     });
