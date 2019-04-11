@@ -1,4 +1,4 @@
-/* global window document atob fetch */
+/* global window document fetch */
 const domready = require('domready');
 const layer2 = require('@tryghost/members-layer2');
 
@@ -51,13 +51,6 @@ function setupMembersListeners() {
     }
 
     members.on('signedin', function () {
-        const currentCookies = document.cookie;
-        const [hasCurrentToken, currentToken] = currentCookies.match(/member=([a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]*)/) || [null]; // eslint-disable-line no-unused-vars
-
-        if (currentToken && isTokenExpired(currentToken)) {
-            return members.signout();
-        }
-
         members.getToken({
             audience: tokenAudience
         }).then(function (token) {
@@ -116,34 +109,5 @@ function setupMembersListeners() {
 
     for (let el of signoutEls) {
         el.addEventListener('click', signout);
-    }
-}
-
-function isTokenExpired(token) {
-    const claims = getClaims(token);
-
-    if (!claims) {
-        return true;
-    }
-
-    const expiry = claims.exp * 1000;
-    const now = Date.now();
-
-    if (expiry < now) {
-        return true;
-    }
-
-    return false;
-}
-
-function getClaims(token) {
-    try {
-        const [header, claims, signature] = token.split('.'); // eslint-disable-line no-unused-vars
-
-        const parsedClaims = JSON.parse(atob(claims.replace('+', '-').replace('/', '_')));
-
-        return parsedClaims;
-    } catch (e) {
-        return null;
     }
 }
