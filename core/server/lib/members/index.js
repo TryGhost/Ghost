@@ -14,10 +14,10 @@ module.exports = function MembersApi({
         privateKey,
         publicKey,
         sessionSecret,
-        ssoOrigin
+        ssoOrigin,
+        accessControl
     },
     paymentConfig,
-    validateAudience,
     createMember,
     validateMember,
     updateMember,
@@ -53,6 +53,20 @@ module.exports = function MembersApi({
     /* session */
     const {getCookie, setCookie, removeCookie} = Cookies(sessionSecret);
 
+    function validateAccess({audience, origin}) {
+        const audienceLookup = accessControl[origin] || {
+            [origin]: accessControl['*']
+        };
+
+        const tokenSettings = audienceLookup[audience];
+
+        if (tokenSettings) {
+            return Promise.resolve(tokenSettings);
+        }
+
+        return Promise.reject();
+    }
+
     /* token */
     apiRouter.post('/token', getData('audience'), (req, res) => {
         const {signedin} = getCookie(req);
@@ -65,16 +79,16 @@ module.exports = function MembersApi({
 
         const {audience, origin} = req.data;
 
-        validateAudience({audience, origin, id: signedin})
-            .then(() => {
-                return users.get({id: signedin});
+        validateAccess({audience, origin})
+            .then(({tokenLength}) => {
+                return users.get({id: signedin})
+                    .then(member => encodeToken({
+                        sub: member.id,
+                        plans: member.subscriptions.map(sub => sub.plan),
+                        exp: tokenLength,
+                        aud: audience
+                    }));
             })
-            .then(member => encodeToken({
-                sub: member.id,
-                plans: member.subscriptions.map(sub => sub.plan),
-                exp: '20m',
-                aud: audience
-            }))
             .then(token => res.end(token))
             .catch(handleError(403, res));
     });
