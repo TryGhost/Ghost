@@ -73,40 +73,7 @@ function validateMember({email, password}) {
 }
 
 function parseMembersSettings() {
-    let membersSettings = settingsCache.get('members_subscription_settings');
-    if (!membersSettings) {
-        membersSettings = {
-            isPaid: false,
-            paymentProcessors: [{
-                adapter: 'stripe',
-                config: {
-                    secret_token: '',
-                    public_token: '',
-                    product: {
-                        name: 'Ghost Subscription'
-                    },
-                    plans: [
-                        {
-                            name: 'Monthly',
-                            currency: 'usd',
-                            interval: 'month',
-                            amount: ''
-                        },
-                        {
-                            name: 'Yearly',
-                            currency: 'usd',
-                            interval: 'year',
-                            amount: ''
-                        }
-                    ]
-                }
-            }]
-        };
-    }
-    if (!membersSettings.isPaid) {
-        membersSettings.paymentProcessors = [];
-    }
-    return membersSettings;
+    return settingsCache.get('members_subscription_settings');
 }
 
 const publicKey = settingsCache.get('members_public_key');
