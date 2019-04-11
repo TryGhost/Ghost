@@ -92,11 +92,9 @@ module.exports = function setupSiteApp(options = {}) {
     });
     siteApp.use(function (req, res, next) {
         membersService.api.ssr.getMemberDataFromSession(req, res).then((member) => {
-            console.log({member});
             req.member = member;
             next();
-        }).catch((err) => {
-            console.log(`Error!! ${err.message}`);
+        }).catch(() => {
             // @TODO log error?
             req.member = null;
             next();
