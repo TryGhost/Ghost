@@ -16,7 +16,7 @@
                 <h2 class="mb0 mt4 f5 fw6 red">Fatal Errors</h2>
                 <p class="mb2 red">Must-fix to activate theme</p>
             </div>
-            <ul class="pa0" data-test-theme-warnings>
+            <ul class="pa0" data-test-theme-fatal-errors>
             {{#each this.fatalErrors as |error|}}
                 <li class="theme-validation-item theme-fatal-error">
                     {{gh-theme-error-li error=error}}
@@ -31,7 +31,7 @@
                 <p class="mb2">Highly recommended to fix, functionality <span>could</span> be restricted</p>
             </div>
 
-            <ul class="pa0" data-test-theme-warnings>
+            <ul class="pa0" data-test-theme-errors>
             {{#each this.errors as |error|}}
                 <li class="theme-validation-item theme-error">
                     {{gh-theme-error-li error=error}}
