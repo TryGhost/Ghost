@@ -106,12 +106,6 @@ module.exports = function setupSiteApp(options = {}) {
         res.locals.member = req.member;
         next();
     });
-    siteApp.use(function (err, req, res, next) {
-        if (err.name === 'UnauthorizedError') {
-            return next();
-        }
-        next(err);
-    });
 
     // Theme middleware
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
