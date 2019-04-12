@@ -206,7 +206,17 @@ module.exports = function MembersApi({
     /* http */
     const staticRouter = Router();
     staticRouter.use('/static', static(require('path').join(__dirname, './static/auth/dist')));
-    staticRouter.use('/gateway', static(require('path').join(__dirname, './static/gateway')));
+    staticRouter.get('/gateway', (req, res) => {
+        res.status(200).send(`
+            <script>
+                window.membersApiUrl = "${issuer}";
+            </script>
+            <script src="bundle.js"></script>
+        `);
+    });
+    staticRouter.get('/gateway/bundle.js', (req, res) => {
+        res.status(200).sendFile(require('path').join(__dirname, './static/gateway/bundle.js'));
+    });
     staticRouter.get('/*', (req, res) => {
         res.status(200).sendFile(require('path').join(__dirname, './static/auth/dist/index.html'));
     });
