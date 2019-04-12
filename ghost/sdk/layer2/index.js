@@ -11,7 +11,7 @@ module.exports = function layer2(options) {
         container
     });
 
-    var loadAuth = loadFrame(authUrl, container).then(function (frame) {
+    var loadAuth = lazyLoadFrame(authUrl, container).then(function (frame) {
         frame.style.position = 'fixed';
         frame.style.width = '100%';
         frame.style.height = '100%';
@@ -22,7 +22,7 @@ module.exports = function layer2(options) {
     });
 
     function openAuth(hash, query = '') {
-        return loadAuth.then(function (frame) {
+        return loadAuth().then(function (frame) {
             return new Promise(function (resolve) {
                 frame.src = `${authUrl}#${hash}?${query}`;
                 frame.style.display = 'block';
@@ -70,6 +70,17 @@ module.exports = function layer2(options) {
         resetPassword
     });
 };
+
+function lazyLoadFrame(src, container) {
+    let promise;
+    return function getFrame() {
+        if (promise) {
+            return promise;
+        }
+        promise = loadFrame(src, container);
+        return getFrame();
+    }
+}
 
 function loadFrame(src, container = document.body) {
     return new Promise(function (resolve) {
