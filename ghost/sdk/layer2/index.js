@@ -62,12 +62,19 @@ module.exports = function layer2(options) {
         return members.getToken({audience, fresh});
     }
 
+    function getSSRToken({fresh} = {}) {
+        return members.getConfig().then(function ({issuer}) {
+            return members.getToken({audience: issuer, fresh});
+        });
+    }
+
     function signout() {
         return members.signout();
     }
 
     return Object.assign(members.bus, {
         getToken,
+        getSSRToken,
         signout,
         signin,
         upgrade,
