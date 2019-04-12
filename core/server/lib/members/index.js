@@ -208,7 +208,7 @@ module.exports = function MembersApi({
     staticRouter.use('/static', static(require('path').join(__dirname, './static/auth/dist')));
     staticRouter.use('/gateway', static(require('path').join(__dirname, './static/gateway')));
     staticRouter.get('/*', (req, res) => {
-        res.sendFile(require('path').join(__dirname, './static/auth/dist/index.html'));
+        res.status(200).sendFile(require('path').join(__dirname, './static/auth/dist/index.html'));
     });
 
     /* http */
