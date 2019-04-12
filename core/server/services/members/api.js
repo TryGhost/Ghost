@@ -74,7 +74,40 @@ function validateMember({email, password}) {
 }
 
 function getSubscriptionSettings() {
-    return settingsCache.get('members_subscription_settings');
+    let membersSettings = settingsCache.get('members_subscription_settings');
+    if (!membersSettings) {
+        membersSettings = {
+            isPaid: false,
+            paymentProcessors: [{
+                adapter: 'stripe',
+                config: {
+                    secret_token: '',
+                    public_token: '',
+                    product: {
+                        name: 'Ghost Subscription'
+                    },
+                    plans: [
+                        {
+                            name: 'Monthly',
+                            currency: 'usd',
+                            interval: 'month',
+                            amount: ''
+                        },
+                        {
+                            name: 'Yearly',
+                            currency: 'usd',
+                            interval: 'year',
+                            amount: ''
+                        }
+                    ]
+                }
+            }]
+        };
+    }
+    if (!membersSettings.isPaid) {
+        membersSettings.paymentProcessors = [];
+    }
+    return membersSettings;
 }
 
 const siteUrl = urlService.utils.getSiteUrl();
