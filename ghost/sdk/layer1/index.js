@@ -5,6 +5,7 @@ var events = require('minivents');
 module.exports = function layer1(options) {
     var members = {
         getToken,
+        getConfig,
         signout,
         signin,
         signup,
@@ -27,6 +28,10 @@ module.exports = function layer1(options) {
 
     function getToken({audience, fresh}) {
         return loadGateway.then(gatewayFn('getToken', {audience, fresh}));
+    }
+
+    function getConfig() {
+        return loadGateway.then(gatewayFn('getConfig'));
     }
 
     function signout() {
