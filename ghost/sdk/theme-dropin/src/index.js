@@ -12,7 +12,6 @@ function reload(success) {
 
 function setupMembersListeners() {
     const members = layer2({membersUrl: window.membersUrl});
-    const tokenAudience = new URL(window.location.href).origin + '/ghost/api/v2/members/';
 
     const [hashMatch, hash, query] = window.location.hash.match(/^#([^?]+)\??(.*)$/) || [];
 
@@ -51,9 +50,7 @@ function setupMembersListeners() {
     }
 
     members.on('signedin', function () {
-        members.getToken({
-            audience: tokenAudience
-        }).then(function (token) {
+        members.getSSRToken({fresh: true}).then(function (token) {
             setCookie(token);
         });
     });
@@ -75,8 +72,7 @@ function setupMembersListeners() {
         event.preventDefault();
         members.signin()
             .then(() => {
-                return members.getToken({
-                    audience: tokenAudience,
+                return members.getSSRToken({
                     fresh: true
                 }).then(function (token) {
                     return setCookie(token);
@@ -89,8 +85,7 @@ function setupMembersListeners() {
         event.preventDefault();
         members.upgrade()
             .then(() => {
-                return members.getToken({
-                    audience: tokenAudience,
+                return members.getSSRToken({
                     fresh: true
                 }).then(function (token) {
                     return setCookie(token);
