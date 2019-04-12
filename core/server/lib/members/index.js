@@ -100,9 +100,10 @@ module.exports = function MembersApi({
                     return subscriptions.getPublicConfig(adapter);
                 }));
             })
-            .then(data => res.json({
-                paymentConfig: data,
-                siteConfig: siteConfig
+            .then(paymentConfig => res.json({
+                paymentConfig,
+                issuer,
+                siteConfig
             }))
             .catch(handleError(500, res));
     });
