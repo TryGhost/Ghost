@@ -11,18 +11,22 @@ module.exports = function layer2(options) {
         container
     });
 
-    var loadAuth = lazyLoadFrame(authUrl, container).then(function (frame) {
-        frame.style.position = 'fixed';
-        frame.style.width = '100%';
-        frame.style.height = '100%';
-        frame.style.background = 'transparent';
-        frame.style.top = '0';
-        frame.style['z-index'] = '9999';
-        return frame;
-    });
+    var loadAuth = lazyLoadFrame(authUrl, container);
+
+    var getAuthFrame = function () {
+        return loadAuth().then(function (frame) {
+            frame.style.position = 'fixed';
+            frame.style.width = '100%';
+            frame.style.height = '100%';
+            frame.style.background = 'transparent';
+            frame.style.top = '0';
+            frame.style['z-index'] = '9999';
+            return frame;
+        });
+    };
 
     function openAuth(hash, query = '') {
-        return loadAuth().then(function (frame) {
+        return getAuthFrame().then(function (frame) {
             return new Promise(function (resolve) {
                 frame.src = `${authUrl}#${hash}?${query}`;
                 frame.style.display = 'block';
@@ -78,8 +82,8 @@ function lazyLoadFrame(src, container) {
             return promise;
         }
         promise = loadFrame(src, container);
-        return getFrame();
-    }
+        return promise;
+    };
 }
 
 function loadFrame(src, container = document.body) {
