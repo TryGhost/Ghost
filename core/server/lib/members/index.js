@@ -215,7 +215,7 @@ module.exports = function MembersApi({
             <script src="bundle.js"></script>
         `);
     });
-    staticRouter.get('/gateway/bundle.js', (req, res) => {
+    staticRouter.get('/bundle.js', (req, res) => {
         res.status(200).sendFile(require('path').join(__dirname, './static/gateway/bundle.js'));
     });
     staticRouter.get('/*', (req, res) => {
