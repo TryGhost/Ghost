@@ -4,6 +4,7 @@ module.exports = function ({
     updateMember,
     getMember,
     listMembers,
+    deleteMember,
     validateMember,
     sendEmail,
     encodeToken,
@@ -45,12 +46,30 @@ module.exports = function ({
         });
     }
 
+    function destroy(...args) {
+        return getMember(...args).then((member) => {
+            if (!member) {
+                return null;
+            }
+            return subscriptions.getAdapters().then((adapters) => {
+                return Promise.all(adapters.map((adapter) => {
+                    return subscriptions.removeCustomer(member, {
+                        adapter
+                    });
+                }));
+            }).then(() => {
+                return deleteMember(...args);
+            });
+        });
+    }
+
     return {
         requestPasswordReset,
         resetPassword,
         create: createMember,
         validate: validateMember,
         list: listMembers,
+        destroy,
         get
     };
 };
