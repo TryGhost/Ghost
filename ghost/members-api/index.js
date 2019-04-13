@@ -22,6 +22,7 @@ module.exports = function MembersApi({
     validateMember,
     updateMember,
     getMember,
+    deleteMember,
     listMembers,
     sendEmail,
     siteConfig
@@ -35,6 +36,7 @@ module.exports = function MembersApi({
         createMember,
         updateMember,
         getMember,
+        deleteMember,
         validateMember,
         sendEmail,
         encodeToken,
