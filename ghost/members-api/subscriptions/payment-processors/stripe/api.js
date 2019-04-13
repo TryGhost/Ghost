@@ -58,6 +58,7 @@ function getSubscription(stripe, member) {
         return {
             validUntil: subscription.current_period_end,
             plan: plan.nickname,
+            amount: plan.amount,
             status: subscription.status
         };
     }).catch(() => {
