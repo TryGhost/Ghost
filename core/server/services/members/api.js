@@ -37,6 +37,17 @@ function getMember(data, options) {
     });
 }
 
+function deleteMember(options) {
+    options = options || {};
+    return models.Member.destroy(options).catch(models.Member.NotFoundError, () => {
+        throw new common.errors.NotFoundError({
+            message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                resource: 'Member'
+            })
+        });
+    });
+}
+
 function listMembers(options) {
     return models.Member.findPage(options).then((models) => {
         return {
@@ -170,6 +181,7 @@ const api = MembersApi({
     validateAudience,
     createMember,
     getMember,
+    deleteMember,
     listMembers,
     validateMember,
     updateMember,

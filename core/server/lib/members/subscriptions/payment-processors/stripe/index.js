@@ -91,4 +91,24 @@ module.exports = class StripePaymentProcessor {
             return api.subscriptions.get(this._stripe, member);
         });
     }
+
+    removeSubscription(member) {
+        if (!this._stripe) {
+            throw new Error('StripePaymentProcessor must be configured()');
+        }
+
+        return this._ready.then(() => {
+            return api.subscriptions.remove(this._stripe, member);
+        });
+    }
+
+    removeCustomer(member) {
+        if (!this._stripe) {
+            throw new Error('StripePaymentProcessor must be configured()');
+        }
+
+        return this._ready.then(() => {
+            return api.customers.remove(this._stripe, member);
+        });
+    }
 };
