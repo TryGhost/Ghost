@@ -401,3 +401,9 @@
 .hover-bg-whitegrey-d1:focus { background-color: var(--whitegrey-d1); }
 .hover-bg-whitegrey-d2:hover,
 .hover-bg-whitegrey-d2:focus { background-color: var(--whitegrey-d2); }
+
+/* Special */
+.hover-bg-table-cell:hover,
+.hover-bg-table-cell:focus {
+    background-color: color-mod(var(--lightgrey) l(+6%) s(-2%));
+}
