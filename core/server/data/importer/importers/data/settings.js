@@ -41,7 +41,15 @@ class SettingsImporter extends BaseImporter {
         const activeApps = _.find(this.dataToImport, {key: 'active_apps'});
         const installedApps = _.find(this.dataToImport, {key: 'installed_apps'});
 
-        if (activeApps || installedApps) {
+        const hasValueEntries = (setting = {}) => {
+            try {
+                return JSON.parse(setting.value || '[]').length !== 0;
+            } catch (e) {
+                return false;
+            }
+        };
+
+        if (hasValueEntries(activeApps) || hasValueEntries(installedApps)) {
             this.problems.push({
                 message: 'Old settings for apps were not imported',
                 help: this.modelName,
