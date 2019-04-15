@@ -113,6 +113,14 @@
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
 
+"@tryghost/pretty-cli@1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/pretty-cli/-/pretty-cli-1.2.1.tgz#b419e936c81c8aabf7f081645751c17004a5bb09"
+  integrity sha512-SFu5CcljG7mqxcA/J2WFE9M/bbpzJG0oVqT7P/P0HRbcTgBmQ5nMczO70WNASSqBglAh/uR34K0HVz5qynxyDw==
+  dependencies:
+    chalk "^2.4.1"
+    sywac "^1.2.1"
+
 "@types/bluebird@^3.5.25":
   version "3.5.25"
   resolved "https://registry.yarnpkg.com/@types/bluebird/-/bluebird-3.5.25.tgz#59188b871208092e37767e4b3d80c3b3eaae43bd"
@@ -420,7 +428,7 @@ async@^1.4.0, async@^1.5.0, async@~1.5.2:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
 
-async@^2.0.0, async@^2.1.2, async@^2.1.4, async@^2.5.0, async@^2.6.0, async@^2.6.1:
+async@^2.0.0, async@^2.1.2, async@^2.1.4, async@^2.6.0, async@^2.6.1:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/async/-/async-2.6.1.tgz#b245a23ca71930044ec53fa46aa00a3e87c6a610"
   dependencies:
@@ -1359,7 +1367,7 @@ debug@^3.1.0:
   dependencies:
     ms "^2.1.1"
 
-debug@^4.0.1, debug@^4.1.0, debug@^4.1.1:
+debug@^4.0.0, debug@^4.0.1, debug@^4.1.0, debug@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.1.1.tgz#3b72260255109c6b589cee050f1d516139664791"
   dependencies:
@@ -1905,14 +1913,6 @@ express-hbs@1.1.1:
     lodash "4.17.11"
     readdirp "2.1.0"
 
-express-hbs@^1.0.3:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-1.0.5.tgz#6553b6bfcc55a965ee6161a6f374837f1eecea1f"
-  dependencies:
-    handlebars "4.0.13"
-    js-beautify "1.6.8"
-    readdirp "2.1.0"
-
 express-jwt@5.3.1:
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-5.3.1.tgz#66f05c7dddb5409c037346a98b88965bb10ea4ae"
@@ -2250,9 +2250,10 @@ fs-extra@3.0.1, fs-extra@^3.0.1:
     jsonfile "^3.0.0"
     universalify "^0.1.0"
 
-fs-extra@^0.26.2:
-  version "0.26.7"
-  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-0.26.7.tgz#9ae1fdd94897798edab76d0918cf42d0c3184fa9"
+fs-extra@^0.30.0:
+  version "0.30.0"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-0.30.0.tgz#f233ffcc08d4da7d432daa449776989db1df93f0"
+  integrity sha1-8jP/zAjU2n1DLapEl3aYnbHfk/A=
   dependencies:
     graceful-fs "^4.1.2"
     jsonfile "^2.1.0"
@@ -2305,6 +2306,18 @@ gaze@^1.1.0:
   resolved "https://registry.yarnpkg.com/gaze/-/gaze-1.1.3.tgz#c441733e13b927ac8c0ff0b4c3b033f28812924a"
   dependencies:
     globule "^1.0.0"
+
+gelf-stream@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/gelf-stream/-/gelf-stream-1.1.1.tgz#9cea9b6386ac301c741838ca3cb91e66dbfbf669"
+  integrity sha1-nOqbY4asMBx0GDjKPLkeZtv79mk=
+  dependencies:
+    gelfling "^0.3.0"
+
+gelfling@^0.3.0:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/gelfling/-/gelfling-0.3.1.tgz#336a98f81510f9ae0af2a494e17468a116a9dc04"
+  integrity sha1-M2qY+BUQ+a4K8qSU4XRooRap3AQ=
 
 generate-function@^1.0.1:
   version "1.1.0"
@@ -2365,10 +2378,10 @@ ghost-ignition@3.0.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-ignition@3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.2.tgz#a74480c337b917c9350ed0c34dfbd13cac24accd"
-  integrity sha512-plTyR1tTxv0uGzRkkyatsuhK/eYJaDlRAISd7DMc8l675yc0FH/A9ji6jjCtpP+00+Av5geKee6zpCVtH0uW8Q==
+ghost-ignition@3.0.4:
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.4.tgz#b951140d2734cd8ff48006f3c1de640499b1028c"
+  integrity sha512-oSA9ri7kUohnk2l1SE0p4nXiO6va1GgE5zRyD4nwt8ni924L2+ccCUQMrFqc/Mne2oXO6TJ/wG8qeL0pACW2Bg==
   dependencies:
     bunyan "1.8.12"
     bunyan-loggly "^1.3.1"
@@ -2383,17 +2396,18 @@ ghost-ignition@3.0.2:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-ignition@3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.4.tgz#b951140d2734cd8ff48006f3c1de640499b1028c"
-  integrity sha512-oSA9ri7kUohnk2l1SE0p4nXiO6va1GgE5zRyD4nwt8ni924L2+ccCUQMrFqc/Mne2oXO6TJ/wG8qeL0pACW2Bg==
+ghost-ignition@3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.1.0.tgz#4a0d7f0a15e54fbc0e16d398da62ff68737e4e23"
+  integrity sha512-ae0r/yBJDo9SkeLfy0ecrHVqO0gt9l07wiCOWmdzdvbmoU24AB881PjymnM/DLP9SY6E33mLYtT8K3ximgieLg==
   dependencies:
     bunyan "1.8.12"
     bunyan-loggly "^1.3.1"
     caller "1.0.1"
-    debug "^2.6.9"
+    debug "^4.0.0"
     find-root "1.1.0"
     fs-extra "^3.0.1"
+    gelf-stream "^1.1.1"
     json-stringify-safe "^5.0.1"
     lodash "^4.16.4"
     moment "^2.15.2"
@@ -2724,23 +2738,24 @@ grunt@1.0.3:
     path-is-absolute "~1.0.0"
     rimraf "~2.6.2"
 
-gscan@2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.4.0.tgz#73d9873f4561c8b00366143f1bba17d865d09e0e"
-  integrity sha512-lTfYQdBEsJS6ZEc60p0CTzyYDXOU30XPqX3OI3dTLP9GtMgJSSvRaJoUz/yYb84pu441Hy4wnwpOuX1Y4cw66A==
+gscan@2.5.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.5.0.tgz#9203fe36cb219a22d5fbd0e3aa98e3ebd07f5e32"
+  integrity sha512-M2igaOAPaUZXEVASPAqZBQZL/W4cXChKOsrMs5W6a0QcyodvBsZxNZj1otFdeZALM23JHWIZ70Llryy478LTcQ==
   dependencies:
     "@tryghost/extract-zip" "1.6.6"
+    "@tryghost/pretty-cli" "1.2.1"
     bluebird "^3.4.6"
     chalk "^1.1.1"
-    commander "2.15.1"
     express "^4.16.2"
-    express-hbs "^1.0.3"
-    fs-extra "^0.26.2"
-    ghost-ignition "3.0.2"
+    express-hbs "1.1.1"
+    fs-extra "^0.30.0"
+    ghost-ignition "3.1.0"
     glob "^7.0.5"
     lodash "^4.17.11"
     multer "^1.1.0"
-    require-dir "^0.3.2"
+    pluralize "^7.0.0"
+    require-dir "^1.0.0"
     semver "^5.3.0"
     upath "^1.1.0"
     uuid "^3.0.0"
@@ -2751,16 +2766,6 @@ gzip-size@^3.0.0:
   resolved "https://registry.yarnpkg.com/gzip-size/-/gzip-size-3.0.0.tgz#546188e9bdc337f673772f81660464b389dce520"
   dependencies:
     duplexer "^0.1.1"
-
-handlebars@4.0.13:
-  version "4.0.13"
-  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.0.13.tgz#89fc17bf26f46fd7f6f99d341d92efaae64f997d"
-  dependencies:
-    async "^2.5.0"
-    optimist "^0.6.1"
-    source-map "^0.6.1"
-  optionalDependencies:
-    uglify-js "^3.1.4"
 
 handlebars@4.1.2:
   version "4.1.2"
@@ -5453,9 +5458,10 @@ request-promise-native@^1.0.5:
     tunnel-agent "^0.6.0"
     uuid "^3.3.2"
 
-require-dir@^0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/require-dir/-/require-dir-0.3.2.tgz#c1d5c75e9fbffde9f2e6b33e383db4f594b5a6a9"
+require-dir@^1.0.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/require-dir/-/require-dir-1.2.0.tgz#0d443b75e96012d3ca749cf19f529a789ae74817"
+  integrity sha512-LY85DTSu+heYgDqq/mK+7zFHWkttVNRXC9NKcKGyuGLdlsfbjEPrIEYdCVrx6hqnJb+xSu3Lzaoo8VnmOhhjNA==
 
 require-uncached@^1.0.3:
   version "1.0.3"
@@ -6171,6 +6177,11 @@ symbol-tree@^3.2.2:
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/symbol-tree/-/symbol-tree-3.2.2.tgz#ae27db38f660a7ae2e1c3b7d1bc290819b8519e6"
   integrity sha1-rifbOPZgp64uHDt9G8KQgZuFGeY=
+
+sywac@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/sywac/-/sywac-1.2.1.tgz#528e482b2f2a18e764ffccc59eb40eea16a7f97d"
+  integrity sha512-bf8agjBAV9mm90k2nWoobe48bO/XugTS86W4dGYTpzVlfFv1cmWsRrQ9hUKIfoDaIRaXIta/BLFINmmxfV+otg==
 
 table@4.0.2:
   version "4.0.2"
