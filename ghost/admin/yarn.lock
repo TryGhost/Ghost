@@ -4880,10 +4880,10 @@ ember-element-resize-detector@~0.4.0:
     ember-cli-babel "^6.6.0"
     ember-cli-htmlbars "^2.0.1"
 
-ember-exam@2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-2.0.3.tgz#74ebcdbbb5658c7420e8960bd04d1e291f728c9f"
-  integrity sha512-FLuDRkpUXQqjd7A3siPbPcMmUmUZlm1lumWatC/3mxph3kV+c2FIfft83CJKjkhK5i7j7jRPa49LimreC6UmbQ==
+ember-exam@2.1.5:
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-2.1.5.tgz#de20cd2f4ec3376d0e0a2696139bb8e37aba5c4f"
+  integrity sha512-x/BZrUF0m5wyl5LMfkq1adqlrspomz5cz2bHgfolNA2NmP9S0mlbllu5wpcRjjKUXSxU/+zH7zo1xvYHcGmUlg==
   dependencies:
     chalk "^2.1.0"
     cli-table3 "^0.5.1"
@@ -11405,7 +11405,41 @@ terser@^3.16.1, terser@^3.17.0, terser@^3.7.5:
     source-map "~0.6.1"
     source-map-support "~0.5.10"
 
-testem@2.14.0, testem@^2.14.0:
+testem@2.15.1:
+  version "2.15.1"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-2.15.1.tgz#8e00a28c13719a8ac1bd4a78dd129e3ad4177055"
+  integrity sha512-fPo7pmTsF15zbb7/Jf7HB5foc3M6qKU7iCCJPAMkZswRzMpSGtTVtMAfUS4UOEKvWWNocnChz8wliGWMlJ2zDg==
+  dependencies:
+    backbone "^1.1.2"
+    bluebird "^3.4.6"
+    charm "^1.0.0"
+    commander "^2.6.0"
+    consolidate "^0.15.1"
+    execa "^1.0.0"
+    express "^4.10.7"
+    fireworm "^0.7.0"
+    glob "^7.0.4"
+    http-proxy "^1.13.1"
+    js-yaml "^3.2.5"
+    lodash.assignin "^4.1.0"
+    lodash.castarray "^4.4.0"
+    lodash.clonedeep "^4.4.1"
+    lodash.find "^4.5.1"
+    lodash.uniqby "^4.7.0"
+    mkdirp "^0.5.1"
+    mustache "^3.0.0"
+    node-notifier "^5.0.1"
+    npmlog "^4.0.0"
+    printf "^0.5.1"
+    rimraf "^2.4.4"
+    socket.io "^2.1.0"
+    spawn-args "^0.2.0"
+    styled_string "0.0.1"
+    tap-parser "^7.0.0"
+    tmp "0.0.33"
+    xmldom "^0.1.19"
+
+testem@^2.14.0:
   version "2.14.0"
   resolved "https://registry.yarnpkg.com/testem/-/testem-2.14.0.tgz#418a9a15843f68381659c6a486abb4ea48d06c29"
   integrity sha512-tldpNPCzXfibmxOoTMGOfr8ztUiHf9292zSXCu7SitBx9dCK83k7vEoa77qJBS9t3RGCQCRF+GNMUuiFw//Mbw==
