@@ -51,8 +51,6 @@ exports.getContentPath = function getContentPath(type) {
     switch (type) {
     case 'images':
         return path.join(this.get('paths:contentPath'), 'images/');
-    case 'apps':
-        return path.join(this.get('paths:contentPath'), 'apps/');
     case 'themes':
         return path.join(this.get('paths:contentPath'), 'themes/');
     case 'storage':
