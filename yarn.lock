@@ -1895,12 +1895,12 @@ express-brute@1.0.1, express-brute@^1.0.0:
     long-timeout "~0.1.1"
     underscore "~1.8.3"
 
-express-hbs@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-1.1.0.tgz#703c3855c30c8052c7d6f9df642d538404c492b5"
-  integrity sha512-4TQ8kwsMyiJ5yh3F5tWnAmYtYn4tHx7kjK42/Hlmq00/ekw6KMeRgK1INJtUK4QETJcQXiuTtwx68yNoNVAomQ==
+express-hbs@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-1.1.1.tgz#0a181c01a399c0fe148ef4a006c59afd21c24f20"
+  integrity sha512-nFBXq8SNb58wospQeRsh3FZL+srv6KMVkCKJnUGB3Gm7pXUf4DzaIQ0zUb+qQRCFeAVQHaF7X4vNfIea00FiGA==
   dependencies:
-    handlebars "4.0.13"
+    handlebars "4.1.2"
     js-beautify "1.6.8"
     lodash "4.17.11"
     readdirp "2.1.0"
@@ -2757,6 +2757,17 @@ handlebars@4.0.13:
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.0.13.tgz#89fc17bf26f46fd7f6f99d341d92efaae64f997d"
   dependencies:
     async "^2.5.0"
+    optimist "^0.6.1"
+    source-map "^0.6.1"
+  optionalDependencies:
+    uglify-js "^3.1.4"
+
+handlebars@4.1.2:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.1.2.tgz#b6b37c1ced0306b221e094fc7aca3ec23b131b67"
+  integrity sha512-nvfrjqvt9xQ8Z/w0ijewdD/vvWDTOweBUm96NTr66Wfvo1mJenBLwcYmPs3TIBP5ruzYGD7Hx/DaM9RmhroGPw==
+  dependencies:
+    neo-async "^2.6.0"
     optimist "^0.6.1"
     source-map "^0.6.1"
   optionalDependencies:
@@ -4260,6 +4271,11 @@ needle@^2.2.1:
 negotiator@0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.1.tgz#2b327184e8992101177b28563fb5e7102acd0ca9"
+
+neo-async@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.0.tgz#b9d15e4d71c6762908654b5183ed38b753340835"
+  integrity sha512-MFh0d/Wa7vkKO3Y3LlacqAEeHK0mckVqzDieUKTT+KGxi+zIpeVsFxymkIiRpbpDziHc290Xr9A1O4Om7otoRA==
 
 netjet@1.3.0:
   version "1.3.0"
