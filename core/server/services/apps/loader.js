@@ -5,7 +5,6 @@ const config = require('../../config');
 const common = require('../../lib/common');
 const AppProxy = require('./proxy');
 const Sandbox = require('./sandbox');
-const AppPermissions = require('./permissions');
 
 // Get the full path to an app by name
 function getAppAbsolutePath(name) {
@@ -29,13 +28,11 @@ function loadApp(appPath) {
     return Sandbox.loadApp(appPath);
 }
 
-function getAppByName(name, permissions) {
+function getAppByName(name) {
     // Grab the app class to instantiate
     const AppClass = loadApp(getAppRelativePath(name));
     const proxy = new AppProxy({
-        name,
-        permissions,
-        internal: true
+        name
     });
 
     // Check for an actual class, otherwise just use whatever was returned
@@ -50,19 +47,15 @@ function getAppByName(name, permissions) {
 module.exports = {
     // Activate a app and return it
     activateAppByName: function (name) {
-        const perms = new AppPermissions(getAppAbsolutePath(name));
+        const {app, proxy} = getAppByName(name);
 
-        return perms.read().then(function (appPerms) {
-            const {app, proxy} = getAppByName(name, appPerms);
+        // Check for an activate() method on the app.
+        if (!_.isFunction(app.activate)) {
+            return Promise.reject(new Error(common.i18n.t('errors.apps.noActivateMethodLoadingApp.error', {name: name})));
+        }
 
-            // Check for an activate() method on the app.
-            if (!_.isFunction(app.activate)) {
-                return Promise.reject(new Error(common.i18n.t('errors.apps.noActivateMethodLoadingApp.error', {name: name})));
-            }
-
-            // Wrapping the activate() with a when because it's possible
-            // to not return a promise from it.
-            return Promise.resolve(app.activate(proxy)).return(app);
-        });
+        // Wrapping the activate() with a when because it's possible
+        // to not return a promise from it.
+        return Promise.resolve(app.activate(proxy)).return(app);
     }
 };
