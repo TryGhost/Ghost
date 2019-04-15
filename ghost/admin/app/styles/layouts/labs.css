@@ -35,10 +35,10 @@
 }
 
 .gh-btn-labs-toggle {
-    border: none;
+    border: none !important;
     display: flex;
     align-items: center;
-    color: var(--blue);
+    color: var(--blue) !important;
 }
 
 .gh-btn-labs-toggle svg {
