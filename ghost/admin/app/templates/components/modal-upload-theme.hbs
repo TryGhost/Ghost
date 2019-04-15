@@ -65,7 +65,7 @@
                 The theme folder <strong>"{{fileThemeName}}"</strong> already exists. Do you want to overwrite it?
             </p>
         {{else if (or validationErrors fatalValidationErrors)}}
-            
+
             <p>
                 This theme is invalid and cannot be activated. Fix the following errors and re-upload the theme.
             </p>
@@ -75,7 +75,7 @@
                     <h2 class="mb0 mt4 f5 fw6">Fatal Errors</h2>
                     <p class="mb2">Must-fix to activate theme</p>
                 </div>
-            
+
                 <ul class="pa0">
                 {{#each fatalValidationErrors as |error|}}
                     <li class="theme-validation-item theme-fatal-error">
@@ -115,7 +115,7 @@
 </div>
 
 <div class="modal-footer">
-    <div class="flex items-center justify-between {{if (or displayOverwriteWarning canActivateTheme validationErrors) "flex-auto"}}">
+    <div class="flex items-center justify-between {{if (or displayOverwriteWarning canActivateTheme validationErrors fatalValidationErrors) "flex-auto"}}">
         <button {{action "closeModal"}} disabled={{closeDisabled}} class="gh-btn" data-test-close-button>
             <span>{{#if theme}}Close{{else}}Cancel{{/if}}</span>
         </button>
@@ -126,11 +126,11 @@
                 </button>
             {{/if}}
             {{#if canActivateTheme}}
-            <button {{action "activate"}} class="gh-btn" data-test-activate-now-button>
-                <span>Activate with errors</span>
-            </button>
+                <button {{action "activate"}} class="gh-btn" data-test-activate-now-button>
+                    <span>Activate{{#if validationErrors}} with errors{{/if}}</span>
+                </button>
             {{/if}}
-            {{#if validationErrors}}
+            {{#if (or validationErrors fatalValidationErrors)}}
                 <button {{action "reset"}} class="gh-btn gh-btn-blue ml2" data-test-try-again-button>
                     <span>Retry</span>
                 </button>
