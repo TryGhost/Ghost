@@ -294,8 +294,8 @@ describe('Acceptance: Settings - Design', function () {
                         {
                             message: 'Theme is not compatible or contains errors.',
                             type: 'ThemeValidationError',
-                            details: [
-                                {
+                            details: {
+                                errors: [{
                                     level: 'error',
                                     rule: 'Assets such as CSS & JS must use the <code>{{asset}}</code> helper',
                                     details: '<p>The listed files should be included using the <code>{{asset}}</code> helper.</p>',
@@ -304,8 +304,7 @@ describe('Acceptance: Settings - Design', function () {
                                             ref: '/assets/javascripts/ui.js'
                                         }
                                     ]
-                                },
-                                {
+                                }, {
                                     level: 'error',
                                     rule: 'Templates must contain valid Handlebars.',
                                     failures: [
@@ -318,8 +317,8 @@ describe('Acceptance: Settings - Design', function () {
                                             message: 'The partial index_meta could not be found'
                                         }
                                     ]
-                                }
-                            ]
+                                }]
+                            }
                         }
                     ]
                 });
