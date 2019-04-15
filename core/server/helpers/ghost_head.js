@@ -10,7 +10,6 @@ var proxy = require('./proxy'),
     getAssetUrl = proxy.metaData.getAssetUrl,
     escapeExpression = proxy.escapeExpression,
     SafeString = proxy.SafeString,
-    filters = proxy.filters,
     logging = proxy.logging,
     settingsCache = proxy.settingsCache,
     config = proxy.config,
@@ -191,9 +190,6 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                     head.push(postCodeInjection);
                 }
             }
-            return filters.doFilter('ghost_head', head);
-        })
-        .then(function afterFilters(head) {
             debug('end');
             return new SafeString(head.join('\n    ').trim());
         })

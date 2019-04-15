@@ -43,9 +43,6 @@ module.exports = {
     // Labs utils for enabling/disabling helpers
     labs: require('../services/labs'),
 
-    // System for apps to hook into one day maybe
-    filters: require('../filters'),
-
     // Things required from data/meta
     metaData: {
         get: require('../data/meta'), // ghost_head

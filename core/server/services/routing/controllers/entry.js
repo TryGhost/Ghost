@@ -1,7 +1,6 @@
 const debug = require('ghost-ignition').debug('services:routing:controllers:entry'),
     url = require('url'),
     urlService = require('../../url'),
-    filters = require('../../../filters'),
     helpers = require('../helpers');
 
 /**
@@ -81,8 +80,8 @@ module.exports = function entryController(req, res, next) {
 
             helpers.secure(req, entry);
 
-            filters.doFilter('prePostsRender', entry, res.locals)
-                .then(helpers.renderEntry(req, res));
+            const renderer = helpers.renderEntry(req, res);
+            return renderer(entry);
         })
         .catch(helpers.handleError(next));
 };
