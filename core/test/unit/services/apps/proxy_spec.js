@@ -48,31 +48,14 @@ describe('Apps', function () {
     describe('Proxy', function () {
         it('requires a name to be passed', function () {
             function makeWithoutName() {
-                return new AppProxy({});
+                return AppProxy.getInstance();
             }
 
             makeWithoutName.should.throw('Must provide an app name for api context');
         });
 
-        it('requires permissions to be passed', function () {
-            function makeWithoutPerms() {
-                return new AppProxy({
-                    name: 'NoPerms'
-                });
-            }
-
-            makeWithoutPerms.should.throw('Must provide app permissions');
-        });
-
         it('creates a ghost proxy', function () {
-            var appProxy = new AppProxy({
-                name: 'TestApp',
-                permissions: {
-                    filters: ['prePostRender'],
-                    helpers: ['myTestHelper'],
-                    posts: ['browse', 'read', 'edit', 'add', 'delete']
-                }
-            });
+            var appProxy = AppProxy.getInstance('TestApp');
 
             should.exist(appProxy.filters);
             should.exist(appProxy.filters.register);
@@ -107,16 +90,9 @@ describe('Apps', function () {
             should.exist(appProxy.api.settings.edit);
         });
 
-        it('allows filter registration with permission', function (done) {
+        it('allows filter registration', function (done) {
             var registerSpy = sinon.spy(filters, 'registerFilter'),
-                appProxy = new AppProxy({
-                    name: 'TestApp',
-                    permissions: {
-                        filters: ['testFilter'],
-                        helpers: ['myTestHelper'],
-                        posts: ['browse', 'read', 'edit', 'add', 'delete']
-                    }
-                }),
+                appProxy = AppProxy.getInstance('TestApp'),
                 fakePosts = [{id: 0}, {id: 1}],
                 filterStub = sinon.spy(function (val) {
                     return val;
@@ -137,38 +113,9 @@ describe('Apps', function () {
                 .catch(done);
         });
 
-        it('does not allow filter registration without permission', function () {
-            var registerSpy = sinon.spy(filters, 'registerFilter'),
-                appProxy = new AppProxy({
-                    name: 'TestApp',
-                    permissions: {
-                        filters: ['prePostRender'],
-                        helpers: ['myTestHelper'],
-                        posts: ['browse', 'read', 'edit', 'add', 'delete']
-                    }
-                }),
-                filterStub = sinon.stub().returns('test result');
-
-            function registerFilterWithoutPermission() {
-                appProxy.filters.register('superSecretFilter', 5, filterStub);
-            }
-
-            registerFilterWithoutPermission.should.throw('The App "TestApp" attempted to perform an action or access' +
-                ' a resource (filters.superSecretFilter) without permission.');
-
-            registerSpy.called.should.equal(false);
-        });
-
-        it('allows filter deregistration with permission', function (done) {
+        it('allows filter deregistration', function (done) {
             var registerSpy = sinon.spy(filters, 'deregisterFilter'),
-                appProxy = new AppProxy({
-                    name: 'TestApp',
-                    permissions: {
-                        filters: ['prePostsRender'],
-                        helpers: ['myTestHelper'],
-                        posts: ['browse', 'read', 'edit', 'add', 'delete']
-                    }
-                }),
+                appProxy = AppProxy.getInstance('TestApp'),
                 fakePosts = [{id: 0}, {id: 1}],
                 filterStub = sinon.stub().returns(fakePosts);
 
@@ -186,79 +133,11 @@ describe('Apps', function () {
                 .catch(done);
         });
 
-        it('does not allow filter deregistration without permission', function () {
-            var registerSpy = sinon.spy(filters, 'deregisterFilter'),
-                appProxy = new AppProxy({
-                    name: 'TestApp',
-                    permissions: {
-                        filters: ['prePostRender'],
-                        helpers: ['myTestHelper'],
-                        posts: ['browse', 'read', 'edit', 'add', 'delete']
-                    }
-                }),
-                filterStub = sinon.stub().returns('test result');
-
-            function deregisterFilterWithoutPermission() {
-                appProxy.filters.deregister('superSecretFilter', 5, filterStub);
-            }
-
-            deregisterFilterWithoutPermission.should.throw('The App "TestApp" attempted to perform an action or ' +
-                'access a resource (filters.superSecretFilter) without permission.');
-
-            registerSpy.called.should.equal(false);
-        });
-
-        it('allows helper registration with permission', function () {
+        it('allows helper registration', function () {
             var registerSpy = sinon.stub(helpers, 'registerThemeHelper'),
-                appProxy = new AppProxy({
-                    name: 'TestApp',
-                    permissions: {
-                        filters: ['prePostRender'],
-                        helpers: ['myTestHelper'],
-                        posts: ['browse', 'read', 'edit', 'add', 'delete']
-                    }
-                });
+                appProxy = AppProxy.getInstance('TestApp');
 
             appProxy.helpers.register('myTestHelper', sinon.stub().returns('test result'));
-
-            registerSpy.called.should.equal(true);
-        });
-
-        it('does not allow helper registration without permission', function () {
-            var registerSpy = sinon.stub(helpers, 'registerThemeHelper'),
-                appProxy = new AppProxy({
-                    name: 'TestApp',
-                    permissions: {
-                        filters: ['prePostRender'],
-                        helpers: ['myTestHelper'],
-                        posts: ['browse', 'read', 'edit', 'add', 'delete']
-                    }
-                });
-
-            function registerWithoutPermissions() {
-                appProxy.helpers.register('otherHelper', sinon.stub().returns('test result'));
-            }
-
-            registerWithoutPermissions.should.throw('The App "TestApp" attempted to perform an action or access a ' +
-                'resource (helpers.otherHelper) without permission.');
-
-            registerSpy.called.should.equal(false);
-        });
-
-        it('does allow INTERNAL app to register helper without permission', function () {
-            var registerSpy = sinon.stub(helpers, 'registerThemeHelper'),
-                appProxy = new AppProxy({
-                    name: 'TestApp',
-                    permissions: {},
-                    internal: true
-                });
-
-            function registerWithoutPermissions() {
-                appProxy.helpers.register('otherHelper', sinon.stub().returns('test result'));
-            }
-
-            registerWithoutPermissions.should.not.throw('The App "TestApp" attempted to perform an action or access a ' +
-                'resource (helpers.otherHelper) without permission.');
 
             registerSpy.called.should.equal(true);
         });
