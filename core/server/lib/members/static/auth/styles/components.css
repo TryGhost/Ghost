@@ -28,6 +28,9 @@
     position: relative;
     top: 25vh;
     display: flex;
+    min-height: 75vh;
+    flex-direction: column;
+    align-items: center;
 }
 
 .gm-modal {
@@ -104,7 +107,7 @@
 
     .gm-modal {
         width: calc(100% - 48px);
-        height: calc(100vh - 48px);
+        min-height: calc(100vh - 90px);
         padding: 24px;
         border-radius: 0;
     }
