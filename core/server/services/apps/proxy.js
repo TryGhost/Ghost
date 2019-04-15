@@ -79,10 +79,6 @@ function AppProxy(options) {
         throw new Error(common.i18n.t('errors.apps.mustProvideAppName.error'));
     }
 
-    if (!options.permissions) {
-        throw new Error(common.i18n.t('errors.apps.mustProvideAppPermissions.error'));
-    }
-
     _.extend(this, generateProxyFunctions(options.name));
 }
 
