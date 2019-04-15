@@ -1,12 +1,7 @@
 const helpers = require('../../helpers/register');
-const common = require('../../lib/common');
 const routingService = require('../routing');
 
-module.exports.getInstance = function getInstance(name) {
-    if (!name) {
-        throw new Error(common.i18n.t('errors.apps.mustProvideAppName.error'));
-    }
-
+module.exports.getInstance = function getInstance() {
     const appRouter = routingService.registry.getRouter('appRouter');
 
     return {
