@@ -16,14 +16,6 @@ describe('Apps', function () {
     });
 
     describe('Proxy', function () {
-        it('requires a name to be passed', function () {
-            function makeWithoutName() {
-                return AppProxy.getInstance();
-            }
-
-            makeWithoutName.should.throw('Must provide an app name for api context');
-        });
-
         it('creates a ghost proxy', function () {
             var appProxy = AppProxy.getInstance('TestApp');
 

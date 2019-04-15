@@ -17,7 +17,7 @@ function loadApp(name) {
 function getAppByName(name) {
     // Grab the app class to instantiate
     const AppClass = loadApp(name);
-    const proxy = Proxy.getInstance(name);
+    const proxy = Proxy.getInstance();
 
     // Check for an actual class, otherwise just use whatever was returned
     const app = _.isFunction(AppClass) ? new AppClass(proxy) : AppClass;
