@@ -66,7 +66,7 @@
     "ember-cli-shims": "1.2.0",
     "ember-cli-string-helpers": "2.0.0",
     "ember-cli-test-loader": "2.2.0",
-    "ember-cli-uglify": "2.1.0",
+    "ember-cli-uglify": "3.0.0",
     "ember-composable-helpers": "2.2.0",
     "ember-concurrency": "0.10.0",
     "ember-data": "3.9.0",
