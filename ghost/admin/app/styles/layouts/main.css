@@ -32,6 +32,7 @@
     overflow-y: auto;
     /* prevent horizontal scroll in IE11 */
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
 /*  Flexbox fix. https://github.com/TryGhost/Ghost/issues/5804#issuecomment-141416812 */

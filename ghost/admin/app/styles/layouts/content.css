@@ -105,7 +105,6 @@
 
 .content-list {
     position: relative;
-    overflow-y: auto;
 }
 
 .content-list ol {
@@ -140,6 +139,7 @@
     margin: 0;
     font-size: 1.6rem;
     font-weight: 300;
+    overflow-wrap: break-word;
 }
 
 
