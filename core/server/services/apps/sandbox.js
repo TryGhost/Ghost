@@ -1,22 +1,13 @@
 const Module = require('module');
 
-function AppSandbox(opts) {
-    this.opts = opts;
-}
-
-AppSandbox.prototype.loadApp = function loadAppSandboxed(appPath) {
-    // Set loaded modules parent to this
-    const parentModulePath = this.opts.parent || module.parent;
-
+module.exports.loadApp = function loadAppSandboxed(appPath) {
     // Resolve the modules path
-    const resolvedModulePath = Module._resolveFilename(appPath, parentModulePath);
+    const resolvedModulePath = Module._resolveFilename(appPath, module.parent);
 
     // Instantiate a Node Module class
-    const currentModule = new Module(resolvedModulePath, parentModulePath);
+    const currentModule = new Module(resolvedModulePath, module.parent);
 
     currentModule.load(currentModule.id);
 
     return currentModule.exports;
 };
-
-module.exports = AppSandbox;
