@@ -3,7 +3,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const config = require('../../config');
 const common = require('../../lib/common');
-const AppProxy = require('./proxy');
+const Proxy = require('./proxy');
 const Sandbox = require('./sandbox');
 
 // Get the full path to an app by name
@@ -23,17 +23,10 @@ function getAppRelativePath(name, relativeTo = __dirname) {
     return relativePath;
 }
 
-// Load apps through a pseudo sandbox
-function loadApp(appPath) {
-    return Sandbox.loadApp(appPath);
-}
-
 function getAppByName(name) {
     // Grab the app class to instantiate
-    const AppClass = loadApp(getAppRelativePath(name));
-    const proxy = new AppProxy({
-        name
-    });
+    const AppClass = Sandbox.loadApp(getAppRelativePath(name));
+    const proxy = Proxy.getInstance(name);
 
     // Check for an actual class, otherwise just use whatever was returned
     const app = _.isFunction(AppClass) ? new AppClass(proxy) : AppClass;

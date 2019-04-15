@@ -5,81 +5,60 @@ const filters = require('../../filters');
 const common = require('../../lib/common');
 const routingService = require('../routing');
 
-let generateProxyFunctions;
+module.exports.getInstance = function getInstance(name) {
+    if (!name) {
+        throw new Error(common.i18n.t('errors.apps.mustProvideAppName.error'));
+    }
 
-generateProxyFunctions = function (name) {
     const appRouter = routingService.registry.getRouter('appRouter');
 
-    var runIfPermissionToMethod = function (perm, method, wrappedFunc, context, args) {
-            // internal apps get all permissions
-            return wrappedFunc.apply(context, args);
-        },
-        checkRegisterPermissions = function (perm, registerMethod) {
-            return _.wrap(registerMethod, function (origRegister, name) {
-                return runIfPermissionToMethod(perm, name, origRegister, this, _.toArray(arguments).slice(1));
-            });
-        },
-        passThruAppContextToApi = function (perm, apiMethods) {
-            var appContext = {
-                app: name
+    const passThruAppContextToApi = (apiMethods) => {
+        const appContext = {
+            app: name
+        };
+
+        return _.reduce(apiMethods, function (memo, apiMethod, methodName) {
+            memo[methodName] = function (...args) {
+                const options = args[args.length - 1];
+
+                if (_.isObject(options)) {
+                    options.context = _.clone(appContext);
+                }
+                return apiMethod.apply({}, args);
             };
 
-            return _.reduce(apiMethods, function (memo, apiMethod, methodName) {
-                memo[methodName] = function () {
-                    var args = _.toArray(arguments),
-                        options = args[args.length - 1];
+            return memo;
+        }, {});
+    };
 
-                    if (_.isObject(options)) {
-                        options.context = _.clone(appContext);
-                    }
-                    return apiMethod.apply({}, args);
-                };
-
-                return memo;
-            }, {});
-        },
-        proxy;
-
-    proxy = {
+    return {
         filters: {
-            register: checkRegisterPermissions('filters', filters.registerFilter.bind(filters)),
-            deregister: checkRegisterPermissions('filters', filters.deregisterFilter.bind(filters))
+            register: filters.registerFilter.bind(filters),
+            deregister: filters.deregisterFilter.bind(filters)
         },
         helpers: {
-            register: checkRegisterPermissions('helpers', helpers.registerThemeHelper.bind(helpers)),
-            registerAsync: checkRegisterPermissions('helpers', helpers.registerAsyncThemeHelper.bind(helpers))
+            register: helpers.registerThemeHelper.bind(helpers),
+            registerAsync: helpers.registerAsyncThemeHelper.bind(helpers)
         },
         // Expose the route service...
         routeService: {
             // This allows for mounting an entirely new Router at a path...
-            registerRouter: checkRegisterPermissions('routes', appRouter.mountRouter.bind(appRouter))
+            registerRouter: appRouter.mountRouter.bind(appRouter)
         },
         // Mini proxy to the API - needs review
         api: {
-            posts: passThruAppContextToApi('posts',
+            posts: passThruAppContextToApi(
                 _.pick(api.posts, 'browse', 'read', 'edit', 'add', 'destroy')
             ),
-            tags: passThruAppContextToApi('tags',
+            tags: passThruAppContextToApi(
                 _.pick(api.tags, 'browse')
             ),
-            notifications: passThruAppContextToApi('notifications',
+            notifications: passThruAppContextToApi(
                 _.pick(api.notifications, 'browse', 'add', 'destroy')
             ),
-            settings: passThruAppContextToApi('settings',
+            settings: passThruAppContextToApi(
                 _.pick(api.settings, 'browse', 'read', 'edit')
             )
         }
     };
-
-    return proxy;
 };
-
-function AppProxy(options) {
-    if (!options.name) {
-        throw new Error(common.i18n.t('errors.apps.mustProvideAppName.error'));
-    }
-
-    _.extend(this, generateProxyFunctions(options.name));
-}
-
-module.exports = AppProxy;
