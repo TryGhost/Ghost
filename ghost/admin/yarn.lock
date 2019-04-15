@@ -2652,7 +2652,7 @@ broccoli-templater@^2.0.1:
     rimraf "^2.6.2"
     walk-sync "^0.3.3"
 
-broccoli-uglify-sourcemap@3.1.0:
+broccoli-uglify-sourcemap@3.1.0, broccoli-uglify-sourcemap@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-3.1.0.tgz#424abcb2c1c70fd1857165c5f191d59a37ee33ff"
   integrity sha512-8urQlRfoL6TDP65EylZgbqTwYkSMuZkWE+bwYgC+GMhncSb6bCc0zHn4AGaC+1DRaAsEjb8uyhtYnKCil4NRPA==
@@ -2668,23 +2668,6 @@ broccoli-uglify-sourcemap@3.1.0:
     terser "^3.17.0"
     walk-sync "^1.1.3"
     workerpool "^3.1.2"
-
-broccoli-uglify-sourcemap@^2.1.1:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-2.2.0.tgz#2ff49389bdf342a550c3596750ba2dde95a8f7d4"
-  integrity sha1-L/STib3zQqVQw1lnULot3pWo99Q=
-  dependencies:
-    async-promise-queue "^1.0.4"
-    broccoli-plugin "^1.2.1"
-    debug "^3.1.0"
-    lodash.defaultsdeep "^4.6.0"
-    matcher-collection "^1.0.5"
-    mkdirp "^0.5.0"
-    source-map-url "^0.4.0"
-    symlink-or-copy "^1.0.1"
-    terser "^3.7.5"
-    walk-sync "^0.3.2"
-    workerpool "^2.3.0"
 
 broccoli@^2.0.1:
   version "2.3.0"
@@ -4637,12 +4620,12 @@ ember-cli-typescript@^2.0.0:
     stagehand "^1.0.0"
     walk-sync "^1.0.0"
 
-ember-cli-uglify@2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/ember-cli-uglify/-/ember-cli-uglify-2.1.0.tgz#4a0641fe4768d7ab7d4807aca9924cc77c544184"
-  integrity sha512-lDzdAUfhGx5AMBsgyR54ibENVp/LRQuHNWNaP2SDjkAXDyuYFgW0iXIAfGbxF6+nYaesJ9Tr9AKOfTPlwxZDSg==
+ember-cli-uglify@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-uglify/-/ember-cli-uglify-3.0.0.tgz#8819665b2cc5fe70e3ba9fe7a94645209bc42fd6"
+  integrity sha512-n3QxdBfAgBdb2Cnso82Kt/nxm3ppIjnYWM8uhOEhF1aYxNXfM7AJrc+yiqTCDUR61Db8aCpHfAMvChz3kyme7g==
   dependencies:
-    broccoli-uglify-sourcemap "^2.1.1"
+    broccoli-uglify-sourcemap "^3.1.0"
     lodash.defaultsdeep "^4.6.0"
 
 ember-cli-version-checker@^2.0.0, ember-cli-version-checker@^2.1.0, ember-cli-version-checker@^2.1.1, ember-cli-version-checker@^2.1.2:
@@ -8373,7 +8356,7 @@ matchdep@2.0.0:
     resolve "^1.4.0"
     stack-trace "0.0.10"
 
-matcher-collection@^1.0.0, matcher-collection@^1.0.5, matcher-collection@^1.1.1:
+matcher-collection@^1.0.0, matcher-collection@^1.1.1:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/matcher-collection/-/matcher-collection-1.1.2.tgz#1076f506f10ca85897b53d14ef54f90a5c426838"
   integrity sha512-YQ/teqaOIIfUHedRam08PB3NK7Mjct6BvzRnJmpGDm8uFXpNr1sbY4yuflI5JcEs6COpYA0FpRQhSDBf1tT95g==
@@ -11396,7 +11379,7 @@ terser-webpack-plugin@^1.1.0:
     webpack-sources "^1.1.0"
     worker-farm "^1.5.2"
 
-terser@^3.16.1, terser@^3.17.0, terser@^3.7.5:
+terser@^3.16.1, terser@^3.17.0:
   version "3.17.0"
   resolved "https://registry.yarnpkg.com/terser/-/terser-3.17.0.tgz#f88ffbeda0deb5637f9d24b0da66f4e15ab10cb2"
   integrity sha512-/FQzzPJmCpjAH9Xvk2paiWrFq+5M6aVOf+2KRbwhByISDX/EujxsK+BAvrhb6H+2rtrLCHK9N01wO014vrIwVQ==
