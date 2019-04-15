@@ -55,11 +55,11 @@ class SettingsImporter extends BaseImporter {
                 help: this.modelName,
                 context: JSON.stringify({activeApps, installedApps})
             });
-
-            this.dataToImport = _.filter(this.dataToImport, (data) => {
-                return data.key !== 'active_apps' && data.key !== 'installed_apps';
-            });
         }
+
+        this.dataToImport = _.filter(this.dataToImport, (data) => {
+            return data.key !== 'active_apps' && data.key !== 'installed_apps';
+        });
 
         const permalinks = _.find(this.dataToImport, {key: 'permalinks'});
 
