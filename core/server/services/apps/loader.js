@@ -27,7 +27,7 @@ function getAppRelativePath(name, relativeTo = __dirname) {
 
 // Load apps through a pseudo sandbox
 function loadApp(appPath) {
-    const sandbox = new AppSandbox({internal: true});
+    const sandbox = new AppSandbox();
 
     return sandbox.loadApp(appPath);
 }
