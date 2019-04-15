@@ -89,7 +89,7 @@ describe('DB API', () => {
                         const jsonResponse = res.body;
                         should.exist(jsonResponse.db);
                         should.exist(jsonResponse.problems);
-                        jsonResponse.problems.should.have.length(4);
+                        jsonResponse.problems.should.have.length(3);
                     });
             })
             .then(() => {
