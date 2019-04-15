@@ -6,36 +6,7 @@ const should = require('should'),
     routing = require('../../../../server/services/routing');
 
 describe('Apps', function () {
-    var fakeApi;
-
     beforeEach(function () {
-        fakeApi = {
-            posts: {
-                browse: sinon.stub(),
-                read: sinon.stub(),
-                edit: sinon.stub(),
-                add: sinon.stub(),
-                destroy: sinon.stub()
-            },
-            users: {
-                browse: sinon.stub(),
-                read: sinon.stub(),
-                edit: sinon.stub()
-            },
-            tags: {
-                all: sinon.stub()
-            },
-            notifications: {
-                destroy: sinon.stub(),
-                add: sinon.stub()
-            },
-            settings: {
-                browse: sinon.stub(),
-                read: sinon.stub(),
-                add: sinon.stub()
-            }
-        };
-
         sinon.stub(routing.registry, 'getRouter').withArgs('appRouter').returns({
             mountRouter: sinon.stub()
         });
@@ -64,30 +35,6 @@ describe('Apps', function () {
             should.exist(appProxy.helpers);
             should.exist(appProxy.helpers.register);
             should.exist(appProxy.helpers.registerAsync);
-
-            should.exist(appProxy.api);
-
-            should.exist(appProxy.api.posts);
-            should.exist(appProxy.api.posts.browse);
-            should.exist(appProxy.api.posts.read);
-            should.exist(appProxy.api.posts.edit);
-            should.exist(appProxy.api.posts.add);
-            should.exist(appProxy.api.posts.destroy);
-
-            should.not.exist(appProxy.api.users);
-
-            should.exist(appProxy.api.tags);
-            should.exist(appProxy.api.tags.browse);
-
-            should.exist(appProxy.api.notifications);
-            should.exist(appProxy.api.notifications.browse);
-            should.exist(appProxy.api.notifications.add);
-            should.exist(appProxy.api.notifications.destroy);
-
-            should.exist(appProxy.api.settings);
-            should.exist(appProxy.api.settings.browse);
-            should.exist(appProxy.api.settings.read);
-            should.exist(appProxy.api.settings.edit);
         });
 
         it('allows filter registration', function (done) {
