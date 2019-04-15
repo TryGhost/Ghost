@@ -3,7 +3,6 @@ const _ = require('lodash'),
     common = require('../../../lib/common'),
     security = require('../../../lib/security'),
     themes = require('../../themes'),
-    filters = require('../../../filters'),
     helpers = require('../helpers');
 
 // @TODO: the collection+rss controller does almost the same
@@ -56,13 +55,8 @@ module.exports = function channelController(req, res, next) {
                 helpers.secure(req, data);
             });
 
-            // @TODO: properly design these filters
-            filters.doFilter('prePostsRender', result.posts, res.locals)
-                .then(function (posts) {
-                    result.posts = posts;
-                    return result;
-                })
-                .then(helpers.renderEntries(req, res));
+            const renderer = helpers.renderEntries(req, res);
+            return renderer(result);
         })
         .catch(helpers.handleError(next));
 };

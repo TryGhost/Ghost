@@ -2,7 +2,6 @@ var downsize = require('downsize'),
     Promise = require('bluebird'),
     RSS = require('rss'),
     urlService = require('../../services/url'),
-    filters = require('../../filters'),
     generateFeed,
     generateItem,
     generateTags;
@@ -90,14 +89,10 @@ generateFeed = function generateFeed(baseUrl, data) {
     return data.posts.reduce((feedPromise, post) => {
         return feedPromise.then(() => {
             const item = generateItem(post, siteUrl, data.secure);
-            return filters.doFilter('rss.item', item, post).then((item) => {
-                return feed.item(item);
-            });
+            return feed.item(item);
         });
     }, Promise.resolve()).then(() => {
-        return filters.doFilter('rss.feed', feed).then((feed) => {
-            return feed.xml();
-        });
+        return feed.xml();
     });
 };
 
