@@ -224,11 +224,11 @@
 /* Tag input */
 
 .tag-token--internal {
-    background: #ebf7fd;
-    color: #3fb0ef;
+    background: color-mod(var(--blue) alpha(0.1));
+    color: var(--blue);
 }
 
 .tag-token--internal svg path {
-    stroke: #3fb0ef;
-    fill: #3fb0ef;
+    stroke: var(--blue);
+    fill: var(--blue);
 }
