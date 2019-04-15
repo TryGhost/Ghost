@@ -11,6 +11,7 @@
     "normalize.css",
     "validator"
   ],
+  "prHourlyLimit": 0,
   "ignorePaths": ["lib/koenig-editor/package.json"],
   "travis": { "enabled": true },
   "node": {
