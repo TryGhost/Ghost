@@ -3,12 +3,11 @@ const Promise = require('bluebird');
 const common = require('../../lib/common');
 const config = require('../../config');
 const loader = require('./loader');
-const internalApps = config.get('apps:internal');
 
 module.exports = {
     init: function () {
         debug('init begin');
-        const appsToLoad = internalApps;
+        const appsToLoad = config.get('apps:internal');
 
         return Promise.map(appsToLoad, appName => loader.activateAppByName(appName))
             .catch(function (err) {
