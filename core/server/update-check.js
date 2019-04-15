@@ -18,7 +18,6 @@
 // - post count - total number of posts
 // - user count - total number of users
 // - theme - name of the currently active theme
-// - apps - names of any active apps
 
 const crypto = require('crypto'),
     exec = require('child_process').exec,
@@ -97,23 +96,12 @@ function updateCheckData() {
     return Promise.props({
         hash: api.settings.read(_.extend({key: 'db_hash'}, internal)).reflect(),
         theme: api.settings.read(_.extend({key: 'active_theme'}, internal)).reflect(),
-        apps: api.settings.read(_.extend({key: 'active_apps'}, internal))
-            .then(function (response) {
-                var apps = response.settings[0];
-
-                apps = JSON.parse(apps.value);
-
-                return _.reduce(apps, function (memo, item) {
-                    return memo === '' ? memo + item : memo + ', ' + item;
-                }, '');
-            }).reflect(),
         posts: api.posts.browse().reflect(),
         users: api.users.browse(internal).reflect(),
         npm: Promise.promisify(exec)('npm -v').reflect()
     }).then(function (descriptors) {
         var hash = descriptors.hash.value().settings[0],
             theme = descriptors.theme.value().settings[0],
-            apps = descriptors.apps.value(),
             posts = descriptors.posts.value(),
             users = descriptors.users.value(),
             npm = descriptors.npm.value(),
@@ -122,7 +110,6 @@ function updateCheckData() {
 
         data.blog_id = crypto.createHash('md5').update(blogId).digest('hex');
         data.theme = theme ? theme.value : '';
-        data.apps = apps || '';
         data.post_count = posts && posts.meta && posts.meta.pagination ? posts.meta.pagination.total : 0;
         data.user_count = users && users.users && users.users.length ? users.users.length : 0;
         data.blog_created_at = users && users.users && users.users[0] && users.users[0].created_at ? moment(users.users[0].created_at).unix() : '';
