@@ -68,7 +68,7 @@
     "ember-cli-test-loader": "2.2.0",
     "ember-cli-uglify": "2.1.0",
     "ember-composable-helpers": "2.2.0",
-    "ember-concurrency": "0.9.0",
+    "ember-concurrency": "0.10.0",
     "ember-data": "3.9.0",
     "ember-drag-drop": "0.4.8",
     "ember-exam": "2.0.3",
