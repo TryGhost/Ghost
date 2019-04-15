@@ -43,7 +43,7 @@ class SettingsImporter extends BaseImporter {
 
         if (activeApps || installedApps) {
             this.problems.push({
-                message: 'Apps Settings were removed.',
+                message: 'Old settings for apps were not imported',
                 help: this.modelName,
                 context: JSON.stringify({activeApps, installedApps})
             });
