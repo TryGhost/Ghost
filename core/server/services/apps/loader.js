@@ -1,85 +1,66 @@
-var path = require('path'),
-    _ = require('lodash'),
-    Promise = require('bluebird'),
-    config = require('../../config'),
-    common = require('../../lib/common'),
-
-    AppProxy = require('./proxy'),
-    AppSandbox = require('./sandbox'),
-    AppDependencies = require('./dependencies'),
-    AppPermissions = require('./permissions'),
-
-    loader;
-
-function isInternalApp(name) {
-    return _.includes(config.get('apps:internal'), name);
-}
+const path = require('path');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const config = require('../../config');
+const common = require('../../lib/common');
+const AppProxy = require('./proxy');
+const AppSandbox = require('./sandbox');
+const AppDependencies = require('./dependencies');
+const AppPermissions = require('./permissions');
 
 // Get the full path to an app by name
 function getAppAbsolutePath(name) {
-    if (isInternalApp(name)) {
-        return path.join(config.get('paths').internalAppPath, name);
-    }
-
-    return path.join(config.getContentPath('apps'), name);
+    return path.join(config.get('paths').internalAppPath, name);
 }
 
 // Get a relative path to the given apps root, defaults
 // to be relative to __dirname
-function getAppRelativePath(name, relativeTo) {
-    relativeTo = relativeTo || __dirname;
-
-    var relativePath = path.relative(relativeTo, getAppAbsolutePath(name));
+function getAppRelativePath(name, relativeTo = __dirname) {
+    const relativePath = path.relative(relativeTo, getAppAbsolutePath(name));
 
     if (relativePath.charAt(0) !== '.') {
-        relativePath = './' + relativePath;
+        return './' + relativePath;
     }
 
     return relativePath;
 }
 
 // Load apps through a pseudo sandbox
-function loadApp(appPath, isInternal) {
-    var sandbox = new AppSandbox({internal: isInternal});
+function loadApp(appPath) {
+    const sandbox = new AppSandbox({internal: true});
 
     return sandbox.loadApp(appPath);
 }
 
 function getAppByName(name, permissions) {
     // Grab the app class to instantiate
-    var AppClass = loadApp(getAppRelativePath(name), isInternalApp(name)),
-        appProxy = new AppProxy({
-            name: name,
-            permissions: permissions,
-            internal: isInternalApp(name)
-        }),
-        app;
+    const AppClass = loadApp(getAppRelativePath(name));
+    const proxy = new AppProxy({
+        name,
+        permissions,
+        internal: true
+    });
 
     // Check for an actual class, otherwise just use whatever was returned
-    if (_.isFunction(AppClass)) {
-        app = new AppClass(appProxy);
-    } else {
-        app = AppClass;
-    }
+    const app = _.isFunction(AppClass) ? new AppClass(proxy) : AppClass;
 
     return {
-        app: app,
-        proxy: appProxy
+        app,
+        proxy
     };
 }
 
-// The loader is responsible for loading apps
-loader = {
+module.exports = {
     // Load a app and return the instantiated app
     installAppByName: function (name) {
         // Install the apps dependencies first
-        var appPath = getAppAbsolutePath(name),
-            deps = new AppDependencies(appPath);
+        const appPath = getAppAbsolutePath(name);
+        const deps = new AppDependencies(appPath);
 
         return deps.install()
             .then(function () {
                 // Load app permissions
-                var perms = new AppPermissions(appPath);
+                const perms = new AppPermissions(appPath);
 
                 return perms.read().catch(function (err) {
                     // Provide a helpful error about which app
@@ -90,9 +71,7 @@ loader = {
                 });
             })
             .then(function (appPerms) {
-                var appInfo = getAppByName(name, appPerms),
-                    app = appInfo.app,
-                    appProxy = appInfo.proxy;
+                const {app, proxy} = getAppByName(name, appPerms);
 
                 // Check for an install() method on the app.
                 if (!_.isFunction(app.install)) {
@@ -102,18 +81,16 @@ loader = {
                 // Run the app.install() method
                 // Wrapping the install() with a when because it's possible
                 // to not return a promise from it.
-                return Promise.resolve(app.install(appProxy)).return(app);
+                return Promise.resolve(app.install(proxy)).return(app);
             });
     },
 
     // Activate a app and return it
     activateAppByName: function (name) {
-        var perms = new AppPermissions(getAppAbsolutePath(name));
+        const perms = new AppPermissions(getAppAbsolutePath(name));
 
         return perms.read().then(function (appPerms) {
-            var appInfo = getAppByName(name, appPerms),
-                app = appInfo.app,
-                appProxy = appInfo.proxy;
+            const {app, proxy} = getAppByName(name, appPerms);
 
             // Check for an activate() method on the app.
             if (!_.isFunction(app.activate)) {
@@ -122,9 +99,7 @@ loader = {
 
             // Wrapping the activate() with a when because it's possible
             // to not return a promise from it.
-            return Promise.resolve(app.activate(appProxy)).return(app);
+            return Promise.resolve(app.activate(proxy)).return(app);
         });
     }
 };
-
-module.exports = loader;
