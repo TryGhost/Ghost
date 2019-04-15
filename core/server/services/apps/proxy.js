@@ -1,45 +1,17 @@
-const _ = require('lodash'),
-    api = require('../../api/v0.1'),
-    helpers = require('../../helpers/register'),
-    filters = require('../../filters'),
-    common = require('../../lib/common'),
-    routingService = require('../routing');
+const _ = require('lodash');
+const api = require('../../api/v0.1');
+const helpers = require('../../helpers/register');
+const filters = require('../../filters');
+const common = require('../../lib/common');
+const routingService = require('../routing');
 
 let generateProxyFunctions;
 
-generateProxyFunctions = function (name, permissions, isInternal) {
+generateProxyFunctions = function (name) {
     const appRouter = routingService.registry.getRouter('appRouter');
 
-    var getPermission = function (perm) {
-            return permissions[perm];
-        },
-        getPermissionToMethod = function (perm, method) {
-            var perms = getPermission(perm);
-
-            if (!perms) {
-                return false;
-            }
-
-            return _.find(perms, function (name) {
-                return name === method;
-            });
-        },
-        runIfPermissionToMethod = function (perm, method, wrappedFunc, context, args) {
+    var runIfPermissionToMethod = function (perm, method, wrappedFunc, context, args) {
             // internal apps get all permissions
-            if (isInternal) {
-                return wrappedFunc.apply(context, args);
-            }
-
-            var permValue = getPermissionToMethod(perm, method);
-
-            if (!permValue) {
-                throw new Error(common.i18n.t('errors.apps.accessResourceWithoutPermission.error', {
-                    name: name,
-                    perm: perm,
-                    method: method
-                }));
-            }
-
             return wrappedFunc.apply(context, args);
         },
         checkRegisterPermissions = function (perm, registerMethod) {
@@ -111,7 +83,7 @@ function AppProxy(options) {
         throw new Error(common.i18n.t('errors.apps.mustProvideAppPermissions.error'));
     }
 
-    _.extend(this, generateProxyFunctions(options.name, options.permissions, options.internal));
+    _.extend(this, generateProxyFunctions(options.name));
 }
 
 module.exports = AppProxy;
