@@ -15,7 +15,6 @@ const _ = require('lodash'),
     db = require('../../data/db'),
     common = require('../../lib/common'),
     security = require('../../lib/security'),
-    filters = require('../../filters'),
     schema = require('../../data/schema'),
     urlService = require('../../services/url'),
     validation = require('../../data/validation'),
@@ -1118,20 +1117,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             }
         }
 
-        // Check the filtered slug doesn't match any of the reserved keywords
-        return filters.doFilter('slug.reservedSlugs', config.get('slugs').reserved).then(function then(slugList) {
-            // Some keywords cannot be changed
-            slugList = _.union(slugList, urlService.utils.getProtectedSlugs());
+        // Some keywords cannot be changed
+        const slugList = _.union(config.get('slugs').reserved, urlService.utils.getProtectedSlugs());
+        slug = _.includes(slugList, slug) ? slug + '-' + baseName : slug;
 
-            return _.includes(slugList, slug) ? slug + '-' + baseName : slug;
-        }).then(function then(slug) {
-            // if slug is empty after trimming use the model name
-            if (!slug) {
-                slug = baseName;
-            }
-            // Test for duplicate slugs.
-            return checkIfSlugExists(slug);
-        });
+        // if slug is empty after trimming use the model name
+        if (!slug) {
+            slug = baseName;
+        }
+
+        // Test for duplicate slugs.
+        return checkIfSlugExists(slug);
     },
 
     parseOrderOption: function (order, withRelated) {

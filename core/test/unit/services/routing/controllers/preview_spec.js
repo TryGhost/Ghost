@@ -4,7 +4,6 @@ const should = require('should'),
     testUtils = require('../../../../utils'),
     configUtils = require('../../../../utils/configUtils'),
     api = require('../../../../../server/api'),
-    filters = require('../../../../../server/filters'),
     controllers = require('../../../../../server/services/routing/controllers'),
     helpers = require('../../../../../server/services/routing/helpers'),
     urlService = require('../../../../../server/services/url'),
@@ -55,7 +54,6 @@ describe('Unit - services/routing/controllers/preview', function () {
             };
 
             secureStub = sinon.stub();
-            renderStub = sinon.stub();
 
             sinon.stub(urlService.utils, 'redirectToAdmin');
             sinon.stub(urlService.utils, 'redirect301');
@@ -65,11 +63,12 @@ describe('Unit - services/routing/controllers/preview', function () {
                 return secureStub;
             });
 
+            renderStub = sinon.stub();
             sinon.stub(helpers, 'renderEntry').get(function () {
-                return renderStub;
+                return function () {
+                    return renderStub;
+                };
             });
-
-            sinon.stub(filters, 'doFilter');
 
             sinon.stub(api.posts, 'read').withArgs({
                 uuid: req.params.uuid,
@@ -81,15 +80,11 @@ describe('Unit - services/routing/controllers/preview', function () {
         });
 
         it('should render post', function (done) {
-            filters.doFilter.withArgs('prePostsRender', post, res.locals).resolves();
-
-            helpers.renderEntry.callsFake(function () {
-                renderStub.called.should.be.true();
+            controllers.preview(req, res, failTest(done)).then(function () {
                 secureStub.called.should.be.true();
+                renderStub.called.should.be.true();
                 done();
-            });
-
-            controllers.preview(req, res, failTest(done));
+            }).catch(done);
         });
 
         it('should call next if post is not found', function (done) {
@@ -174,7 +169,6 @@ describe('Unit - services/routing/controllers/preview', function () {
             };
 
             secureStub = sinon.stub();
-            renderStub = sinon.stub();
 
             sinon.stub(urlService.utils, 'redirectToAdmin');
             sinon.stub(urlService.utils, 'redirect301');
@@ -184,11 +178,12 @@ describe('Unit - services/routing/controllers/preview', function () {
                 return secureStub;
             });
 
+            renderStub = sinon.stub();
             sinon.stub(helpers, 'renderEntry').get(function () {
-                return renderStub;
+                return function () {
+                    return renderStub;
+                };
             });
-
-            sinon.stub(filters, 'doFilter');
 
             previewStub = sinon.stub();
             previewStub.withArgs({
@@ -205,15 +200,11 @@ describe('Unit - services/routing/controllers/preview', function () {
         });
 
         it('should render post', function (done) {
-            filters.doFilter.withArgs('prePostsRender', post, res.locals).resolves();
-
-            helpers.renderEntry.callsFake(function () {
+            controllers.preview(req, res, failTest(done)).then(function () {
                 renderStub.called.should.be.true();
                 secureStub.called.should.be.true();
                 done();
-            });
-
-            controllers.preview(req, res, failTest(done));
+            }).catch(done);
         });
     });
 });
