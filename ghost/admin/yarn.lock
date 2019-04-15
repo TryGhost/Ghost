@@ -4780,7 +4780,7 @@ ember-composable-helpers@2.2.0, ember-composable-helpers@^2.1.0:
     broccoli-funnel "^1.0.1"
     ember-cli-babel "^7.1.0"
 
-ember-concurrency@0.9.0, ember-concurrency@^0.9.0:
+ember-concurrency@0.9.0, "ember-concurrency@^0.8.27 || ^0.9.0":
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-0.9.0.tgz#0016652ff780fb665842e7f47815ee0601122ea1"
   integrity sha512-JDjvwSlZBUQwv1+qUj6YUqXXe0Y0/to4ppUTNXQ1EEiEAopkHJXQUn0ZcFOiQpEinrYp34Vg6+lUNskoJFL2Vg==
@@ -5106,15 +5106,15 @@ ember-power-datepicker@0.5.3:
     ember-native-dom-helpers "^0.5.10"
     ember-power-calendar "^0.9.2"
 
-ember-power-select@2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/ember-power-select/-/ember-power-select-2.3.0.tgz#f9f2d242381f715f860c76f168d63c6ff2688ae7"
-  integrity sha512-LSLAt3WiljlbXelWLgna6cnnvhapltzK/yYoRbQ2iyawIQA1yU/HD4Sc2s3flrGI5IpAIbG+MFYKq0CpfJWQMQ==
+ember-power-select@2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/ember-power-select/-/ember-power-select-2.3.1.tgz#d6b6161155bedfb7ce0b6d40192aed3e2eae4b1b"
+  integrity sha512-HaZ8Kf9hLPGrtcAXsBAPe15nhWPVKzT2qSOIHFNQXWtcbHWtMkwmF44hyMmSb061HhAcJiySzBd8oAlVOkugAg==
   dependencies:
     ember-basic-dropdown "^1.1.0"
     ember-cli-babel "^7.2.0"
     ember-cli-htmlbars "^3.0.1"
-    ember-concurrency "^0.9.0"
+    ember-concurrency "^0.8.27 || ^0.9.0"
     ember-text-measurer "^0.5.0"
     ember-truth-helpers "^2.1.0"
 
