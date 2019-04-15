@@ -4,7 +4,7 @@ const Promise = require('bluebird');
 const config = require('../../config');
 const common = require('../../lib/common');
 const AppProxy = require('./proxy');
-const AppSandbox = require('./sandbox');
+const Sandbox = require('./sandbox');
 const AppDependencies = require('./dependencies');
 const AppPermissions = require('./permissions');
 
@@ -27,9 +27,7 @@ function getAppRelativePath(name, relativeTo = __dirname) {
 
 // Load apps through a pseudo sandbox
 function loadApp(appPath) {
-    const sandbox = new AppSandbox();
-
-    return sandbox.loadApp(appPath);
+    return Sandbox.loadApp(appPath);
 }
 
 function getAppByName(name, permissions) {
