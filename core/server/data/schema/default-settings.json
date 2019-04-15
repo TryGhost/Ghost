@@ -103,14 +103,6 @@
             "defaultValue": "casper"
         }
     },
-    "app": {
-        "active_apps": {
-            "defaultValue": "[]"
-        },
-        "installed_apps": {
-            "defaultValue": "[]"
-        }
-    },
     "private": {
         "is_private": {
             "defaultValue": "false",
