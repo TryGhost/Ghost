@@ -17,11 +17,11 @@
 }
 
 .gm-page-overlay.close {
-    animation: fadeOutOverlay 0.2s ease 0.5s 1 forwards;
+    animation: fadeOutOverlay 0.3s ease 1 forwards;
 }
 
 .gm-page-overlay.close .gm-modal {
-    animation: closeModal 0.4s ease-in-out 1 forwards;
+    animation: closeModal 0.3s ease-in-out 1 forwards;
 }
 
 .gm-modal-container {
