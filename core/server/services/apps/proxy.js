@@ -1,5 +1,4 @@
 const helpers = require('../../helpers/register');
-const filters = require('../../filters');
 const common = require('../../lib/common');
 const routingService = require('../routing');
 
@@ -11,10 +10,6 @@ module.exports.getInstance = function getInstance(name) {
     const appRouter = routingService.registry.getRouter('appRouter');
 
     return {
-        filters: {
-            register: filters.registerFilter.bind(filters),
-            deregister: filters.deregisterFilter.bind(filters)
-        },
         helpers: {
             register: helpers.registerThemeHelper.bind(helpers),
             registerAsync: helpers.registerAsyncThemeHelper.bind(helpers)
