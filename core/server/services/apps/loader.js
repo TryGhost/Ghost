@@ -1,31 +1,22 @@
 const path = require('path');
 const _ = require('lodash');
 const Promise = require('bluebird');
-const config = require('../../config');
 const common = require('../../lib/common');
+const config = require('../../config');
 const Proxy = require('./proxy');
-const Sandbox = require('./sandbox');
 
 // Get the full path to an app by name
 function getAppAbsolutePath(name) {
     return path.join(config.get('paths').internalAppPath, name);
 }
 
-// Get a relative path to the given apps root, defaults
-// to be relative to __dirname
-function getAppRelativePath(name, relativeTo = __dirname) {
-    const relativePath = path.relative(relativeTo, getAppAbsolutePath(name));
-
-    if (relativePath.charAt(0) !== '.') {
-        return './' + relativePath;
-    }
-
-    return relativePath;
+function loadApp(name) {
+    return require(getAppAbsolutePath(name));
 }
 
 function getAppByName(name) {
     // Grab the app class to instantiate
-    const AppClass = Sandbox.loadApp(getAppRelativePath(name));
+    const AppClass = loadApp(name);
     const proxy = Proxy.getInstance(name);
 
     // Check for an actual class, otherwise just use whatever was returned
