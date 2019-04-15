@@ -5,7 +5,6 @@
 var proxy = require('./proxy'),
     _ = require('lodash'),
     SafeString = proxy.SafeString,
-    filters = proxy.filters,
     settingsCache = proxy.settingsCache;
 
 // We use the name ghost_foot to match the helper for consistency:
@@ -22,9 +21,5 @@ module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
         foot.push(postCodeinjection);
     }
 
-    return filters
-        .doFilter('ghost_foot', foot)
-        .then(function (foot) {
-            return new SafeString(foot.join(' ').trim());
-        });
+    return new SafeString(foot.join(' ').trim());
 };

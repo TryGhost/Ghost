@@ -4,7 +4,6 @@ const _ = require('lodash'),
     security = require('../../../lib/security'),
     urlService = require('../../../services/url'),
     themes = require('../../themes'),
-    filters = require('../../../filters'),
     helpers = require('../helpers');
 
 module.exports = function collectionController(req, res, next) {
@@ -67,13 +66,8 @@ module.exports = function collectionController(req, res, next) {
                 helpers.secure(req, data);
             });
 
-            // @TODO: properly design these filters
-            filters.doFilter('prePostsRender', result.posts, res.locals)
-                .then(function (posts) {
-                    result.posts = posts;
-                    return result;
-                })
-                .then(helpers.renderEntries(req, res));
+            const renderer = helpers.renderEntries(req, res);
+            return renderer(result);
         })
         .catch(helpers.handleError(next));
 };

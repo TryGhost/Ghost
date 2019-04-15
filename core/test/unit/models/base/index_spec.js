@@ -6,7 +6,6 @@ var should = require('should'),
     models = require('../../../../server/models'),
     common = require('../../../../server/lib/common'),
     urlService = require('../../../../server/services/url'),
-    filters = require('../../../../server/filters'),
     testUtils = require('../../../utils');
 
 describe('Models: base', function () {
@@ -24,7 +23,6 @@ describe('Models: base', function () {
 
         beforeEach(function () {
             sinon.stub(security.string, 'safe');
-            sinon.stub(filters, 'doFilter').resolves();
             sinon.stub(urlService.utils, 'getProtectedSlugs').returns(['upsi', 'schwupsi']);
 
             Model = sinon.stub();

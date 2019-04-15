@@ -3,7 +3,6 @@ const should = require('should'),
     testUtils = require('../../../../utils'),
     common = require('../../../../../server/lib/common'),
     security = require('../../../../../server/lib/security'),
-    filters = require('../../../../../server/filters'),
     themeService = require('../../../../../server/services/themes'),
     controllers = require('../../../../../server/services/routing/controllers'),
     helpers = require('../../../../../server/services/routing/helpers');
@@ -47,11 +46,7 @@ describe('Unit - services/routing/controllers/channel', function () {
            }
         });
 
-        sinon.stub(helpers, 'renderEntries').get(function () {
-            return renderStub;
-        });
-
-        sinon.stub(filters, 'doFilter');
+        sinon.stub(helpers, 'renderEntries').returns(renderStub);
 
         req = {
             path: '/',
@@ -81,18 +76,13 @@ describe('Unit - services/routing/controllers/channel', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.channel(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
             done();
-        });
-
-        controllers.channel(req, res, failTest(done));
+        }).catch(done);
     });
 
     it('pass page param', function (done) {
@@ -108,18 +98,13 @@ describe('Unit - services/routing/controllers/channel', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.channel(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
             done();
-        });
-
-        controllers.channel(req, res, failTest(done));
+        }).catch(done);
     });
 
     it('update hbs engine: router defines limit', function (done) {
@@ -136,19 +121,14 @@ describe('Unit - services/routing/controllers/channel', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.channel(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             themeService.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}).calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
             done();
-        });
-
-        controllers.channel(req, res, failTest(done));
+        }).catch(done);
     });
 
     it('page param too big', function (done) {
@@ -170,7 +150,6 @@ describe('Unit - services/routing/controllers/channel', function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.false();
             renderStub.calledOnce.should.be.false();
             secureStub.calledOnce.should.be.false();
             done();
@@ -190,18 +169,13 @@ describe('Unit - services/routing/controllers/channel', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.channel(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.true();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
             done();
-        });
-
-        controllers.channel(req, res, failTest(done));
+        }).catch(done);
     });
 
     it('invalid posts per page', function (done) {
@@ -217,18 +191,13 @@ describe('Unit - services/routing/controllers/channel', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.channel(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
             done();
-        });
-
-        controllers.channel(req, res, failTest(done));
+        }).catch(done);
     });
 
     it('ensure secure helper get\'s called for data object', function (done) {
@@ -245,17 +214,12 @@ describe('Unit - services/routing/controllers/channel', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.channel(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledTwice.should.be.true();
             done();
-        });
-
-        controllers.channel(req, res, failTest(done));
+        }).catch(done);
     });
 });

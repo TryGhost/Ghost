@@ -1,6 +1,5 @@
 const debug = require('ghost-ignition').debug('services:routing:controllers:preview'),
     urlService = require('../../url'),
-    filters = require('../../../filters'),
     helpers = require('../helpers');
 
 module.exports = function previewController(req, res, next) {
@@ -14,7 +13,7 @@ module.exports = function previewController(req, res, next) {
         include: 'author,authors,tags'
     };
 
-    api[res.routerOptions.query.controller]
+    return api[res.routerOptions.query.controller]
         .read(params)
         .then(function then(result) {
             const post = result[res.routerOptions.query.resource][0];
@@ -41,8 +40,8 @@ module.exports = function previewController(req, res, next) {
 
             helpers.secure(req, post);
 
-            filters.doFilter('prePostsRender', post, res.locals)
-                .then(helpers.renderEntry(req, res));
+            const renderer = helpers.renderEntry(req, res);
+            return renderer(post);
         })
         .catch(helpers.handleError(next));
 };

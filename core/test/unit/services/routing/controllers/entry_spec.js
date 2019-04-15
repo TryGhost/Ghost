@@ -1,7 +1,6 @@
 const should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../../../utils'),
-    filters = require('../../../../../server/filters'),
     urlService = require('../../../../../server/services/url'),
     controllers = require('../../../../../server/services/routing/controllers'),
     helpers = require('../../../../../server/services/routing/helpers'),
@@ -31,8 +30,6 @@ describe('Unit - services/routing/controllers/entry', function () {
         sinon.stub(helpers, 'renderEntry').get(function () {
             return renderStub;
         });
-
-        sinon.stub(filters, 'doFilter');
 
         sinon.stub(urlService.utils, 'redirectToAdmin');
         sinon.stub(urlService.utils, 'redirect301');
@@ -75,8 +72,6 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         res.routerOptions.resourceType = 'posts';
 
-        filters.doFilter.withArgs('prePostsRender', post, res.locals).resolves();
-
         urlService.getResourceById.withArgs(post.id).returns({
             config: {
                 type: 'posts'
@@ -88,12 +83,10 @@ describe('Unit - services/routing/controllers/entry', function () {
                 entry: post
             });
 
-        renderStub.callsFake(function () {
+        controllers.entry(req, res, function () {
             secureStub.calledOnce.should.be.true();
             done();
-        });
-
-        controllers.entry(req, res);
+        }).catch(done);
     });
 
     describe('[edge cases] resource found', function () {

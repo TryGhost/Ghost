@@ -3,7 +3,6 @@ const should = require('should'),
     testUtils = require('../../../../utils'),
     common = require('../../../../../server/lib/common'),
     security = require('../../../../../server/lib/security'),
-    filters = require('../../../../../server/filters'),
     themeService = require('../../../../../server/services/themes'),
     urlService = require('../../../../../server/services/url'),
     controllers = require('../../../../../server/services/routing/controllers'),
@@ -48,11 +47,7 @@ describe('Unit - services/routing/controllers/collection', function () {
            }
         });
 
-        sinon.stub(helpers, 'renderEntries').get(function () {
-            return renderStub;
-        });
-
-        sinon.stub(filters, 'doFilter');
+        sinon.stub(helpers, 'renderEntries').returns(renderStub);
 
         sinon.stub(urlService, 'owns');
         urlService.owns.withArgs('identifier', posts[0].id).returns(true);
@@ -87,19 +82,14 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.collection(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
             urlService.owns.calledOnce.should.be.true();
             done();
-        });
-
-        controllers.collection(req, res, failTest(done));
+        }).catch(done);
     });
 
     it('pass page param', function (done) {
@@ -115,19 +105,14 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.collection(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
             urlService.owns.calledOnce.should.be.true();
             done();
-        });
-
-        controllers.collection(req, res, failTest(done));
+        }).catch(done);
     });
 
     it('update hbs engine: router defines limit', function (done) {
@@ -144,20 +129,15 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.collection(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             themeService.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}).calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
             urlService.owns.calledOnce.should.be.true();
             done();
-        });
-
-        controllers.collection(req, res, failTest(done));
+        }).catch(done);
     });
 
     it('page param too big', function (done) {
@@ -179,7 +159,6 @@ describe('Unit - services/routing/controllers/collection', function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.false();
             renderStub.calledOnce.should.be.false();
             secureStub.calledOnce.should.be.false();
             urlService.owns.calledOnce.should.be.false();
@@ -200,19 +179,14 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.collection(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.true();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
             urlService.owns.calledOnce.should.be.true();
             done();
-        });
-
-        controllers.collection(req, res, failTest(done));
+        }).catch(done);
     });
 
     it('invalid posts per page', function (done) {
@@ -228,19 +202,14 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.collection(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
             urlService.owns.calledOnce.should.be.true();
             done();
-        });
-
-        controllers.collection(req, res, failTest(done));
+        }).catch(done);
     });
 
     it('ensure secure helper get\'s called for data object', function (done) {
@@ -257,19 +226,14 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', posts, res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.collection(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledTwice.should.be.true();
             urlService.owns.calledOnce.should.be.true();
             done();
-        });
-
-        controllers.collection(req, res, failTest(done));
+        }).catch(done);
     });
 
     it('should verify if post belongs to collection', function (done) {
@@ -301,18 +265,13 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        filters.doFilter.withArgs('prePostsRender', [posts[1]], res.locals).resolves();
-
-        renderStub.callsFake(function () {
+        controllers.collection(req, res, failTest(done)).then(function () {
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            filters.doFilter.calledOnce.should.be.true();
             secureStub.calledTwice.should.be.true();
             urlService.owns.callCount.should.eql(4);
             done();
-        });
-
-        controllers.collection(req, res, failTest(done));
+        }).catch(done);
     });
 });
