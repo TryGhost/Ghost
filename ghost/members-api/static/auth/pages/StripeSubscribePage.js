@@ -114,9 +114,9 @@ export default class StripePaymentPage extends Component {
         } : {};
         return (
             <div class="gm-subscribe-page">
+                <FormHeader title="Subscribe" error={ error } errorText={ error } />
                 <div className="gm-subscribe-form-wrapper">
                     <div className="gm-modal-form gm-subscribe-form">
-                        <FormHeader title="Subscribe" error={ error } errorText={ error } />
                         <StripeProvider apiKey={publicKey}>
                             <Elements>
                                 <PaymentFormWrapped handleSubmit={handleSubmit} publicKey={publicKey} selectedPlan={this.state.selectedPlan} />
