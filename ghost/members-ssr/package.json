@@ -28,5 +28,8 @@
     "ghost-ignition": "^3.0.4",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.11"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
