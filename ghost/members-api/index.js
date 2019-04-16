@@ -118,7 +118,7 @@ module.exports = function MembersApi({
     }
 
     /* subscriptions */
-    apiRouter.post('/subscription', getData('adapter', 'plan', 'stripeToken'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/subscription', getData('adapter', 'plan', 'stripeToken', 'coupon'), ssoOriginCheck, (req, res) => {
         const {signedin} = getCookie(req);
         if (!signedin) {
             res.writeHead(401, {
@@ -127,7 +127,7 @@ module.exports = function MembersApi({
             return res.end();
         }
 
-        const {plan, adapter, stripeToken} = req.data;
+        const {plan, adapter, stripeToken, coupon} = req.data;
 
         subscriptions.getAdapters()
             .then((adapters) => {
@@ -140,7 +140,8 @@ module.exports = function MembersApi({
                 return subscriptions.createSubscription(member, {
                     adapter,
                     plan,
-                    stripeToken
+                    stripeToken,
+                    coupon
                 });
             })
             .then(() => {
