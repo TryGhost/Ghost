@@ -17,6 +17,7 @@ export default class Modal extends Component {
         super();
         this.state = {
             error: null,
+            showLoggedIn: false,
             containerClass: 'gm-page-overlay'
         }
     }
@@ -77,7 +78,7 @@ export default class Modal extends Component {
     }
 
     render(props, state) {
-        const { containerClass, error, loadingConfig, paymentConfig, siteConfig } = state;
+        const { containerClass, error, loadingConfig, paymentConfig, siteConfig, showLoggedIn } = state;
         const { members } = this.context;
 
         const closeModal = () => this.close();
@@ -89,7 +90,18 @@ export default class Modal extends Component {
             this.setState({ error });
         });
 
-        const signin = (data) => this.handleAction(members.signin(data));
+        // const signin = (data) => this.handleAction(members.signin(data));
+        const signin = (data) => members.signin(data).then((success) => {
+            const clearShowLoggedIn = () => {
+                this.setState({showLoggedIn: false});
+                this.close();
+            }
+            this.setState({showLoggedIn: true}, () => {
+                window.setTimeout(clearShowLoggedIn, 5000)
+            });
+        }, (error) => {
+            this.setState({ error });
+        });
 
         const requestReset = (data) => members.requestPasswordReset(data).then((success) => {
             window.location.hash = 'password-reset-sent';
@@ -108,8 +120,8 @@ export default class Modal extends Component {
         }
         return (
             <Pages className={containerClass} onChange={clearError} onClick={closeModal} stripeConfig={stripeConfig} siteConfig={siteConfig}>
-                <SigninPage error={error} hash="" handleSubmit={signup} />
-                <SigninPage error={error} hash="signin" handleSubmit={signin} />
+                <SigninPage error={error} hash="" handleSubmit={signup} showLoggedIn={showLoggedIn} />
+                <SigninPage error={error} hash="signin" handleSubmit={signin} showLoggedIn={showLoggedIn} />
                 {this.renderSignupPage({ error, stripeConfig, members, signup, closeModal, siteConfig})}
                 {this.renderUpgradePage(props, state)}
                 <SignupCompletePage error={ error } hash="signup-complete" handleSubmit={ closeModal } siteConfig={ siteConfig } />
