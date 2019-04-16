@@ -8,19 +8,24 @@ import EmailInput from '../components/EmailInput';
 import PasswordInput from '../components/PasswordInput';
 import { IconClose } from '../components/icons';
 
-export default ({ error, handleClose, handleSubmit }) => (
-    <div className="gm-modal-form gm-signup-page">
-        <FormHeader title="" error={error} errorText="Email already registered">
-            <div className="flex justify-between items-baseline">
-                <h1>Sign up</h1>
-                <FormHeaderCTA title="Already a member?" label="Log in" hash="#signin" />
-            </div>
-        </FormHeader>
-        <Form onSubmit={handleSubmit}>
-            <NameInput bindTo="name" className="first" />
-            <EmailInput bindTo="email" />
-            <PasswordInput bindTo="password" className="last" />
-            <FormSubmit label="Sign up" />
-        </Form>
-    </div>
-);
+export default ({ error, handleClose, handleSubmit, showSpinner }) => {
+    let label = showSpinner ? (
+        <span><span class="gm-spinner"></span> Signing up... </span>
+    ) : "Sign up";
+    return (
+        <div className="gm-modal-form gm-signup-page">
+            <FormHeader title="" error={error} errorText="Email already registered">
+                <div className="flex justify-between items-baseline">
+                    <h1>Sign up</h1>
+                    <FormHeaderCTA title="Already a member?" label="Log in" hash="#signin" />
+                </div>
+            </FormHeader>
+            <Form onSubmit={handleSubmit}>
+                <NameInput bindTo="name" className="first" />
+                <EmailInput bindTo="email" />
+                <PasswordInput bindTo="password" className="last" />
+                <FormSubmit label={label} />
+            </Form>
+        </div>
+    )
+};

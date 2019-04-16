@@ -18,6 +18,7 @@ export default class Modal extends Component {
         this.state = {
             error: null,
             showLoggedIn: false,
+            showSpinner: false,
             containerClass: 'gm-page-overlay'
         }
     }
@@ -45,23 +46,27 @@ export default class Modal extends Component {
         });
     }
 
-    renderSignupPage({error, stripeConfig, members, signup, closeModal, siteConfig}) {
+    renderSignupPage({error, stripeConfig, members, signup, closeModal, siteConfig, showSpinner}) {
 
         if (stripeConfig) {
-            const createAccountWithSubscription = (data) => members.signup(data).then((success) => {
-                members.createSubscription(data).then((success) => {
-                    window.location.hash = 'signup-complete';
+            const createAccountWithSubscription = (data) => {
+                this.setState({showSpinner: true});
+                members.signup(data).then((success) => {
+                    members.createSubscription(data).then((success) => {
+                        this.setState({showSpinner: false});
+                        window.location.hash = 'signup-complete';
+                    }, (error) => {
+                        this.setState({ error: "Unable to confirm payment", showSpinner: false });
+                    });
                 }, (error) => {
-                    this.setState({ error: "Unable to confirm payment" });
-                });
-            }, (error) => {
-                this.setState({ error: "Unable to signup" });
-            });
-            return <StripeSubscribePage stripeConfig={stripeConfig} error={error} hash="signup" handleSubmit={createAccountWithSubscription} handleClose={closeModal} siteConfig={siteConfig} />
+                    this.setState({ error: "Unable to signup", showSpinner: false });
+                })
+            };
+            return <StripeSubscribePage stripeConfig={stripeConfig} error={error} hash="signup" handleSubmit={createAccountWithSubscription} handleClose={closeModal} siteConfig={siteConfig} showSpinner={showSpinner} />
 
         }
         return (
-            <SignupPage error={error} hash="signup" handleSubmit={signup} handleClose={closeModal} />
+            <SignupPage error={error} hash="signup" handleSubmit={signup} handleClose={closeModal} showSpinner={showSpinner} />
         );
     }
 
@@ -78,17 +83,21 @@ export default class Modal extends Component {
     }
 
     render(props, state) {
-        const { containerClass, error, loadingConfig, paymentConfig, siteConfig, showLoggedIn } = state;
+        const { containerClass, error, loadingConfig, paymentConfig, siteConfig, showLoggedIn, showSpinner } = state;
         const { members } = this.context;
 
         const closeModal = () => this.close();
         const clearError = () => this.setState({ error: null });
 
-        const signup = (data) => members.signup(data).then((success) => {
-            window.location.hash = 'signup-complete';
-        }, (error) => {
-            this.setState({ error });
-        });
+        const signup = (data) => {
+            this.setState({showSpinner: true});
+            members.signup(data).then((success) => {
+                this.setState({showSpinner: false});
+                window.location.hash = 'signup-complete';
+            }, (error) => {
+                this.setState({ error, showSpinner: false });
+            })
+        };
 
         // const signin = (data) => this.handleAction(members.signin(data));
         const signin = (data) => members.signin(data).then((success) => {
@@ -122,7 +131,7 @@ export default class Modal extends Component {
             <Pages className={containerClass} onChange={clearError} onClick={closeModal} stripeConfig={stripeConfig} siteConfig={siteConfig}>
                 <SigninPage error={error} hash="" handleSubmit={signup} showLoggedIn={showLoggedIn} />
                 <SigninPage error={error} hash="signin" handleSubmit={signin} showLoggedIn={showLoggedIn} />
-                {this.renderSignupPage({ error, stripeConfig, members, signup, closeModal, siteConfig})}
+                {this.renderSignupPage({ error, stripeConfig, members, signup, closeModal, siteConfig, showSpinner})}
                 {this.renderUpgradePage(props, state)}
                 <SignupCompletePage error={ error } hash="signup-complete" handleSubmit={ closeModal } siteConfig={ siteConfig } />
                 <RequestPasswordResetPage error={error} hash="request-password-reset" handleSubmit={requestReset} />
