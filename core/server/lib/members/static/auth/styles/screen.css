@@ -355,6 +355,12 @@ a:hover {
     text-transform: uppercase;
 }
 
+.gm-thank-you {
+    margin-top: 20px;
+    line-height: 1.65em;
+    text-align: center;
+}
+
 @media (max-width: 440px) {
     .gm-subscribe-form-wrapper {
         flex-direction: column;
