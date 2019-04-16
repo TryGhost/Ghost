@@ -1,10 +1,12 @@
 import Component from '@ember/component';
-import countWords, {countImages, stripTags} from '../utils/count-words';
 import layout from '../templates/components/koenig-card-html';
 import {computed} from '@ember/object';
+import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {set} from '@ember/object';
+
+const {countWords, countImages} = ghostHelperUtils;
 
 export default Component.extend({
     layout,
@@ -25,7 +27,7 @@ export default Component.extend({
 
     counts: computed('payload.html', function () {
         return {
-            wordCount: countWords(stripTags(this.payload.html)),
+            wordCount: countWords(this.payload.html),
             imageCount: countImages(this.payload.html)
         };
     }),

@@ -1,14 +1,15 @@
 import Component from '@ember/component';
-import countWords, {countImages, stripTags} from '../utils/count-words';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import layout from '../templates/components/koenig-card-markdown';
 import {computed} from '@ember/object';
+import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {set} from '@ember/object';
 import {task, timeout} from 'ember-concurrency';
 
+const {countWords, countImages} = ghostHelperUtils;
 const MIN_HEIGHT = 130;
 
 export default Component.extend({
@@ -34,7 +35,7 @@ export default Component.extend({
 
     counts: computed('renderedMarkdown', function () {
         return {
-            wordCount: countWords(stripTags(this.renderedMarkdown)),
+            wordCount: countWords(this.renderedMarkdown),
             imageCount: countImages(this.renderedMarkdown)
         };
     }),

@@ -818,6 +818,13 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
+"@tryghost/helpers@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.1.tgz#d242c44bd5cdf01f39acb929bf9dd345d4ede7b5"
+  integrity sha512-AzFYznuesabUREQhu3VEeotn44QNdRUWcHCWhJD4ktvqS49hfDyTELl4JCpdtBhiflaGXtCD9vykUlr/nFjM8w==
+  dependencies:
+    lodash-es "^4.17.11"
+
 "@tryghost/mobiledoc-kit@0.11.1-ghost.7":
   version "0.11.1-ghost.7"
   resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.1-ghost.7.tgz#79b9ef018dc8c8829864e30602079ea7f4ef3cb6"
@@ -4983,7 +4990,6 @@ ember-lifeline@^3.0.1:
 
 "ember-light-table@https://github.com/kevinansfield/ember-light-table#bump-ember-in-viewport":
   version "1.13.2"
-  uid a757399504755ad8dde5cb4196576201881b93d4
   resolved "https://github.com/kevinansfield/ember-light-table#a757399504755ad8dde5cb4196576201881b93d4"
   dependencies:
     "@html-next/vertical-collection" "^1.0.0-beta.12"
@@ -6467,7 +6473,6 @@ gonzales-pe@^3.4.7:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  uid "275cb75249f038492094a499756a73719ae071fd"
   resolved "https://github.com/acburdine/google-caja-bower#275cb75249f038492094a499756a73719ae071fd"
 
 got@^8.0.1:
@@ -7590,7 +7595,6 @@ just-extend@^4.0.2:
 
 "keymaster@https://github.com/madrobby/keymaster.git":
   version "1.6.3"
-  uid f8f43ddafad663b505dc0908e72853bcf8daea49
   resolved "https://github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
 
 keyv@3.0.0:
@@ -7754,6 +7758,11 @@ locate-path@^3.0.0:
   dependencies:
     p-locate "^3.0.0"
     path-exists "^3.0.0"
+
+lodash-es@^4.17.11:
+  version "4.17.11"
+  resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.17.11.tgz#145ab4a7ac5c5e52a3531fb4f310255a152b4be0"
+  integrity sha512-DHb1ub+rMjjrxqlB3H56/6MXtm1lSksDp2rA2cNWjG8mlDUYFhUj3Di2Zn5IwSU87xLv8tNIQ7sSwE/YOX/D/Q==
 
 lodash._baseassign@^3.0.0:
   version "3.2.0"
@@ -10759,7 +10768,6 @@ simple-swizzle@^0.2.2:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  uid "7afb50dcdd63d3a1f6ccad682b70acbd7bc52eb9"
   resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#7afb50dcdd63d3a1f6ccad682b70acbd7bc52eb9"
 
 sinon@^7.1.1:
