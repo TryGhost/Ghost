@@ -36,10 +36,6 @@ class PaymentForm extends Component {
         });
     };
 
-    onClick = () => {
-        this.props.stripe.createToken({ name: name });
-    }
-
     render({frameLocation}) {
         let label = this.props.showSpinner ? (
             (
@@ -54,7 +50,7 @@ class PaymentForm extends Component {
                 <PasswordInput bindTo="password" />
                 { coupon ? <CouponInput disabled={true} bindTo="coupon" /> : '' }
                 <CheckoutForm />
-                <FormSubmit label={label} onClick={() => this.onClick()}/>
+                <FormSubmit label={label} />
             </Form>
         );
     }
