@@ -141,7 +141,7 @@
 
     addMethod('getToken', getToken);
 
-    addMethod('createSubscription', function createSubscription({adapter, plan, stripeToken}) {
+    addMethod('createSubscription', function createSubscription({adapter, plan, stripeToken, coupon}) {
         return fetch(`${membersApiUrl}subscription`, {
             method: 'POST',
             headers: {
@@ -151,7 +151,8 @@
                 origin,
                 adapter,
                 plan,
-                stripeToken
+                stripeToken,
+                coupon
             })
         }).then((res) => {
             if (res.ok) {
