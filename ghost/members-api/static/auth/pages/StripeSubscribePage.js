@@ -35,13 +35,18 @@ class PaymentForm extends Component {
     }
 
     render() {
+        let label = this.props.showSpinner ? (
+            (
+                <span><span class="gm-spinner"></span> Signing up... </span>
+            ) 
+        ) : "Confirm payment";
         return (
             <Form bindTo="request-password-reset" onSubmit={(data) => this.handleSubmit(data)}>
                 <NameInput bindTo="name" className="first" />
                 <EmailInput bindTo="email" />
                 <PasswordInput bindTo="password" />
                 <CheckoutForm />
-                <FormSubmit label="Confirm payment" onClick={() => this.onClick()}/>
+                <FormSubmit label={label} onClick={() => this.onClick()}/>
             </Form>
         );
     }
@@ -104,7 +109,7 @@ export default class StripePaymentPage extends Component {
         )
     }
 
-    render({ error, handleSubmit, stripeConfig, siteConfig }) {
+    render({ error, handleSubmit, stripeConfig, siteConfig, showSpinner }) {
         const publicKey = stripeConfig.config.publicKey || '';
         let iconUrl = siteConfig && siteConfig.icon;
         let title = (siteConfig && siteConfig.title) || "Ghost Publication";
@@ -119,7 +124,7 @@ export default class StripePaymentPage extends Component {
                     <div className="gm-modal-form gm-subscribe-form">
                         <StripeProvider apiKey={publicKey}>
                             <Elements>
-                                <PaymentFormWrapped handleSubmit={handleSubmit} publicKey={publicKey} selectedPlan={this.state.selectedPlan} />
+                                <PaymentFormWrapped handleSubmit={handleSubmit} publicKey={publicKey} selectedPlan={this.state.selectedPlan} showSpinner={showSpinner} />
                             </Elements>
                         </StripeProvider>
                         <div className="flex justify-center mt4">
