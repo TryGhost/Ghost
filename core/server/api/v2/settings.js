@@ -9,6 +9,12 @@ const urlService = require('../../services/url');
 const common = require('../../lib/common');
 const settingsCache = require('../../services/settings/cache');
 
+const SETTINGS_BLACKLIST = [
+    'members_public_key',
+    'members_private_key',
+    'members_session_secret'
+];
+
 module.exports = {
     docName: 'settings',
 
@@ -28,7 +34,9 @@ module.exports = {
             // CASE: omit core settings unless internal request
             if (!frame.options.context.internal) {
                 settings = _.filter(settings, (setting) => {
-                    return setting.type !== 'core';
+                    const isCore = setting.type === 'core';
+                    const isBlacklisted = SETTINGS_BLACKLIST.includes(setting.key);
+                    return !isBlacklisted && !isCore;
                 });
             }
 
