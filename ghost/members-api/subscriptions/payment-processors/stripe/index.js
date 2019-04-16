@@ -77,7 +77,8 @@ module.exports = class StripePaymentProcessor {
 
             return api.subscriptions.create(this._stripe, member, {
                 plan,
-                stripeToken: metadata.stripeToken
+                stripeToken: metadata.stripeToken,
+                coupon: metadata.coupon
             });
         });
     }
