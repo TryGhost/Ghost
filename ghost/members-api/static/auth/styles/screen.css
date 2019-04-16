@@ -180,7 +180,6 @@ a:hover {
 @media (max-width: 440px) {
     .gm-modal-form {
         width: 100%;
-        /* margin-top: 60px; */
     }
 
     h4 {
@@ -301,7 +300,7 @@ a:hover {
 
 .gm-plans {
     width: 270px;
-    margin: 70px 0 0;
+    margin: 30px 0 0;
     position: absolute;
     top: -5px;
     left: -270px;
@@ -356,6 +355,12 @@ a:hover {
     text-transform: uppercase;
 }
 
+.gm-thank-you {
+    margin-top: 20px;
+    line-height: 1.65em;
+    text-align: center;
+}
+
 @media (max-width: 440px) {
     .gm-subscribe-form-wrapper {
         flex-direction: column;
@@ -375,6 +380,7 @@ a:hover {
         order: 1;
         width: 100%;
         animation: none;
+        margin-bottom: -24px;
     }
 
     .gm-plans {
@@ -395,10 +401,11 @@ a:hover {
 }
 
 .gm-powered-by {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 32px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    margin-bottom: 32px;
 }
 
 .gm-powered-by a {

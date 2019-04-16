@@ -17,17 +17,20 @@
 }
 
 .gm-page-overlay.close {
-    animation: fadeOutOverlay 0.2s ease 0.5s 1 forwards;
+    animation: fadeOutOverlay 0.3s ease 1 forwards;
 }
 
 .gm-page-overlay.close .gm-modal {
-    animation: closeModal 0.4s ease-in-out 1 forwards;
+    animation: closeModal 0.3s ease-in-out 1 forwards;
 }
 
 .gm-modal-container {
     position: relative;
     top: 25vh;
     display: flex;
+    min-height: 75vh;
+    flex-direction: column;
+    align-items: center;
 }
 
 .gm-modal {
@@ -104,7 +107,7 @@
 
     .gm-modal {
         width: calc(100% - 48px);
-        height: calc(100vh - 48px);
+        min-height: calc(100vh - 90px);
         padding: 24px;
         border-radius: 0;
     }
@@ -145,6 +148,8 @@
 /* Buttons */
 /* ------------------------------------------------------------ */
 button {
+    display: flex;
+    justify-content: center;
     width: 100%;
     font-weight: 500;
     border: 1px solid var(--grey);
@@ -194,6 +199,22 @@ button:hover {
     left: 0;
     background: linear-gradient(0deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.2));
     opacity: 0;
+}
+
+@keyframes spinner {
+    to {transform: rotate(360deg);}
+}
+
+.gm-btn-blue .gm-spinner {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+    margin: -3px 8px -3px 0;
+    border-radius: 50%;
+    border-top: 2px solid #fff;
+    border-right: 2px solid transparent;
+    animation: spinner .6s linear infinite;
 }
 
 
