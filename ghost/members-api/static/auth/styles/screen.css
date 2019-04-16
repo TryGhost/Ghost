@@ -218,7 +218,8 @@ a:hover {
 .gm-signin-page,
 .gm-signup-page,
 .gm-subscribe-page,
-.gm-reset-pwd-page {
+.gm-reset-pwd-page,
+.gm-signup-complete-page {
     animation: fadeInPage 0.6s ease 1;
 }
 
