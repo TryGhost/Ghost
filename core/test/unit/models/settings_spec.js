@@ -113,16 +113,16 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
-                    eventSpy.callCount.should.equal(60);
+                    eventSpy.callCount.should.equal(62);
 
                     eventSpy.args[1][0].should.equal('settings.db_hash.added');
                     eventSpy.args[1][1].attributes.type.should.equal('core');
 
-                    eventSpy.args[11][0].should.equal('settings.description.added');
-                    eventSpy.args[11][1].attributes.type.should.equal('blog');
-                    eventSpy.args[11][1].attributes.value.should.equal('The professional publishing platform');
+                    eventSpy.args[13][0].should.equal('settings.description.added');
+                    eventSpy.args[13][1].attributes.type.should.equal('blog');
+                    eventSpy.args[13][1].attributes.value.should.equal('The professional publishing platform');
 
-                    eventSpy.args[59][0].should.equal('settings.members_subscription_settings.added');
+                    eventSpy.args[61][0].should.equal('settings.members_subscription_settings.added');
                 });
         });
 
@@ -136,9 +136,9 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
-                    eventSpy.callCount.should.equal(58);
+                    eventSpy.callCount.should.equal(60);
 
-                    eventSpy.args[11][0].should.equal('settings.logo.added');
+                    eventSpy.args[13][0].should.equal('settings.logo.added');
                 });
         });
     });

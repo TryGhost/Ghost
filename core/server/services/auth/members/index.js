@@ -24,15 +24,12 @@ module.exports = {
                 audience: siteOrigin,
                 issuer: siteOrigin,
                 algorithm: 'RS512',
-                secret: membersService.api.publicKey,
+                secret(req, payload, done) {
+                    membersService.getPublicConfig().then(({publicKey}) => {
+                        done(null, publicKey);
+                    }).catch(done);
+                },
                 getToken(req) {
-                    if (req.get('cookie')) {
-                        const memberTokenMatch = req.get('cookie').match(/member=([a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]*)/);
-                        if (memberTokenMatch) {
-                            return memberTokenMatch[1];
-                        }
-                    }
-
                     if (!req.get('authorization')) {
                         return null;
                     }

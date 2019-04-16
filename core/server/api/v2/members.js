@@ -1,4 +1,4 @@
-const memberUserObject = require('../../services/members').api.memberUserObject;
+const memberUserObject = require('../../services/members').api.members;
 
 const members = {
     docName: 'members',

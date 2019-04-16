@@ -488,6 +488,7 @@ module.exports.deduplicateDoubleSlashes = deduplicateDoubleSlashes;
 module.exports.getApiPath = getApiPath;
 module.exports.getVersionPath = getVersionPath;
 module.exports.getBlogUrl = getBlogUrl;
+module.exports.getSiteUrl = getBlogUrl;
 
 /**
  * If you request **any** image in Ghost, it get's served via
