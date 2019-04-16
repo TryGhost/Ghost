@@ -12,12 +12,12 @@ module.exports = function ({
     function encodeToken({sub, aud = issuer, plans, exp}) {
         return keyStoreReady.then(jwk => jwt.sign({
             sub,
-            exp,
             plans,
             kid: jwk.kid
         }, privateKey, {
             algorithm: 'RS512',
             audience: aud,
+            expiresIn: exp,
             issuer
         }));
     }

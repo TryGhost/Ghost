@@ -11,7 +11,7 @@ module.exports = function ({
     decodeToken
 }) {
     function requestPasswordReset({email}) {
-        return getMember({email}, {require: true}).then((member) => {
+        return getMember({email}).then((member) => {
             return encodeToken({
                 sub: member.id
             }).then((token) => {
