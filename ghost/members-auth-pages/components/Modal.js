@@ -51,8 +51,8 @@ export default class Modal extends Component {
         if (stripeConfig) {
             const createAccountWithSubscription = (data) => {
                 this.setState({showSpinner: true});
-                members.signup(data).then((success) => {
-                    members.createSubscription(data).then((success) => {
+                return members.signup(data).then((success) => {
+                    return members.createSubscription(data).then((success) => {
                         this.setState({showSpinner: false});
                         window.location.hash = 'signup-complete';
                     }, (error) => {
@@ -78,7 +78,7 @@ export default class Modal extends Component {
             members.createSubscription(data)
         );
         const stripeConfig = paymentConfig && paymentConfig.find(({adapter}) => adapter === 'stripe');
-        return <StripeUpgradePage frameLocation={props.frameLocation} stripeConfig={stripeConfig} error={error} hash="upgrade" handleSubmit={createSubscription} handleClose={closeModal}/>
+        return <StripeUpgradePage stripeConfig={stripeConfig} error={error} hash="upgrade" handleSubmit={createSubscription} handleClose={closeModal}/>
 
     }
 
@@ -91,7 +91,7 @@ export default class Modal extends Component {
 
         const signup = (data) => {
             this.setState({showSpinner: true});
-            members.signup(data).then((success) => {
+            return members.signup(data).then((success) => {
                 this.setState({showSpinner: false});
                 window.location.hash = 'signup-complete';
             }, (error) => {
