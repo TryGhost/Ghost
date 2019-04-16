@@ -1,12 +1,12 @@
 import $ from 'jquery';
 import Component from '@ember/component';
 import EmberObject, {computed, set} from '@ember/object';
-import countWords, {stripTags} from '../utils/count-words';
 import layout from '../templates/components/koenig-card-gallery';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
+import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {htmlSafe} from '@ember/string';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
@@ -14,6 +14,7 @@ import {inject as service} from '@ember/service';
 
 const MAX_IMAGES = 9;
 const MAX_PER_ROW = 3;
+const {countWords} = ghostHelperUtils;
 
 export default Component.extend({
     koenigDragDropHandler: service(),
@@ -51,7 +52,7 @@ export default Component.extend({
         let imageCount = this.payload.images.length;
 
         if (this.payload.caption) {
-            wordCount += countWords(stripTags(this.payload.caption));
+            wordCount += countWords(this.payload.caption);
         }
 
         return {wordCount, imageCount};

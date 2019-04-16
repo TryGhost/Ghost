@@ -1,14 +1,16 @@
 /* global noframe */
 import Component from '@ember/component';
-import countWords, {stripTags} from '../utils/count-words';
 import layout from '../templates/components/koenig-card-embed';
 import {NO_CURSOR_MOVEMENT} from './koenig-editor';
 import {computed} from '@ember/object';
+import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
 import {task} from 'ember-concurrency';
+
+const {countWords} = ghostHelperUtils;
 
 export default Component.extend({
     ajax: service(),
@@ -38,7 +40,7 @@ export default Component.extend({
     counts: computed('payload.{html,caption}', function () {
         return {
             imageCount: this.payload.html ? 1 : 0,
-            wordCount: countWords(stripTags(this.payload.caption))
+            wordCount: countWords(this.payload.caption)
         };
     }),
 

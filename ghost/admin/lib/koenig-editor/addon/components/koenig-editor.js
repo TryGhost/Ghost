@@ -9,7 +9,6 @@ import EmberObject, {computed, get} from '@ember/object';
 import Key from 'mobiledoc-kit/utils/key';
 import MobiledocRange from 'mobiledoc-kit/utils/cursor/range';
 import calculateReadingTime from '../utils/reading-time';
-import countWords from '../utils/count-words';
 import defaultAtoms from '../options/atoms';
 import defaultCards, {CARD_COMPONENT_MAP, CARD_ICON_MAP} from '../options/cards';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
@@ -26,12 +25,14 @@ import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {getOwner} from '@ember/application';
 import {getParent} from '../lib/dnd/utils';
+import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {guidFor} from '@ember/object/internals';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {svgJar} from 'ghost-admin/helpers/svg-jar';
 
+const {countWords} = ghostHelperUtils;
 const UNDO_DEPTH = 100;
 
 export const ADD_CARD_HOOK = 'addComponent';
