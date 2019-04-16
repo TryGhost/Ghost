@@ -1,13 +1,28 @@
 import Controller from '@ember/controller';
 import {alias} from '@ember/object/computed';
+import {computed} from '@ember/object';
 import {inject as controller} from '@ember/controller';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 
 export default Controller.extend({
     members: controller(),
+    store: service(),
+
     router: service(),
 
     member: alias('model'),
+
+    subscription: computed('member.subscriptions', function () {
+        let subscriptions = this.member.get('subscriptions') || [];
+        let subscription = subscriptions[0] || {};
+        return {
+            amount: subscription.amount ? (subscription.amount / 100) : '-',
+            status: subscription.status || '-',
+            plan: subscription.plan || '-'
+
+        };
+    }),
 
     actions: {
         finaliseDeletion() {
@@ -18,5 +33,14 @@ export default Controller.extend({
             }
             this.router.transitionTo('members');
         }
-    }
+    },
+
+    fetchMember: task(function* (memberId) {
+        yield this.store.findRecord('member', memberId, {
+            reload: true
+        }).then((data) => {
+            this.set('member', data);
+        });
+    })
+
 });
