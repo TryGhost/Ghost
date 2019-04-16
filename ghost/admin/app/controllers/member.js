@@ -17,9 +17,9 @@ export default Controller.extend({
         let subscriptions = this.member.get('subscriptions') || [];
         let subscription = subscriptions[0] || {};
         return {
-            amount: subscription.amount ? (subscription.amount / 100) : '-',
+            amount: subscription.amount ? (subscription.amount / 100) : '0',
             status: subscription.status || '-',
-            plan: subscription.plan || '-'
+            plan: subscription.plan || 'Free'
 
         };
     }),
