@@ -30,7 +30,7 @@ class PaymentForm extends Component {
         });
     };
 
-    render({frameLocation}) {
+    render() {
         return (
             <Form onSubmit={(data) => this.handleSubmit(data)}>
                 <CheckoutForm />
