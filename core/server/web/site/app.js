@@ -8,9 +8,9 @@ const apps = require('../../services/apps');
 const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
 const urlService = require('../../services/url');
-const members = require('../../services/auth/members');
 const sitemapHandler = require('../../data/xml/sitemap/handler');
 const themeMiddleware = require('../../services/themes').middleware;
+const membersService = require('../../services/members');
 const siteRoutes = require('./routes');
 const shared = require('../shared');
 
@@ -70,17 +70,39 @@ module.exports = function setupSiteApp(options = {}) {
     require('../../helpers').loadCoreHelpers();
     debug('Helpers done');
 
+    // @TODO only loads this stuff if members is enabled
     // Set req.member & res.locals.member if a cookie is set
-    siteApp.use(members.authenticateMembersToken);
+    siteApp.post('/members/ssr', function (req, res) {
+        membersService.api.ssr.exchangeTokenForSession(req, res).then(() => {
+            res.writeHead(200);
+            res.end();
+        }).catch((err) => {
+            res.writeHead(err.statusCode);
+            res.end(err.message);
+        });
+    });
+    siteApp.del('/members/ssr', function (req, res) {
+        membersService.api.ssr.deleteSession(req, res).then(() => {
+            res.writeHead(204);
+            res.end();
+        }).catch((err) => {
+            res.writeHead(err.statusCode);
+            res.end(err.message);
+        });
+    });
+    siteApp.use(function (req, res, next) {
+        membersService.api.ssr.getMemberDataFromSession(req, res).then((member) => {
+            req.member = member;
+            next();
+        }).catch(() => {
+            // @TODO log error?
+            req.member = null;
+            next();
+        });
+    });
     siteApp.use(function (req, res, next) {
         res.locals.member = req.member;
         next();
-    });
-    siteApp.use(function (err, req, res, next) {
-        if (err.name === 'UnauthorizedError') {
-            return next();
-        }
-        next(err);
     });
 
     // Theme middleware

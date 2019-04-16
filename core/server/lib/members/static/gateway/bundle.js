@@ -1,4 +1,4 @@
-/* global atob window document location fetch */
+/* global atob window document fetch membersApiUrl */
 (function () {
     if (window.parent === window) {
         return;
@@ -96,8 +96,6 @@
         storage.removeItem('members:tokens');
     }
 
-    // @TODO this needs to be configurable
-    const membersApi = location.pathname.replace(/\/members\/gateway\/?$/, '/ghost/api/v2/members');
     function getToken({audience, fresh}) {
         const storedToken = getStoredToken(audience);
 
@@ -105,7 +103,7 @@
             return Promise.resolve(storedToken);
         }
 
-        return fetch(`${membersApi}/token`, {
+        return fetch(`${membersApiUrl}token`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -144,7 +142,7 @@
     addMethod('getToken', getToken);
 
     addMethod('createSubscription', function createSubscription({adapter, plan, stripeToken}) {
-        return fetch(`${membersApi}/subscription`, {
+        return fetch(`${membersApiUrl}subscription`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -164,7 +162,7 @@
     });
 
     addMethod('signin', function signin({email, password}) {
-        return fetch(`${membersApi}/signin`, {
+        return fetch(`${membersApiUrl}signin`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -183,7 +181,7 @@
     });
 
     addMethod('signup', function signin({name, email, password}) {
-        return fetch(`${membersApi}/signup`, {
+        return fetch(`${membersApiUrl}signup`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -203,7 +201,7 @@
     });
 
     addMethod('signout', function signout(/*options*/) {
-        return fetch(`${membersApi}/signout`, {
+        return fetch(`${membersApiUrl}signout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -220,7 +218,7 @@
     });
 
     addMethod('requestPasswordReset', function requestPasswordReset({email}) {
-        return fetch(`${membersApi}/request-password-reset`, {
+        return fetch(`${membersApiUrl}request-password-reset`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -235,7 +233,7 @@
     });
 
     addMethod('resetPassword', function resetPassword({token, password}) {
-        return fetch(`${membersApi}/reset-password`, {
+        return fetch(`${membersApiUrl}reset-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -254,7 +252,7 @@
     });
 
     addMethod('getConfig', function getConfig() {
-        return fetch(`${membersApi}/config`, {
+        return fetch(`${membersApiUrl}config`, {
             method: 'GET'
         }).then((res) => {
             return res.json();

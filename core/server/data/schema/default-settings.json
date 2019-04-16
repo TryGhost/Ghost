@@ -11,6 +11,9 @@
         },
         "session_secret": {
             "defaultValue": null
+        },
+        "theme_session_secret": {
+            "defaultValue": null
         }
     },
     "blog": {
