@@ -148,6 +148,8 @@
 /* Buttons */
 /* ------------------------------------------------------------ */
 button {
+    display: flex;
+    justify-content: center;
     width: 100%;
     font-weight: 500;
     border: 1px solid var(--grey);
@@ -197,6 +199,22 @@ button:hover {
     left: 0;
     background: linear-gradient(0deg,hsla(0,0%,100%,0),hsla(0,0%,100%,.2));
     opacity: 0;
+}
+
+@keyframes spinner {
+    to {transform: rotate(360deg);}
+}
+
+.gm-btn-blue .gm-spinner {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+    margin: -3px 8px -3px 0;
+    border-radius: 50%;
+    border-top: 2px solid #fff;
+    border-right: 2px solid transparent;
+    animation: spinner .6s linear infinite;
 }
 
 
