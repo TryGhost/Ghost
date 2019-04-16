@@ -425,11 +425,7 @@ describe('Unit: models/user', function () {
     });
 
     describe('transferOwnership', function () {
-        let ownerRole;
-
         beforeEach(function () {
-            ownerRole = sinon.stub();
-
             sinon.stub(models.Role, 'findOne');
 
             models.Role.findOne
@@ -462,27 +458,67 @@ describe('Unit: models/user', function () {
                 });
         });
 
-        it('Owner tries to transfer ownership to author', function () {
+        it('Owner tries to transfer ownership to editor', function () {
             const loggedInUser = testUtils.context.owner;
             const userToChange = testUtils.context.editor;
-            const contextUser = sinon.stub();
 
-            contextUser.toJSON = sinon.stub().returns(testUtils.permissions.owner.user);
+            const loggedInContext = {
+                toJSON: sinon.stub().returns(testUtils.permissions.owner.user)
+            };
+            const userToChangeContext = {
+                toJSON: sinon.stub().returns(
+                    // Test utils don't contain `status` which is required
+                    Object.assign({status: 'active'}, testUtils.permissions.editor.user)
+                )
+            };
 
             models.User
                 .findOne
                 .withArgs({id: loggedInUser.context.user}, {withRelated: ['roles']})
-                .resolves(contextUser);
+                .resolves(loggedInContext);
 
             models.User
                 .findOne
                 .withArgs({id: userToChange.context.user}, {withRelated: ['roles']})
-                .resolves(contextUser);
+                .resolves(userToChangeContext);
 
             return models.User.transferOwnership({id: userToChange.context.user}, loggedInUser)
                 .then(Promise.reject)
                 .catch((err) => {
                     err.should.be.an.instanceof(common.errors.ValidationError);
+                    err.message.indexOf('Only administrators can')
+                        .should.be.aboveOrEqual(0, 'contains correct error message');
+                });
+        });
+
+        it('Owner tries to transfer ownership to suspended user', function () {
+            const loggedInUser = testUtils.context.owner;
+            const userToChange = testUtils.context.admin;
+
+            const userToChangeJSON = Object.assign({status: 'inactive'}, testUtils.permissions.admin.user);
+            const loggedInContext = {
+                toJSON: sinon.stub().returns(testUtils.permissions.owner.user)
+            };
+            const userToChangeContext = {
+                toJSON: sinon.stub().returns(userToChangeJSON)
+            };
+
+            models.User
+                .findOne
+                .withArgs({id: loggedInUser.context.user}, {withRelated: ['roles']})
+                .resolves(loggedInContext);
+
+            models.User
+                .findOne
+                .withArgs({id: userToChange.context.user}, {withRelated: ['roles']})
+                .resolves(userToChangeContext);
+
+            return models.User.transferOwnership({id: userToChange.context.user}, loggedInUser)
+                .then(Promise.reject)
+                .catch((err) => {
+                    err.should.be.an.instanceof(common.errors.ValidationError);
+                    err.message.indexOf('Only active administrators can')
+                        .should.be.aboveOrEqual(0, 'contains correct error message');
                 });
         });
     });
