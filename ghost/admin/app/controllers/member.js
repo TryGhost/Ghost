@@ -14,13 +14,19 @@ export default Controller.extend({
     member: alias('model'),
 
     subscription: computed('member.subscriptions', function () {
-        let subscriptions = this.member.get('subscriptions') || [];
+        let subscriptions = this.member.get('subscriptions');
+        if (!subscriptions) {
+            return {
+                amount: '...',
+                status: '...',
+                plan: '...'
+            };
+        }
         let subscription = subscriptions[0] || {};
         return {
-            amount: subscription.amount ? (subscription.amount / 100) : '...',
-            status: subscription.status || '...',
+            amount: subscription.amount ? (subscription.amount / 100) : 0,
+            status: subscription.status || '-',
             plan: subscription.plan || 'Free'
-
         };
     }),
 
