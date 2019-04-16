@@ -77,7 +77,8 @@ function createSubscription(stripe, member, metadata) {
         }).then(() => {
             return stripe.subscriptions.create({
                 customer: customer.id,
-                items: [{plan: metadata.plan.id}]
+                items: [{plan: metadata.plan.id}],
+                coupon: metadata.coupon
             });
         });
     });
