@@ -10,11 +10,12 @@
 //
 // Returns estimated reading time for post
 
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    schema = require('../data/schema').checks,
-    SafeString = proxy.SafeString,
-    localUtils = proxy.localUtils;
+const proxy = require('./proxy');
+const _ = require('lodash');
+const schema = require('../data/schema').checks;
+const SafeString = proxy.SafeString;
+const countImages = require('@tryghost/helpers').utils.countImages;
+const countWords = require('@tryghost/helpers').utils.countWords;
 
 module.exports = function reading_time(options) {// eslint-disable-line camelcase
     options = options || {};
@@ -38,8 +39,8 @@ module.exports = function reading_time(options) {// eslint-disable-line camelcas
 
     html = this.html;
     imageCount = this.feature_image ? 1 : 0;
-    imageCount += localUtils.imageCount(html);
-    wordCount = localUtils.wordCount(html);
+    imageCount += countImages(html);
+    wordCount = countWords(html);
     readingTimeSeconds = wordCount / wordsPerSecond;
 
     for (var i = 12; i > 12 - imageCount; i -= 1) {
