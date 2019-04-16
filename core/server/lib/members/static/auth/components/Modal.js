@@ -4,6 +4,7 @@ import Pages from './Pages';
 
 import SigninPage from '../pages/SigninPage';
 import SignupPage from '../pages/SignupPage';
+import SignupCompletePage from '../pages/SignupCompletePage';
 import RequestPasswordResetPage from '../pages/RequestPasswordResetPage';
 import PasswordResetSentPage from '../pages/PasswordResetSentPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
@@ -48,7 +49,7 @@ export default class Modal extends Component {
         if (stripeConfig) {
             const createAccountWithSubscription = (data) => members.signup(data).then((success) => {
                 members.createSubscription(data).then((success) => {
-                    this.close();
+                    window.location.hash = 'signup-complete';
                 }, (error) => {
                     this.setState({ error: "Unable to confirm payment" });
                 });
@@ -82,8 +83,14 @@ export default class Modal extends Component {
         const closeModal = () => this.close();
         const clearError = () => this.setState({ error: null });
 
+        const signup = (data) => members.signup(data).then((success) => {
+            window.location.hash = 'signup-complete';
+        }, (error) => {
+            this.setState({ error });
+        });
+
         const signin = (data) => this.handleAction(members.signin(data));
-        const signup = (data) => this.handleAction(members.signup(data));
+
         const requestReset = (data) => members.requestPasswordReset(data).then((success) => {
             window.location.hash = 'password-reset-sent';
         }, (error) => {
@@ -103,8 +110,9 @@ export default class Modal extends Component {
             <Pages className={containerClass} onChange={clearError} onClick={closeModal} stripeConfig={stripeConfig} siteConfig={siteConfig}>
                 <SigninPage error={error} hash="" handleSubmit={signup} />
                 <SigninPage error={error} hash="signin" handleSubmit={signin} />
-                {this.renderSignupPage({error, stripeConfig, members, signup, closeModal, siteConfig})}
+                {this.renderSignupPage({ error, stripeConfig, members, signup, closeModal, siteConfig})}
                 {this.renderUpgradePage(props, state)}
+                <SignupCompletePage error={ error } hash="signup-complete" handleSubmit={ closeModal } siteConfig={ siteConfig } />
                 <RequestPasswordResetPage error={error} hash="request-password-reset" handleSubmit={requestReset} />
                 <PasswordResetSentPage error={ error } hash="password-reset-sent" handleSubmit={closeModal} />
                 <ResetPasswordPage error={error} hash="reset-password" handleSubmit={resetPassword} />
