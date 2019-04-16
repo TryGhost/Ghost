@@ -29,7 +29,7 @@
     "@ember/jquery": "0.6.0",
     "@ember/optional-features": "0.7.0",
     "@html-next/vertical-collection": "1.0.0-beta.13",
-    "@tryghost/helpers": "^1.1.1",
+    "@tryghost/helpers": "1.1.1",
     "@tryghost/mobiledoc-kit": "0.11.1-ghost.7",
     "@tryghost/timezone-data": "0.2.0",
     "autoprefixer": "9.5.1",
