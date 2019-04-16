@@ -1,14 +1,15 @@
 import Component from '@ember/component';
 import Ember from 'ember';
-import countWords from '../utils/count-words';
 import layout from '../templates/components/koenig-card-code';
 import {computed} from '@ember/object';
+import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {set} from '@ember/object';
 
 const {Handlebars} = Ember;
+const {countWords} = ghostHelperUtils;
 
 export default Component.extend({
     layout,

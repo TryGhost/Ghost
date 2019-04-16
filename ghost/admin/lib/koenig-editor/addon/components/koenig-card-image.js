@@ -1,16 +1,18 @@
 import $ from 'jquery';
 import Component from '@ember/component';
-import countWords, {stripTags} from '../utils/count-words';
 import layout from '../templates/components/koenig-card-image';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {computed, set, setProperties} from '@ember/object';
+import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {htmlSafe} from '@ember/string';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
+
+const {countWords} = ghostHelperUtils;
 
 export default Component.extend({
     ui: service(),
@@ -57,7 +59,7 @@ export default Component.extend({
         }
 
         if (this.payload.caption) {
-            wordCount += countWords(stripTags(this.payload.caption));
+            wordCount += countWords(this.payload.caption);
         }
 
         return {wordCount, imageCount};
