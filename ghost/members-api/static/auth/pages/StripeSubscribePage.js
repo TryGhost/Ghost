@@ -37,11 +37,7 @@ class PaymentForm extends Component {
     };
 
     render({frameLocation}) {
-        let label = this.props.showSpinner ? (
-            (
-                <span><span class="gm-spinner"></span> Signing up... </span>
-            )
-        ) : "Confirm payment";
+        let label = this.props.showSpinner ? "Signing up..." : "Confirm payment";
         const { coupon } = getCouponData(frameLocation);
         return (
             <Form includeData={getCouponData(frameLocation)} bindTo="request-password-reset" onSubmit={(data) => this.handleSubmit(data)}>
@@ -50,7 +46,7 @@ class PaymentForm extends Component {
                 <PasswordInput bindTo="password" />
                 { coupon ? <CouponInput disabled={true} bindTo="coupon" /> : '' }
                 <CheckoutForm />
-                <FormSubmit label={label} />
+                <FormSubmit label={label} showSpinner={this.props.showSpinner} />
             </Form>
         );
     }

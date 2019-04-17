@@ -9,9 +9,7 @@ import PasswordInput from '../components/PasswordInput';
 import { IconClose } from '../components/icons';
 
 export default ({ error, handleClose, handleSubmit, showSpinner }) => {
-    let label = showSpinner ? (
-        <span><span class="gm-spinner"></span> Signing up... </span>
-    ) : "Sign up";
+    let label = showSpinner ? "Signing up..." : "Confirm payment";
     return (
         <div className="gm-modal-form gm-signup-page">
             <FormHeader title="" error={error} errorText="Email already registered">
@@ -24,7 +22,7 @@ export default ({ error, handleClose, handleSubmit, showSpinner }) => {
                 <NameInput bindTo="name" className="first" />
                 <EmailInput bindTo="email" />
                 <PasswordInput bindTo="password" className="last" />
-                <FormSubmit label={label} />
+                <FormSubmit label={label} showSpinner={showSpinner} />
             </Form>
         </div>
     )
