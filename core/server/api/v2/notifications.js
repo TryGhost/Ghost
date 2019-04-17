@@ -29,11 +29,11 @@ module.exports = {
             let allNotifications = _private.fetchAllNotifications();
             allNotifications = _.orderBy(allNotifications, 'addedAt', 'desc');
 
-            // NOTE: Filtering below is just a patch for bigger problem - notifications are not removed
-            //       after Ghost update. Logic below should be removed when Ghost upgrade detection
-            //       is done (https://github.com/TryGhost/Ghost/issues/10236) and notifications are
-            //       be removed permanently on upgrade event.
             allNotifications = allNotifications.filter((notification) => {
+                // NOTE: Filtering by version below is just a patch for bigger problem - notifications are not removed
+                //       after Ghost update. Logic below should be removed when Ghost upgrade detection
+                //       is done (https://github.com/TryGhost/Ghost/issues/10236) and notifications are
+                //       be removed permanently on upgrade event.
                 const ghost20RegEx = /Ghost 2.0 is now available/gi;
 
                 // CASE: do not return old release notification
@@ -42,7 +42,7 @@ module.exports = {
 
                     if (notification.message.match(ghost20RegEx)) {
                         notificationVersion = '2.0.0';
-                    } else {
+                    } else if (notificationVersion){
                         notificationVersion = notificationVersion[0];
                     }
 
