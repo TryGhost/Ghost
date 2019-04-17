@@ -1,23 +1,11 @@
-// # Update Checking Service
-//
-// Makes a request to Ghost.org to check if there is a new version of Ghost available.
-// The service is provided in return for users opting in to anonymous usage data collection.
-//
-// Blog owners can opt-out of update checks by setting `privacy: { useUpdateCheck: false }` in their config.js
-//
-// The data collected is as follows:
-//
-// - blog id - a hash of the blog hostname, pathname and db_hash. No identifiable info is stored.
-// - ghost version
-// - node version
-// - npm version
-// - env - production or development
-// - database type - SQLite, MySQL
-// - email transport - mail.options.service, or otherwise mail.transport
-// - created date - database creation date
-// - post count - total number of posts
-// - user count - total number of users
-// - theme - name of the currently active theme
+/**
+ * Update Checking Unit
+ *
+ * Makes a request to Ghost.org to request release & custom notifications.
+ * The service is provided in return for users opting in to anonymous usage data collection.
+ *
+ * Blog owners can opt-out of update checks by setting `privacy: { useUpdateCheck: false }` in their config file.
+ */
 
 const crypto = require('crypto'),
     exec = require('child_process').exec,
