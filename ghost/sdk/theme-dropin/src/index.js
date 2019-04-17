@@ -59,8 +59,7 @@ function setupMembersListeners() {
         removeCookie();
     });
 
-    function signout(event) {
-        event.preventDefault();
+    function signout() {
         members.signout()
             .then(() => {
                 return removeCookie();
@@ -68,8 +67,7 @@ function setupMembersListeners() {
             .then(reload);
     }
 
-    function signin(event) {
-        event.preventDefault();
+    function signin() {
         members.signin()
             .then(() => {
                 return members.getSSRToken({
@@ -81,8 +79,7 @@ function setupMembersListeners() {
             .then(reload);
     }
 
-    function upgrade(event) {
-        event.preventDefault();
+    function upgrade() {
         members.upgrade()
             .then(() => {
                 return members.getSSRToken({
@@ -95,14 +92,23 @@ function setupMembersListeners() {
     }
 
     for (let el of signinEls) {
-        el.addEventListener('click', signin);
+        el.addEventListener('click', (event) => {
+            event.preventDefault();
+            signin();
+        });
     }
 
     for (let el of upgradeEls) {
-        el.addEventListener('click', upgrade);
+        el.addEventListener('click', (event) => {
+            event.preventDefault();
+            upgrade();
+        });
     }
 
     for (let el of signoutEls) {
-        el.addEventListener('click', signout);
+        el.addEventListener('click', (event) => {
+            event.preventDefault();
+            signout();
+        });
     }
 }
