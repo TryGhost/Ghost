@@ -35,8 +35,9 @@
 
 .gm-modal {
     position: relative;
-    margin: 0 auto;
     animation: openModal 0.6s ease 1 forwards;
+    padding: 60px;
+    margin: -60px 0 0;
 }
 
 .gm-modal-close {
@@ -110,6 +111,7 @@
         min-height: calc(100vh - 90px);
         padding: 24px;
         border-radius: 0;
+        margin: 0;
     }
 
     .gm-page-overlay {
