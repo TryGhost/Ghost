@@ -12,13 +12,13 @@ module.exports = {
                     return next(new common.errors.NotFoundError());
                 },
                 ssr: {
-                    exchangeTokenForSession: function (req, res) {
+                    exchangeTokenForSession: function () {
                         return Promise.reject(new common.errors.InternalServerError());
                     },
-                    deleteSession: function (req, res) {
+                    deleteSession: function () {
                         return Promise.reject(new common.errors.InternalServerError());
                     },
-                    getMemberDataFromSession: function (req, res) {
+                    getMemberDataFromSession: function () {
                         return Promise.reject(new common.errors.InternalServerError());
                     }
                 }
