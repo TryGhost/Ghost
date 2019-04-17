@@ -28,6 +28,7 @@ function setupMembersListeners() {
     }
 
     const signinEls = document.querySelectorAll('[data-members-signin]');
+    const signupEls = document.querySelectorAll('[data-members-signup]');
     const upgradeEls = document.querySelectorAll('[data-members-upgrade]');
     const signoutEls = document.querySelectorAll('[data-members-signout]');
 
@@ -79,6 +80,18 @@ function setupMembersListeners() {
             .then(reload);
     }
 
+    function signup({coupon = ''}) {
+        members.signup({coupon})
+            .then(() => {
+                return members.getSSRToken({
+                    fresh: true
+                }).then(function (token) {
+                    return setCookie(token);
+                });
+            })
+            .then(reload);
+    }
+
     function upgrade() {
         members.upgrade()
             .then(() => {
@@ -95,6 +108,14 @@ function setupMembersListeners() {
         el.addEventListener('click', (event) => {
             event.preventDefault();
             signin();
+        });
+    }
+
+    for (let el of signupEls) {
+        el.addEventListener('click', (event) => {
+            event.preventDefault();
+            const coupon = el.dataset.membersCoupon;
+            signup({coupon});
         });
     }
 
