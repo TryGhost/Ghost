@@ -99,14 +99,14 @@ export default class Modal extends Component {
             })
         };
 
-        // const signin = (data) => this.handleAction(members.signin(data));
         const signin = (data) => members.signin(data).then((success) => {
+            this.setState({ error: null });
             const clearShowLoggedIn = () => {
                 this.setState({showLoggedIn: false});
                 this.close();
             }
             this.setState({showLoggedIn: true}, () => {
-                window.setTimeout(clearShowLoggedIn, 5000)
+                window.setTimeout(clearShowLoggedIn, 1500)
             });
         }, (error) => {
             this.setState({ error });
