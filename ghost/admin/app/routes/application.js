@@ -103,7 +103,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         loadServerNotifications(isDelayed) {
             if (this.get('session.isAuthenticated')) {
                 this.get('session.user').then((user) => {
-                    if (!user.get('isAuthorOrContributor') && !user.get('isEditor')) {
+                    if (!user.get('isAuthorOrContributor')) {
                         this.store.findAll('notification', {reload: true}).then((serverNotifications) => {
                             serverNotifications.forEach((notification) => {
                                 if (notification.get('top') || notification.get('custom')) {
