@@ -85,7 +85,7 @@ module.exports = {
             };
 
             let notificationsToCheck = frame.data.notifications;
-            let addedNotifications = [];
+            let notificationsToAdd = [];
 
             const allNotifications = _private.fetchAllNotifications();
 
@@ -95,7 +95,7 @@ module.exports = {
                 });
 
                 if (!isDuplicate) {
-                    addedNotifications.push(Object.assign({}, defaults, notification, overrides));
+                    notificationsToAdd.push(Object.assign({}, defaults, notification, overrides));
                 }
             });
 
@@ -111,29 +111,30 @@ module.exports = {
             }
 
             // CASE: nothing to add, skip
-            if (!addedNotifications.length) {
+            if (!notificationsToAdd.length) {
                 return Promise.resolve();
             }
 
-            const addedReleaseNotifications = addedNotifications.filter((notification) => {
+            const releaseNotificationsToAdd = notificationsToAdd.filter((notification) => {
                 return !notification.custom;
             });
 
-            // CASE: only latest release notification
-            if (addedReleaseNotifications.length > 1) {
-                addedNotifications = addedNotifications.filter((notification) => {
+            // CASE: reorder notifications before save
+            if (releaseNotificationsToAdd.length > 1) {
+                notificationsToAdd = notificationsToAdd.filter((notification) => {
                     return notification.custom;
                 });
-                addedNotifications.push(_.orderBy(addedReleaseNotifications, 'created_at', 'desc')[0]);
+                notificationsToAdd.push(_.orderBy(releaseNotificationsToAdd, 'created_at', 'desc')[0]);
             }
 
             return api.settings.edit({
                 settings: [{
                     key: 'notifications',
-                    value: allNotifications.concat(addedNotifications)
+                    // @NOTE: We always need to store all notifications!
+                    value: allNotifications.concat(notificationsToAdd)
                 }]
             }, internalContext).then(() => {
-                return addedNotifications;
+                return notificationsToAdd;
             });
         }
     },
@@ -175,6 +176,7 @@ module.exports = {
                 return Promise.resolve();
             }
 
+            // @NOTE: We don't remove the notifications, because otherwise we will receive them again from the service.
             allNotifications[notificationToMarkAsSeenIndex].seen = true;
 
             return api.settings.edit({
@@ -195,6 +197,7 @@ module.exports = {
             const allNotifications = _private.fetchAllNotifications();
 
             allNotifications.forEach((notification) => {
+                // @NOTE: We don't remove the notifications, because otherwise we will receive them again from the service.
                 notification.seen = true;
             });
 
