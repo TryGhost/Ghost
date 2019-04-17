@@ -20,6 +20,7 @@ var _ = require('lodash'),
     addFixturesForModel,
     addFixturesForRelation,
     removeFixturesForModel,
+    removeFixturesForRelation,
 
     findModelFixtureEntry,
     findModelFixtures,
@@ -251,19 +252,19 @@ findRelationFixture = function findRelationFixture(from, to) {
  * @param {String} objName
  * @returns {Object} fixture relation
  */
-findPermissionRelationsForObject = function findPermissionRelationsForObject(objName) {
+findPermissionRelationsForObject = function findPermissionRelationsForObject(objName, role) {
     // Make a copy and delete any entries we don't want
     var foundRelation = _.cloneDeep(findRelationFixture('Role', 'Permission'));
 
-    _.each(foundRelation.entries, function (entry, role) {
+    _.each(foundRelation.entries, function (entry, key) {
         _.each(entry, function (perm, obj) {
             if (obj !== objName) {
                 delete entry[obj];
             }
         });
 
-        if (_.isEmpty(entry)) {
-            delete foundRelation.entries[role];
+        if (_.isEmpty(entry) || (role && role !== key)) {
+            delete foundRelation.entries[key];
         }
     });
 
@@ -282,6 +283,34 @@ removeFixturesForModel = function removeFixturesForModel(modelFixture, options) 
     });
 };
 
+removeFixturesForRelation = function removeFixturesForRelation(relationFixture, options) {
+    return fetchRelationData(relationFixture, options).then(function getRelationOps(data) {
+        const ops = [];
+
+        _.each(relationFixture.entries, function processEntries(entry, key) {
+            const fromItem = data.from.find(matchFunc(relationFixture.from.match, key));
+
+            _.each(entry, function processEntryValues(value, key) {
+                const toItems = data.to.filter(matchFunc(relationFixture.to.match, key, value));
+
+                if (toItems && toItems.length > 0) {
+                    ops.push(function detachRelation() {
+                        return baseUtils.detach(
+                            models[relationFixture.from.Model || relationFixture.from.model],
+                            fromItem.id,
+                            relationFixture.from.relation,
+                            toItems,
+                            options
+                        );
+                    });
+                }
+            });
+        });
+
+        return sequence(ops);
+    });
+};
+
 module.exports = {
     addFixturesForModel: addFixturesForModel,
     addFixturesForRelation: addFixturesForRelation,
@@ -289,5 +318,6 @@ module.exports = {
     findModelFixtures: findModelFixtures,
     findRelationFixture: findRelationFixture,
     findPermissionRelationsForObject: findPermissionRelationsForObject,
-    removeFixturesForModel: removeFixturesForModel
+    removeFixturesForModel: removeFixturesForModel,
+    removeFixturesForRelation: removeFixturesForRelation
 };
