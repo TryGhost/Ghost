@@ -25,15 +25,17 @@
         </div>
 
         <div class="flex flex-row ba b--whitegrey br4 bg-whitegrey-l2 mt2">
-            <div class="flex flex-column flex-grow-1 pa5 br b--whitegrey">
+            <div class="flex flex-column flex-grow-1 pa5 br b--whitegrey w-50">
                 <span class="db ttu f8 midlightgrey">Member since</span>
                 <span class="db f5">{{moment-format member.createdAt "MMMM Do"}}</span>
                 <span class="db f8 midlightgrey">({{moment-to-now member.createdAt hideAffix=true}})</span>
             </div>
-            <div class="flex flex-column flex-grow-1 pa5">
+            <div class="flex flex-column flex-grow-1 pa5 w-50">
                 <span class="db ttu f8 midlightgrey">Current plan</span>
-                <span class="db f5">{{subscription.plan}}</span>
-                <span class="db f8 midlightgrey">{{subscription.amount}} USD/month</span>
+                <span class="db f5 {{if (eq subscription.plan '...') "midlightgrey"}}">{{subscription.plan}}</span>
+                {{#unless (eq subscription.amount '...')}}
+                    <span class="db f8 midlightgrey">{{subscription.amount}} USD/month</span>
+                {{/unless}}
             </div>
         </div>
 
