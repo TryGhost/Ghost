@@ -176,15 +176,23 @@ button[disabled] {
 }
 
 .gm-btn-blue {
-    background: var(--blue);
-    background: linear-gradient(to bottom, rgba(62,176,239,1) 0%,rgba(0,139,214,1) 100%);
+    background: linear-gradient(to bottom, #3eb0ef 0%,#008bd6 100%);
     color: var(--white);
     border: none;
 }
 
 .gm-btn-blue:active {
-    background: var(--blue-d1);
-    background: linear-gradient(to bottom, rgb(22, 147, 214) 0%,rgb(0, 118, 182) 100%);
+    background: linear-gradient(to bottom, #1693d6 0%,#0076b6 100%);
+}
+
+.gm-btn-green {
+    background: linear-gradient(to bottom, #3BD95D 0%, #1FA33C 100%);
+    color: var(--white);
+    border: none;
+}
+
+.gm-btn-green:active {
+    background: linear-gradient(to bottom, #21BF43 0%,#0C8A28 100%);
 }
 
 .gm-btn-blue:hover:enabled {
@@ -228,6 +236,24 @@ button[disabled] {
     animation: spinner .6s linear infinite;
 }
 
+.gm-check {
+    margin: -4px 8px -6px 0;
+}
+
+.gm-check svg {
+    width: 20px;
+    height: 20px;
+}
+
+.gm-check-animation {
+    stroke-dasharray: 87 89;
+    stroke-dashoffset: 88;
+    animation: check_draw 666ms linear 100ms forwards;
+}
+
+@keyframes check_draw {
+    100% { stroke-dashoffset: 0; }
+}
 
 /* Forms inputs */
 /* ------------------------------------------------------------ */
