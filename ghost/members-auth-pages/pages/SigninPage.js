@@ -2,14 +2,14 @@ import Form from '../components/Form';
 import FormHeader from '../components/FormHeader';
 import FormHeaderCTA from '../components/FormHeaderCTA';
 import FormSubmit from '../components/FormSubmit';
-import { IconRightArrow } from '../components/icons';
+import { IconRightArrow, IconAnimatedCheck } from '../components/icons';
 
 import EmailInput from '../components/EmailInput';
 import PasswordInput from '../components/PasswordInput';
 
 export default ({ error, handleSubmit, showLoggedIn }) => {
     let label = showLoggedIn ? (
-        <span><span class="gm-spinner"></span> Logged In </span>
+        <span class="flex items-center"><span class="gm-check">{ IconAnimatedCheck }</span> Logged in </span>
     ) : "Log in";
     return (
         <div className="flex flex-column items-center">
@@ -27,7 +27,7 @@ export default ({ error, handleSubmit, showLoggedIn }) => {
                             Forgot
                         </a>
                     </PasswordInput>
-                    <FormSubmit label={label} />
+                    <FormSubmit label={label} disabled={showLoggedIn} />
                 </Form>
             </div>
         </div>
