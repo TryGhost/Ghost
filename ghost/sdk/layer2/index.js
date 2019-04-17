@@ -54,6 +54,11 @@ module.exports = function layer2(options) {
         return openAuth('upgrade');
     }
 
+    function signup({coupon} = {}) {
+        const query = `coupon=${coupon}`;
+        return openAuth('signup', query);
+    }
+
     function getToken({audience, fresh}) {
         return members.getToken({audience, fresh});
     }
@@ -73,6 +78,7 @@ module.exports = function layer2(options) {
         getSSRToken,
         signout,
         signin,
+        signup,
         upgrade,
         resetPassword
     });
