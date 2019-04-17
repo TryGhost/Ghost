@@ -44,7 +44,7 @@ export default class Pages extends Component {
             backgroundSize: `38px`
         } : {};
         return (
-            <div className={className}>
+            <div className={ className } onClick={ onClick }>
                 <div className="gm-modal-header">
                     <div className="gm-logo" style={iconStyle}></div>
                     <h2>{title}</h2>
