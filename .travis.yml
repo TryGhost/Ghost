@@ -16,9 +16,8 @@ matrix:
   - node_js: '10'
     env: TEST_SUITE=lint
   fast_finish: true
-branches:
-  except:
-  - "/^renovate\\/.+$/"
+# Don't run builds for renovate PRs, only renovate pushes
+if: NOT branch =~ /^renovate\\/.+$/ AND type != pull_request
 install:
 - yarn
 before_script:
