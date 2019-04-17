@@ -393,6 +393,7 @@ function redirectToAdmin(status, res, adminPath) {
  * the variable that takes the result of this function
  */
 function makeAbsoluteUrls(html, siteUrl, itemUrl, options = {assetsOnly: false}) {
+    html = html || '';
     const htmlContent = cheerio.load(html, {decodeEntities: false});
     const staticImageUrlPrefixRegex = new RegExp(STATIC_IMAGE_URL_PREFIX);
 
