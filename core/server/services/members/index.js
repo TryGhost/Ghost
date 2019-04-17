@@ -10,6 +10,17 @@ module.exports = {
                 },
                 staticRouter: function (req, res, next) {
                     return next(new common.errors.NotFoundError());
+                },
+                ssr: {
+                    exchangeTokenForSession: function (req, res) {
+                        return Promise.reject(new common.errors.InternalServerError());
+                    },
+                    deleteSession: function (req, res) {
+                        return Promise.reject(new common.errors.InternalServerError());
+                    },
+                    getMemberDataFromSession: function (req, res) {
+                        return Promise.reject(new common.errors.InternalServerError());
+                    }
                 }
             };
         }

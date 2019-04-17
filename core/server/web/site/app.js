@@ -72,7 +72,7 @@ module.exports = function setupSiteApp(options = {}) {
 
     // @TODO only loads this stuff if members is enabled
     // Set req.member & res.locals.member if a cookie is set
-    siteApp.post('/members/ssr', function (req, res) {
+    siteApp.post('/members/ssr', shared.middlewares.labs.members, function (req, res) {
         membersService.api.ssr.exchangeTokenForSession(req, res).then(() => {
             res.writeHead(200);
             res.end();
@@ -81,7 +81,7 @@ module.exports = function setupSiteApp(options = {}) {
             res.end(err.message);
         });
     });
-    siteApp.del('/members/ssr', function (req, res) {
+    siteApp.del('/members/ssr', shared.middlewares.labs.members, function (req, res) {
         membersService.api.ssr.deleteSession(req, res).then(() => {
             res.writeHead(204);
             res.end();
