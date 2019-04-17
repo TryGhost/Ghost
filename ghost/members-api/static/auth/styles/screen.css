@@ -384,6 +384,11 @@ a:hover {
         margin-bottom: -24px;
     }
 
+    .gm-upgrade-page .gm-plans-container {
+        order: 0;
+        margin-bottom: 0;
+    }
+
     .gm-plans {
         position: relative;
         top: unset;
