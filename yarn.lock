@@ -91,10 +91,10 @@
     mkdirp "0.5.0"
     yauzl "2.4.1"
 
-"@tryghost/helpers@1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.1.tgz#d242c44bd5cdf01f39acb929bf9dd345d4ede7b5"
-  integrity sha512-AzFYznuesabUREQhu3VEeotn44QNdRUWcHCWhJD4ktvqS49hfDyTELl4JCpdtBhiflaGXtCD9vykUlr/nFjM8w==
+"@tryghost/helpers@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.2.tgz#a318957085be33cd47dbf505ebd7bec614365345"
+  integrity sha512-itZIEXx9/prWL3rYQNCJCCZkofz36p3EhfsdUGN7l0KgGJ9/q6rSVfD6cqOdc04qDcADjEem3Jmd0O3gpout+Q==
   dependencies:
     lodash-es "^4.17.11"
 
@@ -2422,25 +2422,7 @@ ghost-ignition@3.0.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-ignition@3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.4.tgz#b951140d2734cd8ff48006f3c1de640499b1028c"
-  integrity sha512-oSA9ri7kUohnk2l1SE0p4nXiO6va1GgE5zRyD4nwt8ni924L2+ccCUQMrFqc/Mne2oXO6TJ/wG8qeL0pACW2Bg==
-  dependencies:
-    bunyan "1.8.12"
-    bunyan-loggly "^1.3.1"
-    caller "1.0.1"
-    debug "^2.6.9"
-    find-root "1.1.0"
-    fs-extra "^3.0.1"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.16.4"
-    moment "^2.15.2"
-    nconf "^0.10.0"
-    prettyjson "^1.1.3"
-    uuid "^3.0.0"
-
-ghost-ignition@3.1.0:
+ghost-ignition@3.1.0, ghost-ignition@^3.0.4:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.1.0.tgz#4a0d7f0a15e54fbc0e16d398da62ff68737e4e23"
   integrity sha512-ae0r/yBJDo9SkeLfy0ecrHVqO0gt9l07wiCOWmdzdvbmoU24AB881PjymnM/DLP9SY6E33mLYtT8K3ximgieLg==
@@ -2469,25 +2451,6 @@ ghost-ignition@^2.9.6:
     debug "^2.6.9"
     find-root "1.1.0"
     fs-extra "^3.0.1"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.16.4"
-    moment "^2.15.2"
-    nconf "^0.10.0"
-    prettyjson "^1.1.3"
-    uuid "^3.0.0"
-
-ghost-ignition@^3.0.4:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.1.0.tgz#4a0d7f0a15e54fbc0e16d398da62ff68737e4e23"
-  integrity sha512-ae0r/yBJDo9SkeLfy0ecrHVqO0gt9l07wiCOWmdzdvbmoU24AB881PjymnM/DLP9SY6E33mLYtT8K3ximgieLg==
-  dependencies:
-    bunyan "1.8.12"
-    bunyan-loggly "^1.3.1"
-    caller "1.0.1"
-    debug "^4.0.0"
-    find-root "1.1.0"
-    fs-extra "^3.0.1"
-    gelf-stream "^1.1.1"
     json-stringify-safe "^5.0.1"
     lodash "^4.16.4"
     moment "^2.15.2"
