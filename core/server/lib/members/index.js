@@ -118,7 +118,7 @@ module.exports = function MembersApi({
     }
 
     /* subscriptions */
-    apiRouter.post('/subscription', getData('adapter', 'plan', 'stripeToken', 'coupon'), ssoOriginCheck, (req, res) => {
+    apiRouter.post('/subscription', getData('adapter', 'plan', 'stripeToken', {name: 'coupon', required: false}), ssoOriginCheck, (req, res) => {
         const {signedin} = getCookie(req);
         if (!signedin) {
             res.writeHead(401, {
