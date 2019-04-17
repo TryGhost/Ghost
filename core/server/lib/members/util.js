@@ -6,11 +6,22 @@ function getData(...props) {
         }
 
         const data = props.concat('origin').reduce((data, prop) => {
-            if (!data || !req.body[prop]) {
+            if (!data) {
                 return null;
             }
+
+            let propObj = typeof prop === 'string' ? {
+                name: prop,
+                required: true
+            } : prop;
+
+            const value = req.body[propObj.name];
+            if (propObj.required && !value) {
+                return null;
+            }
+
             return Object.assign(data, {
-                [prop]: req.body[prop]
+                [propObj.name]: value
             });
         }, {});
 
