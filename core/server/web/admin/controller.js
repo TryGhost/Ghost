@@ -4,13 +4,18 @@ const config = require('../../config');
 const updateCheck = require('../../update-check');
 const common = require('../../lib/common');
 
-// Route: index
-// Path: /ghost/
-// Method: GET
+/**
+ * @description Admin controller to handle /ghost/ requests.
+ *
+ * Every request to the admin panel will re-trigger the update check service.
+ *
+ * @param req
+ * @param res
+ */
 module.exports = function adminController(req, res) {
     debug('index called');
 
-    // run in background, don't block the admin rendering
+    // CASE: trigger update check unit and let it run in background, don't block the admin rendering
     updateCheck()
         .catch((err) => {
             common.logging.error(err);
