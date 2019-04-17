@@ -1,4 +1,4 @@
-export default ({type, name, placeholder, value = '', error, onInput, required, disabled, className, children, icon}) => (
+export default ({type, name, placeholder, value = '', error, onInput, required, disabled = false, className, children, icon}) => (
     <div className="gm-form-element">
         <div className={[
                 (className ? className : ""),
