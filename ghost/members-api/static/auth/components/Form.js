@@ -56,8 +56,8 @@ export default class Form extends Component {
         return (e) => {
             e.preventDefault();
 
-            const requiredFields = children.map(c => c.attributes.bindTo).filter(x => !!x)
-            if (!requiredFields.some(x => !data[x])) {
+            const requiredFields = children.map(c => c.attributes && c.attributes.bindTo).filter(x => !!x)
+            if (!requiredFields.some(x => data[x] == null)) {
                 onSubmit(this.state.data)
             }
             this.setState({
