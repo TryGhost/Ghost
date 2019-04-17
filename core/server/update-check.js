@@ -40,6 +40,18 @@ function nextCheckTimestamp() {
     return now + (24 * 3600);
 }
 
+/**
+ * @description Centralised error handler for the update check unit.
+ *
+ * CASES:
+ *   - the update check service returns an error
+ *   - error during collecting blog stats
+ *
+ * We still need to ensure that we set the "next_update_check" to a new value, otherwise no more
+ * update checks will happen.
+ *
+ * @param err
+ */
 function updateCheckError(err) {
     api.settings.edit({
         settings: [{
@@ -54,9 +66,10 @@ function updateCheckError(err) {
 }
 
 /**
- * If the custom message is intended for current version, create and store a custom notification.
+ * @description Create a Ghost notification and call the API controller.
+ *
  * @param {Object} notification
- * @return {*|Promise}
+ * @return {Promise}
  */
 function createCustomNotification(notification) {
     if (!notification) {
@@ -65,6 +78,7 @@ function createCustomNotification(notification) {
 
     return Promise.each(notification.messages, function (message) {
         let toAdd = {
+            // @NOTE: the update check service returns "0" or "1" (https://github.com/TryGhost/UpdateCheck/issues/43)
             custom: !!notification.custom,
             createdAt: moment(notification.created_at).toDate(),
             status: message.status || 'alert',
@@ -80,6 +94,10 @@ function createCustomNotification(notification) {
     });
 }
 
+/**
+ * @description Collect stats from your blog.
+ * @returns {Promise}
+ */
 function updateCheckData() {
     let data = {},
         mailConfig = config.get('mail');
@@ -121,8 +139,13 @@ function updateCheckData() {
 }
 
 /**
- * With the privacy setting `useUpdateCheck` you can control if you want to expose data from your blog to the
- * Update Check Service. Enabled or disabled, you will receive the latest notification available from the service.
+ * @description Perform request to update check service.
+ *
+ * With the privacy setting `useUpdateCheck` you can control if you want to expose data/stats from your blog to the
+ * service. Enabled or disabled, you will receive the latest notification available from the service.
+ *
+ * @see https://docs.ghost.org/concepts/config/#privacy
+ * @returns {Promise}
  */
 function updateCheckRequest() {
     return updateCheckData()
@@ -134,6 +157,7 @@ function updateCheckRequest() {
                 checkEndpoint = config.get('updateCheck:url'),
                 checkMethod = config.isPrivacyDisabled('useUpdateCheck') ? 'GET' : 'POST';
 
+            // CASE: Expose stats and do a check-in
             if (checkMethod === 'POST') {
                 reqObj.json = true;
                 reqObj.body = reqData;
@@ -161,6 +185,7 @@ function updateCheckRequest() {
                         };
                     }
 
+                    // CASE: service returns JSON error, deserialize into JS error
                     if (err.response && err.response.body && typeof err.response.body === 'object') {
                         err = common.errors.utils.deserialize(err.response.body);
                     }
@@ -171,24 +196,39 @@ function updateCheckRequest() {
 }
 
 /**
- * Handles the response from the update check
- * Does three things with the information received:
- * 1. Updates the time we can next make a check
- * 2. Create custom notifications is response from UpdateCheck as "messages" array which has the following structure:
+ * @description This function handles the response from the update check service.
  *
- * "messages": [{
- *   "id": ed9dc38c-73e5-4d72-a741-22b11f6e151a,
- *   "version": "0.5.x",
- *   "content": "<p>Hey there! 0.6 is available, visit <a href=\"https://ghost.org/download\">Ghost.org</a> to grab your copy now<!/p>",
- *   "dismissible": true | false,
- *   "top": true | false
- * ]}
+ * The helper does three things:
+ *
+ * 1. Updates the time in the settings table to know when we can execute the next update check request.
+ * 2. Iterates over the received notifications and filters them out based on your notification groups.
+ * 3. Calls a custom helper to generate a Ghost notification for the database.
+ *
+ * The structure of the response is:
+ *
+ * {
+ *  id: 20,
+ *  version: 'all4',
+ *  messages:
+ *     [{
+ *          id: 'f8ff6c80-aa61-11e7-a126-6119te37e2b8',
+ *          version: '^2',
+ *          content: 'Hallouuuu custom',
+ *          top: true,
+ *          dismissible: true,
+ *          type: 'info'
+ *      }],
+ *  created_at: '2021-10-06T07:00:00.000Z',
+ *  custom: 1,
+ *  next_check: 1555608722
+ * }
+ *
  *
  * Example for grouped custom notifications in config:
  *
- * notificationGroups: ['migration', 'something']
+ *  "notificationGroups": ["migration", "something"]
  *
- * 'all' is a reserved name for general custom notifications.
+ * The group 'all' is a reserved name for general custom notifications, which every self hosted blog can receive.
  *
  * @param {Object} response
  * @return {Promise}
@@ -202,22 +242,33 @@ function updateCheckResponse(response) {
 
     return api.settings.edit({settings: [{key: 'next_update_check', value: response.next_check}]}, internal)
         .then(function () {
-            // CASE: Update Check Service returns multiple notifications.
+            /**
+             * @NOTE:
+             *
+             * When we refactored notifications in Ghost 1.20, the service did not support returning multiple messages.
+             * But we wanted to already add the support for future functionality.
+             * That's why this helper supports two ways: returning an array of messages or returning an object with
+             * a "notifications" key. The second one is probably the best, because we need to support "next_check"
+             * on the root level of the response.
+             */
             if (_.isArray(response)) {
                 notifications = response;
             } else if ((response.hasOwnProperty('notifications') && _.isArray(response.notifications))) {
                 notifications = response.notifications;
             } else {
+                // CASE: default right now
                 notifications = [response];
             }
 
             // CASE: Hook into received notifications and decide whether you are allowed to receive custom group messages.
             if (notificationGroups.length) {
                 notifications = notifications.filter(function (notification) {
+                    // CASE: release notification, keep
                     if (!notification.custom) {
                         return true;
                     }
 
+                    // CASE: filter out messages based on your groups
                     return _.includes(notificationGroups.map(function (groupIdentifier) {
                         if (notification.version.match(new RegExp(groupIdentifier))) {
                             return true;
@@ -232,6 +283,14 @@ function updateCheckResponse(response) {
         });
 }
 
+/**
+ * @description Entry point to trigger the update check unit.
+ *
+ * Based on a settings value, we check if `next_update_check` is less than now to decide whether
+ * we should request the update check service (http://updates.ghost.org) or not.
+ *
+ * @returns {Promise}
+ */
 function updateCheck() {
     // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments.
     if (_.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
@@ -240,9 +299,10 @@ function updateCheck() {
 
     return api.settings.read(_.extend({key: 'next_update_check'}, internal))
         .then(function then(result) {
-            var nextUpdateCheck = result.settings[0];
+            const nextUpdateCheck = result.settings[0];
 
             // CASE: Next update check should happen now?
+            // @NOTE: You can skip this check by adding a config value. This is helpful for developing.
             if (!config.get('updateCheck:forceUpdate') && nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
                 return Promise.resolve();
             }
