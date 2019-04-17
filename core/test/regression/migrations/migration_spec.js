@@ -47,11 +47,11 @@ describe('Database Migration (special functions)', function () {
 
             // Notifications
             permissions[4].name.should.eql('Browse notifications');
-            permissions[4].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
+            permissions[4].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
             permissions[5].name.should.eql('Add notifications');
-            permissions[5].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
+            permissions[5].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
             permissions[6].name.should.eql('Delete notifications');
-            permissions[6].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
+            permissions[6].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
 
             // Posts
             permissions[7].name.should.eql('Browse posts');

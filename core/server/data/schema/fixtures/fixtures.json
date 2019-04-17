@@ -624,6 +624,7 @@
                     "members": "all"
                 },
                 "Editor": {
+                    "notification": "all",
                     "post": "all",
                     "setting": ["browse", "read"],
                     "slug": "all",
