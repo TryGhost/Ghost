@@ -1,6 +1,6 @@
 import { Component } from 'preact';
 
-const layer0 = require('../layer0');
+const gatewayProtocol = require('@tryghost/members-gateway-protocol');
 
 export default class MembersProvider extends Component {
     constructor() {
@@ -38,7 +38,7 @@ export default class MembersProvider extends Component {
     componentDidMount() {
         const gatewayFrame = this.gatewayFrame;
         gatewayFrame.addEventListener('load', () => {
-            this.gateway = layer0(gatewayFrame)
+            this.gateway = gatewayProtocol(gatewayFrame)
             this.setReady();
         });
     }
