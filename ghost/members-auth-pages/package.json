@@ -22,6 +22,7 @@
     "preact-cli": "https://github.com/TryGhost/preact-cli/tarball/421f03bcf954c79d5f14fd2e278049a9bdfcba83"
   },
   "dependencies": {
+    "@tryghost/members-gateway-protocol": "^0.1.0",
     "preact": "^8.2.1",
     "preact-compat": "^3.17.0",
     "react-stripe-elements": "^2.0.3"
