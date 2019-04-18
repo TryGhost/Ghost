@@ -20,12 +20,20 @@ _private.fetchAllNotifications = () => {
     return allNotifications;
 };
 
+_private.wasSeen = (notification, user) => {
+    if (notification.seenBy === undefined) {
+        return notification.seen;
+    } else {
+        return notification.seenBy.includes(user.id);
+    }
+};
+
 module.exports = {
     docName: 'notifications',
 
     browse: {
         permissions: true,
-        query() {
+        query(frame) {
             let allNotifications = _private.fetchAllNotifications();
             allNotifications = _.orderBy(allNotifications, 'addedAt', 'desc');
 
@@ -55,7 +63,7 @@ module.exports = {
                     }
                 }
 
-                return notification.seen !== true;
+                return !_private.wasSeen(notification, frame.user);
             });
 
             return allNotifications;
@@ -172,12 +180,18 @@ module.exports = {
                 }));
             }
 
-            if (notificationToMarkAsSeen.seen) {
+            if (_private.wasSeen(notificationToMarkAsSeen, frame.user)) {
                 return Promise.resolve();
             }
 
             // @NOTE: We don't remove the notifications, because otherwise we will receive them again from the service.
             allNotifications[notificationToMarkAsSeenIndex].seen = true;
+
+            if (!allNotifications[notificationToMarkAsSeenIndex].seenBy) {
+                allNotifications[notificationToMarkAsSeenIndex].seenBy = [];
+            }
+
+            allNotifications[notificationToMarkAsSeenIndex].seenBy.push(frame.user.id);
 
             return api.settings.edit({
                 settings: [{
@@ -188,6 +202,11 @@ module.exports = {
         }
     },
 
+    /**
+     * Clears all notifications. Method used in tests only
+     *
+     * @private Not exposed over HTTP
+     */
     destroyAll: {
         statusCode: 204,
         permissions: {
