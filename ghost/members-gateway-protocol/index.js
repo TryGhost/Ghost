@@ -7,7 +7,7 @@ module.exports = function layer0(frame) {
     })(1);
     var origin = new URL(frame.getAttribute('src')).origin;
     var handlers = {};
-    var listener = function () {};
+    var listener = null;
 
     window.addEventListener('message', function (event) {
         if (event.origin !== origin) {
@@ -15,7 +15,7 @@ module.exports = function layer0(frame) {
         }
         if (!event.data || !event.data.uid) {
             if (event.data.event) {
-                return listener(event.data);
+                return listener && listener(event.data);
             }
             return;
         }
@@ -35,8 +35,15 @@ module.exports = function layer0(frame) {
     }
 
     function listen(fn) {
+        if (listener) {
+            return false;
+        }
         listener = fn;
+        return true;
     }
 
-    return {call, listen};
+    return {
+        call: call,
+        listen: listen
+    };
 };
