@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
-    "lint": "echo \"Implement me!\"",
+    "lint": "eslint '**/*.js'",
     "posttest": "yarn lint"
   },
   "files": [
