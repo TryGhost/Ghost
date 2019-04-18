@@ -49,6 +49,25 @@ module.exports = function setupSiteApp(options = {}) {
     // /public/ghost-sdk.js
     siteApp.use(shared.middlewares.servePublicFile('public/ghost-sdk.js', 'application/javascript', constants.ONE_HOUR_S));
     siteApp.use(shared.middlewares.servePublicFile('public/ghost-sdk.min.js', 'application/javascript', constants.ONE_YEAR_S));
+
+    // /public/members.js
+    siteApp.get('/public/members-theme-bindings.js',
+        shared.middlewares.labs('members'),
+        shared.middlewares.servePublicFile.createPublicFileMiddleware(
+            'public/members-theme-bindings.js',
+            'application/javascript',
+            constants.ONE_HOUR_S
+        )
+    );
+    siteApp.get('/public/members.js',
+        shared.middlewares.labs('members'),
+        shared.middlewares.servePublicFile.createPublicFileMiddleware(
+            'public/members.js',
+            'application/javascript',
+            constants.ONE_HOUR_S
+        )
+    );
+
     // Serve sitemap.xsl file
     siteApp.use(shared.middlewares.servePublicFile('sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
 
