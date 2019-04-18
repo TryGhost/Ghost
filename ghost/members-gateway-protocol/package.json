@@ -25,5 +25,8 @@
     "bluebird": "^3.5.4",
     "ghost-ignition": "^3.1.0",
     "lodash": "^4.17.11"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
