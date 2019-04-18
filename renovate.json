@@ -3,7 +3,8 @@
     "@tryghost:base",
     "@tryghost:groupTestLint",
     "@tryghost:groupCSS",
-    "@tryghost:groupBuildTools"  
+    "@tryghost:groupBuildTools",
+    "@tryghost:automergeSilentTestLintNonMajor"      
   ],
   "travis": { "enabled": true },
   "node": {
