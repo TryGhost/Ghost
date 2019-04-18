@@ -1,22 +1,18 @@
 {
   "extends": [
-    "config:base",
-     "group:jsTestMonMajor",
-     "group:linters",
-     ":maintainLockFilesWeekly",
-     ":prHourlyLimitNone",
-     ":automergeMinor"
+    "@tryghost:base",
+    "@tryghost:groupTestLint",
+    "@tryghost:groupCSS",
+    "@tryghost:groupBuildTools"  
   ],
   "travis": { "enabled": true },
   "node": {
     "supportPolicy": ["lts"]
    },
+  "separateMinorPatch": true,
+  "patch": {
+    "automerge": true
+  },
   "ignoreDeps": ["nodemailer"],
-  "ignorePaths": ["core/server/lib/members", "core/test"],
-  "packageRules": [
-    {
-      "groupName": "grunt + plugins",
-      "packagePatterns": ["^grunt"]
-    }
-   ]
+  "ignorePaths": ["core/server/lib/members", "core/test"]
 }
