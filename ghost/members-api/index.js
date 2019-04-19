@@ -256,6 +256,7 @@ module.exports = function MembersApi({
             createMember,
             updateMember,
             getMember,
+            deleteMember,
             validateMember,
             sendEmail,
             encodeToken,
