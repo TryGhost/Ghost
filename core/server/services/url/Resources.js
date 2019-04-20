@@ -7,10 +7,12 @@ const models = require('../../models');
 const common = require('../../lib/common');
 
 /**
- * At the moment Resource service is directly responsible for data population
- * for URLs in UrlService. But because it's actually a storage of all possible
+ * @description At the moment the resources class is directly responsible for data population
+ * for URLs...but because it's actually a storage cache of all published
  * resources in the system, could also be used as a cache for Content API in
  * the future.
+ *
+ * Each entry in the database will be represented by a "Resource" (see /Resource.js).
  */
 class Resources {
     constructor(queue) {
@@ -22,6 +24,14 @@ class Resources {
         this._listeners();
     }
 
+    /**
+     * @description Little helper to register on Ghost events and remember the listener functions to be able
+     * to unsubscribe.
+     *
+     * @param {String} eventName
+     * @param {Function} listener
+     * @private
+     */
     _listenOn(eventName, listener) {
         this.listeners.push({
             eventName: eventName,
@@ -31,15 +41,23 @@ class Resources {
         common.events.on(eventName, listener);
     }
 
+    /**
+     * @description Little helper which get's called on class instantiation. It will subscribe to the
+     *              database ready event to start fetching the data as early as possible.
+     *
+     * @private
+     */
     _listeners() {
-        /**
-         * We fetch the resources as early as possible.
-         * Currently the url service needs to use the settings cache,
-         * because we need to `settings.permalink`.
-         */
         this._listenOn('db.ready', this.fetchResources.bind(this));
     }
 
+    /**
+     * @description Initialise the resource config. We currently fetch the data straight via the the model layer,
+     *              but because Ghost supports multiple API versions, we have to ensure we load the correct data.
+     *
+     * @TODO: https://github.com/TryGhost/Ghost/issues/10360
+     * @private
+     */
     _initResourceConfig() {
         if (!_.isEmpty(this.resourcesConfig)) {
             return this.resourceConfig;
@@ -49,11 +67,17 @@ class Resources {
         this.resourcesConfig = require(`./configs/${this.resourcesAPIVersion}`);
     }
 
+    /**
+     * @description Helper function to initialise data fetching. Each resource type needs to register resource/model
+     *              events to get notified about updates/deletions/inserts.
+     */
     fetchResources() {
         const ops = [];
-        debug('db ready. settings cache ready.');
+        debug('fetchResources');
+
         this._initResourceConfig();
 
+        // NOTE: Iterate over all resource types (posts, users etc..) and call `_fetch`.
         _.each(this.resourcesConfig, (resourceConfig) => {
             this.data[resourceConfig.type] = [];
 
@@ -92,13 +116,20 @@ class Resources {
             });
     }
 
+    /**
+     * @description The actual call to the model layer, which will execute raw knex queries to ensure performance.
+     * @param {Object} resourceConfig
+     * @param {Object} options
+     * @returns {Promise}
+     * @private
+     */
     _fetch(resourceConfig, options = {offset: 0, limit: 999}) {
         debug('_fetch', resourceConfig.type, resourceConfig.modelOptions);
 
         let modelOptions = _.cloneDeep(resourceConfig.modelOptions);
         const isSQLite = config.get('database:client') === 'sqlite3';
 
-        // CASE: prevent "too many SQL variables" error on SQLite3
+        // CASE: prevent "too many SQL variables" error on SQLite3 (https://github.com/TryGhost/Ghost/issues/5810)
         if (isSQLite) {
             modelOptions.offset = options.offset;
             modelOptions.limit = options.limit;
@@ -119,6 +150,20 @@ class Resources {
             });
     }
 
+    /**
+     * @description Call the model layer to fetch a single resource via raw knex queries.
+     *
+     * This function was invented, because the model event is a generic event, which is independent of any
+     * api version behaviour. We have to ensure that a model matches the conditions of the configured api version
+     * in the theme.
+     *
+     * See https://github.com/TryGhost/Ghost/issues/10124.
+     *
+     * @param {Object} resourceConfig
+     * @param {String} id
+     * @returns {Promise}
+     * @private
+     */
     _fetchSingle(resourceConfig, id) {
         let modelOptions = _.cloneDeep(resourceConfig.modelOptions);
         modelOptions.id = id;
@@ -126,6 +171,18 @@ class Resources {
         return models.Base.Model.raw_knex.fetchAll(modelOptions);
     }
 
+    /**
+     * @description Helper function to prepare the received model's relations.
+     *
+     * This helper was added to reduce the number of fields we keep in cache for relations.
+     *
+     * If we resolve (https://github.com/TryGhost/Ghost/issues/10360) and talk to the Content API,
+     * we could pass on e.g. `?include=authors&fields=authors.id,authors.slug`, but the API has to support it.
+     *
+     * @param {Bookshelf-Model} model
+     * @param {Object} resourceConfig
+     * @private
+     */
     _prepareModelSync(model, resourceConfig) {
         const exclude = resourceConfig.modelOptions.exclude;
         const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
@@ -168,6 +225,19 @@ class Resources {
         return obj;
     }
 
+    /**
+     * @description Listener for "model added" event.
+     *
+     * If we receive an event from the model layer, we push the new resource into the queue.
+     * The subscribers (the url generators) have registered for this event and the queue will call
+     * all subscribers sequentially. The first generator, where the conditions match the resource, will
+     * own the resource and it's url.
+     *
+     * @param {String} type (post,user...)
+     * @param {Bookshelf-Model} model
+     * @returns {Promise}
+     * @private
+     */
     _onResourceAdded(type, model) {
         debug('_onResourceAdded', type);
 
@@ -217,6 +287,8 @@ class Resources {
     }
 
     /**
+     * @description Listener for "model updated" event.
+     *
      * CASE:
      *  - post was fetched on bootstrap
      *  - that means, the post is already published
@@ -229,6 +301,11 @@ class Resources {
      *   - resource exists and is owned by somebody
      *   - but the data changed and is maybe no longer owned?
      *   - e.g. featured:false changes and your filter requires featured posts
+     *
+     * @param {String} type (post,user...)
+     * @param {Bookshelf-Model} model
+     * @returns {Promise}
+     * @private
      */
     _onResourceUpdated(type, model) {
         debug('_onResourceUpdated', type);
@@ -238,13 +315,14 @@ class Resources {
         // NOTE: synchronous handling for post and pages so that their URL is available without a delay
         //       for more context and future improvements check https://github.com/TryGhost/Ghost/issues/10360
         if (['posts', 'pages'].includes(type)) {
+            // CASE: search for the target resource in the cache
             this.data[type].every((resource) => {
                 if (resource.data.id === model.id) {
                     const obj = this._prepareModelSync(model, resourceConfig);
 
                     resource.update(obj);
 
-                    // CASE: pretend it was added
+                    // CASE: Resource is not owned, try to add it again (data has changed, it could be that somebody will own it now)
                     if (!resource.isReserved()) {
                         this.queue.start({
                             event: 'added',
@@ -270,6 +348,7 @@ class Resources {
                 .then(([dbResource]) => {
                     const resource = this.data[type].find(resource => (resource.data.id === model.id));
 
+                    // CASE: cached resource exists, API conditions matched with the data in the db
                     if (resource && dbResource) {
                         resource.update(dbResource);
 
@@ -293,12 +372,19 @@ class Resources {
         }
     }
 
+    /**
+     * @description Listener for "model removed" event.
+     * @param {String} type (post,user...)
+     * @param {Bookshelf-Model} model
+     * @private
+     */
     _onResourceRemoved(type, model) {
         debug('_onResourceRemoved', type);
 
         let index = null;
         let resource;
 
+        // CASE: search for the cached resource and stop if it was found
         this.data[type].every((_resource, _index) => {
             if (_resource.data.id === model._previousAttributes.id) {
                 resource = _resource;
@@ -316,22 +402,45 @@ class Resources {
             return;
         }
 
+        // remove the resource from cache
         this.data[type].splice(index, 1);
         resource.remove();
     }
 
+    /**
+     * @description Get all cached resources.
+     * @returns {Object}
+     */
     getAll() {
         return this.data;
     }
 
+    /**
+     * @description Get all cached resourced by type.
+     * @param {String} type (post, user...)
+     * @returns {Object}
+     */
     getAllByType(type) {
         return this.data[type];
     }
 
+    /**
+     * @description Get all cached resourced by resource id and type.
+     * @param {String} type (post, user...)
+     * @param {String} id
+     * @returns {Object}
+     */
     getByIdAndType(type, id) {
         return _.find(this.data[type], {data: {id: id}});
     }
 
+    /**
+     * @description Reset this class instance.
+     *
+     * Is triggered if you switch API versions.
+     *
+     * @param {Object} options
+     */
     reset(options = {ignoreDBReady: false}) {
         _.each(this.listeners, (obj) => {
             if (obj.eventName === 'db.ready' && options.ignoreDBReady) {
@@ -346,6 +455,10 @@ class Resources {
         this.resourcesConfig = null;
     }
 
+    /**
+     * @description Soft reset this class instance. Only used for test env.
+     *              It will only clear the cache.
+     */
     softReset() {
         this.data = {};
 
@@ -354,6 +467,9 @@ class Resources {
         });
     }
 
+    /**
+     * @description Release all resources. Get's called during "reset".
+     */
     releaseAll() {
         _.each(this.data, (resources, type) => {
             _.each(this.data[type], (resource) => {
