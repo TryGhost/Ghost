@@ -8,6 +8,11 @@ const _debug = require('ghost-ignition').debug._base,
     Resources = require('./Resources'),
     localUtils = require('./utils');
 
+/**
+ * The url service class holds all instances in a centralised place.
+ * It's the public API you can talk to.
+ * It will tell you if the url generation is in progress or not.
+ */
 class UrlService {
     constructor() {
         this.utils = localUtils;
@@ -22,19 +27,17 @@ class UrlService {
         this._listeners();
     }
 
+    /**
+     * @description Helper function to register the listeners for this instance.
+     * @private
+     */
     _listeners() {
-        /**
-         * The purpose of this event is to notify the url service as soon as a router get's created.
-         */
         this._onRouterAddedListener = this._onRouterAddedType.bind(this);
         common.events.on('router.created', this._onRouterAddedListener);
 
         this._onThemeChangedListener = this._onThemeChangedListener.bind(this);
         common.events.on('services.themes.api.changed', this._onThemeChangedListener);
 
-        /**
-         * The queue will notify us if url generation has started/finished.
-         */
         this._onQueueStartedListener = this._onQueueStarted.bind(this);
         this.queue.addListener('started', this._onQueueStartedListener);
 
@@ -42,18 +45,37 @@ class UrlService {
         this.queue.addListener('ended', this._onQueueEnded.bind(this));
     }
 
+    /**
+     * @description The queue will notify us if the queue has started with an event.
+     *
+     * The "init" event is basically the bootstrap event, which is the siganliser if url generation
+     * is in progress or not.
+     *
+     * @param {String} event
+     * @private
+     */
     _onQueueStarted(event) {
         if (event === 'init') {
             this.finished = false;
         }
     }
 
+    /**
+     * @description The queue will notify us if the queue has ended with an event.
+     * @param {String} event
+     * @private
+     */
     _onQueueEnded(event) {
         if (event === 'init') {
             this.finished = true;
         }
     }
 
+    /**
+     * @description Router was created, connect it with a url generator.
+     * @param {ExpressRouter} router
+     * @private
+     */
     _onRouterAddedType(router) {
         // CASE: there are router types which do not generate resource urls
         //       e.g. static route router
@@ -68,12 +90,18 @@ class UrlService {
         this.urlGenerators.push(urlGenerator);
     }
 
+    /**
+     * @description If the API version in the theme config changes, we have to reset urls and resources.
+     * @private
+     */
     _onThemeChangedListener() {
         this.reset({keepListeners: true});
         this.init();
     }
 
     /**
+     * @description Get Resource by url.
+     *
      * You have a url and want to know which the url belongs to.
      *
      * It's in theory possible that multiple resources generate the same url,
@@ -91,6 +119,10 @@ class UrlService {
      * We only return the resource, which would be served.
      *
      * @NOTE: only accepts relative urls at the moment.
+     *
+     * @param {String} url
+     * @param {Object} options
+     * @returns {Object}
      */
     getResource(url, options) {
         options = options || {};
@@ -133,6 +165,11 @@ class UrlService {
         return objects[0].resource;
     }
 
+    /**
+     * @description Get resource by id.
+     * @param {String} resourceId
+     * @returns {Object}
+     */
     getResourceById(resourceId) {
         const object = this.urls.getByResourceId(resourceId);
 
@@ -146,13 +183,16 @@ class UrlService {
         return object.resource;
     }
 
+    /**
+     * @description Figure out if url generation is in progress or not.
+     * @returns {boolean}
+     */
     hasFinished() {
         return this.finished;
     }
 
     /**
-     * Get url by resource id.
-     * e.g. tags, authors, posts, pages
+     * @description Get url by resource id.
      *
      * If we can't find a url for an id, we have to return a url.
      * There are many components in Ghost which call `getUrlByResourceId` and
@@ -160,6 +200,10 @@ class UrlService {
      * Or if you define no collections in your yaml file and serve a page.
      * You will see a suggestion of posts, but they all don't belong to a collection.
      * They would show localhost:2368/null/.
+     *
+     * @param {String} id
+     * @param {Object} options
+     * @returns {String}
      */
     getUrlByResourceId(id, options) {
         options = options || {};
@@ -189,6 +233,12 @@ class UrlService {
         return '/404/';
     }
 
+    /**
+     * @description Check whether a router owns a resource id.
+     * @param {String} routerId
+     * @param {String} id
+     * @returns {boolean}
+     */
     owns(routerId, id) {
         debug('owns', routerId, id);
 
@@ -210,6 +260,12 @@ class UrlService {
         return urlGenerator.hasId(id);
     }
 
+    /**
+     * @description Get permlink structure for url.
+     * @param {String} url
+     * @param {object} options
+     * @returns {*}
+     */
     getPermalinkByUrl(url, options) {
         options = options || {};
 
@@ -223,10 +279,20 @@ class UrlService {
             .getValue(options);
     }
 
+    /**
+     * @description Internal helper to re-trigger fetching resources on theme change.
+     *
+     * @TODO: Either remove this helper or rename to `_init`, because it's a little confusing,
+     *        because this service get's initalised via events.
+     */
     init() {
         this.resources.fetchResources();
     }
 
+    /**
+     * @description Reset this service.
+     * @param {Object} options
+     */
     reset(options = {}) {
         debug('reset');
         this.urlGenerators = [];
@@ -243,6 +309,10 @@ class UrlService {
         }
     }
 
+    /**
+     * @description Reset the generators.
+     * @param {Object} options
+     */
     resetGenerators(options = {}) {
         debug('resetGenerators');
         this.finished = false;
@@ -257,6 +327,9 @@ class UrlService {
         }
     }
 
+    /**
+     * @description Soft reset this service. Only used in test env.
+     */
     softReset() {
         debug('softReset');
         this.finished = false;

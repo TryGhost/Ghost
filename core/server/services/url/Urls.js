@@ -4,18 +4,26 @@ const localUtils = require('./utils');
 const common = require('../../lib/common');
 
 /**
- * Keeps track of all urls.
- * Each resource has exactly one url.
- *
- * Connector for url generator and resources.
- *
+ * This class keeps track of all urls in the system.
+ * Each resource has exactly one url. Each url is owned by exactly one url generator id.
+ * This is a connector for url generator and resources.
  * Stores relative urls by default.
+ *
+ * We have to have a centralised place where we keep track of all urls, otherwise
+ * we will never know if we generate the same url twice. Furthermore, it's easier
+ * to ask a centralised class instance if you want a url for a resource than
+ * iterating over all url generators and asking for it.
+ * You can easily ask `this.urls[resourceId]`.
  */
 class Urls {
     constructor() {
         this.urls = {};
     }
 
+    /**
+     * @description Add a url to the system.
+     * @param {Object} options
+     */
     add(options) {
         const url = options.url;
         const generatorId = options.generatorId;
@@ -38,6 +46,7 @@ class Urls {
             resource: resource
         };
 
+        // @NOTE: Notify the whole system. Currently used for sitemaps service.
         common.events.emit('url.added', {
             url: {
                 relative: url,
@@ -47,13 +56,19 @@ class Urls {
         });
     }
 
-    // @TODO: add an option to receive an absolute url
+    /**
+     * @description Get url by resource id.
+     * @param {String} id
+     * @returns {Object}
+     */
     getByResourceId(id) {
         return this.urls[id];
     }
 
     /**
-     * Get all by `uid`.
+     * @description Get all urls by generator id.
+     * @param {String} generatorId
+     * @returns {Array}
      */
     getByGeneratorId(generatorId) {
         return _.reduce(Object.keys(this.urls), (toReturn, resourceId) => {
@@ -66,6 +81,8 @@ class Urls {
     }
 
     /**
+     * @description Get by url.
+     *
      * @NOTE:
      * It's is in theory possible that:
      *
@@ -85,6 +102,10 @@ class Urls {
         }, []);
     }
 
+    /**
+     * @description Remove url.
+     * @param id
+     */
     removeResourceId(id) {
         if (!this.urls[id]) {
             return;
@@ -100,10 +121,16 @@ class Urls {
         delete this.urls[id];
     }
 
+    /**
+     * @description Reset instance.
+     */
     reset() {
         this.urls = {};
     }
 
+    /**
+     * @description Soft reset instance.
+     */
     softReset() {
         this.urls = {};
     }
