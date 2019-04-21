@@ -6,6 +6,9 @@ const controllers = require('./controllers');
 const middlewares = require('./middlewares');
 const ParentRouter = require('./ParentRouter');
 
+/**
+ * @description Template routes allow you to map individual URLs to specific template files within a Ghost theme
+ */
 class StaticRoutesRouter extends ParentRouter {
     constructor(mainRoute, object) {
         super('StaticRoutesRouter');
@@ -17,6 +20,8 @@ class StaticRoutesRouter extends ParentRouter {
 
         debug(this.route.value, this.templates);
 
+        // CASE 1: Route is channel (controller: channel) -  a stream of posts
+        // CASE 2: Route is just a static page e.g. landing page
         if (this.isChannel(object)) {
             this.templates = this.templates.reverse();
             this.rss = object.rss !== false;
@@ -35,7 +40,12 @@ class StaticRoutesRouter extends ParentRouter {
         }
     }
 
+    /**
+     * @description Register all channel routes of this router (...if the router is a channel)
+     * @private
+     */
     _registerChannelRoutes() {
+        // REGISTER: prepare context object
         this.router().use(this._prepareChannelContext.bind(this));
 
         // REGISTER: is rss enabled?
@@ -54,6 +64,13 @@ class StaticRoutesRouter extends ParentRouter {
         common.events.emit('router.created', this);
     }
 
+    /**
+     * @description Prepare channel context for further middlewares/controllers.
+     * @param {Object} req
+     * @param {Object} res
+     * @param {Function} next
+     * @private
+     */
     _prepareChannelContext(req, res, next) {
         res.routerOptions = {
             type: this.controller,
@@ -69,13 +86,27 @@ class StaticRoutesRouter extends ParentRouter {
         next();
     }
 
+    /**
+     * @description Register all static routes of this router (...if the router is just a static route)
+     * @private
+     */
     _registerStaticRoute() {
+        // REGISTER: prepare context object
         this.router().use(this._prepareStaticRouteContext.bind(this));
+
+        // REGISTER: static route
         this.mountRoute(this.route.value, controllers.static);
 
         common.events.emit('router.created', this);
     }
 
+    /**
+     * @description Prepare static route context for further middlewares/controllers.
+     * @param {Object} req
+     * @param {Object} res
+     * @param {Function} next
+     * @private
+     */
     _prepareStaticRouteContext(req, res, next) {
         res.routerOptions = {
             type: 'custom',
@@ -89,6 +120,11 @@ class StaticRoutesRouter extends ParentRouter {
         next();
     }
 
+    /**
+     * @description Helper function to figure out if this router is a channel.
+     * @param {Object} object
+     * @returns {boolean}
+     */
     isChannel(object) {
         if (object && object.controller && object.controller === 'channel') {
             return true;

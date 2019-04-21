@@ -2,6 +2,13 @@ const debug = require('ghost-ignition').debug('services:routing:helpers:render-e
     formatResponse = require('./format-response'),
     renderer = require('./renderer');
 
+/**
+ * @description Helper to handle rendering multiple resources.
+ *
+ * @param {Object} req
+ * @param {Object} res
+ * @returns {Closure)
+ */
 module.exports = function renderEntries(req, res) {
     debug('renderEntries called');
     return function renderEntries(result) {

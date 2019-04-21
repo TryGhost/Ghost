@@ -1,8 +1,9 @@
 /**
- * # Router
+ * # Parent Router
  *
- * A wrapper around express.Router
- * Intended to be extended anywhere that routes need to be registered in Ghost
+ * A wrapper around express.Router, which is controlled in Ghost.
+ *
+ * Intended to be extended anywhere that routes need to be registered in Ghost.
  * Only allows for .use and .get at the moment - we don't have clear use-cases for anything else yet.
  */
 
@@ -13,9 +14,19 @@ const debug = require('ghost-ignition').debug('services:routing:ParentRouter'),
     url = require('url'),
     security = require('../../lib/security'),
     urlService = require('../url'),
-    // This the route registry for the whole site
     registry = require('./registry');
 
+/**
+ * @description Inherited express router, which gives control to us.
+ *
+ * Purposes:
+ *   - give the router a correct name
+ *   - give the router a correct parent
+ *
+ * @param {Object} options
+ * @returns {Express-Router}
+ * @constructor
+ */
 function GhostRouter(options) {
     const router = express.Router(options);
 
@@ -34,9 +45,6 @@ function GhostRouter(options) {
     return innerRouter;
 }
 
-/**
- * We expose a very limited amount of express.Router via specialist methods
- */
 class ParentRouter extends EventEmitter {
     constructor(name) {
         super();
@@ -47,6 +55,12 @@ class ParentRouter extends EventEmitter {
         this._router = GhostRouter({mergeParams: true, parent: this});
     }
 
+    /**
+     * @description Helper function to find the site router in the express router stack.
+     * @param {Object} req
+     * @returns {Express-Router}
+     * @private
+     */
     _getSiteRouter(req) {
         let siteRouter = null;
 
@@ -62,10 +76,19 @@ class ParentRouter extends EventEmitter {
         return siteRouter;
     }
 
+    /**
+     * @description Helper function to handle redirects across routers.
+     * @param {Object} req
+     * @param {Object} res
+     * @param {Function} next
+     * @param {String} slug
+     * @private
+     */
     _respectDominantRouter(req, res, next, slug) {
         let siteRouter = this._getSiteRouter(req);
         let targetRoute = null;
 
+        // CASE: iterate over routers and check whether a router has a redirect for the target slug enabled.
         siteRouter.handle.stack.every((router) => {
             if (router.handle.parent && router.handle.parent.isRedirectEnabled && router.handle.parent.isRedirectEnabled(this.getResourceType(), slug)) {
                 targetRoute = router.handle.parent.getRoute();
@@ -93,6 +116,11 @@ class ParentRouter extends EventEmitter {
         next();
     }
 
+    /**
+     * @description Mount a router on a router (sub-routing)
+     * @param {String} path
+     * @param {Express-Router} router
+     */
     mountRouter(path, router) {
         if (arguments.length === 1) {
             router = path;
@@ -105,12 +133,24 @@ class ParentRouter extends EventEmitter {
         }
     }
 
+    /**
+     * @description Mount a route on this router.
+     * @param {String} path
+     * @param {Function} controller
+     */
     mountRoute(path, controller) {
         debug(this.name + ': mountRoute for', path, controller.name);
         registry.setRoute(this.name, path);
         this._router.get(path, controller);
     }
 
+    /**
+     * @description Unmount route.
+     *
+     * Not used at the moment, but useful to keep for e.g. deregister routes on runtime.
+     *
+     * @param {String} path
+     */
     unmountRoute(path) {
         let indexToRemove = null;
 
@@ -125,21 +165,38 @@ class ParentRouter extends EventEmitter {
         }
     }
 
+    /**
+     * @description Very important function to get the actual express router, which satisfies express.
+     * @returns {Express-Router}
+     */
     router() {
         return this._router;
     }
 
+    /**
+     * @description Get configured permalinks of this router.
+     * @returns {Object}
+     */
     getPermalinks() {
         return this.permalinks;
     }
 
+    /**
+     * @description Get configured filter of this router.
+     * @returns {String}
+     */
     getFilter() {
         return this.filter;
     }
 
     /**
-     * Will return the full route including subdirectory.
-     * Do not use this function to mount routes for now, because the subdirectory is already mounted.
+     * @description Get main route of this router.
+     *
+     * Will return the full route including subdirectory. Do not use this function to mount routes for now,
+     * because the subdirectory is already mounted as exclusive feature (independent of dynamic routing).
+     *
+     * @param {Object} options
+     * @returns {String}
      */
     getRoute(options) {
         options = options || {};
@@ -147,6 +204,12 @@ class ParentRouter extends EventEmitter {
         return urlService.utils.createUrl(this.route.value, options.absolute, options.secure);
     }
 
+    /**
+     * @description Figure out if the router has a redirect enabled.
+     * @param {String} routerType
+     * @param {String} slug
+     * @returns {boolean}
+     */
     isRedirectEnabled(routerType, slug) {
         debug('isRedirectEnabled', this.name, this.route && this.route.value, routerType, slug);
 

@@ -13,6 +13,19 @@ const ParentRouter = require('./ParentRouter');
 const registry = require('./registry');
 let siteRouter;
 
+/**
+ * @description The `init` function will return the wrapped parent express router and will start creating all
+ *              routers if you pass the option "start: true".
+ *
+ * CASES:
+ *   - if Ghost starts, it will first init the site app with the wrapper router and then call `start`
+ *     separately, because it could be that your blog goes into maintenance mode
+ *   - if you upload your routes.yaml in the admin client, we will re-initialise routing
+ *   -
+ *
+ * @param {Object} options
+ * @returns {ExpressRouter}
+ */
 module.exports.init = (options = {start: false}) => {
     debug('bootstrap');
 
@@ -32,10 +45,17 @@ module.exports.init = (options = {start: false}) => {
 };
 
 /**
- * Create a set of default and dynamic routers defined in the routing yaml.
+ * @description This function will create the routers based on the routes.yaml config.
  *
- * @TODO:
- *   - is the PreviewRouter an app?
+ * The routers are created in a specific order. This order defines who can get a resource first or
+ * who can dominant other routers.
+ *
+ * 1. Preview Router: Is the strongest and is an inbuilt feature, which you can never override.
+ * 2. Static Routes: Very strong, because you can override any urls and redirect to a static route.
+ * 3. Taxonomies: Stronger than collections, because it's an inbuilt feature.
+ * 4. Collections
+ * 5. Static Pages: Weaker than collections, because we first try to find a post slug and fallback to lookup a static page.
+ * 6. Apps: Weakest
  */
 module.exports.start = () => {
     const apiVersion = themeService.getApiVersion();
@@ -46,6 +66,7 @@ module.exports.start = () => {
     siteRouter.mountRouter(previewRouter.router());
     registry.setRouter('previewRouter', previewRouter);
 
+    // NOTE: Get the routes.yaml config
     const dynamicRoutes = settingsService.get('routes');
 
     _.each(dynamicRoutes.routes, (value, key) => {

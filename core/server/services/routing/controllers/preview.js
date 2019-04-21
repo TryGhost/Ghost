@@ -2,6 +2,13 @@ const debug = require('ghost-ignition').debug('services:routing:controllers:prev
     urlService = require('../../url'),
     helpers = require('../helpers');
 
+/**
+ * @description Preview Controller.
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ * @returns {Promise}
+ */
 module.exports = function previewController(req, res, next) {
     debug('previewController');
 
@@ -10,6 +17,7 @@ module.exports = function previewController(req, res, next) {
     const params = {
         uuid: req.params.uuid,
         status: 'all',
+        // @TODO: Remove "author" if we drop v0.1
         include: 'author,authors,tags'
     };
 
@@ -23,7 +31,8 @@ module.exports = function previewController(req, res, next) {
             }
 
             if (req.params.options && req.params.options.toLowerCase() === 'edit') {
-                // @TODO: we don't know which resource type it is, because it's a generic preview handler
+                // @TODO: we don't know which resource type it is, because it's a generic preview handler and the
+                //        preview API returns {previews: []}
                 // @TODO: figure out how to solve better
                 const resourceType = post.page ? 'page' : 'post';
 
@@ -38,6 +47,7 @@ module.exports = function previewController(req, res, next) {
                 return urlService.utils.redirect301(res, urlService.getUrlByResourceId(post.id, {withSubdirectory: true}));
             }
 
+            // @TODO: See helpers/secure
             helpers.secure(req, post);
 
             const renderer = helpers.renderEntry(req, res);
