@@ -1,8 +1,8 @@
 const _ = require('lodash');
 
 /**
- * formats variables for handlebars in multi-post contexts.
- * If extraValues are available, they are merged in the final value
+ * @description Formats API response into handlebars/theme format.
+ *
  * @return {Object} containing page variables
  */
 function formatPageResponse(result) {
@@ -32,11 +32,13 @@ function formatPageResponse(result) {
 }
 
 /**
- * similar to formatPageResponse, but for entries (post or page)
+ * @description Format a single resource for handlebars.
  *
  * @TODO
  * In the future, we should return {page: entry} or {post:entry).
  * But for now, we would break the themes if we just change it.
+ *
+ * @see https://github.com/TryGhost/Ghost/issues/10042.
  *
  * @return {Object} containing page variables
  */

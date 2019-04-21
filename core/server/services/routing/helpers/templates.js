@@ -2,7 +2,6 @@
 //
 // Figure out which template should be used to render a request
 // based on the templates which are allowed, and what is available in the theme
-// TODO: consider where this should live as it deals with collections, entries, and errors
 const _ = require('lodash'),
     path = require('path'),
     url = require('url'),
@@ -11,7 +10,7 @@ const _ = require('lodash'),
     _private = {};
 
 /**
- * ## Get Error Template Hierarchy
+ * @description Get Error Template Hierarchy
  *
  * Fetch the ordered list of templates that can be used to render this error statusCode.
  *
@@ -34,7 +33,7 @@ _private.getErrorTemplateHierarchy = function getErrorTemplateHierarchy(statusCo
 };
 
 /**
- * ## Get Template Hierarchy
+ * @description Get Template Hierarchy
  *
  * Fetch the ordered list of templates that can be used to render this request.
  * 'index' is the default / fallback
@@ -72,7 +71,7 @@ _private.getEntriesTemplateHierarchy = function getEntriesTemplateHierarchy(rout
 };
 
 /**
- * ## Get Entry Template Hierarchy
+ * @description Get Entry Template Hierarchy
  *
  * Fetch the ordered list of templates that can be used to render this request.
  * 'post' is the default / fallback
@@ -101,7 +100,7 @@ _private.getEntryTemplateHierarchy = function getEntryTemplateHierarchy(postObje
 };
 
 /**
- * ## Pick Template
+ * @description Pick Template
  *
  * Taking the ordered list of allowed templates for this request
  * Cycle through and find the first one which has a match in the theme
@@ -157,6 +156,12 @@ _private.getTemplateForError = function getTemplateForError(statusCode) {
     return _private.pickTemplate(templateList, fallback);
 };
 
+/**
+ * @description Set template for express. Express will render the template you set here.
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Object} data
+ */
 module.exports.setTemplate = function setTemplate(req, res, data) {
     if (res._template && !req.err) {
         return;

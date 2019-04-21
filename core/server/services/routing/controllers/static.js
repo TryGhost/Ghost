@@ -14,6 +14,7 @@ function processQuery(query, locals) {
     //       We override the `include` property for now, because the full data set is required anyway.
     if (_.get(query, 'resource') === 'posts') {
         _.extend(query.options, {
+            // @TODO: Remove "author" when we drop v0.1
             include: 'author,authors,tags'
         });
     }
@@ -26,10 +27,16 @@ function processQuery(query, locals) {
         });
     }
 
-    // Return a promise for the api query
     return api[query.controller][query.type](query.options);
 }
 
+/**
+ * @description Static route controller.
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ * @returns {Promise}
+ */
 module.exports = function staticController(req, res, next) {
     debug('staticController', res.routerOptions);
 
@@ -51,13 +58,13 @@ module.exports = function staticController(req, res, next) {
 
                     if (config.type === 'browse') {
                         response.data[name].meta = result[name].meta;
-                        // @TODO: remove in v3
+                        // @TODO: remove in Ghost 3.0 (see https://github.com/TryGhost/Ghost/issues/10434)
                         response.data[name][config.resource] = result[name][config.resource];
                     }
                 });
             }
 
-            // @TODO: get rid of this O_O
+            // @TODO: See helpers/secure for more context.
             _.each(response.data, function (data) {
                 helpers.secure(req, data);
             });

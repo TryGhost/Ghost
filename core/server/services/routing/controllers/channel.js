@@ -5,7 +5,16 @@ const _ = require('lodash'),
     themes = require('../../themes'),
     helpers = require('../helpers');
 
-// @TODO: the collection+rss controller does almost the same
+/**
+ * @description Channel controller.
+ *
+ * @TODO: The collection+rss controller do almost the same. Merge!
+ *
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ * @returns {Promise}
+ */
 module.exports = function channelController(req, res, next) {
     debug('channelController', req.params, res.routerOptions);
 
@@ -46,11 +55,10 @@ module.exports = function channelController(req, res, next) {
             }
 
             // Format data 1
-            // @TODO: figure out if this can be removed, it's supposed to ensure that absolutely URLs get generated
-            // correctly for the various objects, but I believe it doesn't work and a different approach is needed.
+            // @TODO: See helpers/secure for explanation.
             helpers.secure(req, result.posts);
 
-            // @TODO: get rid of this O_O
+            // @TODO: See helpers/secure for explanation.
             _.each(result.data, function (data) {
                 helpers.secure(req, data);
             });

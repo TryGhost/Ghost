@@ -1,11 +1,12 @@
 const debug = require('ghost-ignition').debug('services:routing:helpers:render-post'),
     formatResponse = require('./format-response'),
     renderer = require('./renderer');
-/*
- * Sets the response context around an entry (post or page)
- * and renders it with the correct template.
- * Used by post preview and entry methods.
- * Returns a function that takes the entry to be rendered.
+/**
+ * @description Helper to handle rendering multiple resources.
+ *
+ * @param {Object} req
+ * @param {Object} res
+ * @returns {Closure)
  */
 module.exports = function renderEntry(req, res) {
     debug('renderEntry called');

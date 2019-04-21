@@ -5,6 +5,13 @@ const debug = require('ghost-ignition').debug('services:routing:helpers:entry-lo
 const routeMatch = require('path-match')();
 const config = require('../../../config');
 
+/**
+ * @description Query API for a single entry/resource.
+ * @param {String} postUrl
+ * @param {Object} routerOptions
+ * @param {Objec†} locals
+ * @returns {*}
+ */
 function entryLookup(postUrl, routerOptions, locals) {
     debug(postUrl);
 
@@ -32,11 +39,11 @@ function entryLookup(postUrl, routerOptions, locals) {
         isEditURL = true;
     }
 
-    /**
-     * Query database to find entry.
-     * @deprecated: `author`, will be removed in Ghost 3.0
-     */
     let options = {
+        /**
+         * @deprecated: `author`, will be removed in Ghost 3.0
+         * @TODO: Remove "author" when we drop v0.1
+         */
         include: 'author,authors,tags'
     };
 

@@ -7,7 +7,7 @@ const _ = require('lodash'),
     rssService = require('../../rss'),
     helpers = require('../helpers');
 
-// @TODO: is this the right logic? move to UrlService utils
+// @TODO: move to services/url/utils
 function getBaseUrlForRSSReq(originalUrl, pageParam) {
     return url.parse(originalUrl).pathname.replace(new RegExp('/' + pageParam + '/$'), '/');
 }
@@ -21,7 +21,14 @@ function getTitle(relatedData) {
     return titleStart + settingsCache.get('title');
 }
 
-// @TODO: the collection controller does almost the same
+/**
+ * @description RSS controller.
+ *
+ * @TODO: The collection controller does almost the same. Merge!
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ */
 module.exports = function rssController(req, res, next) {
     debug('rssController');
 
@@ -30,8 +37,8 @@ module.exports = function rssController(req, res, next) {
         slug: req.params.slug ? security.string.safe(req.params.slug) : undefined
     };
 
-    // CASE: we are using an rss cache - url must be normalised (without pagination)
-    // @TODO: this belongs to the rss service
+    // CASE: Ghost is using an rss cache - we have to normalise the (without pagination)
+    // @TODO: This belongs to the rss service O_o
     const baseUrl = getBaseUrlForRSSReq(req.originalUrl, pathOptions.page);
 
     helpers.fetchData(pathOptions, res.routerOptions, res.locals)

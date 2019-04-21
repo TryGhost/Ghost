@@ -11,7 +11,7 @@
  * 3. data - used for telling the difference between posts and pages
  */
 const labs = require('../../labs'),
-    // @TODO: fix this, this is app specific and should be dynamic
+    // @TODO: fix this!! These regexes are app specific and should be dynamic. They should not belong here....
     // routeKeywords.private: 'private'
     privatePattern = new RegExp('^\\/private\\/'),
     // routeKeywords.subscribe: 'subscribe'
@@ -27,6 +27,7 @@ function setResponseContext(req, res, data) {
     res.locals.context = [];
 
     // If we don't have a relativeUrl, we can't detect the context, so return
+    // See shared/middlewares/ghost-locals
     if (!res.locals.relativeUrl) {
         return;
     }
@@ -63,6 +64,7 @@ function setResponseContext(req, res, data) {
         }
     }
 
+    // @TODO: remove first if condition when we drop v0.1
     if (data && data.post && data.post.page) {
         if (!res.locals.context.includes('page')) {
             res.locals.context.push('page');
