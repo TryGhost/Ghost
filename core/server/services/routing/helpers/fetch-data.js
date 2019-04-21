@@ -16,29 +16,31 @@ const queryDefaults = {
 };
 
 /**
- * @deprecated: `author`, will be removed in Ghost 3.0
+ * The theme expects to have access to the relations by default e.g. {{post.authors}}
  */
 const defaultQueryOptions = {
     options: {
+        /**
+         * @deprecated: `author`, will be removed in Ghost 3.0
+         * @TODO: Remove "author" when we drop v0.1
+         */
         include: 'author,authors,tags'
     }
 };
 
-/**
- * Default post query needs to always include author, authors & tags
- */
 const defaultPostQuery = _.cloneDeep(queryDefaults);
 defaultPostQuery.options = defaultQueryOptions.options;
 
 /**
- * ## Process Query
+ * @description Process query request.
+ *
  * Takes a 'query' object, ensures that type, resource and options are set
  * Replaces occurrences of `%s` in options with slugParam
  * Converts the query config to a promise for the result
  *
- * @param {{type: String, resource: String, options: Object}} query
+ * @param {Object} query
  * @param {String} slugParam
- * @returns {Promise} promise for an API call
+ * @returns {Promise}
  */
 function processQuery(query, slugParam, locals) {
     const api = require('../../../api')[locals.apiVersion];
@@ -55,12 +57,13 @@ function processQuery(query, slugParam, locals) {
     if (config.get('enableDeveloperExperiments')) {
         query.options.context = {member: locals.member};
     }
-    // Return a promise for the api query
+
     return (api[query.controller] || api[query.resource])[query.type](query.options);
 }
 
 /**
- * ## Fetch Data
+ * @description Fetch data from API helper for controllers.
+ *
  * Calls out to get posts per page, builds the final posts query & builds any additional queries
  * Wraps the queries using Promise.props to ensure it gets named responses
  * Does a first round of formatting on the response, and returns

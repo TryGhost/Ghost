@@ -1,6 +1,14 @@
 const common = require('../../../lib/common'),
     urlService = require('../../url');
 
+/**
+ * @description Middleware, which validates and interprets the page param e.g. /page/1
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ * @param {Number} page
+ * @returns {*}
+ */
 module.exports = function handlePageParam(req, res, next, page) {
     // routeKeywords.page: 'page'
     const pageRegex = new RegExp('/page/(.*)?/'),
