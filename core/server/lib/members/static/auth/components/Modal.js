@@ -11,6 +11,7 @@ import ResetPasswordPage from '../pages/ResetPasswordPage';
 import StripeSubscribePage from '../pages/StripeSubscribePage';
 import { IconClose } from '../components/icons';
 import StripeUpgradePage from '../pages/StripeUpgradePage';
+import StripeSubscribePaymentPage from '../pages/StripeSubscribePaymentPage';
 
 export default class Modal extends Component {
     constructor(props, context) {
@@ -57,6 +58,7 @@ export default class Modal extends Component {
                         window.location.hash = 'signup-complete';
                     }, (error) => {
                         this.setState({ error: "Unable to confirm payment", showSpinner: false });
+                        window.location.hash = data.coupon ? `signup-payment?coupon=${data.coupon}` : "signup-payment";
                     });
                 }, (error) => {
                     this.setState({ error: "Unable to signup", showSpinner: false });
@@ -70,6 +72,20 @@ export default class Modal extends Component {
         );
     }
 
+    renderSignupPaymentPage({error, stripeConfig, members, signup, closeModal, siteConfig, showSpinner}) {
+
+        const createSubscription = (data) => {
+            this.setState({showSpinner: true});
+            return members.createSubscription(data).then((success) => {
+                this.setState({showSpinner: false});
+                window.location.hash = 'signup-complete';
+            }, (error) => {
+                this.setState({ error: "Unable to confirm payment", showSpinner: false });
+            });
+        };
+        return <StripeSubscribePaymentPage stripeConfig={stripeConfig} error={error} hash="signup-payment" handleSubmit={createSubscription} handleClose={closeModal} siteConfig={siteConfig} showSpinner={showSpinner} />
+    }
+
     renderUpgradePage(props, state) {
         const { error, paymentConfig } = state;
         const { members } = this.context;
@@ -79,7 +95,6 @@ export default class Modal extends Component {
         );
         const stripeConfig = paymentConfig && paymentConfig.find(({adapter}) => adapter === 'stripe');
         return <StripeUpgradePage stripeConfig={stripeConfig} error={error} hash="upgrade" handleSubmit={createSubscription} handleClose={closeModal}/>
-
     }
 
     render(props, state) {
@@ -132,6 +147,7 @@ export default class Modal extends Component {
                 <SigninPage error={error} hash="" handleSubmit={signup} showLoggedIn={showLoggedIn} />
                 <SigninPage error={error} hash="signin" handleSubmit={signin} showLoggedIn={showLoggedIn} />
                 {this.renderSignupPage({ error, stripeConfig, members, signup, closeModal, siteConfig, showSpinner})}
+                {this.renderSignupPaymentPage({ error, stripeConfig, members, signup, closeModal, siteConfig, showSpinner})}
                 {this.renderUpgradePage(props, state)}
                 <SignupCompletePage error={ error } hash="signup-complete" handleSubmit={ closeModal } siteConfig={ siteConfig } />
                 <RequestPasswordResetPage error={error} hash="request-password-reset" handleSubmit={requestReset} />
