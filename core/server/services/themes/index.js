@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const debug = require('ghost-ignition').debug('themes');
 const common = require('../../lib/common');
 const themeLoader = require('./loader');
@@ -33,29 +34,37 @@ module.exports = {
                 return validate
                     .check(theme)
                     .then(function validationSuccess(checkedTheme) {
-                        // CASE: inform that the theme has errors, but not fatal (theme still works)
-                        if (checkedTheme.results.error.length) {
-                            common.logging.warn(new common.errors.ThemeValidationError({
-                                errorType: 'ThemeWorksButHasErrors',
-                                message: common.i18n.t('errors.middleware.themehandler.themeHasErrors', {theme: activeThemeName}),
-                                errorDetails: checkedTheme.results.error
-                            }));
-                        }
-
-                        debug('Activating theme (method A on boot)', activeThemeName);
-                        self.activate(theme, checkedTheme);
-                    })
-                    .catch(function validationFailure(err) {
-                        if (err.errorDetails) {
-                            common.logging.error(new common.errors.ThemeValidationError({
+                        if (!validate.canActivate(checkedTheme)) {
+                            const checkError = new common.errors.ThemeValidationError({
                                 message: common.i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}),
-                                errorDetails: err.errorDetails
-                            }));
-                        }
+                                errorDetails: Object.assign(
+                                    _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
+                                        errors: checkedTheme.results.error
+                                    }
+                                )
+                            });
 
-                        // CASE: we have to remember to show errors on blog
-                        // `err.context` remembers the theme inside this property
-                        self.activate(theme, err.context, err);
+                            common.logging.error(checkError);
+
+                            self.activate(theme, checkedTheme, checkError);
+                        } else {
+                            // CASE: inform that the theme has errors, but not fatal (theme still works)
+                            if (checkedTheme.results.error.length) {
+                                common.logging.warn(new common.errors.ThemeValidationError({
+                                    errorType: 'ThemeWorksButHasErrors',
+                                    message: common.i18n.t('errors.middleware.themehandler.themeHasErrors', {theme: activeThemeName}),
+                                    errorDetails: Object.assign(
+                                        _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
+                                            errors: checkedTheme.results.error
+                                        }
+                                    )
+                                }));
+                            }
+
+                            debug('Activating theme (method A on boot)', activeThemeName);
+
+                            self.activate(theme, checkedTheme);
+                        }
                     });
             })
             .catch(common.errors.NotFoundError, function (err) {
