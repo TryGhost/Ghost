@@ -49,7 +49,7 @@ module.exports = {
                 }));
             }
 
-            return themeService.validate.check(loadedTheme)
+            return themeService.validate.checkSafe(loadedTheme)
                 .then((_checkedTheme) => {
                     checkedTheme = _checkedTheme;
 
@@ -89,7 +89,7 @@ module.exports = {
                 });
             }
 
-            return themeService.validate.check(zip, true)
+            return themeService.validate.checkSafe(zip, true)
                 .then((_checkedTheme) => {
                     checkedTheme = _checkedTheme;
 

@@ -6,7 +6,6 @@ const themes = require('../../../../server/services/themes');
 const validate = themes.validate;
 
 const gscan = require('gscan');
-const common = require('../../../../server/lib/common');
 
 describe('Themes', function () {
     let checkZipStub;
@@ -41,6 +40,8 @@ describe('Themes', function () {
                     checkStub.callCount.should.be.equal(0);
                     formatStub.calledOnce.should.be.true();
                     checkedTheme.should.be.an.Object();
+
+                    should.equal(validate.canActivate(checkedTheme), true);
                 });
         });
 
@@ -55,6 +56,8 @@ describe('Themes', function () {
                     checkStub.calledWith(testTheme.path).should.be.true();
                     formatStub.calledOnce.should.be.true();
                     checkedTheme.should.be.an.Object();
+
+                    should.equal(validate.canActivate(checkedTheme), true);
                 });
         });
 
@@ -77,14 +80,12 @@ describe('Themes', function () {
 
             return validate.check(testTheme, true)
                 .then((checkedTheme) => {
-                    checkedTheme.should.not.exist();
-                }).catch((error) => {
-                    error.should.be.an.Object();
-                    (error instanceof common.errors.ThemeValidationError).should.eql(true);
                     checkZipStub.calledOnce.should.be.true();
                     checkZipStub.calledWith(testTheme).should.be.true();
                     checkStub.callCount.should.be.equal(0);
                     formatStub.calledOnce.should.be.true();
+
+                    should.equal(validate.canActivate(checkedTheme), false);
                 });
         });
 
@@ -107,14 +108,12 @@ describe('Themes', function () {
 
             return validate.check(testTheme, false)
                 .then((checkedTheme) => {
-                    checkedTheme.should.not.exist();
-                }).catch((error) => {
-                    error.should.be.an.Object();
-                    (error instanceof common.errors.ThemeValidationError).should.eql(true);
                     checkStub.calledOnce.should.be.true();
                     checkStub.calledWith(testTheme.path).should.be.true();
                     checkZipStub.callCount.should.be.equal(0);
                     formatStub.calledOnce.should.be.true();
+
+                    should.equal(validate.canActivate(checkedTheme), false);
                 });
         });
 

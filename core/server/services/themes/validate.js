@@ -3,12 +3,16 @@ const Promise = require('bluebird');
 const config = require('../../config');
 const common = require('../../lib/common');
 
-let checkTheme;
+const canActivate = function canActivate(checkedTheme) {
+    // CASE: production and no fatal errors
+    // CASE: development returns fatal and none fatal errors, theme is only invalid if fatal errors
+    return !checkedTheme.results.error.length || (config.get('env') === 'development') && !checkedTheme.results.hasFatalErrors;
+};
 
-checkTheme = function checkTheme(theme, isZip) {
-    var checkPromise,
-        // gscan can slow down boot time if we require on boot, for now nest the require.
-        gscan = require('gscan');
+const check = function check(theme, isZip) {
+    // gscan can slow down boot time if we require on boot, for now nest the require.
+    const gscan = require('gscan');
+    let checkPromise;
 
     if (isZip) {
         checkPromise = gscan.checkZip(theme, {
@@ -24,10 +28,14 @@ checkTheme = function checkTheme(theme, isZip) {
                 onlyFatalErrors: config.get('env') === 'production'
             });
 
-            // CASE: production and no fatal errors
-            // CASE: development returns fatal and none fatal errors, theme is only invalid if fatal errors
-            if (!checkedTheme.results.error.length ||
-                config.get('env') === 'development' && !checkedTheme.results.hasFatalErrors) {
+            return checkedTheme;
+        });
+};
+
+const checkSafe = function checkSafe(theme, isZip) {
+    return check(theme, isZip)
+        .then((checkedTheme) => {
+            if (canActivate(checkedTheme)) {
                 return checkedTheme;
             }
 
@@ -37,14 +45,11 @@ checkTheme = function checkTheme(theme, isZip) {
                     _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
                         errors: checkedTheme.results.error
                     }
-                ),
-                // NOTE: needs to be removed but first has to be decoupled
-                //       from logic here: https://github.com/TryGhost/Ghost/blob/9810834/core/server/services/themes/index.js#L56-L57
-                context: checkedTheme
+                )
             }));
-        }).catch(function (error) {
-            return Promise.reject(error);
         });
 };
 
-module.exports.check = checkTheme;
+module.exports.check = check;
+module.exports.checkSafe = checkSafe;
+module.exports.canActivate = canActivate;

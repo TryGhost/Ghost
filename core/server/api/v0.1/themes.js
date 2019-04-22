@@ -58,7 +58,7 @@ themes = {
                     }));
                 }
 
-                return themeUtils.validate.check(loadedTheme);
+                return themeUtils.validate.checkSafe(loadedTheme);
             })
             // Update setting
             .then((_checkedTheme) => {
@@ -100,7 +100,7 @@ themes = {
             .handlePermissions('themes', 'add')(options)
             // Validation
             .then(() => {
-                return themeUtils.validate.check(zip, true);
+                return themeUtils.validate.checkSafe(zip, true);
             })
             // More validation (existence check)
             .then((_checkedTheme) => {
