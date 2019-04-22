@@ -1033,7 +1033,7 @@ abbrev@1.0.x:
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.0.9.tgz#91b4792588a7738c25f35dd6f63752a2f8776135"
   integrity sha1-kbR5JYinc4wl813W9jdSovh3YTU=
 
-abortcontroller-polyfill@^1.1.9, abortcontroller-polyfill@^1.2.5:
+abortcontroller-polyfill@^1.1.9, abortcontroller-polyfill@^1.2.5, abortcontroller-polyfill@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/abortcontroller-polyfill/-/abortcontroller-polyfill-1.3.0.tgz#de69af32ae926c210b7efbcc29bf644ee4838b00"
   integrity sha512-lbWQgf+eRvku3va8poBlDBO12FigTQr9Zb7NIjXrePrhxWVKdCP2wbDl1tLDaYa18PWTom3UEWwdH13S46I+yA==
@@ -2622,7 +2622,7 @@ broccoli-stew@^1.4.2, broccoli-stew@^1.5.0:
     symlink-or-copy "^1.2.0"
     walk-sync "^0.3.0"
 
-broccoli-stew@^2.0.0, broccoli-stew@^2.0.1:
+broccoli-stew@^2.0.0, broccoli-stew@^2.0.1, broccoli-stew@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/broccoli-stew/-/broccoli-stew-2.1.0.tgz#ba73add17fda3b9b01d8cfb343a8b613b7136a0a"
   integrity sha512-tgCkuTWYl4uf7k7ib2D79KFEj2hCgnTUNPMnrCoAha0/4bywcNccmaZVWtL9Ex37yX5h5eAbnM/ak2ULoMwSSw==
@@ -2683,7 +2683,24 @@ broccoli-templater@^2.0.1:
     rimraf "^2.6.2"
     walk-sync "^0.3.3"
 
-broccoli-uglify-sourcemap@3.1.0, broccoli-uglify-sourcemap@^3.1.0:
+broccoli-uglify-sourcemap@3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-3.1.1.tgz#c99342fe1da09ff79653b6184ef8efe0b9bac793"
+  integrity sha512-X0GkGz75DFPVwRj7LCUaa1hFOPd6STveaHRCOSXIyq076AZzLVAc08zxhbbMHQOxCer8aRD1pHfuU72fQBCzcA==
+  dependencies:
+    async-promise-queue "^1.0.4"
+    broccoli-plugin "^1.2.1"
+    debug "^4.1.0"
+    lodash.defaultsdeep "^4.6.0"
+    matcher-collection "^2.0.0"
+    mkdirp "^0.5.0"
+    source-map-url "^0.4.0"
+    symlink-or-copy "^1.0.1"
+    terser "^3.17.0"
+    walk-sync "^1.1.3"
+    workerpool "^3.1.2"
+
+broccoli-uglify-sourcemap@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-3.1.0.tgz#424abcb2c1c70fd1857165c5f191d59a37ee33ff"
   integrity sha512-8urQlRfoL6TDP65EylZgbqTwYkSMuZkWE+bwYgC+GMhncSb6bCc0zHn4AGaC+1DRaAsEjb8uyhtYnKCil4NRPA==
@@ -2927,6 +2944,13 @@ calculate-cache-key-for-tree@^1.1.0, calculate-cache-key-for-tree@^1.2.0:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/calculate-cache-key-for-tree/-/calculate-cache-key-for-tree-1.2.3.tgz#5a5e4fcfa2d374a63e47fe967593f179e8282825"
   integrity sha512-PPQorvdNw8K8k7UftCeradwOmKDSDJs8wcqYTtJPEt3fHbZyK8QsorybJA+lOmk0dgE61vX6R+5Kd3W9h4EMGg==
+  dependencies:
+    json-stable-stringify "^1.0.1"
+
+calculate-cache-key-for-tree@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/calculate-cache-key-for-tree/-/calculate-cache-key-for-tree-2.0.0.tgz#7ac57f149a4188eacb0a45b210689215d3fef8d6"
+  integrity sha512-Quw8a6y8CPmRd6eU+mwypktYCwUcf8yVFIRbNZ6tPQEckX9yd+EBVEPC/GSZZrMWH9e7Vz4pT7XhpmyApRByLQ==
   dependencies:
     json-stable-stringify "^1.0.1"
 
@@ -4907,7 +4931,25 @@ ember-factory-for-polyfill@^1.3.1:
   dependencies:
     ember-cli-version-checker "^2.1.0"
 
-ember-fetch@6.5.0, "ember-fetch@^2.1.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0", ember-fetch@^6.5.0:
+ember-fetch@6.5.1:
+  version "6.5.1"
+  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-6.5.1.tgz#6512153b9b85042744ed5a7934c8edb4a5b02dd0"
+  integrity sha512-ZA90lbTFZHhQCQKQNA6/3TdtiF1wBoT8nC7EI1pmkUZ49XDBP7i2eddUodR6qWRn8jK/D7IavQy3tx5fJBx7mw==
+  dependencies:
+    abortcontroller-polyfill "^1.3.0"
+    broccoli-concat "^3.2.2"
+    broccoli-debug "^0.6.5"
+    broccoli-merge-trees "^3.0.0"
+    broccoli-rollup "^2.1.1"
+    broccoli-stew "^2.1.0"
+    broccoli-templater "^2.0.1"
+    calculate-cache-key-for-tree "^2.0.0"
+    caniuse-api "^3.0.0"
+    ember-cli-babel "^6.8.2"
+    node-fetch "^2.3.0"
+    whatwg-fetch "^3.0.0"
+
+"ember-fetch@^2.1.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0", ember-fetch@^6.5.0:
   version "6.5.0"
   resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-6.5.0.tgz#efed80b3dd2259b52efce7498659e9125235bfb7"
   integrity sha512-B9KSeeO3xDNMQ22JqNwbmgnOprBzc8kNVfQMtzkAmugMb2aCmBZohAlQlwUUX5ODz8fHq2xfuZXDHD81Dzb0vg==
@@ -4959,10 +5001,10 @@ ember-in-viewport@3.3.0, ember-in-viewport@^3.2.2, ember-in-viewport@~3.0.0, emb
     intersection-observer-admin "0.1.0"
     raf-pool "0.1.0"
 
-ember-infinity@1.4.1:
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-1.4.1.tgz#7565eceaeafaec67ee14a342b03890288d691e60"
-  integrity sha512-0zCYGvt6j1oqickyo5fvnIWPdNWdcWkmRlv1Y+3TCwh8qPtUKP1Z/WNdbGO09uzRnxVk2Gf6G7qFAxd8mgn5UA==
+ember-infinity@1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-1.4.2.tgz#16098d55230508c82e9af55ebc59e30e01a02639"
+  integrity sha512-k4DmmhBwt7QerQn9mHXrtAjFb43OM8kUqq1/Pd/UY1eQ1+jVtQa4OlL/FLQf1f01QG30nle0dvxppnveIrxzrA==
   dependencies:
     ember-cli-babel "~7.1.2"
     ember-in-viewport "~3.2.2"
@@ -5085,13 +5127,13 @@ ember-one-way-select@4.0.0:
     ember-cli-htmlbars "^2.0.1"
     ember-invoke-action "^1.5.0"
 
-ember-power-calendar-moment@0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/ember-power-calendar-moment/-/ember-power-calendar-moment-0.1.4.tgz#9233c11266eceba160132eff4a92772c11e13abb"
-  integrity sha512-TsFtxOMJi22hbIF24yemFZvdQ5PFi6TVY4mIAFrt/DROhJfn/On7+jvz9Q9gyjo1GWxOTbc722md7czstHTTuQ==
+ember-power-calendar-moment@0.1.7:
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/ember-power-calendar-moment/-/ember-power-calendar-moment-0.1.7.tgz#2e79125f449bdcc94e62afff4e5411012792ed43"
+  integrity sha512-tkxGrSfJJq3MkgDQXfKr3o2vJp8kTokcyZnSxwGC1KByMv/TgtDp4+74cTzaK/Di0qnj5AYeeElwEEcGIn4F3A==
   dependencies:
-    broccoli-funnel "^2.0.1"
-    ember-cli-babel "^6.6.0"
+    broccoli-funnel "^2.0.2"
+    ember-cli-babel "^7.7.3"
     ember-cli-moment-shim "^3.7.1"
 
 ember-power-calendar@^0.9.2:
@@ -5280,13 +5322,13 @@ ember-truth-helpers@2.1.0, ember-truth-helpers@^2.0.0, ember-truth-helpers@^2.1.
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-useragent@0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/ember-useragent/-/ember-useragent-0.9.0.tgz#442c5ea82163c38cb680441b68d82dd6ffda9932"
-  integrity sha512-m9vl5RScIRLv6otBViiv8T+CgM3Y6p3xkc2SaJGfIZ0dfUMNgHrVuBlZXySJO5ofNkCe0PX5B3jXEuFOvRcv2A==
+ember-useragent@0.9.1:
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/ember-useragent/-/ember-useragent-0.9.1.tgz#3a3b63bd5862d26f4fdc5607423c965cf22a4874"
+  integrity sha512-zI2QXex9hnzBik6axvJXouJBvOos3bXa6rkd6Az5U56u+8b0N0bKJRXDdOLHke/FOe790FbBiBiR6LGa236A+w==
   dependencies:
     ember-auto-import "^1.2.15"
-    ember-cli-babel "^6.16.0"
+    ember-cli-babel "^7.1.2"
     ua-parser-js "^0.7.18"
 
 ember-weakmap@^3.0.0:
