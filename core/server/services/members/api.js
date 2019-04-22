@@ -172,8 +172,8 @@ const sendEmail = (function createSendEmail(mailer) {
 
 const getSiteConfig = () => {
     return {
-        defaultBlogTitle: settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : 'Publication',
-        blogIconUrl: blogIcon.getIconUrl()
+        title: settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : 'Publication',
+        icon: blogIcon.getIconUrl()
     };
 };
 
