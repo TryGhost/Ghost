@@ -31,7 +31,7 @@
     "@html-next/vertical-collection": "1.0.0-beta.13",
     "@tryghost/helpers": "1.1.2",
     "@tryghost/mobiledoc-kit": "0.11.1-ghost.7",
-    "@tryghost/timezone-data": "0.2.0",
+    "@tryghost/timezone-data": "0.2.1",
     "autoprefixer": "9.5.1",
     "blueimp-md5": "2.10.0",
     "broccoli-asset-rev": "3.0.0",
