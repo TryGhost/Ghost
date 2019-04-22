@@ -833,10 +833,10 @@
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
 
-"@tryghost/timezone-data@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.0.tgz#49bd7cfad23e9433da02f74221bf7fa9b25a0085"
-  integrity sha512-FwPwdI8QDroTlzzC306o9V0MXrL/Kit5GciFNljB9ytGcMGcx+rhqwNJSbcJ2dx6IqNkRmVHrFuC7+9NRuJJPg==
+"@tryghost/timezone-data@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.1.tgz#7a02306891f30fd4a99d0c2b0ab15ab6fb58f51c"
+  integrity sha512-jq1+fAQGozbvlcU6QUO6ko3nceoWsSqvvjRUQeQy0aULl5Y7MOkjoQGMzrniZFrTu826NkkeqrXdOg5OgEr/Tw==
 
 "@types/acorn@^4.0.3":
   version "4.0.5"
