@@ -17,9 +17,9 @@
   ],
   "devDependencies": {
     "keypair": "^1.0.1",
-    "mocha": "6.0.2",
+    "mocha": "6.1.4",
     "should": "13.2.3",
-    "sinon": "7.3.1"
+    "sinon": "7.3.2"
   },
   "dependencies": {
     "bluebird": "^3.5.3",
