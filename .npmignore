@@ -2,6 +2,9 @@
 .build
 .dist
 .tmp
+.eslintignore
+.eslintrc.json
+.npmignore
 docs/**
 _site/**
 content/adapters/**
@@ -16,6 +19,8 @@ content/logs/**
 !content/logs/README.md
 content/themes/**
 !content/themes/casper/**
+content/themes/casper/assets/css/.csscomb.json
+content/themes/casper/.yarnrc
 node_modules/**
 core/server/lib/members/static/auth/node_modules/**
 **/*.db*
@@ -32,15 +37,18 @@ core/built/**/tests-*
 core/client/**
 core/test/**
 CONTRIBUTING.md
+content/themes/casper/SECURITY.md
 SECURITY.md
 .travis.yml
 *.html
 !core/server/web/admin/views/**
+core/server/web/admin/views/.gitkeep
 !core/server/services/mail/templates/**
 bower_components/**
 .editorconfig
 gulpfile.js
 !content/themes/casper/gulpfile.js
 package-lock.json
+content/themes/casper/config.*.json
 config.*.json
 !core/server/config/env/**
