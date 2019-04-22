@@ -7,9 +7,8 @@ env:
   global:
   - MOZ_HEADLESS=1
   - JOBS=1
-branches:
-  except:
-  - "/^renovate\\/.+$/"
+# Don't run builds for renovate PRs, only renovate pushes
+if: NOT branch =~ /^renovate\\/.+$/ AND type != pull_request
 addons:
   firefox: latest
   chrome: stable
