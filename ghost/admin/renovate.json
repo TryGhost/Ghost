@@ -9,7 +9,8 @@
   "ignoreDeps": [
     "ember-drag-drop",
     "normalize.css",
-    "validator"
+    "validator",
+    "ember-in-viewport"
   ],
   "prHourlyLimit": 0,
   "ignorePaths": ["lib/koenig-editor/package.json"],
