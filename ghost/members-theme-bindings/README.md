@@ -14,7 +14,7 @@ or
 ```js
 const MembersThemeBindings = require('@tryghost/members-theme-bindings');
 
-MembersThemeBindings.init("http://ghost-site.com/root-ghost-path");
+MembersThemeBindings.init({siteUrl: "https://ghost-site.com/root-ghost-path"});
 ```
 
 ## Develop
