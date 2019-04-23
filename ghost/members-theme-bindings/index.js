@@ -4,8 +4,8 @@ const browserAuth = require('@tryghost/members-browser-auth');
 
 module.exports.init = init;
 
-function init(membersUrl) {
-    const auth = browserAuth({membersUrl});
+function init({siteUrl}) {
+    const auth = browserAuth({membersUrl: siteUrl + '/members'});
 
     const [hashMatch, hash, query] = window.location.hash.match(/^#([^?]+)\??(.*)$/) || [];
 
