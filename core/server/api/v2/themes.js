@@ -45,7 +45,7 @@ module.exports = {
             if (!loadedTheme) {
                 return Promise.reject(new common.errors.ValidationError({
                     message: common.i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
-                    context: 'active_theme'
+                    errorDetails: newSettings
                 }));
             }
 
