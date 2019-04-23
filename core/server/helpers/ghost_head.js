@@ -13,7 +13,8 @@ var proxy = require('./proxy'),
     logging = proxy.logging,
     settingsCache = proxy.settingsCache,
     config = proxy.config,
-    blogIconUtils = proxy.blogIcon;
+    blogIconUtils = proxy.blogIcon,
+    labs = proxy.labs;
 
 function writeMetaTag(property, content, type) {
     type = type || property.substring(0, 7) === 'twitter' ? 'name' : 'property';
@@ -52,6 +53,13 @@ function getAjaxHelper(clientId, clientSecret) {
         '\tclientSecret: "' + clientSecret + '"\n' +
         '});\n' +
         '</script>';
+}
+
+function getMembersHelper() {
+    return `
+        <script src="${getAssetUrl('public/members-theme-bindings.js')}"></script>
+        <script defer src="${getAssetUrl('public/members.js')}"></script>
+    `;
 }
 
 /**
@@ -170,6 +178,10 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
 
                 if (client && client.id && client.secret && !_.includes(context, 'amp')) {
                     head.push(getAjaxHelper(client.id, client.secret));
+                }
+
+                if (!_.includes(context, 'amp') && labs.isSet('members')) {
+                    head.push(getMembersHelper());
                 }
             }
 
