@@ -1,0 +1,37 @@
+{
+  "name": "@tryghost/members-theme-bindings",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-theme-bindings",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "prebuild": "rm -rf build && mkdir build",
+    "build": "browserify -s MembersThemeBindings -g es6ify index.js > build/members-theme-bindings.js",
+    "prepublishOnly": "npm run build",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "build/members-theme-bindings.js"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "browserify": "^16.2.3",
+    "es6ify": "^1.6.0",
+    "mocha": "6.1.4",
+    "should": "13.2.3",
+    "sinon": "7.3.2"
+  },
+  "dependencies": {
+    "@tryghost/members-browser-auth": "^0.1.0",
+    "bluebird": "^3.5.4",
+    "ghost-ignition": "^3.1.0",
+    "lodash": "^4.17.11"
+  }
+}
