@@ -76,7 +76,7 @@ DataImporter = {
         if (!semver.valid(importData.meta.version)) {
             return Promise.reject(new common.errors.InternalServerError({
                 message: 'Detected unsupported file structure.',
-                context: 'Please install Ghost 1.0, import the file and then update your blog to Ghost 2.0.\nVisit https://docs.ghost.org/faq/upgrade-to-ghost-1-0 or ask for help in our https://forum.ghost.org.'
+                help: 'Please install Ghost 1.0, import the file and then update your blog to Ghost 2.0.\nVisit https://docs.ghost.org/faq/upgrade-to-ghost-1-0 or ask for help in our https://forum.ghost.org.'
             }));
         }
 
