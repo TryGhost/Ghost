@@ -5,6 +5,7 @@ import FormSubmit from '../components/FormSubmit';
 import CouponInput from '../components/CouponInput';
 import CheckoutForm from '../components/CheckoutForm';
 import Form from '../components/Form';
+import { IconError } from '../components/icons';
 
 const getCouponData = frameLocation => {
     const params = new URLSearchParams(frameLocation.query);
@@ -102,8 +103,10 @@ export default class StripeSubscriptionPage extends Component {
         return (
             <div class="gm-upgrade-page">
                 <div className="gm-modal-form gm-subscribe-form">
-                    <FormHeader title="Complete payment" error={error} errorText="Unable to confirm payment" />
-                    <div> We were unable to process your payment, please try again or use different card details.</div>
+                    <FormHeader title="Card declined" error={error} errorText="Unable to confirm payment" />
+                    <div class="gm-form-errortext"><i>{ IconError }</i>
+                        <span>We were unable to process your payment, please try again or use different card details.</span>
+                    </div>
                     <div className="flex flex-column justfiy-stretch mt7">
                         { this.renderPlansSection() }
                         <div className="mt4 nb3">
