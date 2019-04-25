@@ -84,7 +84,7 @@ module.exports = function MembersApi({
                 return users.get({id: signedin})
                     .then(member => encodeToken({
                         sub: member.id,
-                        plans: member.subscriptions.map(sub => sub.plan),
+                        plans: member.plans,
                         exp: tokenLength,
                         aud: audience
                     }));
