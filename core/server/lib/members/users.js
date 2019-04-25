@@ -39,8 +39,10 @@ module.exports = function ({
                     });
                 }));
             }).then((subscriptions) => {
+                const activeSubscriptions = subscriptions.filter(sub => sub.status === 'active');
                 return Object.assign({}, member, {
-                    subscriptions: subscriptions.filter(sub => sub.status === 'active')
+                    subscriptions: activeSubscriptions,
+                    plans: activeSubscriptions.map(sub => sub.plan)
                 });
             });
         });
