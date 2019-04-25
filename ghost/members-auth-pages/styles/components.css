@@ -415,7 +415,8 @@ select:-webkit-autofill:active {
     display: flex;
     justify-content: center;
     align-items: start;
-    border-radius: 4px;
+    border-radius: 7px;
+    line-height: 1.4em;
 }
 
 .gm-form-errortext span {
@@ -423,7 +424,7 @@ select:-webkit-autofill:active {
 }
 
 .gm-form-errortext i {
-    margin: 1px 8px 0 0;
+    margin: 3px 8px 0 0;
 }
 
 .gm-form-errortext i svg path {
