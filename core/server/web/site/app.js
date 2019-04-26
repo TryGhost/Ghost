@@ -100,7 +100,7 @@ module.exports = function setupSiteApp(options = {}) {
             res.end(err.message);
         });
     });
-    siteApp.del('/members/ssr', shared.middlewares.labs.members, function (req, res) {
+    siteApp.delete('/members/ssr', shared.middlewares.labs.members, function (req, res) {
         membersService.api.ssr.deleteSession(req, res).then(() => {
             res.writeHead(204);
             res.end();
