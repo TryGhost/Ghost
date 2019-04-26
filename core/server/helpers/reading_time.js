@@ -7,6 +7,8 @@
 // "< 1 min read": "< 1 min de lectura",
 // "1 min read": "1 min de lectura",
 // "% min read": "% min de lectura",
+// or for custom word coutns per minute:
+// `{{reading_time words="50"}}`
 //
 // Returns estimated reading time for post
 
@@ -22,7 +24,7 @@ module.exports = function reading_time(options) {// eslint-disable-line camelcas
     options.hash = options.hash || {};
 
     var html,
-        wordsPerMinute = 275,
+        wordsPerMinute = _.isNumber(options.hash.words) ? parseInt(options.hash.words, 10) : 275,
         wordsPerSecond = wordsPerMinute / 60,
         wordCount,
         imageCount,
