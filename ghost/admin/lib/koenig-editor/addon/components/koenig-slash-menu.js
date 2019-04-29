@@ -146,7 +146,7 @@ export default Component.extend({
         // match everything before a space to a card. Keeps the relevant
         // card selected when providing attributes to a card, eg:
         // /twitter https://twitter.com/EffinBirds/status/1001765208958881792
-        let card = query.split(/\s/)[0];
+        let card = query.split(/\s/)[0].replace(/^\//, '');
 
         let matchedItems = CARD_MENU.map((section) => {
             // show all items before anything is typed
