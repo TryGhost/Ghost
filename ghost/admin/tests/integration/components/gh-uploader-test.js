@@ -207,7 +207,7 @@ describe('Integration: Component: gh-uploader', function () {
             this.set('files', [createFile(), createFile()]);
 
             await waitFor('[data-test-progress-bar]', {timeout: 100});
-            await waitFor('[data-test-progress-width^="5"]', {timeout: 100});
+            await waitFor('[data-test-progress-width^="5"]', {timeout: 150});
             await settled();
 
             let finalProgressWidth = parseInt(find('[data-test-progress-bar]').style.width);
