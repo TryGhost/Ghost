@@ -102,6 +102,106 @@ describe('getSchema', function () {
         done();
     });
 
+    it('should return page schema if context starts with page', function (done) {
+        var metadata = {
+            blog: {
+                title: 'Blog Title',
+                url: 'http://mysite.com',
+                logo: {
+                    url: 'http://mysite.com/author/image/url/logo.jpg',
+                    dimensions: {
+                        width: 500,
+                        height: 500
+                    }
+                }
+            },
+            authorImage: {
+                url: 'http://mysite.com/author/image/url/me.jpg',
+                dimensions: {
+                    width: 500,
+                    height: 500
+                }
+            },
+            authorFacebook: 'testuser',
+            creatorTwitter: '@testuser',
+            authorUrl: 'http://mysite.com/author/me/',
+            metaTitle: 'Page Title',
+            url: 'http://mysite.com/post/my-page-slug/',
+            publishedDate: '2015-12-25T05:35:01.234Z',
+            modifiedDate: '2016-01-21T22:13:05.412Z',
+            coverImage: {
+                url: 'http://mysite.com/content/image/mypagecoverimage.jpg',
+                dimensions: {
+                    width: 500,
+                    height: 500
+                }
+            },
+            keywords: ['one', 'two'],
+            metaDescription: 'Post meta description',
+            excerpt: 'Custom excerpt for description'
+        },  data = {
+            context: ['page'],
+            page: {
+                primary_author: {
+                    name: 'Page Author',
+                    website: 'http://myblogsite.com/',
+                    bio: 'My author bio.',
+                    facebook: 'testuser',
+                    twitter: '@testuser'
+                }
+            }
+        },
+        schema = getSchema(metadata, data);
+
+        should.deepEqual(schema, {
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            author: {
+                '@type': 'Person',
+                image: {
+                    '@type': 'ImageObject',
+                    url: 'http://mysite.com/author/image/url/me.jpg',
+                    width: 500,
+                    height: 500
+                },
+                name: 'Page Author',
+                sameAs: [
+                    'http://myblogsite.com/',
+                    'https://www.facebook.com/testuser',
+                    'https://twitter.com/testuser'
+                ],
+                url: 'http://mysite.com/author/me/'
+            },
+            dateModified: '2016-01-21T22:13:05.412Z',
+            datePublished: '2015-12-25T05:35:01.234Z',
+            description: 'Custom excerpt for description',
+            headline: 'Page Title',
+            image: {
+                '@type': 'ImageObject',
+                url: 'http://mysite.com/content/image/mypagecoverimage.jpg',
+                width: 500,
+                height: 500
+            },
+            keywords: 'one, two',
+            mainEntityOfPage: {
+                '@type': 'WebPage',
+                '@id': 'http://mysite.com'
+            },
+            publisher: {
+                '@type': 'Organization',
+                name: 'Blog Title',
+                logo: {
+                    '@type': 'ImageObject',
+                    url: 'http://mysite.com/author/image/url/logo.jpg',
+                    width: 500,
+                    height: 500
+                }
+            },
+            url: 'http://mysite.com/post/my-page-slug/'
+        });
+        done();
+    });
+
     it('should return post schema if context starts with amp', function (done) {
         var metadata = {
             blog: {
