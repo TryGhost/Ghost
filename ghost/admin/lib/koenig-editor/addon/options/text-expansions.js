@@ -144,45 +144,40 @@ function registerInlineMarkdownTextExpansions(editor) {
         }
     });
 
-    function matchStrongStar(editor, text) {
+    function _addMarkdownMarkup(_this, editor, matches, markupStr) {
         let {range} = editor;
+        let match = matches[0].trim();
+        let mdChars = (match.length - matches[1].length) / 2;
+
+        range = range.extend(-(match.length));
+
+        editor.run((postEditor) => {
+            let startPos = postEditor.deleteRange(range.head.toRange().extend(mdChars));
+            let textRange = startPos.toRange().extend(matches[1].length);
+            let markup = editor.builder.createMarkup(markupStr);
+            postEditor.addMarkupToRange(textRange, markup);
+            let endPos = postEditor.deleteRange(textRange.tail.toRange().extend(mdChars));
+            postEditor.setRange(endPos.toRange());
+        });
+
+        // must be scheduled so that the toggle isn't reset automatically
+        // by mobiledoc-kit re-setting state after the range is updated
+        run.later(_this, function () {
+            editor.toggleMarkup(markupStr);
+        }, 10);
+    }
+
+    function matchStrongStar(editor, text) {
         let matches = text.match(/(?:^|\s)\*\*([^\s*]+|[^\s*][^*]*[^\s])\*\*/);
         if (matches) {
-            let match = matches[0].trim();
-            range = range.extend(-(match.length));
-
-            editor.run((postEditor) => {
-                let position = postEditor.deleteRange(range);
-                let bold = postEditor.builder.createMarkup('strong');
-                postEditor.insertTextWithMarkup(position, matches[1], [bold]);
-            });
-
-            // must be scheduled so that the toggle isn't reset automatically
-            // by mobiledoc-kit re-setting state after the range is updated
-            run.later(this, function () {
-                editor.toggleMarkup('strong');
-            }, 10);
+            _addMarkdownMarkup(this, editor, matches, 'strong');
         }
     }
 
     function matchStrongUnderscore(editor, text) {
-        let {range} = editor;
         let matches = text.match(/(?:^|\s)__([^\s_]+|[^\s_][^_]*[^\s])__/);
         if (matches) {
-            let match = matches[0].trim();
-            range = range.extend(-(match.length));
-
-            editor.run((postEditor) => {
-                let position = postEditor.deleteRange(range);
-                let bold = postEditor.builder.createMarkup('strong');
-                postEditor.insertTextWithMarkup(position, matches[1], [bold]);
-            });
-
-            // must be scheduled so that the toggle isn't reset automatically
-            // by mobiledoc-kit re-setting state after the range is updated
-            run.later(this, function () {
-                editor.toggleMarkup('strong');
-            }, 10);
+            _addMarkdownMarkup(this, editor, matches, 'strong');
         }
     }
 
@@ -204,141 +199,63 @@ function registerInlineMarkdownTextExpansions(editor) {
         // matches[1] = "foo"
         let matches = text.match(/(?:^|\s)\*([^\s*]+|[^\s*][^*]*[^\s])\*/);
         if (matches) {
-            let match = matches[0].trim();
-            range = range.extend(-(match.length));
-
-            editor.run((postEditor) => {
-                let position = postEditor.deleteRange(range);
-                let em = postEditor.builder.createMarkup('em');
-                postEditor.insertTextWithMarkup(position, matches[1], [em]);
-            });
-
-            // must be scheduled so that the toggle isn't reset automatically
-            // by mobiledoc-kit re-setting state after the range is updated
-            run.later(this, function () {
-                editor.toggleMarkup('em');
-            }, 10);
+            _addMarkdownMarkup(this, editor, matches, 'em');
         }
     }
 
     function matchEmUnderscore(editor, text) {
-        let {range} = editor;
         let matches = text.match(/(?:^|\s)_([^\s_]+|[^\s_][^_]*[^\s])_/);
         if (matches) {
-            let match = matches[0].trim();
-            range = range.extend(-(match.length));
-
-            editor.run((postEditor) => {
-                let position = postEditor.deleteRange(range);
-                let em = postEditor.builder.createMarkup('em');
-                postEditor.insertTextWithMarkup(position, matches[1], [em]);
-            });
-
-            // must be scheduled so that the toggle isn't reset automatically
-            // by mobiledoc-kit re-setting state after the range is updated
-            run.later(this, function () {
-                editor.toggleMarkup('em');
-            }, 10);
+            _addMarkdownMarkup(this, editor, matches, 'em');
         }
     }
 
     function matchSub(editor, text) {
-        let {range} = editor;
-        let matches = text.match(/(^|[^~])~([^\s~]+|[^\s~][^~]*[^\s])~/);
+        let matches = text.match(/(?:^|[^~])~([^\s~]+|[^\s~][^~]*[^\s])~/);
         if (matches) {
-            let match = matches[0].trim();
-            range = range.extend(-(match.length - matches[1].trim().length));
-
-            editor.run((postEditor) => {
-                let position = postEditor.deleteRange(range);
-                let sub = postEditor.builder.createMarkup('sub');
-                postEditor.insertTextWithMarkup(position, matches[2], [sub]);
-            });
-
-            // must be scheduled so that the toggle isn't reset automatically
-            // by mobiledoc-kit re-setting state after the range is updated
-            run.later(this, function () {
-                editor.toggleMarkup('sub');
-            }, 10);
+            _addMarkdownMarkup(this, editor, matches, 'sub');
         }
     }
 
     function matchStrikethrough(editor, text) {
-        let {range} = editor;
         let matches = text.match(/(?:^|\s)~~([^\s~]+|[^\s~][^~]*[^\s])~~/);
         if (matches) {
-            let match = matches[0].trim();
-            range = range.extend(-(match.length));
-
-            editor.run((postEditor) => {
-                let position = postEditor.deleteRange(range);
-                let s = postEditor.builder.createMarkup('s');
-                postEditor.insertTextWithMarkup(position, matches[1], [s]);
-            });
-
-            // must be scheduled so that the toggle isn't reset automatically
-            // by mobiledoc-kit re-setting state after the range is updated
-            run.later(this, function () {
-                editor.toggleMarkup('s');
-            }, 10);
+            _addMarkdownMarkup(this, editor, matches, 's');
         }
     }
 
     function matchCode(editor, text) {
-        let {range} = editor;
         let matches = text.match(/(?:^|\s)`([^\s`]+|[^\s`][^`]*[^\s`])`/);
         if (matches) {
-            let match = matches[0].trim();
-            range = range.extend(-(match.length));
-
-            editor.run((postEditor) => {
-                let position = postEditor.deleteRange(range);
-                let code = postEditor.builder.createMarkup('code');
-                postEditor.insertTextWithMarkup(position, matches[1], [code]);
-            });
-
-            // must be scheduled so that the toggle isn't reset automatically
-            // by mobiledoc-kit re-setting state after the range is updated
-            run.later(this, function () {
-                editor.toggleMarkup('code');
-            }, 10);
+            _addMarkdownMarkup(this, editor, matches, 'code');
         }
     }
 
     function matchSup(editor, text) {
-        let {range} = editor;
         let matches = text.match(/\^([^\s^]+|[^\s^][^^]*[^\s^])\^/);
         if (matches) {
-            let match = matches[0].trim();
-            range = range.extend(-(match.length));
-
-            editor.run((postEditor) => {
-                let position = postEditor.deleteRange(range);
-                let sup = postEditor.builder.createMarkup('sup');
-                postEditor.insertTextWithMarkup(position, matches[1], [sup]);
-            });
-
-            // must be scheduled so that the toggle isn't reset automatically
-            // by mobiledoc-kit re-setting state after the range is updated
-            run.later(this, function () {
-                editor.toggleMarkup('sup');
-            }, 10);
+            _addMarkdownMarkup(this, editor, matches, 'sup');
         }
     }
 
     function matchLink(editor, text) {
         let {range} = editor;
-        let matches = text.match(/(?:^|\s)\[([^\s\]]+|[^\s\]][^\]]*[^\s\]])\]\(([^\s)]+|[^\s)][^)]*[^\s)])\)/);
+        let matches = text.match(/(?:^|\s)\[([^\s\]]*|[^\s\]][^\]]*[^\s\]])\]\(([^\s)]+|[^\s)][^)]*[^\s)])\)/);
         if (matches) {
             let url = matches[2];
             let text = matches[1] || url;
+            let hasText = !!matches[1];
             let match = matches[0].trim();
             range = range.extend(-match.length);
 
             editor.run((postEditor) => {
-                let position = postEditor.deleteRange(range);
+                let startPos = postEditor.deleteRange(range.head.toRange().extend(hasText ? 1 : 3));
+                let textRange = startPos.toRange().extend(text.length);
                 let a = postEditor.builder.createMarkup('a', {href: url});
-                postEditor.insertTextWithMarkup(position, text, [a]);
+                postEditor.addMarkupToRange(textRange, a);
+                let remainingRange = textRange.tail.toRange().extend(hasText ? (matches[2] || url).length + 3 : 1);
+                let endPos = postEditor.deleteRange(remainingRange);
+                postEditor.setRange(endPos.toRange());
             });
 
             // must be scheduled so that the toggle isn't reset automatically
