@@ -28,6 +28,13 @@ const defaultQueryOptions = {
     }
 };
 
+const defaultDataQueryOptions = {
+    post: _.cloneDeep(defaultQueryOptions),
+    page: _.cloneDeep(defaultQueryOptions),
+    tag: null,
+    author: null
+};
+
 const defaultPostQuery = _.cloneDeep(queryDefaults);
 defaultPostQuery.options = defaultQueryOptions.options;
 
@@ -97,7 +104,8 @@ function fetchData(pathOptions, routerOptions, locals) {
 
     // CASE: fetch more data defined by the router e.g. tags, authors - see TaxonomyRouter
     _.each(routerOptions.data, function (query, name) {
-        props[name] = processQuery(query, pathOptions.slug, locals);
+        const dataQueryOptions = _.merge(query, defaultDataQueryOptions[name]);
+        props[name] = processQuery(dataQueryOptions, pathOptions.slug, locals);
     });
 
     return Promise.props(props)
