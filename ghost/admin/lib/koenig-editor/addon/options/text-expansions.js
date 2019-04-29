@@ -182,7 +182,6 @@ function registerInlineMarkdownTextExpansions(editor) {
     }
 
     function matchEmStar(editor, text) {
-        let {range} = editor;
         // (?:^|\s)     - match beginning of input or a starting space (don't capture)
         // \*           - match leading *
         // (            - start capturing group
