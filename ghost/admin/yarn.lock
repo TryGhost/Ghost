@@ -4958,7 +4958,7 @@ ember-hash-helper-polyfill@^0.2.0:
     ember-cli-babel "^6.8.2"
     ember-cli-version-checker "^2.1.0"
 
-ember-in-viewport@3.3.0, ember-in-viewport@^3.2.2, ember-in-viewport@~3.0.0, ember-in-viewport@~3.5.1:
+ember-in-viewport@3.3.0, ember-in-viewport@^3.2.2, ember-in-viewport@~3.0.0, ember-in-viewport@~3.5.2:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-3.3.0.tgz#718a9df85c1ad7a16c804dc61ce540414cfad710"
   integrity sha512-m9ejkLrc1XiXwbzSiPOOe8P6lz0MV7NBWf/vc+/7b1iNGucwDCA0Hsv9xZS3S1s3m9KWTCIobT8htZx/dCeTrw==
@@ -4968,13 +4968,13 @@ ember-in-viewport@3.3.0, ember-in-viewport@^3.2.2, ember-in-viewport@~3.0.0, emb
     intersection-observer-admin "0.1.0"
     raf-pool "0.1.0"
 
-ember-infinity@1.4.3:
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-1.4.3.tgz#d832b032773a576b04323227e87ffc444c78eafb"
-  integrity sha512-fvdl5MZ4KmVL20r7dpojY13kxoGyjX99hiValD39nlk8esIogA9v9wUBHe6zTqEB8YiZUeNlOXO1VNAhjwWcFg==
+ember-infinity@1.4.4:
+  version "1.4.4"
+  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-1.4.4.tgz#633e1e73e8203f4979e39057f286f88d75ae6667"
+  integrity sha512-AdU47da6LcIW3eUkZNQjjW5N+5paimFJYpDlM4HWSCnkHsM7X74hEdrnDPAvYfW3HfmAO23KO6H8uByeMw/osA==
   dependencies:
     ember-cli-babel "~7.1.2"
-    ember-in-viewport "~3.5.1"
+    ember-in-viewport "~3.5.2"
 
 "ember-inflector@^2.0.0 || ^3.0.0", ember-inflector@^3.0.0:
   version "3.0.0"
