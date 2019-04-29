@@ -40,7 +40,7 @@
     "broccoli-merge-trees": "3.0.2",
     "broccoli-uglify-sourcemap": "3.1.1",
     "chai-dom": "1.8.1",
-    "codemirror": "5.45.0",
+    "codemirror": "5.46.0",
     "coveralls": "3.0.3",
     "csscomb": "4.3.0",
     "cssnano": "4.1.10",
