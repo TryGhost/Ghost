@@ -178,7 +178,7 @@ export const DEFAULT_KEY_COMMANDS = [{
 
         // if the markup about to be deleted is a special format (code, strike)
         // then undo the text expansion to allow it to be extended
-        if (isCollapsed && marker) {
+        if (isCollapsed && marker && offset !== 0) {
             let specialMarkupTagNames = Object.keys(SPECIAL_MARKUPS);
             let hasReversed = false;
             specialMarkupTagNames.forEach((tagName) => {
