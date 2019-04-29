@@ -825,10 +825,10 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/mobiledoc-kit@0.11.1-ghost.7":
-  version "0.11.1-ghost.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.1-ghost.7.tgz#79b9ef018dc8c8829864e30602079ea7f4ef3cb6"
-  integrity sha512-kz2HDZ1V+GUYz+x08gVPFtcc1+96vwEGf7rfoR0wA+XYaCU31gdNgSi5zldk6Cs9a3uUJolHYdME+BUNwlVjVQ==
+"@tryghost/mobiledoc-kit@0.11.2-ghost.1":
+  version "0.11.2-ghost.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.2-ghost.1.tgz#7088eb9eef06b4ccdd6c221613f20d01b106f939"
+  integrity sha512-oc5zAQiEzq0oSUb3NpAXHvfcQ+FOjzQ+1sRNv2QwSJ+JftanpdFvgmc9BwX8dZAlHA/NOnrIeTW1Q2Ip9Nm2Ag==
   dependencies:
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
@@ -5041,7 +5041,6 @@ ember-lifeline@^3.0.1:
 
 "ember-light-table@https://github.com/kevinansfield/ember-light-table#bump-ember-in-viewport":
   version "1.13.2"
-  uid a757399504755ad8dde5cb4196576201881b93d4
   resolved "https://github.com/kevinansfield/ember-light-table#a757399504755ad8dde5cb4196576201881b93d4"
   dependencies:
     "@html-next/vertical-collection" "^1.0.0-beta.12"
@@ -6534,7 +6533,6 @@ gonzales-pe@4.2.4:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  uid "275cb75249f038492094a499756a73719ae071fd"
   resolved "https://github.com/acburdine/google-caja-bower#275cb75249f038492094a499756a73719ae071fd"
 
 got@^8.0.1:
@@ -7668,7 +7666,6 @@ just-extend@^4.0.2:
 
 "keymaster@https://github.com/madrobby/keymaster.git":
   version "1.6.3"
-  uid f8f43ddafad663b505dc0908e72853bcf8daea49
   resolved "https://github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
 
 keyv@3.0.0:
@@ -10845,7 +10842,6 @@ simple-swizzle@^0.2.2:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  uid "7afb50dcdd63d3a1f6ccad682b70acbd7bc52eb9"
   resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#7afb50dcdd63d3a1f6ccad682b70acbd7bc52eb9"
 
 sinon@^7.1.1:
