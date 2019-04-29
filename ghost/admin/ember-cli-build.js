@@ -25,7 +25,6 @@ const assetLocation = function (fileName) {
 
 const codemirrorAssets = function () {
     let codemirrorFiles = [
-        'theme/xq-light.css',
         'lib/codemirror.js',
         'mode/htmlmixed/htmlmixed.js',
         'mode/xml/xml.js',
@@ -221,6 +220,8 @@ module.exports = function (defaults) {
     // 'dem Styles
     // import codemirror + simplemde styles rather than lazy-loading so that
     // our overrides work correctly
+    app.import('node_modules/codemirror/lib/codemirror.css');
+    app.import('node_modules/codemirror/theme/xq-light.css');
     app.import('node_modules/simplemde/dist/simplemde.min.css');
 
     // 'dem Scripts
