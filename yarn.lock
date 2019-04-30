@@ -623,7 +623,7 @@ bluebird@3.5.3, bluebird@^3.0.5, bluebird@^3.4.1, bluebird@^3.4.3, bluebird@^3.4
   version "3.5.3"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.3.tgz#7d01c6f9616c9a51ab0f8c549a79dfe6ec33efa7"
 
-bluebird@^3.5.4:
+bluebird@3.5.4, bluebird@^3.5.4:
   version "3.5.4"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.4.tgz#d6cc661595de30d5b3af5fcedd3c0b3ef6ec5714"
   integrity sha512-FG+nFEZChJrbQ9tIccIfZJBz3J7mLrAhxakAbnrJWn8d7aKOC+LWifa0G+p4ZqKp4y13T7juYvdhq9NzKdsrjw==
@@ -652,12 +652,13 @@ body@^5.1.0:
     raw-body "~1.1.0"
     safe-json-parse "~1.0.1"
 
-bookshelf-relations@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-1.1.0.tgz#35c883c569d8bddb334bbe4bed1fdc1e64d6d0ad"
+bookshelf-relations@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-1.1.1.tgz#bb2909af1aa630285b30376ec46cd7fe5c734d5c"
+  integrity sha512-HkbYDeBwS/YzmHotVRS8xEgg4wMIcCqWToYB7BaMGfxOxAGLWxNo6OITovvxGSVuR0piRo8S/cbT1adFbQXZPw==
   dependencies:
-    bluebird "3.5.3"
-    ghost-ignition "3.0.0"
+    bluebird "3.5.4"
+    ghost-ignition "3.1.0"
     lodash "4.17.11"
 
 bookshelf@0.14.2:
@@ -2449,23 +2450,6 @@ getpass@^0.1.1:
   resolved "https://registry.yarnpkg.com/getpass/-/getpass-0.1.7.tgz#5eff8e3e684d569ae4cb2b1282604e8ba62149fa"
   dependencies:
     assert-plus "^1.0.0"
-
-ghost-ignition@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.0.0.tgz#fed40b40cc71f83ed1ea74429ac8071df38fdf68"
-  dependencies:
-    bunyan "1.8.12"
-    bunyan-loggly "^1.3.1"
-    caller "1.0.1"
-    debug "^2.6.9"
-    find-root "1.1.0"
-    fs-extra "^3.0.1"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.16.4"
-    moment "^2.15.2"
-    nconf "^0.10.0"
-    prettyjson "^1.1.3"
-    uuid "^3.0.0"
 
 ghost-ignition@3.1.0, ghost-ignition@^3.0.4, ghost-ignition@^3.1.0:
   version "3.1.0"
