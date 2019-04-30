@@ -65,7 +65,6 @@ describe('Integration: Component: gh-task-button', function () {
         await settled();
     });
 
-    // skipped due to random failures on Travis - https://github.com/TryGhost/Ghost/issues/10308
     it('appears disabled whilst running', async function () {
         defineProperty(this, 'myTask', task(function* () {
             yield timeout(50);
@@ -76,7 +75,7 @@ describe('Integration: Component: gh-task-button', function () {
 
         this.myTask.perform();
 
-        await waitFor('button.appear-disabled', {timeout: 50});
+        await waitFor('button.appear-disabled', {timeout: 100});
         await settled();
 
         expect(find('button'), 'ended class').to.not.have.class('appear-disabled');
