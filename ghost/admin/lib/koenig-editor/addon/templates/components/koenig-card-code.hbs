@@ -1,5 +1,6 @@
 {{#koenig-card
-    class=(concat "ba b--white relative kg-card-hover miw-100 relative" (if isEditing "pt1 pb1 pl6 nl6 pr6 nr6"))
+    class=(concat "ba b--white relative kg-card-hover miw-100 relative" (if isEditing " bw2 pt1 pb1 pl2 nl6 pr6 nr6"))
+    style=cardStyle
     headerOffset=headerOffset
     toolbar=toolbar
     payload=payload
@@ -9,20 +10,36 @@
     deselectCard=(action deselectCard)
     editCard=(action editCard)
     saveCard=(action saveCard)
+    onEnterEdit=(action "enterEditMode")
     onLeaveEdit=(action "leaveEditMode")
     editor=editor
 }}
     {{#if isEditing}}
         {{gh-cm-editor payload.code
-            class="koenig-card-html--editor"
+            class="koenig-card-code--editor koenig-card-html--editor"
+            textareaClass="o-0"
             autofocus=true
             lineWrapping=true
             update=(action "updateCode")
+            mode=cmMode
         }}
+        <input
+            type="text"
+            value={{readonly payload.language}}
+            onblur={{action (mut payload.language) value="target.value"}}
+            placeholder="Language..."
+            class="absolute w-20 pa1 ba b--lightgrey br2 f-small tracked-2 fw4 z-999 outline-0 anim-normal"
+            style={{languageInputStyle}}
+        />
     {{else}}
         <div class="koenig-card-html-rendered">
             <pre><code class="line-numbers {{if payload.language (concat "language-" payload.language)}}">{{escapedCode}}</code></pre>
         </div>
+        {{#if payload.language}}
+            <div class="absolute top-2 right-2 flex justify-center items-center pa2">
+                <span class="db nudge-top--2 fw5 f-small midlightgrey">{{payload.language}}</span>
+            </div>
+        {{/if}}
         <div class="koenig-card-click-overlay"></div>
     {{/if}}
 {{/koenig-card}}

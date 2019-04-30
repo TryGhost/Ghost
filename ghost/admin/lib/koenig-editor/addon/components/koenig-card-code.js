@@ -11,6 +11,13 @@ import {set} from '@ember/object';
 const {Handlebars} = Ember;
 const {countWords} = ghostHelperUtils;
 
+const CM_MODE_MAP = {
+    html: 'htmlmixed',
+    xhtml: 'htmlmixed',
+    hbs: 'handlebars',
+    js: 'javascript'
+};
+
 export default Component.extend({
     layout,
 
@@ -19,6 +26,7 @@ export default Component.extend({
     isSelected: false,
     isEditing: false,
     headerOffset: 0,
+    showLanguageInput: true,
 
     // closure actions
     editCard() {},
@@ -52,6 +60,24 @@ export default Component.extend({
         return htmlSafe(escapedCode);
     }),
 
+    cmMode: computed('payload.language', function () {
+        let {language} = this.payload;
+        return CM_MODE_MAP[language] || language;
+    }),
+
+    cardStyle: computed('isEditing', function () {
+        let style = this.isEditing ? 'background-color: #f4f8fb; border-color: #f4f8fb' : '';
+        return htmlSafe(style);
+    }),
+
+    languageInputStyle: computed('showLanguageInput', function () {
+        let styles = ['top: 6px', 'right: 6px'];
+        if (!this.showLanguageInput) {
+            styles.push('opacity: 0');
+        }
+        return htmlSafe(styles.join('; '));
+    }),
+
     init() {
         this._super(...arguments);
         let payload = this.payload || {};
@@ -68,10 +94,17 @@ export default Component.extend({
 
     actions: {
         updateCode(code) {
+            this._hideLanguageInput();
             this._updatePayloadAttr('code', code);
         },
 
+        enterEditMode() {
+            this._addMousemoveHandler();
+        },
+
         leaveEditMode() {
+            this._removeMousemoveHandler();
+
             if (isBlank(this.payload.code)) {
                 // afterRender is required to avoid double modification of `isSelected`
                 // TODO: see if there's a way to avoid afterRender
@@ -90,5 +123,22 @@ export default Component.extend({
 
         // update the mobiledoc and stay in edit mode
         save(payload, false);
+    },
+
+    _hideLanguageInput() {
+        this.set('showLanguageInput', false);
+    },
+
+    _showLanguageInput() {
+        this.set('showLanguageInput', true);
+    },
+
+    _addMousemoveHandler() {
+        this._mousemoveHandler = run.bind(this, this._showLanguageInput);
+        window.addEventListener('mousemove', this._mousemoveHandler);
+    },
+
+    _removeMousemoveHandler() {
+        window.removeEventListener('mousemove', this._mousemoveHandler);
     }
 });
