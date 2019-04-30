@@ -816,6 +816,7 @@
 /* Codemirror overrides
 /* --------------------------------------------------------------- */
 .koenig-editor .CodeMirror pre {
+    font-size: 1.6rem;
     white-space: pre;
 }
 
@@ -828,6 +829,10 @@
     padding: 0;
     overflow: auto;
     background-color: #ffffff;
+}
+
+.koenig-card-code--editor .CodeMirror {
+    background: color-mod(var(--lightgrey) lightness(+4%));
 }
 
 .koenig-card-html--editor .CodeMirror:hover {

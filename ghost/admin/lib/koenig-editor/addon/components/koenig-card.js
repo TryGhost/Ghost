@@ -12,7 +12,7 @@ export default Component.extend({
     koenigDragDropHandler: service(),
 
     layout,
-    attributeBindings: ['style'],
+    attributeBindings: ['_style:style'],
     classNameBindings: ['selectedClass'],
 
     // attrs
@@ -43,13 +43,6 @@ export default Component.extend({
     onDeselect() {},
     onEnterEdit() {},
     onLeaveEdit() {},
-
-    // TODO: replace with Spirit classes
-    style: computed(function () {
-        let baseStyles = 'cursor: default; caret-color: auto;';
-
-        return htmlSafe(baseStyles);
-    }),
 
     shouldShowToolbar: computed('showToolbar', 'koenigDragDropHandler.isDragging', function () {
         return this.showToolbar && !this.koenigDragDropHandler.isDragging;
@@ -87,6 +80,13 @@ export default Component.extend({
         let isSelected = this.isSelected;
         let isEditing = this.isEditing;
         let hasEditMode = this.hasEditMode;
+
+        if (this.style !== this._lastSstyle) {
+            // TODO: replace with Spirit classes
+            let baseStyles = 'cursor: default; caret-color: auto;';
+            this.set('_style', htmlSafe(`${baseStyles} ${this.style}`));
+        }
+        this._lastStyle = this.style;
 
         if (isSelected !== this._lastIsSelected) {
             if (isSelected) {
