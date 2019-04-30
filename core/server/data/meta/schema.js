@@ -38,15 +38,15 @@ function trimSchema(schema) {
 function trimSameAs(data, context) {
     var sameAs = [];
 
-    if (context === 'post') {
-        if (data.post.primary_author.website) {
-            sameAs.push(escapeExpression(data.post.primary_author.website));
+    if (context === 'post' || context === 'page') {
+        if (data[context].primary_author.website) {
+            sameAs.push(escapeExpression(data[context].primary_author.website));
         }
-        if (data.post.primary_author.facebook) {
-            sameAs.push(social.urls.facebook(data.post.primary_author.facebook));
+        if (data[context].primary_author.facebook) {
+            sameAs.push(social.urls.facebook(data[context].primary_author.facebook));
         }
-        if (data.post.primary_author.twitter) {
-            sameAs.push(social.urls.twitter(data.post.primary_author.twitter));
+        if (data[context].primary_author.twitter) {
+            sameAs.push(social.urls.twitter(data[context].primary_author.twitter));
         }
     } else if (context === 'author') {
         if (data.author.website) {
@@ -69,6 +69,8 @@ function getPostSchema(metaData, data) {
     var description = metaData.excerpt ? escapeExpression(metaData.excerpt) : null,
         schema;
 
+    const context = data.page ? 'page' : 'post';
+
     schema = {
         '@context': 'https://schema.org',
         '@type': 'Article',
@@ -79,12 +81,12 @@ function getPostSchema(metaData, data) {
         },
         author: {
             '@type': 'Person',
-            name: escapeExpression(data.post.primary_author.name),
+            name: escapeExpression(data[context].primary_author.name),
             image: schemaImageObject(metaData.authorImage),
             url: metaData.authorUrl,
-            sameAs: trimSameAs(data, 'post'),
-            description: data.post.primary_author.metaDescription ?
-                escapeExpression(data.post.primary_author.metaDescription) :
+            sameAs: trimSameAs(data, context),
+            description: data[context].primary_author.metaDescription ?
+                escapeExpression(data[context].primary_author.metaDescription) :
                 null
         },
         headline: escapeExpression(metaData.metaTitle),
