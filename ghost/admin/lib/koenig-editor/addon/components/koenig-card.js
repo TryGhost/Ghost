@@ -141,7 +141,7 @@ export default Component.extend({
     },
 
     mouseDown(event) {
-        let {isSelected, isEditing} = this;
+        let {isSelected, isEditing, hasEditMode} = this;
 
         // if we perform an action we want to prevent the mousedown from
         // triggering a cursor position change which can result in multiple
@@ -165,6 +165,14 @@ export default Component.extend({
             // don't trigger edit mode immediately
             this._skipMouseUp = true;
         }
+
+        // don't trigger select->edit transition for clicks in the caption
+        if (isSelected && hasEditMode) {
+            let allowClickthrough = !!event.target.closest('[data-kg-allow-clickthrough]');
+            if (allowClickthrough) {
+                this._skipMouseUp = true;
+            }
+        }
     },
 
     // lazy-click to enter edit mode
@@ -181,7 +189,8 @@ export default Component.extend({
     },
 
     doubleClick() {
-        if (this.hasEditMode && !this.isEditing) {
+        let allowClickthrough = !!event.target.closest('[data-kg-allow-clickthrough]');
+        if (this.hasEditMode && !this.isEditing && !allowClickthrough) {
             this.editCard();
             this.set('showToolbar', true);
         }
