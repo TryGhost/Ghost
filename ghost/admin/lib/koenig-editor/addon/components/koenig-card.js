@@ -81,12 +81,9 @@ export default Component.extend({
         let isEditing = this.isEditing;
         let hasEditMode = this.hasEditMode;
 
-        if (this.style !== this._lastSstyle) {
-            // TODO: replace with Spirit classes
-            let baseStyles = 'cursor: default; caret-color: auto;';
-            this.set('_style', htmlSafe(`${baseStyles} ${this.style}`));
-        }
-        this._lastStyle = this.style;
+        // TODO: replace with Spirit classes
+        let baseStyles = 'cursor: default; caret-color: auto;';
+        this.set('_style', htmlSafe(`${baseStyles} ${this.style}`));
 
         if (isSelected !== this._lastIsSelected) {
             if (isSelected) {
