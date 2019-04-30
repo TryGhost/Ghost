@@ -35,6 +35,9 @@ export default Component.extend({
     deselectCard() {},
     deleteCard() {},
     registerComponent() {},
+    moveCursorToNextSection() {},
+    moveCursorToPrevSection() {},
+    addParagraphAfterCard() {},
 
     counts: computed('payload.code', function () {
         return {wordCount: countWords(this.payload.code)};
@@ -96,6 +99,10 @@ export default Component.extend({
         updateCode(code) {
             this._hideLanguageInput();
             this._updatePayloadAttr('code', code);
+        },
+
+        updateCaption(caption) {
+            this._updatePayloadAttr('caption', caption);
         },
 
         enterEditMode() {
