@@ -395,9 +395,10 @@ export default function (editor, koenig) {
 
     editor.onTextInput({
         name: 'md_code',
-        match: /^```$/,
-        run(editor) {
+        match: /^```([a-zA-Z0-9]*)(\s)$/,
+        run(editor, matches) {
             let {range: {head, head: {section}}} = editor;
+            let payload = {};
 
             // Skip if cursor is not at end of section
             if (!head.isTail()) {
@@ -409,7 +410,15 @@ export default function (editor, koenig) {
                 return;
             }
 
-            koenig.send('replaceWithCardSection', 'code', section.toRange());
+            if (matches[1]) {
+                payload.language = matches[1];
+            }
+
+            if (matches[2] === '\n') {
+                koenig.skipNewline();
+            }
+
+            koenig.send('replaceWithCardSection', 'code', section.toRange(), payload);
         }
     });
 

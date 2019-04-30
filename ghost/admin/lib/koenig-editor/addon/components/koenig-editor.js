@@ -415,6 +415,12 @@ export default Component.extend({
             });
         });
 
+        editor.willHandleNewline((event) => {
+            run.join(() => {
+                this.willHandleNewline(event);
+            });
+        });
+
         if (this.isEditingDisabled) {
             editor.disableEditing();
         }
@@ -636,6 +642,10 @@ export default Component.extend({
     /* public interface ----------------------------------------------------- */
     // TODO: find a better way to expose the public interface?
 
+    skipNewline() {
+        this._skipNextNewline = true;
+    },
+
     // HACK: this scheduled cleanup is a bit hacky. We call .cleanup when
     // initializing Koenig in our editor controller but we have to wait for
     // rendering to finish so that componentCards is populated, even then
@@ -776,6 +786,13 @@ export default Component.extend({
         } else {
             this.set('activeMarkupTagNames', markupTags);
             this.set('activeSectionTagNames', sectionTags);
+        }
+    },
+
+    willHandleNewline(event) {
+        if (this._skipNextNewline) {
+            event.preventDefault();
+            this._skipNextNewline = false;
         }
     },
 
