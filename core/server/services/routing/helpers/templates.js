@@ -166,7 +166,7 @@ module.exports.setTemplate = function setTemplate(req, res, data) {
     if (res._template && !req.err) {
         return;
     }
-
+    console.log("SETTING TEMPLATE");
     if (req.err) {
         res._template = _private.getTemplateForError(res.statusCode);
         return;

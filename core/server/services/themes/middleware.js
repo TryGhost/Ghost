@@ -77,7 +77,9 @@ function updateLocalTemplateOptions(req, res, next) {
     const siteData = {
         url: urlService.utils.urlFor('home', {secure: req.secure, trailingSlash: false}, true)
     };
-
+    console.log("Context", res.locals.context);
+    console.log("Context Here!", res.locals);
+    console.log("SETTING LOCAL OPTIONS");
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
         data: {
             member: req.member,

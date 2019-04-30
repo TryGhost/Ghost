@@ -11,7 +11,7 @@ const debug = require('ghost-ignition').debug('services:routing:helpers:renderer
 module.exports = function renderer(req, res, data) {
     // Set response context
     setContext(req, res, data);
-
+    console.log("SETTING RENDERER");
     // Set template
     templates.setTemplate(req, res, data);
 
