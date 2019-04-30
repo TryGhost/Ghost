@@ -28,7 +28,7 @@
             value={{readonly payload.language}}
             onblur={{action (mut payload.language) value="target.value"}}
             placeholder="Language..."
-            class="absolute w-20 pa1 ba b--lightgrey br2 f-small tracked-2 fw4 z-999 outline-0 anim-normal"
+            class="absolute w-20 pa1 ba b--lightgrey br2 f8 tracked-2 fw4 z-999 outline-0 anim-normal"
             style={{languageInputStyle}}
         />
     {{else}}
@@ -37,7 +37,7 @@
         </div>
         {{#if payload.language}}
             <div class="absolute top-2 right-2 flex justify-center items-center pa2">
-                <span class="db nudge-top--2 fw5 f-small midlightgrey">{{payload.language}}</span>
+                <span class="db nudge-top--2 fw5 f8 midlightgrey">{{payload.language}}</span>
             </div>
         {{/if}}
         <div class="koenig-card-click-overlay"></div>
