@@ -77,6 +77,38 @@ export function hrToCard(node, builder, {addSection, nodeFinished}) {
     nodeFinished();
 }
 
+export function figureToCodeCard(node, builder, {addSection, nodeFinished}) {
+    if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
+        return;
+    }
+
+    let pre = node.querySelector('pre');
+    let code = pre.querySelector('code');
+    let figcaption = node.querySelector('figcaption');
+
+    // if there's no caption the preCodeToCard plugin will pick it up instead
+    if (!code || !figcaption) {
+        return;
+    }
+
+    let payload = {
+        code: code.textContent,
+        caption: cleanBasicHtml(figcaption.innerHTML)
+    };
+
+    let preClass = code.getAttribute('class');
+    let codeClass = code.getAttribute('class');
+    let langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
+    let languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
+    if (languageMatches) {
+        payload.language = languageMatches[1].toLowerCase();
+    }
+
+    let cardSection = builder.createCardSection('code', payload);
+    addSection(cardSection);
+    nodeFinished();
+}
+
 export function preCodeToCard(node, builder, {addSection, nodeFinished}) {
     if (node.nodeType !== 1 || node.tagName !== 'PRE') {
         return;
@@ -86,6 +118,15 @@ export function preCodeToCard(node, builder, {addSection, nodeFinished}) {
 
     if (codeElement && codeElement.tagName === 'CODE') {
         let payload = {code: codeElement.textContent};
+
+        let preClass = node.getAttribute('class');
+        let codeClass = codeElement.getAttribute('class');
+        let langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
+        let languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
+        if (languageMatches) {
+            payload.language = languageMatches[1].toLowerCase();
+        }
+
         let cardSection = builder.createCardSection('code', payload);
         addSection(cardSection);
         nodeFinished();
@@ -98,5 +139,6 @@ export default [
     figureToImageCard,
     imgToCard,
     hrToCard,
+    figureToCodeCard,
     preCodeToCard
 ];
