@@ -9,7 +9,7 @@ import {inject as service} from '@ember/service';
 const TICK_HEIGHT = 8;
 
 export default Component.extend({
-    koenigDragDropHandler: service(),
+    koenigUi: service(),
 
     layout,
     attributeBindings: ['_style:style'],
@@ -44,8 +44,8 @@ export default Component.extend({
     onEnterEdit() {},
     onLeaveEdit() {},
 
-    shouldShowToolbar: computed('showToolbar', 'koenigDragDropHandler.isDragging', function () {
-        return this.showToolbar && !this.koenigDragDropHandler.isDragging;
+    shouldShowToolbar: computed('showToolbar', 'koenigUi.{captionHasFocus,isDragging}', function () {
+        return this.showToolbar && !this.koenigUi.captionHasFocus && !this.koenigUi.isDragging;
     }),
 
     toolbarStyle: computed('shouldShowToolbar', 'toolbarWidth', 'toolbarHeight', function () {
@@ -166,10 +166,11 @@ export default Component.extend({
             this._skipMouseUp = true;
         }
 
-        // don't trigger select->edit transition for clicks in the caption
+        // don't trigger select->edit transition for clicks in the caption or
+        // when clicking out of the caption
         if (isSelected && hasEditMode) {
             let allowClickthrough = !!event.target.closest('[data-kg-allow-clickthrough]');
-            if (allowClickthrough) {
+            if (allowClickthrough || this.koenigUi.captionHasFocus) {
                 this._skipMouseUp = true;
             }
         }
@@ -179,7 +180,7 @@ export default Component.extend({
     mouseUp(event) {
         let {isSelected, isEditing, hasEditMode, _skipMouseUp} = this;
 
-        if (!_skipMouseUp && hasEditMode && isSelected && !isEditing && !this.koenigDragDropHandler.isDragging) {
+        if (!_skipMouseUp && hasEditMode && isSelected && !isEditing && !this.koenigUi.isDragging) {
             this.editCard();
             this.set('showToolbar', true);
             event.preventDefault();
