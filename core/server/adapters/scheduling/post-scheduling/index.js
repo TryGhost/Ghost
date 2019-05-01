@@ -6,23 +6,40 @@ const Promise = require('bluebird'),
     urlService = require('../../../services/url'),
     _private = {};
 
+/**
+ * @description Normalize model data into scheduler notation.
+ * @param {Object} options
+ * @return {Object}
+ */
 _private.normalize = function normalize(options) {
-    const {object, apiUrl, client} = options;
+    const {model, apiUrl, client} = options;
 
     return {
-        time: moment(object.get('published_at')).valueOf(),
-        url: `${urlService.utils.urlJoin(apiUrl, 'schedules', 'posts', object.get('id'))}?client_id=${client.get('slug')}&client_secret=${client.get('secret')}`,
+        // NOTE: The scheduler expects a unix timestmap.
+        time: moment(model.get('published_at')).valueOf(),
+        // @TODO: We are still using API v0.1
+        url: `${urlService.utils.urlJoin(apiUrl, 'schedules', 'posts', model.get('id'))}?client_id=${client.get('slug')}&client_secret=${client.get('secret')}`,
         extra: {
             httpMethod: 'PUT',
-            oldTime: object.previous('published_at') ? moment(object.previous('published_at')).valueOf() : null
+            oldTime: model.previous('published_at') ? moment(model.previous('published_at')).valueOf() : null
         }
     };
 };
 
+/**
+ * @description Load the client credentials for v0.1 API.
+ *
+ * @TODO: Remove when we drop v0.1. API v2 uses integrations.
+ * @return {Promise}
+ */
 _private.loadClient = function loadClient() {
     return models.Client.findOne({slug: 'ghost-scheduler'}, {columns: ['slug', 'secret']});
 };
 
+/**
+ * @description Load all scheduled posts from database.
+ * @return {Promise}
+ */
 _private.loadScheduledPosts = function () {
     const api = require('../../../api');
     return api.schedules.getScheduledPosts()
@@ -31,6 +48,11 @@ _private.loadScheduledPosts = function () {
         });
 };
 
+/**
+ * @description Initialise post scheduling.
+ * @param {Object} options
+ * @return {*}
+ */
 exports.init = function init(options = {}) {
     const {apiUrl} = options;
     let adapter = null,
@@ -51,9 +73,11 @@ exports.init = function init(options = {}) {
         })
         .then((_adapter) => {
             adapter = _adapter;
+
             if (!adapter.rescheduleOnBoot) {
                 return [];
             }
+
             return _private.loadScheduledPosts();
         })
         .then((scheduledPosts) => {
@@ -61,8 +85,8 @@ exports.init = function init(options = {}) {
                 return;
             }
 
-            scheduledPosts.forEach((object) => {
-                adapter.reschedule(_private.normalize({object, apiUrl, client}));
+            scheduledPosts.forEach((model) => {
+                adapter.reschedule(_private.normalize({model, apiUrl, client}));
             });
         })
         .then(() => {
@@ -72,22 +96,22 @@ exports.init = function init(options = {}) {
             common.events.onMany([
                 'post.scheduled',
                 'page.scheduled'
-            ], (object) => {
-                adapter.schedule(_private.normalize({object, apiUrl, client}));
+            ], (model) => {
+                adapter.schedule(_private.normalize({model, apiUrl, client}));
             });
 
             common.events.onMany([
                 'post.rescheduled',
                 'page.rescheduled'
-            ], (object) => {
-                adapter.reschedule(_private.normalize({object, apiUrl, client}));
+            ], (model) => {
+                adapter.reschedule(_private.normalize({model, apiUrl, client}));
             });
 
             common.events.onMany([
                 'post.unscheduled',
                 'page.unscheduled'
-            ], (object) => {
-                adapter.unschedule(_private.normalize({object, apiUrl, client}));
+            ], (model) => {
+                adapter.unschedule(_private.normalize({model, apiUrl, client}));
             });
         });
 };
