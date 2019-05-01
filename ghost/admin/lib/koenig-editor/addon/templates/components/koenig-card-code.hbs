@@ -12,7 +12,11 @@
     saveCard=(action saveCard)
     onEnterEdit=(action "enterEditMode")
     onLeaveEdit=(action "leaveEditMode")
+    addParagraphAfterCard=addParagraphAfterCard
+    moveCursorToPrevSection=moveCursorToPrevSection
+    moveCursorToNextSection=moveCursorToNextSection
     editor=editor
+    as |card|
 }}
     {{#if isEditing}}
         {{gh-cm-editor payload.code
@@ -41,5 +45,14 @@
             </div>
         {{/if}}
         <div class="koenig-card-click-overlay"></div>
+    {{/if}}
+
+    {{#if (and (not isEditing) (or isSelected (clean-basic-html payload.caption)))}}
+        {{card.captionInput
+            class="z-999"
+            caption=payload.caption
+            update=(action "updateCaption")
+            placeholder="Type caption for code block (optional)"
+        }}
     {{/if}}
 {{/koenig-card}}
