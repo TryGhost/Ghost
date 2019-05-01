@@ -1,4 +1,4 @@
-<ul class="kg-action-bar bg-darkgrey-d1 inline-flex pa0 ma0 pl1 pr1 nl1 list br3 shadow-2 items-center relative white f8 fw6 tracked-2 {{if showToolbar "anim-fast-bezier" "o-0 pop-down"}}" data-kg-allow-clickthrough="true">
+{{#kg-action-bar class="relative" instantClose=true isVisible=showToolbar}}
     <li class="ma0 lh-solid">
         <button
             type="button"
@@ -66,4 +66,4 @@
             {{svg-jar "koenig/kg-link" class=(concat (if activeMarkupTagNames.isA "fill-blue-l2" "fill-white") " w4 h4")}}
         </button>
     </li>
-</ul>
+{{/kg-action-bar}}

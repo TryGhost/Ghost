@@ -239,7 +239,9 @@ export default Component.extend({
 
     _setToolbarProperties() {
         if (this.toolbar) {
-            let toolbar = this.element.querySelector('[data-toolbar="true"]');
+            // select the last toolbar in the element because card contents/captions
+            // may have their own toolbar elements
+            let toolbar = this.element.querySelector(':scope > [data-kg-toolbar="true"]');
             let {width, height} = toolbar.getBoundingClientRect();
 
             this.setProperties({
