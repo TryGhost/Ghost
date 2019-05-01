@@ -43,4 +43,19 @@ describe('Code card', function () {
 
         serializer.serialize(card.render(opts)).should.match('');
     });
+
+    it('Renders a figure if a caption is provided', function () {
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                code: '<p>Test</p>',
+                language: 'html',
+                caption: 'Some <strong>HTML</strong>'
+            }
+        };
+
+        serializer.serialize(card.render(opts)).should.match('<!--kg-card-begin: code--><figure class="kg-card kg-code-card"><pre><code class="language-html">&lt;p&gt;Test&lt;/p&gt;</code></pre><figcaption>Some <strong>HTML</strong></figcaption></figure><!--kg-card-end: code-->');
+    });
 });
