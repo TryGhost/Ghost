@@ -23,6 +23,7 @@ module.exports = createCard({
 
         if (payload.caption) {
             let figure = dom.createElement('figure');
+            figure.setAttribute('class', 'kg-card kg-code-card');
             figure.appendChild(pre);
 
             let figcaption = dom.createElement('figcaption');
