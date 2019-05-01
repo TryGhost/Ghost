@@ -4,8 +4,10 @@ import Container from '../lib/dnd/container';
 import ScrollHandler from '../lib/dnd/scroll-handler';
 import Service from '@ember/service';
 import {A} from '@ember/array';
+import {alias} from '@ember/object/computed';
 import {didCancel, task, waitForProperty} from 'ember-concurrency';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 // this service allows registration of "containers"
 // containers can have both draggables and droppables
@@ -15,12 +17,14 @@ import {run} from '@ember/runloop';
 // this service keeps track of all containers and has centralized event handling for mouse events
 
 export default Service.extend({
+    koenigUi: service(),
 
     containers: null,
     ghostInfo: null,
     grabbedElement: null, // TODO: standardise on draggableInfo.element
-    isDragging: false,
     sourceContainer: null,
+
+    isDragging: alias('koenigUi.isDragging'),
 
     _eventHandlers: null,
 

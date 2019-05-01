@@ -9,7 +9,7 @@ import {inject as service} from '@ember/service';
 const TICK_HEIGHT = 8;
 
 export default Component.extend({
-    koenigDragDropHandler: service(),
+    koenigUi: service(),
 
     layout,
     attributeBindings: ['_style:style'],
@@ -44,8 +44,8 @@ export default Component.extend({
     onEnterEdit() {},
     onLeaveEdit() {},
 
-    shouldShowToolbar: computed('showToolbar', 'koenigDragDropHandler.isDragging', function () {
-        return this.showToolbar && !this.koenigDragDropHandler.isDragging;
+    shouldShowToolbar: computed('showToolbar', 'koenigUi.{captionHasFocus,isDragging}', function () {
+        return this.showToolbar && !this.koenigUi.captionHasFocus && !this.koenigUi.isDragging;
     }),
 
     toolbarStyle: computed('shouldShowToolbar', 'toolbarWidth', 'toolbarHeight', function () {
@@ -141,7 +141,7 @@ export default Component.extend({
     },
 
     mouseDown(event) {
-        let {isSelected, isEditing} = this;
+        let {isSelected, isEditing, hasEditMode} = this;
 
         // if we perform an action we want to prevent the mousedown from
         // triggering a cursor position change which can result in multiple
@@ -165,13 +165,22 @@ export default Component.extend({
             // don't trigger edit mode immediately
             this._skipMouseUp = true;
         }
+
+        // don't trigger select->edit transition for clicks in the caption or
+        // when clicking out of the caption
+        if (isSelected && hasEditMode) {
+            let allowClickthrough = !!event.target.closest('[data-kg-allow-clickthrough]');
+            if (allowClickthrough || this.koenigUi.captionHasFocus) {
+                this._skipMouseUp = true;
+            }
+        }
     },
 
     // lazy-click to enter edit mode
     mouseUp(event) {
         let {isSelected, isEditing, hasEditMode, _skipMouseUp} = this;
 
-        if (!_skipMouseUp && hasEditMode && isSelected && !isEditing && !this.koenigDragDropHandler.isDragging) {
+        if (!_skipMouseUp && hasEditMode && isSelected && !isEditing && !this.koenigUi.isDragging) {
             this.editCard();
             this.set('showToolbar', true);
             event.preventDefault();
@@ -181,7 +190,8 @@ export default Component.extend({
     },
 
     doubleClick() {
-        if (this.hasEditMode && !this.isEditing) {
+        let allowClickthrough = !!event.target.closest('[data-kg-allow-clickthrough]');
+        if (this.hasEditMode && !this.isEditing && !allowClickthrough) {
             this.editCard();
             this.set('showToolbar', true);
         }
@@ -230,7 +240,9 @@ export default Component.extend({
 
     _setToolbarProperties() {
         if (this.toolbar) {
-            let toolbar = this.element.querySelector('[data-toolbar="true"]');
+            // select the last toolbar in the element because card contents/captions
+            // may have their own toolbar elements
+            let toolbar = this.element.querySelector(':scope > [data-kg-toolbar="true"]');
             let {width, height} = toolbar.getBoundingClientRect();
 
             this.setProperties({

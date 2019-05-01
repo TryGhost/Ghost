@@ -4,8 +4,11 @@ import layout from '../templates/components/koenig-caption-input';
 import {computed} from '@ember/object';
 import {kgStyle} from '../helpers/kg-style';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 export default Component.extend({
+    koenigUi: service(),
+
     tagName: 'figcaption',
     classNameBindings: ['figCaptionClass'],
     layout,
@@ -40,6 +43,7 @@ export default Component.extend({
 
     willDestroyElement() {
         this._super(...arguments);
+        this.koenigUi.captionLostFocus(this);
         this._detachHandlers();
     },
 
@@ -70,6 +74,18 @@ export default Component.extend({
             this.addParagraphAfterCard();
         }
     },
+
+    // events ------------------------------------------------------------------
+
+    focusIn() {
+        this.koenigUi.captionGainedFocus(this);
+    },
+
+    focusOut() {
+        this.koenigUi.captionLostFocus(this);
+    },
+
+    // private -----------------------------------------------------------------
 
     _attachHandlers() {
         if (!this._keypressHandler) {
