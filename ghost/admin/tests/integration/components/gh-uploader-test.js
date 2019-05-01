@@ -1,7 +1,7 @@
 import Pretender from 'pretender';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
-import {click, find, findAll, render, settled, waitFor} from '@ember/test-helpers';
+import {click, find, findAll, render, settled, waitFor, waitUntil} from '@ember/test-helpers';
 import {createFile} from '../../helpers/file-upload';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -207,7 +207,11 @@ describe('Integration: Component: gh-uploader', function () {
             this.set('files', [createFile(), createFile()]);
 
             await waitFor('[data-test-progress-bar]', {timeout: 100});
-            await waitFor('[data-test-progress-width^="5"]', {timeout: 150});
+            let progressBar = find('[data-test-progress-bar]');
+            await waitUntil(() => {
+                let width = parseInt(progressBar.style.width);
+                return width > 50;
+            }, {timeout: 150});
             await settled();
 
             let finalProgressWidth = parseInt(find('[data-test-progress-bar]').style.width);
