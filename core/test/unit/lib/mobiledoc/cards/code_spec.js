@@ -56,6 +56,6 @@ describe('Code card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<!--kg-card-begin: code--><figure class="kg-card kg-card-code"><pre><code class="language-html">&lt;p&gt;Test&lt;/p&gt;</code></pre><figcaption>Some <strong>HTML</strong></figcaption></figure><!--kg-card-end: code-->');
+        serializer.serialize(card.render(opts)).should.match('<!--kg-card-begin: code--><figure class="kg-card kg-code-card"><pre><code class="language-html">&lt;p&gt;Test&lt;/p&gt;</code></pre><figcaption>Some <strong>HTML</strong></figcaption></figure><!--kg-card-end: code-->');
     });
 });
