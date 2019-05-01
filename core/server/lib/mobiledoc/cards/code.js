@@ -21,6 +21,17 @@ module.exports = createCard({
         code.appendChild(dom.createTextNode(payload.code));
         pre.appendChild(code);
 
-        return pre;
+        if (payload.caption) {
+            let figure = dom.createElement('figure');
+            figure.appendChild(pre);
+
+            let figcaption = dom.createElement('figcaption');
+            figcaption.appendChild(dom.createRawHTMLSection(payload.caption));
+            figure.appendChild(figcaption);
+
+            return figure;
+        } else {
+            return pre;
+        }
     }
 });
