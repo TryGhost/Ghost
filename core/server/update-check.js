@@ -120,7 +120,6 @@ function updateCheckData() {
         data.user_count = users && users.users && users.users.length ? users.users.length : 0;
         data.blog_created_at = users && users.users && users.users[0] && users.users[0].created_at ? moment(users.users[0].created_at).unix() : '';
         data.npm_version = npm.trim();
-        data.lts = false;
 
         return data;
     }).catch(updateCheckError);
