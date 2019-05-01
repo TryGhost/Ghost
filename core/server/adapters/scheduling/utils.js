@@ -4,6 +4,21 @@ const _ = require('lodash'),
     common = require('../../lib/common'),
     cache = {};
 
+/**
+ * @description Create the scheduling adapter.
+ *
+ * This utility helps us to:
+ *
+ *   - validate the scheduling config
+ *   - cache the target adapter to ensure singletons
+ *   - ensure the adapter can be instantiated
+ *   - have a centralised error handling
+ *   - detect if the adapter is inherited from the base adapter
+ *   - detect if the adapter has implemented the required functions
+ *
+ * @param {Object} options
+ * @return {Promise}
+ */
 exports.createAdapter = function (options) {
     options = options || {};
 
