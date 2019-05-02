@@ -603,7 +603,7 @@
                     "integration": "all",
                     "api_key": "all",
                     "action": "all",
-                    "members": "all"
+                    "member": "all"
                 },
                 "Admin Integration": {
                     "mail": "all",
@@ -621,7 +621,7 @@
                     "redirect": "all",
                     "webhook": "all",
                     "action": "all",
-                    "members": "all"
+                    "member": "all"
                 },
                 "Editor": {
                     "notification": "all",
