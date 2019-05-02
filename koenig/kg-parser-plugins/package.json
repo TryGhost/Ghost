@@ -5,12 +5,13 @@
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "cjs/parser-plugins.js",
-  "module": "lib/parser-plugins.js",
+  "module": "es/parser-plugins.js",
   "source": "lib/parser-plugins.js",
   "files": [
     "LICENSE",
     "README.md",
     "cjs/",
+    "es/",
     "lib/"
   ],
   "scripts": {
@@ -26,8 +27,11 @@
     "access": "public"
   },
   "devDependencies": {
+    "@babel/core": "7.4.4",
+    "@babel/preset-env": "7.4.4",
     "mocha": "5.2.0",
-    "rollup": "1.6.0",
+    "rollup": "1.10.1",
+    "rollup-plugin-babel": "4.3.2",
     "should": "13.2.3",
     "sinon": "6.3.5"
   }
