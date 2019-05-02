@@ -34,5 +34,8 @@
     "rollup-plugin-babel": "4.3.2",
     "should": "13.2.3",
     "sinon": "6.3.5"
+  },
+  "dependencies": {
+    "@tryghost/kg-clean-basic-html": "^0.1.0"
   }
 }

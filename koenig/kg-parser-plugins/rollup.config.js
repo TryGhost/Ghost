@@ -2,6 +2,8 @@
 import pkg from './package.json';
 import babel from 'rollup-plugin-babel';
 
+const dependencies = Object.keys(pkg.dependencies);
+
 export default [
     // Node build.
     // No transpilation or bundling other than converstion from es modules to cjs
@@ -11,7 +13,8 @@ export default [
             file: pkg.main,
             format: 'cjs',
             interop: false
-        }
+        },
+        external: dependencies
     },
 
     // ES module build
@@ -37,6 +40,7 @@ export default [
                 ],
                 exclude: ['node_modues/**', '../../node_modules/**']
             })
-        ]
+        ],
+        external: dependencies
     }
 ];
