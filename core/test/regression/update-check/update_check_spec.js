@@ -137,7 +137,6 @@ describe('Update Check', function () {
                 data.post_count.should.be.above(0);
                 data.npm_version.should.be.a.String();
                 data.npm_version.should.not.be.empty();
-                data.lts.should.eql(false);
 
                 done();
             }).catch(done);
