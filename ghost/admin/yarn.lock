@@ -825,6 +825,11 @@
   dependencies:
     lodash-es "^4.17.11"
 
+"@tryghost/kg-clean-basic-html@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-0.1.0.tgz#49fe824104236858f74c3113e6fc96dc3898a300"
+  integrity sha512-S/BsV6mFXoC8BsLL3WjfZYy2MMiWVrJA5mieNwkYluytSuP8sWUhf5WdNbuXeu5FfnKL9xRttBCc34svp9VIlw==
+
 "@tryghost/mobiledoc-kit@0.11.2-ghost.1":
   version "0.11.2-ghost.1"
   resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.2-ghost.1.tgz#7088eb9eef06b4ccdd6c221613f20d01b106f939"
