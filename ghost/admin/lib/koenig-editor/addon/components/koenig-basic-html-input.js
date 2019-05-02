@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
+import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import layout from '../templates/components/koenig-basic-html-input';
 import parserPlugins from '../options/basic-html-parser-plugins';
 import registerKeyCommands, {BASIC_KEY_COMMANDS} from '../options/key-commands';
@@ -8,7 +9,6 @@ import {DRAG_DISABLED_DATA_ATTR} from '../lib/dnd/constants';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {arrayToMap, toggleSpecialFormatEditState} from './koenig-editor';
 import {assign} from '@ember/polyfills';
-import {cleanBasicHtml} from '../helpers/clean-basic-html';
 import {computed} from '@ember/object';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';

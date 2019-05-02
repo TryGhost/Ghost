@@ -1,4 +1,4 @@
-import {cleanBasicHtml} from 'koenig-editor/helpers/clean-basic-html';
+import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 
 // mobiledoc by default ignores <BR> tags but we have a custom SoftReturn atom
 export function brToSoftBreakAtom(node, builder, {addMarkerable, nodeFinished}) {
