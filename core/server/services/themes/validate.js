@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
+const fs = require('fs-extra');
 const config = require('../../config');
 const common = require('../../lib/common');
 
@@ -37,6 +38,16 @@ const checkSafe = function checkSafe(theme, isZip) {
         .then((checkedTheme) => {
             if (canActivate(checkedTheme)) {
                 return checkedTheme;
+            }
+
+            // NOTE: When theme cannot be activated and gscan explicitly keeps extracted files (after
+            //       being called with `keepExtractedDir: true`), this is the closes place for a cleanup.
+            // TODO: The `keepExtractedDir` flag is the cause of confusion for when and where the cleanup
+            //       should be done. It's probably best if gscan is called directly with path to the extracted
+            //       directory, this would allow keeping gscan to do just one thing - validate the theme, and
+            //       file manipulations could be left to another module/library
+            if (isZip) {
+                fs.remove(checkedTheme.path);
             }
 
             return Promise.reject(new common.errors.ThemeValidationError({
