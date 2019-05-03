@@ -13,7 +13,6 @@ import defaultAtoms from '../options/atoms';
 import defaultCards, {CARD_COMPONENT_MAP, CARD_ICON_MAP} from '../options/cards';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import layout from '../templates/components/koenig-editor';
-import parserPlugins from '../options/parser-plugins';
 import registerKeyCommands from '../options/key-commands';
 import registerTextExpansions from '../options/text-expansions';
 import validator from 'validator';
@@ -21,6 +20,7 @@ import {A} from '@ember/array';
 import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {assign} from '@ember/polyfills';
 import {camelize, capitalize} from '@ember/string';
+import {createParserPlugins} from '@tryghost/kg-parser-plugins';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {getOwner} from '@ember/application';
@@ -301,7 +301,7 @@ export default Component.extend({
         editorOptions.mobiledoc = mobiledoc;
         editorOptions.showLinkTooltips = false;
         editorOptions.undoDepth = UNDO_DEPTH;
-        editorOptions.parserPlugins = parserPlugins;
+        editorOptions.parserPlugins = createParserPlugins();
 
         let componentHooks = {
             // triggered when a card section is added to the mobiledoc
