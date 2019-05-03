@@ -825,10 +825,17 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/kg-clean-basic-html@0.1.0":
+"@tryghost/kg-clean-basic-html@0.1.0", "@tryghost/kg-clean-basic-html@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-0.1.0.tgz#49fe824104236858f74c3113e6fc96dc3898a300"
   integrity sha512-S/BsV6mFXoC8BsLL3WjfZYy2MMiWVrJA5mieNwkYluytSuP8sWUhf5WdNbuXeu5FfnKL9xRttBCc34svp9VIlw==
+
+"@tryghost/kg-parser-plugins@0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-0.4.0.tgz#0120f315723b14555f391f2d4db978ec319a70e2"
+  integrity sha512-YAM+Nafs43JnBJzul5+6ZZUEAuV36seVLghOHa9CCmT99qoByYbtrWQrPHSSusndihuiKqo0FEbUZgpBLb0mAQ==
+  dependencies:
+    "@tryghost/kg-clean-basic-html" "^0.1.0"
 
 "@tryghost/mobiledoc-kit@0.11.2-ghost.1":
   version "0.11.2-ghost.1"

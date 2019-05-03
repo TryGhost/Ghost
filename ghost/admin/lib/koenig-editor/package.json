@@ -13,6 +13,7 @@
   "dependencies": {
     "@tryghost/helpers": "^1.1.1",
     "@tryghost/kg-clean-basic-html": "*",
+    "@tryghost/kg-parser-plugins": "*",
     "ember-auto-import": "^1.2.21",
     "ember-cli-babel": "^7.5.0",
     "ember-cli-htmlbars": "^3.0.1"
