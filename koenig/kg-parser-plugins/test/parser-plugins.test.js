@@ -30,6 +30,14 @@ describe('parser-plugins', function () {
         parser = null;
     });
 
+    describe('createParserPlugins', function () {
+        it('errors in Node.js env without a `createDocument` option', function () {
+            should(function () {
+                createParserPlugins();
+            }).throw('createParserPlugins() must be passed a `createDocument` function as an option when used in a non-browser environment');
+        });
+    });
+
     describe('brToSoftBreakAtom', function () {
         it('parses BR tags to soft-return atoms', function () {
             const dom = buildDOM('Testing<br>Soft-return');

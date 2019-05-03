@@ -12,6 +12,12 @@ describe('cleanBasicHtml', function () {
         }
     };
 
+    it('errors in Node.js env without a `createDocument` option', function () {
+        should(function () {
+            cleanBasicHtml('Test');
+        }).throw('cleanBasicHtml() must be passed a `createDocument` function as an option when used in a non-browser environment');
+    });
+
     it('trims all variants of whitespace', function () {
         const html = '  <br>&nbsp;&nbsp; &nbsp;';
         const result = cleanBasicHtml(html, options);

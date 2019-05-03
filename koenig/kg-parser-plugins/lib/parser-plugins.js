@@ -16,12 +16,14 @@ export function createParserPlugins(_options = {}) {
     const options = Object.assign({}, defaults, _options);
 
     if (!options.createDocument) {
-        if (!DOMParser || (window && !window.DOMParser)) {
+        const Parser = (typeof DOMParser !== 'undefined' && DOMParser) || (typeof window !== 'undefined' && window.DOMParser);
+
+        if (!Parser) {
             throw new Error('createParserPlugins() must be passed a `createDocument` function as an option when used in a non-browser environment');
         }
 
         options.createDocument = function (html) {
-            const parser = new (DOMParser || (window && window.DOMParser))();
+            const parser = new Parser();
             return parser.parseFromString(html, 'text/html');
         };
     }
