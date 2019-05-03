@@ -150,3 +150,17 @@ describe('Nested examples', function () {
         mobiledoc.sections[2].should.eql([1, 'p', [[0, [], 0, 'World']]]);
     });
 });
+
+// Basic test to ensure that we are successfully loading kg-parser-plugins
+describe('Default plugin examples', function () {
+    it('Can convert <hr> into a card', function () {
+        const mobiledoc = converter.toMobiledoc('<hr />');
+
+        mobiledoc.cards.should.be.an.Array().with.lengthOf(1);
+        mobiledoc.cards[0].should.be.an.Array().with.lengthOf(2);
+        mobiledoc.cards[0].should.eql(['hr', {}]);
+        mobiledoc.sections.should.be.an.Array().with.lengthOf(1);
+        mobiledoc.sections[0].should.be.an.Array().with.lengthOf(2);
+        mobiledoc.sections[0].should.eql([10, 0]);
+    });
+});

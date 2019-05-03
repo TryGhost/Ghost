@@ -1,7 +1,7 @@
 const DOMParser = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom').default;
 const Builder = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/models/post-node-builder').default;
 const mobiledocRenderer = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/renderers/mobiledoc').default;
-const parserPlugins = require('@tryghost/kg-parser-plugins');
+const {createParserPlugins} = require('@tryghost/kg-parser-plugins');
 const {JSDOM} = require('jsdom');
 
 module.exports.toMobiledoc = (html, options = {}) => {
@@ -17,7 +17,13 @@ module.exports.toMobiledoc = (html, options = {}) => {
 
     // 2.b. Use Mobiledoc-kit's own DOM Parser to convert the DOM into mobiledoc's internal format
     // We use our parser plugins by default, but this is extensible
-    options.plugins = options.plugins || parserPlugins;
+    if (!options.plugins) {
+        options.plugins = createParserPlugins({
+            createDocument(html) {
+                return (new JSDOM(html)).window.document;
+            }
+        });
+    }
     let parser = new DOMParser(new Builder(), options);
     let post = parser.parse(dom.window.document.body);
 
