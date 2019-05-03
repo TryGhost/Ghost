@@ -129,11 +129,11 @@ export function createParserPlugins(_options = {}) {
 
         let payload = {
             code: code.textContent,
-            caption: cleanBasicHtml(figcaption.innerHTML)
+            caption: cleanBasicHtml(figcaption.innerHTML, options)
         };
 
-        let preClass = code.getAttribute('class');
-        let codeClass = code.getAttribute('class');
+        let preClass = pre.getAttribute('class') || '';
+        let codeClass = code.getAttribute('class') || '';
         let langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
         let languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
         if (languageMatches) {
@@ -155,8 +155,8 @@ export function createParserPlugins(_options = {}) {
         if (codeElement && codeElement.tagName === 'CODE') {
             let payload = {code: codeElement.textContent};
 
-            let preClass = node.getAttribute('class');
-            let codeClass = codeElement.getAttribute('class');
+            let preClass = node.getAttribute('class') || '';
+            let codeClass = codeElement.getAttribute('class') || '';
             let langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
             let languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
             if (languageMatches) {
