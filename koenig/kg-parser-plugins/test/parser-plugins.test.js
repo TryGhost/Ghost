@@ -5,7 +5,7 @@ require('./utils');
 const {JSDOM} = require('jsdom');
 const {createParserPlugins} = require('../');
 const PostNodeBuilder = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/models/post-node-builder').default;
-const SectionParser = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/section').default;
+const DOMParser = require('@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom').default;
 
 const buildDOM = function (html) {
     return (new JSDOM(html)).window.document.body;
@@ -22,7 +22,7 @@ describe('parser-plugins', function () {
 
     beforeEach(function () {
         builder = new PostNodeBuilder();
-        parser = new SectionParser(builder, {plugins});
+        parser = new DOMParser(builder, {plugins});
     });
 
     afterEach(function () {
@@ -42,7 +42,7 @@ describe('parser-plugins', function () {
         it('parses BR tags to soft-return atoms', function () {
             const dom = buildDOM('Testing<br>Soft-return');
 
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
             section.tagName.should.equal('p');
 
             const markers = section.markers.toArray();
@@ -59,7 +59,7 @@ describe('parser-plugins', function () {
         it('strips newline chars from the beginning of text nodes', function () {
             const dom = buildDOM('<p>\nTesting</p>');
 
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
             const [marker] = section.markers.toArray();
 
             marker.value.should.equal('Testing');
@@ -69,7 +69,7 @@ describe('parser-plugins', function () {
     describe('figureToImageCard', function () {
         it('parses IMG inside FIGURE to image card without caption', function () {
             const dom = buildDOM('<figure><img src="http://example.com/test.png" alt="Alt test" title="Title test"></figure>');
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');
             section.name.should.equal('image');
@@ -82,7 +82,7 @@ describe('parser-plugins', function () {
 
         it('parses IMG inside FIGURE to image card with caption', function () {
             const dom = buildDOM('<figure><img src="http://example.com/test.png"><figcaption>&nbsp; <strong>Caption test</strong></figcaption></figure>');
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
 
             section.payload.should.deepEqual({
                 src: 'http://example.com/test.png',
@@ -94,14 +94,14 @@ describe('parser-plugins', function () {
 
         it('extracts Koenig card widths', function () {
             const dom = buildDOM('<figure class="kg-card kg-width-wide"><img src="http://example.com/test.png"></figure>');
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
 
             section.payload.cardWidth.should.equal('wide');
         });
 
         it('extracts Medium card widths', function () {
             const dom = buildDOM('<figure class="graf--layoutFillWidth"><img src="http://example.com/test.png"></figure>');
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
 
             section.payload.cardWidth.should.equal('full');
         });
@@ -110,7 +110,7 @@ describe('parser-plugins', function () {
     describe('imgToCard', function () {
         it('parses IMG into image card', function () {
             const dom = buildDOM('<img src="http://example.com/test.png" alt="Alt test" title="Title test">');
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');
             section.name.should.equal('image');
@@ -125,7 +125,7 @@ describe('parser-plugins', function () {
     describe('hrToCard', function () {
         it('parses HR into hr card', function () {
             const dom = buildDOM('<p>Test 1</p><hr><p>Test 2</p>');
-            const [p1, hr, p2] = parser.parse(dom);
+            const [p1, hr, p2] = parser.parse(dom).sections.toArray();
 
             p1.tagName.should.equal('p');
             p1.markers.head.value.should.equal('Test 1');
@@ -142,7 +142,7 @@ describe('parser-plugins', function () {
         it('parses PRE>CODE inside FIGURE into code card', function () {
             // NOTE: skipped and picked up by preCodeToCard
             const dom = buildDOM('<figure><pre><code>Test code</code></pre></figure>');
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');
             section.name.should.equal('code');
@@ -153,7 +153,7 @@ describe('parser-plugins', function () {
 
         it('parses PRE>CODE inside FIGURE with FIGCAPTION into code card', function () {
             const dom = buildDOM('<figure><pre><code>Test code</code></pre><figcaption>Test caption</figcaption></figure>');
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');
             section.name.should.equal('code');
@@ -165,7 +165,7 @@ describe('parser-plugins', function () {
 
         it('extracts language from pre class name', function () {
             const dom = buildDOM('<figure><pre class="language-js"><code>Test code</code></pre><figcaption>Test caption</figcaption></figure>');
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');
             section.name.should.equal('code');
@@ -178,7 +178,7 @@ describe('parser-plugins', function () {
 
         it('extracts language from code class name', function () {
             const dom = buildDOM('<figure><pre><code class="language-js">Test code</code></pre><figcaption>Test caption</figcaption></figure>');
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');
             section.name.should.equal('code');
@@ -193,7 +193,7 @@ describe('parser-plugins', function () {
     describe('preCodeToCard', function () {
         it('parses PRE>CODE into code card', function () {
             const dom = buildDOM('<figure><pre><code>Test code</code></pre></figure>');
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');
             section.name.should.equal('code');
@@ -204,7 +204,7 @@ describe('parser-plugins', function () {
 
         it('extracts language from pre class name', function () {
             const dom = buildDOM('<figure><pre class="language-javascript"><code>Test code</code></pre></figure>');
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');
             section.name.should.equal('code');
@@ -216,7 +216,7 @@ describe('parser-plugins', function () {
 
         it('extracts language from code class name', function () {
             const dom = buildDOM('<figure><pre><code class="language-ruby">Test code</code></pre></figure>');
-            const [section] = parser.parse(dom);
+            const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');
             section.name.should.equal('code');
