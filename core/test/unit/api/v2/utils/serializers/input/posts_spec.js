@@ -468,7 +468,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["html",{"html":"<div class="custom">My Custom HTML</div>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]],[10,0],[1,"p",[[0,[],0,"custom html preserved!"]]]]}');
+                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["html",{"html":"<div class=\\"custom\\">My Custom HTML</div>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]],[10,0],[1,"p",[[0,[],0,"custom html preserved!"]]]]}');
             });
         });
 
