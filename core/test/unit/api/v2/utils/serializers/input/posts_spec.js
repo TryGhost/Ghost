@@ -448,6 +448,28 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 postData.mobiledoc.should.not.equal(mobiledoc);
                 postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]]]}');
             });
+
+            it('preserves html cards in transformed html', function () {
+                const apiConfig = {};
+                const frame = {
+                    options: {
+                        source: 'html'
+                    },
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                html: '<p>this is great feature</p>\n<!--kg-card-begin: html--><div class="custom">My Custom HTML</div><!--kg-card-end: html-->\n<p>custom html preserved!</p>',
+                            }
+                        ]
+                    }
+                };
+
+                serializers.input.posts.edit(apiConfig, frame);
+
+                let postData = frame.data.posts[0];
+                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["html",{"html":"<div class=\"custom\">My Custom HTML</div>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]],[10,0],[1,"p",[[0,[],0,"custom html preserved!"]]]]}');
+            });
         });
 
         describe('Ensure relations format', function () {
