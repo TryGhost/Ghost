@@ -151,7 +151,7 @@ describe('Nested examples', function () {
     });
 });
 
-// Basic test to ensure that we are successfully loading kg-parser-plugins
+// Basic tests to ensure that we are successfully loading kg-parser-plugins
 describe('Default plugin examples', function () {
     it('Can convert <hr> into a card', function () {
         const mobiledoc = converter.toMobiledoc('<hr />');
@@ -159,6 +159,19 @@ describe('Default plugin examples', function () {
         mobiledoc.cards.should.be.an.Array().with.lengthOf(1);
         mobiledoc.cards[0].should.be.an.Array().with.lengthOf(2);
         mobiledoc.cards[0].should.eql(['hr', {}]);
+        mobiledoc.sections.should.be.an.Array().with.lengthOf(1);
+        mobiledoc.sections[0].should.be.an.Array().with.lengthOf(2);
+        mobiledoc.sections[0].should.eql([10, 0]);
+    });
+
+    // this is a special-case test to make sure that we're preserving the
+    // first HTML comment when parsing html to DOM before the conversion
+    it('can convert html card output back into html card', function () {
+        const mobiledoc = converter.toMobiledoc('<!--kg-card-begin: html--><div><span>Custom HTML</span></div><!--kg-card-end: html-->');
+
+        mobiledoc.cards.should.be.an.Array().with.lengthOf(1);
+        mobiledoc.cards[0].should.be.an.Array().with.lengthOf(2);
+        mobiledoc.cards[0].should.eql(['html', {html: '<div><span>Custom HTML</span></div>'}]);
         mobiledoc.sections.should.be.an.Array().with.lengthOf(1);
         mobiledoc.sections[0].should.be.an.Array().with.lengthOf(2);
         mobiledoc.sections[0].should.eql([10, 0]);

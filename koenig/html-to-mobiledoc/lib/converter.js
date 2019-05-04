@@ -13,7 +13,7 @@ module.exports.toMobiledoc = (html, options = {}) => {
     // https://github.com/ErisDS/mobiledoc-kit/blob/master/src/js/editor/editor.js#L193
 
     // 2.a. Parse our HTML and convert to a DOM with same API as browser
-    let dom = new JSDOM(sanitizedHTML);
+    let dom = new JSDOM(`<body>${sanitizedHTML}</body>`);
 
     // 2.b. Use Mobiledoc-kit's own DOM Parser to convert the DOM into mobiledoc's internal format
     // We use our parser plugins by default, but this is extensible
