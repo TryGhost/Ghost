@@ -30,6 +30,35 @@ export function createParserPlugins(_options = {}) {
 
     // PLUGINS -----------------------------------------------------------------
 
+    // https://github.com/TryGhost/Koenig/issues/1
+    // allows arbitrary HTML blocks wrapped in our card comments to be extracted
+    // into a HTML card rather than being put through the normal parse+plugins
+    function kgHtmlCardToCard(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 8 || node.nodeValue !== 'kg-card-begin: html') {
+            return;
+        }
+
+        let html = [];
+
+        function isHtmlEndComment(node) {
+            return node && node.nodeType === 8 && node.nodeValue === 'kg-card-end: html';
+        }
+
+        let nextNode = node.nextSibling;
+        while (nextNode && !isHtmlEndComment(nextNode)) {
+            let currentNode = nextNode;
+            html.push(currentNode.outerHTML);
+            nextNode = currentNode.nextSibling;
+            // remove nodes as we go so that they don't go through the parser
+            currentNode.remove();
+        }
+
+        let payload = {html: html.join('\n').trim()};
+        let cardSection = builder.createCardSection('html', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+
     // mobiledoc by default ignores <BR> tags but we have a custom SoftReturn atom
     function brToSoftBreakAtom(node, builder, {addMarkerable, nodeFinished}) {
         if (node.nodeType !== 1 || node.tagName !== 'BR') {
@@ -172,6 +201,7 @@ export function createParserPlugins(_options = {}) {
     }
 
     return [
+        kgHtmlCardToCard,
         brToSoftBreakAtom,
         removeLeadingNewline,
         figureToImageCard,
