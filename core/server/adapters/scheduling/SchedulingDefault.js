@@ -74,9 +74,24 @@ SchedulingDefault.prototype.schedule = function (object) {
  *                              oldTime:    [Number] The previous published time.
  *                          }
  *                       }
+ * @param {Object} options
+ *                      {
+ *                          bootstrap: [Boolean]
+ *                      }
  */
-SchedulingDefault.prototype.reschedule = function (object) {
-    this._deleteJob({time: object.extra.oldTime, url: object.url});
+SchedulingDefault.prototype.reschedule = function (object, options = {bootstrap: false}) {
+    /**
+     * CASE:
+     * The post scheduling unit calls "reschedule" on bootstrap, because other custom scheduling implementations
+     * could use a database and we need to give the chance to update the job (delete + re-add).
+     *
+     * We receive a "bootstrap" variable to ensure that jobs are scheduled correctly for this scheduler implementation,
+     * because "object.extra.oldTime" === "object.time". If we mark the job as deleted, it won't get scheduled.
+     */
+    if (!options.bootstrap) {
+        this._deleteJob({time: object.extra.oldTime, url: object.url});
+    }
+
     this._addJob(object);
 };
 
