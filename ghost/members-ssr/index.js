@@ -11,7 +11,14 @@ const {
 const EMPTY = {};
 const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 184;
 
-const wrapFn = (fn, cookieConfig) => (req, res) => {
+const withCookies = (fn, cookieConfig) => (req, res) => {
+    return new Promise((resolve) => {
+        const cookies = new Cookies(req, res, cookieConfig);
+        resolve(fn(req, res, {cookies}));
+    });
+};
+
+const withBodyAndCookies = (fn, cookieConfig) => (req, res) => {
     return new Promise((resolve, reject) => {
         const cookies = new Cookies(req, res, cookieConfig);
         req.on('error', reject);
@@ -64,7 +71,7 @@ module.exports = function create(options = EMPTY) {
         });
     });
 
-    const exchangeTokenForSession = wrapFn((req, res, {body, cookies}) => {
+    const exchangeTokenForSession = withBodyAndCookies((req, res, {body, cookies}) => {
         const token = body;
         if (!body || typeof body !== 'string') {
             return Promise.reject(new BadRequestError({
@@ -83,7 +90,7 @@ module.exports = function create(options = EMPTY) {
         });
     }, cookieConfig);
 
-    const deleteSession = wrapFn((req, res, {cookies}) => {
+    const deleteSession = withCookies((req, res, {cookies}) => {
         cookies.set(cookieName, {
             signed: true,
             httpOnly: true,
@@ -93,7 +100,7 @@ module.exports = function create(options = EMPTY) {
         });
     }, cookieConfig);
 
-    const getMemberDataFromSession = wrapFn((req, res, {cookies}) => {
+    const getMemberDataFromSession = withCookies((req, res, {cookies}) => {
         try {
             const token = cookies.get(cookieName, {
                 signed: true
