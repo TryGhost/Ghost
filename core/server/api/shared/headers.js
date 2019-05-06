@@ -11,6 +11,13 @@ const cacheInvalidate = (result, options = {}) => {
 };
 
 const disposition = {
+    /**
+     * @description Generate CSV header.
+     *
+     * @param {Object} result - API response
+     * @param {Object} options
+     * @return {Object}
+     */
     csv(result, options = {}) {
         let value = options.value;
 
@@ -24,6 +31,13 @@ const disposition = {
         };
     },
 
+    /**
+     * @description Generate JSON header.
+     *
+     * @param {Object} result - API response
+     * @param {Object} options
+     * @return {Object}
+     */
     json(result, options = {}) {
         return {
             'Content-Disposition': `Attachment; filename="${options.value}"`,
@@ -32,6 +46,13 @@ const disposition = {
         };
     },
 
+    /**
+     * @description Generate YAML header.
+     *
+     * @param {Object} result - API response
+     * @param {Object} options
+     * @return {Object}
+     */
     yaml(result, options = {}) {
         return {
             'Content-Disposition': `Attachment; filename="${options.value}"`,
@@ -41,8 +62,9 @@ const disposition = {
     },
 
     /**
-     * ### Content Disposition Header
-     * create a header that invokes the 'Save As' dialog in the browser when exporting the database to file. The 'filename'
+     * @description Content Disposition Header
+     *
+     * Create a header that invokes the 'Save As' dialog in the browser when exporting the database to file. The 'filename'
      * parameter is governed by [RFC6266](http://tools.ietf.org/html/rfc6266#section-4.3).
      *
      * For encoding whitespace and non-ISO-8859-1 characters, you MUST use the "filename*=" attribute, NOT "filename=".
@@ -72,6 +94,13 @@ const disposition = {
 };
 
 module.exports = {
+    /**
+     * @description Get header based on ctrl configuration.
+     *
+     * @param {Object} result - API response
+     * @param {Object} apiConfig
+     * @return {Promise}
+     */
     get(result, apiConfig = {}) {
         let headers = {};
 
