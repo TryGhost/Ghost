@@ -4,7 +4,7 @@ function getStructuredData(metaData) {
     var structuredData,
         card = 'summary';
 
-    if (metaData.coverImage.url) {
+    if (metaData.twitterImage || metaData.coverImage.url) {
         card = 'summary_large_image';
     }
 
