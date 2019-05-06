@@ -15,7 +15,6 @@ describe('Unit: v2/utils/serializers/input/utils/url', function () {
         });
 
         it('should transform canonical_url when protocol and domain match', function () {
-
             const attrs = {
                 canonical_url: 'https://blogurl.com/hello-world'
             };
@@ -26,7 +25,6 @@ describe('Unit: v2/utils/serializers/input/utils/url', function () {
         });
 
         it('should transform canonical_url when protocol and domain match with backslash in the end', function () {
-
             const attrs = {
                 canonical_url: 'https://blogurl.com/hello-world/'
             };
