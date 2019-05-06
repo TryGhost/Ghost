@@ -850,10 +850,10 @@
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
 
-"@tryghost/timezone-data@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.1.tgz#7a02306891f30fd4a99d0c2b0ab15ab6fb58f51c"
-  integrity sha512-jq1+fAQGozbvlcU6QUO6ko3nceoWsSqvvjRUQeQy0aULl5Y7MOkjoQGMzrniZFrTu826NkkeqrXdOg5OgEr/Tw==
+"@tryghost/timezone-data@0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.2.tgz#4ef312cbe40aa5e716505f94e106d3c8a80a28ea"
+  integrity sha512-fogO/PUViDLSbhUTC2I4VS0A86vdHnK2x6qbP21sRzRpMxgLwMS8FMQMOpFK+LY1Ilz0I5wFisi+hoj0lhJntg==
 
 "@types/acorn@^4.0.3":
   version "4.0.5"
