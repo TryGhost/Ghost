@@ -60,6 +60,55 @@ describe('Scheduling Default Adapter', function () {
             ]);
         });
 
+        it('reschedule: default', function (done) {
+            sinon.stub(scope.adapter, '_pingUrl');
+
+            const time = moment().add(20, 'milliseconds').valueOf();
+
+            scope.adapter.schedule({
+                time: time,
+                url: 'something',
+                extra: {
+                    oldTime: null,
+                    method: 'PUT'
+                }
+            });
+
+            scope.adapter.reschedule({
+                time: time,
+                url: 'something',
+                extra: {
+                    oldTime: time,
+                    method: 'PUT'
+                }
+            });
+
+            setTimeout(() => {
+                scope.adapter._pingUrl.calledOnce.should.eql(true);
+                done();
+            }, 50);
+        });
+
+        it('reschedule: simulate restart', function (done) {
+            sinon.stub(scope.adapter, '_pingUrl');
+
+            const time = moment().add(20, 'milliseconds').valueOf();
+
+            scope.adapter.reschedule({
+               time: time,
+                url: 'something',
+                extra: {
+                   oldTime: time,
+                    method: 'PUT'
+                }
+            }, {bootstrap: true});
+
+            setTimeout(() => {
+                scope.adapter._pingUrl.calledOnce.should.eql(true);
+                done();
+            }, 50);
+        });
+
         it('run', function (done) {
             // 1000 jobs, but only the number x are under 1 minute
             var timestamps = _.map(_.range(1000), function (i) {

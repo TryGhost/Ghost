@@ -86,7 +86,9 @@ exports.init = function init(options = {}) {
             }
 
             scheduledPosts.forEach((model) => {
-                adapter.reschedule(_private.normalize({model, apiUrl, client}));
+                // NOTE: We are using reschedule, because custom scheduling adapter could use a database, which needs to be updated
+                //       and not an in-process implementation!
+                adapter.reschedule(_private.normalize({model, apiUrl, client}), {bootstrap: true});
             });
         })
         .then(() => {
