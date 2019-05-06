@@ -842,10 +842,10 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^0.1.1"
 
-"@tryghost/mobiledoc-kit@0.11.2-ghost.1":
-  version "0.11.2-ghost.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.2-ghost.1.tgz#7088eb9eef06b4ccdd6c221613f20d01b106f939"
-  integrity sha512-oc5zAQiEzq0oSUb3NpAXHvfcQ+FOjzQ+1sRNv2QwSJ+JftanpdFvgmc9BwX8dZAlHA/NOnrIeTW1Q2Ip9Nm2Ag==
+"@tryghost/mobiledoc-kit@0.11.2":
+  version "0.11.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.2.tgz#0adbafdff63d8b354c72288abda70b5f510e3309"
+  integrity sha512-G6Co/Gze+m80g1aQrQyIQOIff8eISDWPWckrDm34udK+hGYFqzdNVEEh30GOQ8kaGUlR1wcE2Tmx7jeus7P7wQ==
   dependencies:
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
