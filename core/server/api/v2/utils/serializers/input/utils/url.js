@@ -1,15 +1,21 @@
 const _ = require('lodash');
+const url = require('url');
 const {absoluteToRelative, getBlogUrl, STATIC_IMAGE_URL_PREFIX} = require('../../../../../../services/url/utils');
 
-const handleCanonicalUrl = (url) => {
-    const blogDomain = getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
-    const absolute = url.replace(/^http(s?):\/\//, '');
+const handleCanonicalUrl = (canonicalUrl) => {
+    const blogURl = getBlogUrl();
+    const isSameProtocol = url.parse(canonicalUrl).protocol === url.parse(blogURl).protocol;
+    const blogDomain = blogURl.replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+    const absolute = canonicalUrl.replace(/^http(s?):\/\//, '');
 
-    if (absolute.startsWith(blogDomain)) {
-        return absoluteToRelative(url, {withoutSubdirectory: true});
+    // We only want to tranform to a relative URL when the canoncial URL matches the current
+    // Blog URL incl. the same protocol. This allows users to keep e. g. Facebook comments after
+    // a http -> https switch. See https://github.com/TryGhost/Ghost/issues/10709
+    if (absolute.startsWith(blogDomain) && isSameProtocol) {
+        return absoluteToRelative(canonicalUrl, {withoutSubdirectory: true});
     }
 
-    return url;
+    return canonicalUrl;
 };
 
 const handleImageUrl = (imageUrl) => {
