@@ -63,7 +63,7 @@ describe('Scheduling Default Adapter', function () {
         it('reschedule: default', function (done) {
             sinon.stub(scope.adapter, '_pingUrl');
 
-            const time = moment().add(200, 'milliseconds').valueOf();
+            const time = moment().add(20, 'milliseconds').valueOf();
 
             scope.adapter.schedule({
                 time: time,
@@ -86,13 +86,13 @@ describe('Scheduling Default Adapter', function () {
             setTimeout(() => {
                 scope.adapter._pingUrl.calledOnce.should.eql(true);
                 done();
-            }, 250);
+            }, 50);
         });
 
         it('reschedule: simulate restart', function (done) {
             sinon.stub(scope.adapter, '_pingUrl');
 
-            const time = moment().add(100, 'milliseconds').valueOf();
+            const time = moment().add(20, 'milliseconds').valueOf();
 
             scope.adapter.reschedule({
                time: time,
@@ -106,7 +106,7 @@ describe('Scheduling Default Adapter', function () {
             setTimeout(() => {
                 scope.adapter._pingUrl.calledOnce.should.eql(true);
                 done();
-            }, 150);
+            }, 50);
         });
 
         it('run', function (done) {
