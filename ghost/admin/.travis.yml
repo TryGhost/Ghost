@@ -15,9 +15,7 @@ addons:
 install:
 - yarn
 script:
-- npm run lint:js && COVERAGE=true npm run test
-after_success:
-- npm run coverage
+- yarn run lint:js && yarn run test
 notifications:
   slack:
     rooms:
