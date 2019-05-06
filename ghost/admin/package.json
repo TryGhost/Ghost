@@ -19,8 +19,7 @@
     "start": "ember serve",
     "build": "ember build",
     "test": "ember exam --split 2 --parallel",
-    "lint:js": "eslint .",
-    "coverage": "ember coverage-merge && cat ./coverage/lcov.info | coveralls"
+    "lint:js": "eslint ."
   },
   "engines": {
     "node": ">= 6"
@@ -43,7 +42,6 @@
     "broccoli-uglify-sourcemap": "3.1.1",
     "chai-dom": "1.8.1",
     "codemirror": "5.46.0",
-    "coveralls": "3.0.3",
     "csscomb": "4.3.0",
     "cssnano": "4.1.10",
     "element-resize-detector": "1.1.15",
@@ -54,7 +52,6 @@
     "ember-cli-app-version": "3.2.0",
     "ember-cli-babel": "7.7.3",
     "ember-cli-chai": "0.5.0",
-    "ember-cli-code-coverage": "0.4.2",
     "ember-cli-dependency-checker": "3.1.0",
     "ember-cli-deprecation-workflow": "1.0.1",
     "ember-cli-eslint": "5.1.0",
