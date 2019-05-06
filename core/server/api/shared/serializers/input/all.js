@@ -5,7 +5,11 @@ const utils = require('../../utils');
 const INTERNAL_OPTIONS = ['transacting', 'forUpdate'];
 
 /**
- * Transform into model readable language.
+ * @description Shared serializer for all requests.
+ *
+ * Transforms certain options from API notation into model readable language/notation.
+ *
+ * e.g. API uses "include", but model layer uses "withRelated".
  */
 module.exports = {
     all(apiConfig, frame) {
