@@ -14,6 +14,6 @@ export default BasicDropdown.extend({
 
     willDestroyElement() {
         this._super(...arguments);
-        this.dropdown.off('close');
+        this.dropdown.off('close', this, this.close);
     }
 });
