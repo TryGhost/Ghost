@@ -1,9 +1,9 @@
 const _ = require('lodash');
 const url = require('url');
-const {absoluteToRelative, getBlogUrl, STATIC_IMAGE_URL_PREFIX} = require('../../../../../../services/url/utils');
+const utils = require('../../../../../../services/url/utils');
 
 const handleCanonicalUrl = (canonicalUrl) => {
-    const blogURl = getBlogUrl();
+    const blogURl = utils.getBlogUrl();
     const isSameProtocol = url.parse(canonicalUrl).protocol === url.parse(blogURl).protocol;
     const blogDomain = blogURl.replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     const absolute = canonicalUrl.replace(/^http(s?):\/\//, '');
@@ -12,33 +12,33 @@ const handleCanonicalUrl = (canonicalUrl) => {
     // Blog URL incl. the same protocol. This allows users to keep e. g. Facebook comments after
     // a http -> https switch. See https://github.com/TryGhost/Ghost/issues/10709
     if (absolute.startsWith(blogDomain) && isSameProtocol) {
-        return absoluteToRelative(canonicalUrl, {withoutSubdirectory: true});
+        return utils.absoluteToRelative(canonicalUrl, {withoutSubdirectory: true});
     }
 
     return canonicalUrl;
 };
 
 const handleImageUrl = (imageUrl) => {
-    const blogDomain = getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+    const blogDomain = utils.getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     const imageUrlAbsolute = imageUrl.replace(/^http(s?):\/\//, '');
-    const imagePathRe = new RegExp(`^${blogDomain}/${STATIC_IMAGE_URL_PREFIX}`);
+    const imagePathRe = new RegExp(`^${blogDomain}/${utils.STATIC_IMAGE_URL_PREFIX}`);
 
     if (imagePathRe.test(imageUrlAbsolute)) {
-        return absoluteToRelative(imageUrl);
+        return utils.absoluteToRelative(imageUrl);
     }
 
     return imageUrl;
 };
 
 const handleContentUrls = (content) => {
-    const blogDomain = getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
-    const imagePathRe = new RegExp(`(http(s?)://)?${blogDomain}/${STATIC_IMAGE_URL_PREFIX}`, 'g');
+    const blogDomain = utils.getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+    const imagePathRe = new RegExp(`(http(s?)://)?${blogDomain}/${utils.STATIC_IMAGE_URL_PREFIX}`, 'g');
 
     const matches = _.uniq(content.match(imagePathRe));
 
     if (matches) {
         matches.forEach((match) => {
-            const relative = absoluteToRelative(match);
+            const relative = utils.absoluteToRelative(match);
             content = content.replace(new RegExp(match, 'g'), relative);
         });
     }
