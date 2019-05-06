@@ -65,7 +65,7 @@ describe('getStructuredData', function () {
         done();
     });
 
-    it('should return structured data from metadata with provided og and twitter images per post', function (done) {
+    it('should return structured data from metadata with provided og and twitter images only per post', function (done) {
         var metadata = {
             blog: {
                 title: 'Blog Title',
@@ -78,13 +78,6 @@ describe('getStructuredData', function () {
             canonicalUrl: 'http://mysite.com/post/my-post-slug/',
             publishedDate: '2015-12-25T05:35:01.234Z',
             modifiedDate: '2016-01-21T22:13:05.412Z',
-            coverImage: {
-                url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
-                dimensions: {
-                    width: 500,
-                    height: 500
-                }
-            },
             ogImage: {
                 url: 'http://mysite.com/content/image/mypostogimage.jpg',
                 dimensions: {
