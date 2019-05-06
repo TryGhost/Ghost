@@ -4,9 +4,9 @@ import {alias} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default Controller.extend({
-    applicationController: controller('application'),
     tagsController: controller('settings.tags'),
     notifications: service(),
+    router: service(),
 
     showDeleteTagModal: false,
 
@@ -77,7 +77,7 @@ export default Controller.extend({
     },
 
     _deleteTagSuccess() {
-        let currentRoute = this.get('applicationController.currentRouteName') || '';
+        let currentRoute = this.router.currentRouteName || '';
 
         if (currentRoute.match(/^settings\.tags/)) {
             this.transitionToRoute('settings.tags.index');

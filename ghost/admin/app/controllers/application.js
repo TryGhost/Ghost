@@ -5,23 +5,26 @@ import {inject as service} from '@ember/service';
 
 export default Controller.extend({
     dropdown: service(),
+    router: service(),
     session: service(),
     settings: service(),
     ui: service(),
 
-    showNavMenu: computed('currentPath', 'session.{isAuthenticated,user.isFulfilled}', 'ui.isFullScreen', function () {
+    showNavMenu: computed('router.currentRouteName', 'session.{isAuthenticated,user.isFulfilled}', 'ui.isFullScreen', function () {
+        let {router, session, ui} = this;
+
         // if we're in fullscreen mode don't show the nav menu
-        if (this.ui.isFullScreen) {
+        if (ui.isFullScreen) {
             return false;
         }
 
         // we need to defer showing the navigation menu until the session.user
         // promise has fulfilled so that gh-user-can-admin has the correct data
-        if (!this.get('session.isAuthenticated') || !this.get('session.user.isFulfilled')) {
+        if (!session.isAuthenticated || !session.user.isFulfilled) {
             return false;
         }
 
-        return (this.currentPath !== 'error404' || this.get('session.isAuthenticated'))
-                && !this.currentPath.match(/(signin|signup|setup|reset)/);
+        return (router.currentRouteName !== 'error404' || session.isAuthenticated)
+                && !router.currentRouteName.match(/(signin|signup|setup|reset)/);
     })
 });
