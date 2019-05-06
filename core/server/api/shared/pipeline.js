@@ -7,6 +7,20 @@ const sequence = require('../../lib/promise/sequence');
 
 const STAGES = {
     validation: {
+        /**
+         * @description Input validation.
+         *
+         * We call the shared validator which runs the request through:
+         *
+         * 1. Shared serializers
+         * 2. Custom API serializers
+         *
+         * @param {Object} apiUtils - Local utils of target API version.
+         * @param {Object} apiConfig - Docname & Method of ctrl.
+         * @param {Object} apiImpl -  Controller configuration.
+         * @param {Object} frame
+         * @return {Promise}
+         */
         input(apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: validation');
             const tasks = [];
@@ -30,6 +44,20 @@ const STAGES = {
     },
 
     serialisation: {
+        /**
+         * @description Input Serialisation.
+         *
+         * We call the shared serializer which runs the request through:
+         *
+         * 1. Shared serializers
+         * 2. Custom API serializers
+         *
+         * @param {Object} apiUtils - Local utils of target API version.
+         * @param {Object} apiConfig - Docname & Method of ctrl.
+         * @param {Object} apiImpl -  Controller configuration.
+         * @param {Object} frame
+         * @return {Promise}
+         */
         input(apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: input serialisation');
             return shared.serializers.handle.input(
@@ -38,12 +66,40 @@ const STAGES = {
                 frame
             );
         },
+
+        /**
+         * @description Output Serialisation.
+         *
+         * We call the shared serializer which runs the request through:
+         *
+         * 1. Shared serializers
+         * 2. Custom API serializers
+         *
+         * @param {Object} apiUtils - Local utils of target API version.
+         * @param {Object} apiConfig - Docname & Method of ctrl.
+         * @param {Object} apiImpl -  Controller configuration.
+         * @param {Object} frame
+         * @return {Promise}
+         */
         output(response, apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: output serialisation');
             return shared.serializers.handle.output(response, apiConfig, apiUtils.serializers.output, frame);
         }
     },
 
+    /**
+     * @description Permissions stage.
+     *
+     * We call the target API implementation of permissions.
+     * Permissions implementation can change across API versions.
+     * There is no shared implementation right now.
+     *
+     * @param {Object} apiUtils - Local utils of target API version.
+     * @param {Object} apiConfig - Docname & Method of ctrl.
+     * @param {Object} apiImpl -  Controller configuration.
+     * @param {Object} frame
+     * @return {Promise}
+     */
     permissions(apiUtils, apiConfig, apiImpl, frame) {
         debug('stages: permissions');
         const tasks = [];
@@ -81,6 +137,15 @@ const STAGES = {
         return sequence(tasks);
     },
 
+    /**
+     * @description Execute controller & receive model response.
+     *
+     * @param {Object} apiUtils - Local utils of target API version.
+     * @param {Object} apiConfig - Docname & Method of ctrl.
+     * @param {Object} apiImpl -  Controller configuration.
+     * @param {Object} frame
+     * @return {Promise}
+     */
     query(apiUtils, apiConfig, apiImpl, frame) {
         debug('stages: query');
 
@@ -92,6 +157,25 @@ const STAGES = {
     }
 };
 
+/**
+ * @description The pipeline runs the request through all stages (validation, serialisation, permissions).
+ *
+ * The target API version calls the pipeline and wraps the actual ctrl implementation to be able to
+ * run the request through various stages before hitting the controller.
+ *
+ * The stages are executed in the following order:
+ *
+ * 1. Input validation - General & schema validation
+ * 2. Input serialisation - Modification of incoming data e.g. force filters, auto includes, url transformation etc.
+ * 3. Permissions - Runs after validation & serialisation because the body structure must be valid (see unsafeAttrs)
+ * 4. Controller - Execute the controller implementation & receive model response.
+ * 5. Output Serialisation - Output formatting, Deprecations, Extra attributes etc...
+ *
+ * @param {Function} apiController
+ * @param {Object} apiUtils - Local utils (validation & serialisation) from target API version
+ * @param {String} apiType - Content or Admin API access
+ * @return {Function}
+ */
 const pipeline = (apiController, apiUtils, apiType) => {
     const keys = Object.keys(apiController);
 

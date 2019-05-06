@@ -2,28 +2,28 @@
 
 Ghost supports multiple API versions.
 Each version lives in a separate folder e.g. api/v0.1, api/v2.
-Next to the API folders there is a shared folder, which the API versions use.
+Next to the API folders there is a shared folder, which contains shared code, which all API versions use.
 
-**NOTE: v0.1 is deprecated and we won't touch this folder at all. The v0.1 folder 
+**NOTE: v0.1 is deprecated and we won't touch the shared folder at all. The v0.1 folder 
 contains the API layer which we have used since Ghost was born.**
 
 ## Stages
 
 Each request goes through the following stages:
 
-- validation
+- input validation
 - input serialisation
 - permissions
 - query
 - output serialisation
 
-The framework we are building pipes a request through these stages depending on the API controller implementation.
+The framework we are building pipes a request through these stages in respect of the API controller configuration.
 
 
 ## Frame
 
-Is a class, which holds all the information for API processing. We pass this instance per reference. 
-The target function can modify the original instance. No need to return the class instance.
+Is a class, which holds all the information for request processing. We pass this instance by reference. 
+Each function can modify the original instance. No need to return the class instance.
 
 ### Structure
 
@@ -83,7 +83,9 @@ edit: {
   headers: {
     cacheInvalidate: true
   },
+  // Allowed url/query params
   options: ['include']
+  // Url/query param validation configuration
   validation: {
     options: {
       include: {
@@ -93,6 +95,7 @@ edit: {
     }
   },
   permissions: true,
+  // Returns a model response!
   query(frame) {
     return models.Post.edit(frame.data, frame.options);
   }
@@ -101,6 +104,9 @@ edit: {
 
 ```
 read: {
+  // Allowed url/query params, which will be remembered inside `frame.data`
+  // This is helpful for READ requests e.g. `model.findOne(frame.data, frame.options)`.
+  // Our model layer requires sending the where clauses as first parameter.
   data: ['slug']
   validation: {
     data: {
