@@ -8,9 +8,9 @@ const handleCanonicalUrl = (canonicalUrl) => {
     const blogDomain = blogURl.replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     const absolute = canonicalUrl.replace(/^http(s?):\/\//, '');
 
-    // We only want to tranform to a relative URL when the canoncial URL matches the current
-    // Blog URL incl. the same protocol. This allows users to keep e. g. Facebook comments after
-    // a http -> https switch. See https://github.com/TryGhost/Ghost/issues/10709
+    // We only want to transform to a relative URL when the canonical URL matches the current
+    // Blog URL incl. the same protocol. This allows users to keep e.g. Facebook comments after
+    // a http -> https switch
     if (absolute.startsWith(blogDomain) && isSameProtocol) {
         return utils.absoluteToRelative(canonicalUrl, {withoutSubdirectory: true});
     }
