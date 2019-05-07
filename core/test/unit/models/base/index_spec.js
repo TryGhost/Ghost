@@ -102,7 +102,7 @@ describe('Models: base', function () {
 
         it('contains invisible unicode', function () {
             Model.findOne.resolves(false);
-            security.string.safe.withArgs('abc').returns('abc');
+            security.string.safe.withArgs('abc\u0008').returns('abc');
 
             return models.Base.Model.generateSlug(Model, 'abc\u0008', options)
                 .then((slug) => {
