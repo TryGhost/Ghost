@@ -42,8 +42,11 @@
             {{gh-search-input class="gh-nav-search-input"}}
         </section>
         <ul class="gh-nav-list gh-nav-main">
-            <li {{action "transitionToOrRefreshSite" on="click"}}>
-                {{#link-to "site" data-test-nav="site" current-when=isOnSite preventDefault=false}}{{svg-jar "view-site-embed"}}View site{{/link-to}}
+            <li class="relative">
+                <a href="{{config.blogUrl}}/" class="gh-secondary-action" title="Open site in new tab" target="_blank">
+                    <span>{{svg-jar "expand"}}</span>
+                </a>
+                <span {{action "transitionToOrRefreshSite" on="click"}}>{{#link-to "site" data-test-nav="site" current-when=isOnSite preventDefault=false}}{{svg-jar "view-site-embed"}}View site{{/link-to}}</span>
             </li>
         </ul>
         <ul class="gh-nav-list gh-nav-manage">
@@ -104,7 +107,7 @@
     <div class="gh-nav-bottom">
         <ul class="gh-nav-list gh-nav-labs">
             <li class="relative">
-                <button class="gh-nav-nightshift" title="Toggle Night shift" {{action (toggle "nightShift" this.feature)}}>
+                <button class="gh-secondary-action" title="Toggle Night shift" {{action (toggle "nightShift" this.feature)}}>
                     <span>{{svg-jar "nightshift"}}</span>
                 </button>
                 {{#link-to "settings.labs" data-test-nav="labs"}}{{svg-jar "labs"}}Labs{{/link-to}}</li>
