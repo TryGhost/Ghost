@@ -6,10 +6,10 @@ import FormSubmit from '../components/FormSubmit';
 import NameInput from '../components/NameInput';
 import EmailInput from '../components/EmailInput';
 import PasswordInput from '../components/PasswordInput';
-import { IconClose } from '../components/icons';
+import {IconClose} from '../components/icons';
 
-export default ({ error, handleClose, handleSubmit, showSpinner }) => {
-    let label = showSpinner ? "Signing up..." : "Confirm payment";
+export default ({error, handleClose, handleSubmit, showSpinner}) => {
+    let label = showSpinner ? 'Signing up...' : 'Confirm payment';
     return (
         <div className="gm-modal-form gm-signup-page">
             <FormHeader title="" error={error} errorText="Email already registered">
@@ -25,5 +25,5 @@ export default ({ error, handleClose, handleSubmit, showSpinner }) => {
                 <FormSubmit label={label} showSpinner={showSpinner} />
             </Form>
         </div>
-    )
+    );
 };

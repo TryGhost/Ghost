@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { CardElement } from 'react-stripe-elements';
+import React, {Component} from 'react';
+import {CardElement} from 'react-stripe-elements';
 
 class CheckoutForm extends Component {
     constructor(props) {

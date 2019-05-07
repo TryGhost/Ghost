@@ -4,7 +4,7 @@ import FormSubmit from '../components/FormSubmit';
 
 import Form from '../components/Form';
 
-export default ({ error, handleClose, handleSubmit }) => (
+export default ({error, handleClose, handleSubmit}) => (
     <div className="gm-modal-form gm-reset-pwd-page">
         <FormHeader title="Reset password" error={error} errorText="Unable to send email" />
         <Form bindTo="request-password-reset" onSubmit={handleSubmit}>

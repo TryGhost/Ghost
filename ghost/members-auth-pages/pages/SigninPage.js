@@ -2,15 +2,15 @@ import Form from '../components/Form';
 import FormHeader from '../components/FormHeader';
 import FormHeaderCTA from '../components/FormHeaderCTA';
 import FormSubmit from '../components/FormSubmit';
-import { IconRightArrow, IconAnimatedCheck } from '../components/icons';
+import {IconRightArrow, IconAnimatedCheck} from '../components/icons';
 
 import EmailInput from '../components/EmailInput';
 import PasswordInput from '../components/PasswordInput';
 
-export default ({ error, handleSubmit, showLoggedIn }) => {
+export default ({error, handleSubmit, showLoggedIn}) => {
     let label = showLoggedIn ? (
         <span class="flex items-center"><span class="gm-check">{ IconAnimatedCheck }</span> Logged in </span>
-    ) : "Log in";
+    ) : 'Log in';
     return (
         <div className="flex flex-column items-center">
             <div className="gm-modal-form gm-signin-page">
@@ -31,5 +31,5 @@ export default ({ error, handleSubmit, showLoggedIn }) => {
                 </Form>
             </div>
         </div>
-    )
+    );
 };
