@@ -44,8 +44,6 @@ module.exports = function MembersApi({
         decodeToken
     });
 
-    const router = Router();
-
     const apiRouter = Router();
 
     apiRouter.use(body.json());
@@ -218,21 +216,13 @@ module.exports = function MembersApi({
     staticRouter.get('/bundle.js', (req, res) => {
         res.status(200).sendFile(require('path').join(__dirname, './static/gateway/bundle.js'));
     });
-    /* http */
-    router.use('/api', apiRouter);
-    router.use('/static', staticRouter);
-    /* token */
-    router.get('/.well-known/jwks.json', (req, res) => {
-        getPublicKeys().then((jwks) => {
-            res.json(jwks);
-        });
-    });
 
     const apiInstance = {
         staticRouter,
         apiRouter
     };
     apiInstance.members = users;
+    apiInstance.getPublicKeys = getPublicKeys;
     apiInstance.getPublicConfig = function () {
         return Promise.resolve({
             publicKey,
