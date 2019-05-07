@@ -30,8 +30,6 @@ export default AuthenticatedRoute.extend({
 
     perPage: 30,
 
-    _type: null,
-
     model(params) {
         return this.session.user.then((user) => {
             let queryParams = {};
@@ -94,12 +92,6 @@ export default AuthenticatedRoute.extend({
     },
 
     actions: {
-        willTransition() {
-            if (this.controller) {
-                this.resetController();
-            }
-        },
-
         queryParamsDidChange() {
             // scroll back to the top
             let contentList = document.querySelector('.content-list');
