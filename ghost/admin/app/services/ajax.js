@@ -1,7 +1,6 @@
 import AjaxService from 'ember-ajax/services/ajax';
 import config from 'ghost-admin/config/environment';
 import {AjaxError, isAjaxError} from 'ember-ajax/errors';
-import {computed} from '@ember/object';
 import {get} from '@ember/object';
 import {isArray as isEmberArray} from '@ember/array';
 import {isNone} from '@ember/utils';
@@ -126,7 +125,7 @@ let ajaxService = AjaxService.extend({
     // TODO: find a more elegant way to handle this
     skipSessionDeletion: false,
 
-    headers: computed('session.isAuthenticated', function () {
+    get headers() {
         let headers = {};
 
         headers['X-Ghost-Version'] = config.APP.version;
@@ -137,7 +136,7 @@ let ajaxService = AjaxService.extend({
         }
 
         return headers;
-    }).volatile(),
+    },
 
     init() {
         this._super(...arguments);
