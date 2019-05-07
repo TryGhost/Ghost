@@ -1,5 +1,5 @@
 import FormInput from './FormInput';
-import { IconLock } from './icons';
+import {IconLock} from './icons';
 
 export default ({value, error, children, onInput, className}) => (
     <FormInput

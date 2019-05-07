@@ -1,5 +1,5 @@
 import './styles/members.css';
-import { Component } from 'preact';
+import {Component} from 'preact';
 
 import MembersProvider from './components/MembersProvider';
 import Modal from './components/Modal';
@@ -17,7 +17,7 @@ export default class App extends Component {
     render() {
         return (
             <MembersProvider apiUrl={ this.state.apiUrl }>
-                 <Modal />
+                <Modal />
             </MembersProvider>
         );
     }

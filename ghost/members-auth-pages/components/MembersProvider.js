@@ -1,4 +1,4 @@
-import { Component } from 'preact';
+import {Component} from 'preact';
 
 const gatewayProtocol = require('@tryghost/members-gateway-protocol');
 
@@ -8,7 +8,7 @@ export default class MembersProvider extends Component {
         this.setGatewayFrame = gatewayFrame => this.gatewayFrame = gatewayFrame;
         this.ready = new Promise((resolve) => {
             this.setReady = resolve;
-        })
+        });
         this.gateway = null;
     }
 
@@ -20,7 +20,7 @@ export default class MembersProvider extends Component {
                 signup: this.createMethod('signup'),
                 requestPasswordReset: this.createMethod('requestPasswordReset'),
                 resetPassword: this.createMethod('resetPassword'),
-                getConfig: this.createMethod('getConfig'),
+                getConfig: this.createMethod('getConfig')
             }
         };
     }
@@ -38,7 +38,7 @@ export default class MembersProvider extends Component {
     componentDidMount() {
         const gatewayFrame = this.gatewayFrame;
         gatewayFrame.addEventListener('load', () => {
-            this.gateway = gatewayProtocol(gatewayFrame)
+            this.gateway = gatewayProtocol(gatewayFrame);
             this.setReady();
         });
     }
@@ -52,10 +52,9 @@ export default class MembersProvider extends Component {
                             reject(err || !successful);
                         }
                         resolve(successful);
-                    })
+                    });
                 });
             });
-        }
+        };
     }
-
 }

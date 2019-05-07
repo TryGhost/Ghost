@@ -1,9 +1,9 @@
 import FormHeader from '../components/FormHeader';
 import FormSubmit from '../components/FormSubmit';
-import { IconSignupComplete } from '../components/icons';
+import {IconSignupComplete} from '../components/icons';
 import Form from '../components/Form';
 
-export default ({ error, handleSubmit, siteConfig }) => (
+export default ({error, handleSubmit, siteConfig}) => (
     <div className="gm-modal-form gm-signup-complete-page">
         <Form bindTo="signup" onSubmit={ handleSubmit }>
             <div class="flex flex-column items-center">
