@@ -1,6 +1,6 @@
 {
-  "name": "ghost-member",
-  "version": "0.0.0",
+  "name": "@tryghost/members-auth-pages",
+  "version": "0.1.0",
   "license": "MIT",
   "scripts": {
     "dev": "yarn build --no-production && preact watch --port=8080",
