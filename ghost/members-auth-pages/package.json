@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "yarn build --no-production && preact watch --port=8080",
-    "clean": "rm -rf build && mkdir build",
+    "clean": "rm -rf dist && mkdir dist",
     "prebuild": "npm run clean",
     "build": "preact build --template=index.html --src=app.js --dest=dist  --service-worker=false --no-prerender",
     "prepublishOnly": "npm run build",
