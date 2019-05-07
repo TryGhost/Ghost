@@ -197,7 +197,7 @@ export default Component.extend({
         // once we drop IE11 support we should be able to use native for...of
         for (let i = 0; i < files.length; i += 1) {
             let file = files[i];
-            let tracker = new UploadTracker({file});
+            let tracker = UploadTracker.create({file});
 
             this._uploadTrackers.pushObject(tracker);
             uploads.push(this._uploadFile.perform(tracker, file, i));
