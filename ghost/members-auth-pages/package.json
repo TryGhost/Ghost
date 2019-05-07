@@ -23,7 +23,7 @@
     "postcss-css-variables": "^0.11.0",
     "postcss-custom-properties": "^8.0.9",
     "postcss-import": "^12.0.1",
-    "preact-cli": "https://github.com/TryGhost/preact-cli/tarball/421f03bcf954c79d5f14fd2e278049a9bdfcba83"
+    "preact-cli": "^3.0.0-next.19"
   },
   "dependencies": {
     "@tryghost/members-gateway-protocol": "^0.1.0",
