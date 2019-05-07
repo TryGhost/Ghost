@@ -1,12 +1,12 @@
 const {Router} = require('express');
 const body = require('body-parser');
 
-const {getData, handleError} = require('./util');
+const {getData, handleError} = require('./lib/util');
 
-const Cookies = require('./cookies');
-const Tokens = require('./tokens');
-const Users = require('./users');
-const Subscriptions = require('./subscriptions');
+const Cookies = require('./lib/cookies');
+const Tokens = require('./lib/tokens');
+const Users = require('./lib/users');
+const Subscriptions = require('./lib/subscriptions');
 
 module.exports = function MembersApi({
     authConfig: {
@@ -214,7 +214,7 @@ module.exports = function MembersApi({
         `);
     });
     staticRouter.get('/bundle.js', (req, res) => {
-        res.status(200).sendFile(require('path').join(__dirname, './static/gateway/bundle.js'));
+        res.status(200).sendFile(require('path').join(__dirname, './gateway/bundle.js'));
     });
 
     const apiInstance = {
