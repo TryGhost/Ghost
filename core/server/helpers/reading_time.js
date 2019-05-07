@@ -11,50 +11,20 @@
 // Returns estimated reading time for post
 
 const proxy = require('./proxy');
-const _ = require('lodash');
 const schema = require('../data/schema').checks;
 const SafeString = proxy.SafeString;
-const countImages = require('@tryghost/helpers').utils.countImages;
-const countWords = require('@tryghost/helpers').utils.countWords;
+const calculateReadingTime = require('@tryghost/helpers').readingTime;
 
 module.exports = function reading_time(options) {// eslint-disable-line camelcase
     options = options || {};
     options.hash = options.hash || {};
-
-    var html,
-        wordsPerMinute = 275,
-        wordsPerSecond = wordsPerMinute / 60,
-        wordCount,
-        imageCount,
-        readingTimeSeconds,
-        readingTimeMinutes,
-        readingTime,
-        minute = _.isString(options.hash.minute) ? options.hash.minute : '1 min read',
-        minutes = _.isString(options.hash.minutes) ? options.hash.minutes : '% min read';
 
     // only calculate reading time for posts
     if (!schema.isPost(this)) {
         return null;
     }
 
-    html = this.html;
-    imageCount = this.feature_image ? 1 : 0;
-    imageCount += countImages(html);
-    wordCount = countWords(html);
-    readingTimeSeconds = wordCount / wordsPerSecond;
-
-    for (var i = 12; i > 12 - imageCount; i -= 1) {
-        // add 12 seconds for the first image, 11 for the second, etc. limiting at 3
-        readingTimeSeconds += Math.max(i, 3);
-    }
-
-    readingTimeMinutes = Math.round(readingTimeSeconds / 60);
-
-    if (readingTimeMinutes <= 1) {
-        readingTime = minute;
-    } else {
-        readingTime = minutes.replace('%', readingTimeMinutes);
-    }
+    let readingTime = calculateReadingTime(this, options.hash);
 
     return new SafeString(readingTime);
 };
