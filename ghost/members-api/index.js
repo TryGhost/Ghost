@@ -1,4 +1,4 @@
-const {Router, static} = require('express');
+const {Router} = require('express');
 const body = require('body-parser');
 
 const {getData, handleError} = require('./util');
@@ -207,7 +207,6 @@ module.exports = function MembersApi({
 
     /* http */
     const staticRouter = Router();
-    staticRouter.use('/static', static(require('path').join(__dirname, './static/auth/dist')));
     staticRouter.get('/gateway', (req, res) => {
         res.status(200).send(`
             <script>
@@ -219,10 +218,6 @@ module.exports = function MembersApi({
     staticRouter.get('/bundle.js', (req, res) => {
         res.status(200).sendFile(require('path').join(__dirname, './static/gateway/bundle.js'));
     });
-    staticRouter.get('/*', (req, res) => {
-        res.status(200).sendFile(require('path').join(__dirname, './static/auth/dist/index.html'));
-    });
-
     /* http */
     router.use('/api', apiRouter);
     router.use('/static', staticRouter);
