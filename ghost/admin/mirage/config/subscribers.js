@@ -13,8 +13,9 @@ export default function mockSubscribers(server) {
             return new Response(422, {}, {
                 errors: [{
                     type: 'ValidationError',
-                    message: 'Email already exists.',
-                    property: 'email'
+                    message: 'Validation error, cannot save subscriber.',
+                    context: 'Email address is already subscribed.',
+                    property: null
                 }]
             });
         } else {

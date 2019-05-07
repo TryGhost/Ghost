@@ -1,122 +1,64 @@
-/* eslint-disable ghost/ember/alias-model-in-controller */
 import $ from 'jquery';
 import Controller from '@ember/controller';
-import PaginationMixin from 'ghost-admin/mixins/pagination';
-import Table from 'ember-light-table';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import {assign} from '@ember/polyfills';
+import moment from 'moment';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 
-export default Controller.extend(PaginationMixin, {
+const orderMap = {
+    email: 'email',
+    created_at: 'createdAtUTC',
+    status: 'status'
+};
+
+/* eslint-disable ghost/ember/alias-model-in-controller */
+export default Controller.extend({
     session: service(),
 
     queryParams: ['order', 'direction'],
     order: 'created_at',
     direction: 'desc',
 
-    paginationModel: 'subscriber',
-
-    total: 0,
-    table: null,
+    subscribers: null,
     subscriberToDelete: null,
 
-    // paginationSettings is replaced by the pagination mixin so we need a
-    // getter/setter CP here so that we don't lose the dynamic order param
-    paginationSettings: computed('order', 'direction', {
-        get() {
-            let order = this.order;
-            let direction = this.direction;
+    init() {
+        this._super(...arguments);
+        this.set('subscribers', this.store.peekAll('subscriber'));
+    },
 
-            let currentSettings = this._paginationSettings || {
-                limit: 30
-            };
-
-            return assign({}, currentSettings, {
-                order: `${order} ${direction}`
-            });
-        },
-        set(key, value) {
-            this._paginationSettings = value;
-            return value;
-        }
+    filteredSubscribers: computed('subscribers.@each.{email,createdAtUTC}', function () {
+        return this.subscribers.toArray().filter((subscriber) => {
+            return !subscriber.isNew && !subscriber.isDeleted;
+        });
     }),
 
-    columns: computed('order', 'direction', function () {
-        let order = this.order;
-        let direction = this.direction;
+    sortedSubscribers: computed('order', 'direction', 'subscribers.@each.{email,createdAtUTC,status}', function () {
+        let {filteredSubscribers, order, direction} = this;
 
-        return [{
-            label: 'Email Address',
-            valuePath: 'email',
-            sorted: order === 'email',
-            ascending: direction === 'asc',
-            classNames: ['gh-subscribers-table-email-cell'],
-            cellClassNames: ['gh-subscribers-table-email-cell']
-        }, {
-            label: 'Subscription Date',
-            valuePath: 'createdAtUTC',
-            format(value) {
-                return value.format('MMMM DD, YYYY');
-            },
-            sorted: order === 'created_at',
-            ascending: direction === 'asc',
-            classNames: ['gh-subscribers-table-date-cell'],
-            cellClassNames: ['gh-subscribers-table-date-cell']
-        }, {
-            label: 'Status',
-            valuePath: 'status',
-            sorted: order === 'status',
-            ascending: direction === 'asc',
-            classNames: ['gh-subscribers-table-status-cell'],
-            cellClassNames: ['gh-subscribers-table-status-cell']
-        }, {
-            label: '',
-            sortable: false,
-            cellComponent: 'gh-subscribers-table-delete-cell',
-            align: 'right',
-            classNames: ['gh-subscribers-table-delete-cell'],
-            cellClassNames: ['gh-subscribers-table-delete-cell']
-        }];
+        let sorted = filteredSubscribers.sort((a, b) => {
+            let values = [a.get(orderMap[order]), b.get(orderMap[order])];
+
+            if (direction === 'desc') {
+                values = values.reverse();
+            }
+
+            if (typeof values[0] === 'string') {
+                return values[0].localeCompare(values[1], undefined, {ignorePunctuation: true});
+            }
+
+            if (typeof values[0] === 'object' && values[0]._isAMomentObject) {
+                return values[0].valueOf() - values[1].valueOf();
+            }
+
+            return values[0] - values[1];
+        });
+
+        return sorted;
     }),
 
     actions: {
-        loadFirstPage() {
-            let table = this.table;
-
-            return this._super(...arguments).then((results) => {
-                table.addRows(results);
-                return results;
-            });
-        },
-
-        loadNextPage() {
-            let table = this.table;
-
-            return this._super(...arguments).then((results) => {
-                table.addRows(results);
-                return results;
-            });
-        },
-
-        sortByColumn(column) {
-            let table = this.table;
-
-            if (column.sorted) {
-                this.setProperties({
-                    order: column.get('valuePath').trim().replace(/UTC$/, '').underscore(),
-                    direction: column.ascending ? 'asc' : 'desc'
-                });
-                table.setRows([]);
-                this.send('loadFirstPage');
-            }
-        },
-
-        addSubscriber(subscriber) {
-            this.table.insertRowAt(0, subscriber);
-            this.incrementProperty('total');
-        },
-
         deleteSubscriber(subscriber) {
             this.set('subscriberToDelete', subscriber);
         },
@@ -126,18 +68,11 @@ export default Controller.extend(PaginationMixin, {
 
             return subscriber.destroyRecord().then(() => {
                 this.set('subscriberToDelete', null);
-                this.table.removeRow(subscriber);
-                this.decrementProperty('total');
             });
         },
 
         cancelDeleteSubscriber() {
             this.set('subscriberToDelete', null);
-        },
-
-        reset() {
-            this.table.setRows([]);
-            this.send('loadFirstPage');
         },
 
         exportData() {
@@ -154,14 +89,28 @@ export default Controller.extend(PaginationMixin, {
         }
     },
 
-    initializeTable() {
-        this.set('table', new Table(this.columns, this.subscribers));
-    },
+    fetchSubscribers: task(function* () {
+        let newFetchDate = new Date();
+        let results;
 
-    // capture the total from the server any time we fetch a new page
-    didReceivePaginationMeta(meta) {
-        if (meta && meta.pagination) {
-            this.set('total', meta.pagination.total);
+        if (this._hasFetchedAll) {
+            // fetch any records modified since last fetch
+            results = yield this.store.query('subscriber', {
+                limit: 'all',
+                filter: `updated_at:>='${moment.utc(this._lastFetchDate).format('YYYY-MM-DD HH:mm:ss')}'`
+            });
+        } else {
+            // fetch all records in batches of 200
+            while (!results || results.meta.pagination.page < results.meta.pagination.pages) {
+                results = yield this.store.query('subscriber', {
+                    limit: 200,
+                    order: `${this.order} ${this.direction}`,
+                    page: results ? results.meta.pagination.page + 1 : 1
+                });
+            }
+            this._hasFetchedAll = true;
         }
-    }
+
+        this._lastFetchDate = newFetchDate;
+    })
 });

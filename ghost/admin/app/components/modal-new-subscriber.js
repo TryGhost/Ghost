@@ -29,10 +29,10 @@ export default ModalComponent.extend({
             // properly so that errors are added to model.errors automatically
             if (error && isInvalidError(error)) {
                 let [firstError] = error.payload.errors;
-                let {message} = firstError;
+                let {context} = firstError;
 
-                if (message && message.match(/email/i)) {
-                    this.get('subscriber.errors').add('email', message);
+                if (context && context.match(/email/i)) {
+                    this.get('subscriber.errors').add('email', context);
                     this.get('subscriber.hasValidated').pushObject('email');
                     return;
                 }
