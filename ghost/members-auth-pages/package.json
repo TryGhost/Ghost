@@ -4,7 +4,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "yarn build --no-production && preact watch --port=8080",
-    "build": "preact build --template=index.html --src=index.js --dest=dist  --service-worker=false --no-prerender",
+    "clean": "rm -rf build && mkdir build",
+    "prebuild": "npm run clean",
+    "build": "preact build --template=index.html --src=app.js --dest=dist  --service-worker=false --no-prerender",
     "prepublishOnly": "npm run build",
     "pretest": "npm run clean",
     "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
