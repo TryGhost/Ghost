@@ -1,0 +1,38 @@
+{
+  "name": "@tryghost/members-api",
+  "version": "0.1.0",
+  "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-api",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint '**/*.js'",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "gateway"
+  ],
+  "devDependencies": {
+    "jsdom": "15.0.0",
+    "mocha": "6.1.4",
+    "should": "13.2.3",
+    "sinon": "7.3.2"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.4",
+    "body-parser": "^1.19.0",
+    "cookies": "^0.7.3",
+    "express": "^4.16.4",
+    "ghost-ignition": "^3.1.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.11",
+    "node-jose": "^1.1.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
