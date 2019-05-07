@@ -13,6 +13,10 @@
     "lint": "echo '@TODO FIX LINTING FOR MEMBERS-AUTH-PAGES'",
     "posttest": "yarn lint"
   },
+  "files": [
+    "index.js",
+    "dist"
+  ],
   "eslintIgnore": [
     "build/*"
   ],
