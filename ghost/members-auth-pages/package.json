@@ -3,9 +3,13 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "preact build --template=index.html --src=index.js --dest=dist  --service-worker=false --no-prerender",
     "dev": "yarn build --no-production && preact watch --port=8080",
-    "lint": "eslint src"
+    "build": "preact build --template=index.html --src=index.js --dest=dist  --service-worker=false --no-prerender",
+    "prepublishOnly": "npm run build",
+    "pretest": "npm run clean",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "echo '@TODO FIX LINTING FOR MEMBERS-AUTH-PAGES'",
+    "posttest": "yarn lint"
   },
   "eslintIgnore": [
     "build/*"
