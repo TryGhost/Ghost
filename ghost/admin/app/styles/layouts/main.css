@@ -152,7 +152,7 @@
 .gh-nav-search-button svg {
     width: 13px;
     height: 13px;
-    fill: color-mod(var(--midlightgrey) l(+10%));
+    fill: color-mod(var(--midlightgrey) l(-5%));
     line-height: 13px;
     transition: color 0.2s ease;
     transform: rotate(90deg);
@@ -275,35 +275,42 @@
     stroke: var(--white);
 }
 
-.gh-nav-list .gh-nav-nightshift {
+.gh-nav-list .gh-secondary-action {
     position: absolute;
     z-index: 999;
-    padding: 6px;
+    padding: 4px;
     margin: 0;
-    right: 20px;
+    right: 24px;
+    top: 1px;
+    opacity: 0;
+    transition: opacity ease 0.2s;
 }
 
-.gh-nav-list .gh-nav-nightshift span svg {
+.gh-nav-list:hover .gh-secondary-action {
+    opacity: 1.0;
+}
+
+.gh-nav-list .gh-secondary-action span svg {
     margin-right: 0;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
 }
 
-.gh-nav-list .gh-nav-nightshift span svg path {
-    fill: color-mod(var(--midgrey) l(+5%));
+.gh-nav-list .gh-secondary-action span svg path {
+    fill: color-mod(var(--midlightgrey) l(-5%));
 }
 
-.gh-nav-list a.gh-nav-nightshift:hover,
-.gh-nav-list a.gh-nav-nightshift.active {
+.gh-nav-list a.gh-secondary-action:hover,
+.gh-nav-list a.gh-secondary-action.active {
     background: none;
 }
 
-.gh-nav-list .gh-nav-nightshift:hover span svg path {
-    fill: color-mod(var(--blue) l(-3%) s(+5%));
+.gh-nav-list .gh-secondary-action:hover span svg path {
+    fill: var(--darkgrey);
 }
 
 .gh-nav-main {
-    margin-top: -10px;
+    margin-top: -1px;
 }
 
 .gh-nav-manage .gh-nav-list-h {
