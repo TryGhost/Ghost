@@ -22,10 +22,7 @@ export default Route.extend({
     actions: {
         save() {
             let subscriber = this.controller.get('subscriber');
-            return subscriber.save().then((saved) => {
-                this.send('addSubscriber', saved);
-                return saved;
-            });
+            return subscriber.save();
         },
 
         cancel() {

@@ -4,7 +4,7 @@ import {beforeEach, describe, it} from 'mocha';
 import {click, currentRouteName, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {fileUpload} from '../helpers/file-upload';
-import {findAllWithText, findWithText} from '../helpers/find';
+import {findAllWithText} from '../helpers/find';
 import {setupApplicationTest} from 'ember-mocha';
 import {visit} from '../helpers/visit';
 
@@ -76,11 +76,10 @@ describe('Acceptance: Subscribers', function () {
             expect(document.title, 'page title')
                 .to.equal('Subscribers - Test Blog');
 
-            // it loads the first page
-            // TODO: latest ember-in-viewport causes infinite scroll issues with
-            // FF here where it loads two pages straight away so we need to check
-            // if rows are greater than or equal to a single page
-            expect(findAll('.subscribers-table .lt-body .lt-row').length, 'number of subscriber rows')
+            // it loads subscribers
+            // NOTE: we use vertical-collection for occlusion so the max number of rows can be less than the
+            // number of subscribers that are loaded
+            expect(findAll('.subscribers-table tbody tr').length, 'number of subscriber rows')
                 .to.be.at.least(30);
 
             // it shows the total number of subscribers
@@ -90,37 +89,6 @@ describe('Acceptance: Subscribers', function () {
             // it defaults to sorting by created_at desc
             let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.order).to.equal('created_at desc');
-
-            let createdAtHeader = findWithText('.subscribers-table th', 'Subscription Date');
-            expect(createdAtHeader, 'createdAt column is sorted')
-                .to.have.class('is-sorted');
-            expect(createdAtHeader.querySelectorAll('.gh-icon-descending'), 'createdAt column has descending icon')
-                .to.exist;
-
-            // click the column to re-order
-            await click(findWithText('th', 'Subscription Date'));
-
-            // it flips the directions and re-fetches
-            [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.order).to.equal('created_at asc');
-
-            createdAtHeader = findWithText('.subscribers-table th', 'Subscription Date');
-            expect(createdAtHeader.querySelector('.gh-icon-ascending'), 'createdAt column has ascending icon')
-                .to.exist;
-
-            // TODO: scroll test disabled as ember-light-table doesn't calculate
-            // the scroll trigger element's positioning against the scroll
-            // container - https://github.com/offirgolan/ember-light-table/issues/201
-            //
-            // // scroll to the bottom of the table to simulate infinite scroll
-            // await find('.subscribers-table').scrollTop(find('.subscribers-table .ember-light-table').height() - 50);
-            //
-            // // trigger infinite scroll
-            // await triggerEvent('.subscribers-table tbody', 'scroll');
-            //
-            // // it loads the next page
-            // expect(find('.subscribers-table .lt-body .lt-row').length, 'number of subscriber rows after infinite-scroll')
-            //     .to.equal(40);
 
             // click the add subscriber button
             await click('[data-test-link="add-subscriber"]');
@@ -146,7 +114,7 @@ describe('Acceptance: Subscribers', function () {
                 .to.not.exist;
 
             // the subscriber is added to the table
-            expect(find('.subscribers-table .lt-body .lt-row:first-of-type .lt-cell:first-of-type'), 'first email in list after addition')
+            expect(find('.subscribers-table tbody tr td'), 'first email in list after addition')
                 .to.contain.text('test@example.com');
 
             // the table is scrolled to the top
@@ -165,10 +133,10 @@ describe('Acceptance: Subscribers', function () {
 
             // the validation error is displayed
             expect(find('[data-test-error="new-subscriber-email"]'), 'duplicate email validation')
-                .to.have.trimmed.text('Email already exists.');
+                .to.have.trimmed.text('Email address is already subscribed.');
 
             // the subscriber is not added to the table
-            expect(findAllWithText('.lt-cell', 'test@example.com').length, 'number of "test@example.com rows"')
+            expect(findAllWithText('td.gh-subscribers-table-email-cell', 'test@example.com').length, 'number of "test@example.com rows"')
                 .to.equal(1);
 
             // the subscriber total is unchanged
@@ -198,7 +166,7 @@ describe('Acceptance: Subscribers', function () {
                 .to.not.exist;
 
             // the subscriber is removed from the table
-            expect(find('.subscribers-table .lt-body .lt-row:first-of-type .lt-cell:first-of-type'), 'first email in list after addition')
+            expect(find('.subscribers-table tbody td.gh-subscribers-table-email-cell'), 'first email in list after addition')
                 .to.not.have.trimmed.text('test@example.com');
 
             // the subscriber total is updated
@@ -235,19 +203,6 @@ describe('Acceptance: Subscribers', function () {
             // subscriber total is updated
             expect(find('[data-test-total-subscribers]'), 'subscribers total after import')
                 .to.have.trimmed.text('(90)');
-
-            // TODO: re-enable once bug in ember-light-table that triggers second page load is fixed
-            // table is reset
-            // [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            // expect(lastRequest.url, 'endpoint requested after import')
-            //     .to.match(/\/subscribers\/\?/);
-            // expect(lastRequest.queryParams.page, 'page requested after import')
-            //     .to.equal('1');
-
-            // expect(find('.subscribers-table .lt-body .lt-row').length, 'number of rows in table after import')
-            //     .to.equal(30);
-
-            // close modal
         });
     });
 });
