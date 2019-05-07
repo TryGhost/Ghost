@@ -1,7 +1,10 @@
 {
   "name": "@tryghost/members-auth-pages",
   "version": "0.1.0",
+  "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-gateway-protocol",
+  "author": "Ghost Foundation",
   "license": "MIT",
+  "main": "index.js",
   "scripts": {
     "dev": "yarn build --no-production && preact watch --port=8080",
     "clean": "rm -rf dist && mkdir dist",
@@ -16,9 +19,6 @@
   "files": [
     "index.js",
     "dist"
-  ],
-  "eslintIgnore": [
-    "build/*"
   ],
   "devDependencies": {
     "autoprefixer": "^9.4.2",
@@ -36,5 +36,8 @@
     "preact": "^8.2.1",
     "preact-compat": "^3.17.0",
     "react-stripe-elements": "^2.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
