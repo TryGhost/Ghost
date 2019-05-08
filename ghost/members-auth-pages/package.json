@@ -4,7 +4,7 @@
   "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-gateway-protocol",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "index.js",
+  "main": "blank.js",
   "scripts": {
     "dev": "yarn build --no-production && preact watch --port=8080",
     "clean": "rm -rf dist && mkdir dist",
@@ -17,7 +17,7 @@
     "posttest": "yarn lint"
   },
   "files": [
-    "index.js",
+    "blank.js",
     "dist"
   ],
   "devDependencies": {
