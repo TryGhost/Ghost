@@ -9,6 +9,8 @@ describe('parent app', function () {
     let parentApp;
     let adminSpy;
     let siteSpy;
+    let gatewaySpy;
+    let authPagesSpy;
 
     beforeEach(function () {
         use = sinon.spy();
@@ -20,12 +22,18 @@ describe('parent app', function () {
         apiSpy = sinon.spy();
         adminSpy = sinon.spy();
         siteSpy = sinon.spy();
+        gatewaySpy = sinon.spy();
+        authPagesSpy = sinon.spy();
 
         parentApp = proxyquire('../../../server/web/parent-app', {
             express: expressStub,
             './api': apiSpy,
             './admin': adminSpy,
-            './site': siteSpy
+            './site': siteSpy,
+            '../services/members': {
+                gateway: gatewaySpy,
+                authPages: authPagesSpy
+            }
         });
     });
 

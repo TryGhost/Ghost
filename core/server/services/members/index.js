@@ -25,5 +25,13 @@ module.exports = {
             };
         }
         return require('./api');
+    },
+
+    get authPages() {
+        return require('./authPages');
+    },
+
+    get gateway() {
+        return require('./api').staticRouter;
     }
 };

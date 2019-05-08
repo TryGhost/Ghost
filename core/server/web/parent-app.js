@@ -49,7 +49,8 @@ module.exports = function setupParentApp(options = {}) {
     parentApp.use('/ghost', require('./admin')());
 
     // MEMBERS
-    parentApp.use('/members', labs.members, membersService.api.staticRouter);
+    parentApp.use('/members', labs.members, membersService.gateway);
+    parentApp.use('/members/auth', labs.members, membersService.authPages);
 
     // BLOG
     parentApp.use(require('./site')(options));

@@ -41,6 +41,8 @@
   "dependencies": {
     "@nexes/nql": "0.2.1",
     "@tryghost/helpers": "1.1.2",
+    "@tryghost/members-api": "0.1.1",
+    "@tryghost/members-auth-pages": "0.2.1",
     "@tryghost/members-ssr": "0.1.5",
     "@tryghost/members-theme-bindings": "^0.1.0",
     "@tryghost/string": "^0.1.3",
