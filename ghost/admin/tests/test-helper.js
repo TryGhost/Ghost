@@ -1,11 +1,8 @@
 import Application from '../app';
 import config from '../config/environment';
-import loadEmberExam from 'ember-exam/test-support/load';
 import registerWaiter from 'ember-raf-scheduler/test-support/register-waiter';
+import start from 'ember-exam/test-support/start';
 import {setApplication} from '@ember/test-helpers';
-import {start} from 'ember-mocha';
-
-loadEmberExam();
 
 setApplication(Application.create(config.APP));
 
