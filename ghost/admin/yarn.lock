@@ -4811,10 +4811,10 @@ ember-copy@^1.0.0:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-data@3.9.1:
-  version "3.9.1"
-  resolved "https://registry.yarnpkg.com/ember-data/-/ember-data-3.9.1.tgz#ba9de5ffee05c0bcf061237b2d53b9a0258dfb2c"
-  integrity sha512-qSyAMFiGwzrOvrR59HSVOFu5SYZRWyA6M0Utwi11lQzrG27/+na9317MQ56k71xKwisR5bvPO7HuYVl0iWzDeA==
+ember-data@3.9.3:
+  version "3.9.3"
+  resolved "https://registry.yarnpkg.com/ember-data/-/ember-data-3.9.3.tgz#6338ef6a13d30c5d9da56f2bc02bf7f832636b9f"
+  integrity sha512-t1qfuZeLeUYkhtR4V5FmhKoIkxXwT38CuRTEgyNXHeoMlDeRyj5TR06uPDIVEHJ4T3oOihx0dGZBQM4GKVrY5w==
   dependencies:
     "@ember/ordered-set" "^2.0.3"
     "@glimmer/env" "^0.1.7"
@@ -4835,7 +4835,6 @@ ember-data@3.9.1:
     ember-cli-test-info "^1.0.0"
     ember-cli-typescript "^2.0.0"
     ember-cli-version-checker "^3.1.3"
-    ember-fetch "^6.5.0"
     ember-inflector "^3.0.0"
     git-repo-info "^2.0.0"
     heimdalljs "^0.3.0"
@@ -4883,7 +4882,7 @@ ember-factory-for-polyfill@^1.3.1:
   dependencies:
     ember-cli-version-checker "^2.1.0"
 
-ember-fetch@6.5.1, "ember-fetch@^2.1.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0", ember-fetch@^6.5.0:
+ember-fetch@6.5.1, "ember-fetch@^2.1.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0":
   version "6.5.1"
   resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-6.5.1.tgz#6512153b9b85042744ed5a7934c8edb4a5b02dd0"
   integrity sha512-ZA90lbTFZHhQCQKQNA6/3TdtiF1wBoT8nC7EI1pmkUZ49XDBP7i2eddUodR6qWRn8jK/D7IavQy3tx5fJBx7mw==
