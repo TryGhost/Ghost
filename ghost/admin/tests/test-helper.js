@@ -3,6 +3,7 @@ import config from '../config/environment';
 import loadEmberExam from 'ember-exam/test-support/load';
 import registerWaiter from 'ember-raf-scheduler/test-support/register-waiter';
 import {setApplication} from '@ember/test-helpers';
+import {start} from 'ember-mocha';
 
 loadEmberExam();
 
@@ -15,3 +16,4 @@ mocha.setup({
     slow: 500
 });
 
+start();
