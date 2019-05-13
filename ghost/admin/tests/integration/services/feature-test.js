@@ -71,9 +71,7 @@ function addTestFlag() {
 }
 
 describe('Integration: Service: feature', function () {
-    setupTest('service:feature', {
-        integration: true
-    });
+    setupTest();
 
     let server;
 
@@ -91,7 +89,7 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:feature');
 
         return service.fetch().then(() => {
             expect(service.get('testFlag')).to.be.true;
@@ -105,7 +103,7 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', false);
 
         return service.fetch().then(() => {
@@ -120,7 +118,7 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', true);
 
         return service.fetch().then(() => {
@@ -135,7 +133,7 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', false);
 
         return service.fetch().then(() => {
@@ -150,7 +148,7 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', true);
 
         return service.fetch().then(() => {
@@ -165,7 +163,7 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:feature');
 
         return service.fetch().then(() => {
             expect(service.get('accessibility.testUserFlag')).to.be.false;
@@ -179,7 +177,7 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:feature');
 
         return service.fetch().then(() => {
             expect(service.get('accessibility.testUserFlag')).to.be.true;
@@ -193,7 +191,7 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', false);
 
         return service.fetch().then(() => {
@@ -216,7 +214,7 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:feature');
 
         return service.fetch().then(() => {
             expect(service.get('testUserFlag')).to.be.false;
@@ -238,7 +236,7 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', false);
 
         return service.fetch().then(() => {
@@ -270,7 +268,7 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:feature');
 
         return service.fetch().then(() => {
             expect(service.get('testUserFlag')).to.be.false;
@@ -301,7 +299,7 @@ describe('Integration: Service: feature', function () {
 
         addTestFlag();
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:feature');
         service.get('config').set('testFlag', false);
 
         return service.fetch().then(() => {

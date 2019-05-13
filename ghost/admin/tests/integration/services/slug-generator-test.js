@@ -18,9 +18,7 @@ function stubSlugEndpoint(server, type, slug) {
 }
 
 describe('Integration: Service: slug-generator', function () {
-    setupTest('service:slug-generator', {
-        integration: true
-    });
+    setupTest();
 
     let server;
 
@@ -33,7 +31,7 @@ describe('Integration: Service: slug-generator', function () {
     });
 
     it('returns empty if no slug is provided', function (done) {
-        let service = this.subject();
+        let service = this.owner.lookup('service:slug-generator');
 
         service.generateSlug('post', '').then(function (slug) {
             expect(slug).to.equal('');
@@ -45,7 +43,7 @@ describe('Integration: Service: slug-generator', function () {
         let rawSlug = 'a test post';
         stubSlugEndpoint(server, 'post', rawSlug);
 
-        let service = this.subject();
+        let service = this.owner.lookup('service:slug-generator');
 
         service.generateSlug('post', rawSlug).then(function (slug) {
             expect(slug).to.equal(dasherize(rawSlug));
