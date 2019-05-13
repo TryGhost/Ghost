@@ -5,9 +5,10 @@ import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
 describe('Unit: Transform: navigation-settings', function () {
-    setupTest('transform:navigation-settings', {});
+    setupTest();
+
     it('deserializes navigation json', function () {
-        let transform = this.subject();
+        let transform = this.owner.lookup('transform:navigation-settings');
         let serialized = '[{"label":"One","url":"/one"},{"label":"Two","url":"/two"}]';
         let result = transform.deserialize(serialized);
 
@@ -21,7 +22,7 @@ describe('Unit: Transform: navigation-settings', function () {
     });
 
     it('serializes array of NavigationItems', function () {
-        let transform = this.subject();
+        let transform = this.owner.lookup('transform:navigation-settings');
         let deserialized = emberA([
             NavigationItem.create({label: 'One', url: '/one'}),
             NavigationItem.create({label: 'Two', url: '/two'})

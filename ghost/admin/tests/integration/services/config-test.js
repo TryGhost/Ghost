@@ -5,9 +5,7 @@ import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
 describe('Integration: Service: config', function () {
-    setupTest('service:config', {
-        integration: true
-    });
+    setupTest();
 
     let server;
 
@@ -20,7 +18,7 @@ describe('Integration: Service: config', function () {
     });
 
     it('returns a list of timezones in the expected format', function (done) {
-        let service = this.subject();
+        let service = this.owner.lookup('service:config');
 
         service.get('availableTimezones').then(function (timezones) {
             expect(timezones.length).to.equal(66);
@@ -54,7 +52,7 @@ describe('Integration: Service: config', function () {
                 ];
             });
         };
-        let service = this.subject();
+        let service = this.owner.lookup('service:config');
 
         stubBlogUrl('http://localhost:2368/');
 

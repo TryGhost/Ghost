@@ -3,9 +3,10 @@ import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
 describe('Unit: Transform: twitter-url-user', function () {
-    setupTest('transform:twitter-url-user', {});
+    setupTest();
+
     it('deserializes twitter url', function () {
-        let transform = this.subject();
+        let transform = this.owner.lookup('transform:twitter-url-user');
         let serialized = '@testuser';
         let result = transform.deserialize(serialized);
 
@@ -13,7 +14,7 @@ describe('Unit: Transform: twitter-url-user', function () {
     });
 
     it('serializes url to twitter username', function () {
-        let transform = this.subject();
+        let transform = this.owner.lookup('transform:twitter-url-user');
         let deserialized = 'https://twitter.com/testuser';
         let result = transform.serialize(deserialized);
 

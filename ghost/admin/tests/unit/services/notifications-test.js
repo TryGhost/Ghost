@@ -10,17 +10,15 @@ import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
 
 describe('Unit: Service: notifications', function () {
-    setupTest('service:notifications', {
-        needs: ['service:upgradeStatus']
-    });
+    setupTest();
 
     beforeEach(function () {
-        this.subject().set('content', emberA());
-        this.subject().set('delayedNotifications', emberA());
+        this.owner.lookup('service:notifications').set('content', emberA());
+        this.owner.lookup('service:notifications').set('delayedNotifications', emberA());
     });
 
     it('filters alerts/notifications', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         // wrapped in run-loop to enure alerts/notifications CPs are updated
         run(() => {
@@ -36,7 +34,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#handleNotification deals with DS.Notification notifications', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
         let notification = EmberObject.create({message: '<h1>Test</h1>', status: 'alert'});
 
         notification.toJSON = function () {};
@@ -50,7 +48,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#handleNotification defaults to notification if no status supplied', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         notifications.handleNotification({message: 'Test'}, false);
 
@@ -59,7 +57,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAlert adds POJO alerts', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showAlert('Test Alert', {type: 'error'});
@@ -70,7 +68,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAlert adds delayed notifications', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showNotification('Test Alert', {type: 'error', delayed: true});
@@ -84,7 +82,7 @@ describe('Unit: Service: notifications', function () {
     // we split on the second period and treat the resulting base as
     // the key for duplicate checking
     it('#showAlert clears duplicates using keys', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showAlert('Kept');
@@ -102,7 +100,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAlert clears duplicates using message text', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         notifications.showAlert('Not duplicate');
         notifications.showAlert('Duplicate', {key: 'duplicate'});
@@ -113,7 +111,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showNotification adds POJO notifications', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showNotification('Test Notification', {type: 'success'});
@@ -124,7 +122,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showNotification adds delayed notifications', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showNotification('Test Notification', {delayed: true});
@@ -135,7 +133,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showNotification clears existing notifications', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showNotification('First');
@@ -148,7 +146,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showNotification keeps existing notifications if doNotCloseNotifications option passed', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showNotification('First');
@@ -159,7 +157,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError handles single json response error', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
         let error = new AjaxError({errors: [{message: 'Single error'}]});
 
         run(() => {
@@ -174,7 +172,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError handles multiple json response errors', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
         let error = new AjaxError({errors: [
             {title: 'First error', message: 'First error message'},
             {title: 'Second error', message: 'Second error message'}
@@ -191,7 +189,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError displays default error text if response has no error/message', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
         let resp = false;
 
         run(() => {
@@ -213,7 +211,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError sets correct key when passed a base key', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showAPIError('Test', {key: 'test.alert'});
@@ -223,7 +221,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError sets correct key when not passed a key', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showAPIError('Test');
@@ -233,7 +231,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError parses default ember-ajax errors correctly', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
         let error = new InvalidError();
 
         run(() => {
@@ -248,7 +246,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError parses custom ember-ajax errors correctly', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
         let error = new ServerUnreachableError();
 
         run(() => {
@@ -263,7 +261,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#showAPIError adds error context to message if available', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
         let error = new AjaxError({errors: [{
             message: 'Authorization Error.',
             context: 'Please sign in.'
@@ -281,7 +279,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#displayDelayed moves delayed notifications into content', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showNotification('First', {delayed: true});
@@ -299,7 +297,7 @@ describe('Unit: Service: notifications', function () {
 
     it('#closeNotification removes POJO notifications', function () {
         let notification = {message: 'Close test', status: 'notification'};
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.handleNotification(notification);
@@ -318,7 +316,7 @@ describe('Unit: Service: notifications', function () {
 
     it('#closeNotification removes and deletes DS.Notification records', function () {
         let notification = EmberObject.create({message: 'Close test', status: 'alert'});
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         notification.toJSON = function () {};
         notification.deleteRecord = function () {};
@@ -349,7 +347,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#closeNotifications only removes notifications', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showAlert('First alert');
@@ -369,7 +367,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#closeNotifications only closes notifications with specified key', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         run(() => {
             notifications.showAlert('First alert');
@@ -391,7 +389,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#clearAll removes everything without deletion', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
         let notificationModel = EmberObject.create({message: 'model'});
 
         notificationModel.toJSON = function () {};
@@ -417,7 +415,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#closeAlerts only removes alerts', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         notifications.showNotification('First notification');
         notifications.showAlert('First alert');
@@ -432,7 +430,7 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#closeAlerts closes only alerts with specified key', function () {
-        let notifications = this.subject();
+        let notifications = this.owner.lookup('service:notifications');
 
         notifications.showNotification('First notification');
         notifications.showAlert('First alert', {key: 'test.close'});

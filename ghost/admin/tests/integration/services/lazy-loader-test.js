@@ -1,11 +1,10 @@
-import $ from 'jquery';
 import Pretender from 'pretender';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
 describe('Integration: Service: lazy-loader', function () {
-    setupTest('service:lazy-loader', {integration: true});
+    setupTest();
 
     let server;
     let ghostPaths = {
@@ -21,7 +20,9 @@ describe('Integration: Service: lazy-loader', function () {
     });
 
     it('loads a script correctly and only once', async function () {
-        let subject = this.subject({
+        let subject = this.owner.lookup('service:lazy-loader');
+
+        subject.setProperties({
             ghostPaths,
             scriptPromises: {},
             testing: false
@@ -49,15 +50,17 @@ describe('Integration: Service: lazy-loader', function () {
     });
 
     it('loads styles correctly', function () {
-        let subject = this.subject({
+        let subject = this.owner.lookup('service:lazy-loader');
+
+        subject.setProperties({
             ghostPaths,
             testing: false
         });
 
         return subject.loadStyle('testing', 'style.css').catch(() => {
             // we add a catch handler here because `/assets/style.css` doesn't exist
-            expect($('#testing-styles').length).to.equal(1);
-            expect($('#testing-styles').attr('href')).to.equal('/assets/style.css');
+            expect(document.querySelectorAll('#testing-styles').length).to.equal(1);
+            expect(document.querySelector('#testing-styles').getAttribute('href')).to.equal('/assets/style.css');
         });
     });
 });

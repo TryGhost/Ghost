@@ -5,10 +5,10 @@ import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
 describe('Unit: Transform: slack-settings', function () {
-    setupTest('transform:slack-settings', {});
+    setupTest();
 
     it('deserializes settings json', function () {
-        let transform = this.subject();
+        let transform = this.owner.lookup('transform:slack-settings');
         let serialized = '[{"url":"http://myblog.com/blogpost1","username":"SlackBot"}]';
         let result = transform.deserialize(serialized);
 
@@ -19,7 +19,7 @@ describe('Unit: Transform: slack-settings', function () {
     });
 
     it('deserializes empty array', function () {
-        let transform = this.subject();
+        let transform = this.owner.lookup('transform:slack-settings');
         let serialized = '[]';
         let result = transform.deserialize(serialized);
 
@@ -30,7 +30,7 @@ describe('Unit: Transform: slack-settings', function () {
     });
 
     it('serializes array of Slack settings', function () {
-        let transform = this.subject();
+        let transform = this.owner.lookup('transform:slack-settings');
         let deserialized = emberA([
             SlackIntegration.create({url: 'http://myblog.com/blogpost1', username: 'SlackBot'})
         ]);
@@ -40,7 +40,7 @@ describe('Unit: Transform: slack-settings', function () {
     });
 
     it('serializes empty SlackIntegration objects', function () {
-        let transform = this.subject();
+        let transform = this.owner.lookup('transform:slack-settings');
         let deserialized = emberA([
             SlackIntegration.create({url: ''})
         ]);

@@ -4,14 +4,12 @@ import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
 describe('Integration: Adapter: tag', function () {
-    setupTest('adapter:tag', {
-        integration: true
-    });
+    setupTest();
 
     let server, store;
 
     beforeEach(function () {
-        store = this.container.lookup('service:store');
+        store = this.owner.lookup('service:store');
         server = new Pretender();
     });
 

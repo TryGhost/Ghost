@@ -7,14 +7,7 @@ import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
 
 describe('Unit: Service: unsplash', function () {
-    setupTest('service:unsplash', {
-        needs: [
-            'service:ajax',
-            'service:config',
-            'service:ghostPaths',
-            'service:settings'
-        ]
-    });
+    setupTest();
 
     let server;
 
@@ -48,7 +41,7 @@ describe('Unit: Service: unsplash', function () {
                 return [403, {'x-ratelimit-remaining': '0'}, 'Rate Limit Exceeded'];
             });
 
-            let service = this.subject();
+            let service = this.owner.lookup('service:unsplash');
 
             run(() => {
                 service.loadNextPage();
@@ -67,7 +60,7 @@ describe('Unit: Service: unsplash', function () {
                 })];
             });
 
-            let service = this.subject();
+            let service = this.owner.lookup('service:unsplash');
 
             run(() => {
                 service.loadNextPage();
@@ -84,7 +77,7 @@ describe('Unit: Service: unsplash', function () {
                 return [500, {'Content-Type': 'text/xml'}, 'Unsplash text error'];
             });
 
-            let service = this.subject();
+            let service = this.owner.lookup('service:unsplash');
 
             run(() => {
                 service.loadNextPage();
