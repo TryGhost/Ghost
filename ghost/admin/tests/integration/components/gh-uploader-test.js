@@ -190,7 +190,7 @@ describe('Integration: Component: gh-uploader', function () {
 
             this.set('files', [createFile(), createFile()]);
 
-            await waitFor('.is-uploading-test', {timeout: 100});
+            await waitFor('.is-uploading-test', {timeout: 150});
             await settled();
 
             expect(find('.is-uploading-test')).to.not.exist;
@@ -206,7 +206,7 @@ describe('Integration: Component: gh-uploader', function () {
 
             this.set('files', [createFile(), createFile()]);
 
-            await waitFor('[data-test-progress-bar]', {timeout: 100});
+            await waitFor('[data-test-progress-bar]', {timeout: 150});
             let progressBar = find('[data-test-progress-bar]');
             await waitUntil(() => {
                 let width = parseInt(progressBar.style.width);
