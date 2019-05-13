@@ -4832,18 +4832,21 @@ ember-drag-drop@0.4.8:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-exam@2.1.5:
-  version "2.1.5"
-  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-2.1.5.tgz#de20cd2f4ec3376d0e0a2696139bb8e37aba5c4f"
-  integrity sha512-x/BZrUF0m5wyl5LMfkq1adqlrspomz5cz2bHgfolNA2NmP9S0mlbllu5wpcRjjKUXSxU/+zH7zo1xvYHcGmUlg==
+ember-exam@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-3.0.1.tgz#a4b19aeef44224b4e681ac4e69bd3fceffa9a912"
+  integrity sha512-raI5H9cG9C1VZP6hH88ZCgI8uBJh5FDMTeUdz54slRwFWu0OCIPTbyqjuWefJbSAVqUt57hWH1dvgv8XsF8gFQ==
   dependencies:
     chalk "^2.1.0"
     cli-table3 "^0.5.1"
     debug "^4.1.0"
-    ember-cli-babel "^7.4.0"
+    ember-cli-babel "^7.7.3"
     execa "^1.0.0"
     fs-extra "^7.0.1"
+    js-yaml "^3.13.1"
     rimraf "^2.6.2"
+    semver "^6.0.0"
+    silent-error "^1.1.1"
 
 ember-export-application-global@2.0.0:
   version "2.0.0"
