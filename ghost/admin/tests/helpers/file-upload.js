@@ -14,10 +14,10 @@ export function createFile(content = ['test'], options = {}) {
 
 export function fileUpload(target, content, options) {
     let file = createFile(content, options);
-    // TODO: replace `[file]` with `{files: [file]}` after upgrading ember-test-helpers
+
     return triggerEvent(
         target,
         'change',
-        [file]
+        {files: [file]}
     );
 }
