@@ -18,25 +18,22 @@ const mockGhostPaths = Service.extend({
 });
 
 describe('Unit: Authenticator: cookie', () => {
-    setupTest('authenticator:cookie', {});
+    setupTest();
 
     beforeEach(function () {
-        this.register('service:ajax', mockAjax);
-        this.inject.service('ajax', {as: 'ajax'});
-
-        this.register('service:ghost-paths', mockGhostPaths);
-        this.inject.service('ghost-paths', {as: 'ghostPaths'});
+        this.owner.register('service:ajax', mockAjax);
+        this.owner.register('service:ghost-paths', mockGhostPaths);
     });
 
     describe('#restore', function () {
         it('returns a resolving promise', function () {
-            return this.subject().restore();
+            return this.owner.lookup('authenticator:cookie').restore();
         });
     });
 
     describe('#authenticate', function () {
         it('posts the username and password to the sessionEndpoint and returns the promise', function () {
-            let authenticator = this.subject();
+            let authenticator = this.owner.lookup('authenticator:cookie');
             let post = authenticator.ajax.post;
 
             return authenticator.authenticate('AzureDiamond', 'hunter2').then(() => {
@@ -59,7 +56,7 @@ describe('Unit: Authenticator: cookie', () => {
 
     describe('#invalidate', function () {
         it('makes a delete request to the sessionEndpoint', function () {
-            let authenticator = this.subject();
+            let authenticator = this.owner.lookup('authenticator:cookie');
             let del = authenticator.ajax.del;
 
             return authenticator.invalidate().then(() => {

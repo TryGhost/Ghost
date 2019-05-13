@@ -1,7 +1,8 @@
 import hbs from 'htmlbars-inline-precompile';
+import sinon from 'sinon';
+import {click, find, render} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {render} from '@ember/test-helpers';
 import {setupRenderingTest} from 'ember-mocha';
 
 describe('Integration: Component: gh-alert', function () {
@@ -34,5 +35,20 @@ describe('Integration: Component: gh-alert', function () {
 
         this.set('message.type', 'info');
         expect(alert, 'info class is blue').to.have.class('gh-alert-blue');
+    });
+
+    it('closes notification through notifications service', async function () {
+        let message = {message: 'Test close', type: 'success'};
+        this.set('message', message);
+
+        await render(hbs`{{gh-alert message=message}}`);
+        expect(find('article.gh-alert')).to.exist;
+
+        let notifications = this.owner.lookup('service:notifications');
+        notifications.closeNotification = sinon.stub();
+
+        await click('[data-test-button="close-notification"]');
+
+        expect(notifications.closeNotification.calledWith(message)).to.be.true;
     });
 });
