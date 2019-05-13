@@ -280,7 +280,7 @@ describe('Integration: Component: gh-file-uploader', function () {
                     files: []
                 }
             });
-            this.$('.gh-image-uploader').trigger(dragover);
+            $(find('.gh-image-uploader')).trigger(dragover);
         });
 
         await settled();
@@ -307,7 +307,7 @@ describe('Integration: Component: gh-file-uploader', function () {
         await render(hbs`{{gh-file-uploader url=uploadUrl uploadSuccess=(action uploadSuccess)}}`);
 
         run(() => {
-            this.$('.gh-image-uploader').trigger(drop);
+            $(find('.gh-image-uploader')).trigger(drop);
         });
 
         await settled();
