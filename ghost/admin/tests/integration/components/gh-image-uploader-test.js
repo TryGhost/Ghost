@@ -61,12 +61,6 @@ describe('Integration: Component: gh-image-uploader', function () {
         server.shutdown();
     });
 
-    it('renders', async function () {
-        this.set('image', 'http://example.com/test.png');
-        await render(hbs`{{gh-image-uploader image=image}}`);
-        expect(this.$()).to.have.length(1);
-    });
-
     it('renders form with supplied alt text', async function () {
         await render(hbs`{{gh-image-uploader image=image altText="text test"}}`);
         expect(find('[data-test-file-input-description]')).to.have.trimmed.text('Upload image of "text test"');
@@ -279,7 +273,7 @@ describe('Integration: Component: gh-image-uploader', function () {
                     files: []
                 }
             });
-            this.$('.gh-image-uploader').trigger(dragover);
+            $(find('.gh-image-uploader')).trigger(dragover);
         });
         await settled();
 
@@ -305,7 +299,7 @@ describe('Integration: Component: gh-image-uploader', function () {
         await render(hbs`{{gh-image-uploader uploadSuccess=(action uploadSuccess)}}`);
 
         run(() => {
-            this.$('.gh-image-uploader').trigger(drop);
+            $(find('.gh-image-uploader')).trigger(drop);
         });
         await settled();
 

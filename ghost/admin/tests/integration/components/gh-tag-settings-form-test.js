@@ -45,13 +45,6 @@ describe('Integration: Component: gh-tag-settings-form', function () {
         this.owner.register('service:media-queries', mediaQueriesStub);
     });
 
-    it('renders', async function () {
-        await render(hbs`
-            {{gh-tag-settings-form tag=tag setProperty=(action setProperty)}}
-        `);
-        expect(this.$()).to.have.length(1);
-    });
-
     it('has the correct title', async function () {
         await render(hbs`
             {{gh-tag-settings-form tag=tag setProperty=(action setProperty)}}
@@ -167,24 +160,24 @@ describe('Integration: Component: gh-tag-settings-form', function () {
             {{gh-tag-settings-form tag=tag setProperty=(action setProperty)}}
         `);
 
-        let nameFormGroup = this.$('input[name="name"]').closest('.form-group');
-        expect(nameFormGroup.hasClass('error'), 'name form group has error state').to.be.true;
-        expect(nameFormGroup.find('.response').length, 'name form group has error message').to.equal(1);
+        let nameFormGroup = find('input[name="name"]').closest('.form-group');
+        expect(nameFormGroup, 'name form group has error state').to.have.class('error');
+        expect(nameFormGroup.querySelector('.response'), 'name form group has error message').to.exist;
 
-        let slugFormGroup = this.$('input[name="slug"]').closest('.form-group');
-        expect(slugFormGroup.hasClass('error'), 'slug form group has error state').to.be.true;
-        expect(slugFormGroup.find('.response').length, 'slug form group has error message').to.equal(1);
+        let slugFormGroup = find('input[name="slug"]').closest('.form-group');
+        expect(slugFormGroup, 'slug form group has error state').to.have.class('error');
+        expect(slugFormGroup.querySelector('.response'), 'slug form group has error message').to.exist;
 
-        let descriptionFormGroup = this.$('textarea[name="description"]').closest('.form-group');
-        expect(descriptionFormGroup.hasClass('error'), 'description form group has error state').to.be.true;
+        let descriptionFormGroup = find('textarea[name="description"]').closest('.form-group');
+        expect(descriptionFormGroup, 'description form group has error state').to.have.class('error');
 
-        let metaTitleFormGroup = this.$('input[name="metaTitle"]').closest('.form-group');
-        expect(metaTitleFormGroup.hasClass('error'), 'metaTitle form group has error state').to.be.true;
-        expect(metaTitleFormGroup.find('.response').length, 'metaTitle form group has error message').to.equal(1);
+        let metaTitleFormGroup = find('input[name="metaTitle"]').closest('.form-group');
+        expect(metaTitleFormGroup, 'metaTitle form group has error state').to.have.class('error');
+        expect(metaTitleFormGroup.querySelector('.response'), 'metaTitle form group has error message').to.exist;
 
-        let metaDescriptionFormGroup = this.$('textarea[name="metaDescription"]').closest('.form-group');
-        expect(metaDescriptionFormGroup.hasClass('error'), 'metaDescription form group has error state').to.be.true;
-        expect(metaDescriptionFormGroup.find('.response').length, 'metaDescription form group has error message').to.equal(1);
+        let metaDescriptionFormGroup = find('textarea[name="metaDescription"]').closest('.form-group');
+        expect(metaDescriptionFormGroup, 'metaDescription form group has error state').to.have.class('error');
+        expect(metaDescriptionFormGroup.querySelector('.response'), 'metaDescription form group has error message').to.exist;
     });
 
     it('displays char count for text fields', async function () {
@@ -192,11 +185,11 @@ describe('Integration: Component: gh-tag-settings-form', function () {
             {{gh-tag-settings-form tag=tag setProperty=(action setProperty)}}
         `);
 
-        let descriptionFormGroup = this.$('textarea[name="description"]').closest('.form-group');
-        expect(descriptionFormGroup.find('.word-count').text(), 'description char count').to.equal('12');
+        let descriptionFormGroup = find('textarea[name="description"]').closest('.form-group');
+        expect(descriptionFormGroup.querySelector('.word-count'), 'description char count').to.have.trimmed.text('12');
 
-        let metaDescriptionFormGroup = this.$('textarea[name="metaDescription"]').closest('.form-group');
-        expect(metaDescriptionFormGroup.find('.word-count').text(), 'description char count').to.equal('16');
+        let metaDescriptionFormGroup = find('textarea[name="metaDescription"]').closest('.form-group');
+        expect(metaDescriptionFormGroup.querySelector('.word-count'), 'description char count').to.have.trimmed.text('16');
     });
 
     it('renders SEO title preview', async function () {
