@@ -17,7 +17,7 @@
     "gateway"
   ],
   "devDependencies": {
-    "jsdom": "15.0.0",
+    "jsdom": "15.1.0",
     "mocha": "6.1.4",
     "should": "13.2.3",
     "sinon": "7.3.2"
