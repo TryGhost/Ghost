@@ -3,15 +3,22 @@ const Ajv = require('ajv');
 const stripKeyword = require('./strip-keyword');
 const common = require('../../../../../lib/common');
 
-const validate = (schema, definitions, data) => {
-    const ajv = new Ajv({
-        allErrors: true,
-        useDefaults: true
-    });
+const ajv = new Ajv({
+    allErrors: true,
+    useDefaults: true
+});
 
-    stripKeyword(ajv);
+stripKeyword(ajv);
 
-    const validation = ajv.addSchema(definitions).compile(schema);
+const getValidation = (schema, def) => {
+    if (!ajv.getSchema(def.$id)) {
+        ajv.addSchema(def);
+    }
+    return ajv.getSchema(schema.$id) || ajv.compile(schema);
+};
+
+const validate = (schema, definition, data) => {
+    const validation = getValidation(schema, definition);
 
     validation(data);
 
