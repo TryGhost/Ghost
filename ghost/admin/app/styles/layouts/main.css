@@ -464,17 +464,11 @@
     }
 
     /* non-authed pages shouldn't have the mobile bar */
-    .ghost-setup .gh-viewport,
-    .ghost-reset .gh-viewport,
-    .ghost-signup .gh-viewport,
-    .ghost-login .gh-viewport {
+    .unauthenticated-route .gh-viewport {
         padding-bottom: 0;
     }
 
-    .ghost-setup .gh-mobile-nav-bar,
-    .ghost-reset .gh-mobile-nav-bar,
-    .ghost-signup .gh-mobile-nav-bar,
-    .ghost-login .gh-mobile-nav-bar {
+    .unauthenticated-route .gh-mobile-nav-bar {
         display: none;
     }
 }
