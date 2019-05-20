@@ -1,10 +1,7 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import styleBody from 'ghost-admin/mixins/style-body';
 
-export default AuthenticatedRoute.extend(styleBody, {
+export default AuthenticatedRoute.extend({
     titleToken: 'Site',
-
-    classNames: ['view-site'],
 
     model() {
         return (new Date()).valueOf();
