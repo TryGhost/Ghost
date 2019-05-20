@@ -81,8 +81,12 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
         }
     },
 
-    titleToken() {
-        return this.get('controller.post.title') || 'Editor';
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: () => {
+                return this.get('controller.post.title') || 'Editor';
+            }
+        };
     },
 
     _blurAndScheduleAction(func) {

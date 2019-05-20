@@ -5,8 +5,6 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
     settings: service(),
 
-    titleToken: 'Settings - Integrations',
-
     beforeModel() {
         this._super(...arguments);
         return this.get('session.user')
@@ -18,5 +16,11 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
         // kick off the background fetch of integrations so that we can
         // show the screen immediately
         controller.fetchIntegrations.perform();
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Settings - Integrations'
+        };
     }
 });

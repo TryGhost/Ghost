@@ -5,8 +5,6 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
     settings: service(),
 
-    titleToken: 'Settings - Labs',
-
     beforeModel() {
         this._super(...arguments);
         return this.get('session.user')
@@ -22,5 +20,11 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
         if (isExiting) {
             controller.reset();
         }
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Settings - Labs'
+        };
     }
 });

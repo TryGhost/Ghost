@@ -7,8 +7,6 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
     config: service(),
     settings: service(),
 
-    titleToken: 'Unsplash',
-
     // reload settings to ensure we have latest values and pre-configure
     // Unsplash to be active if the server doesn't have any unsplash setting
     beforeModel() {
@@ -51,5 +49,11 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
                 return;
             }
         }
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Unsplash'
+        };
     }
 });

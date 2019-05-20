@@ -5,8 +5,6 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend({
     feature: service(),
 
-    titleToken: 'Subscribers',
-
     // redirect if subscribers is disabled or user isn't owner/admin
     beforeModel() {
         this._super(...arguments);
@@ -27,5 +25,11 @@ export default AuthenticatedRoute.extend({
     setupController(controller) {
         this._super(...arguments);
         controller.fetchSubscribers.perform();
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Subscribers'
+        };
     }
 });

@@ -5,8 +5,6 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
     router: service(),
 
-    titleToken: 'Settings - Integrations',
-
     init() {
         this._super(...arguments);
         this.router.on('routeWillChange', (transition) => {
@@ -56,5 +54,11 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
                 return;
             }
         }
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Settings - Integrations'
+        };
     }
 });

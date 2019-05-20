@@ -14,8 +14,6 @@ const defaultModel = function defaultModel() {
 };
 
 export default Route.extend(UnauthenticatedRouteMixin, {
-    titleToken: 'Sign In',
-
     model() {
         return defaultModel();
     },
@@ -32,6 +30,7 @@ export default Route.extend(UnauthenticatedRouteMixin, {
 
     buildRouteInfoMetadata() {
         return {
+            titleToken: 'Sign In',
             bodyClasses: ['unauthenticated-route']
         };
     }

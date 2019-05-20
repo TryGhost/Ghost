@@ -19,5 +19,11 @@ export default AuthenticatedRoute.extend({
     setupController(controller, newPost) {
         let editor = this.controllerFor('editor');
         editor.setPost(newPost);
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            mainClasses: ['editor-new']
+        };
     }
 });

@@ -7,8 +7,6 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
     settings: service(),
 
-    titleToken: 'Settings - Design',
-
     beforeModel() {
         this._super(...arguments);
         return this.get('session.user')
@@ -52,5 +50,11 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
         activateTheme(theme) {
             return this.controller.send('activateTheme', theme);
         }
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Settings - Design'
+        };
     }
 });

@@ -4,8 +4,6 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend({
     config: service(),
 
-    titleToken: 'Members',
-
     // redirect to posts screen if:
     // - developer experiments aren't enabled
     // - TODO: members is disabled?
@@ -27,5 +25,11 @@ export default AuthenticatedRoute.extend({
     setupController(controller) {
         this._super(...arguments);
         controller.fetchMembers.perform();
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Members'
+        };
     }
 });

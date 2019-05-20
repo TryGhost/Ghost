@@ -185,10 +185,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         }
     },
 
-    title(tokens) {
-        return `${tokens.join(' - ')} - ${this.get('config.blogTitle')}`;
-    },
-
     sessionAuthenticated() {
         if (this.get('session.skipAuthSuccessHandler')) {
             return;
