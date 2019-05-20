@@ -1,13 +1,11 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from '../../../mixins/current-user-settings';
-import styleBody from 'ghost-admin/mixins/style-body';
 import {inject as service} from '@ember/service';
 
-export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+export default AuthenticatedRoute.extend(CurrentUserSettings, {
     settings: service(),
 
     titleToken: 'Slack',
-    classNames: ['settings-view-integrations-slack'],
 
     beforeModel() {
         this._super(...arguments);
