@@ -2,7 +2,6 @@ import DS from 'ember-data';
 import EmberObject from '@ember/object';
 import Route from '@ember/routing/route';
 import UnauthenticatedRouteMixin from 'ghost-admin/mixins/unauthenticated-route-mixin';
-import styleBody from 'ghost-admin/mixins/style-body';
 
 const {Errors} = DS;
 
@@ -14,10 +13,8 @@ const defaultModel = function defaultModel() {
     });
 };
 
-export default Route.extend(UnauthenticatedRouteMixin, styleBody, {
+export default Route.extend(UnauthenticatedRouteMixin, {
     titleToken: 'Sign In',
-
-    classNames: ['ghost-login'],
 
     model() {
         return defaultModel();
@@ -31,5 +28,11 @@ export default Route.extend(UnauthenticatedRouteMixin, styleBody, {
 
         // clear the properties that hold the credentials when we're no longer on the signin screen
         controller.set('signin', defaultModel());
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            bodyClasses: ['unauthenticated-route']
+        };
     }
 });
