@@ -27,7 +27,10 @@ export default Component.extend({
         },
 
         resetInput() {
-            this.$('input').val('');
+            let input = this.element && this.element.querySelector('input');
+            if (input) {
+                input.value = '';
+            }
         },
 
         handleKeydown(e) {
@@ -41,14 +44,17 @@ export default Component.extend({
     },
 
     open() {
-        this.get('select.actions').open();
+        this.select.actions.open();
     },
 
     close() {
-        this.get('select.actions').close();
+        this.select.actions.close();
     },
 
     _focusInput() {
-        this.$('input')[0].focus();
+        let input = this.element && this.element.querySelector('input');
+        if (input) {
+            input.focus();
+        }
     }
 });
