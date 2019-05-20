@@ -5,8 +5,6 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
     settings: service(),
 
-    titleToken: 'AMP',
-
     beforeModel() {
         this._super(...arguments);
         return this.get('session.user')
@@ -30,6 +28,12 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
                 return;
             }
         }
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'AMP'
+        };
     }
 
 });

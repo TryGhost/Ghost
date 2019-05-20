@@ -6,8 +6,6 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
     infinity: service(),
     session: service(),
 
-    titleToken: 'Staff',
-
     model() {
         return this.session.user;
     },
@@ -21,5 +19,11 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
         reload() {
             this.controller.backgroundUpdate.perform();
         }
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Staff'
+        };
     }
 });

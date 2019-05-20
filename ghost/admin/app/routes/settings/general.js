@@ -7,8 +7,6 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
     config: service(),
     settings: service(),
 
-    titleToken: 'Settings - General',
-
     beforeModel() {
         this._super(...arguments);
         return this.get('session.user')
@@ -50,5 +48,11 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
             }
         }
 
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Settings - General'
+        };
     }
 });

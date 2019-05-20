@@ -1,5 +1,6 @@
 import Service, {inject as service} from '@ember/service';
 import {get} from '@ember/object';
+import {isEmpty} from '@ember/utils';
 import {not, or, reads} from '@ember/object/computed';
 
 function collectMetadataClasses(transition, prop) {
@@ -33,6 +34,7 @@ function updateBodyClasses(transition) {
 }
 
 export default Service.extend({
+    config: service(),
     dropdown: service(),
     mediaQueries: service(),
     router: service(),
@@ -51,6 +53,8 @@ export default Service.extend({
 
         this.router.on('routeDidChange', (transition) => {
             updateBodyClasses(transition);
+
+            this.updateDocumentTitle();
 
             let {newClasses: mainClasses} = collectMetadataClasses(transition, 'mainClasses');
             this.set('mainClass', mainClasses.join(' '));
@@ -75,6 +79,33 @@ export default Service.extend({
 
     openSettingsMenu() {
         this.set('showSettingsMenu', true);
+    },
+
+    updateDocumentTitle() {
+        let {currentRoute} = this.router;
+        let tokens = [];
+
+        while (currentRoute) {
+            let titleToken = get(currentRoute, 'metadata.titleToken');
+
+            if (typeof titleToken === 'function') {
+                titleToken = titleToken();
+            }
+
+            if (titleToken) {
+                tokens.unshift(titleToken);
+            }
+
+            currentRoute = currentRoute.parent;
+        }
+
+        let blogTitle = this.config.get('blogTitle');
+
+        if (!isEmpty(tokens)) {
+            window.document.title = `${tokens.join(' - ')} - ${blogTitle}`;
+        } else {
+            window.document.title = blogTitle;
+        }
     },
 
     actions: {

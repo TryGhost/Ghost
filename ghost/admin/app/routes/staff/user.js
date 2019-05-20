@@ -3,8 +3,6 @@ import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
-    titleToken: 'Staff - User',
-
     model(params) {
         return this.store.queryRecord('user', {slug: params.user_slug, include: 'count.posts'});
     },
@@ -57,5 +55,11 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
                 return;
             }
         }
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Staff - User'
+        };
     }
 });

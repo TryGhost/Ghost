@@ -1,6 +1,11 @@
 import PostsRoute from './posts';
 
 export default PostsRoute.extend({
-    titleToken: 'Pages',
-    modelName: 'page'
+    modelName: 'page',
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Pages'
+        };
+    }
 });
