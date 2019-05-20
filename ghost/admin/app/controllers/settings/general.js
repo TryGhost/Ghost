@@ -20,6 +20,7 @@ export default Controller.extend({
     notifications: service(),
     session: service(),
     settings: service(),
+    ui: service(),
 
     availableTimezones: null,
     iconExtensions: null,
@@ -272,9 +273,8 @@ export default Controller.extend({
             let settings = yield this.settings.save();
             config.set('blogTitle', settings.get('title'));
 
-            // this forces the document title to recompute after
-            // a blog title change
-            this.send('updateDocumentTitle');
+            // this forces the document title to recompute after a blog title change
+            this.ui.updateDocumentTitle();
 
             return settings;
         } catch (error) {

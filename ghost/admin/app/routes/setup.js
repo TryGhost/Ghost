@@ -7,8 +7,6 @@ export default Route.extend({
     ajax: service(),
     config: service(),
 
-    titleToken: 'Setup',
-
     // use the beforeModel hook to check to see whether or not setup has been
     // previously completed.  If it has, stop the transition into the setup page.
     beforeModel() {
@@ -51,6 +49,7 @@ export default Route.extend({
 
     buildRouteInfoMetadata() {
         return {
+            titleToken: 'Setup',
             bodyClasses: ['unauthenticated-route']
         };
     }

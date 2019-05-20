@@ -25,7 +25,6 @@ export default AuthenticatedRoute.extend({
         }
     },
 
-    titleToken: 'Posts',
     modelName: 'post',
 
     perPage: 30,
@@ -101,6 +100,12 @@ export default AuthenticatedRoute.extend({
 
             this._super(...arguments);
         }
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Posts'
+        };
     },
 
     _getTypeFilters(type) {

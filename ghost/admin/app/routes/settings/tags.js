@@ -6,8 +6,6 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 
 export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
 
-    titleToken: 'Settings - Tags',
-
     shortcuts: null,
 
     init() {
@@ -82,6 +80,12 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
         resetShortcutsScope() {
             key.setScope('default');
         }
+    },
+
+    buildRouteInfoMetadata() {
+        return {
+            titleToken: 'Settings - Tags'
+        };
     },
 
     stepThroughTags(step) {

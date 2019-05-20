@@ -472,7 +472,7 @@ export default Controller.extend({
             yield this.autosave.perform();
         }
 
-        this.send('updateDocumentTitle');
+        this.ui.updateDocumentTitle();
     }),
 
     generateSlug: task(function* () {
