@@ -41,10 +41,14 @@ pagination = function (options) {
         !_.isNumber(this.pagination.total) || !_.isNumber(this.pagination.limit)) {
         throw new errors.IncorrectUsageError({message: i18n.t('warnings.helpers.pagination.valuesMustBeNumeric')});
     }
-    const context = _.merge({}, this, options.hash, this.pagination);
+
+    // CASE: The pagination helper should have access to the pagination properties at the top level.
+    _.merge(this, this.pagination);
+    // CASE: The pagination helper will forward attributes passed to it.
+    _.merge(this, options.hash);
     const data = createFrame(options.data);
 
-    return templates.execute('pagination', context, {data});
+    return templates.execute('pagination', this, {data});
 };
 
 module.exports = pagination;

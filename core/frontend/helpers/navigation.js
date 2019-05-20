@@ -75,8 +75,11 @@ module.exports = function navigation(options) {
         return out;
     });
 
-    const context = _.merge({}, this, options.hash, {navigation: output});
+    // CASE: The navigation helper should have access to the navigation items at the top level.
+    this.navigation = output;
+    // CASE: The navigation helper will forward attributes passed to it.
+    _.merge(this, options.hash);
     const data = createFrame(options.data);
 
-    return templates.execute('navigation', context, {data});
+    return templates.execute('navigation', this, {data});
 };
