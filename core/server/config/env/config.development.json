@@ -14,6 +14,7 @@
         "useRpcPing": false,
         "useUpdateCheck": true
     },
+    "enableDeveloperExperiments": true,
     "useMinFiles": false,
     "caching": {
         "theme": {
