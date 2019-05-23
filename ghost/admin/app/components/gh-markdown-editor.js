@@ -45,8 +45,6 @@ export default Component.extend(ShortcutsMixin, {
     _isHemingwayMode: false,
     _isUploading: false,
     _showUnsplash: false,
-    _statusbar: null,
-    _toolbar: null,
     _uploadedImageUrls: null,
 
     // Closure actions
@@ -293,17 +291,6 @@ export default Component.extend(ShortcutsMixin, {
             // eslint-disable-next-line no-control-regex
             this._editor.codemirror.setOption('specialChars', /[\u0000-\u001f\u007f-\u009f\u00ad\u061c\u200b-\u200f\u2028\u2029\ufeff\xa0]/g);
 
-            // HACK: move the toolbar & status bar elements outside of the
-            // editor container so that they can be aligned in fixed positions
-            let container = this.element.closest('.gh-editor');
-            let footer = container && container.querySelector('.gh-editor-footer');
-            if (footer) {
-                this._toolbar = this.element.querySelector('.editor-toolbar');
-                this._statusbar = this.element.querySelector('.editor-statusbar');
-                footer.appendChild(this._toolbar);
-                footer.appendChild(this._statusbar);
-            }
-
             this._updateButtonState();
         },
 
@@ -437,17 +424,6 @@ export default Component.extend(ShortcutsMixin, {
 
         toggleMarkdownHelp() {
             this.toggleProperty('showMarkdownHelp');
-        },
-
-        // put the toolbar/statusbar elements back so that SimpleMDE doesn't throw
-        // errors when it tries to remove them
-        destroyEditor() {
-            let container = this.element.querySelector('.gh-markdown-editor-pane');
-            if (container) {
-                container.appendChild(this._toolbar);
-                container.appendChild(this._statusbar);
-            }
-            this._editor = null;
         }
     },
 
