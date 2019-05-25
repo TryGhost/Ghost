@@ -3901,10 +3901,6 @@ keygrip@~1.0.2, keygrip@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/keygrip/-/keygrip-1.0.3.tgz#399d709f0aed2bab0a059e0cdd3a5023a053e1dc"
 
-keypair@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/keypair/-/keypair-1.0.1.tgz#7603719270afb6564ed38a22087a06fc9aa4ea1b"
-
 keyv@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/keyv/-/keyv-3.0.0.tgz#44923ba39e68b12a7cec7df6c3268c031f2ef373"
@@ -6207,6 +6203,13 @@ rimraf@~2.4.0:
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.4.5.tgz#ee710ce5d93a8fdb856fb5ea8ff0e2d75934b2da"
   dependencies:
     glob "^6.0.1"
+
+rsa-keypair@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/rsa-keypair/-/rsa-keypair-1.0.1.tgz#dc52a7f20b68bf555dc91bc054b9e4ce45556ad6"
+  integrity sha512-Eo075YpL4RL9fINIxb9p6CrCdarF55Aek9zLGWikkcuC1RH3/UkrWFAEFshUUmQO1hmm1dfSNN+GQmhpxFTBYQ==
+  dependencies:
+    nan "~2.10.0"
 
 rss@1.2.2:
   version "1.2.2"
