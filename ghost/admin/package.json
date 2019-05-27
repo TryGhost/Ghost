@@ -75,7 +75,7 @@
     "ember-export-application-global": "2.0.0",
     "ember-fetch": "6.5.1",
     "ember-in-viewport": "3.3.0",
-    "ember-infinity": "1.4.5",
+    "ember-infinity": "1.4.7",
     "ember-load": "0.0.17",
     "ember-load-initializers": "2.0.0",
     "ember-mocha": "0.15.1",
