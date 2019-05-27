@@ -819,10 +819,10 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
-"@tryghost/helpers@1.1.3":
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.3.tgz#4269245969f336ed51ec11042dc51aab29dd1a7c"
-  integrity sha512-i/IO2fQT440ryOJBaOimQWyroRUHrUxp1LMYU+0eUq3j3TlD/k+IM7awl9DFou9Z2lSdfA39UdPfHvQoPBglng==
+"@tryghost/helpers@1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.4.tgz#e55cad1a86e8ffd9360c8921fc4cff43c7f8d40f"
+  integrity sha512-EPnxKza8puwPpv4dAcXHIiWLL1TrXh53BzK8//d+uZ6b1dD923RhUcgSJ13t/kpe7cCof6bYCMxfuZC8+Ymhzw==
   dependencies:
     lodash-es "^4.17.11"
 
