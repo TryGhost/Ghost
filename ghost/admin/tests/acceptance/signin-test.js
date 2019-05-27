@@ -1,4 +1,3 @@
-import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import {Response} from 'ember-cli-mirage';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {
@@ -9,6 +8,7 @@ import {
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
+import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
 
 describe('Acceptance: Signin', function () {

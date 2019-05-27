@@ -1,4 +1,3 @@
-import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {
     beforeEach,
@@ -8,6 +7,7 @@ import {
 import {currentURL} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
+import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
 describe('Acceptance: Settings - Integrations - Zapier', function () {

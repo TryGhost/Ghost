@@ -1,6 +1,5 @@
 import Mirage from 'ember-cli-mirage';
 import moment from 'moment';
-import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import sinon from 'sinon';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
@@ -9,6 +8,7 @@ import {datepickerSelect} from 'ember-power-datepicker/test-support';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
+import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
 
 // TODO: update ember-power-datepicker to expose modern test helpers

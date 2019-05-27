@@ -1,6 +1,5 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import mockUploads from '../../../mirage/config/uploads';
-import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import wait from 'ember-test-helpers/wait';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
@@ -9,6 +8,7 @@ import {expect} from 'chai';
 import {fileUpload} from '../../helpers/file-upload';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
+import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
 describe('Acceptance: Settings - General', function () {

@@ -1,10 +1,10 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {click, fillIn, find, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
+import {setupMirage} from 'ember-cli-mirage/test-support';
 
 // keyCodes
 const KEY_S = 83;

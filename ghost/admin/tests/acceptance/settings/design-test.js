@@ -1,13 +1,13 @@
 import Mirage from 'ember-cli-mirage';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import mockThemes from 'ghost-admin/mirage/config/themes';
-import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {fileUpload} from '../../helpers/file-upload';
 import {setupApplicationTest} from 'ember-mocha';
+import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
 // simulate jQuery's `:visible` pseudo-selector

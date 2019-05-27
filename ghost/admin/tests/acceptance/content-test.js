@@ -1,10 +1,10 @@
-import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
 import {currentURL, find, findAll, triggerEvent, visit} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
+import {setupMirage} from 'ember-cli-mirage/test-support';
 
 describe('Acceptance: Content', function () {
     let hooks = setupApplicationTest();
