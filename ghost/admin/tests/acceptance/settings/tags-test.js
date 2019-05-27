@@ -1,4 +1,3 @@
-import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import wait from 'ember-test-helpers/wait';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'ember-cli-mirage';
@@ -9,6 +8,7 @@ import {errorOverride, errorReset} from 'ghost-admin/tests/helpers/adapter-error
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
+import {setupMirage} from 'ember-cli-mirage/test-support';
 import {timeout} from 'ember-concurrency';
 import {visit} from '../../helpers/visit';
 

@@ -1,9 +1,9 @@
-import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import {click, fillIn, find, findAll, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {invalidateSession} from 'ember-simple-auth/test-support';
 import {setupApplicationTest} from 'ember-mocha';
+import {setupMirage} from 'ember-cli-mirage/test-support';
 
 describe('Acceptance: Password Reset', function () {
     let hooks = setupApplicationTest();
