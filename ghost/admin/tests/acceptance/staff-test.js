@@ -1,6 +1,5 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import moment from 'moment';
-import setupMirage from 'ember-cli-mirage/test-support/setup-mirage';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
@@ -20,6 +19,7 @@ import {
 import {errorOverride, errorReset} from '../helpers/adapter-error';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
+import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
 
 describe('Acceptance: Staff', function () {
