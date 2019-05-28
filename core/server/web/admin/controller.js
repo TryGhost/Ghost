@@ -23,6 +23,11 @@ module.exports = function adminController(req, res) {
 
     const defaultTemplate = config.get('env') === 'production' ? 'default-prod.html' : 'default.html';
     const templatePath = path.resolve(config.get('paths').adminViews, defaultTemplate);
+    const headers = {};
 
-    res.sendFile(templatePath);
+    if (config.get('adminFrameProtection')) {
+        headers['X-Frame-Options'] = 'sameorigin';
+    }
+
+    res.sendFile(templatePath, {headers});
 };
