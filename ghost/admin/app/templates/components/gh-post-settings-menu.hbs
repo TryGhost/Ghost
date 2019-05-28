@@ -126,6 +126,7 @@
                     </li>
                 </ul>
 
+                {{#unless this.session.user.isAuthorOrContributor}}
                 <div class="form-group for-checkbox">
                     <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
                         <input
@@ -139,6 +140,7 @@
                         <p>Feature this {{post.displayName}}</p>
                     </label>
                 </div>
+                {{/unless}}
 
                 {{gh-psm-template-select
                     post=post
@@ -409,10 +411,12 @@
     pane is shown
 --}}
 {{#if _showThrobbers}}
-    {{gh-tour-item "featured-post"
-        target="label[for='featured'] p"
-        throbberAttachment="middle middle"
-        throbberOffset="0px -20px"
-        popoverTriangleClass="bottom-right"
-    }}
+    {{#unless this.session.user.isAuthorOrContributor}}
+        {{gh-tour-item "featured-post"
+            target="label[for='featured'] p"
+            throbberAttachment="middle middle"
+            throbberOffset="0px -20px"
+            popoverTriangleClass="bottom-right"
+        }}
+    {{/unless}}
 {{/if}}
