@@ -94,5 +94,6 @@
     },
     "compress": true,
     "preloadHeaders": false,
+    "adminFrameProtection": true,
     "sendWelcomeEmail": true
 }
