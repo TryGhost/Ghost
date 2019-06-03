@@ -111,13 +111,13 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.4.0.tgz#2dd7111c10213634bfd39dc00d5171abe0f2a321"
-  integrity sha512-YIBqjfXy2l51/zMpNuHilDkZizxF7WYRkATKqh7uKy2UJs+yeJq9gwQBojAvwDOc8Lmdwj/sJGLlg5jWs9dRCA==
+"@tryghost/html-to-mobiledoc@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.4.1.tgz#117d7226996d362db553e97895f32801aec38925"
+  integrity sha512-nh6P4EAdtzUy46q1SXHaCU6OPxfjRWOs5oq26Z/sd4iOYGKwWkZgJDHxQX9OYF0Rr1qoGGVSmffGFCf19a+c9w==
   dependencies:
     "@tryghost/kg-parser-plugins" "^0.5.0"
-    "@tryghost/mobiledoc-kit" "^0.11.2-ghost.3"
+    "@tryghost/mobiledoc-kit" "^0.11.2-ghost.4"
     jsdom "14.1.0"
 
 "@tryghost/kg-clean-basic-html@^0.1.1":
@@ -208,10 +208,10 @@
     ghost-ignition "^3.1.0"
     lodash "^4.17.11"
 
-"@tryghost/mobiledoc-kit@^0.11.2-ghost.3":
-  version "0.11.2-ghost.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.2-ghost.3.tgz#15d5ad0ce0b2c4322ba5e2fc87f641dcb387e8ff"
-  integrity sha512-R07zG7vLViPt2SmJSQXPTdgakfsra9GcP+O2saa0SYzfdTE/+3+hMo0PgJSwcyCx898mJmQv6L1lgu7N7qjihw==
+"@tryghost/mobiledoc-kit@^0.11.2-ghost.4":
+  version "0.11.2-ghost.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.2-ghost.4.tgz#144189e7e62748b3c56e7b723fa18a5e8c807ccf"
+  integrity sha512-C6FHFodOgxso+pZ6ArjBDRoGuzRHg42r3JJXzUX9ursIC2QLQUPsVDG42KN25x26EzOBUi6umB1CvO5bUryNPw==
   dependencies:
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
