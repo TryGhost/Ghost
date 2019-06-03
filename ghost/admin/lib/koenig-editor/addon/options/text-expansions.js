@@ -168,14 +168,14 @@ function registerInlineMarkdownTextExpansions(editor) {
     }
 
     function matchStrongStar(editor, text) {
-        let matches = text.match(/(?:^|\s)\*\*([^\s*]+|[^\s*][^*]*[^\s])\*\*/);
+        let matches = text.match(/(?:^|\s)\*\*([^\s*]+|[^\s*][^*]*[^\s])\*\*$/);
         if (matches) {
             _addMarkdownMarkup(this, editor, matches, 'strong');
         }
     }
 
     function matchStrongUnderscore(editor, text) {
-        let matches = text.match(/(?:^|\s)__([^\s_]+|[^\s_][^_]*[^\s])__/);
+        let matches = text.match(/(?:^|\s)__([^\s_]+|[^\s_][^_]*[^\s])__$/);
         if (matches) {
             _addMarkdownMarkup(this, editor, matches, 'strong');
         }
@@ -196,42 +196,51 @@ function registerInlineMarkdownTextExpansions(editor) {
         // input = " *foo*"
         // matches[0] = " *foo*"
         // matches[1] = "foo"
-        let matches = text.match(/(?:^|\s)\*([^\s*]+|[^\s*][^*]*[^\s])\*/);
+        let matches = text.match(/(?:^|\s)\*([^\s*]+|[^\s*][^*]*[^\s])\*$/);
         if (matches) {
             _addMarkdownMarkup(this, editor, matches, 'em');
         }
     }
 
     function matchEmUnderscore(editor, text) {
-        let matches = text.match(/(?:^|\s)_([^\s_]+|[^\s_][^_]*[^\s])_/);
+        let matches = text.match(/(?:^|\s)_([^\s_]+|[^\s_][^_]*[^\s])_$/);
         if (matches) {
             _addMarkdownMarkup(this, editor, matches, 'em');
         }
     }
 
     function matchSub(editor, text) {
-        let matches = text.match(/(?:^|[^~])~([^\s~]+|[^\s~][^~]*[^\s])~/);
+        let matches = text.match(/(^|[^~])~([^\s~]+|[^\s~][^~]*[^\s~])~$/);
         if (matches) {
-            _addMarkdownMarkup(this, editor, matches, 'sub');
+            // re-adjust the matches to remove the first matched char if it
+            // exists, otherwise our length calculations are off. This is
+            // different to other matchers because we match any char at the
+            // beginning rather than a blank space and need to allow ~~ for
+            // the strikethrough expansion
+            let newMatches = [
+                matches[1] ? matches[0].replace(matches[1], '').trim() : matches[0],
+                matches[2]
+            ];
+            _addMarkdownMarkup(this, editor, newMatches, 'sub');
         }
     }
 
     function matchStrikethrough(editor, text) {
-        let matches = text.match(/(?:^|\s)~~([^\s~]+|[^\s~][^~]*[^\s])~~/);
+        let matches = text.match(/(?:^|\s)~~([^\s~]+|[^\s~][^~]*[^\s])~~$/);
         if (matches) {
             _addMarkdownMarkup(this, editor, matches, 's');
         }
     }
 
     function matchCode(editor, text) {
-        let matches = text.match(/(?:^|\s)`([^\s`]+|[^\s`][^`]*[^\s`])`/);
+        let matches = text.match(/(?:^|\s)`([^\s`]+|[^\s`][^`]*[^\s`])`$/);
         if (matches) {
             _addMarkdownMarkup(this, editor, matches, 'code');
         }
     }
 
     function matchSup(editor, text) {
-        let matches = text.match(/\^([^\s^]+|[^\s^][^^]*[^\s^])\^/);
+        let matches = text.match(/\^([^\s^]+|[^\s^][^^]*[^\s^])\^$/);
         if (matches) {
             _addMarkdownMarkup(this, editor, matches, 'sup');
         }
