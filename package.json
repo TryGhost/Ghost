@@ -35,7 +35,7 @@
     "postinstall": "cpy node_modules/@tryghost/members-theme-bindings/build/members-theme-bindings.js core/server/public/"
   },
   "engines": {
-    "node": "^6.9.0 || ^8.9.0 || ^10.13.0",
+    "node": "^8.9.0 || ^10.13.0",
     "cli": "^1.9.0"
   },
   "dependencies": {

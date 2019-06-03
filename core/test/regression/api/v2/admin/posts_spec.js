@@ -173,11 +173,6 @@ describe('Posts API', function () {
         });
 
         it('html to plaintext', function () {
-            // NOTE: only supported in node v8 and higher
-            if (process.version.startsWith('v6.')) {
-                this.skip();
-            }
-
             return request
                 .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
                 .set('Origin', config.get('url'))
