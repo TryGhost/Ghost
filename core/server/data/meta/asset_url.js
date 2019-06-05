@@ -1,8 +1,7 @@
 const crypto = require('crypto'),
     config = require('../../config'),
     imageLib = require('../../lib/image'),
-    urlService = require('../../services/url'),
-    packageInfo = require('../../../../package.json');
+    urlService = require('../../services/url');
 
 /**
  * Serve either uploaded favicon or default
@@ -39,7 +38,7 @@ function getAssetUrl(path, hasMinFile) {
     // Ensure we have an assetHash
     // @TODO rework this!
     if (!config.get('assetHash')) {
-        config.set('assetHash', (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10));
+        config.set('assetHash', (crypto.createHash('md5').update(Date.now().toString()).digest('hex')).substring(0, 10));
     }
 
     // Finally add the asset hash to the output URL
