@@ -1,6 +1,6 @@
 var config = require('../../config'),
     escapeExpression = require('../../services/themes/engine').escapeExpression,
-    social = require('../../lib/social'),
+    socialUrls = require('@tryghost/social-urls'),
     _ = require('lodash');
 
 function schemaImageObject(metaDataVal) {
@@ -43,20 +43,20 @@ function trimSameAs(data, context) {
             sameAs.push(escapeExpression(data[context].primary_author.website));
         }
         if (data[context].primary_author.facebook) {
-            sameAs.push(social.urls.facebook(data[context].primary_author.facebook));
+            sameAs.push(socialUrls.facebook(data[context].primary_author.facebook));
         }
         if (data[context].primary_author.twitter) {
-            sameAs.push(social.urls.twitter(data[context].primary_author.twitter));
+            sameAs.push(socialUrls.twitter(data[context].primary_author.twitter));
         }
     } else if (context === 'author') {
         if (data.author.website) {
             sameAs.push(escapeExpression(data.author.website));
         }
         if (data.author.facebook) {
-            sameAs.push(social.urls.facebook(data.author.facebook));
+            sameAs.push(socialUrls.facebook(data.author.facebook));
         }
         if (data.author.twitter) {
-            sameAs.push(social.urls.twitter(data.author.twitter));
+            sameAs.push(socialUrls.twitter(data.author.twitter));
         }
     }
 

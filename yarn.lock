@@ -236,6 +236,15 @@
     chalk "^2.4.1"
     sywac "^1.2.1"
 
+"@tryghost/social-urls@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.0.tgz#5e41d2108674e420d9e92d5fc6296e185838eadb"
+  integrity sha512-aBJvQmKDtEZ9nqOcl+jGOnmXndK1qjtIp1p3ExVS/XpzmRApvxBn5ImcIX1rZ8eiyOk0GU4DygerxpKKBE5ARw==
+  dependencies:
+    bluebird "3.5.5"
+    ghost-ignition "3.1.0"
+    lodash "4.17.11"
+
 "@tryghost/string@^0.1.3":
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.3.tgz#aad595f40f984570aff042b08f407e67dc47f692"
@@ -727,6 +736,11 @@ bluebird@3.5.4, bluebird@^3.5.4:
   version "3.5.4"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.4.tgz#d6cc661595de30d5b3af5fcedd3c0b3ef6ec5714"
   integrity sha512-FG+nFEZChJrbQ9tIccIfZJBz3J7mLrAhxakAbnrJWn8d7aKOC+LWifa0G+p4ZqKp4y13T7juYvdhq9NzKdsrjw==
+
+bluebird@3.5.5:
+  version "3.5.5"
+  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.5.tgz#a8d0afd73251effbbd5fe384a77d73003c17a71f"
+  integrity sha512-5am6HnnfN+urzt4yfg7IgTbotDjIT/u8AJpEt0sIU9FtXfVeezXAPKswrG+xKUCOYAINpSdgZVDU6QFh+cuH3w==
 
 body-parser@1.18.3:
   version "1.18.3"
