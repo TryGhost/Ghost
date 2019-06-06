@@ -58,7 +58,7 @@ module.exports = {
     templates: require('./template'),
 
     // Various utils, needs cleaning up / simplifying
-    socialUrls: require('../lib/social/urls'),
+    socialUrls: require('@tryghost/social-urls'),
     blogIcon: require('../lib/image/blog-icon'),
     urlService: require('../services/url'),
     localUtils: require('./utils')
