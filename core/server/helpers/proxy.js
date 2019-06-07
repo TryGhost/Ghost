@@ -19,7 +19,6 @@ module.exports = {
 
     // TODO: Expose less of the API to make this safe
     api: require('../api'),
-    models: require('../models'),
 
     // TODO: Only expose "get"
     settingsCache: settingsCache,

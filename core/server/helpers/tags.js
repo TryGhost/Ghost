@@ -5,12 +5,13 @@
 // By default, tags are separated by commas.
 //
 // Note that the standard {{#each tags}} implementation is unaffected by this helper
-const proxy = require('./proxy'),
-    _ = require('lodash'),
-    urlService = proxy.urlService,
-    SafeString = proxy.SafeString,
-    templates = proxy.templates,
-    models = proxy.models;
+const proxy = require('./proxy');
+const _ = require('lodash');
+const ghostHelperUtils = require('@tryghost/helpers').utils;
+
+const urlService = proxy.urlService;
+const SafeString = proxy.SafeString;
+const templates = proxy.templates;
 
 module.exports = function tags(options) {
     options = options || {};
@@ -20,8 +21,7 @@ module.exports = function tags(options) {
         separator = _.isString(options.hash.separator) ? options.hash.separator : ', ',
         prefix = _.isString(options.hash.prefix) ? options.hash.prefix : '',
         suffix = _.isString(options.hash.suffix) ? options.hash.suffix : '',
-        limit = options.hash.limit ? parseInt(options.hash.limit, 10) : undefined,
-        visibilityArr = models.Base.Model.parseVisibilityString(options.hash.visibility);
+        limit = options.hash.limit ? parseInt(options.hash.limit, 10) : undefined;
 
     let output = '',
         from = options.hash.from ? parseInt(options.hash.from, 10) : 1,
@@ -35,7 +35,7 @@ module.exports = function tags(options) {
             }) : _.escape(tag.name);
         }
 
-        return models.Base.Model.filterByVisibility(tags, visibilityArr, !!options.hash.visibility, processTag);
+        return ghostHelperUtils.visibility.filter(tags, options.hash.visibility, processTag);
     }
 
     if (this.tags && this.tags.length) {
