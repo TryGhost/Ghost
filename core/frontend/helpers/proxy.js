@@ -44,13 +44,13 @@ module.exports = {
 
     // Things required from data/meta
     metaData: {
-        get: require('../../server/data/meta'), // ghost_head
-        getAssetUrl: require('../../server/data/meta/asset_url'), // asset
-        getMetaDataExcerpt: require('../../server/data/meta/excerpt'), // excerpt
-        getMetaDataDescription: require('../../server/data/meta/description'), // meta_desc
-        getMetaDataTitle: require('../../server/data/meta/title'), // meta_title
-        getPaginatedUrl: require('../../server/data/meta/paginated_url'), // page_url
-        getMetaDataUrl: require('../../server/data/meta/url') // url
+        get: require('../meta'), // ghost_head
+        getAssetUrl: require('../meta/asset_url'), // asset
+        getMetaDataExcerpt: require('../meta/excerpt'), // excerpt
+        getMetaDataDescription: require('../meta/description'), // meta_desc
+        getMetaDataTitle: require('../meta/title'), // meta_title
+        getPaginatedUrl: require('../meta/paginated_url'), // page_url
+        getMetaDataUrl: require('../meta/url') // url
     },
 
     // The local template thing, should this be merged with the channels one?

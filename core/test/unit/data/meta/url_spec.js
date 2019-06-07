@@ -2,7 +2,7 @@ const should = require('should'),
     sinon = require('sinon'),
     urlUtils = require('../../../../server/lib/url-utils'),
     urlService = require('../../../../frontend/services/url'),
-    getUrl = require('../../../../server/data/meta/url'),
+    getUrl = require('../../../../frontend/meta/url'),
     testUtils = require('../../../utils/');
 
 describe('getUrl', function () {

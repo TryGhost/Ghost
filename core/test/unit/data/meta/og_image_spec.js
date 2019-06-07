@@ -1,5 +1,5 @@
 var should = require('should'),
-    getOgImage = require('../../../../server/data/meta/og_image');
+    getOgImage = require('../../../../frontend/meta/og_image');
 
 describe('getOgImage', function () {
     it('[home] should return null if not post context [home]', function () {

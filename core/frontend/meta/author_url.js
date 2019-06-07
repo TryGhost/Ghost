@@ -1,4 +1,4 @@
-var urlService = require('../../../frontend/services/url');
+var urlService = require('../services/url');
 
 function getAuthorUrl(data, absolute) {
     var context = data.context ? data.context[0] : null;

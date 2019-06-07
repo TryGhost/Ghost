@@ -1,7 +1,7 @@
 const crypto = require('crypto'),
-    config = require('../../config'),
-    imageLib = require('../../lib/image'),
-    urlUtils = require('../../lib/url-utils');
+    config = require('../../server/config'),
+    imageLib = require('../../server/lib/image'),
+    urlUtils = require('../../server/lib/url-utils');
 
 /**
  * Serve either uploaded favicon or default

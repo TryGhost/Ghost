@@ -1,5 +1,5 @@
 var should = require('should'),
-    getTwitterImage = require('../../../../server/data/meta/twitter_image');
+    getTwitterImage = require('../../../../frontend/meta/twitter_image');
 
 describe('getTwitterImage', function () {
     it('[home] should return null if not post context [home]', function () {
