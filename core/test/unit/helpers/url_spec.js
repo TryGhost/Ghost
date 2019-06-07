@@ -5,7 +5,7 @@ var should = require('should'),
     urlUtils = require('../../utils/urlUtils'),
     markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
     helpers = require('../../../frontend/helpers'),
-    urlService = require('../../../server/services/url'),
+    urlService = require('../../../frontend/services/url'),
     api = require('../../../server/api');
 
 describe('{{url}} helper', function () {

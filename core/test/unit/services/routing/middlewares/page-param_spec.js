@@ -1,7 +1,6 @@
 const should = require('should'),
     sinon = require('sinon'),
     common = require('../../../../../server/lib/common'),
-    urlService = require('../../../../../server/services/url'),
     urlUtils = require('../../../../../server/lib/url-utils'),
     middlewares = require('../../../../../frontend/services/routing/middlewares');
 

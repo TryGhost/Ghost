@@ -4,7 +4,7 @@ const path = require('path'),
 
     // Dirty requires
     common = require('../../../../server/lib/common'),
-    urlService = require('../../../../server/services/url'),
+    urlService = require('../../../services/url'),
     helpers = require('../../../services/routing/helpers'),
     templateName = 'amp';
 

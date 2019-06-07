@@ -6,7 +6,7 @@ const path = require('path'),
     // Dirty requires
     common = require('../../../../server/lib/common'),
     urlUtils = require('../../../../server/lib/url-utils'),
-    urlService = require('../../../../server/services/url'),
+    urlService = require('../../../services/url'),
     validator = require('../../../../server/data/validation').validator,
     routing = require('../../../services/routing'),
     templateName = 'subscribe';

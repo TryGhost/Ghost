@@ -7,7 +7,7 @@ const configUtils = require('../../utils/configUtils');
 const models = require('../../../server/models');
 const common = require('../../../server/lib/common');
 const themes = require('../../../frontend/services/themes');
-const UrlService = rewire('../../../server/services/url/UrlService');
+const UrlService = rewire('../../../frontend/services/url/UrlService');
 
 describe('Integration: services/url/UrlService', function () {
     let urlService;

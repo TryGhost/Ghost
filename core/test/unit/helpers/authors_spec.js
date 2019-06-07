@@ -1,6 +1,6 @@
 const should = require('should'),
     sinon = require('sinon'),
-    urlService = require('../../../server/services/url'),
+    urlService = require('../../../frontend/services/url'),
     helpers = require('../../../frontend/helpers'),
     models = require('../../../server/models'),
     testUtils = require('../../utils');

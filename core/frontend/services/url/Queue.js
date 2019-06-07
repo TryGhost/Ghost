@@ -1,7 +1,7 @@
 const debug = require('ghost-ignition').debug('services:url:queue'),
     EventEmitter = require('events').EventEmitter,
     _ = require('lodash'),
-    common = require('../../lib/common');
+    common = require('../../../server/lib/common');
 
 /**
  * ### Purpose of this queue

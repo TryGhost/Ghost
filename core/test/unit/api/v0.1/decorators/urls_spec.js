@@ -2,7 +2,7 @@ const url = require('url');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
-const urlService = require('../../../../../server/services/url');
+const urlService = require('../../../../../frontend/services/url');
 const urls = require('../../../../../server/api/v0.1/decorators/urls');
 
 describe('Unit: api:v0.1:decorators:urls', function () {

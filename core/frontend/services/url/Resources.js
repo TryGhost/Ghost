@@ -2,9 +2,9 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const debug = require('ghost-ignition').debug('services:url:resources');
 const Resource = require('./Resource');
-const config = require('../../config');
-const models = require('../../models');
-const common = require('../../lib/common');
+const config = require('../../../server/config');
+const models = require('../../../server/models');
+const common = require('../../../server/lib/common');
 
 /**
  * @description At the moment the resources class is directly responsible for data population
@@ -63,7 +63,7 @@ class Resources {
             return this.resourceConfig;
         }
 
-        this.resourcesAPIVersion = require('../../../frontend/services/themes').getApiVersion();
+        this.resourcesAPIVersion = require('../themes').getApiVersion();
         this.resourcesConfig = require(`./configs/${this.resourcesAPIVersion}`);
     }
 

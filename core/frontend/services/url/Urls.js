@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('services:url:urls');
-const localUtils = require('../../lib/url-utils');
-const common = require('../../lib/common');
+const urlUtils = require('../../../server/lib/url-utils');
+const common = require('../../../server/lib/common');
 
 /**
  * This class keeps track of all urls in the system.
@@ -50,7 +50,7 @@ class Urls {
         common.events.emit('url.added', {
             url: {
                 relative: url,
-                absolute: localUtils.createUrl(url, true)
+                absolute: urlUtils.createUrl(url, true)
             },
             resource: resource
         });

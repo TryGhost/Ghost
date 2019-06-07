@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const config = require('../../config');
 const models = require('../../models');
-const urlService = require('../../services/url');
+const urlService = require('../../../frontend/services/url');
 const common = require('../../lib/common');
 const settingsCache = require('../../services/settings/cache');
 

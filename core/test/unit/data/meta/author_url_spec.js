@@ -1,7 +1,7 @@
 const should = require('should'),
     sinon = require('sinon'),
     ObjectId = require('bson-objectid'),
-    urlService = require('../../../../server/services/url'),
+    urlService = require('../../../../frontend/services/url'),
     getAuthorUrl = require('../../../../server/data/meta/author_url');
 
 describe('getAuthorUrl', function () {

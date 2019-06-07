@@ -6,7 +6,7 @@ const should = require('should'),
     api = require('../../../../../server/api'),
     controllers = require('../../../../../frontend/services/routing/controllers'),
     helpers = require('../../../../../frontend/services/routing/helpers'),
-    urlService = require('../../../../../server/services/url'),
+    urlService = require('../../../../../frontend/services/url'),
     urlUtils = require('../../../../../server/lib/url-utils'),
 
     EDITOR_URL = '/editor/post/';

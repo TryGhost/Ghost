@@ -1,7 +1,7 @@
 var _ = require('lodash'),
     xml = require('xml'),
     config = require('../config'),
-    urlService = require('../services/url'),
+    urlService = require('../../frontend/services/url'),
     common = require('../lib/common'),
     request = require('../lib/request'),
     settingsCache = require('./settings/cache'),
