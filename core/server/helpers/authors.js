@@ -9,7 +9,8 @@
 const proxy = require('./proxy');
 const _ = require('lodash');
 const urlService = require('../services/url');
-const {SafeString, templates, models} = proxy;
+const {SafeString, templates} = proxy;
+const ghostHelperUtils = require('@tryghost/helpers').utils;
 
 module.exports = function authors(options = {}) {
     options.hash = options.hash || {};
@@ -25,7 +26,6 @@ module.exports = function authors(options = {}) {
         to
     } = options.hash;
     let output = '';
-    const visibilityArr = models.Base.Model.parseVisibilityString(visibility);
 
     autolink = !(_.isString(autolink) && autolink === 'false');
     limit = limit ? parseInt(limit, 10) : limit;
@@ -40,7 +40,7 @@ module.exports = function authors(options = {}) {
             }) : _.escape(author.name);
         }
 
-        return models.Base.Model.filterByVisibility(authors, visibilityArr, !!visibility, processAuthor);
+        return ghostHelperUtils.visibility.filter(authors, visibility, processAuthor);
     }
 
     if (this.authors && this.authors.length) {

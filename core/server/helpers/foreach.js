@@ -3,14 +3,9 @@
 //
 // Block helper designed for looping through posts
 const _ = require('lodash');
-const {logging, i18n, models, hbs} = require('./proxy');
+const {logging, i18n, hbs} = require('./proxy');
 const {Utils: hbsUtils, handlebars: {createFrame}} = hbs;
-
-function filterItemsByVisibility(items, options) {
-    const visibilityArr = models.Base.Model.parseVisibilityString(options.hash.visibility);
-
-    return models.Base.Model.filterByVisibility(items, visibilityArr, !!options.hash.visibility);
-}
+const ghostHelperUtils = require('@tryghost/helpers').utils;
 
 module.exports = function foreach(items, options) {
     if (!options) {
@@ -22,7 +17,7 @@ module.exports = function foreach(items, options) {
     }
 
     // Exclude items which should not be visible in the theme
-    items = filterItemsByVisibility(items, options);
+    items = ghostHelperUtils.visibility.filter(items, options.hash.visibility);
 
     // Initial values set based on parameters sent through. If nothing sent, set to defaults
     const {fn, inverse, hash, data, ids} = options;
