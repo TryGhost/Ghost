@@ -54,6 +54,12 @@ const ghostErrors = {
             statusCode: 409,
             errorType: 'UpdateCollisionError'
         }, options));
+    },
+    HelperWarning: function HelperWarning(options) {
+        GhostError.call(this, merge({
+            errorType: 'HelperWarning',
+            hideStack: true
+        }, options));
     }
 };
 
