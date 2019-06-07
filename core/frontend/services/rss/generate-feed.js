@@ -1,8 +1,8 @@
 var downsize = require('downsize'),
     Promise = require('bluebird'),
     RSS = require('rss'),
-    urlUtils = require('../../lib/url-utils'),
-    urlService = require('../../../frontend/services/url'),
+    urlUtils = require('../../../server/lib/url-utils'),
+    urlService = require('../url'),
     generateFeed,
     generateItem,
     generateTags;

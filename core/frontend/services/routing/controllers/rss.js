@@ -4,7 +4,7 @@ const _ = require('lodash'),
     common = require('../../../../server/lib/common'),
     security = require('../../../../server/lib/security'),
     settingsCache = require('../../../../server/services/settings/cache'),
-    rssService = require('../../../../server/services/rss'),
+    rssService = require('../../rss'),
     helpers = require('../helpers');
 
 // @TODO: move to services/url/utils

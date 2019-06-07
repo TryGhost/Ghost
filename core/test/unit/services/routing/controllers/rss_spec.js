@@ -7,7 +7,7 @@ const should = require('should'),
     settingsCache = require('../../../../../server/services/settings/cache'),
     controllers = require('../../../../../frontend/services/routing/controllers'),
     helpers = require('../../../../../frontend/services/routing/helpers'),
-    rssService = require('../../../../../server/services/rss');
+    rssService = require('../../../../../frontend/services/rss');
 
 // Helper function to prevent unit tests
 // from failing via timeout when they

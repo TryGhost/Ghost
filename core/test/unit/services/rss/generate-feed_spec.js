@@ -4,7 +4,7 @@ var should = require('should'),
     testUtils = require('../../../utils'),
     urlUtils = require('../../../utils/urlUtils'),
     urlService = require('../../../../frontend/services/url'),
-    generateFeed = require('../../../../server/services/rss/generate-feed');
+    generateFeed = require('../../../../frontend/services/rss/generate-feed');
 
 describe('RSS: Generate Feed', function () {
     var data = {},
