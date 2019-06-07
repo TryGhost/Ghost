@@ -1,9 +1,9 @@
 const router = require('./lib/router'),
     registerHelpers = require('./lib/helpers'),
-    urlUtils = require('../../lib/url-utils'),
+    urlUtils = require('../../../server/lib/url-utils'),
 
     // Dirty requires
-    settingsCache = require('../../services/settings/cache');
+    settingsCache = require('../../../server/services/settings/cache');
 
 function ampRouter(req, res) {
     if (settingsCache.get('amp') === true) {

@@ -1,5 +1,5 @@
 // Dirty requires!
-const labs = require('../../../../services/labs');
+const labs = require('../../../../../server/services/labs');
 
 module.exports = function registerHelpers(ghost) {
     ghost.helpers.register('input_email', require('./input_email'));

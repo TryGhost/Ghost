@@ -1,5 +1,5 @@
 // Dirty require!
-const ghostHead = require('../../../../helpers/ghost_head');
+const ghostHead = require('../../../../../server/helpers/ghost_head');
 
 function registerAmpHelpers(ghost) {
     ghost.helpers.registerAsync('amp_content', require('./amp_content'));

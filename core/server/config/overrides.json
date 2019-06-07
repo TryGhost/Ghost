@@ -7,7 +7,7 @@
         "adminViews": "core/server/web/admin/views/",
         "defaultViews": "core/server/views/",
         "defaultSettings": "core/server/services/settings/",
-        "internalAppPath": "core/server/apps/",
+        "internalAppPath": "core/frontend/apps/",
         "internalStoragePath": "core/server/adapters/storage/",
         "internalSchedulingPath": "core/server/adapters/scheduling/",
         "migrationPath": "core/server/data/migrations",

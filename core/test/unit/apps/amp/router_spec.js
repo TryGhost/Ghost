@@ -1,7 +1,7 @@
 const should = require('should'),
     sinon = require('sinon'),
     path = require('path'),
-    ampController = require('../../../../server/apps/amp/lib/router'),
+    ampController = require('../../../../frontend/apps/amp/lib/router'),
     urlService = require('../../../../server/services/url'),
     helpers = require('../../../../server/services/routing/helpers'),
     common = require('../../../../server/lib/common'),
@@ -49,7 +49,7 @@ describe('Unit - apps/amp/lib/router', function () {
             }
         };
 
-        defaultPath = path.join(configUtils.config.get('paths').appRoot, '/core/server/apps/amp/lib/views/amp.hbs');
+        defaultPath = path.join(configUtils.config.get('paths').appRoot, '/core/frontend/apps/amp/lib/views/amp.hbs');
     });
 
     afterEach(function () {

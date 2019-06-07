@@ -1,4 +1,4 @@
-var urlUtils = require('../../lib/url-utils'),
+var urlUtils = require('../../../server/lib/url-utils'),
     getUrl = require('./url'),
     _ = require('lodash');
 

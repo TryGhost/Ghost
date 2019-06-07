@@ -3,9 +3,9 @@ const path = require('path'),
     ampRouter = express.Router(),
 
     // Dirty requires
-    common = require('../../../lib/common'),
-    urlService = require('../../../services/url'),
-    helpers = require('../../../services/routing/helpers'),
+    common = require('../../../../server/lib/common'),
+    urlService = require('../../../../server/services/url'),
+    helpers = require('../../../../server/services/routing/helpers'),
     templateName = 'amp';
 
 function _renderer(req, res, next) {

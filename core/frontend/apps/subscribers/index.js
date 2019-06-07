@@ -1,7 +1,7 @@
 const router = require('./lib/router'),
     registerHelpers = require('./lib/helpers'),
     // Dirty requires
-    labs = require('../../services/labs');
+    labs = require('../../../server/services/labs');
 
 module.exports = {
     activate(ghost) {

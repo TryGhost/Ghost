@@ -2,8 +2,8 @@ const path = require('path'),
     express = require('express'),
     middleware = require('./middleware'),
     bodyParser = require('body-parser'),
-    routing = require('../../../services/routing'),
-    web = require('../../../web'),
+    routing = require('../../../../server/services/routing'),
+    web = require('../../../../server/web'),
     templateName = 'private',
     privateRouter = express.Router();
 

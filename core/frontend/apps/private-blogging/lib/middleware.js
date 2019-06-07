@@ -3,11 +3,11 @@ const url = require('url');
 const session = require('cookie-session');
 const crypto = require('crypto');
 const path = require('path');
-const config = require('../../../config');
-const urlUtils = require('../../../lib/url-utils');
-const constants = require('../../../lib/constants');
-const common = require('../../../lib/common');
-const settingsCache = require('../../../services/settings/cache');
+const config = require('../../../../server/config');
+const urlUtils = require('../../../../server/lib/url-utils');
+const constants = require('../../../../server/lib/constants');
+const common = require('../../../../server/lib/common');
+const settingsCache = require('../../../../server/services/settings/cache');
 // routeKeywords.private: 'private'
 const privateRoute = '/private/';
 

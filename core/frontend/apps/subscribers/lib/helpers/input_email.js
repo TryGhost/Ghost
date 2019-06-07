@@ -4,7 +4,7 @@
 // Used by `{{subscribe_form}}`
 
 // (less) dirty requires
-const proxy = require('../../../../helpers/proxy');
+const proxy = require('../../../../../server/helpers/proxy');
 const SafeString = proxy.SafeString;
 const templates = proxy.templates;
 

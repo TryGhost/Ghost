@@ -1,5 +1,5 @@
-const urlUtils = require('../../lib/url-utils'),
-    common = require('../../lib/common'),
+const urlUtils = require('../../../server/lib/url-utils'),
+    common = require('../../../server/lib/common'),
     middleware = require('./lib/middleware'),
     router = require('./lib/router'),
     registerHelpers = require('./lib/helpers'),
