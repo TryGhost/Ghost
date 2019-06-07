@@ -30,7 +30,11 @@
             "period": "1d",
             "count": 10
         },
-        "transports": ["stdout"]
+        "transports": ["stdout"],
+        "slowHelper": {
+            "level": "warn",
+            "threshold": 200
+        }
     },
     "spam": {
         "user_login": {

@@ -6,7 +6,9 @@ var proxy = require('./proxy'),
     Promise = require('bluebird'),
     jsonpath = require('jsonpath'),
 
+    config = proxy.config,
     logging = proxy.logging,
+    errors = proxy.errors,
     i18n = proxy.i18n,
     createFrame = proxy.hbs.handlebars.createFrame,
 
@@ -133,10 +135,12 @@ get = function get(resource, options) {
     options.data = options.data || {};
 
     const self = this;
+    const start = Date.now();
     const data = createFrame(options.data);
     const ghostGlobals = _.omit(data, ['_parent', 'root']);
     const apiVersion = _.get(data, 'root._locals.apiVersion');
     let apiOptions = options.hash;
+    let returnedRowsCount;
 
     if (!options.fn) {
         data.error = i18n.t('warnings.helpers.mustBeCalledAsBlock', {helperName: 'get'});
@@ -167,6 +171,9 @@ get = function get(resource, options) {
     return api[apiVersion][controller][action](apiOptions).then(function success(result) {
         var blockParams;
 
+        // used for logging details of slow requests
+        returnedRowsCount = result[resource] && result[resource].length;
+
         // block params allows the theme developer to name the data using something like
         // `{{#get "posts" as |result pageInfo|}}`
         blockParams = [result[resource]];
@@ -184,6 +191,21 @@ get = function get(resource, options) {
         logging.error(err);
         data.error = err.message;
         return options.inverse(self, {data: data});
+    }).finally(function () {
+        const totalMs = Date.now() - start;
+        const logLevel = config.get('logging:slowHelper:level');
+        const threshold = config.get('logging:slowHelper:threshold');
+        if (totalMs > threshold) {
+            logging[logLevel](new errors.HelperWarning({
+                message: `{{#get}} helper took ${totalMs}ms to complete`,
+                code: 'SLOW_GET_HELPER',
+                errorDetails: {
+                    api: `${apiVersion}.${controller}.${action}`,
+                    apiOptions,
+                    returnedRows: returnedRowsCount
+                }
+            }));
+        }
     });
 };
 
