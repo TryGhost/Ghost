@@ -2,7 +2,7 @@ const _ = require('lodash'),
     debug = require('ghost-ignition').debug('services:routing:controllers:channel'),
     common = require('../../../lib/common'),
     security = require('../../../lib/security'),
-    themes = require('../../themes'),
+    themes = require('../../../../frontend/services/themes'),
     helpers = require('../helpers');
 
 /**

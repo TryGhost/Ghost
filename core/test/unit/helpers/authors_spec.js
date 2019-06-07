@@ -1,7 +1,7 @@
 const should = require('should'),
     sinon = require('sinon'),
     urlService = require('../../../server/services/url'),
-    helpers = require('../../../server/helpers'),
+    helpers = require('../../../frontend/helpers'),
     models = require('../../../server/models'),
     testUtils = require('../../utils');
 

@@ -3,7 +3,7 @@ const _ = require('lodash'),
     common = require('../../../lib/common'),
     security = require('../../../lib/security'),
     urlService = require('../../../services/url'),
-    themes = require('../../themes'),
+    themes = require('../../../../frontend/services/themes'),
     helpers = require('../helpers');
 
 /**

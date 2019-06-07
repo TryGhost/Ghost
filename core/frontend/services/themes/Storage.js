@@ -2,10 +2,10 @@ var fs = require('fs-extra'),
     os = require('os'),
     path = require('path'),
     Promise = require('bluebird'),
-    config = require('../../config'),
-    security = require('../../lib/security'),
-    fsLib = require('../../lib/fs'),
-    LocalFileStorage = require('../../adapters/storage/LocalFileStorage');
+    config = require('../../../server/config'),
+    security = require('../../../server/lib/security'),
+    fsLib = require('../../../server/lib/fs'),
+    LocalFileStorage = require('../../../server/adapters/storage/LocalFileStorage');
 
 /**
  * @TODO: combine with loader.js?

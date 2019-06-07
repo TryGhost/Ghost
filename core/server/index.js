@@ -77,7 +77,7 @@ function initialiseServices() {
 const minimalRequiredSetupToStartGhost = (dbState) => {
     const settings = require('./services/settings');
     const models = require('./models');
-    const themes = require('./services/themes');
+    const themes = require('../frontend/services/themes');
     const GhostServer = require('./ghost-server');
 
     let ghostServer;

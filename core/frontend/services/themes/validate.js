@@ -1,8 +1,8 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const fs = require('fs-extra');
-const config = require('../../config');
-const common = require('../../lib/common');
+const config = require('../../../server/config');
+const common = require('../../../server/lib/common');
 
 const canActivate = function canActivate(checkedTheme) {
     // CASE: production and no fatal errors

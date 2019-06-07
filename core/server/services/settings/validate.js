@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('services:settings:validate');
 const common = require('../../lib/common');
-const themeService = require('../../services/themes');
+const themeService = require('../../../frontend/services/themes');
 const _private = {};
 let RESOURCE_CONFIG;
 

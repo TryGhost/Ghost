@@ -1,11 +1,11 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('themes');
-const common = require('../../lib/common');
+const common = require('../../../server/lib/common');
 const themeLoader = require('./loader');
 const active = require('./active');
 const validate = require('./validate');
 const Storage = require('./Storage');
-const settingsCache = require('../settings/cache');
+const settingsCache = require('../../../server/services/settings/cache');
 const engineDefaults = require('./engines/defaults');
 
 let themeStorage;

@@ -3,7 +3,7 @@ var should = require('should'),
     sinon = require('sinon'),
     path = require('path'),
     configUtils = require('../../../utils/configUtils'),
-    themes = require('../../../../server/services/themes'),
+    themes = require('../../../../frontend/services/themes'),
     privateController = require('../../../../frontend/apps/private-blogging/lib/router');
 
 describe('Private Controller', function () {

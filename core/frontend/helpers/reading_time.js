@@ -11,7 +11,7 @@
 // Returns estimated reading time for post
 
 const proxy = require('./proxy');
-const schema = require('../data/schema').checks;
+const schema = require('../../server/data/schema').checks;
 const SafeString = proxy.SafeString;
 const calculateReadingTime = require('@tryghost/helpers').readingTime;
 

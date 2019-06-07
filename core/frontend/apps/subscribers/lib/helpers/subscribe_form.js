@@ -2,7 +2,7 @@
 // Usage: `{{subscribe_form}}`
 const _ = require('lodash'),
     // (Less) dirty requires
-    proxy = require('../../../../../server/helpers/proxy'),
+    proxy = require('../../../../helpers/proxy'),
     createFrame = proxy.hbs.handlebars.createFrame,
     templates = proxy.templates,
     urlUtils = proxy.urlUtils,

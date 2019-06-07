@@ -8,7 +8,7 @@
 // there if available. The cacheId is a combination of `updated_at` and the `slug`.
 const Promise = require('bluebird'),
     moment = require('moment/moment'),
-    proxy = require('../../../../../server/helpers/proxy'),
+    proxy = require('../../../../helpers/proxy'),
     SafeString = proxy.SafeString,
     logging = proxy.logging,
     i18n = proxy.i18n,

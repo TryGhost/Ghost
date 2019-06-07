@@ -1,9 +1,9 @@
 const _ = require('lodash');
 const hbs = require('./engine');
-const urlUtils = require('../../lib/url-utils');
-const config = require('../../config');
-const common = require('../../lib/common');
-const settingsCache = require('../settings/cache');
+const urlUtils = require('../../../server/lib/url-utils');
+const config = require('../../../server/config');
+const common = require('../../../server/lib/common');
+const settingsCache = require('../../../server/services/settings/cache');
 const activeTheme = require('./active');
 
 // ### Ensure Active Theme

@@ -3,7 +3,7 @@
 // Outputs navigation menu of static urls
 
 var proxy = require('./proxy'),
-    string = require('../lib/security/string'),
+    string = require('../../server/lib/security/string'),
     _ = require('lodash'),
     SafeString = proxy.SafeString,
     createFrame = proxy.hbs.handlebars.createFrame,

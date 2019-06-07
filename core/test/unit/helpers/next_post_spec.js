@@ -3,7 +3,7 @@ var should = require('should'),
     Promise = require('bluebird'),
     markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
 
-    helpers = require('../../../server/helpers'),
+    helpers = require('../../../frontend/helpers'),
     api = require('../../../server/api'),
     common = require('../../../server/lib/common');
 

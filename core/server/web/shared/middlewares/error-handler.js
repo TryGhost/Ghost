@@ -15,7 +15,7 @@ const errorHandler = {};
  */
 _private.createHbsEngine = () => {
     const engine = hbs.create();
-    engine.registerHelper('asset', require('../../../helpers/asset'));
+    engine.registerHelper('asset', require('../../../../frontend/helpers/asset'));
 
     return engine.express4();
 };

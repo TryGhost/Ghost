@@ -11,7 +11,7 @@
 // This is the default handlebars behaviour of dropping into the author object scope
 const proxy = require('./proxy'),
     _ = require('lodash'),
-    urlService = require('../services/url'),
+    urlService = require('../../server/services/url'),
     SafeString = proxy.SafeString,
     handlebars = proxy.hbs.handlebars,
     templates = proxy.templates;

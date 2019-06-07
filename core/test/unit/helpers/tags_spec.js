@@ -3,7 +3,7 @@ const should = require('should'),
     testUtils = require('../../utils'),
     urlService = require('../../../server/services/url'),
     models = require('../../../server/models'),
-    helpers = require('../../../server/helpers');
+    helpers = require('../../../frontend/helpers');
 
 describe('{{tags}} helper', function () {
     before(function () {

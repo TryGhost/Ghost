@@ -15,7 +15,7 @@ var join = require('path').join,
     _ = require('lodash'),
     themeConfig = require('./config'),
     themeEngines = require('./engines'),
-    config = require('../../config'),
+    config = require('../../../server/config'),
     engine = require('./engine'),
     // Current instance of ActiveTheme
     currentActiveTheme;

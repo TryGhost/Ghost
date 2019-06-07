@@ -2,7 +2,7 @@ const should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
     templates = rewire('../../../../../server/services/routing/helpers/templates'),
-    themes = require('../../../../../server/services/themes');
+    themes = require('../../../../../frontend/services/themes');
 
 describe('templates', function () {
     let getActiveThemeStub, hasTemplateStub,

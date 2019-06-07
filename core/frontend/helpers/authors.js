@@ -8,7 +8,7 @@
 // Note that the standard {{#each authors}} implementation is unaffected by this helper.
 const proxy = require('./proxy');
 const _ = require('lodash');
-const urlService = require('../services/url');
+const urlService = require('../../server/services/url');
 const {SafeString, templates} = proxy;
 const ghostHelperUtils = require('@tryghost/helpers').utils;
 

@@ -6,7 +6,7 @@ const _ = require('lodash'),
     path = require('path'),
     url = require('url'),
     config = require('../../../config'),
-    themes = require('../../themes'),
+    themes = require('../../../../frontend/services/themes'),
     _private = {};
 
 /**
