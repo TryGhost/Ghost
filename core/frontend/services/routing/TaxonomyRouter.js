@@ -1,8 +1,8 @@
 const debug = require('ghost-ignition').debug('services:routing:taxonomy-router');
-const common = require('../../lib/common');
+const common = require('../../../server/lib/common');
 const ParentRouter = require('./ParentRouter');
 const RSSRouter = require('./RSSRouter');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../server/lib/url-utils');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
 

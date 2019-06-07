@@ -12,8 +12,8 @@ const debug = require('ghost-ignition').debug('services:routing:ParentRouter'),
     express = require('express'),
     _ = require('lodash'),
     url = require('url'),
-    security = require('../../lib/security'),
-    urlUtils = require('../../lib/url-utils'),
+    security = require('../../../server/lib/security'),
+    urlUtils = require('../../../server/lib/url-utils'),
     registry = require('./registry');
 
 /**

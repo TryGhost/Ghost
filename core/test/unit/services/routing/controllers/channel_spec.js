@@ -4,8 +4,8 @@ const should = require('should'),
     common = require('../../../../../server/lib/common'),
     security = require('../../../../../server/lib/security'),
     themeService = require('../../../../../frontend/services/themes'),
-    controllers = require('../../../../../server/services/routing/controllers'),
-    helpers = require('../../../../../server/services/routing/helpers');
+    controllers = require('../../../../../frontend/services/routing/controllers'),
+    helpers = require('../../../../../frontend/services/routing/helpers');
 
 function failTest(done) {
     return function (err) {

@@ -1,8 +1,8 @@
 const debug = require('ghost-ignition').debug('services:routing:bootstrap');
 const _ = require('lodash');
-const common = require('../../lib/common');
-const settingsService = require('../settings');
-const themeService = require('../../../frontend/services/themes');
+const common = require('../../../server/lib/common');
+const settingsService = require('../../../server/services/settings');
+const themeService = require('../themes');
 const StaticRoutesRouter = require('./StaticRoutesRouter');
 const StaticPagesRouter = require('./StaticPagesRouter');
 const CollectionRouter = require('./CollectionRouter');
@@ -59,7 +59,7 @@ module.exports.init = (options = {start: false}) => {
  */
 module.exports.start = () => {
     const apiVersion = themeService.getApiVersion();
-    const RESOURCE_CONFIG = require(`../../services/routing/config/${apiVersion}`);
+    const RESOURCE_CONFIG = require(`./config/${apiVersion}`);
 
     const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
 

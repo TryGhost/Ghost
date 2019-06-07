@@ -1,8 +1,8 @@
 const debug = require('ghost-ignition').debug('services:routing:static-pages-router');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../server/lib/url-utils');
 const ParentRouter = require('./ParentRouter');
 const controllers = require('./controllers');
-const common = require('../../lib/common');
+const common = require('../../../server/lib/common');
 
 /**
  * @description Resource: pages

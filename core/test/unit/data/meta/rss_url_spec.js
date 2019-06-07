@@ -1,6 +1,6 @@
 const should = require('should'),
     sinon = require('sinon'),
-    routing = require('../../../../server/services/routing'),
+    routing = require('../../../../frontend/services/routing'),
     getRssUrl = require('../../../../server/data/meta/rss_url');
 
 describe('getRssUrl', function () {

@@ -10,7 +10,7 @@
  * 2. req.params.page - always has the page parameter, regardless of if the URL contains a keyword (RSS pages don't)
  * 3. data - used for telling the difference between posts and pages
  */
-const labs = require('../../labs'),
+const labs = require('../../../../server/services/labs'),
     // @TODO: fix this!! These regexes are app specific and should be dynamic. They should not belong here....
     // routeKeywords.private: 'private'
     privatePattern = new RegExp('^\\/private\\/'),

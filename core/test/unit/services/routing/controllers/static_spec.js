@@ -3,8 +3,8 @@ const should = require('should'),
     testUtils = require('../../../../utils'),
     api = require('../../../../../server/api'),
     themeService = require('../../../../../frontend/services/themes'),
-    helpers = require('../../../../../server/services/routing/helpers'),
-    controllers = require('../../../../../server/services/routing/controllers');
+    helpers = require('../../../../../frontend/services/routing/helpers'),
+    controllers = require('../../../../../frontend/services/routing/controllers');
 
 function failTest(done) {
     return function (err) {

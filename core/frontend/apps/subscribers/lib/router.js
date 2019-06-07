@@ -8,7 +8,7 @@ const path = require('path'),
     urlUtils = require('../../../../server/lib/url-utils'),
     urlService = require('../../../../server/services/url'),
     validator = require('../../../../server/data/validation').validator,
-    routing = require('../../../../server/services/routing'),
+    routing = require('../../../services/routing'),
     templateName = 'subscribe';
 
 function _renderer(req, res) {

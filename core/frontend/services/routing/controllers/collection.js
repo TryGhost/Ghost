@@ -1,22 +1,20 @@
 const _ = require('lodash'),
-    debug = require('ghost-ignition').debug('services:routing:controllers:channel'),
-    common = require('../../../lib/common'),
-    security = require('../../../lib/security'),
-    themes = require('../../../../frontend/services/themes'),
+    debug = require('ghost-ignition').debug('services:routing:controllers:collection'),
+    common = require('../../../../server/lib/common'),
+    security = require('../../../../server/lib/security'),
+    urlService = require('../../../../server/services/url'),
+    themes = require('../../themes'),
     helpers = require('../helpers');
 
 /**
- * @description Channel controller.
- *
- * @TODO: The collection+rss controller do almost the same. Merge!
- *
+ * @description Collection controller.
  * @param {Object} req
  * @param {Object} res
  * @param {Function} next
  * @returns {Promise}
  */
-module.exports = function channelController(req, res, next) {
-    debug('channelController', req.params, res.routerOptions);
+module.exports = function collectionController(req, res, next) {
+    debug('collectionController', req.params, res.routerOptions);
 
     const pathOptions = {
         page: req.params.page !== undefined ? req.params.page : 1,
@@ -53,6 +51,27 @@ module.exports = function channelController(req, res, next) {
                     message: common.i18n.t('errors.errors.pageNotFound')
                 }));
             }
+
+            debug(result.posts.length);
+
+            /**
+             * CASE:
+             *
+             * Does this post belong to this collection?
+             * A post can only live in one collection. If you make use of multiple collections and you mis-use your routes.yaml,
+             * it can happen that your database query will load the same posts, but we cannot show a post on two
+             * different urls. This helper is only a prevention, but it's not a solution for the user, because
+             * it will break pagination (e.g. you load 10 posts from database, but you only render 9).
+             *
+             * People should always invert their filters to ensure that the database query loads unique posts per collection.
+             */
+            result.posts = _.filter(result.posts, (post) => {
+                if (urlService.owns(res.routerOptions.identifier, post.id)) {
+                    return post;
+                }
+
+                debug(`'${post.slug}' is not owned by this collection`);
+            });
 
             // Format data 1
             // @TODO: See helpers/secure for explanation.

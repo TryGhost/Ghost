@@ -1,10 +1,10 @@
 const _ = require('lodash'),
     debug = require('ghost-ignition').debug('services:routing:controllers:rss'),
     url = require('url'),
-    common = require('../../../lib/common'),
-    security = require('../../../lib/security'),
-    settingsCache = require('../../settings/cache'),
-    rssService = require('../../rss'),
+    common = require('../../../../server/lib/common'),
+    security = require('../../../../server/lib/security'),
+    settingsCache = require('../../../../server/services/settings/cache'),
+    rssService = require('../../../../server/services/rss'),
     helpers = require('../helpers');
 
 // @TODO: move to services/url/utils

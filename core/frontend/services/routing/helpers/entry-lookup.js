@@ -3,7 +3,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const debug = require('ghost-ignition').debug('services:routing:helpers:entry-lookup');
 const routeMatch = require('path-match')();
-const config = require('../../../config');
+const config = require('../../../../server/config');
 
 /**
  * @description Query API for a single entry/resource.
@@ -15,7 +15,7 @@ const config = require('../../../config');
 function entryLookup(postUrl, routerOptions, locals) {
     debug(postUrl);
 
-    const api = require('../../../api')[locals.apiVersion];
+    const api = require('../../../../server/api')[locals.apiVersion];
     const targetPath = url.parse(postUrl).path;
     const permalinks = routerOptions.permalinks;
     let isEditURL = false;

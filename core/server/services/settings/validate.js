@@ -396,7 +396,7 @@ module.exports = function validate(object) {
 
     debug('api version', apiVersion);
 
-    RESOURCE_CONFIG = require(`../../services/routing/config/${apiVersion}`);
+    RESOURCE_CONFIG = require(`../../../frontend/services/routing/config/${apiVersion}`);
 
     object.routes = _private.validateRoutes(object.routes);
     object.collections = _private.validateCollections(object.collections);

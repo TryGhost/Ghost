@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('services:routing:controllers:preview'),
-    urlService = require('../../url'),
-    urlUtils = require('../../../lib/url-utils'),
+    urlService = require('../../../../server/services/url'),
+    urlUtils = require('../../../../server/lib/url-utils'),
     helpers = require('../helpers');
 
 /**
@@ -13,7 +13,7 @@ const debug = require('ghost-ignition').debug('services:routing:controllers:prev
 module.exports = function previewController(req, res, next) {
     debug('previewController');
 
-    const api = require('../../../api')[res.locals.apiVersion];
+    const api = require('../../../../server/api')[res.locals.apiVersion];
 
     const params = {
         uuid: req.params.uuid,

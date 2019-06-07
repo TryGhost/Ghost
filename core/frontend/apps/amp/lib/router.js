@@ -5,7 +5,7 @@ const path = require('path'),
     // Dirty requires
     common = require('../../../../server/lib/common'),
     urlService = require('../../../../server/services/url'),
-    helpers = require('../../../../server/services/routing/helpers'),
+    helpers = require('../../../services/routing/helpers'),
     templateName = 'amp';
 
 function _renderer(req, res, next) {

@@ -4,7 +4,7 @@
  */
 const _ = require('lodash');
 const Promise = require('bluebird');
-const config = require('../../../config');
+const config = require('../../../../server/config');
 
 // The default settings for a default post query
 // @TODO: get rid of this config and use v0.1 or v2 config
@@ -50,7 +50,7 @@ defaultPostQuery.options = defaultQueryOptions.options;
  * @returns {Promise}
  */
 function processQuery(query, slugParam, locals) {
-    const api = require('../../../api')[locals.apiVersion];
+    const api = require('../../../../server/api')[locals.apiVersion];
 
     query = _.cloneDeep(query);
 

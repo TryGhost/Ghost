@@ -2,10 +2,10 @@ const _ = require('lodash'),
     Promise = require('bluebird'),
     debug = require('ghost-ignition').debug('services:routing:controllers:static'),
     helpers = require('../helpers'),
-    config = require('../../../config');
+    config = require('../../../../server/config');
 
 function processQuery(query, locals) {
-    const api = require('../../../api')[locals.apiVersion];
+    const api = require('../../../../server/api')[locals.apiVersion];
     query = _.cloneDeep(query);
 
     // CASE: If you define a single data key for a static route (e.g. data: page.team), this static route will represent
