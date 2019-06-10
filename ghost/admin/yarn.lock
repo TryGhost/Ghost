@@ -4850,20 +4850,20 @@ ember-drag-drop@0.4.8:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-exam@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-3.0.1.tgz#a4b19aeef44224b4e681ac4e69bd3fceffa9a912"
-  integrity sha512-raI5H9cG9C1VZP6hH88ZCgI8uBJh5FDMTeUdz54slRwFWu0OCIPTbyqjuWefJbSAVqUt57hWH1dvgv8XsF8gFQ==
+ember-exam@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-3.0.2.tgz#b31f34c35fc1899c5f1fecd504f4cc64ee963c86"
+  integrity sha512-5EhsvKYNX+IDmw5VSfMH+332BrwWYY6D+Ntpzbw78FOKeBDrTXq8UU5ualEgoNaYFxllmiss+Y9eV3RlSqZdIA==
   dependencies:
     chalk "^2.1.0"
     cli-table3 "^0.5.1"
     debug "^4.1.0"
     ember-cli-babel "^7.7.3"
     execa "^1.0.0"
-    fs-extra "^7.0.1"
+    fs-extra "^8.0.1"
     js-yaml "^3.13.1"
     rimraf "^2.6.2"
-    semver "^6.0.0"
+    semver "^6.1.1"
     silent-error "^1.1.1"
 
 ember-export-application-global@2.0.0:
@@ -6052,7 +6052,7 @@ from2@^2.1.0, from2@^2.1.1:
     inherits "^2.0.1"
     readable-stream "^2.0.0"
 
-fs-extra@8.0.1:
+fs-extra@8.0.1, fs-extra@^8.0.1:
   version "8.0.1"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-8.0.1.tgz#90294081f978b1f182f347a440a209154344285b"
   integrity sha512-W+XLrggcDzlle47X/XnS7FXrXu9sDo+Ze9zpndeBxdgv88FHLm1HtmkhEwavruS6koanBjp098rUpHs65EmG7A==
@@ -10504,7 +10504,7 @@ schema-utils@^1.0.0:
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.7.0.tgz#790a7cf6fea5459bac96110b29b60412dc8ff96b"
   integrity sha512-Ya52jSX2u7QKghxeoFGpLwCtGlt7j0oY9DYb5apt9nPlJ42ID+ulTXESnt/qAQcoSERyZ5sl3LDIOw0nAn/5DA==
 
-semver@^6.0.0, semver@^6.1.0:
+semver@^6.0.0, semver@^6.1.0, semver@^6.1.1:
   version "6.1.1"
   resolved "https://registry.yarnpkg.com/semver/-/semver-6.1.1.tgz#53f53da9b30b2103cd4f15eab3a18ecbcb210c9b"
   integrity sha512-rWYq2e5iYW+fFe/oPPtYJxYgjBm8sC4rmoGdUOgBB7VnwKt6HrL793l2voH1UlsyYZpJ4g0wfjnTEO1s1NP2eQ==
