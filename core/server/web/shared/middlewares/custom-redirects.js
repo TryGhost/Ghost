@@ -53,7 +53,9 @@ _private.registerRoutes = () => {
                 const fromURL = url.parse(req.originalUrl);
                 const toURL = url.parse(redirect.to);
 
-                toURL.pathname = fromURL.pathname.replace(new RegExp(redirect.from, options), toURL.pathname),
+                toURL.pathname = (toURL.hostname)
+                    ? toURL.pathname
+                    : fromURL.pathname.replace(new RegExp(redirect.from, options), toURL.pathname);
                 toURL.search = fromURL.search;
 
                 res.set({
