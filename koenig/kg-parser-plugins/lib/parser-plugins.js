@@ -150,6 +150,12 @@ export function createParserPlugins(_options = {}) {
         }
 
         let pre = node.querySelector('pre');
+
+        // If this figure doesn't have a pre tag in it
+        if (!pre) {
+            return;
+        }
+
         let code = pre.querySelector('code');
         let figcaption = node.querySelector('figcaption');
 

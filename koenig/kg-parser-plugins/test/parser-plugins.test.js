@@ -230,6 +230,13 @@ describe('parser-plugins', function () {
                 language: 'js'
             });
         });
+
+        it('correctly skips if there is no pre tag', function () {
+            const dom = buildDOM('<figure><iframe src="https://www.youtube.com/embed/12345678?feature=oembed" width="700" height="393" frameborder="0" scrolling="no"></iframe></figure>');
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.should.have.lengthOf(0);
+        });
     });
 
     describe('preCodeToCard', function () {
