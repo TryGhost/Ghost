@@ -1,5 +1,3 @@
-const common = require('../../../lib/common');
-
 /**
  * @description Centralised error handling for API requests.
  * @param {Function} next
@@ -16,8 +14,6 @@ function handleError(next) {
         //       this post from Content API (by slug), but this is not a valid slug. With dynamic routing we cannot
         //       add a regex to the target express route, because we don't know if people use /:slug/ or not. It's dynamic.
         if (err.errorType === 'ValidationError') {
-            common.logging.error(err);
-
             // @NOTE: Just try next router, it will end in a 404 if no router can resolve the request.
             return next();
         }
