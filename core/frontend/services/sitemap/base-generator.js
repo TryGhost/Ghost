@@ -1,6 +1,6 @@
 const _ = require('lodash'),
     xml = require('xml'),
-    moment = require('moment/moment'),
+    moment = require('moment'),
     path = require('path'),
     urlUtils = require('../../../server/lib/url-utils'),
     localUtils = require('./utils');

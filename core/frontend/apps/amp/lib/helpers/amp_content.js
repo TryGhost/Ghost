@@ -7,7 +7,7 @@
 // Converts normal HTML into AMP HTML with Amperize module and uses a cache to return it from
 // there if available. The cacheId is a combination of `updated_at` and the `slug`.
 const Promise = require('bluebird'),
-    moment = require('moment/moment'),
+    moment = require('moment'),
     proxy = require('../../../../helpers/proxy'),
     SafeString = proxy.SafeString,
     logging = proxy.logging,
