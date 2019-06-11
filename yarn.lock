@@ -367,10 +367,10 @@ alphanum-sort@^1.0.1, alphanum-sort@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/alphanum-sort/-/alphanum-sort-1.0.2.tgz#97a1119649b211ad33691d9f9f486a8ec9fbe0a3"
 
-amperize@0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/amperize/-/amperize-0.5.1.tgz#e2f8b36fd8c1b287be3e765ef832b5c47aea0f6d"
-  integrity sha512-szsjeFr74DFSdPC+tfuHpEhpuIIvxWU8Y8IL1j6fJ7RosH0xMPZFNXLHPqGudZgyz1R41hBOXa3s1eMcj7KEfQ==
+amperize@0.5.2:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/amperize/-/amperize-0.5.2.tgz#405233bf8b5a4c6ced48522be32aeb417b11db27"
+  integrity sha512-Y6MWCov1dnN+WYlWSp07qRWjdZYWtlOA+j6OOy/Lb73sPpKkcgxGXa91RjE5h+MGHFeamd0nWuLFngjcHbLWZA==
   dependencies:
     async "^3.0.1"
     domutils "^1.7.0"
