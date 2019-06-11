@@ -1,4 +1,4 @@
-const common = require('../../../lib/common'),
+const common = require('../../../server/lib/common'),
     IndexMapGenerator = require('./index-generator'),
     PagesMapGenerator = require('./page-generator'),
     PostsMapGenerator = require('./post-generator'),

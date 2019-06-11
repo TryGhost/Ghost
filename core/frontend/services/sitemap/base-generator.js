@@ -1,8 +1,8 @@
 const _ = require('lodash'),
     xml = require('xml'),
-    moment = require('moment'),
+    moment = require('moment/moment'),
     path = require('path'),
-    urlUtils = require('../../../lib/url-utils'),
+    urlUtils = require('../../../server/lib/url-utils'),
     localUtils = require('./utils');
 
 // Sitemap specific xml namespace declarations that should not change
