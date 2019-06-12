@@ -144,6 +144,41 @@ export function createParserPlugins(_options = {}) {
         nodeFinished();
     }
 
+    function figureToEmbedCard(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
+            return;
+        }
+
+        let iframe = node.querySelector('iframe');
+
+        if (!iframe) {
+            return;
+        }
+
+        let src = iframe.src;
+        let figcaption = node.querySelector('figcaption');
+
+        // If we don't have a src, or it's not an absolute URL, we can't handle this
+        if (!src || !src.match(/^https?:\/\//i)) {
+            return;
+        }
+
+        let payload = {
+            url: src
+        };
+
+        if (figcaption) {
+            payload.caption = cleanBasicHtml(figcaption.innerHTML, options);
+            node.removeChild(figcaption);
+        }
+
+        payload.html = node.innerHTML;
+
+        let cardSection = builder.createCardSection('embed', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+
     function figureToCodeCard(node, builder, {addSection, nodeFinished}) {
         if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
             return;
@@ -214,6 +249,7 @@ export function createParserPlugins(_options = {}) {
         imgToCard,
         hrToCard,
         figureToCodeCard,
-        preCodeToCard
+        preCodeToCard,
+        figureToEmbedCard
     ];
 }

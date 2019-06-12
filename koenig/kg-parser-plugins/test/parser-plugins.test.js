@@ -232,7 +232,58 @@ describe('parser-plugins', function () {
         });
 
         it('correctly skips if there is no pre tag', function () {
-            const dom = buildDOM('<figure><iframe src="https://www.youtube.com/embed/12345678?feature=oembed" width="700" height="393" frameborder="0" scrolling="no"></iframe></figure>');
+            const dom = buildDOM('<figure><div><span class="nothing-to-see-here"></span></div></figure>');
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.should.have.lengthOf(0);
+        });
+    });
+
+        // YouTube (same structure used for vimeo, instagram, etc)
+        // Mobiledoc {"version":"0.3.1","atoms":[],"cards":[["embed",{"url":"https://www.youtube.com/watch?v=YTVID","html":"<iframe width=\"480\" height=\"270\" src=\"https://www.youtube.com/embed/YTVID?feature=oembed\" frameborder=\"0\" allow=\"accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe>","type":"video"}]],"markups":[],"sections":[[10,0],[1,"p",[]]]}
+        // Ghost HTML <!--kg-card-begin: embed--><figure class="kg-card kg-embed-card"><iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></figure><!--kg-card-end: embed-->
+        // Medium Export HTML <figure name="abc" id="abc" class="graf graf--figure graf--iframe graf-after--p"><iframe src="https://www.youtube.com/embed/YTVID?feature=oembed" width="700" height="393" frameborder="0" scrolling="no"></iframe></figure>
+        // Medium Live HTML <figure><iframe data-width="854" data-height="480" width="700" height="393" data-src="/media/345?postId=567" data-media-id="345" data-thumbnail="https://i.embed.ly/1/image?url=https%3A%2F%2Fi.ytimg.com%2Fvi%2FYTVID%2Fhqdefault.jpg&amp;key=abc" class="progressiveMedia-iframe js-progressiveMedia-iframe" allowfullscreen="" frameborder="0" src="/media/345?postId=567"></iframe></figure>
+
+        it('parses youtube iframe into embed card', function () {
+            const dom = buildDOM('<figure class="kg-card kg-embed-card"><iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></figure>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('embed');
+            section.payload.should.deepEqual({
+                url: 'https://www.youtube.com/embed/YTVID?feature=oembed',
+                html: '<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>'
+            });
+        });
+
+        it('parses medium youtube iframe into embed card', function () {
+            const dom = buildDOM('<figure name="abc" id="abc" class="graf graf--figure graf--iframe graf-after--p"><iframe src="https://www.youtube.com/embed/YTVID?feature=oembed" width="700" height="393" frameborder="0" scrolling="no"></iframe></figure>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('embed');
+            section.payload.should.deepEqual({
+                url: 'https://www.youtube.com/embed/YTVID?feature=oembed',
+                html: '<iframe src="https://www.youtube.com/embed/YTVID?feature=oembed" width="700" height="393" frameborder="0" scrolling="no"></iframe>'
+            });
+        });
+
+        it('parses youtube iframe with caption into embed card', function () {
+            const dom = buildDOM('<figure class="kg-card kg-embed-card"><iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>My Video</figure>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('embed');
+            section.payload.should.deepEqual({
+                url: 'https://www.youtube.com/embed/YTVID?feature=oembed',
+                html: '<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>',
+                caption: 'My Video'
+            });
+        });
+
+        it('ignores iframe with relative src', function () {
+            const dom = buildDOM('<figure><iframe data-width="854" data-height="480" width="700" height="393" data-src="/media/345?postId=567" data-media-id="345" data-thumbnail="https://i.embed.ly/1/image?url=https%3A%2F%2Fi.ytimg.com%2Fvi%2FYTVID%2Fhqdefault.jpg&amp;key=abc" class="progressiveMedia-iframe js-progressiveMedia-iframe" allowfullscreen="" frameborder="0" src="/media/345?postId=567"></iframe></figure>');
             const sections = parser.parse(dom).sections.toArray();
 
             sections.should.have.lengthOf(0);
