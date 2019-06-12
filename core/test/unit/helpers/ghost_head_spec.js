@@ -7,6 +7,7 @@ const should = require('should'),
     themes = require('../../../server/services/themes'),
     models = require('../../../server/models'),
     imageLib = require('../../../server/lib/image'),
+    urlUtils = require('../../../server/lib/url-utils'),
     routing = require('../../../server/services/routing'),
     urlService = require('../../../server/services/url'),
     helpers = require('../../../server/helpers'),
@@ -276,6 +277,7 @@ describe('{{ghost_head}} helper', function () {
 
         // @TODO: this is a LOT of mocking :/
         sinon.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
+        sinon.stub(urlUtils, 'urlFor').returns('/favicon.ico');
         sinon.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
         sinon.stub(themes, 'getActive').returns({
             engine: () => 'v0.1'
@@ -1242,7 +1244,7 @@ describe('{{ghost_head}} helper', function () {
                 configUtils.set({
                     url: 'http://localhost:65530/blog/'
                 });
-
+                urlUtils.urlFor.returns('/blog/favicon.png');
                 routing.registry.getRssUrl.returns('http://localhost:65530/blog/rss/');
             });
 
@@ -1300,7 +1302,7 @@ describe('{{ghost_head}} helper', function () {
     describe('with useStructuredData is set to false in config file', function () {
         before(function () {
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
-
+            urlUtils.urlFor.returns('/favicon.png');
             configUtils.set({
                 url: 'http://localhost:65530/',
                 privacy: {
