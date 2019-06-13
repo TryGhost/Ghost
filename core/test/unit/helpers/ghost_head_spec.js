@@ -300,6 +300,7 @@ describe('{{ghost_head}} helper', function () {
     describe('without Code Injection', function () {
         before(function () {
             configUtils.set('url', 'http://localhost:65530/');
+            urlUtils.urlFor.withArgs('home').returns('http://localhost:65530/');
         });
 
         it('returns meta tag string on paginated index page without structured data and schema', function (done) {
@@ -1303,6 +1304,7 @@ describe('{{ghost_head}} helper', function () {
         before(function () {
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
             urlUtils.urlFor.returns('/favicon.png');
+            urlUtils.urlFor.withArgs('home').returns('http://localhost:65530/');
             configUtils.set({
                 url: 'http://localhost:65530/',
                 privacy: {
