@@ -1,5 +1,5 @@
 const ParentRouter = require('./ParentRouter');
-const urlService = require('../url');
+const urlUtils = require('../../lib/url-utils');
 const controllers = require('./controllers');
 
 /**
@@ -26,7 +26,7 @@ class PreviewRouter extends ParentRouter {
         this.router().use(this._prepareContext.bind(this));
 
         // REGISTER: actual preview route
-        this.mountRoute(urlService.utils.urlJoin(this.route.value, ':uuid', ':options?'), controllers.preview);
+        this.mountRoute(urlUtils.urlJoin(this.route.value, ':uuid', ':options?'), controllers.preview);
     }
 
     /**

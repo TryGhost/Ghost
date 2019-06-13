@@ -2,6 +2,7 @@ const should = require('should'),
     sinon = require('sinon'),
     common = require('../../../../../server/lib/common'),
     urlService = require('../../../../../server/services/url'),
+    urlUtils = require('../../../../../server/lib/url-utils'),
     middlewares = require('../../../../../server/services/routing/middlewares');
 
 describe('UNIT: services/routing/middlewares/page-param', function () {
@@ -14,7 +15,7 @@ describe('UNIT: services/routing/middlewares/page-param', function () {
         res = sinon.stub();
         next = sinon.stub();
 
-        sinon.stub(urlService.utils, 'redirect301');
+        sinon.stub(urlUtils, 'redirect301');
     });
 
     afterEach(function () {
@@ -27,7 +28,7 @@ describe('UNIT: services/routing/middlewares/page-param', function () {
 
         middlewares.pageParam(req, res, next, 2);
 
-        urlService.utils.redirect301.called.should.be.false();
+        urlUtils.redirect301.called.should.be.false();
         next.calledOnce.should.be.true();
         req.params.page.should.eql(2);
     });
@@ -38,7 +39,7 @@ describe('UNIT: services/routing/middlewares/page-param', function () {
 
         middlewares.pageParam(req, res, next, 1);
 
-        urlService.utils.redirect301.calledOnce.should.be.true();
+        urlUtils.redirect301.calledOnce.should.be.true();
         next.called.should.be.false();
     });
 
@@ -48,7 +49,7 @@ describe('UNIT: services/routing/middlewares/page-param', function () {
 
         middlewares.pageParam(req, res, next, 0);
 
-        urlService.utils.redirect301.called.should.be.false();
+        urlUtils.redirect301.called.should.be.false();
         next.calledOnce.should.be.true();
         (next.args[0][0] instanceof common.errors.NotFoundError).should.be.true();
     });
@@ -59,7 +60,7 @@ describe('UNIT: services/routing/middlewares/page-param', function () {
 
         middlewares.pageParam(req, res, next, 'something');
 
-        urlService.utils.redirect301.called.should.be.false();
+        urlUtils.redirect301.called.should.be.false();
         next.calledOnce.should.be.true();
         (next.args[0][0] instanceof common.errors.NotFoundError).should.be.true();
     });
@@ -70,7 +71,7 @@ describe('UNIT: services/routing/middlewares/page-param', function () {
 
         middlewares.pageParam(req, res, next, 1);
 
-        urlService.utils.redirect301.calledOnce.should.be.true();
+        urlUtils.redirect301.calledOnce.should.be.true();
         next.called.should.be.false();
     });
 });
