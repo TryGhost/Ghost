@@ -1,5 +1,5 @@
 const debug = require('ghost-ignition').debug('services:routing:static-pages-router');
-const urlService = require('../url');
+const urlUtils = require('../../lib/url-utils');
 const ParentRouter = require('./ParentRouter');
 const controllers = require('./controllers');
 const common = require('../../lib/common');
@@ -24,7 +24,7 @@ class StaticPagesRouter extends ParentRouter {
             // @NOTE: url options are only required when registering urls in express.
             //        e.g. the UrlService will access the routes and doesn't want to know about possible url options
             if (options.withUrlOptions) {
-                return urlService.utils.urlJoin(this.permalinks.value, '/:options(edit)?/');
+                return urlUtils.urlJoin(this.permalinks.value, '/:options(edit)?/');
             }
 
             return this.permalinks.value;
