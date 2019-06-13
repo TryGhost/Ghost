@@ -12,7 +12,7 @@
 //  req.baseUrl = /blog
 //  req.path =  /ghost/signin/
 
-const urlService = require('../../../services/url');
+const urlUtils = require('../../../lib/url-utils');
 const common = require('../../../lib/common');
 const localUtils = require('../utils');
 
@@ -48,7 +48,7 @@ const uncapitalise = (req, res, next) => {
      */
     if (/[A-Z]/.test(decodedURI)) {
         redirectPath = (localUtils.removeOpenRedirectFromUrl((req.originalUrl || req.url).replace(pathToTest, pathToTest.toLowerCase())));
-        return urlService.utils.redirect301(res, redirectPath);
+        return urlUtils.redirect301(res, redirectPath);
     }
 
     next();
