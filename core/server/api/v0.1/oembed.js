@@ -44,7 +44,8 @@ const oembed = {
 
         function unknownProvider() {
             return Promise.reject(new common.errors.ValidationError({
-                message: common.i18n.t('errors.api.oembed.unknownProvider')
+                message: common.i18n.t('errors.api.oembed.unknownProvider'),
+                context: url
             }));
         }
 
