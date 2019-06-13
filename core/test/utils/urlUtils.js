@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const UrlUtils = require('@tryghost/url-utils');
+const urlUtils = require('../../server/lib/url-utils');
 
 const getInstance = (config) => {
     const params = {
@@ -14,4 +15,13 @@ const getInstance = (config) => {
     return new UrlUtils(params);
 };
 
+const stubUrlUtils = (config, sandbox) => {
+    const stubInstance = getInstance(config);
+
+    Object.keys(urlUtils).forEach((key) => {
+        sandbox.stub(urlUtils, key).callsFake(stubInstance[key]);
+    });
+};
+
+module.exports.stubUrlUtils = stubUrlUtils;
 module.exports.getInstance = getInstance;
