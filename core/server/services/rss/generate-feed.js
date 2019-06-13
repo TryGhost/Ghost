@@ -1,6 +1,7 @@
 var downsize = require('downsize'),
     Promise = require('bluebird'),
     RSS = require('rss'),
+    urlUtils = require('../../lib/url-utils'),
     urlService = require('../../services/url'),
     generateFeed,
     generateItem,
@@ -21,7 +22,7 @@ generateTags = function generateTags(data) {
 
 generateItem = function generateItem(post, siteUrl, secure) {
     var itemUrl = urlService.getUrlByResourceId(post.id, {secure: secure, absolute: true}),
-        htmlContent = urlService.utils.makeAbsoluteUrls(post.html, siteUrl, itemUrl),
+        htmlContent = urlUtils.makeAbsoluteUrls(post.html, siteUrl, itemUrl),
         item = {
             title: post.title,
             // @TODO: DRY this up with data/meta/index & other excerpt code
@@ -36,7 +37,7 @@ generateItem = function generateItem(post, siteUrl, secure) {
         imageUrl;
 
     if (post.feature_image) {
-        imageUrl = urlService.utils.urlFor('image', {image: post.feature_image, secure: secure}, true);
+        imageUrl = urlUtils.urlFor('image', {image: post.feature_image, secure: secure}, true);
 
         // Add a media content tag
         item.custom_elements.push({
@@ -71,14 +72,14 @@ generateItem = function generateItem(post, siteUrl, secure) {
  * @param {{title, description, safeVersion, secure, posts}} data
  */
 generateFeed = function generateFeed(baseUrl, data) {
-    const siteUrl = urlService.utils.urlFor('home', {secure: data.secure}, true);
+    const siteUrl = urlUtils.urlFor('home', {secure: data.secure}, true);
     const feed = new RSS({
         title: data.title,
         description: data.description,
         generator: 'Ghost ' + data.safeVersion,
-        feed_url: urlService.utils.urlFor({relativeUrl: baseUrl, secure: data.secure}, true),
+        feed_url: urlUtils.urlFor({relativeUrl: baseUrl, secure: data.secure}, true),
         site_url: siteUrl,
-        image_url: urlService.utils.urlFor({relativeUrl: 'favicon.png'}, true),
+        image_url: urlUtils.urlFor({relativeUrl: 'favicon.png'}, true),
         ttl: '60',
         custom_namespaces: {
             content: 'http://purl.org/rss/1.0/modules/content/',
