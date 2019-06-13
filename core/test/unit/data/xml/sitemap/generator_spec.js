@@ -3,7 +3,7 @@ const should = require('should'),
     ObjectId = require('bson-objectid'),
     _ = require('lodash'),
     testUtils = require('../../../../utils'),
-    urlService = require('../../../../../server/services/url'),
+    urlUtils = require('../../../../../server/lib/url-utils'),
     IndexGenerator = require('../../../../../server/data/xml/sitemap/index-generator'),
     PostGenerator = require('../../../../../server/data/xml/sitemap/post-generator'),
     PageGenerator = require('../../../../../server/data/xml/sitemap/page-generator'),
@@ -95,7 +95,7 @@ describe('Generators', function () {
 
         describe('fn: getXml', function () {
             beforeEach(function () {
-                sinon.stub(urlService.utils, 'urlFor');
+                sinon.stub(urlUtils, 'urlFor');
             });
 
             it('get cached xml', function () {
@@ -109,10 +109,10 @@ describe('Generators', function () {
             it('compare content output', function () {
                 let idxFirst, idxSecond, idxThird;
 
-                urlService.utils.urlFor.withArgs('image', {image: 'post-100.jpg'}, true).returns('http://my-ghost-blog.com/images/post-100.jpg');
-                urlService.utils.urlFor.withArgs('image', {image: 'post-200.jpg'}, true).returns('http://my-ghost-blog.com/images/post-200.jpg');
-                urlService.utils.urlFor.withArgs('image', {image: 'post-300.jpg'}, true).returns('http://my-ghost-blog.com/images/post-300.jpg');
-                urlService.utils.urlFor.withArgs('sitemap_xsl', true).returns('http://my-ghost-blog.com/sitemap.xsl');
+                urlUtils.urlFor.withArgs('image', {image: 'post-100.jpg'}, true).returns('http://my-ghost-blog.com/images/post-100.jpg');
+                urlUtils.urlFor.withArgs('image', {image: 'post-200.jpg'}, true).returns('http://my-ghost-blog.com/images/post-200.jpg');
+                urlUtils.urlFor.withArgs('image', {image: 'post-300.jpg'}, true).returns('http://my-ghost-blog.com/images/post-300.jpg');
+                urlUtils.urlFor.withArgs('sitemap_xsl', true).returns('http://my-ghost-blog.com/sitemap.xsl');
 
                 generator.addUrl('http://my-ghost-blog.com/url/100/', testUtils.DataGenerator.forKnex.createPost({
                     feature_image: 'post-100.jpg',
