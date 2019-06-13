@@ -1,7 +1,7 @@
 const url = require('url');
 const path = require('path');
 const debug = require('ghost-ignition').debug('web:shared:mw:url-redirects');
-const urlService = require('../../../services/url');
+const urlUtils = require('../../../lib/url-utils');
 
 const _private = {};
 
@@ -28,8 +28,8 @@ _private.redirectUrl = (options) => {
 };
 
 _private.getAdminRedirectUrl = (options) => {
-    const blogHostWithProtocol = urlService.utils.urlFor('home', true);
-    const adminHostWithProtocol = urlService.utils.urlFor('admin', true);
+    const blogHostWithProtocol = urlUtils.urlFor('home', true);
+    const adminHostWithProtocol = urlUtils.urlFor('admin', true);
     const adminHostWithoutProtocol = adminHostWithProtocol.replace(/(^\w+:|^)\/\//, '');
     const blogHostWithoutProtocol = blogHostWithProtocol.replace(/(^\w+:|^)\/\//, '');
     const requestedHost = options.requestedHost;
@@ -37,14 +37,14 @@ _private.getAdminRedirectUrl = (options) => {
     const queryParameters = options.queryParameters;
     const secure = options.secure;
 
-    debug('getAdminRedirectUrl', requestedHost, requestedUrl, adminHostWithoutProtocol, blogHostWithoutProtocol, urlService.utils.urlJoin(blogHostWithoutProtocol, 'ghost/'));
+    debug('getAdminRedirectUrl', requestedHost, requestedUrl, adminHostWithoutProtocol, blogHostWithoutProtocol, urlUtils.urlJoin(blogHostWithoutProtocol, 'ghost/'));
 
     // CASE: we only redirect the admin access if `admin.url` is configured
     // If url and admin.url are not equal AND the requested host does not match, redirect.
     // The first condition is the most important, because it ensures that you have a custom admin url configured,
     // because we don't force an admin redirect if you have a custom url configured, but no admin url.
-    if (adminHostWithoutProtocol !== urlService.utils.urlJoin(blogHostWithoutProtocol, 'ghost/') &&
-        adminHostWithoutProtocol !== urlService.utils.urlJoin(requestedHost, urlService.utils.getSubdir(), 'ghost/')) {
+    if (adminHostWithoutProtocol !== urlUtils.urlJoin(blogHostWithoutProtocol, 'ghost/') &&
+        adminHostWithoutProtocol !== urlUtils.urlJoin(requestedHost, urlUtils.getSubdir(), 'ghost/')) {
         debug('redirect because admin host does not match');
 
         return _private.redirectUrl({
@@ -55,7 +55,7 @@ _private.getAdminRedirectUrl = (options) => {
     }
 
     // CASE: configured admin url is HTTPS, but request is HTTP
-    if (urlService.utils.isSSL(adminHostWithProtocol) && !secure) {
+    if (urlUtils.isSSL(adminHostWithProtocol) && !secure) {
         debug('redirect because protocol does not match');
 
         return _private.redirectUrl({
@@ -67,7 +67,7 @@ _private.getAdminRedirectUrl = (options) => {
 };
 
 _private.getBlogRedirectUrl = (options) => {
-    const blogHostWithProtocol = urlService.utils.urlFor('home', true);
+    const blogHostWithProtocol = urlUtils.urlFor('home', true);
     const requestedHost = options.requestedHost;
     const requestedUrl = options.requestedUrl;
     const queryParameters = options.queryParameters;
@@ -76,7 +76,7 @@ _private.getBlogRedirectUrl = (options) => {
     debug('getBlogRedirectUrl', requestedHost, requestedUrl, blogHostWithProtocol);
 
     // CASE: configured canonical url is HTTPS, but request is HTTP, redirect to requested host + SSL
-    if (urlService.utils.isSSL(blogHostWithProtocol) && !secure) {
+    if (urlUtils.isSSL(blogHostWithProtocol) && !secure) {
         debug('redirect because protocol does not match');
 
         return _private.redirectUrl({
@@ -104,7 +104,7 @@ _private.redirect = (req, res, next, redirectFn) => {
 
     if (redirectUrl) {
         debug(`url redirect to: ${redirectUrl}`);
-        return urlService.utils.redirect301(res, redirectUrl);
+        return urlUtils.redirect301(res, redirectUrl);
     }
 
     debug('no url redirect');
