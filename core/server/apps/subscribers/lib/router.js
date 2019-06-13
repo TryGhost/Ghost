@@ -5,7 +5,7 @@ const path = require('path'),
     bodyParser = require('body-parser'),
     // Dirty requires
     common = require('../../../lib/common'),
-    urlUtils = require('../lib/url-utils'),
+    urlUtils = require('../../../lib/url-utils'),
     urlService = require('../../../services/url'),
     validator = require('../../../data/validation').validator,
     routing = require('../../../services/routing'),
