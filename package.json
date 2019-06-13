@@ -154,7 +154,7 @@
     "should": "13.2.3",
     "should-http": "0.1.1",
     "sinon": "7.3.2",
-    "supertest": "^4.0.2",
+    "supertest": "3.4.1",
     "tmp": "0.0.33"
   }
 }
