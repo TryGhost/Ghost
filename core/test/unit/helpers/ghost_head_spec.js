@@ -300,6 +300,7 @@ describe('{{ghost_head}} helper', function () {
     describe('without Code Injection', function () {
         before(function () {
             configUtils.set('url', 'http://localhost:65530/');
+            urlUtils.urlFor.withArgs('image').returns('http://localhost:65530/content/images/test-author-image.png');
             urlUtils.urlFor.withArgs('home').returns('http://localhost:65530/');
         });
 
