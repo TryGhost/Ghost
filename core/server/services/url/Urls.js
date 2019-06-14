@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('services:url:urls');
-const localUtils = require('./utils');
+const localUtils = require('../../lib/url-utils');
 const common = require('../../lib/common');
 
 /**
