@@ -235,7 +235,6 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                 });
 
                 it('when mobiledoc contains an absolute URL to image', function () {
-
                     const apiConfig = {};
                     const frame = {
                         options: {
