@@ -1,6 +1,7 @@
 dist: xenial
 language: node_js
 node_js:
+- '12'
 - '10'
 - '8'
 cache: yarn
@@ -16,6 +17,8 @@ matrix:
   include:
   - node_js: '10'
     env: TEST_SUITE=lint
+  allow_failures:
+  - node_js: '12'
   fast_finish: true
 install:
 - yarn
