@@ -302,7 +302,6 @@ describe('{{ghost_head}} helper', function () {
         before(function () {
             sandbox = sinon.createSandbox();
 
-            configUtils.set('url', 'http://localhost:65530/');
             testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/'}, sandbox);
         });
 
@@ -1254,9 +1253,6 @@ describe('{{ghost_head}} helper', function () {
 
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
 
-            configUtils.set({
-                url: 'http://localhost:65530/blog/'
-            });
             testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/blog'}, sandbox);
 
             routing.registry.getRssUrl.returns('http://localhost:65530/blog/rss/');
@@ -1295,7 +1291,6 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
 
             configUtils.set({
-                url: 'http://localhost:65530/blog/',
                 referrerPolicy: 'origin'
             });
 
@@ -1331,7 +1326,6 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
 
             configUtils.set({
-                url: 'http://localhost:65530/',
                 privacy: {
                     useStructuredData: false
                 }
@@ -1380,9 +1374,6 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
             settingsCache.get.withArgs('ghost_head').returns('<style>body {background: red;}</style>');
 
-            configUtils.set({
-                url: 'http://localhost:65530/'
-            });
             testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/'}, sandbox);
         });
 
@@ -1503,9 +1494,6 @@ describe('{{ghost_head}} helper', function () {
 
         before(function () {
             sandbox = sinon.createSandbox();
-            configUtils.set({
-                url: 'http://localhost:65530/'
-            });
             testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/'}, sandbox);
         });
 
@@ -1581,10 +1569,6 @@ describe('{{ghost_head}} helper', function () {
 
     describe('amp is disabled', function () {
         before(function () {
-            configUtils.set({
-                url: 'http://localhost:65530/'
-            });
-
             settingsCache.get.withArgs('amp').returns(false);
         });
 

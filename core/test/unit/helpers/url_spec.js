@@ -3,7 +3,6 @@ var should = require('should'),
     Promise = require('bluebird'),
     testUtils = require('../../utils'),
     urlUtils = require('../../utils/urlUtils'),
-    configUtils = require('../../utils/configUtils'),
     markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
     helpers = require('../../../server/helpers'),
     urlService = require('../../../server/services/url'),
@@ -30,12 +29,10 @@ describe('{{url}} helper', function () {
     describe('no subdir', function () {
         before(function () {
             sandbox = sinon.createSandbox();
-            configUtils.set({url: 'http://localhost:82832/'});
             urlUtils.stubUrlUtils({url: 'http://localhost:82832/'}, sandbox);
         });
 
         after(function () {
-            configUtils.restore();
             sandbox.restore();
         });
 
@@ -278,7 +275,6 @@ describe('{{url}} helper', function () {
 
         before(function () {
             sandbox = sinon.createSandbox();
-            configUtils.set({url: 'http://localhost:82832/blog'});
             urlUtils.stubUrlUtils({url: 'http://localhost:82832/blog'}, sandbox);
         });
 
