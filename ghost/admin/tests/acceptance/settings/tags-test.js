@@ -4,7 +4,6 @@ import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
-import {errorOverride, errorReset} from 'ghost-admin/tests/helpers/adapter-error';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
@@ -312,11 +311,8 @@ describe('Acceptance: Settings - Tags', function () {
                 return new Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'Tag not found.', type: 'NotFoundError'}]});
             });
 
-            errorOverride();
-
             await visit('settings/tags/unknown');
 
-            errorReset();
             expect(currentRouteName()).to.equal('error404');
             expect(currentURL()).to.equal('/settings/tags/unknown');
         });

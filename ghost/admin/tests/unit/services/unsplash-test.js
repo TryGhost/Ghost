@@ -1,7 +1,6 @@
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
-import {errorOverride, errorReset} from '../../helpers/adapter-error';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
@@ -48,9 +47,7 @@ describe('Unit: Service: unsplash', function () {
             });
             await wait();
 
-            errorOverride();
             expect(service.get('error')).to.have.string('Unsplash API rate limit reached');
-            errorReset();
         });
 
         it('handles json errors', async function () {
@@ -67,9 +64,7 @@ describe('Unit: Service: unsplash', function () {
             });
             await wait();
 
-            errorOverride();
             expect(service.get('error')).to.equal('Unsplash API Error');
-            errorReset();
         });
 
         it('handles text errors', async function () {
@@ -84,9 +79,7 @@ describe('Unit: Service: unsplash', function () {
             });
             await wait();
 
-            errorOverride();
             expect(service.get('error')).to.equal('Unsplash text error');
-            errorReset();
         });
     });
 
