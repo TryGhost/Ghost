@@ -83,7 +83,7 @@
     "ember-one-way-select": "4.0.0",
     "ember-power-calendar-moment": "0.1.7",
     "ember-power-datepicker": "0.6.0",
-    "ember-power-select": "2.3.3",
+    "ember-power-select": "2.3.4",
     "ember-resolver": "5.1.3",
     "ember-route-action-helper": "2.0.7",
     "ember-simple-auth": "1.8.2",

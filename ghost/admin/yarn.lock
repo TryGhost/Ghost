@@ -5057,10 +5057,10 @@ ember-power-datepicker@0.6.0:
     ember-native-dom-helpers "^0.5.10"
     ember-power-calendar "^0.12.0"
 
-ember-power-select@2.3.3:
-  version "2.3.3"
-  resolved "https://registry.yarnpkg.com/ember-power-select/-/ember-power-select-2.3.3.tgz#01aa5d1534c59804c1538da6c3ab3c406366d335"
-  integrity sha512-2h20HEWcLv32ySG4wGTx3suwHpRKkJP6YPYgx57uJL6U8loeHFXzoo/9tbEc5Hc3hp1fUhaUilmLmSudjrT+Sw==
+ember-power-select@2.3.4:
+  version "2.3.4"
+  resolved "https://registry.yarnpkg.com/ember-power-select/-/ember-power-select-2.3.4.tgz#5cd4284da55109a47e489c2302682ffb6ae71916"
+  integrity sha512-i3Y1NIb/aUEPcTg1SeF9Xv3YDFITqTghuf9X3CGZ1r/3KG+2oIugBeHU1kQWzzq12nDH7sfXPj7bacor+WdZSA==
   dependencies:
     ember-basic-dropdown "^1.1.0"
     ember-cli-babel "^7.7.3"
