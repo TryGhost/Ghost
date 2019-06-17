@@ -1,10 +1,10 @@
 const _ = require('lodash');
 const sinon = require('sinon');
-const config = require('../../server/config');
 const UrlUtils = require('@tryghost/url-utils');
+const config = require('../../server/config');
 const urlUtils = require('../../server/lib/url-utils');
 
-let sandbox;
+const defaultSandbox = sinon.createSandbox();
 
 const getInstance = (options) => {
     const opts = {
@@ -29,7 +29,6 @@ const stubUrlUtils = (options, sandbox) => {
 
 // Method for regressions tests must be used with restore method
 const stubUrlUtilsFromConfig = () => {
-    sandbox = sinon.createSandbox();
     const options = {
         url: config.get('url'),
         adminUrl: config.get('admin:url'),
@@ -38,13 +37,11 @@ const stubUrlUtilsFromConfig = () => {
         redirectCacheMaxAge: config.get('caching:301:maxAge'),
         baseApiPath: '/ghost/api'
     };
-    stubUrlUtils(options, sandbox);
+    stubUrlUtils(options, defaultSandbox);
 };
 
 const restore = () => {
-    if (sandbox) {
-        sandbox.restore();
-    }
+    defaultSandbox.restore();
 };
 
 module.exports.stubUrlUtils = stubUrlUtils;
