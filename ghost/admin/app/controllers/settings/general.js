@@ -1,7 +1,7 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import $ from 'jquery';
 import Controller from '@ember/controller';
-import randomPassword from 'ghost-admin/utils/random-password';
+import generatePassword from 'ghost-admin/utils/password-generator';
 import validator from 'validator';
 import {
     IMAGE_EXTENSIONS,
@@ -13,6 +13,13 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 const ICON_EXTENSIONS = ['ico', 'png'];
+
+function randomPassword() {
+    let word = generatePassword(6);
+    let randomN = Math.floor(Math.random() * 1000);
+
+    return word + randomN;
+}
 
 export default Controller.extend({
     config: service(),
