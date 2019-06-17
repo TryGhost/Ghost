@@ -16,7 +16,6 @@ import {
     triggerEvent,
     triggerKeyEvent
 } from '@ember/test-helpers';
-import {errorOverride, errorReset} from '../helpers/adapter-error';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -877,11 +876,8 @@ describe('Acceptance: Staff', function () {
                 return new Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'User not found.', type: 'NotFoundError'}]});
             });
 
-            errorOverride();
-
             await visit('/staff/unknown');
 
-            errorReset();
             expect(currentRouteName()).to.equal('error404');
             expect(currentURL()).to.equal('/staff/unknown');
         });
@@ -911,11 +907,8 @@ describe('Acceptance: Staff', function () {
             this.server.create('user', {roles: [adminRole]});
             this.server.create('invite', {role: authorRole});
 
-            errorOverride();
-
             await visit('/staff');
 
-            errorReset();
             expect(currentRouteName()).to.equal('staff.index');
             expect(findAll('.gh-alert').length).to.equal(0);
         });

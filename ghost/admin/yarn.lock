@@ -5024,16 +5024,16 @@ ember-maybe-in-element@^0.2.0:
   dependencies:
     ember-cli-babel "^7.1.0"
 
-ember-mocha@0.15.1:
-  version "0.15.1"
-  resolved "https://registry.yarnpkg.com/ember-mocha/-/ember-mocha-0.15.1.tgz#f044cd5a6091f2c97bb3a1e472cb8476b4fde3b6"
-  integrity sha512-OqSeLU84kAfsmkkUUQl0FJlxFhDAPnAyRX6uOFKSHAAffWKTR205txqzbtaxzEJbGJfBODvxqjfdk0tuAIU7BA==
+ember-mocha@0.16.0:
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/ember-mocha/-/ember-mocha-0.16.0.tgz#0a8499f59e626a5af5ca47e3f1d19c2bd5cc7393"
+  integrity sha512-iYWrCOHdPQNwFsD1UNKa6RnA629wgN4zql9730hfiV0Ib4I4VwDueldGwWjXEF+3jGM/R993z6DPvYQKbNfTdg==
   dependencies:
     "@ember/test-helpers" "^1.5.0"
     broccoli-funnel "^2.0.2"
     broccoli-merge-trees "^3.0.2"
     common-tags "^1.8.0"
-    ember-cli-babel "^6.6.0"
+    ember-cli-babel "^7.7.3"
     ember-cli-test-loader "^2.2.0"
     mocha "^2.5.3"
 

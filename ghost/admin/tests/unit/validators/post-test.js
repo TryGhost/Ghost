@@ -40,7 +40,7 @@ describe('Unit: Validator: post', function () {
 
         it('cannot be a random string', async function () {
             let post = Post.create({canonicalUrl: 'asdfghjk'});
-            let passed = await post.validate({property: 'canonicalUrl'}).then(() => true);
+            let passed = await post.validate({property: 'canonicalUrl'}).then(() => true).catch(() => false);
 
             expect(passed, 'passed').to.be.false;
             expect(post.hasValidated).to.include('canonicalUrl');
@@ -52,14 +52,14 @@ describe('Unit: Validator: post', function () {
 
         it('cannot be too long', async function () {
             let post = Post.create({canonicalUrl: `http://example.com/${(new Array(1983).join('x'))}`});
-            let passed = await post.validate({property: 'canonicalUrl'}).then(() => true);
+            let passed = await post.validate({property: 'canonicalUrl'}).then(() => true).catch(() => false);
 
             expect(passed, 'passed').to.be.false;
             expect(post.hasValidated).to.include('canonicalUrl');
 
             let error = post.errors.errorsFor('canonicalUrl').get(0);
             expect(error.attribute).to.equal('canonicalUrl');
-            expect(error.message).to.equal('Please enter a valid URL');
+            expect(error.message).to.equal('Canonical URL is too long, max 2000 chars');
         });
     });
 });
