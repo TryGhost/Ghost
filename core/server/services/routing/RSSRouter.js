@@ -1,5 +1,5 @@
 const ParentRouter = require('./ParentRouter');
-const urlService = require('../url');
+const urlUtils = require('../../lib/url-utils');
 
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
@@ -28,7 +28,7 @@ class RSSRouter extends ParentRouter {
         this.router().param('page', middlewares.pageParam);
 
         // REGISTER: actual rss route
-        this.mountRoute(urlService.utils.urlJoin(this.route.value, ':page(\\d+)'), controllers.rss);
+        this.mountRoute(urlUtils.urlJoin(this.route.value, ':page(\\d+)'), controllers.rss);
 
         // REGISTER: redirect rule
         this.mountRoute('/feed/', this._redirectFeedRequest.bind(this));
@@ -41,11 +41,10 @@ class RSSRouter extends ParentRouter {
      * @private
      */
     _redirectFeedRequest(req, res) {
-        urlService
-            .utils
+        urlUtils
             .redirect301(
                 res,
-                urlService.utils.urlJoin(urlService.utils.getSubdir(), req.baseUrl, this.route.value)
+                urlUtils.urlJoin(urlUtils.getSubdir(), req.baseUrl, this.route.value)
             );
     }
 }

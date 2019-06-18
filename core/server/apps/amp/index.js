@@ -1,6 +1,6 @@
 const router = require('./lib/router'),
     registerHelpers = require('./lib/helpers'),
-    urlService = require('../../services/url'),
+    urlUtils = require('../../lib/url-utils'),
 
     // Dirty requires
     settingsCache = require('../../services/settings/cache');
@@ -11,7 +11,7 @@ function ampRouter(req, res) {
     } else {
         // routeKeywords.amp: 'amp'
         let redirectUrl = req.originalUrl.replace(/amp\/$/, '');
-        urlService.utils.redirect301(res, redirectUrl);
+        urlUtils.redirect301(res, redirectUrl);
     }
 }
 

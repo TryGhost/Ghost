@@ -7,6 +7,7 @@ var should = require('should'),
     supertest = require('supertest'),
     testUtils = require('../../utils/index'),
     configUtils = require('../../utils/configUtils'),
+    urlUtils = require('../../utils/urlUtils'),
     ghost = testUtils.startGhost,
     common = require('../../../server/lib/common/index'),
     config = require('../../../server/config/index'),
@@ -120,6 +121,7 @@ describe('Admin Routing', function () {
 
         before(function () {
             configUtils.set('url', 'https://localhost:2390');
+            urlUtils.stubUrlUtilsFromConfig();
 
             return ghost({forceStart: true})
                 .then(function (_ghostServer) {
@@ -129,6 +131,7 @@ describe('Admin Routing', function () {
         });
 
         after(function () {
+            urlUtils.restore();
             configUtils.restore();
         });
 

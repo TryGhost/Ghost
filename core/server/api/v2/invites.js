@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 const common = require('../../lib/common');
 const security = require('../../lib/security');
 const mailService = require('../../services/mail');
-const urlService = require('../../services/url');
+const urlUtils = require('../../lib/url-utils');
 const settingsCache = require('../../services/settings/cache');
 const models = require('../../models');
 const api = require('./index');
@@ -122,13 +122,13 @@ module.exports = {
                 .then((_invite) => {
                     invite = _invite;
 
-                    const adminUrl = urlService.utils.urlFor('admin', true);
+                    const adminUrl = urlUtils.urlFor('admin', true);
 
                     emailData = {
                         blogName: settingsCache.get('title'),
                         invitedByName: frame.user.get('name'),
                         invitedByEmail: frame.user.get('email'),
-                        resetLink: urlService.utils.urlJoin(adminUrl, 'signup', security.url.encodeBase64(invite.get('token')), '/')
+                        resetLink: urlUtils.urlJoin(adminUrl, 'signup', security.url.encodeBase64(invite.get('token')), '/')
                     };
 
                     return mailService.utils.generateContent({data: emailData, template: 'invite-user'});

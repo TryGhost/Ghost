@@ -6,7 +6,7 @@ const _debug = require('ghost-ignition').debug._base,
     Queue = require('./Queue'),
     Urls = require('./Urls'),
     Resources = require('./Resources'),
-    localUtils = require('./utils');
+    localUtils = require('../../lib/url-utils');
 
 /**
  * The url service class holds all instances in a centralised place.

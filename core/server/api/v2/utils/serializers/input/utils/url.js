@@ -1,9 +1,9 @@
 const _ = require('lodash');
 const url = require('url');
-const utils = require('../../../../../../services/url/utils');
+const urlUtils = require('../../../../../../lib/url-utils');
 
 const handleCanonicalUrl = (canonicalUrl) => {
-    const blogURl = utils.getBlogUrl();
+    const blogURl = urlUtils.getBlogUrl();
     const isSameProtocol = url.parse(canonicalUrl).protocol === url.parse(blogURl).protocol;
     const blogDomain = blogURl.replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     const absolute = canonicalUrl.replace(/^http(s?):\/\//, '');
@@ -12,33 +12,33 @@ const handleCanonicalUrl = (canonicalUrl) => {
     // Blog URL incl. the same protocol. This allows users to keep e.g. Facebook comments after
     // a http -> https switch
     if (absolute.startsWith(blogDomain) && isSameProtocol) {
-        return utils.absoluteToRelative(canonicalUrl, {withoutSubdirectory: true});
+        return urlUtils.absoluteToRelative(canonicalUrl, {withoutSubdirectory: true});
     }
 
     return canonicalUrl;
 };
 
 const handleImageUrl = (imageUrl) => {
-    const blogDomain = utils.getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+    const blogDomain = urlUtils.getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     const imageUrlAbsolute = imageUrl.replace(/^http(s?):\/\//, '');
-    const imagePathRe = new RegExp(`^${blogDomain}/${utils.STATIC_IMAGE_URL_PREFIX}`);
+    const imagePathRe = new RegExp(`^${blogDomain}/${urlUtils.STATIC_IMAGE_URL_PREFIX}`);
 
     if (imagePathRe.test(imageUrlAbsolute)) {
-        return utils.absoluteToRelative(imageUrl);
+        return urlUtils.absoluteToRelative(imageUrl);
     }
 
     return imageUrl;
 };
 
 const handleContentUrls = (content) => {
-    const blogDomain = utils.getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
-    const imagePathRe = new RegExp(`(http(s?)://)?${blogDomain}/${utils.STATIC_IMAGE_URL_PREFIX}`, 'g');
+    const blogDomain = urlUtils.getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+    const imagePathRe = new RegExp(`(http(s?)://)?${blogDomain}/${urlUtils.STATIC_IMAGE_URL_PREFIX}`, 'g');
 
     const matches = _.uniq(content.match(imagePathRe));
 
     if (matches) {
         matches.forEach((match) => {
-            const relative = utils.absoluteToRelative(match);
+            const relative = urlUtils.absoluteToRelative(match);
             content = content.replace(new RegExp(match, 'g'), relative);
         });
     }

@@ -1,5 +1,6 @@
 const debug = require('ghost-ignition').debug('services:routing:controllers:preview'),
     urlService = require('../../url'),
+    urlUtils = require('../../../lib/url-utils'),
     helpers = require('../helpers');
 
 /**
@@ -37,14 +38,14 @@ module.exports = function previewController(req, res, next) {
                 const resourceType = post.page ? 'page' : 'post';
 
                 // CASE: last param of the url is /edit, redirect to admin
-                return urlService.utils.redirectToAdmin(302, res, `/editor/${resourceType}/${post.id}`);
+                return urlUtils.redirectToAdmin(302, res, `/editor/${resourceType}/${post.id}`);
             } else if (req.params.options) {
                 // CASE: unknown options param detected, ignore
                 return next();
             }
 
             if (post.status === 'published') {
-                return urlService.utils.redirect301(res, urlService.getUrlByResourceId(post.id, {withSubdirectory: true}));
+                return urlUtils.redirect301(res, urlService.getUrlByResourceId(post.id, {withSubdirectory: true}));
             }
 
             // @TODO: See helpers/secure

@@ -6,7 +6,7 @@ var _ = require('lodash'),
     config = require('../../config'),
     common = require('../../lib/common'),
     settingsCache = require('../settings/cache'),
-    urlService = require('../url');
+    urlUtils = require('../../lib/url-utils');
 
 function GhostMailer() {
     var nodemailer = require('nodemailer'),
@@ -39,7 +39,7 @@ GhostMailer.prototype.from = function () {
 
 // Moved it to its own module
 GhostMailer.prototype.getDomain = function () {
-    var domain = urlService.utils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+    var domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
     return domain && domain[1];
 };
 

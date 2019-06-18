@@ -10,6 +10,7 @@ var should = require('should'),
     _ = require('lodash'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
+    urlUtils = require('../../utils/urlUtils'),
     config = require('../../../server/config'),
     settingsCache = require('../../../server/services/settings/cache'),
     origCache = _.cloneDeep(settingsCache),
@@ -479,6 +480,7 @@ describe('Frontend Routing', function () {
 
         before(function () {
             configUtils.set('url', 'http://localhost/blog');
+            urlUtils.stubUrlUtilsFromConfig();
 
             return ghost({forceStart: true, subdir: true})
                 .then(function (_ghostServer) {
@@ -490,6 +492,7 @@ describe('Frontend Routing', function () {
 
         after(function () {
             configUtils.restore();
+            urlUtils.restore();
         });
 
         it('http://localhost should 404', function (done) {
@@ -557,6 +560,7 @@ describe('Frontend Routing', function () {
 
         before(function () {
             configUtils.set('url', 'http://localhost/blog/');
+            urlUtils.stubUrlUtilsFromConfig();
 
             return ghost({forceStart: true, subdir: true})
                 .then(function (_ghostServer) {
@@ -567,6 +571,7 @@ describe('Frontend Routing', function () {
 
         after(function () {
             configUtils.restore();
+            urlUtils.restore();
         });
 
         it('http://localhost should 404', function (done) {
@@ -643,6 +648,7 @@ describe('Frontend Routing', function () {
 
         before(function () {
             configUtils.set('url', 'http://localhost:2370/');
+            urlUtils.stubUrlUtilsFromConfig();
 
             return ghost({forceStart: true})
                 .then(function (_ghostServer) {
@@ -653,6 +659,7 @@ describe('Frontend Routing', function () {
 
         after(function () {
             configUtils.restore();
+            urlUtils.restore();
         });
 
         it('should set links to url over non-HTTPS', function (done) {
@@ -679,6 +686,7 @@ describe('Frontend Routing', function () {
 
         before(function () {
             configUtils.set('url', 'http://localhost:2370/');
+            urlUtils.stubUrlUtilsFromConfig();
 
             return ghost({forceStart: true})
                 .then(function (_ghostServer) {
@@ -689,6 +697,7 @@ describe('Frontend Routing', function () {
 
         after(function () {
             configUtils.restore();
+            urlUtils.restore();
         });
 
         describe('1 case', function () {
