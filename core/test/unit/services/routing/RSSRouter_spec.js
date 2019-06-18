@@ -4,7 +4,7 @@ const should = require('should'),
     common = require('../../../../server/lib/common'),
     controllers = require('../../../../server/services/routing/controllers'),
     RSSRouter = require('../../../../server/services/routing/RSSRouter'),
-    urlService = require('../../../../server/services/url');
+    urlUtils = require('../../../../server/lib/url-utils');
 
 describe('UNIT - services/routing/RSSRouter', function () {
     describe('instantiate', function () {
@@ -15,7 +15,7 @@ describe('UNIT - services/routing/RSSRouter', function () {
             sinon.spy(RSSRouter.prototype, 'mountRoute');
             sinon.spy(RSSRouter.prototype, 'mountRouter');
 
-            sinon.stub(urlService.utils, 'urlJoin');
+            sinon.stub(urlUtils, 'urlJoin');
         });
 
         afterEach(function () {
@@ -24,7 +24,7 @@ describe('UNIT - services/routing/RSSRouter', function () {
         });
 
         it('default', function () {
-            urlService.utils.urlJoin.withArgs('/rss/', ':page(\\d+)').returns('/rss-pagination/');
+            urlUtils.urlJoin.withArgs('/rss/', ':page(\\d+)').returns('/rss-pagination/');
 
             const rssRouter = new RSSRouter();
 
@@ -47,7 +47,7 @@ describe('UNIT - services/routing/RSSRouter', function () {
 
         it('subdirectory is enabled', function () {
             configUtils.set('url', 'http://localhost:22222/blog/');
-            urlService.utils.urlJoin.withArgs('/rss/', ':page(\\d+)').returns('/rss-pagination/');
+            urlUtils.urlJoin.withArgs('/rss/', ':page(\\d+)').returns('/rss-pagination/');
 
             const rssRouter = new RSSRouter();
 

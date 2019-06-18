@@ -1,9 +1,13 @@
 var should = require('should'),
     sinon = require('sinon'),
-    getAssetUrl = require('../../../../server/data/meta/asset_url'),
+    rewire = require('rewire'),
+    imageLib = require('../../../../server/lib/image'),
     settingsCache = require('../../../../server/services/settings/cache'),
     configUtils = require('../../../utils/configUtils'),
+    urlUtils = require('../../../utils/urlUtils'),
     config = configUtils.config;
+
+const getAssetUrl = rewire('../../../../server/data/meta/asset_url');
 
 describe('getAssetUrl', function () {
     afterEach(function () {
@@ -77,7 +81,7 @@ describe('getAssetUrl', function () {
 
     describe('with /blog subdirectory', function () {
         beforeEach(function () {
-            configUtils.set({url: 'http://localhost:82832/blog'});
+            getAssetUrl.__set__('urlUtils', urlUtils.getInstance({url: 'http://localhost:82832/blog'}));
         });
 
         it('should return asset url with just context', function () {
@@ -102,16 +106,19 @@ describe('getAssetUrl', function () {
 
         describe('favicon', function () {
             it('should not add asset to url if favicon.ico', function () {
+                sinon.stub(imageLib.blogIcon, 'getIconUrl').returns('/blog/favicon.ico');
                 var testUrl = getAssetUrl('favicon.ico');
                 testUrl.should.equal('/blog/favicon.ico');
             });
 
             it('should not add asset to url if favicon.png', function () {
+                sinon.stub(imageLib.blogIcon, 'getIconUrl').returns('/blog/favicon.ico');
                 var testUrl = getAssetUrl('favicon.png');
                 testUrl.should.equal('/blog/favicon.ico');
             });
 
             it('should return correct favicon path for custom png', function () {
+                sinon.stub(imageLib.blogIcon, 'getIconUrl').returns('/blog/favicon.png');
                 sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
                 var testUrl = getAssetUrl('favicon.ico');
                 testUrl.should.equal('/blog/favicon.png');

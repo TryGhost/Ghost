@@ -2,6 +2,7 @@ const should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../../../utils'),
     urlService = require('../../../../../server/services/url'),
+    urlUtils = require('../../../../../server/lib/url-utils'),
     controllers = require('../../../../../server/services/routing/controllers'),
     helpers = require('../../../../../server/services/routing/helpers'),
     EDITOR_URL = `/editor/post/`;
@@ -31,8 +32,8 @@ describe('Unit - services/routing/controllers/entry', function () {
             return renderStub;
         });
 
-        sinon.stub(urlService.utils, 'redirectToAdmin');
-        sinon.stub(urlService.utils, 'redirect301');
+        sinon.stub(urlUtils, 'redirectToAdmin');
+        sinon.stub(urlUtils, 'redirect301');
         sinon.stub(urlService, 'getResourceById');
 
         req = {
@@ -114,7 +115,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            urlService.utils.redirectToAdmin.callsFake(function (statusCode, res, editorUrl) {
+            urlUtils.redirectToAdmin.callsFake(function (statusCode, res, editorUrl) {
                 statusCode.should.eql(302);
                 editorUrl.should.eql(EDITOR_URL + post.id);
                 done();
@@ -164,7 +165,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            urlService.utils.redirect301.callsFake(function (res, postUrl) {
+            urlUtils.redirect301.callsFake(function (res, postUrl) {
                 postUrl.should.eql(post.url);
                 done();
             });
@@ -193,7 +194,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            urlService.utils.redirect301.callsFake(function (res, postUrl) {
+            urlUtils.redirect301.callsFake(function (res, postUrl) {
                 postUrl.should.eql(post.url + '?query=true');
                 done();
             });

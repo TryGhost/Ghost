@@ -10,8 +10,8 @@
 const url = require('url');
 const _ = require('lodash');
 const proxy = require('./proxy');
-const urlService = proxy.urlService;
-const STATIC_IMAGE_URL_PREFIX = `/${urlService.utils.STATIC_IMAGE_URL_PREFIX}`;
+const urlUtils = proxy.urlUtils;
+const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 
 module.exports = function imgUrl(requestedImageUrl, options) {
     // CASE: if no url is passed, e.g. `{{img_url}}` we show a warning
@@ -47,11 +47,11 @@ module.exports = function imgUrl(requestedImageUrl, options) {
     }
 
     function getImageUrl(image) {
-        return urlService.utils.urlFor('image', {image}, absoluteUrlRequested);
+        return urlUtils.urlFor('image', {image}, absoluteUrlRequested);
     }
 
     function ensureRelativePath(image) {
-        return urlService.utils.absoluteToRelative(image);
+        return urlUtils.absoluteToRelative(image);
     }
 
     // CASE: only make paths relative if we didn't get a request for an absolute url
@@ -81,7 +81,7 @@ function getImageSizeOptions(options) {
 }
 
 function detectInternalImage(requestedImageUrl) {
-    const siteUrl = urlService.utils.getBlogUrl();
+    const siteUrl = urlUtils.getBlogUrl();
     const isAbsoluteImage = /https?:\/\//.test(requestedImageUrl);
     const isAbsoluteInternalImage = isAbsoluteImage && requestedImageUrl.startsWith(siteUrl);
 

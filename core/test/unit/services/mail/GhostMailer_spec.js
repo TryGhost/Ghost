@@ -4,6 +4,7 @@ var should = require('should'),
     mail = require('../../../../server/services/mail'),
     settingsCache = require('../../../../server/services/settings/cache'),
     configUtils = require('../../../utils/configUtils'),
+    urlUtils = require('../../../../server/lib/url-utils'),
     common = require('../../../../server/lib/common'),
     mailer,
 
@@ -176,31 +177,42 @@ describe('Mail: Ghostmailer', function () {
             mailer.from().should.equal('"Blog Title" <static@example.com>');
         });
 
-        it('should fall back to [blog.title] <ghost@[blog.url]>', function () {
-            sinon.stub(settingsCache, 'get').returns('Test');
+        describe('should fall back to [blog.title] <ghost@[blog.url]>', function () {
+            let mailer;
 
-            // Standard domain
-            configUtils.set({url: 'http://default.com', mail: {from: null}});
+            beforeEach(function () {
+                mailer = new mail.GhostMailer();
+                sinon.stub(settingsCache, 'get').returns('Test');
+            });
 
-            mailer = new mail.GhostMailer();
+            it('standard domain', function () {
+                sinon.stub(urlUtils, 'urlFor').returns('http://default.com');
+                configUtils.set({mail: {from: null}});
 
-            mailer.from().should.equal('"Test" <ghost@default.com>');
+                mailer.from().should.equal('"Test" <ghost@default.com>');
+            });
 
-            // Trailing slash
-            configUtils.set({url: 'http://default.com/', mail: {from: null}});
+            it('trailing slash', function () {
+                sinon.stub(urlUtils, 'urlFor').returns('http://default.com/');
+                configUtils.set({mail: {from: null}});
 
-            mailer.from().should.equal('"Test" <ghost@default.com>');
+                mailer.from().should.equal('"Test" <ghost@default.com>');
+            });
 
-            // Strip Port
-            configUtils.set({url: 'http://default.com:2368/', mail: {from: null}});
-            mailer.from().should.equal('"Test" <ghost@default.com>');
+            it('strip port', function () {
+                sinon.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
+                configUtils.set({mail: {from: null}});
+                mailer.from().should.equal('"Test" <ghost@default.com>');
+            });
 
-            settingsCache.get.restore();
-            sinon.stub(settingsCache, 'get').returns('Test"');
+            it('Escape title', function () {
+                settingsCache.get.restore();
+                sinon.stub(settingsCache, 'get').returns('Test"');
 
-            // Escape title
-            configUtils.set({url: 'http://default.com:2368/', mail: {from: null}});
-            mailer.from().should.equal('"Test\\"" <ghost@default.com>');
+                sinon.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
+                configUtils.set({mail: {from: null}});
+                mailer.from().should.equal('"Test\\"" <ghost@default.com>');
+            });
         });
 
         it('should use mail.from', function () {
@@ -239,7 +251,8 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('should use default title if not theme title is provided', function () {
-            configUtils.set({url: 'http://default.com:2368/', mail: {from: null}});
+            configUtils.set({mail: {from: null}});
+            sinon.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
 
             mailer = new mail.GhostMailer();
 

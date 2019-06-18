@@ -7,6 +7,8 @@ const should = require('should'),
     controllers = require('../../../../../server/services/routing/controllers'),
     helpers = require('../../../../../server/services/routing/helpers'),
     urlService = require('../../../../../server/services/url'),
+    urlUtils = require('../../../../../server/lib/url-utils'),
+
     EDITOR_URL = '/editor/post/';
 
 describe('Unit - services/routing/controllers/preview', function () {
@@ -55,8 +57,8 @@ describe('Unit - services/routing/controllers/preview', function () {
 
             secureStub = sinon.stub();
 
-            sinon.stub(urlService.utils, 'redirectToAdmin');
-            sinon.stub(urlService.utils, 'redirect301');
+            sinon.stub(urlUtils, 'redirectToAdmin');
+            sinon.stub(urlUtils, 'redirect301');
             sinon.stub(urlService, 'getUrlByResourceId');
 
             sinon.stub(helpers, 'secure').get(function () {
@@ -102,7 +104,7 @@ describe('Unit - services/routing/controllers/preview', function () {
             post.status = 'published';
             urlService.getUrlByResourceId.withArgs(post.id).returns('/something/');
 
-            urlService.utils.redirect301.callsFake(function (res, postUrl) {
+            urlUtils.redirect301.callsFake(function (res, postUrl) {
                 postUrl.should.eql('/something/');
                 renderStub.called.should.be.false();
                 secureStub.called.should.be.false();
@@ -115,7 +117,7 @@ describe('Unit - services/routing/controllers/preview', function () {
         it('should call redirect if /edit/ (options param) is detected', function (done) {
             req.params.options = 'edit';
 
-            urlService.utils.redirectToAdmin.callsFake(function (statusCode, res, editorUrl) {
+            urlUtils.redirectToAdmin.callsFake(function (statusCode, res, editorUrl) {
                 statusCode.should.eql(302);
                 editorUrl.should.eql(EDITOR_URL + post.id);
                 renderStub.called.should.be.false();
@@ -170,8 +172,8 @@ describe('Unit - services/routing/controllers/preview', function () {
 
             secureStub = sinon.stub();
 
-            sinon.stub(urlService.utils, 'redirectToAdmin');
-            sinon.stub(urlService.utils, 'redirect301');
+            sinon.stub(urlUtils, 'redirectToAdmin');
+            sinon.stub(urlUtils, 'redirect301');
             sinon.stub(urlService, 'getUrlByResourceId');
 
             sinon.stub(helpers, 'secure').get(function () {

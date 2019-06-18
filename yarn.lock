@@ -240,6 +240,16 @@
   dependencies:
     unidecode "^0.1.8"
 
+"@tryghost/url-utils@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.1.2.tgz#8224a80d69a78a8b178e14219f64ec0d32676166"
+  integrity sha512-kj2kHzkAmwL3trVaL90C/c6DdVYAtJ3KdMRB7V1JkBKL6VJJUuoBte2AR9FBbR429vRngoySzCt8jyYOfuQsKQ==
+  dependencies:
+    cheerio "0.22.0"
+    lodash "4.17.11"
+    moment "2.24.0"
+    moment-timezone "0.5.23"
+
 "@types/bluebird@^3.5.25":
   version "3.5.25"
   resolved "https://registry.yarnpkg.com/@types/bluebird/-/bluebird-3.5.25.tgz#59188b871208092e37767e4b3d80c3b3eaae43bd"

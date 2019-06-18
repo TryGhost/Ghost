@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('services:routing:collection-router');
 const common = require('../../lib/common');
-const urlService = require('../url');
+const urlUtils = require('../../lib/url-utils');
 const ParentRouter = require('./ParentRouter');
 
 const controllers = require('./controllers');
@@ -46,7 +46,7 @@ class CollectionRouter extends ParentRouter {
             // @NOTE: url options are only required when registering urls in express.
             //        e.g. the UrlService will access the routes and doesn't want to know about possible url options
             if (options.withUrlOptions) {
-                return urlService.utils.urlJoin(this.permalinks.value, '/:options(edit)?/');
+                return urlUtils.urlJoin(this.permalinks.value, '/:options(edit)?/');
             }
 
             return this.permalinks.value;
@@ -73,7 +73,7 @@ class CollectionRouter extends ParentRouter {
 
         // REGISTER: enable pagination by default
         this.router().param('page', middlewares.pageParam);
-        this.mountRoute(urlService.utils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers.collection);
+        this.mountRoute(urlUtils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers.collection);
 
         // REGISTER: is rss enabled?
         if (this.rss) {
@@ -179,7 +179,7 @@ class CollectionRouter extends ParentRouter {
     getRoute(options) {
         options = options || {};
 
-        return urlService.utils.createUrl(this.route.value, options.absolute, options.secure);
+        return urlUtils.createUrl(this.route.value, options.absolute, options.secure);
     }
 
     /**
@@ -192,7 +192,7 @@ class CollectionRouter extends ParentRouter {
             return null;
         }
 
-        return urlService.utils.createUrl(urlService.utils.urlJoin(this.route.value, this.rssRouter.route.value), options.absolute, options.secure);
+        return urlUtils.createUrl(urlUtils.urlJoin(this.route.value, this.rssRouter.route.value), options.absolute, options.secure);
     }
 
     reset() {

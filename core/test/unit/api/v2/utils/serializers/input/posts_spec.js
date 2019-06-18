@@ -1,6 +1,7 @@
 const should = require('should');
+const sinon = require('sinon');
 const serializers = require('../../../../../../../server/api/v2/utils/serializers');
-const configUtils = require('../../../../../../utils/configUtils');
+const urlUtils = require('../../../../../../utils/urlUtils');
 
 describe('Unit: v2/utils/serializers/input/posts', function () {
     describe('browse', function () {
@@ -221,152 +222,170 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
 
     describe('edit', function () {
         describe('Ensure relative urls are returned for standard image urls', function () {
-            after(function () {
-                configUtils.restore();
-            });
+            describe('no subdir', function () {
+                let sandbox;
 
-            it('when mobiledoc contains an absolute URL to image', function () {
-                configUtils.set({url: 'https://mysite.com'});
-                const apiConfig = {};
-                const frame = {
-                    options: {
-                        context: {
-                            user: 0,
-                            api_key: {
-                                id: 1,
-                                type: 'content'
+                after(function () {
+                    sandbox.restore();
+                });
+
+                before(function () {
+                    sandbox = sinon.createSandbox();
+                    urlUtils.stubUrlUtils({url: 'https://mysite.com'}, sandbox);
+                });
+
+                it('when mobiledoc contains an absolute URL to image', function () {
+                    const apiConfig = {};
+                    const frame = {
+                        options: {
+                            context: {
+                                user: 0,
+                                api_key: {
+                                    id: 1,
+                                    type: 'content'
+                                },
                             },
                         },
-                    },
-                    data: {
-                        posts: [
-                            {
-                                id: 'id1',
-                                mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"https://mysite.com/content/images/2019/02/image.jpg"}]]}'
-                            }
-                        ]
-                    }
-                };
+                        data: {
+                            posts: [
+                                {
+                                    id: 'id1',
+                                    mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"https://mysite.com/content/images/2019/02/image.jpg"}]]}'
+                                }
+                            ]
+                        }
+                    };
 
-                serializers.input.posts.edit(apiConfig, frame);
+                    serializers.input.posts.edit(apiConfig, frame);
 
-                let postData = frame.data.posts[0];
-                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"/content/images/2019/02/image.jpg"}]]}');
-            });
+                    let postData = frame.data.posts[0];
+                    postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"/content/images/2019/02/image.jpg"}]]}');
+                });
 
-            it('when mobiledoc contains multiple absolute URLs to images with different protocols', function () {
-                configUtils.set({url: 'https://mysite.com'});
-                const apiConfig = {};
-                const frame = {
-                    options: {
-                        context: {
-                            user: 0,
-                            api_key: {
-                                id: 1,
-                                type: 'content'
+                it('when mobiledoc contains multiple absolute URLs to images with different protocols', function () {
+                    const apiConfig = {};
+                    const frame = {
+                        options: {
+                            context: {
+                                user: 0,
+                                api_key: {
+                                    id: 1,
+                                    type: 'content'
+                                },
                             },
                         },
-                    },
-                    data: {
-                        posts: [
-                            {
-                                id: 'id1',
-                                mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"https://mysite.com/content/images/2019/02/image.jpg"}],["image",{"src":"http://mysite.com/content/images/2019/02/image.png"}]]'
-                            }
-                        ]
-                    }
-                };
+                        data: {
+                            posts: [
+                                {
+                                    id: 'id1',
+                                    mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"https://mysite.com/content/images/2019/02/image.jpg"}],["image",{"src":"http://mysite.com/content/images/2019/02/image.png"}]]'
+                                }
+                            ]
+                        }
+                    };
 
-                serializers.input.posts.edit(apiConfig, frame);
+                    serializers.input.posts.edit(apiConfig, frame);
 
-                let postData = frame.data.posts[0];
-                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"/content/images/2019/02/image.jpg"}],["image",{"src":"/content/images/2019/02/image.png"}]]');
+                    let postData = frame.data.posts[0];
+                    postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"/content/images/2019/02/image.jpg"}],["image",{"src":"/content/images/2019/02/image.png"}]]');
+                });
+
+                it('when blog url is without subdir', function () {
+                    const apiConfig = {};
+                    const frame = {
+                        options: {
+                            context: {
+                                user: 0,
+                                api_key: {
+                                    id: 1,
+                                    type: 'content'
+                                },
+                            },
+                            withRelated: ['tags', 'authors']
+                        },
+                        data: {
+                            posts: [
+                                {
+                                    id: 'id1',
+                                    feature_image: 'https://mysite.com/content/images/image.jpg',
+                                    og_image: 'https://mysite.com/mycustomstorage/images/image.jpg',
+                                    twitter_image: 'https://mysite.com/blog/content/images/image.jpg',
+                                    tags: [{
+                                        id: 'id3',
+                                        feature_image: 'http://mysite.com/content/images/image.jpg'
+                                    }],
+                                    authors: [{
+                                        id: 'id4',
+                                        name: 'Ghosty',
+                                        profile_image: 'https://somestorage.com/blog/images/image.jpg'
+                                    }]
+                                }
+                            ]
+                        }
+                    };
+                    serializers.input.posts.edit(apiConfig, frame);
+                    let postData = frame.data.posts[0];
+                    postData.feature_image.should.eql('/content/images/image.jpg');
+                    postData.og_image.should.eql('https://mysite.com/mycustomstorage/images/image.jpg');
+                    postData.twitter_image.should.eql('https://mysite.com/blog/content/images/image.jpg');
+                    postData.tags[0].feature_image.should.eql('/content/images/image.jpg');
+                    postData.authors[0].profile_image.should.eql('https://somestorage.com/blog/images/image.jpg');
+                });
             });
 
-            it('when blog url is without subdir', function () {
-                configUtils.set({url: 'https://mysite.com'});
-                const apiConfig = {};
-                const frame = {
-                    options: {
-                        context: {
-                            user: 0,
-                            api_key: {
-                                id: 1,
-                                type: 'content'
-                            },
-                        },
-                        withRelated: ['tags', 'authors']
-                    },
-                    data: {
-                        posts: [
-                            {
-                                id: 'id1',
-                                feature_image: 'https://mysite.com/content/images/image.jpg',
-                                og_image: 'https://mysite.com/mycustomstorage/images/image.jpg',
-                                twitter_image: 'https://mysite.com/blog/content/images/image.jpg',
-                                tags: [{
-                                    id: 'id3',
-                                    feature_image: 'http://mysite.com/content/images/image.jpg'
-                                }],
-                                authors: [{
-                                    id: 'id4',
-                                    name: 'Ghosty',
-                                    profile_image: 'https://somestorage.com/blog/images/image.jpg'
-                                }]
-                            }
-                        ]
-                    }
-                };
-                serializers.input.posts.edit(apiConfig, frame);
-                let postData = frame.data.posts[0];
-                postData.feature_image.should.eql('/content/images/image.jpg');
-                postData.og_image.should.eql('https://mysite.com/mycustomstorage/images/image.jpg');
-                postData.twitter_image.should.eql('https://mysite.com/blog/content/images/image.jpg');
-                postData.tags[0].feature_image.should.eql('/content/images/image.jpg');
-                postData.authors[0].profile_image.should.eql('https://somestorage.com/blog/images/image.jpg');
-            });
+            describe('with subdir', function () {
+                let sandbox;
 
-            it('when blog url is with subdir', function () {
-                configUtils.set({url: 'https://mysite.com/blog'});
-                const apiConfig = {};
-                const frame = {
-                    options: {
-                        context: {
-                            user: 0,
-                            api_key: {
-                                id: 1,
-                                type: 'content'
+                after(function () {
+                    sandbox.restore();
+                });
+
+                before(function () {
+                    sandbox = sinon.createSandbox();
+                    urlUtils.stubUrlUtils({url: 'https://mysite.com/blog'}, sandbox);
+                });
+
+                it('when blog url is with subdir', function () {
+                    const apiConfig = {};
+                    const frame = {
+                        options: {
+                            context: {
+                                user: 0,
+                                api_key: {
+                                    id: 1,
+                                    type: 'content'
+                                },
                             },
+                            withRelated: ['tags', 'authors']
                         },
-                        withRelated: ['tags', 'authors']
-                    },
-                    data: {
-                        posts: [
-                            {
-                                id: 'id1',
-                                feature_image: 'https://mysite.com/blog/content/images/image.jpg',
-                                og_image: 'https://mysite.com/content/images/image.jpg',
-                                twitter_image: 'https://mysite.com/mycustomstorage/images/image.jpg',
-                                tags: [{
-                                    id: 'id3',
-                                    feature_image: 'http://mysite.com/blog/mycustomstorage/content/images/image.jpg'
-                                }],
-                                authors: [{
-                                    id: 'id4',
-                                    name: 'Ghosty',
-                                    profile_image: 'https://somestorage.com/blog/content/images/image.jpg'
-                                }]
-                            }
-                        ]
-                    }
-                };
-                serializers.input.posts.edit(apiConfig, frame);
-                let postData = frame.data.posts[0];
-                postData.feature_image.should.eql('/blog/content/images/image.jpg');
-                postData.og_image.should.eql('https://mysite.com/content/images/image.jpg');
-                postData.twitter_image.should.eql('https://mysite.com/mycustomstorage/images/image.jpg');
-                postData.tags[0].feature_image.should.eql('http://mysite.com/blog/mycustomstorage/content/images/image.jpg');
-                postData.authors[0].profile_image.should.eql('https://somestorage.com/blog/content/images/image.jpg');
+                        data: {
+                            posts: [
+                                {
+                                    id: 'id1',
+                                    feature_image: 'https://mysite.com/blog/content/images/image.jpg',
+                                    og_image: 'https://mysite.com/content/images/image.jpg',
+                                    twitter_image: 'https://mysite.com/mycustomstorage/images/image.jpg',
+                                    tags: [{
+                                        id: 'id3',
+                                        feature_image: 'http://mysite.com/blog/mycustomstorage/content/images/image.jpg'
+                                    }],
+                                    authors: [{
+                                        id: 'id4',
+                                        name: 'Ghosty',
+                                        profile_image: 'https://somestorage.com/blog/content/images/image.jpg'
+                                    }]
+                                }
+                            ]
+                        }
+                    };
+                    serializers.input.posts.edit(apiConfig, frame);
+                    let postData = frame.data.posts[0];
+                    postData.feature_image.should.eql('/blog/content/images/image.jpg');
+                    postData.og_image.should.eql('https://mysite.com/content/images/image.jpg');
+                    postData.twitter_image.should.eql('https://mysite.com/mycustomstorage/images/image.jpg');
+                    postData.tags[0].feature_image.should.eql('http://mysite.com/blog/mycustomstorage/content/images/image.jpg');
+                    postData.authors[0].profile_image.should.eql('https://somestorage.com/blog/content/images/image.jpg');
+                });
             });
         });
 

@@ -5,7 +5,7 @@ const url = require('url');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const request = require('../request');
-const urlService = require('../../services/url');
+const urlUtils = require('../../lib/url-utils');
 const common = require('../common');
 const config = require('../../config');
 const storage = require('../../adapters/storage');
@@ -133,7 +133,7 @@ const getImageSizeFromUrl = (imagePath) => {
 
     // CASE: pre 1.0 users were able to use an asset path for their blog logo
     if (imagePath.match(/^\/assets/)) {
-        imagePath = urlService.utils.urlJoin(urlService.utils.urlFor('home', true), urlService.utils.getSubdir(), '/', imagePath);
+        imagePath = urlUtils.urlJoin(urlUtils.urlFor('home', true), urlUtils.getSubdir(), '/', imagePath);
     }
 
     debug('requested imagePath:', imagePath);
@@ -202,7 +202,7 @@ const getImageSizeFromUrl = (imagePath) => {
 const getImageSizeFromStoragePath = (imagePath) => {
     let filePath;
 
-    imagePath = urlService.utils.urlFor('image', {image: imagePath}, true);
+    imagePath = urlUtils.urlFor('image', {image: imagePath}, true);
 
     // get the storage readable filePath
     filePath = storageUtils.getLocalFileStoragePath(imagePath);
