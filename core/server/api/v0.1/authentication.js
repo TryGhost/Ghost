@@ -6,8 +6,8 @@ const Promise = require('bluebird'),
     security = require('../../lib/security'),
     constants = require('../../lib/constants'),
     pipeline = require('../../lib/promise/pipeline'),
+    urlUtils = require('../../lib/url-utils'),
     mail = require('../../services/mail'),
-    urlService = require('../../services/url'),
     localUtils = require('./utils'),
     models = require('../../models'),
     web = require('../../web'),
@@ -185,8 +185,8 @@ authentication = {
         }
 
         function sendResetNotification(data) {
-            const adminUrl = urlService.utils.urlFor('admin', true),
-                resetUrl = urlService.utils.urlJoin(adminUrl, 'reset', security.url.encodeBase64(data.resetToken), '/');
+            const adminUrl = urlUtils.urlFor('admin', true),
+                resetUrl = urlUtils.urlJoin(adminUrl, 'reset', security.url.encodeBase64(data.resetToken), '/');
 
             return mail.utils.generateContent({
                 data: {

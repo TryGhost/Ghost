@@ -4,8 +4,8 @@ var sizeOf = require('image-size'),
     path = require('path'),
     config = require('../../config'),
     common = require('../common'),
+    urlUtils = require('../../lib/url-utils'),
     settingsCache = require('../../services/settings/cache'),
-    urlService = require('../../services/url'),
     storageUtils = require('../../adapters/storage/utils'),
     getIconDimensions,
     isIcoImageType,
@@ -89,15 +89,15 @@ getIconUrl = function getIconUrl(absolut) {
 
     if (absolut) {
         if (blogIcon) {
-            return isIcoImageType(blogIcon) ? urlService.utils.urlFor({relativeUrl: '/favicon.ico'}, true) : urlService.utils.urlFor({relativeUrl: '/favicon.png'}, true);
+            return isIcoImageType(blogIcon) ? urlUtils.urlFor({relativeUrl: '/favicon.ico'}, true) : urlUtils.urlFor({relativeUrl: '/favicon.png'}, true);
         } else {
-            return urlService.utils.urlFor({relativeUrl: '/favicon.ico'}, true);
+            return urlUtils.urlFor({relativeUrl: '/favicon.ico'}, true);
         }
     } else {
         if (blogIcon) {
-            return isIcoImageType(blogIcon) ? urlService.utils.urlFor({relativeUrl: '/favicon.ico'}) : urlService.utils.urlFor({relativeUrl: '/favicon.png'});
+            return isIcoImageType(blogIcon) ? urlUtils.urlFor({relativeUrl: '/favicon.ico'}) : urlUtils.urlFor({relativeUrl: '/favicon.png'});
         } else {
-            return urlService.utils.urlFor({relativeUrl: '/favicon.ico'});
+            return urlUtils.urlFor({relativeUrl: '/favicon.ico'});
         }
     }
 };

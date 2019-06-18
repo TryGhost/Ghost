@@ -1,9 +1,9 @@
 const express = require('express');
-const urlService = require('../../../services/url');
+const urlUtils = require('../../../lib/url-utils');
 
 const adminRedirect = (path) => {
     return function doRedirect(req, res) {
-        return urlService.utils.redirectToAdmin(301, res, path);
+        return urlUtils.redirectToAdmin(301, res, path);
     };
 };
 

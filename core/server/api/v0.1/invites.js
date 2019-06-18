@@ -2,7 +2,7 @@ const Promise = require('bluebird'),
     {omit, merge} = require('lodash'),
     pipeline = require('../../lib/promise/pipeline'),
     mail = require('../../services/mail'),
-    urlService = require('../../services/url'),
+    urlUtils = require('../../lib/url-utils'),
     localUtils = require('./utils'),
     models = require('../../models'),
     common = require('../../lib/common'),
@@ -106,14 +106,14 @@ const invites = {
                     return settingsAPI.read({key: 'title'});
                 })
                 .then((response) => {
-                    const adminUrl = urlService.utils.urlFor('admin', true);
+                    const adminUrl = urlUtils.urlFor('admin', true);
 
                     emailData = {
                         blogName: response.settings[0].value,
                         invitedByName: loggedInUser.get('name'),
                         invitedByEmail: loggedInUser.get('email'),
                         // @TODO: resetLink sounds weird
-                        resetLink: urlService.utils.urlJoin(adminUrl, 'signup', security.url.encodeBase64(invite.get('token')), '/')
+                        resetLink: urlUtils.urlJoin(adminUrl, 'signup', security.url.encodeBase64(invite.get('token')), '/')
                     };
 
                     return mail.utils.generateContent({data: emailData, template: 'invite-user'});

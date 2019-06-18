@@ -1,6 +1,7 @@
 var common = require('../lib/common'),
     request = require('../lib/request'),
     imageLib = require('../lib/image'),
+    urlUtils = require('../lib/url-utils'),
     urlService = require('../services/url'),
     settingsCache = require('./settings/cache'),
     schema = require('../data/schema').checks,
@@ -71,7 +72,7 @@ function ping(post) {
                         title: title,
                         title_link: message,
                         author_name: blogTitle,
-                        image_url: post ? urlService.utils.urlFor('image', {image: post.feature_image}, true) : null,
+                        image_url: post ? urlUtils.urlFor('image', {image: post.feature_image}, true) : null,
                         color: '#008952',
                         fields: [
                             {
@@ -84,7 +85,7 @@ function ping(post) {
                     {
                         fallback: 'Sorry, content cannot be shown.',
                         color: '#008952',
-                        thumb_url: author ? urlService.utils.urlFor('image', {image: author.profile_image}, true) : null,
+                        thumb_url: author ? urlUtils.urlFor('image', {image: author.profile_image}, true) : null,
                         fields: [
                             {
                                 title: 'Author',

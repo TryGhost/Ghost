@@ -6,7 +6,7 @@ var debug = require('ghost-ignition').debug('server'),
     path = require('path'),
     _ = require('lodash'),
     config = require('./config'),
-    urlService = require('./services/url'),
+    urlUtils = require('./lib/url-utils'),
     common = require('./lib/common'),
     moment = require('moment');
 
@@ -193,7 +193,7 @@ GhostServer.prototype.logStartMessages = function () {
     // Startup & Shutdown messages
     if (config.get('env') === 'production') {
         common.logging.info(common.i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
-        common.logging.info(common.i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: urlService.utils.urlFor('home', true)}));
+        common.logging.info(common.i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: urlUtils.urlFor('home', true)}));
         common.logging.info(common.i18n.t('notices.httpServer.ctrlCToShutDown'));
     } else {
         common.logging.info(common.i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
@@ -201,7 +201,7 @@ GhostServer.prototype.logStartMessages = function () {
             host: config.get('server').socket || config.get('server').host,
             port: config.get('server').port
         }));
-        common.logging.info(common.i18n.t('notices.httpServer.urlConfiguredAs', {url: urlService.utils.urlFor('home', true)}));
+        common.logging.info(common.i18n.t('notices.httpServer.urlConfiguredAs', {url: urlUtils.urlFor('home', true)}));
         common.logging.info(common.i18n.t('notices.httpServer.ctrlCToShutDown'));
     }
 

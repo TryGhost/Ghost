@@ -16,7 +16,7 @@ const _ = require('lodash'),
     common = require('../../lib/common'),
     security = require('../../lib/security'),
     schema = require('../../data/schema'),
-    urlService = require('../../services/url'),
+    urlUtils = require('../../lib/url-utils'),
     validation = require('../../data/validation'),
     plugins = require('../plugins');
 
@@ -1110,7 +1110,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         // Some keywords cannot be changed
-        const slugList = _.union(config.get('slugs').reserved, urlService.utils.getProtectedSlugs());
+        const slugList = _.union(config.get('slugs').reserved, urlUtils.getProtectedSlugs());
         slug = _.includes(slugList, slug) ? slug + '-' + baseName : slug;
 
         // if slug is empty after trimming use the model name

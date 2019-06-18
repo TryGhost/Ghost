@@ -14,7 +14,7 @@ const Promise = require('bluebird');
 const config = require('./config');
 const common = require('./lib/common');
 const migrator = require('./data/db/migrator');
-const urlService = require('./services/url');
+const urlUtils = require('./lib/url-utils');
 let parentApp;
 
 function initialiseServices() {
@@ -46,7 +46,7 @@ function initialiseServices() {
             active: config.get('scheduling').active,
             // NOTE: When changing API version need to consider how to migrate custom scheduling adapters
             //       that rely on URL to lookup persisted scheduled records (jobs, etc.). Ref: https://github.com/TryGhost/Ghost/pull/10726#issuecomment-489557162
-            apiUrl: urlService.utils.urlFor('api', {version: 'v0.1', versionType: 'content'}, true),
+            apiUrl: urlUtils.urlFor('api', {version: 'v0.1', versionType: 'content'}, true),
             internalPath: config.get('paths').internalSchedulingPath,
             contentPath: config.getContentPath('scheduling')
         })

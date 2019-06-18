@@ -2,7 +2,7 @@ const _ = require('lodash'),
     xml = require('xml'),
     moment = require('moment'),
     path = require('path'),
-    urlService = require('../../../services/url'),
+    urlUtils = require('../../../lib/url-utils'),
     localUtils = require('./utils');
 
 // Sitemap specific xml namespace declarations that should not change
@@ -112,7 +112,7 @@ class BaseSiteMapGenerator {
         }
 
         // Grab the image url
-        imageUrl = urlService.utils.urlFor('image', {image: image}, true);
+        imageUrl = urlUtils.urlFor('image', {image: image}, true);
 
         // Verify the url structure
         if (!this.validateImageUrl(imageUrl)) {

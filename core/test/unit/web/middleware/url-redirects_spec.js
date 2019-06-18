@@ -1,7 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
-    configUtils = require('../../../utils/configUtils'),
+    urlUtils = require('../../../utils/urlUtils'),
     urlRedirects = rewire('../../../../server/web/shared/middlewares/url-redirects'),
     {adminRedirect} = urlRedirects,
     getAdminRedirectUrl = urlRedirects.__get__('_private.getAdminRedirectUrl'),
@@ -27,7 +27,6 @@ describe('UNIT: url redirects', function () {
 
     afterEach(function () {
         sinon.restore();
-        configUtils.restore();
         host = null;
     });
 
@@ -40,9 +39,7 @@ describe('UNIT: url redirects', function () {
         });
 
         it('urlRedirects passes getAdminRedirectUrl method when iAdmin flag is not set', function () {
-            configUtils.set({
-                url: 'https://default.com:2368/'
-            });
+            urlRedirects.__set__('urlUtils', urlUtils.getInstance({url: 'https://default.com:2368/'}));
 
             urlRedirects(req, res, next);
 
@@ -51,9 +48,7 @@ describe('UNIT: url redirects', function () {
 
         it('urlRedirects passes getAdminRedirectUrl method when iAdmin flag present', function () {
             res.isAdmin = true;
-            configUtils.set({
-                url: 'https://default.com:2368/'
-            });
+            urlRedirects.__set__('urlUtils', urlUtils.getInstance({url: 'https://default.com:2368/'}));
 
             urlRedirects(req, res, next);
 
@@ -61,9 +56,7 @@ describe('UNIT: url redirects', function () {
         });
 
         it('adminRedirect passes getAdminRedirectUrl', function () {
-            configUtils.set({
-                url: 'https://default.com:2368/'
-            });
+            urlRedirects.__set__('urlUtils', urlUtils.getInstance({url: 'https://default.com:2368/'}));
 
             adminRedirect(req, res, next);
 
@@ -73,9 +66,9 @@ describe('UNIT: url redirects', function () {
 
     describe('expect redirect', function () {
         it('blog is https, request is http', function (done) {
-            configUtils.set({
+            urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                 url: 'https://default.com:2368/'
-            });
+            }));
 
             host = 'default.com:2368';
 
@@ -89,10 +82,9 @@ describe('UNIT: url redirects', function () {
         });
 
         it('blog host is !== request host', function (done) {
-            configUtils.set({
+            urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                 url: 'https://default.com'
-            });
-
+            }));
             host = 'localhost:2368';
 
             req.originalUrl = '/';
@@ -106,12 +98,10 @@ describe('UNIT: url redirects', function () {
 
         describe(`admin redirects`, function () {
             it('url and admin url are equal, but protocol is different, request is http', function (done) {
-                configUtils.set({
+                urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                     url: 'http://default.com:2368',
-                    admin: {
-                        url: 'https://default.com:2368'
-                    }
-                });
+                    adminUrl: 'https://default.com:2368'
+                }));
 
                 host = 'default.com:2368';
 
@@ -124,12 +114,10 @@ describe('UNIT: url redirects', function () {
             });
 
             it('url and admin url are different, request is http', function (done) {
-                configUtils.set({
+                urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                     url: 'http://default.com:2368',
-                    admin: {
-                        url: 'https://admin.default.com:2368'
-                    }
-                });
+                    adminUrl: 'https://admin.default.com:2368'
+                }));
 
                 host = 'default.com:2368';
 
@@ -142,12 +130,10 @@ describe('UNIT: url redirects', function () {
             });
 
             it('subdirectory', function (done) {
-                configUtils.set({
+                urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                     url: 'http://default.com:2368/blog',
-                    admin: {
-                        url: 'https://admin.default.com:2368'
-                    }
-                });
+                    adminUrl: 'https://admin.default.com:2368'
+                }));
 
                 host = 'default.com:2368';
 
@@ -167,12 +153,10 @@ describe('UNIT: url redirects', function () {
             });
 
             it('keeps query', function (done) {
-                configUtils.set({
+                urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                     url: 'http://default.com:2368',
-                    admin: {
-                        url: 'https://admin.default.com:2368'
-                    }
-                });
+                    adminUrl: 'https://admin.default.com:2368'
+                }));
 
                 host = 'default.com:2368';
 
@@ -189,12 +173,10 @@ describe('UNIT: url redirects', function () {
             });
 
             it('original url has search params', function (done) {
-                configUtils.set({
+                urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                     url: 'http://default.com:2368',
-                    admin: {
-                        url: 'https://admin.default.com:2368'
-                    }
-                });
+                    adminUrl: 'https://admin.default.com:2368'
+                }));
 
                 host = 'default.com:2368';
 
@@ -211,12 +193,10 @@ describe('UNIT: url redirects', function () {
             });
 
             it('ensure redirect loop won\'t happen', function (done) {
-                configUtils.set({
+                urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                     url: 'http://default.com:2368',
-                    admin: {
-                        url: 'https://default.com:2368'
-                    }
-                });
+                    adminUrl: 'https://default.com:2368'
+                }));
 
                 host = 'default.com:2368';
 
@@ -240,9 +220,9 @@ describe('UNIT: url redirects', function () {
 
     describe('expect no redirect', function () {
         it('blog is http, request is http', function (done) {
-            configUtils.set({
+            urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                 url: 'http://default.com:2368/'
-            });
+            }));
 
             host = 'default.com:2368';
 
@@ -256,9 +236,9 @@ describe('UNIT: url redirects', function () {
         });
 
         it('blog is http, request is https', function (done) {
-            configUtils.set({
+            urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                 url: 'http://default.com:2368/'
-            });
+            }));
 
             host = 'default.com:2368';
 
@@ -272,9 +252,9 @@ describe('UNIT: url redirects', function () {
         });
 
         it('blog is http, request is https (trailing slash is missing)', function (done) {
-            configUtils.set({
+            urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                 url: 'http://default.com:2368/'
-            });
+            }));
 
             host = 'default.com:2368/';
 
@@ -288,9 +268,9 @@ describe('UNIT: url redirects', function () {
         });
 
         it('blog is https, request is https', function (done) {
-            configUtils.set({
+            urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                 url: 'https://default.com:2368/'
-            });
+            }));
 
             host = 'default.com:2368';
 
@@ -305,9 +285,9 @@ describe('UNIT: url redirects', function () {
         });
 
         it('blog host is !== request host', function (done) {
-            configUtils.set({
+            urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                 url: 'https://default.com'
-            });
+            }));
 
             host = 'localhost:2368';
 
@@ -322,9 +302,9 @@ describe('UNIT: url redirects', function () {
 
         describe(`admin redirects`, function () {
             it('admin is blog url and http, requester is http', function (done) {
-                configUtils.set({
+                urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                     url: 'http://default.com:2368'
-                });
+                }));
 
                 host = 'default.com:2368';
 
@@ -337,9 +317,9 @@ describe('UNIT: url redirects', function () {
             });
 
             it('admin request, no custom admin.url configured', function (done) {
-                configUtils.set({
+                urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                     url: 'http://default.com:2368'
-                });
+                }));
 
                 host = 'localhost:2368';
 
@@ -352,12 +332,10 @@ describe('UNIT: url redirects', function () {
             });
 
             it('url and admin url are different, protocol is different, request is not secure', function (done) {
-                configUtils.set({
+                urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                     url: 'http://blog.ghost.org',
-                    admin: {
-                        url: 'http://something.com'
-                    }
-                });
+                    adminUrl: 'http://something.com'
+                }));
 
                 host = 'something.com';
                 req.secure = false;
@@ -371,12 +349,10 @@ describe('UNIT: url redirects', function () {
             });
 
             it('url and admin url are different, protocol is different, request is secure', function (done) {
-                configUtils.set({
+                urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                     url: 'http://blog.ghost.org',
-                    admin: {
-                        url: 'http://something.com'
-                    }
-                });
+                    adminUrl: 'http://something.com'
+                }));
 
                 host = 'something.com';
                 req.secure = true;

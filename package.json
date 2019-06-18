@@ -47,6 +47,7 @@
     "@tryghost/members-theme-bindings": "^0.1.0",
     "@tryghost/social-urls": "0.1.0",
     "@tryghost/string": "^0.1.3",
+    "@tryghost/url-utils": "0.1.2",
     "ajv": "6.8.1",
     "amperize": "0.5.2",
     "analytics-node": "3.3.0",

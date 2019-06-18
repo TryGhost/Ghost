@@ -8,13 +8,14 @@ const apps = require('../../services/apps');
 const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
 const urlService = require('../../services/url');
+const urlUtils = require('../../lib/url-utils');
 const sitemapHandler = require('../../data/xml/sitemap/handler');
 const themeMiddleware = require('../../services/themes').middleware;
 const membersService = require('../../services/members');
 const siteRoutes = require('./routes');
 const shared = require('../shared');
 
-const STATIC_IMAGE_URL_PREFIX = `/${urlService.utils.STATIC_IMAGE_URL_PREFIX}`;
+const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 
 let router;
 

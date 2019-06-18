@@ -2,7 +2,7 @@ const cors = require('cors');
 const url = require('url');
 const os = require('os');
 const some = require('lodash/some');
-const urlService = require('../../../../services/url');
+const urlUtils = require('../../../../lib/url-utils');
 
 let whitelist = [];
 const ENABLE_CORS = {origin: true, maxAge: 86400};
@@ -33,8 +33,8 @@ function getIPs() {
 }
 
 function getUrls() {
-    const blogHost = url.parse(urlService.utils.urlFor('home', true)).hostname;
-    const adminHost = url.parse(urlService.utils.urlFor('admin', true)).hostname;
+    const blogHost = url.parse(urlUtils.urlFor('home', true)).hostname;
+    const adminHost = url.parse(urlUtils.urlFor('admin', true)).hostname;
     const urls = [];
 
     urls.push(blogHost);

@@ -5,7 +5,7 @@ const _ = require('lodash'),
     proxy = require('../../../../helpers/proxy'),
     createFrame = proxy.hbs.handlebars.createFrame,
     templates = proxy.templates,
-    urlService = proxy.urlService,
+    urlUtils = proxy.urlUtils,
     SafeString = proxy.SafeString,
     params = ['error', 'success', 'email'];
 
@@ -43,7 +43,7 @@ module.exports = function subscribe_form(options) { // eslint-disable-line camel
 
     const context = _.merge({}, options.hash, _.pick(root, params), {
         // routeKeywords.subscribe: 'subscribe'
-        action: urlService.utils.urlJoin('/', urlService.utils.getSubdir(), 'subscribe/'),
+        action: urlUtils.urlJoin('/', urlUtils.getSubdir(), 'subscribe/'),
         script: new SafeString(subscribeScript),
         hidden: new SafeString(
             makeHidden('confirm') +

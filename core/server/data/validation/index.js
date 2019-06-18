@@ -6,7 +6,7 @@ var schema = require('../schema').tables,
     Promise = require('bluebird'),
     common = require('../../lib/common'),
     settingsCache = require('../../services/settings/cache'),
-    urlService = require('../../services/url'),
+    urlUtils = require('../../lib/url-utils'),
 
     validatePassword,
     validateSchema,
@@ -96,7 +96,7 @@ validator.extend('isSlug', function isSlug(str) {
 validatePassword = function validatePassword(password, email, blogTitle) {
     var validationResult = {isValid: true},
         disallowedPasswords = ['password', 'ghost', 'passw0rd'],
-        blogUrl = urlService.utils.urlFor('home', true),
+        blogUrl = urlUtils.urlFor('home', true),
         badPasswords = [
             '1234567890',
             'qwertyuiop',

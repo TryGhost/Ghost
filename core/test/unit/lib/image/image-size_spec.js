@@ -4,7 +4,7 @@ const should = require('should'),
     nock = require('nock'),
     path = require('path'),
     configUtils = require('../../../utils/configUtils'),
-    urlService = require('../../../../server/services/url'),
+    urlUtils = require('../../../../server/lib/url-utils'),
     common = require('../../../../server/lib/common'),
     storage = require('../../../../server/adapters/storage');
 
@@ -146,9 +146,9 @@ describe('lib/image: image size', function () {
                 width: 1
             };
 
-            const urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            const urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            const urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            const urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             const requestMock = nock('http://myblog.com')
@@ -258,10 +258,10 @@ describe('lib/image: image size', function () {
             };
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
-            const urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            const urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/favicon.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            const urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            const urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             const requestMock = nock('http://myblog.com')
@@ -423,10 +423,10 @@ describe('lib/image: image size', function () {
             };
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
-            const urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            const urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/ghost-logo.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            const urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            const urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
@@ -450,10 +450,10 @@ describe('lib/image: image size', function () {
             };
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
-            const urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            const urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/blog/content/images/favicon_too_large.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            const urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            const urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('/blog');
 
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
@@ -477,10 +477,10 @@ describe('lib/image: image size', function () {
             };
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
-            const urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            const urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/favicon_multi_sizes.ico');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            const urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            const urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             imageSize.getImageSizeFromStoragePath(url).then(function (res) {
@@ -499,10 +499,10 @@ describe('lib/image: image size', function () {
             const url = '/content/images/not-existing-image.png';
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
-            const urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            const urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/not-existing-image.png');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            const urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            const urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             imageSize.getImageSizeFromStoragePath(url)
@@ -521,10 +521,10 @@ describe('lib/image: image size', function () {
             imageSize.__set__('sizeOf', sizeOfStub);
 
             storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
-            const urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            const urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('image').returns('http://myblog.com/content/images/ghost-logo.pngx');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            const urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            const urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             imageSize.getImageSizeFromStoragePath(url)

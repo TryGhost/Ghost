@@ -1,5 +1,5 @@
 const urlService = require('../../../services/url');
-const {urlFor, makeAbsoluteUrls} = require('../../../services/url/utils');
+const {urlFor, makeAbsoluteUrls} = require('../../../lib/url-utils');
 
 const urlsForPost = (id, attrs, options) => {
     attrs.url = urlService.getUrlByResourceId(id);

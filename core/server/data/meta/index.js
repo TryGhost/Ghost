@@ -1,6 +1,6 @@
 var Promise = require('bluebird'),
     settingsCache = require('../../services/settings/cache'),
-    urlService = require('../../services/url'),
+    urlUtils = require('../../lib/url-utils'),
     common = require('../../lib/common'),
     getUrl = require('./url'),
     getImageDimensions = require('./image-dimensions'),
@@ -61,7 +61,7 @@ function getMetaData(data, root) {
             blog: {
                 title: settingsCache.get('title'),
                 description: settingsCache.get('description'),
-                url: urlService.utils.urlFor('home', true),
+                url: urlUtils.urlFor('home', true),
                 facebook: settingsCache.get('facebook'),
                 twitter: settingsCache.get('twitter'),
                 timezone: settingsCache.get('active_timezone'),

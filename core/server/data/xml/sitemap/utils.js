@@ -1,9 +1,9 @@
-var urlService = require('../../../services/url'),
+var urlUtils = require('../../../lib/url-utils'),
     sitemapsUtils;
 
 sitemapsUtils = {
     getDeclarations: function () {
-        var baseUrl = urlService.utils.urlFor('sitemap_xsl', true);
+        var baseUrl = urlUtils.urlFor('sitemap_xsl', true);
         baseUrl = baseUrl.replace(/^(http:|https:)/, '');
         return '<?xml version="1.0" encoding="UTF-8"?>' +
             '<?xml-stylesheet type="text/xsl" href="' + baseUrl + '"?>';

@@ -13,7 +13,7 @@ const debug = require('ghost-ignition').debug('services:routing:ParentRouter'),
     _ = require('lodash'),
     url = require('url'),
     security = require('../../lib/security'),
-    urlService = require('../url'),
+    urlUtils = require('../../lib/url-utils'),
     registry = require('./registry');
 
 /**
@@ -107,8 +107,8 @@ class ParentRouter extends EventEmitter {
             const matchPath = this.permalinks.getValue().replace(/:\w+/g, '[a-zA-Z0-9-_]+');
             const toAppend = req.url.replace(new RegExp(matchPath), '');
 
-            return urlService.utils.redirect301(res, url.format({
-                pathname: urlService.utils.createUrl(urlService.utils.urlJoin(targetRoute, toAppend), false, false, true),
+            return urlUtils.redirect301(res, url.format({
+                pathname: urlUtils.createUrl(urlUtils.urlJoin(targetRoute, toAppend), false, false, true),
                 search: url.parse(req.originalUrl).search
             }));
         }
@@ -201,7 +201,7 @@ class ParentRouter extends EventEmitter {
     getRoute(options) {
         options = options || {};
 
-        return urlService.utils.createUrl(this.route.value, options.absolute, options.secure);
+        return urlUtils.createUrl(this.route.value, options.absolute, options.secure);
     }
 
     /**

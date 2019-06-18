@@ -4,6 +4,7 @@ const _ = require('lodash');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../../../utils/configUtils');
+const urlUtils = require('../../../../utils/urlUtils');
 const config = require('../../../../../server/config');
 
 const ghost = testUtils.startGhost;
@@ -22,6 +23,7 @@ describe('Posts', function () {
 
     afterEach(function () {
         configUtils.restore();
+        urlUtils.restore();
     });
 
     const validKey = localUtils.getValidKey();
@@ -89,6 +91,7 @@ describe('Posts', function () {
     it('ensure origin header on redirect is not getting lost', function (done) {
         // NOTE: force a redirect to the admin url
         configUtils.set('admin:url', 'http://localhost:9999');
+        urlUtils.stubUrlUtilsFromConfig();
 
         request.get(localUtils.API.getApiQuery(`posts?key=${validKey}`))
             .set('Origin', 'https://example.com')

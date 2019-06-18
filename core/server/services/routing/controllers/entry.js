@@ -1,6 +1,7 @@
 const debug = require('ghost-ignition').debug('services:routing:controllers:entry'),
     url = require('url'),
     urlService = require('../../url'),
+    urlUtils = require('../../../lib/url-utils'),
     helpers = require('../helpers');
 
 /**
@@ -34,7 +35,7 @@ module.exports = function entryController(req, res, next) {
                 debug('redirect. is edit url');
                 const resourceType = entry.page ? 'page' : 'post';
 
-                return urlService.utils.redirectToAdmin(302, res, `/editor/${resourceType}/${entry.id}`);
+                return urlUtils.redirectToAdmin(302, res, `/editor/${resourceType}/${entry.id}`);
             }
 
             /**
@@ -74,10 +75,10 @@ module.exports = function entryController(req, res, next) {
              * @TODO:
              * Simplify if we drop v0.1.
              */
-            if (urlService.utils.absoluteToRelative(entry.url, {withoutSubdirectory: true}) !== req.path) {
+            if (urlUtils.absoluteToRelative(entry.url, {withoutSubdirectory: true}) !== req.path) {
                 debug('redirect');
 
-                return urlService.utils.redirect301(res, url.format({
+                return urlUtils.redirect301(res, url.format({
                     pathname: url.parse(entry.url).pathname,
                     search: url.parse(req.originalUrl).search
                 }));

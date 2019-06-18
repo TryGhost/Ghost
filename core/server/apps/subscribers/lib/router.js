@@ -5,6 +5,7 @@ const path = require('path'),
     bodyParser = require('body-parser'),
     // Dirty requires
     common = require('../../../lib/common'),
+    urlUtils = require('../../../lib/url-utils'),
     urlService = require('../../../services/url'),
     validator = require('../../../data/validation').validator,
     routing = require('../../../services/routing'),
@@ -64,7 +65,7 @@ function handleSource(req, res, next) {
     delete req.body.location;
     delete req.body.referrer;
 
-    const resource = urlService.getResource(urlService.utils.absoluteToRelative(req.body.subscribed_url, {withoutSubdirectory: true}));
+    const resource = urlService.getResource(urlUtils.absoluteToRelative(req.body.subscribed_url, {withoutSubdirectory: true}));
 
     if (resource) {
         req.body.post_id = resource.data.id;

@@ -7,6 +7,7 @@ var should = require('should'),
     testUtils = require('../../../utils/index'),
     localUtils = require('./utils'),
     configUtils = require('../../../utils/configUtils'),
+    urlUtils = require('../../../utils/urlUtils'),
     config = require('../../../../server/config/index'),
     models = require('../../../../server/models/index'),
     ghost = testUtils.startGhost,
@@ -42,6 +43,7 @@ describe('Public API', function () {
 
     afterEach(function () {
         configUtils.restore();
+        urlUtils.restore();
     });
 
     it('browse posts', function (done) {
@@ -468,6 +470,7 @@ describe('Public API', function () {
     it('ensure origin header on redirect is not getting lost', function (done) {
         // NOTE: force a redirect to the admin url
         configUtils.set('admin:url', 'http://localhost:9999');
+        urlUtils.stubUrlUtilsFromConfig();
 
         request.get(localUtils.API.getApiQuery('posts?client_id=ghost-test&client_secret=not_available'))
             .set('Origin', 'https://example.com')

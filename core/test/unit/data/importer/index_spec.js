@@ -1,5 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
+    rewire = require('rewire'),
     Promise = require('bluebird'),
     _ = require('lodash'),
     testUtils = require('../../../utils'),
@@ -10,19 +11,19 @@ var should = require('should'),
     // Stuff we are testing
     ImportManager = require('../../../../server/data/importer'),
     JSONHandler = require('../../../../server/data/importer/handlers/json'),
-    ImageHandler = require('../../../../server/data/importer/handlers/image'),
+    ImageHandler = rewire('../../../../server/data/importer/handlers/image'),
     MarkdownHandler = require('../../../../server/data/importer/handlers/markdown'),
     DataImporter = require('../../../../server/data/importer/importers/data'),
     ImageImporter = require('../../../../server/data/importer/importers/image'),
 
     storage = require('../../../../server/adapters/storage'),
 
-    configUtils = require('../../../utils/configUtils');
+    urlUtils = require('../../../utils/urlUtils');
 
 describe('Importer', function () {
     afterEach(function () {
         sinon.restore();
-        configUtils.restore();
+        ImageHandler = rewire('../../../../server/data/importer/handlers/image');
     });
 
     describe('ImportManager', function () {
@@ -124,9 +125,8 @@ describe('Importer', function () {
                     imageSpy = sinon.stub(ImageHandler, 'loadFile'),
                     mdSpy = sinon.stub(MarkdownHandler, 'loadFile');
 
+                getFileSpy.returns([]);
                 getFileSpy.withArgs(JSONHandler).returns(['/tmp/dir/myFile.json']);
-                getFileSpy.withArgs(ImageHandler).returns([]);
-                getFileSpy.withArgs(MarkdownHandler).returns([]);
 
                 ImportManager.processZip(testZip).then(function (zipResult) {
                     extractSpy.calledOnce.should.be.true();
@@ -418,7 +418,7 @@ describe('Importer', function () {
         });
 
         it('can load a file (subdirectory)', function (done) {
-            configUtils.set({url: 'http://localhost:82832/subdir'});
+            ImageHandler.__set__('urlUtils', urlUtils.getInstance({url: 'http://localhost:82832/subdir'}));
 
             var filename = 'test-image.jpeg',
                 file = [{

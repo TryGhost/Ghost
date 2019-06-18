@@ -1,7 +1,7 @@
 const _ = require('lodash'),
     xml = require('xml'),
     moment = require('moment'),
-    urlService = require('../../../services/url'),
+    urlUtils = require('../../../lib/url-utils'),
     localUtils = require('./utils');
 
 const XMLNS_DECLS = {
@@ -29,7 +29,7 @@ class SiteMapIndexGenerator {
 
     generateSiteMapUrlElements() {
         return _.map(this.types, (resourceType) => {
-            var url = urlService.utils.urlFor({relativeUrl: '/sitemap-' + resourceType.name + '.xml'}, true),
+            var url = urlUtils.urlFor({relativeUrl: '/sitemap-' + resourceType.name + '.xml'}, true),
                 lastModified = resourceType.lastModified;
 
             return {

@@ -1,6 +1,6 @@
 var should = require('should'),
     rewire = require('rewire'),
-    configUtils = require('../../../../test/utils/configUtils'),
+    urlUtils = require('../../../../test/utils/urlUtils'),
     ampContentHelper = rewire('../../../../server/apps/amp/lib/helpers/amp_content');
 
 // TODO: Amperize really needs to get stubbed, so we can test returning errors
@@ -109,12 +109,11 @@ describe('{{amp_content}} helper', function () {
 
     describe('Transforms and sanitizes HTML', function () {
         beforeEach(function () {
-            configUtils.set({url: 'https://blog.ghost.org/'});
+            ampContentHelper.__set__('urlUtils', urlUtils.getInstance({url: 'https://blog.ghost.org/'}));
         });
 
         afterEach(function () {
             ampContentHelper.__set__('amperizeCache', {});
-            configUtils.restore();
         });
 
         it('can transform img tags to amp-img', function (done) {

@@ -16,7 +16,7 @@ const crypto = require('crypto'),
     debug = require('ghost-ignition').debug('update-check'),
     api = require('./api').v2,
     config = require('./config'),
-    urlService = require('./services/url'),
+    urlUtils = require('./lib/url-utils'),
     common = require('./lib/common'),
     request = require('./lib/request'),
     ghostVersion = require('./lib/ghost-version'),
@@ -111,7 +111,7 @@ function updateCheckData() {
             posts = descriptors.posts.value(),
             users = descriptors.users.value(),
             npm = descriptors.npm.value(),
-            blogUrl = url.parse(urlService.utils.urlFor('home', true)),
+            blogUrl = url.parse(urlUtils.urlFor('home', true)),
             blogId = blogUrl.hostname + blogUrl.pathname.replace(/\//, '') + hash.value;
 
         data.blog_id = crypto.createHash('md5').update(blogId).digest('hex');

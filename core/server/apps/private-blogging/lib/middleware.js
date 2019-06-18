@@ -4,7 +4,7 @@ const session = require('cookie-session');
 const crypto = require('crypto');
 const path = require('path');
 const config = require('../../../config');
-const urlService = require('../../../services/url');
+const urlUtils = require('../../../lib/url-utils');
 const constants = require('../../../lib/constants');
 const common = require('../../../lib/common');
 const settingsCache = require('../../../services/settings/cache');
@@ -99,7 +99,7 @@ const privateBlogging = {
         if (isVerified) {
             return next();
         } else {
-            url = urlService.utils.urlFor({relativeUrl: privateRoute});
+            url = urlUtils.urlFor({relativeUrl: privateRoute});
             url += '?r=' + encodeURIComponent(req.url);
             return res.redirect(url);
         }
@@ -108,7 +108,7 @@ const privateBlogging = {
     // This is here so a call to /private/ after a session is verified will redirect to home;
     isPrivateSessionAuth: function isPrivateSessionAuth(req, res, next) {
         if (!res.isPrivateBlog) {
-            return res.redirect(urlService.utils.urlFor('home', true));
+            return res.redirect(urlUtils.urlFor('home', true));
         }
 
         let hash = req.session.token || '',
@@ -117,7 +117,7 @@ const privateBlogging = {
 
         if (isVerified) {
             // redirect to home if user is already authenticated
-            return res.redirect(urlService.utils.urlFor('home', true));
+            return res.redirect(urlUtils.urlFor('home', true));
         } else {
             return next();
         }
@@ -140,7 +140,7 @@ const privateBlogging = {
             req.session.token = hasher.digest('hex');
             req.session.salt = salt;
 
-            return res.redirect(urlService.utils.urlFor({relativeUrl: forward}));
+            return res.redirect(urlUtils.urlFor({relativeUrl: forward}));
         } else {
             res.error = {
                 message: common.i18n.t('errors.middleware.privateblogging.wrongPassword')

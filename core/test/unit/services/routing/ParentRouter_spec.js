@@ -2,7 +2,7 @@ const should = require('should'),
     sinon = require('sinon'),
     configUtils = require('../../../utils/configUtils'),
     common = require('../../../../server/lib/common'),
-    urlService = require('../../../../server/services/url'),
+    urlUtils = require('../../../../server/lib/url-utils'),
     ParentRouter = require('../../../../server/services/routing/ParentRouter');
 
 describe('UNIT - services/routing/ParentRouter', function () {
@@ -12,7 +12,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
         sinon.stub(common.events, 'emit');
         sinon.stub(common.events, 'on');
 
-        sinon.stub(urlService.utils, 'redirect301');
+        sinon.stub(urlUtils, 'redirect301');
 
         req = sinon.stub();
         req.app = {
@@ -76,7 +76,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(false);
-            urlService.utils.redirect301.withArgs(res, '/channel/').calledOnce.should.be.true();
+            urlUtils.redirect301.withArgs(res, '/channel/').calledOnce.should.be.true();
         });
 
         it('redirect with query params', function () {
@@ -106,7 +106,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(false);
-            urlService.utils.redirect301.withArgs(res, '/channel/?a=b').calledOnce.should.be.true();
+            urlUtils.redirect301.withArgs(res, '/channel/?a=b').calledOnce.should.be.true();
         });
 
         it('redirect rss', function () {
@@ -136,7 +136,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(false);
-            urlService.utils.redirect301.withArgs(res, '/channel/rss/').calledOnce.should.be.true();
+            urlUtils.redirect301.withArgs(res, '/channel/rss/').calledOnce.should.be.true();
         });
 
         it('redirect pagination', function () {
@@ -166,11 +166,11 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(false);
-            urlService.utils.redirect301.withArgs(res, '/channel/page/2/').calledOnce.should.be.true();
+            urlUtils.redirect301.withArgs(res, '/channel/page/2/').calledOnce.should.be.true();
         });
 
         it('redirect correctly with subdirectory', function () {
-            configUtils.set('url', 'http://localhost:7777/blog/');
+            sinon.stub(urlUtils, 'createUrl').returns('/blog/channel/');
 
             const parentRouter = new ParentRouter('tag', '/tag/:slug/');
             parentRouter.getResourceType = sinon.stub().returns('tags');
@@ -198,7 +198,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(false);
-            urlService.utils.redirect301.withArgs(res, '/blog/channel/').calledOnce.should.be.true();
+            urlUtils.redirect301.withArgs(res, '/blog/channel/').calledOnce.should.be.true();
         });
 
         it('no redirect: different data key', function () {
@@ -225,7 +225,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(true);
-            urlService.utils.redirect301.called.should.be.false();
+            urlUtils.redirect301.called.should.be.false();
         });
 
         it('no redirect: no channel defined', function () {
@@ -247,7 +247,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(true);
-            urlService.utils.redirect301.called.should.be.false();
+            urlUtils.redirect301.called.should.be.false();
         });
 
         it('redirect primary tag permalink', function () {
@@ -277,7 +277,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'welcome');
             next.called.should.eql(false);
-            urlService.utils.redirect301.withArgs(res, '/route/?x=y').calledOnce.should.be.true();
+            urlUtils.redirect301.withArgs(res, '/route/?x=y').calledOnce.should.be.true();
         });
     });
 

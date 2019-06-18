@@ -1,4 +1,4 @@
-var urlService = require('../../services/url'),
+var urlUtils = require('../../lib/url-utils'),
     getContextObject = require('./context_object.js'),
     _ = require('lodash');
 
@@ -8,9 +8,9 @@ function getOgImage(data) {
 
     if (_.includes(context, 'post') || _.includes(context, 'page') || _.includes(context, 'amp')) {
         if (contextObject.og_image) {
-            return urlService.utils.urlFor('image', {image: contextObject.og_image}, true);
+            return urlUtils.urlFor('image', {image: contextObject.og_image}, true);
         } else if (contextObject.feature_image) {
-            return urlService.utils.urlFor('image', {image: contextObject.feature_image}, true);
+            return urlUtils.urlFor('image', {image: contextObject.feature_image}, true);
         }
     }
 

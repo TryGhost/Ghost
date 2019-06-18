@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const config = require('../../../config');
 const imageLib = require('../../../lib/image');
 const storage = require('../../../adapters/storage');
-const urlService = require('../../../services/url');
+const urlUtils = require('../../../lib/url-utils');
 const settingsCache = require('../../../services/settings/cache');
 
 let content;
@@ -46,7 +46,7 @@ function serveFavicon() {
             if (settingsCache.get('icon')) {
                 // depends on the uploaded icon extension
                 if (originalExtension !== requestedExtension) {
-                    return res.redirect(302, urlService.utils.urlFor({relativeUrl: `/favicon${originalExtension}`}));
+                    return res.redirect(302, urlUtils.urlFor({relativeUrl: `/favicon${originalExtension}`}));
                 }
 
                 storage.getStorage()
@@ -64,7 +64,7 @@ function serveFavicon() {
 
                 // CASE: always redirect to .ico for default icon
                 if (originalExtension !== requestedExtension) {
-                    return res.redirect(302, urlService.utils.urlFor({relativeUrl: '/favicon.ico'}));
+                    return res.redirect(302, urlUtils.urlFor({relativeUrl: '/favicon.ico'}));
                 }
 
                 fs.readFile(filePath, (err, buf) => {

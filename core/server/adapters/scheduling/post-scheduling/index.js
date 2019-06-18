@@ -3,7 +3,7 @@ const Promise = require('bluebird'),
     localUtils = require('../utils'),
     common = require('../../../lib/common'),
     models = require('../../../models'),
-    urlService = require('../../../services/url'),
+    urlUtils = require('../../../lib/url-utils'),
     _private = {};
 
 /**
@@ -18,7 +18,7 @@ _private.normalize = function normalize(options) {
         // NOTE: The scheduler expects a unix timestmap.
         time: moment(model.get('published_at')).valueOf(),
         // @TODO: We are still using API v0.1
-        url: `${urlService.utils.urlJoin(apiUrl, 'schedules', 'posts', model.get('id'))}?client_id=${client.get('slug')}&client_secret=${client.get('secret')}`,
+        url: `${urlUtils.urlJoin(apiUrl, 'schedules', 'posts', model.get('id'))}?client_id=${client.get('slug')}&client_secret=${client.get('secret')}`,
         extra: {
             httpMethod: 'PUT',
             oldTime: model.previous('published_at') ? moment(model.previous('published_at')).valueOf() : null

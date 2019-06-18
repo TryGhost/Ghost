@@ -3,7 +3,7 @@ const express = require('express');
 const serveStatic = require('express').static;
 const config = require('../../config');
 const constants = require('../../lib/constants');
-const urlService = require('../../services/url');
+const urlUtils = require('../../lib/url-utils');
 const shared = require('../shared');
 const adminMiddleware = require('./middleware');
 
@@ -25,7 +25,7 @@ module.exports = function setupAdminApp() {
     // Ember CLI's live-reload script
     if (config.get('env') === 'development') {
         adminApp.get('/ember-cli-live-reload.js', function emberLiveReload(req, res) {
-            res.redirect(`http://localhost:4200${urlService.utils.getSubdir()}/ghost/ember-cli-live-reload.js`);
+            res.redirect(`http://localhost:4200${urlUtils.getSubdir()}/ghost/ember-cli-live-reload.js`);
         });
     }
 

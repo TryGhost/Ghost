@@ -1,6 +1,6 @@
 const models = require('../../models');
 const common = require('../../lib/common');
-const urlService = require('../../services/url');
+const urlUtils = require('../../lib/url-utils');
 const allowedIncludes = ['tags', 'authors', 'authors.roles'];
 const unsafeAttrs = ['status', 'authors'];
 
@@ -146,8 +146,8 @@ module.exports = {
                         model.get('status') === 'scheduled' && model.wasChanged()
                     ) {
                         this.headers.cacheInvalidate = {
-                            value: urlService.utils.urlFor({
-                                relativeUrl: urlService.utils.urlJoin('/p', model.get('uuid'), '/')
+                            value: urlUtils.urlFor({
+                                relativeUrl: urlUtils.urlJoin('/p', model.get('uuid'), '/')
                             })
                         };
                     } else {

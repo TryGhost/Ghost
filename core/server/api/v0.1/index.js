@@ -7,7 +7,7 @@
 const {isEmpty} = require('lodash');
 const Promise = require('bluebird');
 const models = require('../../models');
-const urlService = require('../../services/url');
+const urlUtils = require('../../lib/url-utils');
 const configuration = require('./configuration');
 const db = require('./db');
 const mail = require('./mail');
@@ -97,7 +97,7 @@ const cacheInvalidationHeader = (req, result) => {
                 return INVALIDATE_ALL;
             } else {
                 // routeKeywords.preview: 'p'
-                return urlService.utils.urlFor({relativeUrl: urlService.utils.urlJoin('/p', post.uuid, '/')});
+                return urlUtils.urlFor({relativeUrl: urlUtils.urlJoin('/p', post.uuid, '/')});
             }
         }
     }
@@ -115,7 +115,7 @@ const cacheInvalidationHeader = (req, result) => {
  * @return {String} Resolves to header string
  */
 const locationHeader = (req, result) => {
-    const apiRoot = urlService.utils.urlFor('api', {version: 'v0.1'});
+    const apiRoot = urlUtils.urlFor('api', {version: 'v0.1'});
     let location,
         newObject,
         statusQuery;
@@ -124,23 +124,23 @@ const locationHeader = (req, result) => {
         if (result.hasOwnProperty('posts')) {
             newObject = result.posts[0];
             statusQuery = `/?status=${newObject.status}`;
-            location = urlService.utils.urlJoin(apiRoot, 'posts', newObject.id, statusQuery);
+            location = urlUtils.urlJoin(apiRoot, 'posts', newObject.id, statusQuery);
         } else if (result.hasOwnProperty('notifications')) {
             newObject = result.notifications[0];
 
             // CASE: you add one notification, but it's a duplicate, the API will return {notifications: []}
             if (newObject) {
-                location = urlService.utils.urlJoin(apiRoot, 'notifications', newObject.id, '/');
+                location = urlUtils.urlJoin(apiRoot, 'notifications', newObject.id, '/');
             }
         } else if (result.hasOwnProperty('users')) {
             newObject = result.users[0];
-            location = urlService.utils.urlJoin(apiRoot, 'users', newObject.id, '/');
+            location = urlUtils.urlJoin(apiRoot, 'users', newObject.id, '/');
         } else if (result.hasOwnProperty('tags')) {
             newObject = result.tags[0];
-            location = urlService.utils.urlJoin(apiRoot, 'tags', newObject.id, '/');
+            location = urlUtils.urlJoin(apiRoot, 'tags', newObject.id, '/');
         } else if (result.hasOwnProperty('webhooks')) {
             newObject = result.webhooks[0];
-            location = urlService.utils.urlJoin(apiRoot, 'webhooks', newObject.id, '/');
+            location = urlUtils.urlJoin(apiRoot, 'webhooks', newObject.id, '/');
         }
     }
 
