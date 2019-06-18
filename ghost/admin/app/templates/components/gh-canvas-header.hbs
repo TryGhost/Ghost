@@ -1,0 +1,7 @@
+<header
+    {{did-insert (action "initScrollWatch")}}
+    {{will-destroy (action "clearScrollWatch")}}
+    ...attributes
+>
+    {{yield}}
+</header>

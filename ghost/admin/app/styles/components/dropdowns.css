@@ -20,12 +20,12 @@
     left: 0;
     float: left;
     margin: 2px 0 0;
-    padding: 10px;
+    padding: 6px;
     min-width: 200px;
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: 4px;
-    box-shadow: 0 0 0 1px rgba(99,114,130,0.16), 0 8px 16px rgba(27,39,51,0.08);
+    border-radius: 5px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 7px 20px -5px rgba(0,0,0,.15);
     list-style: none;
     text-align: left;
     text-transform: none;
@@ -56,8 +56,7 @@
     clear: both;
     padding: 6px 10px;
     width: 100%;
-    border-radius: 3px;
-    color: color-mod(var(--darkgrey) lightness(+20%));
+    color: var(--middarkgrey);
     text-align: left;
     white-space: nowrap;
     font-size: 1.3rem;
@@ -94,7 +93,7 @@
 .dropdown-menu > li > a:focus,
 .dropdown-menu > li > button:hover,
 .dropdown-menu > li > button:focus {
-    background: color-mod(var(--blue) alpha(-85%));
+    background: color-mod(var(--whitegrey) a(60%) s(-12%));
     color: var(--darkgrey);
     text-decoration: none;
 }

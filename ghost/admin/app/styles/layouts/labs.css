@@ -39,6 +39,12 @@
     display: flex;
     align-items: center;
     color: var(--blue) !important;
+    background: transparent !important;
+}
+
+.gh-btn-labs-toggle,
+.gh-btn-labs-toggle:hover {
+    box-shadow: none !important;
 }
 
 .gh-btn-labs-toggle svg {
@@ -65,6 +71,11 @@
     opacity: 0.25;
 }
 
-.gh-labs-disabled .for-checkbox label {
+.gh-labs-disabled .for-checkbox label,
+.gh-labs-disabled .for-checkbox .input-toggle-component,
+.gh-labs-disabled .for-switch label,
+.gh-labs-disabled .for-switch .input-toggle-component
+.gh-labs-disabled .for-radio label,
+.gh-labs-disabled .for-radio .input-toggle-component {
     cursor: default;
 }

@@ -1,17 +1,15 @@
 <section class="gh-canvas">
-    <header class="gh-canvas-header">
+    <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
-    </header>
-
-    <section class="view-container h-100">
-
         <div>
             <GhTextInput placeholder="Search members..." @value={{this.searchText}}
                 @input={{action (mut this.searchText) value="target.value"}} />
         </div>
+    </GhCanvasHeader>
 
-        <div class="flex justify-between items-center pt1 mt7">
-            <h2 class="f7 fw4 midgrey">
+    <section class="view-container h-100">
+        <div class="flex justify-between items-center">
+            <h2 class="f-small fw5 midlightgrey ttu">
                 {{#if this.searchText}}
                     Search result
                 {{else}}
@@ -27,7 +25,7 @@
 
         {{#if this.filteredMembers}}
             {{!-- members list, styles taken from .apps-grid --}}
-            <div class="flex flex-row flex-wrap items-start ba br3 b--whitegrey mt2 mb10">
+            <div class="flex flex-row flex-wrap items-start br3 mt2 mb10 bg-grouped-table shadow-1">
                 <VerticalCollection
                     @items={{this.filteredMembers}}
                     @key="id"
@@ -37,11 +35,11 @@
                 >
                     <div class="flex-grow-1 flex-shrink-1" style="flex-basis: 100%">
                         {{#link-to "member" member classNames="link whitegrey"}}
-                            <article class="flex items-center justify-between pa4 {{if index "bt"}} hover-bg-table-cell">
+                            <article class="flex items-center justify-between pa4 pt3 pb3 {{if index "bt"}} highlight-whitegrey">
                                 <div class="flex items-center">
-                                    <GhMemberAvatar @member={{member}} class="w10 h10 mr4" />
+                                    <GhMemberAvatar @member={{member}} class="w9 h9 mr4" />
                                     <div class="flex flex-column">
-                                        <h3 class="darkgrey ma0 f5 fw7">{{member.name}}</h3>
+                                        <h3 class="darkgrey ma0 f6 fw6">{{member.name}}</h3>
                                         <p class="midgrey ma0 pa0 f7">{{member.email}}</p>
                                     </div>
                                 </div>

@@ -18,6 +18,15 @@
     --border-radius: 4px;
     --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif;
     --font-family-mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+
+    /* Shadows */
+    --shadow-1: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 6px 10px -8px rgba(0,0,0,.1);
+    --shadow-2: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
+    --shadow-3: 0 0 1px rgba(0,0,0,.05), 0 8px 28px rgba(0,0,0,.12);
+
+    /* Inputs */
+    --input-bg-color: var(--white);
+    --input-border: color-mod(var(--whitegrey) h(+7) s(-12%) l(-4%)) 1px solid;
 }
 
 /* Colour classes
@@ -80,7 +89,35 @@
 }
 
 .green-hover:hover {
-    color: var(--green);
+    color: var(--green-d1);
+}
+
+.darkgrey-bg-hover:hover {
+    background: color-mod(var(--darkgrey) a(20%));
+}
+
+.midgrey-bg-hover:hover {
+    background: color-mod(var(--midgrey) a(30%));
+}
+
+.lightgrey-bg-hover:hover {
+    background: color-mod(var(--lightgrey) a(30%));
+}
+
+.blue-bg-hover:hover {
+    background: color-mod(var(--blue) a(30%));
+}
+
+.red-bg-hover:hover {
+    background-color: color-mod(var(--red) a(20%));
+}
+
+.orange-bg-hover:hover {
+    background: color-mod(var(--orange) a(30%));
+}
+
+.green-bg-hover:hover {
+    background: color-mod(var(--green) a(20%));
 }
 
 
@@ -117,6 +154,8 @@ body {
     height: 100%;
     color: var(--darkgrey);
     font-size: 1.4rem;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
 ::selection {

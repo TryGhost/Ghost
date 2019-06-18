@@ -161,43 +161,71 @@ button, .btn-base {
 }
 
 
-/* Tooltip Styles */
+/* Tooltip Styles
+---------------------------------------------------------- */
 [data-tooltip] {
-  position: relative;
-  z-index: 2;
-  cursor: pointer;
-}
-
-[data-tooltip]:before,
-[data-tooltip]:after {
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: all 200ms ease;
+    position: relative;
 }
 
 [data-tooltip]:before {
-  position: absolute;
-  bottom: 110%;
-  white-space: nowrap;
-  padding: 6px 8px;
-  border-radius: 4px;
-  background-color: var(--darkgrey);
-  color: var(--white);
-  content: attr(data-tooltip);
-  text-align: center;
-  font-size: 1.3rem;
-  letter-spacing: 0.2px;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 200ms ease;
+    transform: translateY(5px);
+    z-index: 9999;
 }
 
-[data-tooltip]:hover:before,
-[data-tooltip]:hover:after {
-  visibility: visible;
-  opacity: 1;
+[data-tooltip]:before {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    width: max-content;
+    white-space: nowrap;
+    padding: 3px 7px;
+    border-radius: 3px;
+    background-color: var(--darkgrey);
+    color: var(--white);
+    content: attr(data-tooltip);
+    text-align: center;
+    font-size: 1.3rem;
+    letter-spacing: 0.2px;
+    transform: translate(-50%, 5px);
+}
+
+[data-tooltip]:hover:before {
+    visibility: visible;
+    opacity: 1;
+    transform: translate(-50%, 0px);
+}
+
+.tooltip-delayed:before {
+    transition: all 200ms ease 0.4s;
+}
+
+.tooltip-left:before {
+    bottom: 2px;
+    left: calc(100% + 6px);
+    transform: translate(-4px, 0);
+}
+
+.tooltip-left:hover:before {
+    transform: translate(0, 0);
+}
+
+.tooltip-bottom:before {
+    bottom: calc(-100% - 4px);
+    left: 50%;
+    transform: translate(-50%, -5px);
+}
+
+.tooltip-bottom:hover:before {
+    transform: translate(-50%, 0);
 }
 
 
-/* Errors */
+/* Errors
+---------------------------------------------------------- */
 .error-background {
     width: 406px;
     height: 288px;
@@ -312,4 +340,8 @@ button, .btn-base {
     animation-name: bounce-2;
     animation-iteration-count: infinite;
     animation-duration: 0.7s;
+}
+
+.bg-grouped-table {
+    background: var(--white);
 }

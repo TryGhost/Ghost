@@ -50,15 +50,15 @@
 
 .nav-list-item b {
     display: block;
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     line-height: 1.375;
-    font-weight: normal;
+    font-weight: 600;
 }
 
 .nav-list-item span {
     display: block;
     color: var(--midgrey);
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     line-height: 1.375;
     letter-spacing: 0.2px;
 }

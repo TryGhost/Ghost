@@ -7,27 +7,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 2vw 0 1vw;
-    padding: 10px 0 0 0;
-    border-top: color-mod(var(--lightgrey)) 1px solid;
+    margin: 0 32px;
+    padding: 0;
     list-style: none;
-}
-
-.gh-contentfilter-left {
-    display: flex;
-    align-items: center;
-}
-
-.gh-contentfilter-left .gh-contentfilter-menu {
-    margin-right: 30px;
-}
-
-.gh-contentfilter-right {
-    display: flex;
-}
-
-.gh-contentfilter-right .gh-contentfilter-menu {
-    margin-left: 10px;
 }
 
 .gh-contentfilter li {
@@ -52,7 +34,7 @@
     padding: 13px 1px 0;
     color: color-mod(var(--midgrey) l(+8%));
     font-size: 1.5rem;
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: 0.3px;
 }
 
@@ -64,13 +46,34 @@
 .gh-contentfilter-menu-trigger,
 .gh-contentfilter-menu-trigger:focus,
 .gh-contentfilter-menu-trigger--active {
-    padding: 0;
+    background: var(--white);
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--darkgrey);
+    padding: 0 8px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.01), 0 1px 2px rgba(0, 0, 0, 0.05);
+    outline: none;
     border: none;
-    outline: 0;
+    border-radius: 9999px !important;
+    margin-left: 10px;
+    white-space: nowrap;
+    transition: all 0.25s ease;
 }
 
 .gh-contentfilter-menu-trigger:hover {
     cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
+    color: var(--darkgrey);
+}
+
+.gh-contentfilter-selected .gh-contentfilter-menu-trigger,
+.gh-contentfilter-selected .gh-contentfilter-menu-trigger:hover {
+    color: var(--blue);
+    font-weight: 500;
+}
+
+.gh-contentfilter-menu-trigger svg path {
+    stroke: color-mod(var(--midgrey) l(-7%));
 }
 
 .gh-contentfilter .ember-power-select-selected-item,
@@ -80,23 +83,29 @@
 
 .gh-contentfilter-menu-dropdown {
     width: 180px;
-    margin-top: 10px;
-    padding: 5px 0 7px 0;
+    margin-top: 6px;
+    padding: 6px 0;
     border: none !important;
     font-size: 1.3rem;
-    box-shadow: 0 0 0 1px rgba(99,114,130,0.16), 0 8px 16px rgba(27,39,51,0.08);
-    border-radius: 4px !important;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 7px 20px -5px rgba(0,0,0,.15);
+    border-radius: 5px !important;
 }
 
 .gh-contentfilter-menu-dropdown .ember-power-select-search input {
     display: block !important;
-    margin: 0 10px !important;
+    margin: 0 14px !important;
+    border-bottom: 1px solid var(--lightgrey) !important;
+    width: calc(100% - 28px) !important;
 }
 
 .gh-contentfilter-menu-dropdown .ember-power-select-option {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.gh-contentfilter-sort .gh-contentfilter-menu-trigger .ember-power-select-selected-item::before {
+    content: "Sort by: ";
 }
 
 
@@ -107,46 +116,66 @@
     position: relative;
 }
 
-.content-list ol {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
 .gh-posts-list-item {
     position: relative;
-    margin: 0;
-    padding: 24px 0 25px 0;
-    border-bottom: color-mod(var(--lightgrey)) 1px solid;
 }
 
 .gh-posts-list-item a:hover {
     text-decoration: none;
 }
 
+.content-list .gh-list-header:first-child {
+    padding: 0 !important;
+}
+
+.gh-posts-title-header {
+    padding-left: 10px;
+}
+
+.gh-post-list-title {
+    padding-left: 10px;
+}
+
+.gh-post-list-featured {
+    padding: 20px 0px 20px 10px;
+    width: 1px;
+}
+
+.gh-post-list-updated,
+.gh-post-list-author {
+    color: var(--middarkgrey);
+    font-size: 1.3rem;
+}
+
 .gh-content-entry-title {
     margin: 0 0 3px 0;
-    font-size: 2.2rem;
+    font-size: 1.5rem;
     font-weight: 600;
-    letter-spacing: 0.4px;
 }
 
 .gh-content-entry-title a {
-    color: color-mod(var(--darkgrey) l(+3%));
+    color: var(--darkgrey);
 }
 
 .gh-posts-list-item p {
-    margin: 0;
-    font-size: 1.6rem;
-    font-weight: 300;
+    margin: 2px 0 0;
+    font-size: 1.3rem;
     overflow-wrap: break-word;
+    color: var(--middarkgrey);
 }
 
+.gh-schedule-time {
+    color: var(--green-d1);
+}
+
+.gh-schedule-subtext {
+    max-width: 200px;
+}
 
 .gh-content-entry-meta {
-    margin: 10px 0 0 0;
+    margin: 4px 0 0 0;
     font-size: 1.3rem;
-    color: var(--midgrey);
+    color: var(--midlightgrey);
     font-weight: 200;
     letter-spacing: 0.3px;
 }
@@ -156,26 +185,161 @@
 }
 
 .gh-content-status-published {
-    color: var(--darkgrey);
+    color: var(--midgrey);
+    background: var(--lightgrey);
+    display: inline-block;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    padding: 0 3px;
+    font-weight: 500;
+}
+
+.gh-content-status-featured {
+    color: var(--blue);
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    font-weight: 500;
+    padding: 0 3px 0 0;
+}
+
+.gh-content-status-featured svg {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: -4px;
+}
+
+.gh-content-status-featured svg path {
+    fill: var(--blue);
 }
 
 .gh-content-entry-author {
-    color: var(--darkgrey);
+    color: var(--middarkgrey);
 }
 
 .gh-posts-placeholder {
-    width: 145px;
+    width: 120px;
     margin: -30px 0 15px;
 }
 
 .gh-pages-placeholder {
-    width: 136px;
+    width: 118px;
     margin: -30px 0 15px;
 }
 
-@media (max-width: 900px) {
-    .gh-posts-list-item a {
-        padding-right: 40px;
+/* Mobile style of post list */
+@media (max-width: 1000px) {
+    .gh-posts-list-item {
+        display: flex;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--lightgrey);
+        margin: 0;
+    }
+
+    .gh-post-list-featured {
+        display: block;
+        order: 1;
+        border-bottom: none;
+        position: absolute;
+        left: 0;
+        top: -1px;
+    }
+
+    .gh-post-list-title {
+        display: block;
+        order: 2;
+        flex: 1 1 100%;
+        border: none;
+        padding: 20px 28px 4px;
+    }
+
+    .gh-post-list-status {
+        display: inline-block;
+        order: 3;
+        border: none;
+        padding: 0 4px 20px 28px;
+        font-size: 1.3rem;
+        max-width: 140px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gh-post-list-updated {
+        display: inline-block;
+        order: 4;
+        border: none;
+        padding: 0 4px 20px;
+        font-size: 1.3rem;
+        max-width: calc((100% - 140px) * 1/4);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gh-post-list-author {
+        display: inline-block;
+        order: 5;
+        border: none;
+        padding: 0 4px 20px 0;
+        font-size: 1.3rem;
+        max-width: calc((100% - 140px) * 3/4);;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gh-post-list-author:before {
+        content: "- by";
+    }
+
+    .gh-post-headers,
+    .gh-post-list-actions {
+        display: none;
+    }
+
+    .post-header {
+        justify-content: flex-end;
+        min-height: 120px;
+    }
+
+    .post-header .gh-canvas-title {
+        position: absolute;
+        top: 29px;
+        left: 21px;
+    }
+
+    .post-header .view-actions {
+        flex-direction: column;
+        align-items: flex-end;
+        margin-top: 18px;
+    }
+
+    .post-header .view-actions .gh-contentfilter {
+        order: 2;
+        margin: 10px 0;
+        padding: 6px 2px;
+        max-width: calc(100vw - 10px);
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 800px) {
+    .post-header {
+        left: 0;
+    }
+
+    .post-header .gh-canvas-title {
+        left: 20px;
+    }
+
+    .gh-post-list-updated {
+        display: none;
+    }
+
+    .gh-post-list-author {
+        max-width: calc(100% - 140px);
     }
 }
 
@@ -194,6 +358,14 @@
 
 /* Empty State
 /* ---------------------------------------------------------- */
+.no-posts {
+    background: none;
+    box-shadow: none;
+}
+
+.no-posts + .infinity-loader {
+    padding: 0 !important;
+}
 
 .no-posts-box {
     position: relative;
@@ -203,7 +375,7 @@
     align-items: center;
     margin: 0 auto;
     padding: 0;
-    height: 70vh;
+    height: calc(100vh - 140px);
 }
 
 .no-posts-box .no-posts {

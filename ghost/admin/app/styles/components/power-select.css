@@ -28,39 +28,41 @@
 .ember-power-select-trigger[aria-expanded="true"],
 .ember-power-select-search input {
     outline: 0;
-    border-color: color-mod(var(--lightgrey) l(-10%) s(-10%));
+    border-color: color-mod(var(--whitegrey) a(70%) s(-10%));
 }
 
 .ember-power-select-dropdown {
     position: absolute;
     z-index: 1000;
     box-sizing: border-box;
-    margin: -1px 0 0 0;
-    border: 1px solid color-mod(var(--lightgrey) l(-10%) s(-10%));
+    margin: 0;
+    border: 1px solid color-mod(var(--whitegrey) a(70%) s(-10%));
     border-top: 0 none;
     background: #fff;
     border-radius: 0 0 var(--border-radius) var(--border-radius);
-    box-shadow: 0 8px 20px -4px rgba(0,0,0,.1);
+    box-shadow: 0 18px 45px -5px rgba(0, 0, 0, 0.15);
 }
 
 .ember-power-select-dropdown.ember-basic-dropdown-content--in-place {
-    border-bottom-color: color-mod(var(--lightgrey) l(-10%) s(-10%));
+    padding: 4px 0;
+    border-bottom-color: color-mod(var(--whitegrey) a(70%) s(-10%));
+    border-top: 1px solid color-mod(var(--whitegrey) a(70%) s(-10%));
 }
 
 .ember-power-select-option {
     margin: 0;
-    padding: 6px 10px;
-    color: color-mod(var(--darkgrey) lightness(+20%));
+    padding: 6px 14px;
+    color: var(--darkgrey);
 }
 
 .ember-power-select-option[aria-current="true"] {
-    background: color-mod(var(--blue) alpha(-85%));
+    background: color-mod(var(--whitegrey) a(60%) s(-12%));
     color: var(--darkgrey);
 }
 
 .ember-power-select-option[aria-selected="true"] {
     color: var(--darkgrey);
-    font-weight: 500;
+    font-weight: 700;
     background: transparent;
 }
 
@@ -82,6 +84,7 @@
     box-shadow: none !important;
     text-indent: 0 !important;
     font-size: 1.4rem;
+    font-weight: 400;
     line-height: inherit !important;
 }
 
@@ -95,12 +98,12 @@
 .ember-power-select-group .ember-power-select-group-name {
     position: relative;
     display: inline-block;
-    padding: 7px 8px;
+    padding: 7px 12px;
     cursor: default;
     text-transform: uppercase;
-    color: color-mod(var(--midlightgrey) l(+5%));
+    color: var(--midlightgrey);
     white-space: nowrap;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.1px;
     font-size: 1.2rem;
     font-weight: 500;
 }
@@ -111,25 +114,25 @@
     top: 60%;
     left: calc(100% - 3px);
     display: block;
-    width: calc(246px - 100%);
+    width: calc(540px - 100%);
     height: 1px;
-    border-bottom: var(--lightgrey) 1px solid;
+    border-bottom: color-mod(var(--lightgrey) l(-5%)) 1px solid;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 900px) {
     .ember-power-select-group .ember-power-select-group-name:after {
-        width: calc(224px - 100%);
+        width: calc(524px - 100%);
     }
 }
 
-@media (max-width: 500px) {
+@media (max-width: 600px) {
     .ember-power-select-group .ember-power-select-group-name:after {
         width: calc(80vw - 45px - 100%);
     }
 }
 
 .ember-power-select-group:first-of-type .ember-power-select-group-name {
-    margin-bottom: 7px;
+    margin: 8px 0;
     padding-top: 0;
     padding-bottom: 0;
 }
@@ -138,11 +141,16 @@
     top: 66%;
 }
 
+.ember-power-select-group:last-of-type {
+    margin-bottom: 4px;
+}
+
 .ember-power-select-group .ember-power-select-option {
     overflow: hidden;
-    padding: 7px 8px;
+    padding: 7px 12px;
     line-height: 1.35em;
     cursor: pointer;
+    font-size: 1.4rem;
 }
 
 .ember-power-select-group .ember-power-select-option .highlight {
@@ -152,7 +160,7 @@
 }
 
 .ember-power-select-group .ember-power-select-option[aria-current="true"] {
-    background: color-mod(var(--blue) alpha(-85%));
+    background: color-mod(var(--whitegrey) a(60%) s(-12%));
     color: var(--darkgrey);
 }
 

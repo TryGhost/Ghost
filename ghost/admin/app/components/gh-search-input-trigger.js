@@ -1,3 +1,4 @@
+/* global key */
 import Component from '@ember/component';
 import {isBlank} from '@ember/utils';
 
@@ -10,7 +11,7 @@ export default Component.extend({
         search(term) {
             // open dropdown if not open and term is present
             // close dropdown if open and term is blank
-            if (isBlank(term) === this.get('select.isOpen')) {
+            if (isBlank(term) === this.select.isOpen) {
                 isBlank(term) ? this.close() : this.open();
 
                 // ensure focus isn't lost when dropdown is closed
@@ -26,19 +27,18 @@ export default Component.extend({
             this._focusInput();
         },
 
-        resetInput() {
-            let input = this.element && this.element.querySelector('input');
-            if (input) {
-                input.value = '';
+        // hacky workaround to let Escape clear the input if there's text,
+        // but still allow it to close the search modal if there's no text
+        handleKeydown(e) {
+            if ((e.key === 'Escape' && e.target.value) || e.key === 'Enter') {
+                this._previousKeyScope = key.getScope();
+                key.setScope('ignore');
             }
         },
 
-        handleKeydown(e) {
-            let select = this.select;
-
-            // TODO: remove keycode check once EPS is updated to 1.0
-            if (!select.isOpen || e.keyCode === 32) {
-                e.stopPropagation();
+        handleKeyup() {
+            if (key.getScope() === 'ignore') {
+                key.setScope(this._previousKeyScope);
             }
         }
     },

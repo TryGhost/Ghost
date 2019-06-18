@@ -39,7 +39,7 @@ export default AuthenticatedRoute.extend({
         this._super(...arguments);
 
         return this.get('session.user').then((user) => {
-            let returnRoute = `${pluralize(post.constructor.modelName)}.index`;
+            let returnRoute = pluralize(post.constructor.modelName);
 
             if (user.get('isAuthorOrContributor') && !post.isAuthoredByUser(user)) {
                 return this.replaceWith(returnRoute);

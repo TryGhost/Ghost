@@ -257,7 +257,7 @@ describe('Integration: Component: gh-tag-settings-form', function () {
         expect(openModalFired).to.be.true;
     });
 
-    it('shows settings.tags arrow link on mobile', async function () {
+    it('shows tags arrow link on mobile', async function () {
         let mediaQueries = this.owner.lookup('service:media-queries');
         mediaQueries.set('maxWidth600', true);
 
@@ -265,6 +265,6 @@ describe('Integration: Component: gh-tag-settings-form', function () {
             {{gh-tag-settings-form tag=tag setProperty=(action setProperty)}}
         `);
 
-        expect(findAll('.tag-settings-pane .settings-menu-header .settings-menu-header-action').length, 'settings.tags link is shown').to.equal(1);
+        expect(findAll('.tag-settings-pane .settings-menu-header .settings-menu-header-action').length, 'tags link is shown').to.equal(1);
     });
 });

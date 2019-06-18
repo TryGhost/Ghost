@@ -34,8 +34,8 @@
 /* Layout
 /* ---------------------------------------------------------- */
 
-.content.settings-user {
-    padding: 0;
+.settings-user {
+    padding: 0 0 3vw;
 }
 
 .user-cover {
@@ -47,13 +47,14 @@
     margin-bottom: 30px;
     background: #fafafa no-repeat center center;
     background-size: cover;
-    border-radius: 6px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 
 .user-cover-edit {
     position: absolute;
-    top: 30px;
-    left: 35px;
+    top: 20px;
+    left: 20px;
     z-index: 2;
     min-height: 37px;
     height: 37px;
@@ -68,6 +69,18 @@
 .user-cover-edit:hover {
     background: rgba(0, 0, 0, 0.5);
     color: #fff;
+}
+
+.user-details-bottom,
+.user-details-password {
+    max-width: 540px;
+    margin: 2vw auto 0;
+}
+
+.user-details-password {
+    border-top: 1px solid var(--lightgrey);
+    padding-top: 4vw;
+    margin-bottom: -2vw;
 }
 
 
@@ -95,14 +108,16 @@
 
 .user-image {
     position: absolute;
-    top: 200px;
+    top: 236px;
     left: 0;
+    right: 0;
     z-index: 2;
-    margin: 0;
+    margin: 0 auto;
     padding: 0;
-    width: 100px;
-    height: 100px;
-    border-radius: 0 6px;
+    width: 120px;
+    height: 120px;
+    border-radius: 9999px;
+    border: 4px solid var(--white);
     text-align: center;
 }
 
@@ -112,7 +127,7 @@
     height: 100%;
     background-position: center center;
     background-size: cover;
-    border-radius: 0 6px;
+    border-radius: 9999px;
 }
 
 .user-image:hover .edit-user-image {
@@ -124,8 +139,9 @@
     top: 0;
     left: 0;
     width: 100%;
+    height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    border-radius: 0 6px;
+    border-radius: 9999px;
     color: #fff;
     text-decoration: none;
     text-transform: uppercase;

@@ -1,89 +1,87 @@
-<section class="gh-canvas">
-    <header class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>Your posts</h2>
+<section class="gh-canvas" {{did-insert (action "setMainClass" "gh-main-primarybg" target=this.ui)}}>
+    <header class="gh-canvas-header post-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>Posts</h2>
         <section class="view-actions">
+            <div class="gh-contentfilter">
+                {{#unless session.user.isContributor}}
+                {{#power-select
+                    selected=selectedType
+                    options=availableTypes
+                    searchEnabled=false
+                    onchange=(action (mut k))
+                    tagName="div"
+                    classNames="gh-contentfilter-menu gh-contentfilter-type"
+                    triggerClass="gh-contentfilter-menu-trigger"
+                    dropdownClass="gh-contentfilter-menu-dropdown"
+                    matchTriggerWidth=false
+                    data-test-type-select=true
+                    as |type|
+                }}
+                {{type.name}}
+                {{/power-select}}
+                {{/unless}}
+
+                {{#unless session.user.isAuthorOrContributor}}
+                {{#power-select
+                    selected=selectedAuthor
+                    options=availableAuthors
+                    searchField="name"
+                    onchange=(action (mut k))
+                    tagName="div"
+                    classNames="gh-contentfilter-menu gh-contentfilter-author"
+                    triggerClass="gh-contentfilter-menu-trigger"
+                    dropdownClass="gh-contentfilter-menu-dropdown"
+                    searchPlaceholder="Search authors"
+                    matchTriggerWidth=false
+                    data-test-author-select=true
+                    as |author|
+                }}
+                {{author.name}}
+                {{/power-select}}
+                {{/unless}}
+
+                {{#unless session.user.isContributor}}
+                {{#power-select
+                    selected=selectedTag
+                    options=availableTags
+                    searchField="name"
+                    onchange=(action (mut k))
+                    tagName="div"
+                    classNames="gh-contentfilter-menu gh-contentfilter-tag"
+                    triggerClass="gh-contentfilter-menu-trigger"
+                    dropdownClass="gh-contentfilter-menu-dropdown"
+                    searchPlaceholder="Search tags"
+                    matchTriggerWidth=false
+                    optionsComponent="power-select-vertical-collection-options"
+                    data-test-tag-select=true
+                    as |tag|
+                }}
+                {{tag.name}}
+                {{/power-select}}
+                {{/unless}}
+
+                {{#power-select
+                    selected=selectedOrder
+                    options=availableOrders
+                    searchEnabled=false
+                    onchange=(action (mut k))
+                    tagName="div"
+                    classNames="gh-contentfilter-menu gh-contentfilter-sort"
+                    triggerClass="gh-contentfilter-menu-trigger"
+                    dropdownClass="gh-contentfilter-menu-dropdown"
+                    matchTriggerWidth=false
+                    data-test-order-select=true
+                    as |order|
+                }}
+                {{order.name}}
+                {{/power-select}}
+            </div>
+
             {{#link-to "editor.new" "post" class="gh-btn gh-btn-green" data-test-new-post-button=true}}<span>New post</span>{{/link-to}}
         </section>
     </header>
 
-    <div class="gh-contentfilter">
-        <div class="gh-contentfilter-left">
-            {{#power-select
-                placeholder="All posts"
-                selected=selectedType
-                options=availableTypes
-                searchField="name"
-                onchange=(action (mut k))
-                tagName="div"
-                classNames="gh-contentfilter-menu gh-contentfilter-type"
-                triggerClass="gh-contentfilter-menu-trigger"
-                dropdownClass="gh-contentfilter-menu-dropdown"
-                matchTriggerWidth=false
-                data-test-type-select=true
-                as |type|
-            }}
-                {{type.name}}
-            {{/power-select}}
-
-            {{#unless session.user.isAuthorOrContributor}}
-            {{#power-select
-                placeholder="All authors"
-                selected=selectedAuthor
-                options=availableAuthors
-                searchField="name"
-                onchange=(action (mut k))
-                tagName="div"
-                classNames="gh-contentfilter-menu gh-contentfilter-author"
-                triggerClass="gh-contentfilter-menu-trigger"
-                dropdownClass="gh-contentfilter-menu-dropdown"
-                matchTriggerWidth=false
-                data-test-author-select=true
-                as |author|
-            }}
-                {{author.name}}
-            {{/power-select}}
-            {{/unless}}
-
-            {{#power-select
-                placeholder="All tags"
-                selected=selectedTag
-                options=availableTags
-                searchField="name"
-                onchange=(action (mut k))
-                tagName="div"
-                classNames="gh-contentfilter-menu gh-contentfilter-tag"
-                triggerClass="gh-contentfilter-menu-trigger"
-                dropdownClass="gh-contentfilter-menu-dropdown"
-                searchPlaceholder="Search tags"
-                matchTriggerWidth=false
-                data-test-tag-select=true
-                as |tag|
-            }}
-                {{tag.name}}
-            {{/power-select}}
-        </div>
-        <div class="gh-contentfilter-right">
-            Sort by:
-            {{#power-select
-                selected=selectedOrder
-                options=availableOrders
-                searchEnabled=false
-                onchange=(action (mut k))
-                tagName="div"
-                classNames="gh-contentfilter-menu gh-contentfilter-sort"
-                triggerClass="gh-contentfilter-menu-trigger"
-                dropdownClass="gh-contentfilter-menu-dropdown"
-                horizontalPosition="right"
-                matchTriggerWidth=false
-                data-test-order-select=true
-                as |order|
-            }}
-                {{order.name}}
-            {{/power-select}}
-        </div>
-    </div>
-
     <div class="gh-content">
-        {{gh-loading-spinner}}
+        {{gh-loading-list}}
     </div>
 </section>
