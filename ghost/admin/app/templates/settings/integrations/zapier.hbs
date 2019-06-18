@@ -1,17 +1,18 @@
 <section class="gh-canvas">
-    <header class="gh-canvas-header">
+    <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
-            {{#link-to "settings.integrations"}}Integrations{{/link-to}}
+            {{#link-to "settings.integrations" data-test-link="integrations-back"}}Integrations{{/link-to}}
             <span>{{svg-jar "arrow-right"}}</span>
             Zapier
         </h2>
-    </header>
+    </GhCanvasHeader>
 
-    <section class="view-container">
-        <br>
+    <section class="view-container bt b--lightgrey-d1 pt5">
         <section class="app-grid">
             <div class="app-cell">
-                <img class="app-icon" src="assets/img/zapiericon.png" />
+                <div class="bg-white mr3 display flex items-center justify-center br-pill shadow-1 pa3">
+                    <img class="app-icon" src="assets/img/zapiericon.png" />
+                </div>
             </div>
             <div class="app-cell">
                 <h3>Zapier</h3>
@@ -19,8 +20,8 @@
             </div>
         </section>
 
-        <div class="m15 ba br3 b--lightgrey mt4">
-            <table class="ma0" style="table-layout: fixed">
+        <div class="m15 mt4">
+            <table class="ma0 shadow-1 bg-grouped-table br3" style="table-layout: fixed">
                 <tbody>
                     <tr class="bb b--lightgrey">
                         <td class="pa3 w50 fw7">Admin API Key</td>

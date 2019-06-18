@@ -116,7 +116,8 @@
 /* Google SERP Preview */
 .seo-preview {
     font-family: Arial, sans-serif;
-    background: #fff;
+    background: var(--whitegrey-l2);
+    border: 1px solid var(--whitegrey);
     padding: 10px 12px;
 }
 
@@ -333,7 +334,7 @@
 .gh-editor-status {
     color: var(--midgrey);
     font-size: 1.3rem;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .gh-editor-container {
@@ -347,7 +348,7 @@
 
 .gh-editor-inner {
     height: 100%;
-    max-width: 760px;
+    max-width: 740px;
     margin: 0 auto;
 }
 
@@ -363,6 +364,12 @@
     font-weight: 700;
     letter-spacing: 0.04rem;
     overflow: hidden;
+    box-shadow: none;
+}
+
+.gh-editor-title:focus {
+    box-shadow: none !important;
+    border: none !important;
 }
 
 .gh-editor-wordcount {
@@ -508,7 +515,7 @@
 
 .gh-editor .gh-editor-title,
 .gh-markdown-editor .CodeMirror-wrap {
-    max-width: 760px;
+    max-width: 740px;
     margin-right: auto;
     margin-left: auto;
     border: none;

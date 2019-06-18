@@ -6,6 +6,13 @@
     border: none;
     cursor: pointer;
     text-shadow: none;
+    background: none;
+    box-shadow: none;
+}
+
+.gh-publishmenu-trigger:hover {
+    background: none;
+    box-shadow: none;
 }
 
 .gh-publishmenu-trigger svg {
@@ -79,6 +86,7 @@
 
 .gh-publishmenu-button {
     float: right;
+    margin-left: 8px;
 }
 
 .gh-publishmenu-radio {
@@ -155,10 +163,10 @@
     position: relative;
     margin: 7px 0 4px;
     padding: 6px 8px;
-    border: color-mod(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
+    border: transparent 1px solid;
     border-radius: 3px;
     transition: border-color 0.15s linear;
-    background: #fff;
+    background: var(--input-bg-color);
 }
 
 .gh-date-time-picker-time {
@@ -181,6 +189,7 @@
     line-height: 1em;
     font-weight: 400;
     user-select: text;
+    background: transparent;
 
     -webkit-appearance: none;
 }

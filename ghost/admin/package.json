@@ -27,6 +27,7 @@
   "devDependencies": {
     "@ember/jquery": "0.6.1",
     "@ember/optional-features": "0.7.0",
+    "@ember/render-modifiers": "1.0.0",
     "@html-next/vertical-collection": "1.0.0-beta.13",
     "@tryghost/helpers": "1.1.6",
     "@tryghost/kg-clean-basic-html": "0.1.1",

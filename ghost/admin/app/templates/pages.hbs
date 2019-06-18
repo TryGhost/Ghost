@@ -1,93 +1,98 @@
 <section class="gh-canvas">
-    <header class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>Your pages</h2>
+    <GhCanvasHeader class="gh-canvas-header post-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>Pages</h2>
         <section class="view-actions">
+            <div class="gh-contentfilter">
+                {{#unless session.user.isContributor}}
+                {{#power-select
+                    selected=selectedType
+                    options=availableTypes
+                    searchEnabled=false
+                    onchange=(action "changeType")
+                    tagName="div"
+                    classNames=typeClassNames
+                    triggerClass="gh-contentfilter-menu-trigger"
+                    dropdownClass="gh-contentfilter-menu-dropdown"
+                    matchTriggerWidth=false
+                    data-test-type-select=true
+                    as |type|
+                }}
+                    {{type.name}}
+                {{/power-select}}
+                {{/unless}}
+
+                {{#unless session.user.isAuthorOrContributor}}
+                {{#power-select
+                    selected=selectedAuthor
+                    options=availableAuthors
+                    searchField="name"
+                    onchange=(action "changeAuthor")
+                    tagName="div"
+                    classNames=authorClassNames
+                    triggerClass="gh-contentfilter-menu-trigger"
+                    dropdownClass="gh-contentfilter-menu-dropdown"
+                    searchPlaceholder="Search authors"
+                    matchTriggerWidth=false
+                    data-test-author-select=true
+                    as |author|
+                }}
+                    {{author.name}}
+                {{/power-select}}
+                {{/unless}}
+
+                {{#unless session.user.isContributor}}
+                {{#power-select
+                    selected=selectedTag
+                    options=availableTags
+                    searchField="name"
+                    onchange=(action "changeTag")
+                    tagName="div"
+                    classNames=tagClassNames
+                    triggerClass="gh-contentfilter-menu-trigger"
+                    dropdownClass="gh-contentfilter-menu-dropdown"
+                    searchPlaceholder="Search tags"
+                    matchTriggerWidth=false
+                    optionsComponent="power-select-vertical-collection-options"
+                    data-test-tag-select=true
+                    as |tag|
+                }}
+                    {{tag.name}}
+                {{/power-select}}
+                {{/unless}}
+
+                {{#power-select
+                    selected=selectedOrder
+                    options=availableOrders
+                    searchEnabled=false
+                    onchange=(action "changeOrder")
+                    tagName="div"
+                    classNames="gh-contentfilter-menu gh-contentfilter-sort"
+                    triggerClass="gh-contentfilter-menu-trigger"
+                    dropdownClass="gh-contentfilter-menu-dropdown"
+                    matchTriggerWidth=false
+                    data-test-order-select=true
+                    as |order|
+                }}
+                    {{order.name}}
+                {{/power-select}}
+            </div>
+
             {{#link-to "editor.new" "page" class="gh-btn gh-btn-green" data-test-new-page-button=true}}<span>New page</span>{{/link-to}}
         </section>
-    </header>
-    <div class="gh-contentfilter">
-        <div class="gh-contentfilter-left">
-            {{#unless session.user.isContributor}}
-            {{#power-select
-                selected=selectedType
-                options=availableTypes
-                searchEnabled=false
-                onchange=(action "changeType")
-                tagName="div"
-                classNames="gh-contentfilter-menu gh-contentfilter-type"
-                triggerClass="gh-contentfilter-menu-trigger"
-                dropdownClass="gh-contentfilter-menu-dropdown"
-                matchTriggerWidth=false
-                data-test-type-select=true
-                as |type|
-            }}
-                {{type.name}}
-            {{/power-select}}
-            {{/unless}}
-
-            {{#unless session.user.isAuthorOrContributor}}
-            {{#power-select
-                selected=selectedAuthor
-                options=availableAuthors
-                searchField="name"
-                onchange=(action "changeAuthor")
-                tagName="div"
-                classNames="gh-contentfilter-menu gh-contentfilter-author"
-                triggerClass="gh-contentfilter-menu-trigger"
-                dropdownClass="gh-contentfilter-menu-dropdown"
-                searchPlaceholder="Search authors"
-                matchTriggerWidth=false
-                data-test-author-select=true
-                as |author|
-            }}
-                {{author.name}}
-            {{/power-select}}
-            {{/unless}}
-
-            {{#unless session.user.isContributor}}
-            {{#power-select
-                selected=selectedTag
-                options=availableTags
-                searchField="name"
-                onchange=(action "changeTag")
-                tagName="div"
-                classNames="gh-contentfilter-menu gh-contentfilter-tag"
-                triggerClass="gh-contentfilter-menu-trigger"
-                dropdownClass="gh-contentfilter-menu-dropdown"
-                searchPlaceholder="Search tags"
-                matchTriggerWidth=false
-                optionsComponent="power-select-vertical-collection-options"
-                data-test-tag-select=true
-                as |tag|
-            }}
-                {{tag.name}}
-            {{/power-select}}
-            {{/unless}}
-        </div>
-
-        <div class="gh-contentfilter-right">
-            Sort by:
-            {{#power-select
-                selected=selectedOrder
-                options=availableOrders
-                searchEnabled=false
-                onchange=(action "changeOrder")
-                tagName="div"
-                classNames="gh-contentfilter-menu gh-contentfilter-sort"
-                triggerClass="gh-contentfilter-menu-trigger"
-                dropdownClass="gh-contentfilter-menu-dropdown"
-                horizontalPosition="right"
-                matchTriggerWidth=false
-                data-test-order-select=true
-                as |order|
-            }}
-                {{order.name}}
-            {{/power-select}}
-        </div>
-    </div>
+    </GhCanvasHeader>
 
     <section class="content-list">
-        <ol class="posts-list">
+        <ol class="gh-list {{unless postsInfinityModel "no-posts"}}">
+            {{#if postsInfinityModel}}
+                <li class="gh-list-row header">
+                    <div class="gh-list-header">{{!--Favorite indicator column: no header--}}</div>
+                    <div class="gh-list-header gh-posts-title-header">Title</div>
+                    <div class="gh-list-header">Status</div>
+                    <div class="gh-list-header">Last update</div>
+                    <div class="gh-list-header">Authors</div>
+                </li>
+            {{/if}}
+
             {{#each postsInfinityModel as |page|}}
                 {{gh-posts-list-item
                     post=page
@@ -99,10 +104,14 @@
                         {{#if showingAll}}
                             {{svg-jar "pages-placeholder" class="gh-pages-placeholder"}}
                             <h3>You haven't created any pages yet!</h3>
-                            {{#link-to "editor.new" "page"}}<button type="button" class="gh-btn gh-btn-green gh-btn-lg"><span>Create a new page</span></button>{{/link-to}}
+                            {{#link-to "editor.new" "page" class="gh-btn gh-btn-green gh-btn-lg"}}
+                                <span>Create a new page</span>
+                            {{/link-to}}
                         {{else}}
                             <h3>No pages match the current filter</h3>
-                            {{#link-to "pages.index" (query-params type=null author=null tag=null)}}<button type="button" class="gh-btn gh-btn-lg"><span>Show all pages</span></button>{{/link-to}}
+                            {{#link-to "pages" (query-params type=null author=null tag=null) class="gh-btn gh-btn-lg"}}
+                                <span>Show all pages</span>
+                            {{/link-to}}
                         {{/if}}
                     </div>
                 </li>

@@ -7,10 +7,10 @@
     padding: 40px;
     max-width: 400px;
     width: 100%;
-    border: #dae1e3 1px solid;
-    background: #f8fbfd;
+    background: #fff;
     border-radius: 5px;
     text-align: left;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.05), 0 20px 45px -10px rgba(0, 0, 0, 0.1);
 }
 
 .gh-signin .form-group {
@@ -31,17 +31,18 @@
 
 .forgotten-wrap .forgotten-link {
     position: absolute;
-    top: 10px;
+    top: 7px;
     right: 1px;
-    bottom: 10px;
+    bottom: 7px;
     border-left: color-mod(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
     border-radius: 0;
 }
 .forgotten-link span {
-    height: 20px;
+    height: 19px;
     font-size: 1.1rem;
-    line-height: 20px;
+    line-height: 19px;
     padding: 0 11px 0 12px;
+    margin-top: -1px;
 }
 
 .forgotten-link:hover {

@@ -21,7 +21,14 @@
 }
 
 .subscribers-table th {
-    padding: 8px 0 15px;
+    padding: 4px 0;
+}
+
+.subscribers-table th a {
+    color: var(--midlightgrey);
+    font-size: 1.2rem;
+    font-weight: 500;
+    text-transform: uppercase;
 }
 
 .subscribers-table td {

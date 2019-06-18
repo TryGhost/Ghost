@@ -12,7 +12,8 @@ export default Route.extend({
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: 'Error'
+            titleToken: 'Error',
+            mainClasses: ['gh-main-white']
         };
     }
 });

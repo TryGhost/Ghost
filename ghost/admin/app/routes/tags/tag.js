@@ -13,7 +13,7 @@ export default AuthenticatedRoute.extend({
 
     setupController(controller, model) {
         this._super(...arguments);
-        this.controllerFor('settings.tags').scrollTagIntoView(model);
+        this.controllerFor('tags').scrollTagIntoView(model);
     },
 
     // reset the model so that mobile screens react to an empty selectedTag

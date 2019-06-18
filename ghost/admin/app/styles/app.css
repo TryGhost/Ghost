@@ -37,6 +37,8 @@
 @import "components/tour.css";
 @import "components/unsplash.css";
 @import "components/codemirror.css";
+@import "components/lists.css";
+@import "components/tabs.css";
 
 
 /* Layouts: Groups of Components

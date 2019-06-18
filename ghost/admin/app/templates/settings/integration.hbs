@@ -1,6 +1,6 @@
 <section class="gh-canvas">
     <form class="mb15" {{action (perform "save") on="submit"}}>
-        <header class="gh-canvas-header">
+        <GhCanvasHeader class="gh-canvas-header">
             <h2 class="gh-canvas-title" data-test-screen-title>
                 {{#link-to "settings.integrations" data-test-link="integrations-back"}}Integrations{{/link-to}}
                 <span>{{svg-jar "arrow-right"}}</span>
@@ -9,169 +9,170 @@
             <section class="view-actions">
                 {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-button="save"}}
             </section>
-        </header>
+        </GhCanvasHeader>
 
-        <div class="flex">
-            <div class="flex flex-column mr8 items-start">
-                <label>Icon</label>
-                <figure class="relative flex items-center h-100 ma0 br4 hide-child ba b--whitegrey-d2 pa8 mt1" style={{iconImageStyle}}>
-                    {{#aspect-ratio-box class="flex items-center h-100" ratio="1/1" base="height"}}
-                        {{#unless integration.iconImage}}
-                            {{svg-jar "integration" class="w14 h14"}}
-                        {{/unless}}
-                    {{/aspect-ratio-box}}
+        <h4 class="midlightgrey f-small fw5 ttu">Configuration</h4>
+        <div class="pa5 pt3 pb3 br4 shadow-1 bg-grouped-table mt2">
+            <div class="flex">
+                <div class="flex flex-column items-start">
+                    <label class="mb1">Icon</label>
+                    <figure class="relative flex items-center h-100 ma0 br4 hide-child ba b--whitegrey-d2 pa8 bg-white" style={{iconImageStyle}}>
+                        {{#aspect-ratio-box class="flex items-center h-100" ratio="1/1" base="height"}}
+                            {{#unless integration.iconImage}}
+                                {{svg-jar "integration" class="w11 h11"}}
+                            {{/unless}}
+                        {{/aspect-ratio-box}}
 
-                    {{#gh-uploader
-                        extensions=imageExtensions
-                        onComplete=(action "setIconImage")
-                        as |uploader|
+                        {{#gh-uploader
+                            extensions=imageExtensions
+                            onComplete=(action "setIconImage")
+                            as |uploader|
+                        }}
+                            {{#if uploader.isUploading}}
+                                <div class="absolute top-0 left-0 w-100 h-100 br4 bg-black-70 flex items-center">
+                                    {{uploader.progressBar}}
+                                    </div>
+                            {{else}}
+                                <button
+                                    type="button"
+                                    class="child absolute top-0 left-0 w-100 h-100 br4 b white text-center bg-black-70 f8"
+                                    {{action "triggerIconFileDialog"}}
+                                >
+                                    Upload
+                                </button>
+                            {{/if}}
+                            <div style="display:none">
+                                {{gh-file-input
+                                    name="iconImage"
+                                    multiple=false
+                                    action=uploader.setFiles
+                                    accept=imageMimeTypes
+                                    data-test-file-input="icon"}}
+                            </div>
+                        {{/gh-uploader}}
+                    </figure>
+                </div>
+                <div class="flex-auto ml12">
+                    {{#gh-validation-status-container
+                        class="flex flex-column w-100 mr3"
+                        errors=integration.errors
+                        hasValidated=integration.hasValidated
+                        property="name"
                     }}
-                        {{#if uploader.isUploading}}
-                            <div class="absolute top-0 left-0 w-100 h-100 br4 bg-black-70 flex items-center">
-                                {{uploader.progressBar}}
+                        <label for="integration_name">Name</label>
+                        {{gh-text-input
+                            id="integration_name"
+                            class="gh-input mt1 mb1"
+                            type="text"
+                            value=(readonly integration.name)
+                            input=(action (mut integration.name) value="target.value")
+                            focus-out=(action "validate" "name" target=integration)
+                            data-test-input="name"
+                        }}
+                        {{gh-error-message errors=integration.errors property="name" data-test-error="name" class="ma0"}}
+                    {{/gh-validation-status-container}}
+
+                    {{#gh-validation-status-container
+                        class="flex flex-column w-100 mr3"
+                        errors=integration.errors
+                        hasValidated=integration.hasValidated
+                        property="decription"
+                    }}
+                        <label for="integration_description" class="mt3">Description</label>
+                        {{gh-text-input
+                            id="integration_description"
+                            class="gh-input mt1"
+                            type="text"
+                            value=(readonly integration.description)
+                            input=(action (mut integration.description) value="target.value")
+                            focus-out=(action "validate" "description" target=integration)
+                            data-test-input="description"
+                        }}
+                        {{gh-error-message errors=integration.errors property="description" data-test-error="description" class="ma0"}}
+                    {{/gh-validation-status-container}}
+                </div>
+            </div>
+            <table class="ma0 mt5" style="table-layout: fixed">
+                <tbody>
+                    <tr>
+                        <td class="pa3 pl0 fw7 f8 w35">Content API Key</td>
+                        <td class="pa0 truncate bb b--lightgrey">
+                            <div class="pt3 pb3 relative truncate {{unless copyContentKey.isRunning "hide-child-instant"}}">
+                                <span class="midlightgrey" data-test-text="content-key">
+                                    {{this.integration.contentKey.secret}}
+                                </span>
+                                <div class="absolute top-1 right-0">
+                                    <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
+                                        <button type="button" {{action (perform copyContentKey)}}
+                                            class="white fw4 flex items-center">
+                                            {{#if copyContentKey.isRunning}}
+                                            {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
+                                            {{else}}
+                                            Copy
+                                            {{/if}}
+                                        </button>
+                                    </div>
                                 </div>
-                        {{else}}
-                            <button
-                                type="button"
-                                class="child absolute top-0 left-0 w-100 h-100 br4 b white text-center bg-black-70 f8"
-                                {{action "triggerIconFileDialog"}}
-                            >
-                                Upload
-                            </button>
-                        {{/if}}
-                        <div style="display:none">
-                            {{gh-file-input
-                                name="iconImage"
-                                multiple=false
-                                action=uploader.setFiles
-                                accept=imageMimeTypes
-                                data-test-file-input="icon"}}
-                        </div>
-                    {{/gh-uploader}}
-                </figure>
-            </div>
-            <div class="flex-auto">
-                {{#gh-validation-status-container
-                    class="flex flex-column w-100 mr3"
-                    errors=integration.errors
-                    hasValidated=integration.hasValidated
-                    property="name"
-                }}
-                    <label for="integration_name">Name</label>
-                    {{gh-text-input
-                        id="integration_name"
-                        class="gh-input mt1 mb1"
-                        type="text"
-                        value=(readonly integration.name)
-                        input=(action (mut integration.name) value="target.value")
-                        focus-out=(action "validate" "name" target=integration)
-                        data-test-input="name"
-                    }}
-                    {{gh-error-message errors=integration.errors property="name" data-test-error="name" class="ma0"}}
-                {{/gh-validation-status-container}}
-
-                {{#gh-validation-status-container
-                    class="flex flex-column w-100 mr3"
-                    errors=integration.errors
-                    hasValidated=integration.hasValidated
-                    property="decription"
-                }}
-                    <label for="integration_description" class="mt3">Description</label>
-                    {{gh-text-input
-                        id="integration_description"
-                        class="gh-input mt1"
-                        type="text"
-                        value=(readonly integration.description)
-                        input=(action (mut integration.description) value="target.value")
-                        focus-out=(action "validate" "description" target=integration)
-                        data-test-input="description"
-                    }}
-                    {{gh-error-message errors=integration.errors property="description" data-test-error="description" class="ma0"}}
-                {{/gh-validation-status-container}}
-            </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="pa3 pl0 w50 fw7 f8 w35">Admin API Key</td>
+                        <td class="pa0 truncate bb b--lightgrey">
+                            <div class="pt3 pb3 relative truncate {{unless copyAdminKey.isRunning "hide-child-instant"}}">
+                                <span class="midlightgrey" data-test-text="admin-key">
+                                    {{this.integration.adminKey.secret}}
+                                </span>
+                                <div class="absolute top-1 right-0">
+                                    <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
+                                        <button type="button" {{action (perform copyAdminKey)}} class="white fw4 flex items-center">
+                                            {{#if copyAdminKey.isRunning}}
+                                            {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
+                                            {{else}}
+                                            Copy
+                                            {{/if}}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="pa3 pl0 w50 fw7 f8 w35">API URL</td>
+                        <td class="pa0 truncate">
+                            <div class="pt3 pb3 relative truncate {{unless copyApiUrl.isRunning "hide-child-instant"}}">
+                                <span class="midlightgrey" data-test-text="api-url">
+                                    {{this.apiUrl}}
+                                </span>
+                                <div class="absolute top-1 right-0">
+                                    <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
+                                        <button type="button" {{action (perform copyApiUrl)}} class="white fw4 flex items-center">
+                                            {{#if copyApiUrl.isRunning}}
+                                            {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
+                                            {{else}}
+                                            Copy
+                                            {{/if}}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </form>
 
-    <div class="m15 ba br3 b--lightgrey mt4">
-        <table class="ma0" style="table-layout: fixed">
-            <tbody>
-                <tr class="bb b--lightgrey">
-                    <td class="pa3 w50 fw7">Content API Key</td>
-                    <td class="pa0 truncate">
-                        <div class="pa3 relative truncate {{unless copyContentKey.isRunning "hide-child-instant"}}">
-                            <span class="midgrey" data-test-text="content-key">
-                                {{this.integration.contentKey.secret}}
-                            </span>
-                            <div class="absolute top-1 right-1">
-                                <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--5">
-                                    <button type="button" {{action (perform copyContentKey)}} class="white fw4 flex items-center">
-                                        {{#if copyContentKey.isRunning}}
-                                            {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
-                                        {{else}}
-                                            Copy
-                                        {{/if}}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr class="bb b--lightgrey">
-                    <td class="pa3 w50 fw7">Admin API Key</td>
-                    <td class="pa0">
-                        <div class="pa3 relative truncate {{unless copyAdminKey.isRunning "hide-child-instant"}}">
-                            <span class="midgrey" data-test-text="admin-key">
-                                {{this.integration.adminKey.secret}}
-                            </span>
-                            <div class="absolute top-1 right-2">
-                                <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
-                                    <button type="button" {{action (perform copyAdminKey)}} class="white fw4 flex items-center">
-                                        {{#if copyAdminKey.isRunning}}
-                                            {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
-                                        {{else}}
-                                            Copy
-                                        {{/if}}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="pa3 w50 fw7">API URL</td>
-                    <td class="pa0 truncate">
-                        <div class="pa3 relative truncate {{unless copyApiUrl.isRunning "hide-child-instant"}}">
-                            <span class="midgrey" data-test-text="api-url">
-                                {{this.apiUrl}}
-                            </span>
-                            <div class="absolute top-1 right-2">
-                                <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
-                                    <button type="button" {{action (perform copyApiUrl)}} class="white fw4 flex items-center">
-                                        {{#if copyApiUrl.isRunning}}
-                                            {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
-                                        {{else}}
-                                            Copy
-                                        {{/if}}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <h4 class="mt15 midgrey f7 fw4">Webhooks</h4>
-    <div class="ba br3 b--lightgrey mt4">
-        <table class="ma0 w-100">
+    <h4 class="mt15 midlightgrey f-small fw5 ttu">Webhooks</h4>
+    <div class="mt2">
+        <table class="ma0 w-100 bg-grouped-table shadow-1 br3">
             <thead>
                 <tr>
-                    <th class="pa2 pl3 midlightgrey fw4 f8 bg-whitegrey-l2 br3 br--top br--left fw6">Name</th>
-                    <th class="pa2 pl3 midlightgrey fw4 f8 bg-whitegrey-l2 br3 fw6">Event</th>
-                    <th class="pa2 pl3 midlightgrey fw4 f8 bg-whitegrey-l2 br3 fw6">URL</th>
-                    <th class="pa2 pl3 midlightgrey fw4 f8 bg-whitegrey-l2 br3 fw6">Last triggered</th>
-                    <th class="pa2 pl3 bg-whitegrey-l2 br3 br--top br--right"></th>
+                    <th class="pa2 pl3 midlightgrey ttu fw4 f-small br3 br--top br--left fw5">Name</th>
+                    <th class="pa2 pl3 midlightgrey ttu fw4 f-small br3 fw5">Event</th>
+                    <th class="pa2 pl3 midlightgrey ttu fw4 f-small br3 fw5">URL</th>
+                    <th class="pa2 pl3 midlightgrey ttu fw4 f-small br3 fw5">Last triggered</th>
+                    <th class="pa2 pl3 ttu br3 br--top br--right"></th>
                 </tr>
             </thead>
             <tbody>

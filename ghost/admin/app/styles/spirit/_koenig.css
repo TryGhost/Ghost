@@ -61,37 +61,37 @@
 }
 
 .koenig-editor__editor h1 {
-    font-size: 3.3rem;
+    font-size: 3.2rem;
     line-height: 1.4em;
     letter-spacing: .04rem;
 }
 
 .koenig-editor__editor h2 {
-    font-size: 2.8rem;
+    font-size: 2.7rem;
     line-height: 1.4em;
     letter-spacing: .04rem;
 }
 
 .koenig-editor__editor h3 {
-    font-size: 2.3rem;
+    font-size: 2.2rem;
     line-height: 1.6em;
     letter-spacing: .04rem;
 }
 
 .koenig-editor__editor h4 {
-    font-size: 2.0rem;
+    font-size: 1.92rem;
     line-height: 1.4em;
     letter-spacing: .04rem;
 }
 
 .koenig-editor__editor h5 {
-    font-size: 1.9rem;
+    font-size: 1.8rem;
     line-height: 1.4em;
     letter-spacing: .06rem;
 }
 
 .koenig-editor__editor h6 {
-    font-size: 1.75rem;
+    font-size: 1.65rem;
     line-height: 1.6em;
     letter-spacing: .04rem;
 }
@@ -239,25 +239,25 @@
 .koenig-editor__editor ol
  {
     font-family: georgia,serif;
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: .02rem;
     line-height: 1.6em;
-    font-size: 2rem;
+    font-size: 1.92rem;
 }
 
 .koenig-editor__editor h1 + p {
-    margin: 1.2rem 0 0;
+    margin: 1.0rem 0 0;
 }
 
 .koenig-editor__editor h2 + p {
-    margin: 0.8rem 0 0;
+    margin: 0.52rem 0 0;
 }
 
 .koenig-editor__editor h3 + p,
 .koenig-editor__editor h4 + p,
 .koenig-editor__editor h5 + p,
 .koenig-editor__editor h6 + p {
-    margin: .8rem 0 0;
+    margin: 0.52rem 0 0;
 }
 
 .koenig-editor__editor p + p,
@@ -265,7 +265,7 @@
 .koenig-editor__editor ul + p,
 .koenig-editor__editor ol + p
  {
-    margin: 3.2rem 0 0;
+    margin: 3.6rem 0 0;
 }
 
 .koenig-editor__editor div + p { /* Mobiledoc cards can be addressed by their wrapper div element */
@@ -305,7 +305,10 @@
 }
 
 .koenig-editor__editor p + ul:not(.kg-action-bar):not(.kg-link-toolbar),
-.koenig-editor__editor p + ol,
+.koenig-editor__editor p + ol {
+    margin: 1.0rem 0 0;
+}
+
 .koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar) + ul:not(.kg-action-bar):not(.kg-link-toolbar),
 .koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar) + ol,
 .koenig-editor__editor ol + ul:not(.kg-action-bar):not(.kg-link-toolbar),
@@ -715,7 +718,7 @@
 
 .kg-action-bar:after {
     position: absolute;
-    top: 40px;
+    top: 36px;
     left: calc(50% - 8px);
     width: 0;
     border-top: 8px solid var(--darkgrey-d1);
@@ -765,7 +768,7 @@
 }
 
 .koenig-editor {
-    max-width: 760px;
+    max-width: 740px;
 }
 
 /* ⨁ menu

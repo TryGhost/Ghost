@@ -116,6 +116,30 @@ export default Controller.extend({
         return authors.findBy('slug', author);
     }),
 
+    typeClassNames: computed('type', function () {
+        let classNames = 'gh-contentfilter-menu gh-contentfilter-type';
+        if (this.get('type')) {
+            classNames = classNames + ' gh-contentfilter-selected';
+        }
+        return classNames;
+    }),
+
+    authorClassNames: computed('author', function () {
+        let classNames = 'gh-contentfilter-menu gh-contentfilter-author';        
+        if (this.get('author')) {
+            classNames = classNames + ' gh-contentfilter-selected';
+        }
+        return classNames;
+    }),
+
+    tagClassNames: computed('tag', function () {
+        let classNames = 'gh-contentfilter-menu gh-contentfilter-tag';
+        if (this.get('tag')) {
+            classNames = classNames + ' gh-contentfilter-selected';
+        }
+        return classNames;
+    }),
+
     actions: {
         changeType(type) {
             this.set('type', get(type, 'value'));

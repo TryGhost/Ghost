@@ -17,7 +17,7 @@
     display: flex;
     margin-top: 5px;
     padding: 4px;
-    width: 240px;
+    width: 232px;
     border: color-mod(var(--blue) l(-10%)) 1px solid;
     background: var(--blue);
     border-radius: 4px;

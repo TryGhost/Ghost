@@ -4,7 +4,7 @@ import {alias} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default Controller.extend({
-    tagsController: controller('settings.tags'),
+    tagsController: controller('tags'),
     notifications: service(),
     router: service(),
 
@@ -47,7 +47,7 @@ export default Controller.extend({
 
         tag.save().then((savedTag) => {
             // replace 'new' route with 'tag' route
-            this.replaceRoute('settings.tags.tag', savedTag);
+            this.replaceRoute('tags.tag', savedTag);
 
             // update the URL if the slug changed
             if (propKey === 'slug' && !isNewTag) {
@@ -79,8 +79,8 @@ export default Controller.extend({
     _deleteTagSuccess() {
         let currentRoute = this.router.currentRouteName || '';
 
-        if (currentRoute.match(/^settings\.tags/)) {
-            this.transitionToRoute('settings.tags.index');
+        if (currentRoute.match(/^tags/)) {
+            this.transitionToRoute('tags.index');
         }
     },
 

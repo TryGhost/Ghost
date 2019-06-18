@@ -74,7 +74,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
         },
 
         newTag() {
-            this.transitionTo('settings.tags.new');
+            this.transitionTo('tags.new');
         },
 
         resetShortcutsScope() {
@@ -84,12 +84,12 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: 'Settings - Tags'
+            titleToken: 'Tags'
         };
     },
 
     stepThroughTags(step) {
-        let currentTag = this.modelFor('settings.tags.tag');
+        let currentTag = this.modelFor('tags.tag');
         let tags = this.get('controller.sortedTags');
         let length = tags.get('length');
 
@@ -102,7 +102,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
                 return;
             }
 
-            this.transitionTo('settings.tags.tag', tags.objectAt(newPosition));
+            this.transitionTo('tags.tag', tags.objectAt(newPosition));
         }
     },
 

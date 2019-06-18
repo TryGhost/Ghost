@@ -29,7 +29,7 @@
     z-index: 50;
     height: 100vh;
     background: #324750;
-    opacity: 0.75;
+    opacity: 0.6;
 }
 
 .fullscreen-modal {
@@ -39,6 +39,10 @@
     margin-top: 30px;
     margin-bottom: 30px;
     max-width: 550px;
+    pointer-events: none;
+}
+
+.fullscreen-modal * {
     pointer-events: auto;
 }
 
@@ -70,11 +74,11 @@
 
 .modal-content {
     position: relative;
-    padding: 40px;
+    padding: 32px;
     background-color: #fff;
     background-clip: padding-box;
     border-radius: 6px;
-    box-shadow: 1px 3px 8px rgba(0,0,0,.09), 8px 14px 38px rgba(0,0,0,.15);
+    box-shadow: 1px 3px 8px rgba(0,0,0,.09), 2px 32px 38px -20px rgba(0,0,0,0.25);
 }
 
 .modal-content * {

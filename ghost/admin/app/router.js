@@ -23,8 +23,8 @@ Router.map(function () {
     this.route('about');
     this.route('site');
 
-    this.route('posts', function () {});
-    this.route('pages', function () {});
+    this.route('posts');
+    this.route('pages');
 
     this.route('editor', function () {
         this.route('new', {path: ':type'});
@@ -35,11 +35,12 @@ Router.map(function () {
         this.route('user', {path: ':user_slug'});
     });
 
-    this.route('settings.general', {path: '/settings/general'});
-    this.route('settings.tags', {path: '/settings/tags'}, function () {
+    this.route('tags', function () {
         this.route('tag', {path: ':tag_slug'});
         this.route('new');
     });
+
+    this.route('settings.general', {path: '/settings/general'});
     this.route('settings.labs', {path: '/settings/labs'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
     this.route('settings.design', {path: '/settings/design'}, function () {

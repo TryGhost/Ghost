@@ -1,0 +1,187 @@
+.gh-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--white);
+    display: table;
+    width: 100%;
+    border-radius: 5px;
+    box-shadow: var(--shadow-1);
+}
+
+.gh-list.tabbed {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+.gh-list-row {
+    display: table-row;
+}
+
+.gh-list-row:not(.header):not(.loading):hover .gh-list-cell,
+.gh-list-row:not(.header):not(.loading):hover .gh-list-data {
+    background: var(--whitegrey-l2);
+}
+
+.gh-list-row:first-child .gh-list-cell:first-child,
+.gh-list-row:first-child .gh-list-data:first-child {
+    border-top-left-radius: 5px;
+}
+
+.gh-list-row:first-child .gh-list-cell:last-child,
+.gh-list-row:first-child .gh-list-data:last-child {
+    border-top-right-radius: 5px;
+}
+
+.gh-list-row:last-child .gh-list-cell:first-child,
+.gh-list-row:last-child .gh-list-data:first-child {
+    border-bottom-left-radius: 5px;
+}
+
+.gh-list-row:last-child .gh-list-cell:last-child,
+.gh-list-row:last-child .gh-list-data:last-child {
+    border-bottom-right-radius: 5px;
+}
+
+.gh-list-cell {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.gh-list-header {
+    display: table-cell;
+    vertical-align: middle;
+    border-bottom: var(--lightgrey) 1px solid;
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    color: var(--midgrey);
+    text-transform: uppercase;
+    padding: 10px 20px;
+    white-space: nowrap;
+    background: var(--whitegrey-l2);
+}
+
+.gh-list:not(.tabbed) .gh-list-header:first-child {
+    border-top-left-radius: 5px;
+}
+
+.gh-list:not(.tabbed) .gh-list-header:last-child {
+    border-top-right-radius: 5px;
+}
+
+.gh-list-data {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 16px 20px;
+    border-top: var(--whitegrey) 1px solid;
+    transition: none !important;
+}
+
+.gh-list-row:nth-of-type(2) .gh-list-data {
+    border: none;
+}
+
+.gh-list-data.show-on-hover > *,
+.gh-list-cell.show-on-hover > * {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gh-list-row:hover .gh-list-data.show-on-hover > *,
+.gh-list-row:hover .gh-list-cell.show-on-hover > * {
+    opacity: 1;
+}
+
+.gh-list-data.align-right,
+.gh-list-cell.align-right {
+    text-align: right;
+}
+
+/* Helpers for smaller sizes
+/* --------------------------------------------------- */
+
+@media (max-width: 1000px) {
+    .gh-list-header {
+        display: none;
+    }
+
+    /* Generic helper class to hide cell */
+    .gh-list-hidecell-m {
+        display: none;
+    }
+}
+
+@media (max-width: 800px) {
+    .gh-list-hidecell-s {
+        display: none;
+    }
+
+    /* Hidden elements are usually controls for the row which should
+       be shown always on mobile sizes */
+    .gh-list-cell.show-on-hover > *,
+    .gh-list-data.show-on-hover > * {
+        opacity: 1;
+    }
+
+    .gh-list-cell.force-hide-s > *,
+    .gh-list-data.force-hide-s > * {
+        opacity: 0;
+    }
+}
+
+
+/* Fake loading list
+/* -------------------------------------------------- */
+
+@keyframes placeHolderShimmer {
+    0%{
+        background-position: -800px 0
+    }
+    100%{
+        background-position: 800px 0
+    }
+}
+
+@keyframes fadeLoadingList {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.gh-list.loading {
+    opacity: 0;
+    animation: fadeLoadingList 0.3s ease 0.75s 1 forwards;
+}
+
+.gh-list-loadingcell div {
+    animation-duration: 1.5s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: infinite;
+    animation-name: placeHolderShimmer;
+    animation-timing-function: linear;
+    background: var(--lightgrey);
+    background: linear-gradient(to right, var(--lightgrey) 8%, color-mod(var(--lightgrey) l(+2%)) 18%, var(--lightgrey) 33%);
+    background-size: 800px 104px;
+    position: relative;
+    max-width: 440px;
+    height: 13px;
+}
+
+.gh-list-loadingcell:hover {
+    background: none;
+}
+
+.gh-list-loadingcell .gh-list-loading-title {
+    max-width: 440px;
+    height: 13px;
+}
+
+.gh-list-loadingcell .gh-list-loading-detail {
+    max-width: 320px;
+    height: 9px;
+    margin-top: 8px;
+}

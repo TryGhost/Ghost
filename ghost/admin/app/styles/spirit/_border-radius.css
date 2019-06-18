@@ -26,8 +26,8 @@
   .br0 {        border-radius: 0; }
   .br1 {        border-radius: .2rem; }
   .br2 {        border-radius: .3rem; }
-  .br3 {        border-radius: .4rem; }
-  .br4 {        border-radius: .8rem; }
+  .br3 {        border-radius: .5rem; }
+  .br4 {        border-radius: .9rem; }
   .br-100 {     border-radius: 100%; }
   .br-pill {    border-radius: 9999px; }
   .br--bottom {

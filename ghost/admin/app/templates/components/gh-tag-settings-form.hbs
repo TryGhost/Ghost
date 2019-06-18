@@ -1,7 +1,7 @@
 <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane tag-settings-pane">
     <div class="settings-menu-header {{if isMobile 'subview'}}">
         {{#if isMobile}}
-            {{#link-to 'settings.tags' class="back settings-menu-header-action"}}{{svg-jar "arrow-left"}}<span class="hidden">Back</span>{{/link-to}}
+            {{#link-to 'tags' class="back settings-menu-header-action"}}{{svg-jar "arrow-left"}}<span class="hidden">Back</span>{{/link-to}}
             <h4>{{title}}</h4>
             <div style="width:23px;">{{!flexbox space-between}}</div>
         {{else}}
@@ -63,7 +63,7 @@
             </ul>
 
             {{#unless tag.isNew}}
-                <button type="button" class="gh-btn gh-btn-link gh-btn-sm gh-btn-icon settings-menu-delete-button" {{action "deleteTag"}}><span>{{svg-jar "trash"}} Delete Tag</span></button>
+                <button type="button" class="gh-btn gh-btn-hover-red gh-btn-icon settings-menu-delete-button" {{action "deleteTag"}}><span>{{svg-jar "trash"}} Delete Tag</span></button>
             {{/unless}}
         </form>
     </div>

@@ -5,7 +5,7 @@ form label {
     display: block;
     color: var(--darkgrey);
     font-size: 1.3rem;
-    font-weight: bold;
+    font-weight: 600;
     user-select: text;
 }
 
@@ -38,12 +38,12 @@ input {
 
 ::-webkit-input-placeholder {
     color: color-mod(var(--midgrey) l(+18%));
-    font-weight: 200;
+    font-weight: 300;
 }
 
 :-ms-input-placeholder {
     color: color-mod(var(--midgrey) l(+18%));
-    font-weight: 200;
+    font-weight: 300;
 }
 
 .error .response {
@@ -57,7 +57,7 @@ input {
 .form-group {
     position: relative;
     width: 100%;
-    max-width: 700px;
+    max-width: 620px;
     margin-bottom: 1.6em;
     user-select: text;
 }
@@ -68,7 +68,7 @@ input {
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: var(--midgrey);
+    color: var(--midlightgrey);
     font-size: 1.25rem;
 }
 
@@ -127,16 +127,16 @@ input {
 select {
     display: block;
     width: 100%;
-    height: 40px;
-    padding: 10px 12px;
-    border: color-mod(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
-    color: color-mod(var(--midgrey) l(-18%));
-    font-size: 1.6rem;
+    height: 31px;
+    padding: 6px 12px;
+    border: var(--input-border);
+    background: var(--input-bg-color);
+    color: var(--darkgrey);
+    font-size: 1.4rem;
     line-height: 1em;
-    font-weight: 300;
+    font-weight: 400;
     user-select: text;
     border-radius: var(--border-radius);
-    transition: border-color 0.15s linear;
 
     -webkit-appearance: none;
 }
@@ -156,11 +156,16 @@ select.error {
 }
 
 .gh-input:focus,
-.gh-input.focus,
+.gh-input.focus {
+    outline: 0;
+    border-color: color-mod(var(--blue));
+    box-shadow: inset 0 0 0 1px var(--blue);
+    background: var(--white);
+}
+
 .gh-select:focus,
 select:focus {
-    outline: 0;
-    border-color: color-mod(var(--lightgrey) l(-15%) s(-10%));
+    background: color-mod(var(--input-bg-color) l(-3%));
 }
 
 textarea {
@@ -282,6 +287,71 @@ textarea {
 }
 
 
+/* Switch
+/* ---------------------------------------------------------- */
+.for-switch label {
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    width: 50px !important;
+    height: 28px !important;
+}
+
+.for-switch label p {
+    overflow: auto;
+    color: var(--darkgrey);
+    font-weight: normal;
+}
+
+.for-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.for-switch .input-toggle-component {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--whitegrey-l2);
+    border: 1px solid color-mod(var(--lightgrey) l(-3%));
+    transition: .3s;
+    width: 50px !important;
+    height: 28px !important;
+    border-radius: 999px;
+    transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.for-switch label:hover input:not(:checked) + .input-toggle-component {
+    border-color: color-mod(var(--lightgrey) l(-10%) s(-10%));
+}
+
+.for-switch .input-toggle-component:before {
+    position: absolute;
+    content: "";
+    height: 22px !important;
+    width: 22px !important;
+    left: 2px !important;
+    top: 2px !important;
+    background-color: white;
+    transition: .3s;
+    box-shadow: 0 0 1px rgba(0,0,0,.6), 0 2px 3px rgba(0,0,0,.2);
+    border-radius: 999px;
+}
+
+.for-switch input:checked + .input-toggle-component {
+    background: var(--green);
+    border-color: transparent;
+}
+
+.for-switch input:checked + .input-toggle-component:before {
+    transform: translateX(22px);
+}
+
+
 /* Select
 /* ---------------------------------------------------------- */
 
@@ -299,8 +369,8 @@ textarea {
     top: 50%;
     right: 1.2rem;
     left: inherit;
-    width: 14px;
-    height: 8px;
+    width: 12px;
+    height: 6px;
     margin-top: -0.2em;
     transform: inherit;
     pointer-events: none;
@@ -309,16 +379,15 @@ textarea {
 }
 
 .gh-select svg path {
-    stroke: color-mod(var(--midgrey) l(+15%));
+    stroke: var(--darkgrey);
 }
 
 .gh-select select {
-    padding: 10px 12px;
+    padding: 6px 12px;
     outline: none;
     line-height: normal;
     text-indent: 0.01px;
     text-overflow: "";
-    background: #fff;
 
     appearance: none;
     -webkit-appearance: none;

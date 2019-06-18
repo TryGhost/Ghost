@@ -1,10 +1,12 @@
 <section class="gh-canvas">
-    <header class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>Code injection</h2>
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            Code injection
+        </h2>
         <section class="view-actions">
             {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
         </section>
-    </header>
+    </GhCanvasHeader>
 
     {{#if showLeaveSettingsModal}}
         {{gh-fullscreen-modal "leave-settings"
@@ -13,23 +15,26 @@
             modifier="action wide"}}
     {{/if}}
 
-    <section class="view-continer">
+    <section class="view-container">
         <form id="settings-code" novalidate="novalidate">
             <fieldset>
-                <p>
+                <p class="gh-box gh-box-info">
+                    {{svg-jar "idea"}}
                     Ghost allows you to inject code into the top and bottom of your theme files without editing them. This allows for quick modifications to insert useful things like tracking codes and meta tags.
                 </p>
 
-                <div class="form-group settings-code">
-                    <label for="ghost-head">Site Header</label>
-                    <p>Code here will be injected into the <code>\{{ghost_head}}</code> tag on every page of the site</p>
-                    {{gh-cm-editor settings.codeinjectionHead id="ghost-head" class="gh-input settings-code-editor" name="codeInjection[ghost_head]" type="text" update=(action (mut settings.codeinjectionHead))}}
-                </div>
+                <div class="br3 shadow-1 bg-grouped-table pa5 pt3 pb1">
+                    <div class="form-group settings-code">
+                        <label for="ghost-head">Site Header</label>
+                        <p>Code here will be injected into the <code>\{{ghost_head}}</code> tag on every page of the site</p>
+                        {{gh-cm-editor settings.codeinjectionHead id="ghost-head" class="gh-input settings-code-editor" name="codeInjection[ghost_head]" type="text" update=(action (mut settings.codeinjectionHead))}}
+                    </div>
 
-                <div class="form-group settings-code">
-                    <label for="ghost-foot">Site Footer</label>
-                    <p>Code here will be injected into the <code>\{{ghost_foot}}</code> tag on every page of the site</p>
-                    {{gh-cm-editor settings.codeinjectionFoot id="ghost-foot" class="gh-input settings-code-editor" name="codeInjection[ghost_foot]" type="text" update=(action (mut settings.codeinjectionFoot))}}
+                    <div class="form-group settings-code">
+                        <label for="ghost-foot">Site Footer</label>
+                        <p>Code here will be injected into the <code>\{{ghost_foot}}</code> tag on every page of the site</p>
+                        {{gh-cm-editor settings.codeinjectionFoot id="ghost-foot" class="gh-input settings-code-editor" name="codeInjection[ghost_foot]" type="text" update=(action (mut settings.codeinjectionFoot))}}
+                    </div>
                 </div>
             </fieldset>
         </form>
