@@ -1,7 +1,9 @@
 <section class="gh-canvas">
-    <header class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>Integrations</h2>
-    </header>
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            Integrations
+        </h2>
+    </GhCanvasHeader>
 
     <div class="integrations-directory">
         <a class="id-item" href="https://docs.ghost.org/integrations/disqus/" target="_blank" rel="noopener noreferrer">
@@ -57,13 +59,13 @@
     <section class="apps-grid-container">
 
         {{!-- TODO: move fully to spirit and normalize spacing --}}
-        <span class="apps-grid-title pb2">Built-in integrations</span>
+        <span class="apps-grid-title pb1">Built-in integrations</span>
         <div class="apps-grid">
             <div class="apps-grid-cell" data-test-app="zapier">
                 {{#link-to "settings.integrations.zapier" data-test-link="zapier"}}
                 <article class="apps-card-app">
                     <div class="apps-card-left">
-                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/zapiericon.png);background-size:45px;"></figure>
+                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/zapiericon.png);background-size:36px;"></figure>
                         <div class="apps-card-meta">
                             <h3 class="apps-card-app-title">Zapier</h3>
                             <p class="apps-card-app-desc">Automation for your favourite apps</p>
@@ -83,7 +85,7 @@
                 {{#link-to "settings.integrations.slack" data-test-link="slack"}}
                 <article class="apps-card-app">
                     <div class="apps-card-left">
-                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/slackicon.png)"></figure>
+                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/slackicon.png); background-size: 36px;"></figure>
                         <div class="apps-card-meta">
                             <h3 class="apps-card-app-title">Slack</h3>
                             <p class="apps-card-app-desc">A messaging app for teams</p>
@@ -92,7 +94,7 @@
                     <div class="gh-card-right">
                         <div class="apps-configured">
                             {{#if settings.slack.isActive}}
-                                <span class="green" data-test-app-status>Active</span>
+                                <span class="gh-badge" data-test-app-status>Active</span>
                             {{else}}
                                 <span data-test-app-status>Configure</span>
                             {{/if}}
@@ -107,7 +109,7 @@
                 {{#link-to "settings.integrations.amp" data-test-link="amp"}}
                 <article class="apps-card-app">
                     <div class="apps-card-left">
-                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/ampicon.png)"></figure>
+                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/ampicon.png); background-size: 36px;"></figure>
                         <div class="apps-card-meta">
                             <h3 class="apps-card-app-title">AMP</h3>
                             <p class="apps-card-app-desc">Google Accelerated Mobile Pages</p>
@@ -116,7 +118,7 @@
                     <div class="gh-card-right">
                         <div class="apps-configured">
                             {{#if settings.amp}}
-                                <span class="green" data-test-app-status>Active</span>
+                                <span class="gh-badge" data-test-app-status>Active</span>
                             {{else}}
                                 <span data-test-app-status>Configure</span>
                             {{/if}}
@@ -131,7 +133,7 @@
                 {{#link-to "settings.integrations.unsplash" data-test-link="unsplash"}}
                 <article class="apps-card-app">
                     <div class="apps-card-left">
-                        <figure class="apps-card-app-icon" style="background-image:url(assets/icons/unsplash.svg);background-size:38px;"></figure>
+                        <figure class="apps-card-app-icon" style="background-image:url(assets/icons/unsplash.svg); background-size:30px;"></figure>
                         <div class="apps-card-meta">
                             <h3 class="apps-card-app-title">Unsplash</h3>
                             <p class="apps-card-app-desc">Beautiful, free photos</p>
@@ -140,7 +142,7 @@
                     <div class="gh-card-right">
                         <div class="apps-configured">
                             {{#if settings.unsplash.isActive}}
-                                <span class="green" data-test-app-status>Active</span>
+                                <span class="gh-badge" data-test-app-status>Active</span>
                             {{else}}
                                 <span data-test-app-status>Configure</span>
                             {{/if}}
@@ -155,9 +157,9 @@
         </div>
     </section>
 
-    <section class="apps-grid-container pt6">
+    <section class="apps-grid-container">
 
-        <span class="apps-grid-title pb2">Custom integrations</span>
+        <span class="apps-grid-title pb1">Custom integrations</span>
         <div class="apps-grid">
             {{#each integrations as |integration|}}
                 <div class="apps-grid-cell" data-test-custom-integration>
@@ -166,7 +168,7 @@
                             <div class="apps-card-left">
                                 <figure class="apps-card-app-icon flex items-center" style={{integration-icon-style integration}}>
                                     {{#unless integration.iconImage}}
-                                        {{svg-jar "integration" class="w-100 stroke-darkgrey"}}
+                                        {{svg-jar "integration" class="nudge-left--6 w9 stroke-darkgrey"}}
                                     {{/unless}}
                                 </figure>
                                 <div class="apps-card-meta">

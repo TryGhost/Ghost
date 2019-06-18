@@ -1,0 +1,7 @@
+.bg-grouped-table {
+    background: #212A2E;
+}
+
+.highlight-whitegrey:hover {
+    background-color: color-mod(var(--whitegrey) a(60%) s(+5%)) !important;
+}

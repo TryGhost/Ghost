@@ -123,6 +123,10 @@ export default Service.extend({
 
         openSettingsMenu() {
             this.openSettingsMenu();
+        },
+
+        setMainClass(cls) {
+            this.set('mainClass', cls);
         }
     }
 });

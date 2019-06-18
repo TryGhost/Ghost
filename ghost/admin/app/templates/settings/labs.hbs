@@ -1,320 +1,328 @@
 <section class="gh-canvas">
-    <header class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>Labs</h2>
-    </header>
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            Labs
+        </h2>
+    </GhCanvasHeader>
 
     <section class="view-container settings-debug">
         <p class="gh-box gh-box-info">{{svg-jar "idea"}}This is a testing ground for experimental features which aren't quite ready for primetime. They may change, break or inexplicably disappear at any time.</p>
 
         <div class="gh-setting-header">Migration options</div>
-        <div class="gh-setting">
-            <div class="gh-setting-content">
-                <div class="gh-setting-title">Import content</div>
-                <div class="gh-setting-desc">Import posts from another Ghost installation</div>
-            </div>
-            <div class="gh-setting-action">
-                <form id="settings-import" enctype="multipart/form-data">
-                    {{gh-file-upload
-                        id="importfile"
-                        classNames="flex"
-                        uploadButtonText=uploadButtonText
-                        onUpload=(action "onUpload")
-                        acceptEncoding=importMimeType
-                        data-test-file-input="import"}}
-                </form>
-            </div>
-        </div>
-
-        {{#if importErrors}}
-            <div class="gh-import-errors {{if importSuccessful "gh-import-errors-warning"}}" data-test-import-errors>
-                <div class="gh-import-errors-title">
-                    {{#if importSuccessful}}
-                        Import successful with warnings
-                    {{else}}
-                        Import failed
-                    {{/if}}
+        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">
+            <div class="gh-setting-first">
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Import content</div>
+                    <div class="gh-setting-desc">Import posts from another Ghost installation</div>
                 </div>
+                <div class="gh-setting-action">
+                    <form id="settings-import" enctype="multipart/form-data">
+                        {{gh-file-upload
+                            id="importfile"
+                            classNames="flex"
+                            uploadButtonText=uploadButtonText
+                            onUpload=(action "onUpload")
+                            acceptEncoding=importMimeType
+                            data-test-file-input="import"}}
+                    </form>
+                </div>
+            </div>
 
-                {{#each importErrors as |error|}}
-                    <div class="gh-import-error" data-test-import-error>
-                        <p class="gh-import-error-message" data-test-import-error-message>
-                            {{#if error.help}}{{error.help}}: {{/if}}{{error.message}}
-                        </p>
-
-                        {{#if error.context}}
-                            <div class="gh-import-error-entry" data-test-import-error-context>
-                                <pre>{{error.context}}</pre>
-                            </div>
+            {{#if importErrors}}
+                <div class="gh-import-errors {{if importSuccessful "gh-import-errors-warning"}}" data-test-import-errors>
+                    <div class="gh-import-errors-title">
+                        {{#if importSuccessful}}
+                            Import successful with warnings
+                        {{else}}
+                            Import failed
                         {{/if}}
                     </div>
-                {{/each}}
-            </div>
-        {{/if}}
 
-        <div class="gh-setting">
-            <div class="gh-setting-content">
-                <div class="gh-setting-title">Export your content</div>
-                <div class="gh-setting-desc">Download all of your posts and settings in a single, glorious JSON file</div>
+                    {{#each importErrors as |error|}}
+                        <div class="gh-import-error" data-test-import-error>
+                            <p class="gh-import-error-message" data-test-import-error-message>
+                                {{#if error.help}}{{error.help}}: {{/if}}{{error.message}}
+                            </p>
+
+                            {{#if error.context}}
+                                <div class="gh-import-error-entry" data-test-import-error-context>
+                                    <pre>{{error.context}}</pre>
+                                </div>
+                            {{/if}}
+                        </div>
+                    {{/each}}
+                </div>
+            {{/if}}
+
+            <div class="gh-setting">
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Export your content</div>
+                    <div class="gh-setting-desc">Download all of your posts and settings in a single, glorious JSON file</div>
+                </div>
+                <div class="gh-setting-action">
+                    <button type="button" class="gh-btn gh-btn-hover-blue" {{action "downloadFile" "db"}}><span>Export</span></button>
+                </div>
             </div>
-            <div class="gh-setting-action">
-                <button type="button" class="gh-btn gh-btn-hover-blue" {{action "downloadFile" "db"}}><span>Export</span></button>
-            </div>
-        </div>
-        <div class="gh-setting">
-            <div class="gh-setting-content">
-                <div class="gh-setting-title">Delete all content</div>
-                <div class="gh-setting-desc">Permanently delete all posts and tags from the database, a hard reset</div>
-            </div>
-            <div class="gh-setting-action">
-                <button type="button" class="gh-btn gh-btn-hover-red js-delete" {{action "toggleDeleteAllModal"}}><span>Delete</span></button>
+            <div class="gh-setting-last">
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Delete all content</div>
+                    <div class="gh-setting-desc">Permanently delete all posts and tags from the database, a hard reset</div>
+                </div>
+                <div class="gh-setting-action">
+                    <button type="button" class="gh-btn gh-btn-hover-red js-delete" {{action "toggleDeleteAllModal"}}><span>Delete</span></button>
+                </div>
             </div>
         </div>
 
         <div class="gh-setting-header">Testing tools</div>
-        <div class="gh-setting">
-            <div class="gh-setting-content">
-                <div class="gh-setting-title">Test email configuration</div>
-                <div class="gh-setting-desc">Send yourself a test email to make sure everything is working</div>
-            </div>
-            <div class="gh-setting-action">
-                {{gh-task-button "Send" successText="Sent" task=sendTestEmail class="gh-btn gh-btn-hover-blue gh-btn-icon"}}
+        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">
+            <div class="gh-setting-first gh-setting-last">
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Test email configuration</div>
+                    <div class="gh-setting-desc">Send yourself a test email to make sure everything is working</div>
+                </div>
+                <div class="gh-setting-action">
+                    {{gh-task-button "Send" successText="Sent" task=sendTestEmail class="gh-btn gh-btn-hover-blue gh-btn-icon"}}
+                </div>
             </div>
         </div>
 
         <div class="gh-setting-header">Beta features</div>
-        {{#if (not-eq feature.labs.publicAPI undefined)}}
-            <div class="gh-setting">
+        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">
+            <div class="gh-setting-first">
                 <div class="gh-setting-content">
-                <div class="gh-setting-title">Public API (deprecated)</div>
-                <div class="gh-setting-desc">⚠️ Please use the Content API instead, more info in <a href="https://docs.ghost.org/api/content/">the docs</a></div>
+                    <div class="gh-setting-title">Night shift</div>
+                    <div class="gh-setting-desc">Swap Ghost admin's colours to a dark background which is easy on the eyes</div>
                 </div>
                 <div class="gh-setting-action">
-                    <div class="for-checkbox">{{gh-feature-flag "publicAPI"}}</div>
+                    <div class="for-switch">{{gh-feature-flag "nightShift"}}</div>
                 </div>
             </div>
-        {{/if}}
-        <div class="gh-setting">
-            <div class="gh-setting-content">
-                <div class="gh-setting-title">Night shift</div>
-                <div class="gh-setting-desc">Swap Ghost admin's colours to a dark background which is easy on the eyes</div>
-            </div>
-            <div class="gh-setting-action">
-                <div class="for-checkbox">{{gh-feature-flag "nightShift"}}</div>
-            </div>
-        </div>
-        <div class="gh-setting {{if feature.members "gh-labs-disabled"}}">
-            <div class="gh-setting-content">
-                <div class="gh-setting-title">Subscribers</div>
-                <div class="gh-setting-desc">Collect email addresses from your readers, more info in <a
-                        href="https://docs.ghost.org/faq/enable-subscribers-feature/">the docs</a></div>
-            </div>
-            <div class="gh-setting-action">
-                {{#if feature.members}}
-                    <div class="for-checkbox">{{gh-feature-flag "subscribers" "disabled"}}</div>
-                {{else}}
-                    <div class="for-checkbox">{{gh-feature-flag "subscribers" }}</div>
-                {{/if}}
-            </div>
-        </div>
-        {{#if config.enableDeveloperExperiments}}
-            <div class="gh-setting">
+            {{#if (not-eq feature.labs.publicAPI undefined)}}
+                <div class="gh-setting">
+                    <div class="gh-setting-content">
+                    <div class="gh-setting-title">Public API (deprecated)</div>
+                    <div class="gh-setting-desc">⚠️ Please use the Content API instead, more info in <a href="https://docs.ghost.org/api/content/">the docs</a></div>
+                    </div>
+                    <div class="gh-setting-action">
+                        <div class="for-switch">{{gh-feature-flag "publicAPI"}}</div>
+                    </div>
+                </div>
+            {{/if}}
+            <div class="gh-setting {{if feature.members "gh-labs-disabled"}}" data-tooltip="{{if feature.members "Disabled when members is turned on"}}">
                 <div class="gh-setting-content">
-                    <div class="gh-setting-title">Members</div>
-                    <div class="gh-setting-desc">Enable free or paid member registration. Restrict content by using <span class="dib blue ba br2 b--blue pa1 pt0 pb0 tag-token--internal">#members</span> hashtag on posts</div>
+                    <div class="gh-setting-title">Subscribers</div>
+                    <div class="gh-setting-desc">Collect email addresses from your readers, more info in <a
+                            href="https://docs.ghost.org/faq/enable-subscribers-feature/">the docs</a></div>
+                </div>
+                <div class="gh-setting-action">
+                    {{#if feature.members}}
+                        <div class="for-switch">{{gh-feature-flag "subscribers" "disabled"}}</div>
+                    {{else}}
+                        <div class="for-switch">{{gh-feature-flag "subscribers" }}</div>
+                    {{/if}}
+                </div>
+            </div>
+            {{#if config.enableDeveloperExperiments}}
+                <div class="gh-setting">
+                    <div class="gh-setting-content">
+                        <div class="gh-setting-title">Members</div>
+                        <div class="gh-setting-desc">Enable free or paid member registration. Restrict content by using <span class="dib blue ba br2 b--blue pa1 pt0 pb0 tag-token--internal">#members</span> hashtag on posts</div>
 
-                    {{#liquid-if feature.labs.members class="nr20"}}
+                        {{#liquid-if feature.labs.members class="nr20"}}
 
-                        <button type="button" class="gh-btn gh-btn-labs-toggle" {{action "toggleMemberConfig" ""}}>
-                            {{#if showMemberConfig}}
-                                {{svg-jar "arrow-down-small"}}
-                            {{else}}
-                                {{svg-jar "arrow-right-small"}}
-                            {{/if}}
-                            Configure
-                        </button>
+                            <button type="button" class="gh-btn gh-btn-labs-toggle" {{action "toggleMemberConfig" ""}}>
+                                {{#if showMemberConfig}}
+                                    {{svg-jar "arrow-down-small"}}
+                                {{else}}
+                                    {{svg-jar "arrow-right-small"}}
+                                {{/if}}
+                                Configure
+                            </button>
 
-                        {{#liquid-if showMemberConfig}}
-                            <div class="flex nl2 nr2 mt5">
-                                <div class="gh-publishmenu-radio {{if (eq subscriptionSettings.isPaid false) "active"}} flex-auto w-50 ba br4 b--whitegrey pa5 gh-labs-members-radio"
-                                    {{action "setSubscriptionSettings" "isPaid" false on="click"}}>
-                                    <div class="gh-publishmenu-radio-button"></div>
-                                    <div class="gh-publishmenu-radio-content">
-                                        <div class="gh-publishmenu-radio-label f3"><span class="fw6 f7 darkgrey">Free</span></div>
-                                        <div class="gh-publishmenu-radio-desc">Access to members-only posts require free user registration</div>
+                            {{#liquid-if showMemberConfig}}
+                                <div class="flex nl2 nr2 mt5">
+                                    <div class="gh-publishmenu-radio {{if (eq subscriptionSettings.isPaid false) "active"}} flex-auto w-50 ba br4 b--whitegrey pa5 gh-labs-members-radio"
+                                        {{action "setSubscriptionSettings" "isPaid" false on="click"}}>
+                                        <div class="gh-publishmenu-radio-button"></div>
+                                        <div class="gh-publishmenu-radio-content">
+                                            <div class="gh-publishmenu-radio-label f3"><span class="fw6 f7 darkgrey">Free</span></div>
+                                            <div class="gh-publishmenu-radio-desc">Access to members-only posts require free user registration</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="gh-publishmenu-radio {{if (eq subscriptionSettings.isPaid true) "active"}} flex-auto w-50 ba br4 b--whitegrey pa5 ml2 gh-labs-members-radio">
-                                    <div class="gh-publishmenu-radio-button" {{action "setSubscriptionSettings" "isPaid" true on="click"}}></div>
-                                    <div class="gh-publishmenu-radio-content">
-                                        <div {{action "setSubscriptionSettings" "isPaid" true on="click"}}>
-                                            <div class="gh-publishmenu-radio-label"><span class="fw6 f7 darkgrey">Paid</span></div>
-                                            <div class="gh-publishmenu-radio-desc">Set up paid subscriptions using Stripe</div>
+                                    <div class="gh-publishmenu-radio {{if (eq subscriptionSettings.isPaid true) "active"}} flex-auto w-50 ba br4 b--whitegrey pa5 ml2 gh-labs-members-radio">
+                                        <div class="gh-publishmenu-radio-button" {{action "setSubscriptionSettings" "isPaid" true on="click"}}></div>
+                                        <div class="gh-publishmenu-radio-content">
+                                            <div {{action "setSubscriptionSettings" "isPaid" true on="click"}}>
+                                                <div class="gh-publishmenu-radio-label"><span class="fw6 f7 darkgrey">Paid</span></div>
+                                                <div class="gh-publishmenu-radio-desc">Set up paid subscriptions using Stripe</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {{#liquid-if (eq subscriptionSettings.isPaid true)}}
+                                {{#liquid-if (eq subscriptionSettings.isPaid true)}}
 
-                            <div class="ba br4 b--whitegrey pa5 mt5">
-                                <div class="flex flex-column">
-                                    <div class="flex">
+                                <div class="ba br4 b--whitegrey pa5 mt5">
+                                    <div class="flex flex-column">
+                                        <div class="flex">
+                                            <div class="w-50 mr2">
+                                                <label class="fw6">Stripe publishable API key</label>
+                                                {{gh-text-input
+                                                    value=(readonly subscriptionSettings.stripeConfig.public_token)
+                                                    input=(action "setSubscriptionSettings" "public_token")
+                                                    class="mt1"
+                                                    placeholder="pk_..."
+                                                }}
+                                            </div>
+                                            <div class="w-50 ml2">
+                                                <label class="fw6">Stripe secret API key</label>
+                                                {{gh-text-input
+                                                    value=(readonly subscriptionSettings.stripeConfig.secret_token)
+                                                    input=(action "setSubscriptionSettings" "secret_token")
+                                                    class="mt1"
+                                                    placeholder="sk_..."
+                                                }}
+                                            </div>
+                                        </div>
+                                        <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 self-end fw4">Where to find Stripe API keys</a>
+                                    </div>
+
+                                    <div class="mt4 flex nb5">
                                         <div class="w-50 mr2">
-                                            <label class="fw6">Stripe publishable API key</label>
-                                            {{gh-text-input
-                                                value=(readonly subscriptionSettings.stripeConfig.public_token)
-                                                input=(action "setSubscriptionSettings" "public_token")
-                                                class="mt1"
-                                                placeholder="pk_..."
-                                            }}
+                                            {{#gh-form-group}}
+                                            <label class="fw6">Monthly price</label>
+                                            <div class="mt1 relative gh-labs-price-label gh-labs-monthly-price">
+                                                {{gh-text-input
+                                                    value=(readonly subscriptionSettings.stripeConfig.plans.monthly.dollarAmount)
+                                                    type="number"
+                                                    input=(action "setSubscriptionSettings" "month")
+                                                }}
+                                            </div>
+                                            {{/gh-form-group}}
                                         </div>
                                         <div class="w-50 ml2">
-                                            <label class="fw6">Stripe secret API key</label>
-                                            {{gh-text-input
-                                                value=(readonly subscriptionSettings.stripeConfig.secret_token)
-                                                input=(action "setSubscriptionSettings" "secret_token")
-                                                class="mt1"
-                                                placeholder="sk_..."
-                                            }}
+                                            {{#gh-form-group class="description-container"}}
+                                            <label class="fw6">Yearly price</label>
+                                            <div class="mt1 relative gh-labs-price-label gh-labs-yearly-price">
+                                                {{gh-text-input
+                                                    value=(readonly subscriptionSettings.stripeConfig.plans.yearly.dollarAmount)
+                                                    type="number"
+                                                    input=(action "setSubscriptionSettings" "year")
+                                                }}
+                                            </div>
+                                            {{/gh-form-group}}
                                         </div>
                                     </div>
-                                    <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 self-end fw3">Where to find Stripe API keys</a>
                                 </div>
+                                {{/liquid-if}}
 
-                                <div class="mt4 flex nb5">
-                                    <div class="w-50 mr2">
-                                        {{#gh-form-group}}
-                                        <label class="fw6">Monthly price</label>
-                                        <div class="mt1 relative gh-labs-price-label gh-labs-monthly-price">
-                                            {{gh-text-input
-                                                value=(readonly subscriptionSettings.stripeConfig.plans.monthly.dollarAmount)
-                                                type="number"
-                                                input=(action "setSubscriptionSettings" "month")
-                                            }}
-                                        </div>
-                                        {{/gh-form-group}}
-                                    </div>
-                                    <div class="w-50 ml2">
-                                        {{#gh-form-group class="description-container"}}
-                                        <label class="fw6">Yearly price</label>
-                                        <div class="mt1 relative gh-labs-price-label gh-labs-yearly-price">
-                                            {{gh-text-input
-                                                value=(readonly subscriptionSettings.stripeConfig.plans.yearly.dollarAmount)
-                                                type="number"
-                                                input=(action "setSubscriptionSettings" "year")
-                                            }}
-                                        </div>
-                                        {{/gh-form-group}}
-                                    </div>
+                                <div class="mb5 mt5">
+                                    {{gh-task-button "Save"
+                                        task=saveSettings
+                                        successText="Saved"
+                                        runningText="Saving"
+                                        class="gh-btn gh-btn-blue gh-btn-icon"
+                                    }}
                                 </div>
-                            </div>
                             {{/liquid-if}}
-
-                            <div class="mb5 mt5">
-                                {{gh-task-button "Save"
-                                    task=saveSettings
-                                    successText="Saved"
-                                    runningText="Saving"
-                                    class="gh-btn gh-btn-blue gh-btn-icon"
-                                }}
-                            </div>
                         {{/liquid-if}}
-                    {{/liquid-if}}
+                    </div>
+                    <div class="gh-setting-action">
+                        <div class="for-switch">{{gh-feature-flag "members"}}</div>
+                    </div>
                 </div>
-                <div class="gh-setting-action">
-                    <div class="for-checkbox">{{gh-feature-flag "members"}}</div>
+            {{/if}}
+            <div class="gh-setting">
+                {{#gh-uploader
+                    extensions=jsonExtension
+                    uploadUrl="/redirects/json/"
+                    paramName="redirects"
+                    onUploadSuccess=(perform redirectUploadResult true)
+                    onUploadFailure=(perform redirectUploadResult false)
+                    as |uploader|
+                }}
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Redirects</div>
+                    <div class="gh-setting-desc">Configure redirects for old or moved content, more info in <a href="https://docs.ghost.org/tutorials/implementing-redirects/">the docs</a></div>
+                    {{#each uploader.errors as |error|}}
+                        <div class="gh-setting-error" data-test-error="redirects">{{or error.context error.message}}</div>
+                    {{/each}}
                 </div>
-            </div>
-        {{/if}}
-        <div class="gh-setting">
-            {{#gh-uploader
-                extensions=jsonExtension
-                uploadUrl="/redirects/json/"
-                paramName="redirects"
-                onUploadSuccess=(perform redirectUploadResult true)
-                onUploadFailure=(perform redirectUploadResult false)
-                as |uploader|
-            }}
-            <div class="gh-setting-content">
-                <div class="gh-setting-title">Redirects</div>
-                <div class="gh-setting-desc">Configure redirects for old or moved content, more info in <a href="https://docs.ghost.org/tutorials/implementing-redirects/">the docs</a></div>
-                {{#each uploader.errors as |error|}}
-                    <div class="gh-setting-error" data-test-error="redirects">{{or error.context error.message}}</div>
-                {{/each}}
-            </div>
-            <div class="gh-setting-action" style="display: flex; flex-direction: column">
-                {{#if uploader.isUploading}}
-                    {{uploader.progressBar}}
-                {{else}}
-                    <button
-                        type="button"
-                        class="gh-btn gh-btn-icon {{if redirectSuccess "gh-btn-green"}} {{if redirectFailure "gh-btn-red"}}"
-                        onclick={{action "triggerFileDialog"}}
-                        data-test-button="upload-redirects"
-                    >
-                        <span>
-                            {{#if redirectSuccess}}
-                                {{svg-jar "check-circle"}} Uploaded
-                            {{else if redirectFailure}}
-                                {{svg-jar "retry"}} Upload Failed
-                            {{else}}
-                                Upload redirects JSON
-                            {{/if}}
-                        </span>
-                    </button>
-                    <span><a href="#" {{action "downloadFile" "redirects/json"}} data-test-link="download-redirects">Download current redirects</a></span>
-                {{/if}}
+                <div class="gh-setting-action" style="display: flex; flex-direction: column">
+                    {{#if uploader.isUploading}}
+                        {{uploader.progressBar}}
+                    {{else}}
+                        <button
+                            type="button"
+                            class="gh-btn gh-btn-icon {{if redirectSuccess "gh-btn-green"}} {{if redirectFailure "gh-btn-red"}}"
+                            onclick={{action "triggerFileDialog"}}
+                            data-test-button="upload-redirects"
+                        >
+                            <span>
+                                {{#if redirectSuccess}}
+                                    {{svg-jar "check-circle"}} Uploaded
+                                {{else if redirectFailure}}
+                                    {{svg-jar "retry"}} Upload Failed
+                                {{else}}
+                                    Upload redirects JSON
+                                {{/if}}
+                            </span>
+                        </button>
+                        <span><a href="#" {{action "downloadFile" "redirects/json"}} data-test-link="download-redirects">Download current redirects</a></span>
+                    {{/if}}
 
-                <div style="display:none">
-                    {{gh-file-input multiple=false action=uploader.setFiles accept=jsonMimeType data-test-file-input="redirects"}}
+                    <div style="display:none">
+                        {{gh-file-input multiple=false action=uploader.setFiles accept=jsonMimeType data-test-file-input="redirects"}}
+                    </div>
                 </div>
+                {{/gh-uploader}}
             </div>
-            {{/gh-uploader}}
-        </div>
-        <div class="gh-setting">
-            {{#gh-uploader
-                extensions=yamlExtension
-                uploadUrl="/settings/routes/yaml/"
-                paramName="routes"
-                onUploadSuccess=(perform routesUploadResult true)
-                onUploadFailure=(perform routesUploadResult false)
-                as |uploader|
-            }}
-            <div class="gh-setting-content">
-                <div class="gh-setting-title">Routes</div>
-                <div class="gh-setting-desc">Configure dynamic routing by modifying the routes.yaml file</div>
-                {{#each uploader.errors as |error|}}
-                    <div class="gh-setting-error" data-test-error="routes">{{or error.context error.message}}</div>
-                {{/each}}
-            </div>
-            <div class="gh-setting-action" style="display: flex; flex-direction: column">
-                {{#if uploader.isUploading}}
-                    {{uploader.progressBar}}
-                {{else}}
-                    <button
-                        type="button"
-                        class="gh-btn gh-btn-icon {{if routesSuccess "gh-btn-green"}} {{if routesFailure "gh-btn-red"}}"
-                        onclick={{action "triggerFileDialog"}}
-                        data-test-button="upload-routes"
-                    >
-                        <span>
-                            {{#if routesSuccess}}
-                                {{svg-jar "check-circle"}} Uploaded
-                            {{else if routesFailure}}
-                                {{svg-jar "retry"}} Upload Failed
-                            {{else}}
-                                Upload routes YAML
-                            {{/if}}
-                        </span>
-                    </button>
-                    <span><a href="#" {{action "downloadFile" "settings/routes/yaml"}} data-test-link="download-routes">Download current routes.yaml</a></span>
-                {{/if}}
+            <div class="gh-setting-last">
+                {{#gh-uploader
+                    extensions=yamlExtension
+                    uploadUrl="/settings/routes/yaml/"
+                    paramName="routes"
+                    onUploadSuccess=(perform routesUploadResult true)
+                    onUploadFailure=(perform routesUploadResult false)
+                    as |uploader|
+                }}
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Routes</div>
+                    <div class="gh-setting-desc">Configure dynamic routing by modifying the routes.yaml file</div>
+                    {{#each uploader.errors as |error|}}
+                        <div class="gh-setting-error" data-test-error="routes">{{or error.context error.message}}</div>
+                    {{/each}}
+                </div>
+                <div class="gh-setting-action" style="display: flex; flex-direction: column">
+                    {{#if uploader.isUploading}}
+                        {{uploader.progressBar}}
+                    {{else}}
+                        <button
+                            type="button"
+                            class="gh-btn gh-btn-icon {{if routesSuccess "gh-btn-green"}} {{if routesFailure "gh-btn-red"}}"
+                            onclick={{action "triggerFileDialog"}}
+                            data-test-button="upload-routes"
+                        >
+                            <span>
+                                {{#if routesSuccess}}
+                                    {{svg-jar "check-circle"}} Uploaded
+                                {{else if routesFailure}}
+                                    {{svg-jar "retry"}} Upload Failed
+                                {{else}}
+                                    Upload routes YAML
+                                {{/if}}
+                            </span>
+                        </button>
+                        <span><a href="#" {{action "downloadFile" "settings/routes/yaml"}} data-test-link="download-routes">Download current routes.yaml</a></span>
+                    {{/if}}
 
-                <div style="display:none">
-                    {{gh-file-input multiple=false action=uploader.setFiles accept=yamlMimeType data-test-file-input="routes"}}
+                    <div style="display:none">
+                        {{gh-file-input multiple=false action=uploader.setFiles accept=yamlMimeType data-test-file-input="routes"}}
+                    </div>
                 </div>
+                {{/gh-uploader}}
             </div>
-            {{/gh-uploader}}
         </div>
     </section>
 </section>

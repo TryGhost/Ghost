@@ -61,6 +61,7 @@
 @import './_icons';
 @import './_animations';
 @import './_pointer-events';
+@import './_word-break';
 
 /* Variables */
 /* Importing here will allow you to override any variables in the modules */

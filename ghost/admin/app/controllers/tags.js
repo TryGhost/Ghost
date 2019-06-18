@@ -5,7 +5,7 @@ import {run} from '@ember/runloop';
 
 export default Controller.extend({
 
-    tagController: controller('settings.tags.tag'),
+    tagController: controller('tags.tag'),
 
     tags: alias('model'),
     selectedTag: alias('tagController.tag'),
@@ -29,7 +29,7 @@ export default Controller.extend({
             // redirect to first tag if possible so that you're not left with
             // tag settings blank slate when switching from portrait to landscape
             if (firstTag && !this.get('tagController.tag')) {
-                this.transitionToRoute('settings.tags.tag', firstTag);
+                this.transitionToRoute('tags.tag', firstTag);
             }
         }
     },

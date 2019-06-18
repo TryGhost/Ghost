@@ -3,15 +3,15 @@
 
 .label {
     display: inline;
-    padding: 0.2em 0.6em 0.3em;
+    padding: 2px 4px;
     border-radius: 0.25em;
     color: #fff;
     vertical-align: baseline;
     text-align: center;
     white-space: nowrap;
-    font-size: 75%;
+    font-size: 1.2rem;
     line-height: 1;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .label:empty {
@@ -49,17 +49,17 @@ a.label:focus {
 /* ---------------------------------------------------------- */
 
 .label-default {
-    background-color: #a1adb3;
-    color: #fff;
+    background: var(--lightgrey);
+    color: var(--midgrey);
 }
 
 .label-default[href] {
-    color: #fff;
+    color: var(--midgrey);
 }
 
 .label-default[href]:hover,
 .label-default[href]:focus {
-    background-color: color-mod(#a1adb3 lightness(-10%));
+    background: color-mod(var(--lightgrey) l(-5%));
 }
 
 .label-alt {

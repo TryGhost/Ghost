@@ -1,5 +1,5 @@
 {{#link-to "editor.new" "post" data-test-mobile-nav="new-post"}}{{svg-jar "pen"}}New post{{/link-to}}
-{{#if (eq router.currentRouteName "posts.index")}}
+{{#if (eq router.currentRouteName "posts")}}
     {{#link-to "posts" (query-params type=null) classNames="active" data-test-mobile-nav="posts"}}{{svg-jar "content"}}Posts{{/link-to}}
 {{else}}
     {{#link-to "posts"}}{{svg-jar "content" data-test-mobile-nav="posts"}}Posts{{/link-to}}

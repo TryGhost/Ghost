@@ -7,6 +7,7 @@ export default Controller.extend({
 
     postsController: controller('posts'),
     session: service(),
+    ui: service(),
 
     availableTypes: readOnly('postsController.availableTypes'),
     selectedType: readOnly('postsController.selectedType'),
@@ -16,5 +17,4 @@ export default Controller.extend({
     selectedAuthor: readOnly('postsController.selectedAuthor'),
     availableOrders: readOnly('postsController.availableOrders'),
     selectedOrder: readOnly('postsController.selectedOrder')
-
 });

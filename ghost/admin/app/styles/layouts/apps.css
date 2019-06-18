@@ -18,8 +18,7 @@
     justify-content: space-between;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     grid-gap: 25px;
-    max-width: 1200px;
-    margin: 2vw 0 4vw;
+    margin: 4px 0 2.4vw;
 }
 
 .id-item {
@@ -33,13 +32,14 @@
     text-align: center;
     text-decoration: none;
     color: var(--darkgrey);
-    border: var(--lightgrey) 1px solid;
-    border-radius: 6px;
-    transition: all .8s ease;
+    border-radius: 5px;
+    box-shadow: 0 3px 6px -2px rgba(0,0,0,.1);
+    background: var(--white);
+    transition: all .5s ease;
 }
 
 .id-item:hover {
-    transform: translateY(-2%);
+    transform: translateY(-2.5%);
     box-shadow: 0 0 1px rgba(0,0,0,.02), 0 8px 26px -4px rgba(0,0,0,.08);
     transition: all .3s ease;
 }
@@ -49,7 +49,7 @@
     justify-content: center;
     align-items: center;
     height: 38px;
-    width: 43px;
+    width: 38px;
     margin-top: 4px;
 }
 
@@ -101,22 +101,31 @@
 /* Built-in integrations */
 
 .apps-grid-container {
-    margin: 2vw 0;
+    margin: 2vw 0 0;
 }
 
 .apps-grid-title {
     display: block;
-    margin-bottom: 5px;
-    color: var(--midgrey);
+    margin: 1vw 0 5px 1px;
+    color: var(--midlightgrey);
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0.35px;
+    font-size: 1.2rem;
+}
+
+.apps-first-header,
+.apps-first-header .apps-grid-title {
+    margin-top: 0px;
 }
 
 .apps-grid {
     display: flex;
     flex-flow: row wrap;
     align-items: flex-start;
-    max-width: 1200px;
-    border: var(--lightgrey) 1px solid;
     border-radius: 5px;
+    background: var(--white);
+    box-shadow: var(--shadow-1);
 }
 
 .apps-grid-note {
@@ -132,10 +141,17 @@
 
 .apps-grid-cell {
     flex: 1 1 100%;
+    background: var(--white);
+    margin: 0;
+}
+
+.apps-grid-cell {
+    transition: background 0.3s ease;
 }
 
 .apps-grid-cell:hover {
-    background: color-mod(var(--lightgrey) l(+6%) s(-2%));
+    background: var(--whitegrey-l2);
+    transition: none;
 }
 
 .apps-card-app {
@@ -143,14 +159,14 @@
     align-items: center;
     justify-content: space-between;
     overflow: hidden;
-    padding: 14px;
-    height: 75px;
+    padding: 16px 16px;
+    height: 65px;
     border-top: var(--lightgrey) 1px solid;
     transition: background 0.3s ease;
 }
 
 .new-integration-cell .apps-card-app {
-    padding: 10px 14px;
+    padding: 10px 16px;
     height: auto;
 }
 
@@ -164,6 +180,16 @@
         min-height: auto;
         height: auto;
     }
+}
+
+.apps-grid-cell:first-of-type {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.apps-grid-cell:last-of-type {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
 
 .apps-grid-cell:first-of-type .apps-card-app {
@@ -203,18 +229,21 @@
 }
 
 .apps-configured a {
-    text-decoration: underline;
+    display: inline-block;
+    padding: 0 4px;
+    border-radius: 4px;
 }
 
 .apps-configured-action {
     margin-left: 15px;
     text-transform: uppercase;
-    font-size: 11px;
+    font-size: 1.2rem;
+    font-weight: 500;
 }
 
 .apps-card-app-icon {
     flex: 0 0 47px;
-    margin: 0 15px 0 0;
+    margin: 0 12px 0 0;
     width: 47px;
     height: 47px;
     background-position: center center;
@@ -241,9 +270,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     line-height: 1.15em;
-    font-weight: bold;
+    font-weight: 600;
 }
 @media (max-width: 500px) {
     .apps-card-app-title {
@@ -259,14 +288,14 @@
 .apps-card-app-desc {
     display: -webkit-box;
     overflow: hidden;
-    margin: 0;
+    margin: 4px 0 0;
     padding: 0;
     max-height: 4.2rem;
     color: var(--midgrey);
     text-overflow: ellipsis;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     line-height: 1.3em;
-    font-weight: 200;
+    font-weight: 400;
 
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -300,13 +329,12 @@
     align-content: flex-start;
     margin-bottom: 30px;
 }
+
 .app-icon {
     position: relative;
-    flex: 0 0 60px;
-    margin: 0 10px 0 0;
-    padding: 5px;
-    width: 60px;
-    height: 60px;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
     background-position: center center;
     background-size: cover;
     border-radius: 10%;
@@ -320,6 +348,7 @@
     margin: 0;
     color: var(--darkgrey);
     font-size: 2.4rem;
+    font-weight: 500;
 }
 
 .app-cell p {
@@ -355,5 +384,5 @@
 }
 
 .new-webhook-cell:hover {
-    background: color-mod(var(--lightgrey) l(+6%) s(-2%));
+    background: var(--whitegrey-l2);
 }

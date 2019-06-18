@@ -1,10 +1,12 @@
 <section class="gh-canvas">
-    <header class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>Design</h2>
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            Design
+        </h2>
         <section class="view-actions">
             {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
         </section>
-    </header>
+    </GhCanvasHeader>
 
     {{#if showLeaveSettingsModal}}
         {{gh-fullscreen-modal "leave-settings"
@@ -15,8 +17,8 @@
 
     <section class="view-container">
 
-        <div class="gh-setting-header">Navigation</div>
-        <div class="gh-blognav-container">
+        <div class="gh-setting-header gh-first-header">Navigation</div>
+        <div class="gh-blognav-container pa5 pt6 bg-grouped-table shadow-1 br3">
             <form id="settings-navigation" class="gh-blognav" novalidate="novalidate">
                 {{#sortable-objects sortableObjectList=settings.navigation useSwap=false}}
                     {{#each settings.navigation as |navItem index|}}
@@ -99,7 +101,7 @@
                     <div class="td-cta-icon">{{svg-jar "store"}}</div>
                     <div class="td-cta-content-wrapper">
                         <div class="td-cta-content">
-                            <h4>Theme Marketplace</h4>
+                            <h4 class="fw6 f6">Theme Marketplace</h4>
                             <p>Explore a huge range of free and premium themes for Ghost with a range of design and layout options</p>
                         </div>
                         <div class="td-cta-arrow">
@@ -111,7 +113,7 @@
                     <div class="td-cta-icon">{{svg-jar "book-open"}}</div>
                     <div class="td-cta-content-wrapper">
                         <div class="td-cta-content">
-                            <h4>Developer Docs</h4>
+                            <h4 class="fw6 f6">Developer Docs</h4>
                             <p>Build your own custom Ghost theme from scratch using our comprehensive Handlebars.js SDK</p>
                         </div>
                         <div class="td-cta-arrow">

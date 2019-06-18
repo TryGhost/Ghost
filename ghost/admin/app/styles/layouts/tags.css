@@ -1,5 +1,17 @@
-/* Tag Management /ghost/settings/tags/
+/* Tag Management /ghost/tags/
 /* ---------------------------------------------------------- */
+
+.tags-view {
+    max-width: 1220px;
+    margin: 0 auto;
+}
+
+.tags-container {
+    background: var(--white);
+    border-radius: 5px;
+    box-shadow: var(--shadow-1);
+    margin: 0 24px 24px;
+}
 
 
 /* Tag
@@ -8,19 +20,21 @@
 .settings-tag {
     position: relative;
     display: block;
-    padding: 0 45px 0 0;
+    padding: 0 60px 0 0;
     border-bottom: var(--lightgrey) 1px solid;
 }
 
 .settings-tag .tag-edit-button {
     display: block;
-    padding: 20px;
-    width: calc(100% + 45px);
+    padding: 16px 20px;
+    width: calc(100% + 60px);
     text-align: left;
 }
 
 .settings-tag .tag-edit-button.active {
-    border-left: 3px solid;
+    border-left: 4px solid;
+    padding-left: 16px;
+    background: var(--whitegrey-l2);
 }
 
 .settings-tag .label {
@@ -38,23 +52,23 @@
 
 .settings-tag .tag-title {
     color: var(--darkgrey);
-    font-size: 16px;
-    font-weight: normal;
+    font-size: 1.5rem;
+    font-weight: 600;
 }
 
 .settings-tag .tag-description {
     margin: 0;
-    color: var(--midgrey);
+    color: var(--middarkgrey);
     word-wrap: break-word;
     font-size: 13px;
 }
 
 .settings-tag .tags-count {
     position: absolute;
-    top: 20px;
-    right: 12px;
+    top: calc(50% - 11px);
+    right: 20px;
     color: var(--midgrey);
-    font-size: 16px;
+    font-size: 1.4rem;
 }
 
 /* Tag List (Left pane)
@@ -97,6 +111,10 @@
     width: 34%;
     border: none;
     transform: none;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    box-shadow: none;
+    background: var(--white);
 }
 
 .tag-settings .no-posts {
@@ -109,6 +127,10 @@
 
 .tag-settings .settings-menu-pane {
     transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+
+.tag-settings .gh-image-uploader {
+    background: var(--whitegrey-l2);
 }
 
 @media (max-width: 600px) {
@@ -125,3 +147,6 @@
         transform: translate3d(0px, 0px, 0px);
     }
 }
+
+/* New tag list
+/* ---------------------------------------------------------- */

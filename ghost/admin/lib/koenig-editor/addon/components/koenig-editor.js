@@ -1324,7 +1324,7 @@ export default Component.extend({
 
         let ghostElement = document.createElement('div');
         ghostElement.classList.add('absolute', 'flex', 'flex-column', 'justify-center',
-            'items-center', 'w15', 'h15', 'br3', 'bg-white', 'shadow-2');
+            'items-center', 'w15', 'h15', 'br3', 'bg-white', 'shadow-1');
         ghostElement.style.top = '0';
         ghostElement.style.left = '-100%';
         ghostElement.style.zIndex = 10001;
