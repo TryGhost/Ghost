@@ -1,0 +1,18 @@
+ports:
+- port: 2368
+  onOpen: open-preview
+- port: 4200
+  onOpen: ignore
+- port: 4201
+  onOpen: ignore
+tasks:
+- before: >
+    echo '{
+      "enableDeveloperExperiments": true,
+      "server": {
+        "host": "0.0.0.0"
+      }
+    }' > config.development.json &&
+    yarn global add knex-migrator grunt-cli ember-cli bower
+  init: yarn setup
+  command: npx grunt dev
