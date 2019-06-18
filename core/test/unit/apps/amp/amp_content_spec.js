@@ -1,5 +1,6 @@
 var should = require('should'),
     rewire = require('rewire'),
+    nock = require('nock'),
     configUtils = require('../../../../test/utils/configUtils'),
     ampContentHelper = rewire('../../../../server/apps/amp/lib/helpers/amp_content');
 
@@ -118,12 +119,18 @@ describe('{{amp_content}} helper', function () {
         });
 
         it('can transform img tags to amp-img', function (done) {
+            const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
+
+            nock('https://blog.ghost.org')
+                .get('/content/images/2019/06/test.jpg')
+                .reply(200, GIF1x1);
+
             var testData = {
-                    html: '<img src="/content/images/2016/08/scheduled2-1.jpg" alt="The Ghost Logo" />',
+                    html: '<img src="/content/images/2019/06/test.jpg" alt="The Ghost Logo" />',
                     updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
                     id: 1
                 },
-                expectedResult = '<amp-img src="https://blog.ghost.org/content/images/2016/08/scheduled2-1.jpg" alt="The Ghost Logo" width="1000" height="281" layout="responsive"></amp-img>',
+                expectedResult = '<amp-img src="https://blog.ghost.org/content/images/2019/06/test.jpg" alt="The Ghost Logo" width="1" height="1" layout="fixed"></amp-img>',
                 ampResult = ampContentHelper.call(testData);
 
             ampResult.then(function (rendered) {
