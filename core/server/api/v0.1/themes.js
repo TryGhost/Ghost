@@ -7,8 +7,8 @@ const debug = require('ghost-ignition').debug('api:themes'),
     common = require('../../lib/common'),
     models = require('../../models'),
     settingsCache = require('../../services/settings/cache'),
-    themeUtils = require('../../../frontend/services/themes'),
-    themeList = themeUtils.list;
+    themeService = require('../../../frontend/services/themes'),
+    themeList = themeService.list;
 
 let themes;
 
@@ -31,7 +31,7 @@ themes = {
             // Main action
             .then(() => {
                 // Return JSON result
-                return themeUtils.toJSON();
+                return themeService.toJSON();
             });
     },
 
@@ -58,7 +58,7 @@ themes = {
                     }));
                 }
 
-                return themeUtils.validate.checkSafe(loadedTheme);
+                return themeService.validate.checkSafe(loadedTheme);
             })
             // Update setting
             .then((_checkedTheme) => {
@@ -70,10 +70,10 @@ themes = {
             .then(() => {
                 // Activate! (sort of)
                 debug('Activating theme (method B on API "activate")', themeName);
-                themeUtils.activate(loadedTheme, checkedTheme);
+                themeService.activate(loadedTheme, checkedTheme);
 
                 // Return JSON result
-                return themeUtils.toJSON(themeName, checkedTheme);
+                return themeService.toJSON(themeName, checkedTheme);
             });
     },
 
@@ -86,7 +86,7 @@ themes = {
         let zip = {
                 path: options.path,
                 name: options.originalname,
-                shortName: themeUtils.storage.getSanitizedFileName(options.originalname.split('.zip')[0])
+                shortName: themeService.storage.getSanitizedFileName(options.originalname.split('.zip')[0])
             },
             checkedTheme;
 
@@ -100,24 +100,24 @@ themes = {
             .handlePermissions('themes', 'add')(options)
             // Validation
             .then(() => {
-                return themeUtils.validate.checkSafe(zip, true);
+                return themeService.validate.checkSafe(zip, true);
             })
             // More validation (existence check)
             .then((_checkedTheme) => {
                 checkedTheme = _checkedTheme;
 
-                return themeUtils.storage.exists(zip.shortName);
+                return themeService.storage.exists(zip.shortName);
             })
             // If the theme existed we need to delete it
             .then((themeExists) => {
                 // delete existing theme
                 if (themeExists) {
-                    return themeUtils.storage.delete(zip.shortName);
+                    return themeService.storage.delete(zip.shortName);
                 }
             })
             .then(() => {
                 // store extracted theme
-                return themeUtils.storage.save({
+                return themeService.storage.save({
                     name: zip.shortName,
                     path: checkedTheme.path
                 });
@@ -125,7 +125,7 @@ themes = {
             .then(() => {
                 // Loads the theme from the filesystem
                 // Sets the theme on the themeList
-                return themeUtils.loadOne(zip.shortName);
+                return themeService.loadOne(zip.shortName);
             })
             .then((loadedTheme) => {
                 // If this is the active theme, we are overriding
@@ -133,13 +133,13 @@ themes = {
                 if (zip.shortName === settingsCache.get('active_theme')) {
                     // Activate! (sort of)
                     debug('Activating theme (method C, on API "override")', zip.shortName);
-                    themeUtils.activate(loadedTheme, checkedTheme);
+                    themeService.activate(loadedTheme, checkedTheme);
                 }
 
                 common.events.emit('theme.uploaded');
 
                 // @TODO: unify the name across gscan and Ghost!
-                return themeUtils.toJSON(zip.shortName, checkedTheme);
+                return themeService.toJSON(zip.shortName, checkedTheme);
             })
             .finally(() => {
                 // @TODO we should probably do this as part of saving the theme
@@ -166,7 +166,7 @@ themes = {
         // Permissions
             .handlePermissions('themes', 'read')(options)
             .then(() => {
-                return themeUtils.storage.serve({
+                return themeService.storage.serve({
                     name: themeName
                 });
             });
@@ -200,7 +200,7 @@ themes = {
                 }
 
                 // Actually do the deletion here
-                return themeUtils.storage.delete(themeName);
+                return themeService.storage.delete(themeName);
             })
             // And some extra stuff to maintain state here
             .then(() => {
