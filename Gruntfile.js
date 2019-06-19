@@ -9,7 +9,7 @@
 require('./core/server/overrides');
 
 const config = require('./core/server/config');
-const urlService = require('./core/server/services/url');
+const urlService = require('./core/frontend/services/url');
 const _ = require('lodash');
 const chalk = require('chalk');
 const fs = require('fs-extra');

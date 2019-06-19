@@ -1,5 +1,5 @@
 var should = require('should'),
-    getExcerpt = require('../../../../server/data/meta/excerpt');
+    getExcerpt = require('../../../../frontend/meta/excerpt');
 
 describe('getExcerpt', function () {
     it('should return html excerpt with no html', function () {

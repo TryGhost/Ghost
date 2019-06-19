@@ -3,9 +3,9 @@ const should = require('should'),
     testUtils = require('../../../../utils'),
     common = require('../../../../../server/lib/common'),
     security = require('../../../../../server/lib/security'),
-    themeService = require('../../../../../server/services/themes'),
-    controllers = require('../../../../../server/services/routing/controllers'),
-    helpers = require('../../../../../server/services/routing/helpers');
+    themeService = require('../../../../../frontend/services/themes'),
+    controllers = require('../../../../../frontend/services/routing/controllers'),
+    helpers = require('../../../../../frontend/services/routing/helpers');
 
 function failTest(done) {
     return function (err) {

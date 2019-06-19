@@ -1,7 +1,7 @@
 var should = require('should'),
 
 // Stuff we are testing
-    helpers = require('../../../server/helpers'),
+    helpers = require('../../../frontend/helpers'),
     moment = require('moment-timezone');
 
 describe('{{date}} helper', function () {

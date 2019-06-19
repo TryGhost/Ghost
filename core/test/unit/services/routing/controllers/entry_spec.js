@@ -1,10 +1,10 @@
 const should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../../../utils'),
-    urlService = require('../../../../../server/services/url'),
+    urlService = require('../../../../../frontend/services/url'),
     urlUtils = require('../../../../../server/lib/url-utils'),
-    controllers = require('../../../../../server/services/routing/controllers'),
-    helpers = require('../../../../../server/services/routing/helpers'),
+    controllers = require('../../../../../frontend/services/routing/controllers'),
+    helpers = require('../../../../../frontend/services/routing/helpers'),
     EDITOR_URL = `/editor/post/`;
 
 describe('Unit - services/routing/controllers/entry', function () {

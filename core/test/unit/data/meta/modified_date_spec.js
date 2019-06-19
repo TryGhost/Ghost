@@ -1,5 +1,5 @@
 var should = require('should'),
-    getModifiedDate = require('../../../../server/data/meta/modified_date');
+    getModifiedDate = require('../../../../frontend/meta/modified_date');
 
 describe('getModifiedDate', function () {
     it('should return updated at date as ISO 8601 from context if exists', function () {

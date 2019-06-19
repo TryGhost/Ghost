@@ -2,8 +2,8 @@ var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
 
-    rssCache = require('../../../../server/services/rss/cache'),
-    renderer = require('../../../../server/services/rss/renderer');
+    rssCache = require('../../../../frontend/services/rss/cache'),
+    renderer = require('../../../../frontend/services/rss/renderer');
 
 describe('RSS: Renderer', function () {
     var rssCacheStub, res, baseUrl;

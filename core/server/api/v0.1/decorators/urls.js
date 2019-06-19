@@ -1,4 +1,4 @@
-const urlService = require('../../../services/url');
+const urlService = require('../../../../frontend/services/url');
 const {urlFor, makeAbsoluteUrls} = require('../../../lib/url-utils');
 
 const urlsForPost = (id, attrs, options) => {

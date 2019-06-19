@@ -5,13 +5,13 @@ const should = require('should'),
     testUtils = require('../../utils'),
     testUrlUtils = require('../../utils/urlUtils'),
     configUtils = require('../../utils/configUtils'),
-    themes = require('../../../server/services/themes'),
+    themes = require('../../../frontend/services/themes'),
     models = require('../../../server/models'),
     imageLib = require('../../../server/lib/image'),
-    routing = require('../../../server/services/routing'),
-    urlService = require('../../../server/services/url'),
-    helpers = require('../../../server/helpers'),
-    proxy = require('../../../server/helpers/proxy'),
+    routing = require('../../../frontend/services/routing'),
+    urlService = require('../../../frontend/services/url'),
+    helpers = require('../../../frontend/helpers'),
+    proxy = require('../../../frontend/helpers/proxy'),
     settingsCache = proxy.settingsCache;
 
 describe('{{ghost_head}} helper', function () {

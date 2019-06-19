@@ -1,9 +1,9 @@
 const should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
-    urlService = require('../../../server/services/url'),
+    urlService = require('../../../frontend/services/url'),
     models = require('../../../server/models'),
-    helpers = require('../../../server/helpers');
+    helpers = require('../../../frontend/helpers');
 
 describe('{{tags}} helper', function () {
     before(function () {

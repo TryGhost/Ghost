@@ -5,7 +5,7 @@ var should = require('should'),
     fs = require('fs-extra'),
     common = require('../../../../server/lib/common'),
     settingsCache = require('../../../../server/services/settings/cache'),
-    privateBlogging = require('../../../../server/apps/private-blogging/lib/middleware');
+    privateBlogging = require('../../../../frontend/apps/private-blogging/lib/middleware');
 
 function hash(password, salt) {
     var hasher = crypto.createHash('sha256');

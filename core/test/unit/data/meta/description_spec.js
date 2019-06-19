@@ -1,5 +1,5 @@
 var should = require('should'),
-    getMetaDescription = require('../../../../server/data/meta/description');
+    getMetaDescription = require('../../../../frontend/meta/description');
 
 describe('getMetaDescription', function () {
     it('should return meta_description if on data root', function () {

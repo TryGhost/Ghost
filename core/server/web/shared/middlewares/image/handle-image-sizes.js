@@ -1,7 +1,7 @@
 const path = require('path');
 const image = require('../../../../lib/image');
 const storage = require('../../../../adapters/storage');
-const activeTheme = require('../../../../services/themes/active');
+const activeTheme = require('../../../../../frontend/services/themes/active');
 
 const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;
 

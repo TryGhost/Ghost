@@ -2,7 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
 
 // Stuff we are testing
-    helpers = require('../../../server/helpers');
+    helpers = require('../../../frontend/helpers');
 
 describe('{{#has}} helper', function () {
     var fn, inverse, thisCtx, handlebarsOptions;

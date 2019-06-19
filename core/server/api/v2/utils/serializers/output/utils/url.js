@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const urlService = require('../../../../../../services/url');
+const urlService = require('../../../../../../../frontend/services/url');
 const urlUtils = require('../../../../../../lib/url-utils');
 const localUtils = require('../../../index');
 

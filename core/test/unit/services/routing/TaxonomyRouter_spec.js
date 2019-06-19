@@ -3,9 +3,9 @@ const should = require('should'),
     _ = require('lodash'),
     settingsCache = require('../../../../server/services/settings/cache'),
     common = require('../../../../server/lib/common'),
-    controllers = require('../../../../server/services/routing/controllers'),
-    TaxonomyRouter = require('../../../../server/services/routing/TaxonomyRouter'),
-    RESOURCE_CONFIG = require('../../../../server/services/routing/config/v2');
+    controllers = require('../../../../frontend/services/routing/controllers'),
+    TaxonomyRouter = require('../../../../frontend/services/routing/TaxonomyRouter'),
+    RESOURCE_CONFIG = require('../../../../frontend/services/routing/config/v2');
 
 describe('UNIT - services/routing/TaxonomyRouter', function () {
     let req, res, next;
