@@ -3,7 +3,7 @@ var should = require('should'),
     urlUtils = require('../../utils/urlUtils'),
 
     // Stuff we are testing
-    helpers = require('../../../server/helpers'),
+    helpers = require('../../../frontend/helpers'),
     common = require('../../../server/lib/common');
 
 describe('{{image}} helper', function () {

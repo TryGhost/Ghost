@@ -1,7 +1,7 @@
 const settingsCache = require('./settings/cache');
 const _ = require('lodash');
 const Promise = require('bluebird');
-const SafeString = require('./themes/engine').SafeString;
+const SafeString = require('../../frontend/services/themes/engine').SafeString;
 const common = require('../lib/common');
 const config = require('../config');
 let labs = module.exports = {};

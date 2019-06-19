@@ -251,7 +251,7 @@ I18n = {
 
     /**
      * Exporting the current locale (e.g. "en") to make it available for other files as well,
-     * such as core/server/helpers/date.js and core/server/helpers/lang.js
+     * such as core/frontend/helpers/date.js and core/frontend/helpers/lang.js
      */
     locale: function locale() {
         return settingsCache.get('default_locale');

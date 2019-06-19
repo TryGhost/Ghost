@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    getPaginatedUrl = require('../../../../server/data/meta/paginated_url'),
+    getPaginatedUrl = require('../../../../frontend/meta/paginated_url'),
     urlUtils = require('../../../utils/urlUtils');
 
 describe('getPaginatedUrl', function () {

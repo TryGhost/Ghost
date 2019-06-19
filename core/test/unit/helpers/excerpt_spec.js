@@ -1,7 +1,7 @@
 var should = require('should'),
 
 // Stuff we are testing
-    helpers = require('../../../server/helpers');
+    helpers = require('../../../frontend/helpers');
 
 describe('{{excerpt}} Helper', function () {
     it('renders empty string when html and excerpt are null', function () {

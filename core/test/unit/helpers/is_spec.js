@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    helpers = require('../../../server/helpers'),
+    helpers = require('../../../frontend/helpers'),
     common = require('../../../server/lib/common');
 
 describe('{{#is}} helper', function () {

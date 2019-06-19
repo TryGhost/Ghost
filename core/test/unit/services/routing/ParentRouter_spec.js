@@ -3,7 +3,7 @@ const should = require('should'),
     configUtils = require('../../../utils/configUtils'),
     common = require('../../../../server/lib/common'),
     urlUtils = require('../../../../server/lib/url-utils'),
-    ParentRouter = require('../../../../server/services/routing/ParentRouter');
+    ParentRouter = require('../../../../frontend/services/routing/ParentRouter');
 
 describe('UNIT - services/routing/ParentRouter', function () {
     let req, res, next;

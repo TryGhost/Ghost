@@ -1,9 +1,8 @@
 const should = require('should'),
     sinon = require('sinon'),
     common = require('../../../../../server/lib/common'),
-    urlService = require('../../../../../server/services/url'),
     urlUtils = require('../../../../../server/lib/url-utils'),
-    middlewares = require('../../../../../server/services/routing/middlewares');
+    middlewares = require('../../../../../frontend/services/routing/middlewares');
 
 describe('UNIT: services/routing/middlewares/page-param', function () {
     let req, res, next;

@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('services:settings:validate');
 const common = require('../../lib/common');
-const themeService = require('../../services/themes');
+const themeService = require('../../../frontend/services/themes');
 const _private = {};
 let RESOURCE_CONFIG;
 
@@ -396,7 +396,7 @@ module.exports = function validate(object) {
 
     debug('api version', apiVersion);
 
-    RESOURCE_CONFIG = require(`../../services/routing/config/${apiVersion}`);
+    RESOURCE_CONFIG = require(`../../../frontend/services/routing/config/${apiVersion}`);
 
     object.routes = _private.validateRoutes(object.routes);
     object.collections = _private.validateCollections(object.collections);

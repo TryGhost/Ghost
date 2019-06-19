@@ -1,6 +1,6 @@
 const should = require('should'),
     testUtils = require('../../../../utils'),
-    helpers = require('../../../../../server/services/routing/helpers');
+    helpers = require('../../../../../frontend/services/routing/helpers');
 
 describe('Unit - services/routing/helpers/format-response', function () {
     let posts, tags;

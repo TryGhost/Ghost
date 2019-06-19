@@ -3,7 +3,7 @@ const Promise = require('bluebird');
 const should = require('should');
 const sinon = require('sinon');
 const common = require('../../../../server/lib/common');
-const Queue = require('../../../../server/services/url/Queue');
+const Queue = require('../../../../frontend/services/url/Queue');
 
 describe('Unit: services/url/Queue', function () {
     let queue;

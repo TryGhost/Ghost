@@ -2,7 +2,7 @@ const should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
     testUtils = require('../../../../utils'),
-    helpers = require('../../../../../server/services/routing/helpers'),
+    helpers = require('../../../../../frontend/services/routing/helpers'),
     labs = require('../../../../../server/services/labs');
 
 describe('Contexts', function () {
