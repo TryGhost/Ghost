@@ -1,8 +1,8 @@
 const should = require('should'),
     sinon = require('sinon'),
     urlUtils = require('../../../../server/lib/url-utils'),
-    urlService = require('../../../../server/services/url'),
-    getUrl = require('../../../../server/data/meta/url'),
+    urlService = require('../../../../frontend/services/url'),
+    getUrl = require('../../../../frontend/meta/url'),
     testUtils = require('../../../utils/');
 
 describe('getUrl', function () {

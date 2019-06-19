@@ -2,9 +2,9 @@ const should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../../../utils'),
     api = require('../../../../../server/api'),
-    themeService = require('../../../../../server/services/themes'),
-    helpers = require('../../../../../server/services/routing/helpers'),
-    controllers = require('../../../../../server/services/routing/controllers');
+    themeService = require('../../../../../frontend/services/themes'),
+    helpers = require('../../../../../frontend/services/routing/helpers'),
+    controllers = require('../../../../../frontend/services/routing/controllers');
 
 function failTest(done) {
     return function (err) {

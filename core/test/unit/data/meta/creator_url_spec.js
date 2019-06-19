@@ -1,5 +1,5 @@
 var should = require('should'),
-    getCreatorTwitterUrl = require('../../../../server/data/meta/creator_url');
+    getCreatorTwitterUrl = require('../../../../frontend/meta/creator_url');
 
 describe('getCreatorTwitterUrl', function () {
     it('should return author twitter url if post and has url',

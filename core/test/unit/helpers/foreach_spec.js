@@ -1,8 +1,8 @@
 var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
-    helpers = require.main.require('core/server/helpers'),
-    handlebars = require.main.require('core/server/services/themes/engine').handlebars;
+    helpers = require.main.require('core/frontend/helpers'),
+    handlebars = require.main.require('core/frontend/services/themes/engine').handlebars;
 
 describe('{{#foreach}} helper', function () {
     var options, context, _this, resultData;

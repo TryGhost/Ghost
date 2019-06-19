@@ -1,7 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
 
-    themeConfig = require('../../../../server/services/themes/config');
+    themeConfig = require('../../../../frontend/services/themes/config');
 
 describe('Themes', function () {
     afterEach(function () {

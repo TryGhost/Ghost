@@ -4,7 +4,7 @@ const should = require('should');
 const jsonpath = require('jsonpath');
 const sinon = require('sinon');
 const common = require('../../../../server/lib/common');
-const Urls = require('../../../../server/services/url/Urls');
+const Urls = require('../../../../frontend/services/url/Urls');
 
 describe('Unit: services/url/Urls', function () {
     let urls, eventsToRemember;

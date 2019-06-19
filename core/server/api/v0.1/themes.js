@@ -7,7 +7,7 @@ const debug = require('ghost-ignition').debug('api:themes'),
     common = require('../../lib/common'),
     models = require('../../models'),
     settingsCache = require('../../services/settings/cache'),
-    themeUtils = require('../../services/themes'),
+    themeUtils = require('../../../frontend/services/themes'),
     themeList = themeUtils.list;
 
 let themes;

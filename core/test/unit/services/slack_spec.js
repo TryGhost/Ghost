@@ -9,7 +9,7 @@ var should = require('should'),
     slack = rewire('../../../server/services/slack'),
     common = require('../../../server/lib/common'),
     imageLib = require('../../../server/lib/image'),
-    urlService = require('../../../server/services/url'),
+    urlService = require('../../../frontend/services/url'),
     schema = require('../../../server/data/schema').checks,
     settingsCache = require('../../../server/services/settings/cache'),
 

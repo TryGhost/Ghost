@@ -3,7 +3,7 @@ const _ = require('lodash');
 const debug = require('ghost-ignition').debug('error-handler');
 const config = require('../../../config');
 const common = require('../../../lib/common');
-const helpers = require('../../../services/routing/helpers');
+const helpers = require('../../../../frontend/services/routing/helpers');
 
 const escapeExpression = hbs.Utils.escapeExpression;
 const _private = {};
@@ -15,7 +15,7 @@ const errorHandler = {};
  */
 _private.createHbsEngine = () => {
     const engine = hbs.create();
-    engine.registerHelper('asset', require('../../../helpers/asset'));
+    engine.registerHelper('asset', require('../../../../frontend/helpers/asset'));
 
     return engine.express4();
 };

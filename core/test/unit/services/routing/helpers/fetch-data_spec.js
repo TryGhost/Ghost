@@ -1,7 +1,7 @@
 const should = require('should'),
     sinon = require('sinon'),
     api = require('../../../../../server/api')['v0.1'],
-    helpers = require('../../../../../server/services/routing/helpers'),
+    helpers = require('../../../../../frontend/services/routing/helpers'),
     testUtils = require('../../../../utils');
 
 describe('Unit - services/routing/helpers/fetch-data', function () {

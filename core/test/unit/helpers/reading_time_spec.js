@@ -1,7 +1,7 @@
 var should = require('should'),
 
 // Stuff we are testing
-    helpers = require('../../../server/helpers');
+    helpers = require('../../../frontend/helpers');
 
 var almostOneMinute =
     '<p>Ghost has a number of different user roles for your team</p>' +

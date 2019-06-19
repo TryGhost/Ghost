@@ -2,7 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
 
     express = require('express'),
-    themeUtils = require('../../../../server/services/themes'),
+    themeUtils = require('../../../../frontend/services/themes'),
     staticTheme = require('../../../../server/web/shared/middlewares/static-theme');
 
 describe('staticTheme', function () {

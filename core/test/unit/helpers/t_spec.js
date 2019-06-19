@@ -1,7 +1,7 @@
 const should = require('should'),
     path = require('path'),
     settingsCache = require('../../../server/services/settings/cache'),
-    helpers = require('../../../server/helpers'),
+    helpers = require('../../../frontend/helpers'),
     common = require('../../../server/lib/common'),
     configUtils = require('../../utils/configUtils');
 

@@ -1,5 +1,5 @@
 var should        = require('should'),
-    getBlogLogo   = require('../../../../server/data/meta/blog_logo'),
+    getBlogLogo   = require('../../../../frontend/meta/blog_logo'),
     sinon         = require('sinon'),
     settingsCache = require('../../../../server/services/settings/cache');
 

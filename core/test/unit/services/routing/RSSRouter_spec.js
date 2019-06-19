@@ -2,8 +2,8 @@ const should = require('should'),
     sinon = require('sinon'),
     configUtils = require('../../../utils/configUtils'),
     common = require('../../../../server/lib/common'),
-    controllers = require('../../../../server/services/routing/controllers'),
-    RSSRouter = require('../../../../server/services/routing/RSSRouter'),
+    controllers = require('../../../../frontend/services/routing/controllers'),
+    RSSRouter = require('../../../../frontend/services/routing/RSSRouter'),
     urlUtils = require('../../../../server/lib/url-utils');
 
 describe('UNIT - services/routing/RSSRouter', function () {

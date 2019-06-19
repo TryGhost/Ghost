@@ -1,8 +1,8 @@
 const should = require('should'),
     sinon = require('sinon'),
     ObjectId = require('bson-objectid'),
-    urlService = require('../../../../server/services/url'),
-    getAuthorUrl = require('../../../../server/data/meta/author_url');
+    urlService = require('../../../../frontend/services/url'),
+    getAuthorUrl = require('../../../../frontend/meta/author_url');
 
 describe('getAuthorUrl', function () {
     beforeEach(function () {

@@ -7,10 +7,10 @@ const config = require('../../config');
 const apps = require('../../services/apps');
 const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
-const urlService = require('../../services/url');
-const urlUtils = require('../../lib/url-utils');
-const sitemapHandler = require('../../data/xml/sitemap/handler');
-const themeMiddleware = require('../../services/themes').middleware;
+const urlService = require('../../../frontend/services/url');
+const urlUtils = require('../../../server/lib/url-utils');
+const sitemapHandler = require('../../../frontend/services/sitemap/handler');
+const themeMiddleware = require('../../../frontend/services/themes').middleware;
 const membersService = require('../../services/members');
 const siteRoutes = require('./routes');
 const shared = require('../shared');
@@ -87,7 +87,7 @@ module.exports = function setupSiteApp(options = {}) {
     // We do this here, at the top level, because helpers require so much stuff.
     // Moving this to being inside themes, where it probably should be requires the proxy to be refactored
     // Else we end up with circular dependencies
-    require('../../helpers').loadCoreHelpers();
+    require('../../../frontend/helpers').loadCoreHelpers();
     debug('Helpers done');
 
     // @TODO only loads this stuff if members is enabled

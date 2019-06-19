@@ -4,7 +4,7 @@ var should = require('should'),
     tmp = require('tmp'),
     join = require('path').join,
     config = require('../../../../server/config'),
-    themes = require('../../../../server/services/themes'),
+    themes = require('../../../../frontend/services/themes'),
     themeList = themes.list;
 
 describe('Themes', function () {

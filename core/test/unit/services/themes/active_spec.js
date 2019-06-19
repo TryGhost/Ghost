@@ -3,8 +3,8 @@ var should = require('should'),
 
     config = require('../../../../server/config'),
     // is only exposed via themes.getActive()
-    activeTheme = require('../../../../server/services/themes/active'),
-    engine = require('../../../../server/services/themes/engine');
+    activeTheme = require('../../../../frontend/services/themes/active'),
+    engine = require('../../../../frontend/services/themes/engine');
 
 describe('Themes', function () {
     afterEach(function () {

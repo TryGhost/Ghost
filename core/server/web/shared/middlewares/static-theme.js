@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const config = require('../../../config');
 const constants = require('../../../lib/constants');
-const themeUtils = require('../../../services/themes');
+const themeUtils = require('../../../../frontend/services/themes');
 
 function isBlackListedFileType(file) {
     const blackListedFileTypes = ['.hbs', '.md', '.json'];

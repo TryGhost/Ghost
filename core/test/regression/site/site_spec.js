@@ -7,7 +7,7 @@ const should = require('should'),
     urlUtils = require('../../utils/urlUtils'),
     appsService = require('../../../server/services/apps'),
     settingsService = require('../../../server/services/settings'),
-    themeService = require('../../../server/services/themes'),
+    themeService = require('../../../frontend/services/themes'),
     siteApp = require('../../../server/web/parent-app');
 
 describe('Integration - Web - Site', function () {

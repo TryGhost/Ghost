@@ -7,7 +7,7 @@ var should = require('should'),
     urlUtils = require('../../../utils/urlUtils'),
     config = configUtils.config;
 
-const getAssetUrl = rewire('../../../../server/data/meta/asset_url');
+const getAssetUrl = rewire('../../../../frontend/meta/asset_url');
 
 describe('getAssetUrl', function () {
     afterEach(function () {

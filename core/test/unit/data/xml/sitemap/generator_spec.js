@@ -4,11 +4,11 @@ const should = require('should'),
     _ = require('lodash'),
     testUtils = require('../../../../utils'),
     urlUtils = require('../../../../../server/lib/url-utils'),
-    IndexGenerator = require('../../../../../server/data/xml/sitemap/index-generator'),
-    PostGenerator = require('../../../../../server/data/xml/sitemap/post-generator'),
-    PageGenerator = require('../../../../../server/data/xml/sitemap/page-generator'),
-    TagGenerator = require('../../../../../server/data/xml/sitemap/tag-generator'),
-    UserGenerator = require('../../../../../server/data/xml/sitemap/user-generator');
+    IndexGenerator = require('../../../../../frontend/services/sitemap/index-generator'),
+    PostGenerator = require('../../../../../frontend/services/sitemap/post-generator'),
+    PageGenerator = require('../../../../../frontend/services/sitemap/page-generator'),
+    TagGenerator = require('../../../../../frontend/services/sitemap/tag-generator'),
+    UserGenerator = require('../../../../../frontend/services/sitemap/user-generator');
 
 should.Assertion.add('ValidUrlNode', function (options) {
     // Check urlNode looks correct

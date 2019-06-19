@@ -1,6 +1,6 @@
 var should = require('should'),
     // Stuff we are testing
-    input_email = require('../../../../server/apps/subscribers/lib/helpers/input_email');
+    input_email = require('../../../../frontend/apps/subscribers/lib/helpers/input_email');
 
 describe('{{input_email}} helper', function () {
     it('has input_email helper', function () {

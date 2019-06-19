@@ -4,7 +4,7 @@ const should = require('should'),
     urlUtils = require('../../../../server/lib/url-utils'),
     testUtils = require('../../../utils');
 
-let getAmpUrl = rewire('../../../../server/data/meta/amp_url');
+let getAmpUrl = rewire('../../../../frontend/meta/amp_url');
 
 describe('getAmpUrl', function () {
     let getUrlStub;
@@ -12,7 +12,7 @@ describe('getAmpUrl', function () {
     beforeEach(function () {
         getUrlStub = sinon.stub();
 
-        getAmpUrl = rewire('../../../../server/data/meta/amp_url');
+        getAmpUrl = rewire('../../../../frontend/meta/amp_url');
         getAmpUrl.__set__('getUrl', getUrlStub);
 
         sinon.stub(urlUtils, 'urlJoin');

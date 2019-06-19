@@ -1,7 +1,7 @@
 const should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
-    registry = rewire('../../../../server/services/routing/registry');
+    registry = rewire('../../../../frontend/services/routing/registry');
 
 describe('UNIT: services/routing/registry', function () {
     let getRssUrlStub;

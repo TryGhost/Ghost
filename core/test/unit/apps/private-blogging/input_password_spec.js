@@ -2,7 +2,7 @@
 var should = require('should'),
 
 // Stuff we are testing
-    input_password = require('../../../../server/apps/private-blogging/lib/helpers/input_password');
+    input_password = require('../../../../frontend/apps/private-blogging/lib/helpers/input_password');
 
 describe('{{input_password}} helper', function () {
     it('has input_password helper', function () {

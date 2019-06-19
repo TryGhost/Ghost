@@ -1,9 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
-const hbs = require('../../../../server/services/themes/engine');
-const themes = require('../../../../server/services/themes');
+const hbs = require('../../../../frontend/services/themes/engine');
+const themes = require('../../../../frontend/services/themes');
 // is only exposed via themes.getActive()
-const activeTheme = require('../../../../server/services/themes/active');
+const activeTheme = require('../../../../frontend/services/themes/active');
 const settingsCache = require('../../../../server/services/settings/cache');
 const middleware = themes.middleware;
 

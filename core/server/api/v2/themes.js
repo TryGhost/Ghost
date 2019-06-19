@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 const fs = require('fs-extra');
 const debug = require('ghost-ignition').debug('api:themes');
 const common = require('../../lib/common');
-const themeService = require('../../services/themes');
+const themeService = require('../../../frontend/services/themes');
 const settingsCache = require('../../services/settings/cache');
 const models = require('../../models');
 

@@ -1,5 +1,5 @@
 var should = require('should'),
-    getStructuredData = require('../../../../server/data/meta/structured_data');
+    getStructuredData = require('../../../../frontend/meta/structured_data');
 
 describe('getStructuredData', function () {
     it('should return structured data from metadata per post', function (done) {

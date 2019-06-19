@@ -3,7 +3,7 @@ var should = require('should'),
     Promise = require('bluebird'),
 
     // Stuff we are testing
-    helpers = require('../../../server/helpers'),
+    helpers = require('../../../frontend/helpers'),
     models = require('../../../server/models'),
     api = require('../../../server/api'),
 

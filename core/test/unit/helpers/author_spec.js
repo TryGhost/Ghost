@@ -1,8 +1,8 @@
 const should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../utils'),
-    urlService = require('../../../server/services/url'),
-    helpers = require('../../../server/helpers');
+    urlService = require('../../../frontend/services/url'),
+    helpers = require('../../../frontend/helpers');
 
 describe('{{author}} helper', function () {
     beforeEach(function () {

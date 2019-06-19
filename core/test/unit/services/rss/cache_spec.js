@@ -2,7 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
     configUtils = require('../../../utils/configUtils'),
-    rssCache = rewire('../../../../server/services/rss/cache');
+    rssCache = rewire('../../../../frontend/services/rss/cache');
 
 describe('RSS: Cache', function () {
     var generateSpy, generateFeedReset;

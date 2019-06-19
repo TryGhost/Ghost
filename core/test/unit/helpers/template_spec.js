@@ -1,6 +1,6 @@
 var should = require('should'),
-    hbs = require.main.require('core/server/services/themes/engine'),
-    template = require.main.require('core/server/helpers/template');
+    hbs = require.main.require('core/frontend/services/themes/engine'),
+    template = require.main.require('core/frontend/helpers/template');
 
 describe('Helpers Template', function () {
     it('can execute a template', function () {

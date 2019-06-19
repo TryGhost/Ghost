@@ -1,5 +1,5 @@
 var should = require('should'),
-    getSchema = require('../../../../server/data/meta/schema'),
+    getSchema = require('../../../../frontend/meta/schema'),
     markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
 
 describe('getSchema', function () {

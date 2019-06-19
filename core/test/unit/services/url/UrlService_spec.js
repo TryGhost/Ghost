@@ -4,11 +4,11 @@ const rewire = require('rewire');
 const should = require('should');
 const sinon = require('sinon');
 const common = require('../../../../server/lib/common');
-const Queue = require('../../../../server/services/url/Queue');
-const Resources = require('../../../../server/services/url/Resources');
-const UrlGenerator = require('../../../../server/services/url/UrlGenerator');
-const Urls = require('../../../../server/services/url/Urls');
-const UrlService = rewire('../../../../server/services/url/UrlService');
+const Queue = require('../../../../frontend/services/url/Queue');
+const Resources = require('../../../../frontend/services/url/Resources');
+const UrlGenerator = require('../../../../frontend/services/url/UrlGenerator');
+const Urls = require('../../../../frontend/services/url/Urls');
+const UrlService = rewire('../../../../frontend/services/url/UrlService');
 
 describe('Unit: services/url/UrlService', function () {
     let QueueStub, ResourcesStub, UrlsStub, UrlGeneratorStub, urlService;

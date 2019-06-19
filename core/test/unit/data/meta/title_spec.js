@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    getTitle = require('../../../../server/data/meta/title'),
+    getTitle = require('../../../../frontend/meta/title'),
     settingsCache = require('../../../../server/services/settings/cache');
 
 describe('getTitle', function () {

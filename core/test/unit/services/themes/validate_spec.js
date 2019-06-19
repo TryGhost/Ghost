@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 
-const themes = require('../../../../server/services/themes');
+const themes = require('../../../../frontend/services/themes');
 const validate = themes.validate;
 
 const gscan = require('gscan');

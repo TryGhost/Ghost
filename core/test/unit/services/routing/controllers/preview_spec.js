@@ -4,9 +4,9 @@ const should = require('should'),
     testUtils = require('../../../../utils'),
     configUtils = require('../../../../utils/configUtils'),
     api = require('../../../../../server/api'),
-    controllers = require('../../../../../server/services/routing/controllers'),
-    helpers = require('../../../../../server/services/routing/helpers'),
-    urlService = require('../../../../../server/services/url'),
+    controllers = require('../../../../../frontend/services/routing/controllers'),
+    helpers = require('../../../../../frontend/services/routing/helpers'),
+    urlService = require('../../../../../frontend/services/url'),
     urlUtils = require('../../../../../server/lib/url-utils'),
 
     EDITOR_URL = '/editor/post/';

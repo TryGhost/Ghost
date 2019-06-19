@@ -4,7 +4,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     configUtils = require('../../utils/configUtils'),
-    helpers = require('../../../server/helpers'),
+    helpers = require('../../../frontend/helpers'),
     settingsCache = require('../../../server/services/settings/cache');
 
 describe('{{asset}} helper', function () {

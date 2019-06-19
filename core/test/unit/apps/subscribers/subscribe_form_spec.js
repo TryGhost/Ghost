@@ -1,8 +1,8 @@
 var should = require('should'),
-    hbs = require('../../../../server/services/themes/engine'),
+    hbs = require('../../../../frontend/services/themes/engine'),
     configUtils = require('../../../utils/configUtils'),
     // Stuff we are testing
-    subscribe_form = require('../../../../server/apps/subscribers/lib/helpers/subscribe_form');
+    subscribe_form = require('../../../../frontend/apps/subscribers/lib/helpers/subscribe_form');
 
 describe('{{subscribe_form}} helper', function () {
     before(function (done) {
