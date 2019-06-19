@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('services:routing:static-routes-router');
 const common = require('../../lib/common');
-const urlService = require('../../services/url');
+const urlUtils = require('../../lib/url-utils');
 const RSSRouter = require('./RSSRouter');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
@@ -59,7 +59,7 @@ class StaticRoutesRouter extends ParentRouter {
 
         // REGISTER: pagination
         this.router().param('page', middlewares.pageParam);
-        this.mountRoute(urlService.utils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers[this.controller]);
+        this.mountRoute(urlUtils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers[this.controller]);
 
         common.events.emit('router.created', this);
     }

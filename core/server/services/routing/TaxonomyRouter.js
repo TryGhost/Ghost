@@ -2,7 +2,7 @@ const debug = require('ghost-ignition').debug('services:routing:taxonomy-router'
 const common = require('../../lib/common');
 const ParentRouter = require('./ParentRouter');
 const RSSRouter = require('./RSSRouter');
-const urlService = require('../url');
+const urlUtils = require('../../lib/url-utils');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
 
@@ -50,10 +50,10 @@ class TaxonomyRouter extends ParentRouter {
 
         // REGISTER: enable pagination for each taxonomy by default
         this.router().param('page', middlewares.pageParam);
-        this.mountRoute(urlService.utils.urlJoin(this.permalinks.value, 'page', ':page(\\d+)'), controllers.channel);
+        this.mountRoute(urlUtils.urlJoin(this.permalinks.value, 'page', ':page(\\d+)'), controllers.channel);
 
         // REGISTER: edit redirect to admin client e.g. /tag/:slug/edit
-        this.mountRoute(urlService.utils.urlJoin(this.permalinks.value, 'edit'), this._redirectEditOption.bind(this));
+        this.mountRoute(urlUtils.urlJoin(this.permalinks.value, 'edit'), this._redirectEditOption.bind(this));
 
         common.events.emit('router.created', this);
     }
@@ -88,7 +88,7 @@ class TaxonomyRouter extends ParentRouter {
      * @private
      */
     _redirectEditOption(req, res) {
-        urlService.utils.redirectToAdmin(302, res, this.RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].editRedirect.replace(':slug', req.params.slug));
+        urlUtils.redirectToAdmin(302, res, this.RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].editRedirect.replace(':slug', req.params.slug));
     }
 
     /**

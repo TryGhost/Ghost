@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    urlService = require('../../../../server/services/url'),
+    urlUtils = require('../../../../server/lib/url-utils'),
 
     // Stuff we are testing
     storageUtils = require('../../../../server/adapters/storage/utils');
@@ -22,9 +22,9 @@ describe('storage utils', function () {
             var url = 'http://myblog.com/content/images/2017/07/ghost-logo.png',
                 result;
 
-            urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = storageUtils.getLocalFileStoragePath(url);
@@ -39,9 +39,9 @@ describe('storage utils', function () {
             var url = 'https://myblog.com/content/images/2017/07/ghost-logo.png',
                 result;
 
-            urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = storageUtils.getLocalFileStoragePath(url);
@@ -53,9 +53,9 @@ describe('storage utils', function () {
             var url = 'http://myblog.com/blog/content/images/2017/07/ghost-logo.png',
                 result;
 
-            urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('/blog');
 
             result = storageUtils.getLocalFileStoragePath(url);
@@ -67,9 +67,9 @@ describe('storage utils', function () {
             var filePath = '/content/images/2017/07/ghost-logo.png',
                 result;
 
-            urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = storageUtils.getLocalFileStoragePath(filePath);
@@ -81,9 +81,9 @@ describe('storage utils', function () {
             var filePath = '/blog/content/images/2017/07/ghost-logo.png',
                 result;
 
-            urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('/blog');
 
             result = storageUtils.getLocalFileStoragePath(filePath);
@@ -95,9 +95,9 @@ describe('storage utils', function () {
             var url = 'http://example-blog.com/ghost-logo.png',
                 result;
 
-            urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = storageUtils.getLocalFileStoragePath(url);
@@ -111,9 +111,9 @@ describe('storage utils', function () {
             var url = 'http://myblog.com/content/images/2017/07/ghost-logo.png',
                 result;
 
-            urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = storageUtils.isLocalImage(url);
@@ -128,9 +128,9 @@ describe('storage utils', function () {
             var url = 'https://myblog.com/content/images/2017/07/ghost-logo.png',
                 result;
 
-            urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = storageUtils.isLocalImage(url);
@@ -142,9 +142,9 @@ describe('storage utils', function () {
             var url = 'http://myblog.com/blog/content/images/2017/07/ghost-logo.png',
                 result;
 
-            urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('/blog');
 
             result = storageUtils.isLocalImage(url);
@@ -156,9 +156,9 @@ describe('storage utils', function () {
             var url = '/content/images/2017/07/ghost-logo.png',
                 result;
 
-            urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = storageUtils.isLocalImage(url);
@@ -170,9 +170,9 @@ describe('storage utils', function () {
             var url = '/blog/content/images/2017/07/ghost-logo.png',
                 result;
 
-            urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('/blog');
 
             result = storageUtils.isLocalImage(url);
@@ -184,9 +184,9 @@ describe('storage utils', function () {
             var url = 'http://somewebsite.com/ghost-logo.png',
                 result;
 
-            urlForStub = sinon.stub(urlService.utils, 'urlFor');
+            urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
-            urlGetSubdirStub = sinon.stub(urlService.utils, 'getSubdir');
+            urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
             result = storageUtils.isLocalImage(url);

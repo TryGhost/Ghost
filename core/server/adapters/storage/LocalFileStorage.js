@@ -9,7 +9,7 @@ const serveStatic = require('express').static,
     config = require('../../config'),
     common = require('../../lib/common'),
     constants = require('../../lib/constants'),
-    urlService = require('../../services/url'),
+    urlUtils = require('../../lib/url-utils'),
     StorageBase = require('ghost-storage-base');
 
 class LocalFileStore extends StorageBase {
@@ -35,8 +35,8 @@ class LocalFileStore extends StorageBase {
             .then(() => {
                 // For local file system storage can use relative path so add a slash
                 const fullUrl = (
-                    urlService.utils.urlJoin('/', urlService.utils.getSubdir(),
-                        urlService.utils.STATIC_IMAGE_URL_PREFIX,
+                    urlUtils.urlJoin('/', urlUtils.getSubdir(),
+                        urlUtils.STATIC_IMAGE_URL_PREFIX,
                         targetPath)
                 ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
 
@@ -68,8 +68,8 @@ class LocalFileStore extends StorageBase {
             // The src for the image must be in URI format, not a file system path, which in Windows uses \
             // For local file system storage can use relative path so add a slash
             const fullUrl = (
-                urlService.utils.urlJoin('/', urlService.utils.getSubdir(),
-                    urlService.utils.STATIC_IMAGE_URL_PREFIX,
+                urlUtils.urlJoin('/', urlUtils.getSubdir(),
+                    urlUtils.STATIC_IMAGE_URL_PREFIX,
                     path.relative(this.storagePath, targetFilename))
             ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
 

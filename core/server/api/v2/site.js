@@ -1,6 +1,6 @@
 const ghostVersion = require('../../lib/ghost-version');
 const settingsCache = require('../../services/settings/cache');
-const urlService = require('../../services/url');
+const urlUtils = require('../../lib/url-utils');
 
 const site = {
     docName: 'site',
@@ -10,7 +10,7 @@ const site = {
         query() {
             return {
                 title: settingsCache.get('title'),
-                url: urlService.utils.urlFor('home', true),
+                url: urlUtils.urlFor('home', true),
                 version: ghostVersion.safe
             };
         }

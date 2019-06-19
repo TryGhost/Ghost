@@ -1,4 +1,5 @@
 var schema = require('../schema').checks,
+    urlUtils = require('../../lib/url-utils'),
     urlService = require('../../services/url');
 
 // This cleans the url from any `/amp` postfixes, so we'll never
@@ -26,9 +27,7 @@ function getUrl(data, absolute) {
          * A long term solution should be part of the final version of Dynamic Routing.
          */
         if (data.status !== 'published' && urlService.getUrlByResourceId(data.id) === '/404/') {
-            return urlService
-                .utils
-                .urlFor({relativeUrl: urlService.utils.urlJoin('/p', data.uuid, '/'), secure: data.secure}, null, absolute);
+            return urlUtils.urlFor({relativeUrl: urlUtils.urlJoin('/p', data.uuid, '/'), secure: data.secure}, null, absolute);
         }
 
         return urlService.getUrlByResourceId(data.id, {secure: data.secure, absolute: absolute, withSubdirectory: true});
@@ -39,11 +38,11 @@ function getUrl(data, absolute) {
     }
 
     if (schema.isNav(data)) {
-        return urlService.utils.urlFor('nav', {nav: data, secure: data.secure}, absolute);
+        return urlUtils.urlFor('nav', {nav: data, secure: data.secure}, absolute);
     }
 
     // sanitize any trailing `/amp` in the url
-    return sanitizeAmpUrl(urlService.utils.urlFor(data, {}, absolute));
+    return sanitizeAmpUrl(urlUtils.urlFor(data, {}, absolute));
 }
 
 module.exports = getUrl;

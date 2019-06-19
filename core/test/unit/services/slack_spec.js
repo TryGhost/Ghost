@@ -8,6 +8,7 @@ var should = require('should'),
     // Stuff we test
     slack = rewire('../../../server/services/slack'),
     common = require('../../../server/lib/common'),
+    imageLib = require('../../../server/lib/image'),
     urlService = require('../../../server/services/url'),
     schema = require('../../../server/data/schema').checks,
     settingsCache = require('../../../server/services/settings/cache'),
@@ -107,6 +108,8 @@ describe('Slack', function () {
             slackReset = slack.__set__('request', makeRequestStub);
             makeRequestStub.resolves();
 
+            sinon.stub(imageLib.blogIcon, 'getIconUrl').returns('http://myblog.com/favicon.ico');
+
             configUtils.set('url', 'http://myblog.com');
         });
 
@@ -141,6 +144,7 @@ describe('Slack', function () {
             requestData.attachments[0].fields[0].value.should.equal('## markdown.');
             requestData.attachments[0].should.not.have.property('author_name');
             requestData.icon_url.should.equal('http://myblog.com/favicon.ico');
+
             requestData.username.should.equal('Ghost');
             requestData.unfurl_links.should.equal(true);
         });
@@ -150,8 +154,6 @@ describe('Slack', function () {
 
             isPostStub.returns(false);
             settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
-
-            configUtils.set('url', 'https://myblog.com');
 
             // execute code
             ping({message: 'Hi!'});
@@ -167,7 +169,7 @@ describe('Slack', function () {
 
             requestUrl.should.equal(slackObjWithUrl[0].url);
             requestData.text.should.equal('Hi!');
-            requestData.icon_url.should.equal('https://myblog.com/favicon.ico');
+            requestData.icon_url.should.equal('http://myblog.com/favicon.ico');
             requestData.username.should.equal('Ghost');
             requestData.unfurl_links.should.equal(true);
         });

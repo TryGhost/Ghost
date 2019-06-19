@@ -1,5 +1,5 @@
 var _ = require('lodash'),
-    urlService = require('../../services/url');
+    urlUtils = require('../../lib/url-utils');
 
 function getPaginatedUrl(page, data, absolute) {
     // If we don't have enough information, return null right away
@@ -7,7 +7,7 @@ function getPaginatedUrl(page, data, absolute) {
         return null;
     }
     // routeKeywords.page: 'page'
-    var pagePath = urlService.utils.urlJoin('/page/'),
+    var pagePath = urlUtils.urlJoin('/page/'),
         // Try to match the base url, as whatever precedes the pagePath
         // routeKeywords.page: 'page'
         baseUrlPattern = new RegExp('(.+)?(/page/\\d+/)'),
@@ -17,20 +17,20 @@ function getPaginatedUrl(page, data, absolute) {
         newRelativeUrl;
 
     if (page === 'next' && data.pagination.next) {
-        newRelativeUrl = urlService.utils.urlJoin(pagePath, data.pagination.next, '/');
+        newRelativeUrl = urlUtils.urlJoin(pagePath, data.pagination.next, '/');
     } else if (page === 'prev' && data.pagination.prev) {
-        newRelativeUrl = data.pagination.prev > 1 ? urlService.utils.urlJoin(pagePath, data.pagination.prev, '/') : '/';
+        newRelativeUrl = data.pagination.prev > 1 ? urlUtils.urlJoin(pagePath, data.pagination.prev, '/') : '/';
     } else if (_.isNumber(page)) {
-        newRelativeUrl = page > 1 ? urlService.utils.urlJoin(pagePath, page, '/') : '/';
+        newRelativeUrl = page > 1 ? urlUtils.urlJoin(pagePath, page, '/') : '/';
     } else {
         // If none of the cases match, return null right away
         return null;
     }
 
     // baseUrl can be undefined, if there was nothing preceding the pagePath (e.g. first page of the index channel)
-    newRelativeUrl = baseUrl ? urlService.utils.urlJoin(baseUrl, newRelativeUrl) : newRelativeUrl;
+    newRelativeUrl = baseUrl ? urlUtils.urlJoin(baseUrl, newRelativeUrl) : newRelativeUrl;
 
-    return urlService.utils.urlFor({relativeUrl: newRelativeUrl, secure: data.secure}, absolute);
+    return urlUtils.urlFor({relativeUrl: newRelativeUrl, secure: data.secure}, absolute);
 }
 
 module.exports = getPaginatedUrl;

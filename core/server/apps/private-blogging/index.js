@@ -1,4 +1,4 @@
-const urlService = require('../../services/url'),
+const urlUtils = require('../../lib/url-utils'),
     common = require('../../lib/common'),
     middleware = require('./lib/middleware'),
     router = require('./lib/router'),
@@ -9,8 +9,8 @@ const urlService = require('../../services/url'),
 let checkSubdir = function checkSubdir() {
     let paths = '';
 
-    if (urlService.utils.getSubdir()) {
-        paths = urlService.utils.getSubdir().split('/');
+    if (urlUtils.getSubdir()) {
+        paths = urlUtils.getSubdir().split('/');
 
         if (paths.pop() === PRIVATE_KEYWORD) {
             common.logging.error(new common.errors.GhostError({

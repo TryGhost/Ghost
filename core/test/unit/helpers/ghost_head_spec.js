@@ -3,6 +3,7 @@ const should = require('should'),
     _ = require('lodash'),
     moment = require('moment'),
     testUtils = require('../../utils'),
+    testUrlUtils = require('../../utils/urlUtils'),
     configUtils = require('../../utils/configUtils'),
     themes = require('../../../server/services/themes'),
     models = require('../../../server/models'),
@@ -296,8 +297,16 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('without Code Injection', function () {
+        let sandbox;
+
         before(function () {
-            configUtils.set('url', 'http://localhost:65530/');
+            sandbox = sinon.createSandbox();
+
+            testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/'}, sandbox);
+        });
+
+        after(function () {
+            sandbox.restore();
         });
 
         it('returns meta tag string on paginated index page without structured data and schema', function (done) {
@@ -1234,50 +1243,62 @@ describe('{{ghost_head}} helper', function () {
                 done();
             }).catch(done);
         });
+    });
 
-        describe('with /blog subdirectory', function () {
-            before(function () {
-                settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
+    describe('with /blog subdirectory', function () {
+        let sandbox;
 
-                configUtils.set({
-                    url: 'http://localhost:65530/blog/'
-                });
+        before(function () {
+            sandbox = sinon.createSandbox();
 
-                routing.registry.getRssUrl.returns('http://localhost:65530/blog/rss/');
-            });
+            settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
 
-            after(function () {
-                routing.registry.getRssUrl.returns('http://localhost:65530/rss/');
-            });
+            testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/blog'}, sandbox);
 
-            it('returns correct rss url with subdirectory', function (done) {
-                helpers.ghost_head(testUtils.createHbsResponse({
-                    locals: {
-                        context: ['paged', 'index'],
-                        safeVersion: '0.3'
-                    }
-                })).then(function (rendered) {
-                    should.exist(rendered);
-                    rendered.string.should.match(/<link rel="shortcut icon" href="\/blog\/favicon.png" type="image\/png" \/>/);
-                    rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/blog\/" \/>/);
-                    rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                    rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/blog\/rss\/" \/>/);
-                    rendered.string.should.not.match(/<meta name="description" /);
+            routing.registry.getRssUrl.returns('http://localhost:65530/blog/rss/');
+        });
 
-                    done();
-                }).catch(done);
-            });
+        after(function () {
+            sandbox.restore();
+            routing.registry.getRssUrl.returns('http://localhost:65530/rss/');
+        });
+
+        it('returns correct rss url with subdirectory', function (done) {
+            helpers.ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    context: ['paged', 'index'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/<link rel="shortcut icon" href="\/blog\/favicon.png" type="image\/png" \/>/);
+                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/blog\/" \/>/);
+                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
+                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/blog\/rss\/" \/>/);
+                rendered.string.should.not.match(/<meta name="description" /);
+
+                done();
+            }).catch(done);
         });
     });
 
     describe('with changed origin in config file', function () {
+        let sandbox;
+
         before(function () {
+            sandbox = sinon.createSandbox();
+
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
 
             configUtils.set({
-                url: 'http://localhost:65530/blog/',
                 referrerPolicy: 'origin'
             });
+
+            testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/blog'}, sandbox);
+        });
+
+        after(function () {
+            sandbox.restore();
         });
 
         it('contains the changed origin', function (done) {
@@ -1298,15 +1319,23 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with useStructuredData is set to false in config file', function () {
+        let sandbox;
+
         before(function () {
+            sandbox = sinon.createSandbox();
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
 
             configUtils.set({
-                url: 'http://localhost:65530/',
                 privacy: {
                     useStructuredData: false
                 }
             });
+
+            testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/'}, sandbox);
+        });
+
+        after(function () {
+            sandbox.restore();
         });
 
         it('does not return structured data', function (done) {
@@ -1338,13 +1367,18 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with Code Injection', function () {
+        let sandbox;
+
         before(function () {
+            sandbox = sinon.createSandbox();
             settingsCache.get.withArgs('icon').returns('/content/images/favicon.png');
             settingsCache.get.withArgs('ghost_head').returns('<style>body {background: red;}</style>');
 
-            configUtils.set({
-                url: 'http://localhost:65530/'
-            });
+            testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/'}, sandbox);
+        });
+
+        after(function () {
+            sandbox.restore();
         });
 
         it('returns meta tag plus injected code', function (done) {
@@ -1456,10 +1490,15 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with Ajax Helper', function () {
+        let sandbox;
+
         before(function () {
-            configUtils.set({
-                url: 'http://localhost:65530/'
-            });
+            sandbox = sinon.createSandbox();
+            testUrlUtils.stubUrlUtils({url: 'http://localhost:65530/'}, sandbox);
+        });
+
+        after(function () {
+            sandbox.restore();
         });
 
         it('renders script tag with src', function (done) {
@@ -1530,10 +1569,6 @@ describe('{{ghost_head}} helper', function () {
 
     describe('amp is disabled', function () {
         before(function () {
-            configUtils.set({
-                url: 'http://localhost:65530/'
-            });
-
             settingsCache.get.withArgs('amp').returns(false);
         });
 

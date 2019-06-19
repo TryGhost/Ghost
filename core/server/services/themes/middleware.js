@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const hbs = require('./engine');
-const urlService = require('../url');
+const urlUtils = require('../../lib/url-utils');
 const config = require('../../config');
 const common = require('../../lib/common');
 const settingsCache = require('../settings/cache');
@@ -75,7 +75,7 @@ function updateLocalTemplateData(req, res, next) {
 function updateLocalTemplateOptions(req, res, next) {
     const localTemplateOptions = hbs.getLocalTemplateOptions(res.locals);
     const siteData = {
-        url: urlService.utils.urlFor('home', {secure: req.secure, trailingSlash: false}, true)
+        url: urlUtils.urlFor('home', {secure: req.secure, trailingSlash: false}, true)
     };
 
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {

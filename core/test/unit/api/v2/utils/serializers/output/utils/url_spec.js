@@ -2,13 +2,14 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../../utils');
 const urlService = require('../../../../../../../../server/services/url');
+const urlUtils = require('../../../../../../../../server/lib/url-utils');
 const urlUtil = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/url');
 
 describe('Unit: v2/utils/serializers/output/utils/url', () => {
     beforeEach(() => {
         sinon.stub(urlService, 'getUrlByResourceId').returns('getUrlByResourceId');
-        sinon.stub(urlService.utils, 'urlFor').returns('urlFor');
-        sinon.stub(urlService.utils, 'makeAbsoluteUrls').returns({html: sinon.stub()});
+        sinon.stub(urlUtils, 'urlFor').returns('urlFor');
+        sinon.stub(urlUtils, 'makeAbsoluteUrls').returns({html: sinon.stub()});
     });
 
     afterEach(() => {
@@ -34,12 +35,12 @@ describe('Unit: v2/utils/serializers/output/utils/url', () => {
 
             post.hasOwnProperty('url').should.be.true();
 
-            urlService.utils.urlFor.callCount.should.eql(2);
-            urlService.utils.urlFor.getCall(0).args.should.eql(['image', {image: 'value'}, true]);
-            urlService.utils.urlFor.getCall(1).args.should.eql(['home', true]);
+            urlUtils.urlFor.callCount.should.eql(2);
+            urlUtils.urlFor.getCall(0).args.should.eql(['image', {image: 'value'}, true]);
+            urlUtils.urlFor.getCall(1).args.should.eql(['home', true]);
 
-            urlService.utils.makeAbsoluteUrls.callCount.should.eql(1);
-            urlService.utils.makeAbsoluteUrls.getCall(0).args.should.eql([
+            urlUtils.makeAbsoluteUrls.callCount.should.eql(1);
+            urlUtils.makeAbsoluteUrls.getCall(0).args.should.eql([
                 '## markdown',
                 'urlFor',
                 'getUrlByResourceId',

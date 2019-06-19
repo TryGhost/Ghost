@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
 const config = require('../../../config');
-const urlService = require('../../../services/url');
+const urlUtils = require('../../../lib/url-utils');
 
 function createPublicFileMiddleware(file, type, maxAge) {
     let content;
@@ -24,8 +24,8 @@ function createPublicFileMiddleware(file, type, maxAge) {
             let str = buf.toString();
 
             if (type === 'text/xsl' || type === 'text/plain' || type === 'application/javascript') {
-                str = str.replace(blogRegex, urlService.utils.urlFor('home', true).replace(/\/$/, ''));
-                str = str.replace(apiRegex, urlService.utils.urlFor('api', {cors: true, version: 'v0.1', versionType: 'content'}, true));
+                str = str.replace(blogRegex, urlUtils.urlFor('home', true).replace(/\/$/, ''));
+                str = str.replace(apiRegex, urlUtils.urlFor('api', {cors: true, version: 'v0.1', versionType: 'content'}, true));
             }
 
             content = {

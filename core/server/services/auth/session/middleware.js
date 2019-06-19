@@ -6,7 +6,7 @@ const config = require('../../../config');
 const settingsCache = require('../../settings/cache');
 const models = require('../../../models');
 const SessionStore = require('./store');
-const urlService = require('../../url');
+const urlUtils = require('../../../lib/url-utils');
 
 const getOrigin = (req) => {
     const origin = req.get('origin');
@@ -39,9 +39,9 @@ const getSession = (req, res, next) => {
             cookie: {
                 maxAge: constants.SIX_MONTH_MS,
                 httpOnly: true,
-                path: urlService.utils.getSubdir() + '/ghost',
+                path: urlUtils.getSubdir() + '/ghost',
                 sameSite: 'lax',
-                secure: urlService.utils.isSSL(config.get('url'))
+                secure: urlUtils.isSSL(config.get('url'))
             }
         });
     }
