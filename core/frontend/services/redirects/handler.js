@@ -1,7 +1,11 @@
 const fs = require('fs-extra');
+const path = require('path');
 const Promise = require('bluebird');
+const moment = require('moment-timezone');
 
+const config = require('../../../server/config');
 const common = require('../../../server/lib/common');
+const validation = require('../../../server/data/validation');
 
 const readRedirectsFile = (customRedirectsPath) => {
     const redirectsPath = customRedirectsPath;
@@ -33,4 +37,36 @@ const readRedirectsFile = (customRedirectsPath) => {
         });
 };
 
+const activate = (filePath) => {
+    const redirectsPath = path.join(config.getContentPath('data'), 'redirects.json');
+    const backupRedirectsPath = path.join(config.getContentPath('data'), `redirects-${moment().format('YYYY-MM-DD-HH-mm-ss')}.json`);
+
+    return fs.pathExists(redirectsPath)
+        .then((exists) => {
+            if (!exists) {
+                return null;
+            }
+
+            return fs.pathExists(backupRedirectsPath)
+                .then((exists) => {
+                    if (!exists) {
+                        return null;
+                    }
+
+                    return fs.unlink(backupRedirectsPath);
+                })
+                .then(() => {
+                    return fs.move(redirectsPath, backupRedirectsPath);
+                });
+        })
+        .then(() => {
+            return readRedirectsFile(filePath)
+                .then((content) => {
+                    validation.validateRedirects(content);
+                    return fs.writeFile(redirectsPath, JSON.stringify(content), 'utf-8');
+                });
+        });
+};
+
 module.exports.readRedirectsFile = readRedirectsFile;
+module.exports.activate = activate;
