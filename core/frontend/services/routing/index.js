@@ -17,9 +17,5 @@ module.exports = {
 
     get TaxonomyRouter() {
         return require('./TaxonomyRouter');
-    },
-
-    get settings() {
-        return require('./SettingsHandler');
     }
 };
