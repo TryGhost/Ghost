@@ -66,5 +66,24 @@ const activate = (filePath) => {
         });
 };
 
+const serve = () => {
+    const routesPath = path.join(config.getContentPath('settings'), 'routes.yaml');
+
+    return fs.readFile(routesPath, 'utf-8')
+        .catch((err) => {
+            if (err.code === 'ENOENT') {
+                return Promise.resolve([]);
+            }
+
+            if (common.errors.utils.isIgnitionError(err)) {
+                throw err;
+            }
+
+            throw new common.errors.NotFoundError({
+                err: err
+            });
+        });
+};
+
 module.exports.activate = activate;
-// module.exports.serve = serve;
+module.exports.serve = serve;
