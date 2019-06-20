@@ -6,7 +6,7 @@ const sinon = require('sinon'),
 
     yamlParser = require('../../../../frontend/services/settings/yaml-parser');
 
-describe('UNIT > Settings Service:', function () {
+describe('UNIT > Settings Service yaml parser:', function () {
     let yamlSpy;
 
     beforeEach(function () {

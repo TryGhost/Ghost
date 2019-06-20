@@ -6,9 +6,9 @@ const sinon = require('sinon'),
     configUtils = require('../../../utils/configUtils'),
     common = require('../../../../server/lib/common'),
 
-    ensureSettings = require('../../../../server/services/settings/ensure-settings');
+    ensureSettings = require('../../../../frontend/services/settings/ensure-settings');
 
-describe('UNIT > Settings Service:', function () {
+describe('UNIT > Settings Service ensure settings:', function () {
     beforeEach(function () {
         configUtils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures/'));
         sinon.stub(fs, 'readFile');
@@ -32,7 +32,7 @@ describe('UNIT > Settings Service:', function () {
         });
 
         it('copies default settings file if not found but does not overwrite existing files', function () {
-            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../server/services/settings/default-globals.yaml');
+            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../frontend/services/settings/default-globals.yaml');
             const expectedContentPath = path.join(__dirname, '../../../utils/fixtures/settings/globals.yaml');
             const fsError = new Error('not found');
             fsError.code = 'ENOENT';
@@ -49,7 +49,7 @@ describe('UNIT > Settings Service:', function () {
         });
 
         it('copies default settings file if no file found', function () {
-            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../server/services/settings/default-routes.yaml');
+            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../frontend/services/settings/default-routes.yaml');
             const expectedContentPath = path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml');
             const fsError = new Error('not found');
             fsError.code = 'ENOENT';

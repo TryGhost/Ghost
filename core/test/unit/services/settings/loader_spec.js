@@ -7,7 +7,7 @@ const sinon = require('sinon'),
     common = require('../../../../server/lib/common'),
     loadSettings = rewire('../../../../frontend/services/settings/loader');
 
-describe('UNIT > Settings Service:', function () {
+describe('UNIT > Settings Service loader:', function () {
     beforeEach(function () {
         configUtils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures/'));
     });
