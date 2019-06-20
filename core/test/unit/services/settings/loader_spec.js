@@ -5,7 +5,7 @@ const sinon = require('sinon'),
     path = require('path'),
     configUtils = require('../../../utils/configUtils'),
     common = require('../../../../server/lib/common'),
-    loadSettings = rewire('../../../../server/services/settings/loader');
+    loadSettings = rewire('../../../../frontend/services/settings/loader');
 
 describe('UNIT > Settings Service:', function () {
     beforeEach(function () {

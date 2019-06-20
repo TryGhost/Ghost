@@ -1,8 +1,8 @@
 const fs = require('fs-extra'),
     path = require('path'),
     debug = require('ghost-ignition').debug('services:settings:settings-loader'),
-    common = require('../../lib/common'),
-    config = require('../../config'),
+    common = require('../../../server/lib/common'),
+    config = require('../../../server/config'),
     yamlParser = require('./yaml-parser'),
     validate = require('./validate');
 
