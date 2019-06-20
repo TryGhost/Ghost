@@ -1,8 +1,5 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
-const fs = require('fs-extra');
-const path = require('path');
-const config = require('../../config');
 const models = require('../../models');
 const frontendRouting = require('../../../frontend/services/routing');
 const common = require('../../lib/common');
@@ -168,22 +165,7 @@ module.exports = {
             method: 'browse'
         },
         query() {
-            const routesPath = path.join(config.getContentPath('settings'), 'routes.yaml');
-
-            return fs.readFile(routesPath, 'utf-8')
-                .catch((err) => {
-                    if (err.code === 'ENOENT') {
-                        return Promise.resolve([]);
-                    }
-
-                    if (common.errors.utils.isIgnitionError(err)) {
-                        throw err;
-                    }
-
-                    throw new common.errors.NotFoundError({
-                        err: err
-                    });
-                });
+            return frontendRouting.settings.serve();
         }
     }
 };
