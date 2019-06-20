@@ -97,9 +97,6 @@ module.exports = {
             return engineDefaults['ghost-api'];
         }
     },
-    delete: function (){
-
-    },
     activate: function activate(loadedTheme, checkedTheme, error) {
         // no need to check the score, activation should be used in combination with validate.check
         // Use the two theme objects to set the current active theme
