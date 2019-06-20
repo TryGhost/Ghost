@@ -6,6 +6,17 @@ const urlService = require('../url');
 const common = require('../../../server/lib/common');
 const config = require('../../../server/config');
 
+/**
+ * The `routes.yaml` file offers a way to configure your Ghost blog. It's currently a setting feature
+ * we have added. That's why the `routes.yaml` file is treated as a "setting" right now.
+ * If we want to add single permissions for this file (e.g. upload/download routes.yaml), we can add later.
+ *
+ * How does it work?
+ *
+ * - we first reset all url generators (each url generator belongs to one express router)
+ *   - we don't destroy the resources, we only release them (this avoids reloading all resources from the db again)
+ * - then we reload the whole site app, which will reset all routers and re-create the url generators
+ */
 const activate = (filePath) => {
     const settingsPath = config.getContentPath('settings');
     const backupRoutesPath = path.join(settingsPath, `routes-${moment().format('YYYY-MM-DD-HH-mm-ss')}.yaml`);
