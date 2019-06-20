@@ -20,7 +20,7 @@ module.exports = {
         },
         permissions: true,
         query() {
-            return redirects.handler.readRedirectsFile();
+            return redirects.handler.readRedirectsFile(path.join(config.getContentPath('data'), 'redirects.json'));
         }
     },
 

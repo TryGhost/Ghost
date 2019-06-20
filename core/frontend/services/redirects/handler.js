@@ -1,12 +1,10 @@
 const fs = require('fs-extra');
-const path = require('path');
 const Promise = require('bluebird');
 
 const common = require('../../../server/lib/common');
-const config = require('../../../server/config');
 
 const readRedirectsFile = (customRedirectsPath) => {
-    const redirectsPath = customRedirectsPath || path.join(config.getContentPath('data'), 'redirects.json');
+    const redirectsPath = customRedirectsPath;
 
     return fs.readFile(redirectsPath, 'utf-8')
         .then((content) => {
