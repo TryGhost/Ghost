@@ -6,8 +6,6 @@ const validation = require('../../data/validation');
 const web = require('../../web');
 const redirects = require('../../../frontend/services/redirects');
 
-const _private = {};
-
 module.exports = {
     docName: 'redirects',
 
