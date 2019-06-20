@@ -1,6 +1,3 @@
-const path = require('path');
-const config = require('../../config');
-
 const web = require('../../web');
 const redirects = require('../../../frontend/services/redirects');
 
@@ -16,7 +13,7 @@ module.exports = {
         },
         permissions: true,
         query() {
-            return redirects.handler.readRedirectsFile(path.join(config.getContentPath('data'), 'redirects.json'));
+            return redirects.handler.serveDefault();
         }
     },
 

@@ -68,5 +68,9 @@ const activate = (filePath) => {
         });
 };
 
-module.exports.readRedirectsFile = readRedirectsFile;
+const serveDefault = () => {
+    return readRedirectsFile(path.join(config.getContentPath('data'), 'redirects.json'));
+};
+
+module.exports.serveDefault = serveDefault;
 module.exports.activate = activate;
