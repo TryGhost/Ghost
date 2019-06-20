@@ -3,9 +3,10 @@ const path = require('path');
 const Promise = require('bluebird');
 const moment = require('moment-timezone');
 
+const validation = require('./validation');
+
 const config = require('../../../server/config');
 const common = require('../../../server/lib/common');
-const validation = require('../../../server/data/validation');
 
 const readRedirectsFile = (customRedirectsPath) => {
     const redirectsPath = customRedirectsPath;
@@ -62,7 +63,7 @@ const activate = (filePath) => {
         .then(() => {
             return readRedirectsFile(filePath)
                 .then((content) => {
-                    validation.validateRedirects(content);
+                    validation.validate(content);
                     return fs.writeFile(redirectsPath, JSON.stringify(content), 'utf-8');
                 });
         });
