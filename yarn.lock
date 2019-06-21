@@ -6204,12 +6204,10 @@ rimraf@~2.4.0:
   dependencies:
     glob "^6.0.1"
 
-rsa-keypair@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/rsa-keypair/-/rsa-keypair-1.0.1.tgz#dc52a7f20b68bf555dc91bc054b9e4ce45556ad6"
-  integrity sha512-Eo075YpL4RL9fINIxb9p6CrCdarF55Aek9zLGWikkcuC1RH3/UkrWFAEFshUUmQO1hmm1dfSNN+GQmhpxFTBYQ==
-  dependencies:
-    nan "~2.10.0"
+rsa-keypair@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/rsa-keypair/-/rsa-keypair-2.0.2.tgz#47ec7fa29486ceaefdd1af1f80f1db2284dba236"
+  integrity sha512-FmMjEQrH9oJrBy13wMbSQx1bomRbub7mzxwvVuXFvqJIeZ7NkWd9NJhFoeftd4lzQAeLP8/avm7HHmtEIGLHpQ==
 
 rss@1.2.2:
   version "1.2.2"
