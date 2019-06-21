@@ -354,7 +354,7 @@
 
 .gh-flow-content input {
     padding: 10px 10px 10px 30px;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     line-height: 1.4em;
     font-weight: 400;
 }
@@ -408,10 +408,10 @@
 
 .gh-flow-invite textarea {
     background: var(--input-bg-color) url(img/invite-placeholder.png) 10px 8px no-repeat;
-    background-size: 185px 32px;
+    background-size: 203px 35px;
     border: var(--input-border);
     box-shadow: none; /* Remove some default styling for Firefox (required attribute) */
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     line-height: 1.8rem;
 }
 
@@ -448,7 +448,7 @@
     font-size: 1.2rem;
 }
 
-.gh-flow-content .success .gh-input-icon svg {
+.gh-flow-content form:not(.gh-signin) .success .gh-input-icon svg {
     fill: var(--green);
 }
 

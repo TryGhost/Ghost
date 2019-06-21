@@ -66,6 +66,21 @@
     border: 1px solid color-mod(var(--main-bg-color) l(-8%));
 }
 
+.gh-user-name {
+    margin: -2px 8px 5px 0;
+    word-break: break-all;
+    font-weight: 600;
+    line-height: 1.1em;
+}
+
+.gh-user-email {
+    margin: -1px 8px 0 0;
+    word-break: break-all;
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1.1em;
+    color: var(--middarkgrey);
+}
 
 /* Global Nav
 /* ---------------------------------------------------------- */

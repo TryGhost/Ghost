@@ -26,7 +26,7 @@
 
     /* Inputs */
     --input-bg-color: var(--white);
-    --input-border: color-mod(var(--whitegrey) h(+7) s(-12%) l(-4%)) 1px solid;
+    --input-border: color-mod(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
 }
 
 /* Colour classes
