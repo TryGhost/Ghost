@@ -116,7 +116,7 @@
 /* Google SERP Preview */
 .seo-preview {
     font-family: Arial, sans-serif;
-    background: var(--whitegrey-l2);
+    background: #fff;
     border: 1px solid var(--whitegrey);
     padding: 10px 12px;
 }

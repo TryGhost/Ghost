@@ -163,37 +163,39 @@ input:focus,
 }
 
 .gh-btn {
-    border: color-mod(var(--darkgrey) l(-27%) blackness(+15%)) 1px solid ;
     color: color-mod(var(--darkgrey) l(-27%) blackness(+15%));
     text-shadow: none;
+}
+
+.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red) {
+    border: color-mod(var(--darkgrey) l(-27%) blackness(+15%)) 1px solid;
 }
 
 .gh-btn-blue,
 .gh-btn-green,
 .gh-btn-red {
     color: #fff;
-    border: 0;
 }
 
 .gh-btn-blue:hover,
 .gh-btn-green:hover,
 .gh-btn-red:hover {
-    border-color: white;
     color: white;
 }
 
 .gh-btn-link {
-    border: none;
+    border: none !important;
 }
 
 .settings-menu-delete-button {
     color: var(--red);
-    border: none;
+    border: none !important;
+    border-color: transparent;
 }
 
 .gh-publishmenu-trigger {
     color: var(--blue);
-    border: none;
+    border: none !important;
 }
 
 .gh-publishmenu-trigger svg path {
