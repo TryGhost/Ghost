@@ -2,7 +2,6 @@
 // With the exception of modules like lodash, Bluebird
 // We can later refactor to enforce this something like we do in apps
 var hbs = require('../services/themes/engine'),
-    settingsCache = require('../../server/services/settings/cache'),
     config = require('../../server/config');
 
 // Direct requires:
@@ -19,9 +18,6 @@ module.exports = {
 
     // TODO: Expose less of the API to make this safe
     api: require('../../server/api'),
-
-    // TODO: Only expose "get"
-    settingsCache: settingsCache,
 
     // These 3 are kind of core and required all the time
     errors: require('../../server/lib/common/errors'),

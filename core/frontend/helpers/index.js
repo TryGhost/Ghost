@@ -48,7 +48,6 @@ registerAllCoreHelpers = function registerAllCoreHelpers() {
     registerThemeHelper('encode', coreHelpers.encode);
     registerThemeHelper('excerpt', coreHelpers.excerpt);
     registerThemeHelper('foreach', coreHelpers.foreach);
-    registerThemeHelper('ghost_foot', coreHelpers.ghost_foot);
     registerThemeHelper('has', coreHelpers.has);
     registerThemeHelper('is', coreHelpers.is);
     registerThemeHelper('img_url', coreHelpers.img_url);
@@ -70,6 +69,7 @@ registerAllCoreHelpers = function registerAllCoreHelpers() {
 
     // Async theme helpers
     registerAsyncThemeHelper('ghost_head', coreHelpers.ghost_head);
+    registerAsyncThemeHelper('ghost_foot', coreHelpers.ghost_foot);
     registerAsyncThemeHelper('next_post', coreHelpers.next_post);
     registerAsyncThemeHelper('prev_post', coreHelpers.prev_post);
     registerAsyncThemeHelper('get', coreHelpers.get);

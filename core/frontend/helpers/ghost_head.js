@@ -11,9 +11,9 @@ var proxy = require('./proxy'),
     escapeExpression = proxy.escapeExpression,
     SafeString = proxy.SafeString,
     logging = proxy.logging,
-    settingsCache = proxy.settingsCache,
     config = proxy.config,
     blogIconUtils = proxy.blogIcon,
+    api = proxy.api,
     labs = proxy.labs;
 
 function writeMetaTag(property, content, type) {
@@ -111,104 +111,118 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
         client = dataRoot._locals.client,
         safeVersion = dataRoot._locals.safeVersion,
         postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null,
-        globalCodeinjection = settingsCache.get('ghost_head'),
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade',
         favicon = blogIconUtils.getIconUrl(),
         iconType = blogIconUtils.getIconType(favicon);
 
+    const apiVersion = data.root._locals.apiVersion;
+    let settingsController = api[apiVersion].publicSettings || api[apiVersion].settings;
+
     debug('preparation complete, begin fetch');
 
-    /**
-     * @TODO:
-     *   - getMetaData(dataRoot, dataRoot) -> yes that looks confusing!
-     *   - there is a very mixed usage of `data.context` vs. `root.context` vs `root._locals.context` vs. `this.context`
-     *   - NOTE: getMetaData won't live here anymore soon, see https://github.com/TryGhost/Ghost/issues/8995
-     *   - therefor we get rid of using `getMetaData(this, dataRoot)`
-     *   - dataRoot has access to *ALL* locals, see function description
-     *   - it should not break anything
-     */
-    return getMetaData(dataRoot, dataRoot)
-        .then(function handleMetaData(metaData) {
-            debug('end fetch');
+    return settingsController.browse({}).then((settings) => {
+        let globalCodeinjection = '';
+        let amp = '';
+        if (_.isArray(settings)) {
+            globalCodeinjection = settings.find(setting => setting.key === 'ghost_head').value;
+            amp = settings.find(setting => setting.key === 'amp').value;
+        } else {
+            globalCodeinjampection = settings.settings['ghost_head'];
+            amp = settings.settings['amp'];
+        }
 
-            if (context) {
-                // head is our main array that holds our meta data
-                if (metaData.metaDescription && metaData.metaDescription.length > 0) {
-                    head.push('<meta name="description" content="' + escapeExpression(metaData.metaDescription) + '" />');
-                }
+        /**
+         * @TODO:
+         *   - getMetaData(dataRoot, dataRoot) -> yes that looks confusing!
+         *   - there is a very mixed usage of `data.context` vs. `root.context` vs `root._locals.context` vs. `this.context`
+         *   - NOTE: getMetaData won't live here anymore soon, see https://github.com/TryGhost/Ghost/issues/8995
+         *   - therefor we get rid of using `getMetaData(this, dataRoot)`
+         *   - dataRoot has access to *ALL* locals, see function description
+         *   - it should not break anything
+         */
+        return getMetaData(dataRoot, dataRoot)
+            .then(function handleMetaData(metaData) {
+                debug('end fetch');
 
-                head.push('<link rel="shortcut icon" href="' + favicon + '" type="image/' + iconType + '" />');
-                head.push('<link rel="canonical" href="' +
-                    escapeExpression(metaData.canonicalUrl) + '" />');
-                head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
+                if (context) {
+                    // head is our main array that holds our meta data
+                    if (metaData.metaDescription && metaData.metaDescription.length > 0) {
+                        head.push('<meta name="description" content="' + escapeExpression(metaData.metaDescription) + '" />');
+                    }
 
-                // don't allow indexing of preview URLs!
-                if (_.includes(context, 'preview')) {
-                    head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
-                }
+                    head.push('<link rel="shortcut icon" href="' + favicon + '" type="image/' + iconType + '" />');
+                    head.push('<link rel="canonical" href="' +
+                        escapeExpression(metaData.canonicalUrl) + '" />');
+                    head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
 
-                // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
-                if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
-                    head.push('<link rel="amphtml" href="' +
-                        escapeExpression(metaData.ampUrl) + '" />');
-                }
+                    // don't allow indexing of preview URLs!
+                    if (_.includes(context, 'preview')) {
+                        head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
+                    }
 
-                if (metaData.previousUrl) {
-                    head.push('<link rel="prev" href="' +
-                        escapeExpression(metaData.previousUrl) + '" />');
-                }
+                    // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
+                    if (_.includes(context, 'post') && !_.includes(context, 'amp') && amp) {
+                        head.push('<link rel="amphtml" href="' +
+                            escapeExpression(metaData.ampUrl) + '" />');
+                    }
 
-                if (metaData.nextUrl) {
-                    head.push('<link rel="next" href="' +
-                        escapeExpression(metaData.nextUrl) + '" />');
-                }
+                    if (metaData.previousUrl) {
+                        head.push('<link rel="prev" href="' +
+                            escapeExpression(metaData.previousUrl) + '" />');
+                    }
 
-                if (!_.includes(context, 'paged') && useStructuredData) {
-                    head.push('');
-                    head.push.apply(head, finaliseStructuredData(metaData));
-                    head.push('');
+                    if (metaData.nextUrl) {
+                        head.push('<link rel="next" href="' +
+                            escapeExpression(metaData.nextUrl) + '" />');
+                    }
 
-                    if (metaData.schema) {
-                        head.push('<script type="application/ld+json">\n' +
-                            JSON.stringify(metaData.schema, null, '    ') +
-                            '\n    </script>\n');
+                    if (!_.includes(context, 'paged') && useStructuredData) {
+                        head.push('');
+                        head.push.apply(head, finaliseStructuredData(metaData));
+                        head.push('');
+
+                        if (metaData.schema) {
+                            head.push('<script type="application/ld+json">\n' +
+                                JSON.stringify(metaData.schema, null, '    ') +
+                                '\n    </script>\n');
+                        }
+                    }
+
+                    if (client && client.id && client.secret && !_.includes(context, 'amp')) {
+                        head.push(getAjaxHelper(client.id, client.secret));
+                    }
+
+                    if (!_.includes(context, 'amp') && labs.isSet('members')) {
+                        head.push(getMembersHelper());
                     }
                 }
 
-                if (client && client.id && client.secret && !_.includes(context, 'amp')) {
-                    head.push(getAjaxHelper(client.id, client.secret));
+                head.push('<meta name="generator" content="Ghost ' +
+                    escapeExpression(safeVersion) + '" />');
+
+                head.push('<link rel="alternate" type="application/rss+xml" title="' +
+                    escapeExpression(metaData.blog.title) + '" href="' +
+                    escapeExpression(metaData.rssUrl) + '" />');
+
+                // no code injection for amp context!!!
+                if (!_.includes(context, 'amp')) {
+                    if (!_.isEmpty(globalCodeinjection)) {
+                        head.push(globalCodeinjection);
+                    }
+
+                    if (!_.isEmpty(postCodeInjection)) {
+                        head.push(postCodeInjection);
+                    }
                 }
+                debug('end');
+                return new SafeString(head.join('\n    ').trim());
+            })
+            .catch(function handleError(err) {
+                logging.error(err);
 
-                if (!_.includes(context, 'amp') && labs.isSet('members')) {
-                    head.push(getMembersHelper());
-                }
-            }
-
-            head.push('<meta name="generator" content="Ghost ' +
-                escapeExpression(safeVersion) + '" />');
-
-            head.push('<link rel="alternate" type="application/rss+xml" title="' +
-                escapeExpression(metaData.blog.title) + '" href="' +
-                escapeExpression(metaData.rssUrl) + '" />');
-
-            // no code injection for amp context!!!
-            if (!_.includes(context, 'amp')) {
-                if (!_.isEmpty(globalCodeinjection)) {
-                    head.push(globalCodeinjection);
-                }
-
-                if (!_.isEmpty(postCodeInjection)) {
-                    head.push(postCodeInjection);
-                }
-            }
-            debug('end');
-            return new SafeString(head.join('\n    ').trim());
-        })
-        .catch(function handleError(err) {
-            logging.error(err);
-
-            // Return what we have so far (currently nothing)
-            return new SafeString(head.join('\n    ').trim());
-        });
-};
+                // Return what we have so far (currently nothing)
+                return new SafeString(head.join('\n    ').trim());
+            });
+    })
+}
