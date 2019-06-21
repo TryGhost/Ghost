@@ -38,12 +38,12 @@ input {
 
 ::-webkit-input-placeholder {
     color: color-mod(var(--midgrey) l(+18%));
-    font-weight: 300;
+    font-weight: 400;
 }
 
 :-ms-input-placeholder {
     color: color-mod(var(--midgrey) l(+18%));
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .error .response {
@@ -68,8 +68,9 @@ input {
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: var(--midlightgrey);
+    color: var(--midgrey);
     font-size: 1.25rem;
+    font-weight: 400;
 }
 
 .form-group h3 {
@@ -127,12 +128,12 @@ input {
 select {
     display: block;
     width: 100%;
-    height: 31px;
+    height: 38px;
     padding: 6px 12px;
     border: var(--input-border);
     background: var(--input-bg-color);
     color: var(--darkgrey);
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     line-height: 1em;
     font-weight: 400;
     user-select: text;

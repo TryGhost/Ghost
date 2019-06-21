@@ -37,18 +37,23 @@
     border-left: color-mod(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
     border-radius: 0;
 }
+
 .forgotten-link span {
     height: 19px;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     line-height: 19px;
     padding: 0 11px 0 12px;
     margin-top: -1px;
+    color: var(--midlightgrey);
 }
 
 .forgotten-link:hover {
     border-left: color-mod(var(--lightgrey) l(-15%) s(-10%)) 1px solid;
-    color: color-mod(var(--blue) l(-10%));
     text-decoration: none;
+}
+
+.forgotten-link:hover span {
+    color: var(--blue);
 }
 
 .forgotten-link:active {
