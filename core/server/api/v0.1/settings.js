@@ -254,14 +254,14 @@ settings = {
     upload(options) {
         return localUtils.handlePermissions('settings', 'edit')(options)
             .then(() => {
-                return frontendSettings.dynamicRouting.activate(options.path);
+                return frontendSettings.dynamicRouting.setFromFilePath(options.path);
             });
     },
 
     download(options) {
         return localUtils.handlePermissions('settings', 'browse')(options)
             .then(() => {
-                return frontendSettings.dynamicRouting.serve();
+                return frontendSettings.dynamicRouting.get();
             });
     }
 };

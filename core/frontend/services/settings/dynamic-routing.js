@@ -17,7 +17,7 @@ const config = require('../../../server/config');
  *   - we don't destroy the resources, we only release them (this avoids reloading all resources from the db again)
  * - then we reload the whole site app, which will reset all routers and re-create the url generators
  */
-const activate = (filePath) => {
+const setFromFilePath = (filePath) => {
     const settingsPath = config.getContentPath('settings');
     const backupRoutesPath = path.join(settingsPath, `routes-${moment().format('YYYY-MM-DD-HH-mm-ss')}.yaml`);
 
@@ -77,7 +77,7 @@ const activate = (filePath) => {
         });
 };
 
-const serve = () => {
+const get = () => {
     const routesPath = path.join(config.getContentPath('settings'), 'routes.yaml');
 
     return fs.readFile(routesPath, 'utf-8')
@@ -96,5 +96,5 @@ const serve = () => {
         });
 };
 
-module.exports.activate = activate;
-module.exports.serve = serve;
+module.exports.setFromFilePath = setFromFilePath;
+module.exports.get = get;
