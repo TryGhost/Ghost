@@ -8,9 +8,7 @@ const validation = require('./validation');
 const config = require('../../../server/config');
 const common = require('../../../server/lib/common');
 
-const readRedirectsFile = (customRedirectsPath) => {
-    const redirectsPath = customRedirectsPath;
-
+const readRedirectsFile = (redirectsPath) => {
     return fs.readFile(redirectsPath, 'utf-8')
         .then((content) => {
             try {
