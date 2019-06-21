@@ -11,7 +11,6 @@ var schema = require('../schema').tables,
     validatePassword,
     validateSchema,
     validateSettings,
-    validateRedirects,
     validate;
 
 function assertString(input) {
@@ -356,34 +355,10 @@ validate = function validate(value, key, validations, tableName) {
     return validationErrors;
 };
 
-/**
- * Redirects are file based at the moment, but they will live in the database in the future.
- * See V2 of https://github.com/TryGhost/Ghost/issues/7707.
- */
-validateRedirects = function validateRedirects(redirects) {
-    if (!_.isArray(redirects)) {
-        throw new common.errors.ValidationError({
-            message: common.i18n.t('errors.utils.redirectsWrongFormat'),
-            help: 'https://docs.ghost.org/concepts/redirects/'
-        });
-    }
-
-    _.each(redirects, function (redirect) {
-        if (!redirect.from || !redirect.to) {
-            throw new common.errors.ValidationError({
-                message: common.i18n.t('errors.utils.redirectsWrongFormat'),
-                context: redirect,
-                help: 'https://docs.ghost.org/concepts/redirects/'
-            });
-        }
-    });
-};
-
 module.exports = {
     validate: validate,
     validator: validator,
     validatePassword: validatePassword,
     validateSchema: validateSchema,
-    validateSettings: validateSettings,
-    validateRedirects: validateRedirects
+    validateSettings: validateSettings
 };
