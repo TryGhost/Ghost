@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
 const models = require('../../models');
-const frontendSettings = require('../../../frontend/services/settings');
+const routing = require('../../../frontend/services/routing');
 const common = require('../../lib/common');
 const settingsCache = require('../../services/settings/cache');
 
@@ -147,7 +147,7 @@ module.exports = {
             method: 'edit'
         },
         query(frame) {
-            return frontendSettings.dynamicRouting.setFromFilePath(frame.file.path);
+            return routing.settings.setFromFilePath(frame.file.path);
         }
     },
 
@@ -165,7 +165,7 @@ module.exports = {
             method: 'browse'
         },
         query() {
-            return frontendSettings.dynamicRouting.get();
+            return routing.settings.get();
         }
     }
 };
