@@ -163,7 +163,7 @@
     position: relative;
     margin: 7px 0 4px;
     padding: 6px 8px;
-    border: transparent 1px solid;
+    border: var(--input-border);
     border-radius: 3px;
     transition: border-color 0.15s linear;
     background: var(--input-bg-color);
