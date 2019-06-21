@@ -6,7 +6,7 @@ const ensureSettingsFiles = require('./ensure-settings');
 const common = require('../../../server/lib/common');
 
 module.exports = {
-    init: () => {
+    init: function () {
         const knownSettings = this.knownSettings();
 
         debug('init settings service for:', knownSettings);
