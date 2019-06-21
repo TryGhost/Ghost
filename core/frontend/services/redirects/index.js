@@ -1,5 +1,5 @@
 module.exports = {
-    get handler() {
-        return require('./handler');
+    get settings() {
+        return require('./settings');
     }
 };
