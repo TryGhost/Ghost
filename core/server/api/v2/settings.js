@@ -147,7 +147,7 @@ module.exports = {
             method: 'edit'
         },
         query(frame) {
-            return frontendSettings.routes.activate(frame.file.path);
+            return frontendSettings.dynamicRouting.activate(frame.file.path);
         }
     },
 
@@ -165,7 +165,7 @@ module.exports = {
             method: 'browse'
         },
         query() {
-            return frontendSettings.routes.serve();
+            return frontendSettings.dynamicRouting.serve();
         }
     }
 };

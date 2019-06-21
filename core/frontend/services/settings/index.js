@@ -1,5 +1,5 @@
 module.exports = {
-    get routes() {
-        return require('./RoutesHandler');
+    get dynamicRouting() {
+        return require('./dynamic-routing');
     }
 };
