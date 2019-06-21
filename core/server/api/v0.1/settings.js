@@ -5,7 +5,7 @@ const Promise = require('bluebird'),
     models = require('../../models'),
     canThis = require('../../services/permissions').canThis,
     localUtils = require('./utils'),
-    frontendSettings = require('../../../frontend/services/settings'),
+    routing = require('../../../frontend/services/routing'),
     common = require('../../lib/common'),
     settingsCache = require('../../services/settings/cache'),
     docName = 'settings';
@@ -254,14 +254,14 @@ settings = {
     upload(options) {
         return localUtils.handlePermissions('settings', 'edit')(options)
             .then(() => {
-                return frontendSettings.dynamicRouting.setFromFilePath(options.path);
+                return routing.settings.setFromFilePath(options.path);
             });
     },
 
     download(options) {
         return localUtils.handlePermissions('settings', 'browse')(options)
             .then(() => {
-                return frontendSettings.dynamicRouting.get();
+                return routing.settings.get();
             });
     }
 };
