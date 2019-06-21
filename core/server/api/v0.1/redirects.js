@@ -8,12 +8,12 @@ redirectsAPI = {
     download(options) {
         return localUtils.handlePermissions('redirects', 'download')(options)
             .then(() => {
-                return redirects.settings.serveDefault();
+                return redirects.settings.get();
             });
     },
     upload(options) {
         return localUtils.handlePermissions('redirects', 'upload')(options)
-            .then(() => redirects.settings.activate(options.path))
+            .then(() => redirects.settings.setFromFilePath(options.path))
             .then(() => {
                 // CASE: trigger that redirects are getting re-registered
                 web.shared.middlewares.customRedirects.reload();

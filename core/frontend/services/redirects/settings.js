@@ -38,7 +38,7 @@ const readRedirectsFile = (customRedirectsPath) => {
         });
 };
 
-const activate = (filePath) => {
+const setFromFilePath = (filePath) => {
     const redirectsPath = path.join(config.getContentPath('data'), 'redirects.json');
     const backupRedirectsPath = path.join(config.getContentPath('data'), `redirects-${moment().format('YYYY-MM-DD-HH-mm-ss')}.json`);
 
@@ -69,9 +69,9 @@ const activate = (filePath) => {
         });
 };
 
-const serveDefault = () => {
+const get = () => {
     return readRedirectsFile(path.join(config.getContentPath('data'), 'redirects.json'));
 };
 
-module.exports.serveDefault = serveDefault;
-module.exports.activate = activate;
+module.exports.get = get;
+module.exports.setFromFilePath = setFromFilePath;

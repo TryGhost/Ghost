@@ -13,7 +13,7 @@ module.exports = {
         },
         permissions: true,
         query() {
-            return redirects.settings.serveDefault();
+            return redirects.settings.get();
         }
     },
 
@@ -23,7 +23,7 @@ module.exports = {
             cacheInvalidate: true
         },
         query(frame) {
-            return redirects.settings.activate(frame.file.path)
+            return redirects.settings.setFromFilePath(frame.file.path)
                 .then(() => {
                     // CASE: trigger that redirects are getting re-registered
                     web.shared.middlewares.customRedirects.reload();
