@@ -5,12 +5,14 @@
 var proxy = require('./proxy'),
     _ = require('lodash'),
     SafeString = proxy.SafeString,
-    settingsCache = proxy.settingsCache;
+    // settingsCache = proxy.settingsCache,
+    settingsPublic = proxy.settingsPublic,
+    api = proxy.api;
 
 // We use the name ghost_foot to match the helper for consistency:
 module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
     var foot = [],
-        globalCodeinjection = settingsCache.get('ghost_foot'),
+        globalCodeinjection = settingsPublic.get('ghost_foot'),
         postCodeinjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_foot : null;
 
     if (!_.isEmpty(globalCodeinjection)) {

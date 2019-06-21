@@ -12,6 +12,7 @@ var proxy = require('./proxy'),
     SafeString = proxy.SafeString,
     logging = proxy.logging,
     settingsCache = proxy.settingsCache,
+    settingsPublic = proxy.settingsPublic,
     config = proxy.config,
     blogIconUtils = proxy.blogIcon,
     labs = proxy.labs;
@@ -111,7 +112,7 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
         client = dataRoot._locals.client,
         safeVersion = dataRoot._locals.safeVersion,
         postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null,
-        globalCodeinjection = settingsCache.get('ghost_head'),
+        globalCodeinjection = settingsPublic.get('ghost_head'),
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade',
         favicon = blogIconUtils.getIconUrl(),
@@ -149,7 +150,7 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                 }
 
                 // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
-                if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
+                if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsPublic.get('amp')) {
                     head.push('<link rel="amphtml" href="' +
                         escapeExpression(metaData.ampUrl) + '" />');
                 }
