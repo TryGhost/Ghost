@@ -124,5 +124,6 @@ module.exports = {
             }));
         }
     },
+    settings: require('./settings'),
     middleware: require('./middleware')
 };
