@@ -1613,7 +1613,7 @@ babel-plugin-debug-macros@^0.3.0:
   dependencies:
     semver "^5.3.0"
 
-babel-plugin-ember-modules-api-polyfill@^2.5.0, babel-plugin-ember-modules-api-polyfill@^2.6.0, babel-plugin-ember-modules-api-polyfill@^2.8.0:
+babel-plugin-ember-modules-api-polyfill@^2.5.0, babel-plugin-ember-modules-api-polyfill@^2.6.0, babel-plugin-ember-modules-api-polyfill@^2.8.0, babel-plugin-ember-modules-api-polyfill@^2.9.0:
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/babel-plugin-ember-modules-api-polyfill/-/babel-plugin-ember-modules-api-polyfill-2.9.0.tgz#8503e7b4192aeb336b00265e6235258ff6b754aa"
   integrity sha512-c03h50291phJ2gQxo/aIOvFQE2c6glql1A7uagE3XbPXpKVAJOUxtVDjvWG6UAB6BC5ynsJfMWvY0w4TPRKIHQ==
@@ -4328,6 +4328,33 @@ ember-cli-babel@^6.0.0-beta.4, ember-cli-babel@^6.0.0-beta.7, ember-cli-babel@^6
     ember-cli-version-checker "^2.1.2"
     semver "^5.5.0"
 
+ember-cli-babel@^7.8.0:
+  version "7.8.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-7.8.0.tgz#e596500eca0f5a7c9aaee755f803d1542f578acf"
+  integrity sha512-xUBgJQ81fqd7k/KIiGU+pjpoXhrmmRf9pUrqLenNSU5N+yeNFT5a1+w0b+p1F7oBphfXVwuxApdZxrmAHOdA3Q==
+  dependencies:
+    "@babel/core" "^7.0.0"
+    "@babel/plugin-proposal-class-properties" "^7.3.4"
+    "@babel/plugin-proposal-decorators" "^7.3.0"
+    "@babel/plugin-transform-modules-amd" "^7.0.0"
+    "@babel/plugin-transform-runtime" "^7.2.0"
+    "@babel/polyfill" "^7.0.0"
+    "@babel/preset-env" "^7.0.0"
+    "@babel/runtime" "^7.2.0"
+    amd-name-resolver "^1.2.1"
+    babel-plugin-debug-macros "^0.3.0"
+    babel-plugin-ember-modules-api-polyfill "^2.9.0"
+    babel-plugin-module-resolver "^3.1.1"
+    broccoli-babel-transpiler "^7.1.2"
+    broccoli-debug "^0.6.4"
+    broccoli-funnel "^2.0.1"
+    broccoli-source "^1.1.0"
+    clone "^2.1.2"
+    ember-cli-babel-plugin-helpers "^1.1.0"
+    ember-cli-version-checker "^2.1.2"
+    ensure-posix-path "^1.0.2"
+    semver "^5.5.0"
+
 ember-cli-babel@~7.1.2:
   version "7.1.4"
   resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-7.1.4.tgz#5f2b6ba2156d8dce2681aea92689b57ffbc71ccb"
@@ -4846,15 +4873,15 @@ ember-drag-drop@0.4.8:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-exam@3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-3.0.2.tgz#b31f34c35fc1899c5f1fecd504f4cc64ee963c86"
-  integrity sha512-5EhsvKYNX+IDmw5VSfMH+332BrwWYY6D+Ntpzbw78FOKeBDrTXq8UU5ualEgoNaYFxllmiss+Y9eV3RlSqZdIA==
+ember-exam@3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-3.0.3.tgz#07ae10c5a224afa736bc6d28b141f55999382284"
+  integrity sha512-LLkSA5LNFggFpEtEb9GuXkidvyzAWBVpKiyahP5CfM9VGi/Rxw2OLGliH3nrjrJKFrptWUgBnNcRdB1/iLlfMg==
   dependencies:
     chalk "^2.1.0"
     cli-table3 "^0.5.1"
     debug "^4.1.0"
-    ember-cli-babel "^7.7.3"
+    ember-cli-babel "^7.8.0"
     execa "^1.0.0"
     fs-extra "^8.0.1"
     js-yaml "^3.13.1"
