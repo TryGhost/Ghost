@@ -50,15 +50,11 @@ const GhTaskButton = Component.extend({
     }),
 
     isIdleClass: computed('isIdle', function () {
-        if (this.isIdle) {
-            return this.idleClass;
-        }
+        return this.isIdle ? this.idleClass : '';
     }),
 
     isRunningClass: computed('isRunning', function () {
-        if (this.isRunning) {
-            return this.runningClass || this.idleClass;
-        }
+        return this.isRunning ? (this.runningClass || this.idleClass) : '';
     }),
 
     isSuccess: computed('hasRun', 'isRunning', 'task.last.value', function () {
@@ -71,9 +67,7 @@ const GhTaskButton = Component.extend({
     }),
 
     isSuccessClass: computed('isSuccess', function () {
-        if (this.isSuccess) {
-            return this.successClass;
-        }
+        return this.isSuccess ? this.successClass : '';
     }),
 
     isFailure: computed('hasRun', 'isRunning', 'isSuccess', 'task.last.error', function () {
@@ -85,9 +79,7 @@ const GhTaskButton = Component.extend({
     }),
 
     isFailureClass: computed('isFailure', function () {
-        if (this.isFailure) {
-            return this.failureClass;
-        }
+        return this.isFailure ? this.failureClass : '';
     }),
 
     isIdle: computed('isRunning', 'isSuccess', 'isFailure', function () {

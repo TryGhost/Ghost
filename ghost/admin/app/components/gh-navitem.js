@@ -19,9 +19,7 @@ export default Component.extend(ValidationState, {
     errors: readOnly('navItem.errors'),
 
     errorClass: computed('hasError', function () {
-        if (this.hasError) {
-            return 'gh-blognav-item--error';
-        }
+        return this.hasError ? 'gh-blognav-item--error' : '';
     }),
 
     actions: {
