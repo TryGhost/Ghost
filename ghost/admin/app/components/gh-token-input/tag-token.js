@@ -17,9 +17,7 @@ export default DraggableObject.extend({
     }),
 
     title: computed('internal', function () {
-        if (this.internal) {
-            return `Internal tag`;
-        }
+        return this.internal ? 'Internal tag' : '';
     })
 
 });

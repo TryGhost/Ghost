@@ -20,10 +20,13 @@ export default Component.extend({
 
     backgroundStyle: computed('member.name', function () {
         let name = this.member.name;
+
         if (name) {
             let color = stringToHslColor(name, 55, 55);
             return htmlSafe(`background-color: ${color}`);
         }
+
+        return htmlSafe('');
     }),
 
     initials: computed('member.name', function () {

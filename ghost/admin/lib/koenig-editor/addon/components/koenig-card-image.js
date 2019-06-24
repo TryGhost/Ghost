@@ -80,44 +80,37 @@ export default Component.extend({
     }),
 
     toolbar: computed('payload.{cardWidth,src}', function () {
-        let cardWidth = this.payload.cardWidth;
-        let items = [];
+        if (!this.payload.src) {
+            return false;
+        }
 
-        if (this.payload.src) {
-            items.push({
+        let cardWidth = this.payload.cardWidth;
+
+        return {
+            items: [{
                 title: 'Regular',
                 icon: 'koenig/kg-img-regular',
                 iconClass: `${!cardWidth ? 'fill-blue-l2' : 'fill-white'}`,
                 action: run.bind(this, this._changeCardWidth, '')
-            });
-
-            items.push({
+            }, {
                 title: 'Wide',
                 icon: 'koenig/kg-img-wide',
                 iconClass: `${cardWidth === 'wide' ? 'fill-blue-l2' : 'fill-white'}`,
                 action: run.bind(this, this._changeCardWidth, 'wide')
-            });
-
-            items.push({
+            }, {
                 title: 'Full',
                 icon: 'koenig/kg-img-full',
                 iconClass: `${cardWidth === 'full' ? 'fill-blue-l2' : 'fill-white'}`,
                 action: run.bind(this, this._changeCardWidth, 'full')
-            });
-
-            items.push({divider: true});
-
-            items.push({
+            }, {
+                divider: true
+            }, {
                 title: 'Replace image',
                 icon: 'koenig/kg-replace',
                 iconClass: 'fill-white',
                 action: run.bind(this, this._triggerFileDialog)
-            });
-        }
-
-        if (items.length > 0) {
-            return {items};
-        }
+            }]
+        };
     }),
 
     init() {

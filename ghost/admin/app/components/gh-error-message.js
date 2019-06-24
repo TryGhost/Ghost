@@ -33,5 +33,7 @@ export default Component.extend({
             index = Math.floor(Math.random() * messages.length);
             return messages[index].message;
         }
+
+        return '';
     })
 });

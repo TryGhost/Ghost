@@ -44,18 +44,20 @@ export default Component.extend({
     }),
 
     toolbar: computed('isEditing', function () {
-        if (!this.isEditing) {
-            return {
-                items: [{
-                    buttonClass: 'fw4 flex items-center white',
-                    icon: 'koenig/kg-edit',
-                    iconClass: 'fill-white',
-                    title: 'Edit',
-                    text: '',
-                    action: run.bind(this, this.editCard)
-                }]
-            };
+        if (this.isEditing) {
+            return false;
         }
+
+        return {
+            items: [{
+                buttonClass: 'fw4 flex items-center white',
+                icon: 'koenig/kg-edit',
+                iconClass: 'fill-white',
+                title: 'Edit',
+                text: '',
+                action: run.bind(this, this.editCard)
+            }]
+        };
     }),
 
     escapedCode: computed('payload.code', function () {
