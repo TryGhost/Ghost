@@ -114,7 +114,7 @@ module.exports = {
 
             if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
                 common.events.emit('services.themes.api.changed');
-                const siteApp = require('../../web/site/app');
+                const siteApp = require('../../../server/web/site/app');
                 siteApp.reload();
             }
         } catch (err) {
