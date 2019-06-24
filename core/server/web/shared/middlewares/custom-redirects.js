@@ -5,7 +5,7 @@ const path = require('path');
 const debug = require('ghost-ignition').debug('web:shared:mw:custom-redirects');
 const config = require('../../../config');
 const common = require('../../../lib/common');
-const validation = require('../../../data/validation');
+const redirectsService = require('../../../../frontend/services/redirects');
 
 const _private = {};
 
@@ -19,7 +19,7 @@ _private.registerRoutes = () => {
     try {
         let redirects = fs.readFileSync(path.join(config.getContentPath('data'), 'redirects.json'), 'utf-8');
         redirects = JSON.parse(redirects);
-        validation.validateRedirects(redirects);
+        redirectsService.validation.validate(redirects);
 
         redirects.forEach((redirect) => {
             /**
