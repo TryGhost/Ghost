@@ -52,6 +52,8 @@ export default Controller.extend({
             ];
             return htmlSafe(styles.join('; '));
         }
+
+        return htmlSafe('');
     }),
 
     actions: {

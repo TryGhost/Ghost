@@ -17,9 +17,7 @@ export default Component.extend({
     zoom() {},
 
     style: computed('zoomed', function () {
-        if (this.zoomed) {
-            return htmlSafe('width: auto; margin: 0;');
-        }
+        return htmlSafe(this.zoomed ? 'width: auto; margin: 0;' : '');
     }),
 
     // avoid "binding style attributes" warnings

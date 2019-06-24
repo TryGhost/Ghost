@@ -59,20 +59,18 @@ export default Component.extend({
     }),
 
     toolbar: computed('images.[]', function () {
-        let items = [];
+        if (isEmpty(this.images)) {
+            return false;
+        }
 
-        if (!isEmpty(this.images)) {
-            items.push({
+        return {
+            items: [{
                 title: 'Add images',
                 icon: 'koenig/kg-add',
                 iconClass: 'fill-white',
                 action: run.bind(this, this._triggerFileDialog)
-            });
-        }
-
-        if (items.length > 0) {
-            return {items};
-        }
+            }]
+        };
     }),
 
     imageRows: computed('images.@each.{src,previewSrc,width,height,row}', function () {

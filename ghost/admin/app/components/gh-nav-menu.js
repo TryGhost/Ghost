@@ -2,7 +2,7 @@ import Component from '@ember/component';
 import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-import {computed} from '@ember/object';
+import {and, equal, match} from '@ember/object/computed';
 import {getOwner} from '@ember/application';
 import {htmlSafe} from '@ember/string';
 import {inject as service} from '@ember/service';
@@ -24,37 +24,20 @@ export default Component.extend(ShortcutsMixin, {
 
     shortcuts: null,
 
-    showMenuExtension: computed('config.clientExtensions.menu', 'session.user.isOwner', function () {
-        return this.get('config.clientExtensions.menu') && this.get('session.user.isOwner');
-    }),
-
-    showDropdownExtension: computed('config.clientExtensions.dropdown', 'session.user.isOwner', function () {
-        return this.get('config.clientExtensions.dropdown') && this.get('session.user.isOwner');
-    }),
-
-    showScriptExtension: computed('config.clientExtensions.script', 'session.user.isOwner', function () {
-        return this.get('config.clientExtensions.script') && this.get('session.user.isOwner');
-    }),
-
-    isIntegrationRoute: computed('router.currentRouteName', function () {
-        let re = /^settings\.integration/;
-        return re.test(this.router.currentRouteName);
-    }),
-
-    isSettingsRoute: computed('router.currentRouteName', function () {
-        let re = /^settings/;
-        return re.test(this.router.currentRouteName);
-    }),
+    isIntegrationRoute: match('router.currentRouteName', /^settings\.integration/),
+    isSettingsRoute: match('router.currentRouteName', /^settings/),
 
     // HACK: {{link-to}} should be doing this automatically but there appears to
     // be a bug in Ember that's preventing it from working immediately after login
-    isOnSite: computed('router.currentRouteName', function () {
-        return this.router.currentRouteName === 'site';
-    }),
+    isOnSite: equal('router.currentRouteName', 'site'),
+
+    showMenuExtension: and('config.clientExtensions.menu', 'session.user.isOwner'),
+    showDropdownExtension: and('config.clientExtensions.dropdown', 'session.user.isOwner'),
+    showScriptExtension: and('config.clientExtensions.script', 'session.user.isOwner'),
 
     init() {
         this._super(...arguments);
-        
+
         let shortcuts = {};
 
         shortcuts[`${ctrlOrCmd}+k`] = {action: 'toggleSearchModal'};

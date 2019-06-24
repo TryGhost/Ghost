@@ -69,9 +69,7 @@ export default Component.extend({
     }),
 
     selectedClass: computed('isSelected', 'showSelectedOutline', function () {
-        if (this.isSelected && this.showSelectedOutline) {
-            return 'kg-card-selected';
-        }
+        return this.isSelected && this.showSelectedOutline ? 'kg-card-selected' : '';
     }),
 
     didReceiveAttrs() {

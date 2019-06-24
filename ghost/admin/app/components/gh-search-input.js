@@ -21,10 +21,10 @@ export function computedGroup(category) {
 }
 
 export default Component.extend({
-    store: service('store'),
-    router: service('router'),
     ajax: service(),
     notifications: service(),
+    router: service(),
+    store: service(),
 
     content: null,
     contentExpiresAt: false,

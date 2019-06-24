@@ -37,14 +37,13 @@ export default Controller.extend({
     email: readOnly('user.email'),
     slugValue: boundOneWay('user.slug'),
 
-    canAssignRoles: or('currentUser.isAdmin', 'currentUser.isOwner'),
     canChangeEmail: not('isAdminUserOnOwnerProfile'),
     canChangePassword: not('isAdminUserOnOwnerProfile'),
     canMakeOwner: and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin', 'isNotSuspended'),
     isAdminUserOnOwnerProfile: and('currentUser.isAdmin', 'user.isOwner'),
     isNotOwnersProfile: not('user.isOwner'),
     isNotSuspended: not('user.isSuspended'),
-    rolesDropdownIsVisible: and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
+    rolesDropdownIsVisible: and('currentUser.isOwnerOrAdmin', 'isNotOwnProfile', 'isNotOwnersProfile'),
     userActionsAreVisible: or('deleteUserActionIsVisible', 'canMakeOwner'),
 
     isNotOwnProfile: not('isOwnProfile'),
@@ -52,12 +51,22 @@ export default Controller.extend({
         return this.get('user.id') === this.get('currentUser.id');
     }),
 
-    deleteUserActionIsVisible: computed('currentUser', 'canAssignRoles', 'user', function () {
-        if ((this.canAssignRoles && this.isNotOwnProfile && !this.get('user.isOwner'))
-            || (this.get('currentUser.isEditor') && (this.isNotOwnProfile
-            || this.get('user.isAuthorOrContributor')))) {
+    deleteUserActionIsVisible: computed('currentUser.{isOwnerOrAdmin,isEditor}', 'user.{isOwner,isAuthorOrContributor}', 'isOwnProfile', function () {
+        // users can't delete themselves
+        if (this.isOwnProfile) {
+            return false;
+        }
+
+        if (
+            // owners/admins can delete any non-owner user
+            (this.currentUser.get('isOwnerOrAdmin') && !this.user.isOwner) ||
+            // editors can delete any author or contributor
+            (this.currentUser.get('isEditor') && this.user.isAuthorOrContributor)
+        ) {
             return true;
         }
+
+        return false;
     }),
 
     coverTitle: computed('user.name', function () {
