@@ -117,7 +117,7 @@
     "normalize.css": "3.0.3",
     "postcss-color-mod-function": "3.0.3",
     "postcss-custom-media": "7.0.8",
-    "postcss-custom-properties": "8.0.10",
+    "postcss-custom-properties": "8.0.11",
     "postcss-easy-import": "3.0.0",
     "reframe.js": "2.2.5",
     "simplemde": "https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost",
