@@ -23,7 +23,7 @@ function init({membersUrl, ssrUrl}) {
 
     auth.on('signedin', function () {
         auth.getSSRToken({fresh: true}).then(function (token) {
-            createSession(token);
+            createSession(token, ssrUrl);
         });
     });
 
