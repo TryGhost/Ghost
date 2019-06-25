@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-theme-bindings",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-theme-bindings",
   "author": "Ghost Foundation",
   "license": "MIT",
