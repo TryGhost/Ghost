@@ -4,8 +4,8 @@ const browserAuth = require('@tryghost/members-browser-auth');
 
 module.exports.init = init;
 
-function init({siteUrl}) {
-    const auth = browserAuth({membersUrl: siteUrl + '/members'});
+function init({membersUrl, ssrUrl}) {
+    const auth = browserAuth({membersUrl});
 
     const [hashMatch, hash, query] = window.location.hash.match(/^#([^?]+)\??(.*)$/) || [];
 
@@ -34,7 +34,7 @@ function init({siteUrl}) {
     function signout() {
         auth.signout()
             .then(() => {
-                return destroySession();
+                return destroySession(ssrUrl);
             })
             .then(reload);
     }
@@ -45,7 +45,7 @@ function init({siteUrl}) {
                 return auth.getSSRToken({
                     fresh: true
                 }).then(function (token) {
-                    return createSession(token);
+                    return createSession(token, ssrUrl);
                 });
             })
             .then(reload);
@@ -57,7 +57,7 @@ function init({siteUrl}) {
                 return auth.getSSRToken({
                     fresh: true
                 }).then(function (token) {
-                    return createSession(token);
+                    return createSession(token, ssrUrl);
                 });
             })
             .then(reload);
@@ -69,7 +69,7 @@ function init({siteUrl}) {
                 return auth.getSSRToken({
                     fresh: true
                 }).then(function (token) {
-                    return createSession(token);
+                    return createSession(token, ssrUrl);
                 });
             })
             .then(reload);
@@ -116,8 +116,8 @@ function reload(success) {
     }
 }
 
-function createSession(token) {
-    return fetch('/members/ssr', {
+function createSession(token, ssrUrl) {
+    return fetch(ssrUrl, {
         method: 'post',
         credentials: 'include',
         body: token
@@ -126,8 +126,8 @@ function createSession(token) {
     });
 }
 
-function destroySession() {
-    return fetch('/members/ssr', {
+function destroySession(ssrUrl) {
+    return fetch(ssrUrl, {
         method: 'delete'
     }).then(function (res) {
         return !!res.ok;
