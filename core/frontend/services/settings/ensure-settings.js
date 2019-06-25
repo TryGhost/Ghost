@@ -2,8 +2,8 @@ const fs = require('fs-extra'),
     Promise = require('bluebird'),
     path = require('path'),
     debug = require('ghost-ignition').debug('services:settings:ensure-settings'),
-    common = require('../../lib/common'),
-    config = require('../../config');
+    common = require('../../../server/lib/common'),
+    config = require('../../../server/config');
 
 /**
  * Makes sure that all supported settings files are in the
