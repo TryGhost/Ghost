@@ -45,12 +45,12 @@ module.exports = function setupParentApp(options = {}) {
     // @TODO: finish refactoring the API app
     parentApp.use('/ghost/api', require('./api')());
 
+    // MEMBERS
+    parentApp.use('/ghost/members', labs.members, membersService.gateway);
+    parentApp.use('/ghost/members/auth', labs.members, membersService.authPages);
+
     // ADMIN
     parentApp.use('/ghost', require('./admin')());
-
-    // MEMBERS
-    parentApp.use('/members', labs.members, membersService.gateway);
-    parentApp.use('/members/auth', labs.members, membersService.authPages);
 
     // BLOG
     parentApp.use(require('./site')(options));
