@@ -1,8 +1,9 @@
+dist: xenial
 language: node_js
 # When changing node version also update it on lines 31 and 49.
 node_js:
+  - "10"
   - "8"
-  - "6"
 
 sudo: false
 
@@ -17,6 +18,9 @@ addons:
         key_url: 'https://dl.yarnpkg.com/debian/pubkey.gpg'
     packages:
       - yarn
+
+services:
+  - mysql
 
 env:
   global:
