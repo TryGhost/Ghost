@@ -22,6 +22,7 @@ var Promise = require('bluebird'),
     urlService = require('../../frontend/services/url'),
     routingService = require('../../frontend/services/routing'),
     settingsService = require('../../server/services/settings'),
+    frontendSettingsService = require('../../frontend/services/settings'),
     settingsCache = require('../../server/services/settings/cache'),
     imageLib = require('../../server/lib/image'),
     web = require('../../server/web'),
@@ -896,6 +897,9 @@ startGhost = function startGhost(options) {
                 return settingsService.init();
             })
             .then(function () {
+                return frontendSettingsService.init();
+            })
+            .then(function () {
                 return themes.init();
             })
             .then(function () {
@@ -1109,7 +1113,7 @@ module.exports = {
             },
 
             init: function () {
-                const routes = settingsService.get('routes');
+                const routes = frontendSettingsService.get('routes');
 
                 const collectionRouter = new routingService.CollectionRouter('/', routes.collections['/']);
                 const tagRouter = new routingService.TaxonomyRouter('tag', routes.taxonomies.tag);
