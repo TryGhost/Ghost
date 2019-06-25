@@ -77,6 +77,7 @@ function initialiseServices() {
 const minimalRequiredSetupToStartGhost = (dbState) => {
     const settings = require('./services/settings');
     const models = require('./models');
+    const frontendSettings = require('../frontend/services/settings');
     const themes = require('../frontend/services/themes');
     const GhostServer = require('./ghost-server');
 
@@ -92,6 +93,11 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
     return settings.init()
         .then(() => {
             debug('Settings done');
+
+            return frontendSettings.init();
+        })
+        .then(() => {
+            debug('Frontend settings done');
             return themes.init();
         })
         .then(() => {
