@@ -116,16 +116,8 @@ const siteOrigin = doBlock(() => {
     return `${protocol}//${host}`;
 });
 
-const getApiUrl = ({version, type}) => {
-    const {href} = new url.URL(
-        urlUtils.getApiPath({version, type}),
-        siteUrl
-    );
-    return href;
-};
-
-const contentApiUrl = getApiUrl({version: 'v2', type: 'content'});
-const membersApiUrl = getApiUrl({version: 'v2', type: 'members'});
+const contentApiUrl = urlUtils.urlFor('api', {version: 'v2', type: 'content'}, true);
+const membersApiUrl = urlUtils.urlFor('api', {version: 'v2', type: 'members'}, true);
 
 const accessControl = {
     [siteOrigin]: {
