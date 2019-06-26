@@ -6,7 +6,7 @@ const should = require('should'),
     configUtils = require('../../utils/configUtils'),
     urlUtils = require('../../utils/urlUtils'),
     appsService = require('../../../server/services/apps'),
-    settingsService = require('../../../server/services/settings'),
+    frontendSettingsService = require('../../../frontend/services/settings'),
     themeService = require('../../../frontend/services/themes'),
     siteApp = require('../../../server/web/parent-app');
 
@@ -409,7 +409,7 @@ describe('Integration - Web - Site', function () {
         describe('extended routes.yaml: collections', function () {
             describe('2 collections', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
                             '/': 'home'
                         },
@@ -543,7 +543,7 @@ describe('Integration - Web - Site', function () {
 
             describe('no collections', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
                             '/test/': 'test'
                         },
@@ -595,7 +595,7 @@ describe('Integration - Web - Site', function () {
 
             describe('static permalink route', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -702,7 +702,7 @@ describe('Integration - Web - Site', function () {
 
             describe('primary author permalink', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -788,7 +788,7 @@ describe('Integration - Web - Site', function () {
 
             describe('primary tag permalink', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -889,7 +889,7 @@ describe('Integration - Web - Site', function () {
 
             describe('collection with data key', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -1028,7 +1028,7 @@ describe('Integration - Web - Site', function () {
         describe('extended routes.yaml: templates', function () {
             describe('default template, no template', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -1101,7 +1101,7 @@ describe('Integration - Web - Site', function () {
 
             describe('two templates', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -1156,7 +1156,7 @@ describe('Integration - Web - Site', function () {
 
             describe('home.hbs priority', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -1238,7 +1238,7 @@ describe('Integration - Web - Site', function () {
                 before(function () {
                     testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
                             '/channel1/': {
                                 controller: 'channel',
@@ -1627,7 +1627,7 @@ describe('Integration - Web - Site', function () {
 
         describe('extended routes.yaml (5): rss override', function () {
             before(function () {
-                sinon.stub(settingsService, 'get').returns({
+                sinon.stub(frontendSettingsService, 'get').returns({
                     routes: {
                         '/about/': 'about',
                         '/podcast/rss/': {
@@ -2175,7 +2175,7 @@ describe('Integration - Web - Site', function () {
         describe('extended routes.yaml: collections', function () {
             describe('2 collections', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
                             '/': 'home'
                         },
@@ -2309,7 +2309,7 @@ describe('Integration - Web - Site', function () {
 
             describe('no collections', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
                             '/test/': 'test'
                         },
@@ -2361,7 +2361,7 @@ describe('Integration - Web - Site', function () {
 
             describe('static permalink route', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -2468,7 +2468,7 @@ describe('Integration - Web - Site', function () {
 
             describe('primary author permalink', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -2554,7 +2554,7 @@ describe('Integration - Web - Site', function () {
 
             describe('primary tag permalink', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -2655,7 +2655,7 @@ describe('Integration - Web - Site', function () {
 
             describe('collection/routes with data key', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
                             '/my-page/': {
                                 data: {
@@ -2826,7 +2826,7 @@ describe('Integration - Web - Site', function () {
         describe('extended routes.yaml: templates', function () {
             describe('default template, no template', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -2899,7 +2899,7 @@ describe('Integration - Web - Site', function () {
 
             describe('two templates', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -2954,7 +2954,7 @@ describe('Integration - Web - Site', function () {
 
             describe('home.hbs priority', function () {
                 before(function () {
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {},
 
                         collections: {
@@ -3036,7 +3036,7 @@ describe('Integration - Web - Site', function () {
                 before(function () {
                     testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
-                    sinon.stub(settingsService, 'get').returns({
+                    sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
                             '/channel1/': {
                                 controller: 'channel',
@@ -3371,7 +3371,7 @@ describe('Integration - Web - Site', function () {
 
         describe('extended routes.yaml (5): rss override', function () {
             before(function () {
-                sinon.stub(settingsService, 'get').returns({
+                sinon.stub(frontendSettingsService, 'get').returns({
                     routes: {
                         '/about/': 'about',
                         '/podcast/rss/': {
