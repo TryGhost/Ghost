@@ -2,13 +2,31 @@ const Promise = require('bluebird'),
     _ = require('lodash'),
     uuid = require('uuid'),
     crypto = require('crypto'),
-    keypair = require('rsa-keypair'),
     ghostBookshelf = require('./base'),
     common = require('../lib/common'),
     validation = require('../data/validation'),
     internalContext = {context: {internal: true}};
 
 let Settings, defaultSettings;
+
+const doBlock = fn => fn();
+
+const keypair = (bits) => {
+    const keypairModule = doBlock(() => {
+        try {
+            return require('rsa-keypair').generate;
+        } catch (e) {
+            return bits => require('keypair')({bits});
+        }
+    });
+
+    const {public, private, publicKey, privateKey} = keypairModule(bits);
+
+    return {
+        publicKey: public || publicKey.toString(),
+        privateKey: private || privateKey.toString()
+    };
+};
 
 // For neatness, the defaults file is split into categories.
 // It's much easier for us to work with it as a single level
@@ -25,7 +43,7 @@ function parseDefaultSettings() {
             theme_session_secret: crypto.randomBytes(32).toString('hex')
         };
 
-    const membersKeypair = keypair.generate(1024);
+    const membersKeypair = keypair(1024);
 
     dynamicDefault.members_public_key = membersKeypair.publicKey;
     dynamicDefault.members_private_key = membersKeypair.privateKey;
