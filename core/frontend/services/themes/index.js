@@ -97,33 +97,7 @@ module.exports = {
             return engineDefaults['ghost-api'];
         }
     },
-    activate: function activate(loadedTheme, checkedTheme, error) {
-        // no need to check the score, activation should be used in combination with validate.check
-        // Use the two theme objects to set the current active theme
-        try {
-            let previousGhostAPI;
-
-            if (this.getActive()) {
-                previousGhostAPI = this.getApiVersion();
-            }
-
-            active.set(loadedTheme, checkedTheme, error);
-            const currentGhostAPI = this.getApiVersion();
-
-            common.events.emit('services.themes.activated');
-
-            if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
-                common.events.emit('services.themes.api.changed');
-                const siteApp = require('../../../server/web/site/app');
-                siteApp.reload();
-            }
-        } catch (err) {
-            common.logging.error(new common.errors.InternalServerError({
-                message: common.i18n.t('errors.middleware.themehandler.activateFailed', {theme: loadedTheme.name}),
-                err: err
-            }));
-        }
-    },
+    activate: require('./activate'),
     settings: require('./settings'),
     middleware: require('./middleware')
 };
