@@ -144,6 +144,77 @@ export function createParserPlugins(_options = {}) {
         nodeFinished();
     }
 
+    function figureIframeToEmbedCard(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
+            return;
+        }
+
+        let iframe = node.querySelector('iframe');
+
+        if (!iframe) {
+            return;
+        }
+
+        let src = iframe.src;
+        let figcaption = node.querySelector('figcaption');
+
+        // If we don't have a src, or it's not an absolute URL, we can't handle this
+        if (!src || !src.match(/^https?:\/\//i)) {
+            return;
+        }
+
+        let payload = {
+            url: src
+        };
+
+        if (figcaption) {
+            payload.caption = cleanBasicHtml(figcaption.innerHTML, options);
+            node.removeChild(figcaption);
+        }
+
+        payload.html = node.innerHTML;
+
+        let cardSection = builder.createCardSection('embed', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+
+    function figureBlockquoteToEmbedCard(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
+            return;
+        }
+
+        let blockquote = node.querySelector('blockquote');
+        let link = node.querySelector('a');
+
+        if (!blockquote || !link) {
+            return;
+        }
+
+        let figcaption = node.querySelector('figcaption');
+        let url = link.href;
+
+        // If we don't have a url, or it's not an absolute URL, we can't handle this
+        if (!url || !url.match(/^https?:\/\//i)) {
+            return;
+        }
+
+        let payload = {
+            url: url
+        };
+
+        if (figcaption) {
+            payload.caption = cleanBasicHtml(figcaption.innerHTML, options);
+            node.removeChild(figcaption);
+        }
+
+        payload.html = node.innerHTML;
+
+        let cardSection = builder.createCardSection('embed', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+
     function figureToCodeCard(node, builder, {addSection, nodeFinished}) {
         if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
             return;
@@ -210,10 +281,12 @@ export function createParserPlugins(_options = {}) {
         kgHtmlCardToCard,
         brToSoftBreakAtom,
         removeLeadingNewline,
+        figureBlockquoteToEmbedCard, // I think these can contain images
         figureToImageCard,
         imgToCard,
         hrToCard,
         figureToCodeCard,
-        preCodeToCard
+        preCodeToCard,
+        figureIframeToEmbedCard
     ];
 }
