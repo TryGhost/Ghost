@@ -78,7 +78,11 @@ module.exports = {
                 shortName: themeService.storage.getSanitizedFileName(frame.file.originalname.split('.zip')[0])
             };
 
-            return themeService.settings.setFromZip(zip);
+            return themeService.settings.setFromZip(zip)
+                .then((theme) => {
+                    common.events.emit('theme.uploaded');
+                    return theme;
+                });
         }
     },
 
