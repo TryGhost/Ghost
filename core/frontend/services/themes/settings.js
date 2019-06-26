@@ -1,11 +1,12 @@
 const fs = require('fs-extra');
 
-// const activate = require('./activate');
+const activate = require('./activate');
 const validate = require('./validate');
 const Storage = require('./Storage');
 const themeLoader = require('./loader');
 const toJSON = require('./to-json');
 
+const settingsCache = require('../../../server/services/settings/cache');
 const common = require('../../../server/lib/common');
 const debug = require('ghost-ignition').debug('api:themes');
 
