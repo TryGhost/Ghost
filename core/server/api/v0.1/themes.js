@@ -26,7 +26,7 @@ themes = {
             // Main action
             .then(() => {
                 // Return JSON result
-                return themeService.toJSON();
+                return themeService.settings.get();
             });
     },
 
@@ -52,7 +52,7 @@ themes = {
             })
             .then((checkedTheme) => {
                 // Return JSON result
-                return themeService.toJSON(themeName, checkedTheme);
+                return themeService.settings.get(themeName, checkedTheme);
             });
     },
 
