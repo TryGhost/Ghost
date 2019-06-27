@@ -29,14 +29,14 @@ function parseDefaultSettings() {
     var defaultSettingsInCategories = require('../data/schema/').defaultSettings,
         defaultSettingsFlattened = {},
         dynamicDefault = {
-            db_hash: uuid.v4(),
-            public_hash: crypto.randomBytes(15).toString('hex'),
+            db_hash: () => uuid.v4(),
+            public_hash: () => crypto.randomBytes(15).toString('hex'),
             // @TODO: session_secret would ideally be named "admin_session_secret"
-            session_secret: crypto.randomBytes(32).toString('hex'),
-            members_session_secret: crypto.randomBytes(32).toString('hex'),
-            theme_session_secret: crypto.randomBytes(32).toString('hex'),
-            members_public_key: getMembersKey('public'),
-            members_private_key: getMembersKey('private')
+            session_secret: () => crypto.randomBytes(32).toString('hex'),
+            members_session_secret: () => crypto.randomBytes(32).toString('hex'),
+            theme_session_secret: () => crypto.randomBytes(32).toString('hex'),
+            members_public_key: () => getMembersKey('public'),
+            members_private_key: () => getMembersKey('private')
         };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
@@ -45,9 +45,9 @@ function parseDefaultSettings() {
             setting.key = settingName;
 
             setting.getDefaultValue = function getDefaultValue() {
-                const dynamicDefaultValue = dynamicDefault[setting.key];
-                if (dynamicDefaultValue) {
-                    return dynamicDefaultValue;
+                const getDynamicDefault = dynamicDefault[setting.key];
+                if (getDynamicDefault) {
+                    return getDynamicDefault();
                 } else {
                     return setting.defaultValue;
                 }
