@@ -2,6 +2,7 @@ const fs = require('fs-extra');
 
 const activate = require('./activate');
 const validate = require('./validate');
+const list = require('./list');
 const Storage = require('./Storage');
 const themeLoader = require('./loader');
 const toJSON = require('./to-json');
@@ -76,6 +77,32 @@ module.exports = {
                             common.logging.error(new common.errors.GhostError({err: err}));
                         });
                 }
+            });
+    },
+    destroy: function (themeName) {
+        if (themeName === 'casper') {
+            throw new common.errors.ValidationError({
+                message: common.i18n.t('errors.api.themes.destroyCasper')
+            });
+        }
+
+        if (themeName === settingsCache.get('active_theme')) {
+            throw new common.errors.ValidationError({
+                message: common.i18n.t('errors.api.themes.destroyActive')
+            });
+        }
+
+        const theme = list.get(themeName);
+
+        if (!theme) {
+            throw new common.errors.NotFoundError({
+                message: common.i18n.t('errors.api.themes.themeDoesNotExist')
+            });
+        }
+
+        return getStorage().delete(themeName)
+            .then(() => {
+                list.del(themeName);
             });
     }
 };

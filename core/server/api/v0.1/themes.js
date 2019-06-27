@@ -124,35 +124,14 @@ themes = {
      * remove theme folder
      */
     destroy(options) {
-        let themeName = options.name,
-            theme;
+        let themeName = options.name;
 
         return localUtils
         // Permissions
             .handlePermissions('themes', 'destroy')(options)
             // Validation
             .then(() => {
-                if (themeName === 'casper') {
-                    throw new common.errors.ValidationError({message: common.i18n.t('errors.api.themes.destroyCasper')});
-                }
-
-                if (themeName === settingsCache.get('active_theme')) {
-                    throw new common.errors.ValidationError({message: common.i18n.t('errors.api.themes.destroyActive')});
-                }
-
-                theme = themeList.get(themeName);
-
-                if (!theme) {
-                    throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.themes.themeDoesNotExist')});
-                }
-
-                // Actually do the deletion here
-                return themeService.storage.delete(themeName);
-            })
-            // And some extra stuff to maintain state here
-            .then(() => {
-                themeList.del(themeName);
-                // Delete returns an empty 204 response
+                return themeService.settings.destroy(themeName);
             });
     }
 };

@@ -135,30 +135,7 @@ module.exports = {
         query(frame) {
             let themeName = frame.options.name;
 
-            if (themeName === 'casper') {
-                throw new common.errors.ValidationError({
-                    message: common.i18n.t('errors.api.themes.destroyCasper')
-                });
-            }
-
-            if (themeName === settingsCache.get('active_theme')) {
-                throw new common.errors.ValidationError({
-                    message: common.i18n.t('errors.api.themes.destroyActive')
-                });
-            }
-
-            const theme = themeService.list.get(themeName);
-
-            if (!theme) {
-                throw new common.errors.NotFoundError({
-                    message: common.i18n.t('errors.api.themes.themeDoesNotExist')
-                });
-            }
-
-            return themeService.storage.delete(themeName)
-                .then(() => {
-                    themeService.list.del(themeName);
-                });
+            return themeService.settings.destroy(themeName);
         }
     }
 };
