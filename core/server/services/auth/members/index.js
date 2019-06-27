@@ -18,14 +18,14 @@ module.exports = {
             const {protocol, host} = url.parse(config.get('url'));
             const siteOrigin = `${protocol}//${host}`;
 
-            UNO_MEMBERINO = membersService.getPublicConfig().then(({issuer}) => jwt({
+            UNO_MEMBERINO = membersService.api.getPublicConfig().then(({issuer}) => jwt({
                 credentialsRequired: false,
                 requestProperty: 'member',
                 audience: siteOrigin,
                 issuer,
                 algorithm: 'RS512',
                 secret(req, payload, done) {
-                    membersService.getPublicConfig().then(({publicKey}) => {
+                    membersService.api.getPublicConfig().then(({publicKey}) => {
                         done(null, publicKey);
                     }).catch(done);
                 },
