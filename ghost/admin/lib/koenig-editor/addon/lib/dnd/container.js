@@ -13,6 +13,11 @@ import {A} from '@ember/array';
 
 class Container {
     constructor(element, options) {
+        if (options.createGhostElement) {
+            this._createGhostElement = options.createGhostElement;
+            delete options.createGhostElement;
+        }
+
         Object.assign(this, {
             element,
             draggables: A([]),
@@ -48,8 +53,9 @@ class Container {
     onDragOverDroppable() { }
     onDragLeaveDroppable() { }
     onDragLeaveContainer() { }
-    onDrop() { }
     onDragEnd() { }
+    onDrop() { }
+    onDropEnd() { }
 
     // TODO: allow configuration for ghost element creation
     // builds an element that is attached to the mouse pointer when dragging.
@@ -57,7 +63,13 @@ class Container {
     // - a selector for which element in the draggable to copy
     // - a function to hand off element creation to the consumer
     createGhostElement(draggableInfo) {
-        if (draggableInfo.type === 'image') {
+        let ghostElement;
+
+        if (typeof this._createGhostElement === 'function') {
+            ghostElement = this._createGhostElement(draggableInfo);
+        }
+
+        if (!ghostElement && (draggableInfo.type === 'image' || draggableInfo.cardName === 'image')) {
             let image = draggableInfo.element.querySelector('img');
             if (image) {
                 let aspectRatio = image.width / image.height;
@@ -72,7 +84,7 @@ class Container {
                     height = 200;
                 }
 
-                let ghostElement = document.createElement('img');
+                ghostElement = document.createElement('img');
                 ghostElement.width = width;
                 ghostElement.height = height;
                 ghostElement.id = 'koenig-drag-drop-ghost';
@@ -82,13 +94,15 @@ class Container {
                 ghostElement.style.left = `-${width}px`;
                 ghostElement.style.zIndex = constants.GHOST_ZINDEX;
                 ghostElement.style.willChange = 'transform';
-
-                return ghostElement;
             } else {
                 // eslint-disable-next-line
                 console.warn('No <img> element found in draggable');
                 return;
             }
+        }
+
+        if (ghostElement) {
+            return ghostElement;
         }
 
         // eslint-disable-next-line

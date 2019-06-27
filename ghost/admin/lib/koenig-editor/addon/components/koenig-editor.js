@@ -1286,16 +1286,19 @@ export default Component.extend({
         let cardDragDropContainer = this.koenigDragDropHandler.registerContainer(this.editor.element, {
             draggableSelector: ':scope > div', // cards
             droppableSelector: ':scope > *', // all block elements
-            onDragStart: run.bind(this, function () {
-                this._cardDragDropContainer.refresh();
-            }),
+            onDragStart: run.bind(this, this._onDragStart),
             getDraggableInfo: run.bind(this, this._getDraggableInfo),
             createGhostElement: run.bind(this, this._createCardDragElement),
             getIndicatorPosition: run.bind(this, this._getDropIndicatorPosition),
-            onDrop: run.bind(this, this._onCardDrop)
+            onDrop: run.bind(this, this._onCardDrop),
+            onDropEnd: run.bind(this, this._onDropEnd)
         });
 
         this._cardDragDropContainer = cardDragDropContainer;
+    },
+
+    _onDragStart() {
+        this._cardDragDropContainer.refresh();
     },
 
     _getDraggableInfo(draggableElement) {
@@ -1318,7 +1321,7 @@ export default Component.extend({
     _createCardDragElement(draggableInfo) {
         let {cardName} = draggableInfo;
 
-        if (!cardName) {
+        if (!cardName || cardName === 'image') {
             return;
         }
 
@@ -1345,9 +1348,8 @@ export default Component.extend({
         let droppableIndex = droppables.indexOf(droppableElem);
         let draggableIndex = droppables.indexOf(draggableInfo.element);
 
-        // only allow card drag/drop for now so it's not possible to drag
-        // images out of a gallery and see drop indicators in the post content
-        if (draggableInfo.type !== 'card') {
+        // allow card and image drops (images can be dragged out of a gallery)
+        if (draggableInfo.type !== 'card' && draggableInfo.type !== 'image') {
             return false;
         }
 
@@ -1379,7 +1381,7 @@ export default Component.extend({
     },
 
     _onCardDrop(draggableInfo) {
-        if (draggableInfo.type !== 'card') {
+        if (draggableInfo.type !== 'card' && draggableInfo.type !== 'image') {
             return false;
         }
 
@@ -1387,26 +1389,46 @@ export default Component.extend({
         let draggableIndex = droppables.indexOf(draggableInfo.element);
 
         if (this._isCardDropAllowed(draggableIndex, draggableInfo.insertIndex)) {
-            let card = this.getCardFromElement(draggableInfo.element);
-            let cardSection = this.getSectionFromCard(card);
-            let difference = draggableIndex - draggableInfo.insertIndex;
+            if (draggableInfo.type === 'card') {
+                let card = this.getCardFromElement(draggableInfo.element);
+                let cardSection = this.getSectionFromCard(card);
+                let difference = draggableIndex - draggableInfo.insertIndex;
 
-            if (draggableIndex < draggableInfo.insertIndex) {
-                difference += 1;
+                if (draggableIndex < draggableInfo.insertIndex) {
+                    difference += 1;
+                }
+
+                if (difference !== 0) {
+                    this.editor.run((postEditor) => {
+                        do {
+                            if (difference > 0) {
+                                cardSection = postEditor.moveSectionUp(cardSection);
+                                difference -= 1;
+                            } else if (difference < 0) {
+                                cardSection = postEditor.moveSectionDown(cardSection);
+                                difference += 1;
+                            }
+                        } while (difference !== 0);
+                    });
+                }
+
+                // make sure we don't remove the dropped card in the card->card drop handler
+                this._skipOnDropEnd = true;
+
+                return true;
             }
 
-            if (difference !== 0) {
+            if (draggableInfo.type === 'image') {
+                // we need to create an image card from a raw image payload
                 this.editor.run((postEditor) => {
-                    do {
-                        if (difference > 0) {
-                            cardSection = postEditor.moveSectionUp(cardSection);
-                            difference -= 1;
-                        } else if (difference < 0) {
-                            cardSection = postEditor.moveSectionDown(cardSection);
-                            difference += 1;
-                        }
-                    } while (difference !== 0);
+                    let imageCard = postEditor.builder.createCardSection('image', draggableInfo.payload);
+                    let sections = this.editor.post.sections;
+                    let droppableSection = sections.objectAt(draggableInfo.insertIndex);
+                    postEditor.insertSectionBefore(sections, imageCard, droppableSection);
+                    postEditor.setRange(imageCard.tailPosition());
                 });
+
+                return true;
             }
         }
     },
@@ -1414,6 +1436,11 @@ export default Component.extend({
     // TODO: more or less duplicated in koenig-card-gallery other than direction
     // - move to DnD container?
     _isCardDropAllowed(draggableIndex, droppableIndex, position = '') {
+        // images can be dragged out of a gallery to any position
+        if (draggableIndex === -1) {
+            return true;
+        }
+
         // can't drop on itself or when droppableIndex doesn't exist
         if (draggableIndex === droppableIndex || typeof droppableIndex === 'undefined') {
             return false;
@@ -1429,6 +1456,17 @@ export default Component.extend({
         }
 
         return droppableIndex !== draggableIndex;
+    },
+
+    // a card can be dropped into another card which means we need to remove the original
+    _onDropEnd(draggableInfo, success) {
+        if (this._skipOnDropEnd || !success || draggableInfo.type !== 'card') {
+            this._skipOnDropEnd = false;
+            return;
+        }
+
+        let card = this.getCardFromElement(draggableInfo.element);
+        this.deleteCard(card, NO_CURSOR_MOVEMENT);
     },
 
     // calculate the number of words in rich-text sections and query cards for
