@@ -4,7 +4,7 @@
     "@tryghost:groupTestLint",
     "@tryghost:groupCSS",
     "@tryghost:groupBuildTools",
-    "@tryghost:automergeSilentTestLintNonMajor"      
+    "@tryghost:automergeSilentTestLintNonMajor"
   ],
   "travis": { "enabled": true },
   "node": {
