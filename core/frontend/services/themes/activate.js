@@ -7,12 +7,12 @@ function activate(loadedTheme, checkedTheme, error) {
     try {
         let previousGhostAPI;
 
-        if (this.getActive()) {
-            previousGhostAPI = this.getApiVersion();
+        if (active.get()) {
+            previousGhostAPI = active.get().engine('ghost-api');
         }
 
         active.set(loadedTheme, checkedTheme, error);
-        const currentGhostAPI = this.getApiVersion();
+        const currentGhostAPI = active.get().engine('ghost-api');
 
         common.events.emit('services.themes.activated');
 
