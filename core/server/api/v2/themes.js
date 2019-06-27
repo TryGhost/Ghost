@@ -8,7 +8,7 @@ module.exports = {
     browse: {
         permissions: true,
         query() {
-            return themeService.toJSON();
+            return themeService.settings.get();
         }
     },
 
@@ -41,7 +41,7 @@ module.exports = {
                         .then(() => checkedTheme);
                 })
                 .then((checkedTheme) => {
-                    return themeService.toJSON(themeName, checkedTheme);
+                    return themeService.settings.get(themeName, checkedTheme);
                 });
         }
     },
@@ -57,8 +57,7 @@ module.exports = {
 
             let zip = {
                 path: frame.file.path,
-                name: frame.file.originalname,
-                shortName: themeService.storage.getSanitizedFileName(frame.file.originalname.split('.zip')[0])
+                name: frame.file.originalname
             };
 
             return themeService.settings.setFromZip(zip)

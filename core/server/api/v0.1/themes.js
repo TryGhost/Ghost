@@ -64,8 +64,7 @@ themes = {
 
         let zip = {
             path: options.path,
-            name: options.originalname,
-            shortName: themeService.storage.getSanitizedFileName(options.originalname.split('.zip')[0])
+            name: options.originalname
         };
 
         return localUtils

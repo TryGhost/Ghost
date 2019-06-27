@@ -35,6 +35,8 @@ module.exports = {
         });
     },
     setFromZip: (zip) => {
+        const shortName = getStorage().getSanitizedFileName(zip.name.split('.zip')[0]);
+
         // check if zip name is casper.zip
         if (zip.name === 'casper.zip') {
             throw new common.errors.ValidationError({
@@ -48,29 +50,29 @@ module.exports = {
             .then((_checkedTheme) => {
                 checkedTheme = _checkedTheme;
 
-                return getStorage().exists(zip.shortName);
+                return getStorage().exists(shortName);
             })
             .then((themeExists) => {
                 // CASE: delete existing theme
                 if (themeExists) {
-                    return getStorage().delete(zip.shortName);
+                    return getStorage().delete(shortName);
                 }
             })
             .then(() => {
                 // CASE: store extracted theme
                 return getStorage().save({
-                    name: zip.shortName,
+                    name: shortName,
                     path: checkedTheme.path
                 });
             })
             .then(() => {
                 // CASE: loads the theme from the fs & sets the theme on the themeList
-                return themeLoader.loadOneTheme(zip.shortName);
+                return themeLoader.loadOneTheme(shortName);
             })
             .then((loadedTheme) => {
                 // CASE: if this is the active theme, we are overriding
-                if (zip.shortName === settingsCache.get('active_theme')) {
-                    debug('Activating theme (method C, on API "override")', zip.shortName);
+                if (shortName === settingsCache.get('active_theme')) {
+                    debug('Activating theme (method C, on API "override")', shortName);
                     activate(loadedTheme, checkedTheme);
 
                     // CASE: clear cache
@@ -78,7 +80,7 @@ module.exports = {
                 }
 
                 // @TODO: unify the name across gscan and Ghost!
-                return toJSON(zip.shortName, checkedTheme);
+                return toJSON(shortName, checkedTheme);
             })
             .finally(() => {
                 // @TODO: we should probably do this as part of saving the theme
