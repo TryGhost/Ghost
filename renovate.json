@@ -15,5 +15,5 @@
     "automerge": true
   },
   "ignoreDeps": ["nodemailer"],
-  "ignorePaths": ["core/server/lib/members", "core/test"]
+  "ignorePaths": ["core/test"]
 }
