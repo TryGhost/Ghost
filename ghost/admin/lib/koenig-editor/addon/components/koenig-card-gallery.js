@@ -360,17 +360,12 @@ export default Component.extend({
                             draggableSelector: '[data-image]',
                             droppableSelector: '[data-image]',
                             isDragEnabled: !isEmpty(this.images),
-                            onDragStart: run.bind(this, function () {
-                                this.element.querySelector('figure').classList.remove('kg-card-selected');
-                            }),
-                            onDragEnd: run.bind(this, function () {
-                                if (this.isSelected) {
-                                    this.element.querySelector('figure').classList.add('kg-card-selected');
-                                }
-                            }),
+                            onDragStart: run.bind(this, this._dragStart),
+                            onDragEnd: run.bind(this, this._dragEnd),
                             getDraggableInfo: run.bind(this, this._getDraggableInfo),
                             getIndicatorPosition: run.bind(this, this._getDropIndicatorPosition),
-                            onDrop: run.bind(this, this._onDrop)
+                            onDrop: run.bind(this, this._onDrop),
+                            onDropEnd: run.bind(this, this._onDropEnd)
                         }
                     );
                 }
@@ -378,10 +373,28 @@ export default Component.extend({
         }
     },
 
+    _dragStart(draggableInfo) {
+        this.element.querySelector('figure').classList.remove('kg-card-selected');
+
+        // enable dropping when an image is dragged in from outside of this card
+        let isImageDrag = draggableInfo.type === 'image' || draggableInfo.cardName === 'image';
+        if (isImageDrag && draggableInfo.payload.src && this.images.length !== MAX_IMAGES) {
+            this._dragDropContainer.enableDrag();
+        }
+    },
+
+    _dragEnd() {
+        if (this.isSelected) {
+            this.element.querySelector('figure').classList.add('kg-card-selected');
+        } else {
+            this._dragDropContainer.disableDrag();
+        }
+    },
+
     _getDraggableInfo(draggableElement) {
         let src = draggableElement.querySelector('img').getAttribute('src');
         let image = this.images.findBy('src', src) || this.images.findBy('previewSrc', src);
-        let payload = image && image.getProperties('fileName', 'src', 'row', 'width', 'height');
+        let payload = image && image.getProperties('fileName', 'src', 'row', 'width', 'height', 'caption');
 
         if (image) {
             return {
@@ -393,9 +406,9 @@ export default Component.extend({
         return {};
     },
 
-    _onDrop(draggableInfo/*, droppableElem, position*/) {
-        // do not allow dragging between galleries for now
-        if (!this.element.contains(draggableInfo.element)) {
+    _onDrop(draggableInfo, droppableElem, position) {
+        // do not allow dropping of non-images
+        if (draggableInfo.type !== 'image' && draggableInfo.cardName !== 'image') {
             return false;
         }
 
@@ -403,12 +416,56 @@ export default Component.extend({
         let draggableIndex = droppables.indexOf(draggableInfo.element);
 
         if (this._isDropAllowed(draggableIndex, draggableInfo.insertIndex)) {
-            let draggedImage = this.images.findBy('src', draggableInfo.payload.src);
+            if (draggableIndex === -1) {
+                // external image being added
+                let {payload} = draggableInfo;
+                let img = draggableInfo.element.querySelector(`img[src="${payload.src}"]`);
+                let insertIndex = draggableInfo.insertIndex;
 
-            this.images.removeObject(draggedImage);
-            this.images.insertAt(draggableInfo.insertIndex, draggedImage);
+                // insert index needs adjusting because we're not shuffling
+                if (position && position.match(/right/)) {
+                    insertIndex += 1;
+                }
+
+                // image card payloads may not have all of the details we need but we can fill them in
+                payload.width = payload.width || img.naturalWidth;
+                payload.height = payload.height || img.naturalHeight;
+                if (!payload.fileName) {
+                    let url = new URL(img.src);
+                    let fileName = url.pathname.match(/\/([^/]*)$/)[1];
+                    payload.fileName = fileName;
+                }
+
+                this.images.insertAt(insertIndex, EmberObject.create(payload));
+            } else {
+                // internal image being re-ordered
+                let draggedImage = this.images.findBy('src', draggableInfo.payload.src);
+                this.images.removeObject(draggedImage);
+                this.images.insertAt(draggableInfo.insertIndex, draggedImage);
+            }
+
             this._recalculateImageRows();
+            this._buildAndSaveImagesPayload();
+            this._dragDropContainer.refresh();
 
+            this._skipOnDragEnd = true;
+            return true;
+        }
+
+        return false;
+    },
+
+    // if an image is dragged out of a gallery we need to remove it
+    _onDropEnd(draggableInfo, success) {
+        if (this._skipOnDragEnd || !success) {
+            this._skipOnDragEnd = false;
+            return;
+        }
+
+        let image = this.images.findBy('src', draggableInfo.payload.src);
+        if (image) {
+            this.images.removeObject(image);
+            this._recalculateImageRows();
             this._buildAndSaveImagesPayload();
             this._dragDropContainer.refresh();
         }
@@ -422,8 +479,8 @@ export default Component.extend({
     //   droppableIndex:
     // }
     _getDropIndicatorPosition(draggableInfo, droppableElem, position) {
-        // do not allow dragging between galleries for now
-        if (!this.element.contains(draggableInfo.element)) {
+        // do not allow dropping of non-images
+        if (draggableInfo.type !== 'image' && draggableInfo.cardName !== 'image') {
             return false;
         }
 
@@ -480,6 +537,11 @@ export default Component.extend({
     // we don't allow an image to be dropped where it would end up in the
     // same position within the gallery
     _isDropAllowed(draggableIndex, droppableIndex, position = '') {
+        // external images can always be dropped
+        if (draggableIndex === -1) {
+            return true;
+        }
+
         // can't drop on itself or when droppableIndex doesn't exist
         if (draggableIndex === droppableIndex || typeof droppableIndex === 'undefined') {
             return false;
