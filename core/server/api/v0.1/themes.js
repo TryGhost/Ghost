@@ -2,7 +2,6 @@
 // RESTful API for Themes
 const debug = require('ghost-ignition').debug('api:themes'),
     Promise = require('bluebird'),
-    fs = require('fs-extra'),
     localUtils = require('./utils'),
     common = require('../../lib/common'),
     models = require('../../models'),
@@ -84,73 +83,21 @@ themes = {
         options.originalname = options.originalname.toLowerCase();
 
         let zip = {
-                path: options.path,
-                name: options.originalname,
-                shortName: themeService.storage.getSanitizedFileName(options.originalname.split('.zip')[0])
-            },
-            checkedTheme;
-
-        // check if zip name is casper.zip
-        if (zip.name === 'casper.zip') {
-            throw new common.errors.ValidationError({message: common.i18n.t('errors.api.themes.overrideCasper')});
-        }
+            path: options.path,
+            name: options.originalname,
+            shortName: themeService.storage.getSanitizedFileName(options.originalname.split('.zip')[0])
+        };
 
         return localUtils
             // Permissions
             .handlePermissions('themes', 'add')(options)
             // Validation
             .then(() => {
-                return themeService.validate.checkSafe(zip, true);
+                return themeService.settings.setFromZip(zip);
             })
-            // More validation (existence check)
-            .then((_checkedTheme) => {
-                checkedTheme = _checkedTheme;
-
-                return themeService.storage.exists(zip.shortName);
-            })
-            // If the theme existed we need to delete it
-            .then((themeExists) => {
-                // delete existing theme
-                if (themeExists) {
-                    return themeService.storage.delete(zip.shortName);
-                }
-            })
-            .then(() => {
-                // store extracted theme
-                return themeService.storage.save({
-                    name: zip.shortName,
-                    path: checkedTheme.path
-                });
-            })
-            .then(() => {
-                // Loads the theme from the filesystem
-                // Sets the theme on the themeList
-                return themeService.loadOne(zip.shortName);
-            })
-            .then((loadedTheme) => {
-                // If this is the active theme, we are overriding
-                // This is a special case of activation
-                if (zip.shortName === settingsCache.get('active_theme')) {
-                    // Activate! (sort of)
-                    debug('Activating theme (method C, on API "override")', zip.shortName);
-                    themeService.activate(loadedTheme, checkedTheme);
-                }
-
+            .then((theme) => {
                 common.events.emit('theme.uploaded');
-
-                // @TODO: unify the name across gscan and Ghost!
-                return themeService.toJSON(zip.shortName, checkedTheme);
-            })
-            .finally(() => {
-                // @TODO we should probably do this as part of saving the theme
-                // remove extracted dir from gscan
-                // happens in background
-                if (checkedTheme) {
-                    fs.remove(checkedTheme.path)
-                        .catch((err) => {
-                            common.logging.error(new common.errors.GhostError({err: err}));
-                        });
-                }
+                return theme;
             });
     },
 
