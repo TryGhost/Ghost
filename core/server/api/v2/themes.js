@@ -2,7 +2,6 @@ const Promise = require('bluebird');
 const debug = require('ghost-ignition').debug('api:themes');
 const common = require('../../lib/common');
 const themeService = require('../../../frontend/services/themes');
-const settingsCache = require('../../services/settings/cache');
 const models = require('../../models');
 
 module.exports = {
