@@ -61,15 +61,14 @@ themes = {
             // Update setting
             .then((_checkedTheme) => {
                 checkedTheme = _checkedTheme;
-                // We use the model, not the API here, as we don't want to trigger permissions
-                return models.Settings.edit(newSettings, options);
-            })
-            // Call activate
-            .then(() => {
-                // Activate! (sort of)
+
                 debug('Activating theme (method B on API "activate")', themeName);
                 themeService.activate(loadedTheme, checkedTheme);
 
+                // We use the model, not the API here, as we don't want to trigger permissions
+                return models.Settings.edit(newSettings, options);
+            })
+            .then(() => {
                 // Return JSON result
                 return themeService.toJSON(themeName, checkedTheme);
             });
