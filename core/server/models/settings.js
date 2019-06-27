@@ -43,9 +43,15 @@ function parseDefaultSettings() {
         _.each(settings, function each(setting, settingName) {
             setting.type = categoryName;
             setting.key = settingName;
-            if (dynamicDefault[setting.key]) {
-                setting.defaultValue = dynamicDefault[setting.key];
-            }
+
+            setting.getDefaultValue = function getDefaultValue() {
+                const dynamicDefaultValue = dynamicDefault[setting.key];
+                if (dynamicDefaultValue) {
+                    return dynamicDefaultValue;
+                } else {
+                    return setting.defaultValue;
+                }
+            };
 
             defaultSettingsFlattened[settingName] = setting;
         });
@@ -216,7 +222,7 @@ Settings = ghostBookshelf.Model.extend({
                 _.each(getDefaultSettings(), function forEachDefault(defaultSetting, defaultSettingKey) {
                     var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
                     if (isMissingFromDB) {
-                        defaultSetting.value = defaultSetting.defaultValue;
+                        defaultSetting.value = defaultSetting.getDefaultValue();
                         insertOperations.push(Settings.forge(defaultSetting).save(null, options));
                     }
                 });
