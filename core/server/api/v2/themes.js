@@ -1,5 +1,3 @@
-const Promise = require('bluebird');
-const debug = require('ghost-ignition').debug('api:themes');
 const common = require('../../lib/common');
 const themeService = require('../../../frontend/services/themes');
 const models = require('../../models');
@@ -31,32 +29,18 @@ module.exports = {
         permissions: true,
         query(frame) {
             let themeName = frame.options.name;
-            let checkedTheme;
-
             const newSettings = [{
                 key: 'active_theme',
                 value: themeName
             }];
 
-            const loadedTheme = themeService.list.get(themeName);
-
-            if (!loadedTheme) {
-                return Promise.reject(new common.errors.ValidationError({
-                    message: common.i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
-                    errorDetails: newSettings
-                }));
-            }
-
-            return themeService.validate.checkSafe(loadedTheme)
-                .then((_checkedTheme) => {
-                    checkedTheme = _checkedTheme;
-                    debug('Activating theme (method B on API "activate")', themeName);
-                    themeService.activate(loadedTheme, checkedTheme);
-
+            return themeService.activate(themeName)
+                .then((checkedTheme) => {
                     // @NOTE: we use the model, not the API here, as we don't want to trigger permissions
-                    return models.Settings.edit(newSettings, frame.options);
+                    return models.Settings.edit(newSettings, frame.options)
+                        .then(() => checkedTheme);
                 })
-                .then(() => {
+                .then((checkedTheme) => {
                     return themeService.toJSON(themeName, checkedTheme);
                 });
         }

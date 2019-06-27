@@ -38,37 +38,22 @@ themes = {
             newSettings = [{
                 key: 'active_theme',
                 value: themeName
-            }],
-            loadedTheme,
-            checkedTheme;
+            }];
 
         return localUtils
         // Permissions
             .handlePermissions('themes', 'activate')(options)
-            // Validation
+            // Validation & activation
             .then(() => {
-                loadedTheme = themeList.get(themeName);
-
-                if (!loadedTheme) {
-                    return Promise.reject(new common.errors.ValidationError({
-                        message: common.i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
-                        errorDetails: newSettings
-                    }));
-                }
-
-                return themeService.validate.checkSafe(loadedTheme);
+                return themeService.activate(themeName);
             })
             // Update setting
-            .then((_checkedTheme) => {
-                checkedTheme = _checkedTheme;
-
-                debug('Activating theme (method B on API "activate")', themeName);
-                themeService.activate(loadedTheme, checkedTheme);
-
-                // We use the model, not the API here, as we don't want to trigger permissions
-                return models.Settings.edit(newSettings, options);
+            .then((checkedTheme) => {
+                // @NOTE: We use the model, not the API here, as we don't want to trigger permissions
+                return models.Settings.edit(newSettings, options)
+                    .then(() => checkedTheme);
             })
-            .then(() => {
+            .then((checkedTheme) => {
                 // Return JSON result
                 return themeService.toJSON(themeName, checkedTheme);
             });
