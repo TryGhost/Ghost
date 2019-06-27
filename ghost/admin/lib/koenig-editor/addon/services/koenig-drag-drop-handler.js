@@ -149,15 +149,21 @@ export default Service.extend({
 
     _onMouseUp(/*event*/) {
         if (this.draggableInfo) {
+            let success = false;
+
             // TODO: accept object rather than positioned args? OR, should the
             // droppable data be stored on draggableInfo?
             if (this._currentOverContainer) {
-                this._currentOverContainer.onDrop(
+                success = this._currentOverContainer.onDrop(
                     this.draggableInfo,
                     this._currentOverDroppableElem,
                     this._currentOverDroppablePosition
                 );
             }
+
+            this.containers.forEach((container) => {
+                container.onDropEnd(this.draggableInfo, success);
+            });
         }
 
         // remove drag info and any ghost element
