@@ -349,6 +349,29 @@ describe('parser-plugins', function () {
         });
     });
 
+    describe('figureScriptToHtmlCard', function () {
+        // Gist
+        // mobiledoc {"version":"0.3.1","atoms":[],"cards":[["html",{"html":"<script src=\"https://gist.github.com/ErisDS/3a9132089955b2698135257a72fa30cb.js\"></script>"}]],"markups":[],"sections":[[10,0],[1,"p",[]]]}
+
+        it('Can convert an embedded gist to an html card', function () {
+            const dom = buildDOM('<figure><script src="https://gist.github.com/ErisDS/3a9132089955b2698135257a72fa30cb.js"></script><link rel="stylesheet" href="https://github.githubassets.com/assets/gist-embed-a9a1cf2ca01efd362bfa52312712ae94.css"><div id="gist95747987" class="gist"> <div class="gist-file"> <div class="gist-data"> <div class="js-gist-file-update-container js-task-list-container file-box"> <div id="file-slimer-js" class="file"> <div itemprop="text" class="Box-body p-0 blob-wrapper data type-javascript "> /* Content Ommitted */</div></div></div></div><div class="gist-meta"> <a href="https://gist.github.com/ErisDS/3a9132089955b2698135257a72fa30cb/raw/c22760e77e948934cde4b4a61af7230539071f2a/slimer.js" style="float:right">view raw</a> <a href="https://gist.github.com/ErisDS/3a9132089955b2698135257a72fa30cb#file-slimer-js">slimer.js</a> hosted with ❤ by <a href="https://github.com">GitHub</a> </div></div></div></figure>');
+
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('html');
+            section.payload.html.should.eql('<script src="https://gist.github.com/ErisDS/3a9132089955b2698135257a72fa30cb.js"></script>');
+        });
+
+        it('ignores script tag if not for gist', function () {
+            const dom = buildDOM('<figure><script src="https://cdn.somewhere.com/3a9132089955b2698135257a72fa30cb.js"></script></figure>');
+
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.should.have.lengthOf(0);
+        });
+    });
+
     describe('preCodeToCard', function () {
         it('parses PRE>CODE into code card', function () {
             const dom = buildDOM('<figure><pre><code>Test code</code></pre></figure>');

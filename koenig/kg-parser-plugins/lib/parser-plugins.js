@@ -277,6 +277,23 @@ export function createParserPlugins(_options = {}) {
         }
     }
 
+    function figureScriptToHtmlCard(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
+            return;
+        }
+
+        let script = node.querySelector('script');
+
+        if (!script || !script.src.match(/^https:\/\/gist\.github\.com/)) {
+            return;
+        }
+
+        let payload = {html: script.outerHTML};
+        let cardSection = builder.createCardSection('html', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+
     return [
         kgHtmlCardToCard,
         brToSoftBreakAtom,
@@ -287,6 +304,7 @@ export function createParserPlugins(_options = {}) {
         hrToCard,
         figureToCodeCard,
         preCodeToCard,
-        figureIframeToEmbedCard
+        figureIframeToEmbedCard,
+        figureScriptToHtmlCard
     ];
 }
