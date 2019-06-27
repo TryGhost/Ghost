@@ -1,12 +1,9 @@
 // # Themes API
 // RESTful API for Themes
-const debug = require('ghost-ignition').debug('api:themes'),
-    Promise = require('bluebird'),
-    localUtils = require('./utils'),
+const localUtils = require('./utils'),
     common = require('../../lib/common'),
     models = require('../../models'),
-    themeService = require('../../../frontend/services/themes'),
-    themeList = themeService.list;
+    themeService = require('../../../frontend/services/themes');
 
 let themes;
 
