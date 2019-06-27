@@ -21,6 +21,19 @@ const getStorage = () => {
 
 module.exports = {
     get: require('./to-json'),
+    getZip: (themeName) => {
+        const theme = list.get(themeName);
+
+        if (!theme) {
+            return Promise.reject(new common.errors.BadRequestError({
+                message: common.i18n.t('errors.api.themes.invalidThemeName')
+            }));
+        }
+
+        return getStorage().serve({
+            name: themeName
+        });
+    },
     setFromZip: (zip) => {
         // check if zip name is casper.zip
         if (zip.name === 'casper.zip') {

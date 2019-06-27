@@ -102,17 +102,8 @@ module.exports = {
         },
         query(frame) {
             let themeName = frame.options.name;
-            const theme = themeService.list.get(themeName);
 
-            if (!theme) {
-                return Promise.reject(new common.errors.BadRequestError({
-                    message: common.i18n.t('errors.api.themes.invalidThemeName')
-                }));
-            }
-
-            return themeService.storage.serve({
-                name: themeName
-            });
+            return themeService.settings.getZip(themeName);
         }
     },
 

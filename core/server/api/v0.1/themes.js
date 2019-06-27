@@ -102,20 +102,13 @@ themes = {
     },
 
     download(options) {
-        let themeName = options.name,
-            theme = themeList.get(themeName);
-
-        if (!theme) {
-            return Promise.reject(new common.errors.BadRequestError({message: common.i18n.t('errors.api.themes.invalidThemeName')}));
-        }
+        let themeName = options.name;
 
         return localUtils
         // Permissions
             .handlePermissions('themes', 'read')(options)
             .then(() => {
-                return themeService.storage.serve({
-                    name: themeName
-                });
+                return themeService.settings.getZip(themeName);
             });
     },
 
