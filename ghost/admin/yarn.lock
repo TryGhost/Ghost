@@ -5263,14 +5263,14 @@ ember-get-config@^0.2.2:
     ember-cli-version-checker "^2.1.0"
     ember-factory-for-polyfill "^1.3.1"
 
-ember-in-viewport@3.3.0, ember-in-viewport@~3.0.0, ember-in-viewport@~3.5.8:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-3.3.0.tgz#718a9df85c1ad7a16c804dc61ce540414cfad710"
-  integrity sha512-m9ejkLrc1XiXwbzSiPOOe8P6lz0MV7NBWf/vc+/7b1iNGucwDCA0Hsv9xZS3S1s3m9KWTCIobT8htZx/dCeTrw==
+ember-in-viewport@3.5.8, ember-in-viewport@~3.0.0, ember-in-viewport@~3.5.8:
+  version "3.5.8"
+  resolved "https://registry.yarnpkg.com/ember-in-viewport/-/ember-in-viewport-3.5.8.tgz#da03f5e69c5e5e6cbd048f0db8de0b05c2e3e68f"
+  integrity sha512-2GBK5KbNYiGADy433tN3yHnxZ77wSnVyMezx23cr3qs2gwac+5ta2FkOTiKibNkGmWE/Mk/c7zcF7sDk1jy5DA==
   dependencies:
     ember-auto-import "^1.2.15"
-    ember-cli-babel "^7.1.2"
-    intersection-observer-admin "0.1.0"
+    ember-cli-babel "^7.7.3"
+    intersection-observer-admin "~0.2.5"
     raf-pool "0.1.0"
 
 ember-infinity@1.4.7:
@@ -6762,7 +6762,6 @@ gonzales-pe@4.2.4:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  uid "275cb75249f038492094a499756a73719ae071fd"
   resolved "https://github.com/acburdine/google-caja-bower#275cb75249f038492094a499756a73719ae071fd"
 
 got@^8.0.1:
@@ -7369,10 +7368,10 @@ inquirer@^6, inquirer@^6.2.2:
     strip-ansi "^5.1.0"
     through "^2.3.6"
 
-intersection-observer-admin@0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/intersection-observer-admin/-/intersection-observer-admin-0.1.0.tgz#2e7cc3806302a603ea1d3d7975e2b25f205141ee"
-  integrity sha512-5ZG7AVBojgngckA4B7rzr6S751yxIjiolmj08y5KBgu1Xe8fAmO2hWonYzbi6jwXNtdqAMld8jAZGxZS2KDjKQ==
+intersection-observer-admin@~0.2.5:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/intersection-observer-admin/-/intersection-observer-admin-0.2.5.tgz#e7e595bb1a0e8d085609b1b0ed3c90efc2b3408b"
+  integrity sha512-gLA9+FYp3Sbw20VSYle1gW9oZ2eU2EkrBJiI42VQC5wfxfzpHeaJje9rbRbJa1i44E5K9QPrmjHtGsI31wpsUw==
 
 into-stream@^3.1.0:
   version "3.1.0"
@@ -8336,7 +8335,6 @@ just-extend@^4.0.2:
 
 "keymaster@https://github.com/madrobby/keymaster.git":
   version "1.6.3"
-  uid f8f43ddafad663b505dc0908e72853bcf8daea49
   resolved "https://github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
 
 keyv@3.0.0:
@@ -11700,7 +11698,6 @@ simple-swizzle@^0.2.2:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  uid "4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
   resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
 
 sinon@^7.3.2:
