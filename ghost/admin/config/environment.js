@@ -17,7 +17,7 @@ module.exports = function (environment) {
                 Date: false,
                 Array: true,
                 String: true,
-                Function: true
+                Function: false
             }
         },
 
