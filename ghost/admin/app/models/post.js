@@ -9,6 +9,7 @@ import {compare} from '@ember/utils';
 import {computed, observer} from '@ember/object';
 import {equal, filterBy} from '@ember/object/computed';
 import {isBlank} from '@ember/utils';
+import {on} from '@ember/object/evented';
 import {inject as service} from '@ember/service';
 
 // ember-cli-shims doesn't export these so we must get them manually
@@ -228,10 +229,10 @@ export default Model.extend(Comparable, ValidationEngine, {
 
     // TODO: is there a better way to handle this?
     // eslint-disable-next-line ghost/ember/no-observers
-    _setPublishedAtBlogTZ: observer('publishedAtUTC', 'settings.activeTimezone', function () {
+    _setPublishedAtBlogTZ: on('init', observer('publishedAtUTC', 'settings.activeTimezone', function () {
         let publishedAtUTC = this.publishedAtUTC;
         this._setPublishedAtBlogStrings(publishedAtUTC);
-    }).on('init'),
+    })),
 
     _setPublishedAtBlogStrings(momentDate) {
         if (momentDate) {

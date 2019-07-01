@@ -2,6 +2,7 @@ import Mixin from '@ember/object/mixin';
 import {A as emberA} from '@ember/array';
 import {isEmpty} from '@ember/utils';
 import {observer} from '@ember/object';
+import {on} from '@ember/object/evented';
 import {run} from '@ember/runloop';
 
 export default Mixin.create({
@@ -38,9 +39,9 @@ export default Mixin.create({
     },
 
     // eslint-disable-next-line ghost/ember/no-observers
-    hasErrorObserver: observer('errors.[]', 'property', 'hasValidated.[]', function () {
+    hasErrorObserver: on('init', observer('errors.[]', 'property', 'hasValidated.[]', function () {
         run.once(this, 'setHasError');
         // this.setHasError();
-    }).on('init')
+    }))
 
 });
