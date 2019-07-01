@@ -33,8 +33,8 @@
             "contentTypes": ["text/csv", "application/csv", "application/octet-stream"]
         },
         "images": {
-            "extensions": [".jpg", ".jpeg", ".gif", ".png", ".svg", ".svgz"],
-            "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml"]
+            "extensions": [".jpg", ".jpeg", ".gif", ".png", ".svg", ".svgz", ".ico"],
+            "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/x-icon", "image/vnd.microsoft.icon"]
         },
         "icons": {
             "extensions": [".png", ".ico"],
