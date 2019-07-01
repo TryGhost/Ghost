@@ -4,10 +4,6 @@ import {run} from '@ember/runloop';
 export default Component.extend({
     tagName: '',
 
-    init() {
-        this._super(...arguments);
-    },
-
     actions: {
         initScrollWatch(element) {
             this._onScroll = run.bind(this, this.onScroll, element);
