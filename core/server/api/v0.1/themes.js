@@ -1,14 +1,9 @@
 // # Themes API
 // RESTful API for Themes
-const debug = require('ghost-ignition').debug('api:themes'),
-    Promise = require('bluebird'),
-    fs = require('fs-extra'),
-    localUtils = require('./utils'),
+const localUtils = require('./utils'),
     common = require('../../lib/common'),
     models = require('../../models'),
-    settingsCache = require('../../services/settings/cache'),
-    themeService = require('../../../frontend/services/themes'),
-    themeList = themeService.list;
+    themeService = require('../../../frontend/services/themes');
 
 let themes;
 
@@ -31,7 +26,7 @@ themes = {
             // Main action
             .then(() => {
                 // Return JSON result
-                return themeService.toJSON();
+                return themeService.settings.get();
             });
     },
 
@@ -40,40 +35,24 @@ themes = {
             newSettings = [{
                 key: 'active_theme',
                 value: themeName
-            }],
-            loadedTheme,
-            checkedTheme;
+            }];
 
         return localUtils
         // Permissions
             .handlePermissions('themes', 'activate')(options)
-            // Validation
+            // Validation & activation
             .then(() => {
-                loadedTheme = themeList.get(themeName);
-
-                if (!loadedTheme) {
-                    return Promise.reject(new common.errors.ValidationError({
-                        message: common.i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
-                        errorDetails: newSettings
-                    }));
-                }
-
-                return themeService.validate.checkSafe(loadedTheme);
+                return themeService.activate(themeName);
             })
             // Update setting
-            .then((_checkedTheme) => {
-                checkedTheme = _checkedTheme;
-                // We use the model, not the API here, as we don't want to trigger permissions
-                return models.Settings.edit(newSettings, options);
+            .then((checkedTheme) => {
+                // @NOTE: We use the model, not the API here, as we don't want to trigger permissions
+                return models.Settings.edit(newSettings, options)
+                    .then(() => checkedTheme);
             })
-            // Call activate
-            .then(() => {
-                // Activate! (sort of)
-                debug('Activating theme (method B on API "activate")', themeName);
-                themeService.activate(loadedTheme, checkedTheme);
-
+            .then((checkedTheme) => {
                 // Return JSON result
-                return themeService.toJSON(themeName, checkedTheme);
+                return themeService.settings.get(themeName, checkedTheme);
             });
     },
 
@@ -84,91 +63,31 @@ themes = {
         options.originalname = options.originalname.toLowerCase();
 
         let zip = {
-                path: options.path,
-                name: options.originalname,
-                shortName: themeService.storage.getSanitizedFileName(options.originalname.split('.zip')[0])
-            },
-            checkedTheme;
-
-        // check if zip name is casper.zip
-        if (zip.name === 'casper.zip') {
-            throw new common.errors.ValidationError({message: common.i18n.t('errors.api.themes.overrideCasper')});
-        }
+            path: options.path,
+            name: options.originalname
+        };
 
         return localUtils
             // Permissions
             .handlePermissions('themes', 'add')(options)
             // Validation
             .then(() => {
-                return themeService.validate.checkSafe(zip, true);
+                return themeService.settings.setFromZip(zip);
             })
-            // More validation (existence check)
-            .then((_checkedTheme) => {
-                checkedTheme = _checkedTheme;
-
-                return themeService.storage.exists(zip.shortName);
-            })
-            // If the theme existed we need to delete it
-            .then((themeExists) => {
-                // delete existing theme
-                if (themeExists) {
-                    return themeService.storage.delete(zip.shortName);
-                }
-            })
-            .then(() => {
-                // store extracted theme
-                return themeService.storage.save({
-                    name: zip.shortName,
-                    path: checkedTheme.path
-                });
-            })
-            .then(() => {
-                // Loads the theme from the filesystem
-                // Sets the theme on the themeList
-                return themeService.loadOne(zip.shortName);
-            })
-            .then((loadedTheme) => {
-                // If this is the active theme, we are overriding
-                // This is a special case of activation
-                if (zip.shortName === settingsCache.get('active_theme')) {
-                    // Activate! (sort of)
-                    debug('Activating theme (method C, on API "override")', zip.shortName);
-                    themeService.activate(loadedTheme, checkedTheme);
-                }
-
+            .then((theme) => {
                 common.events.emit('theme.uploaded');
-
-                // @TODO: unify the name across gscan and Ghost!
-                return themeService.toJSON(zip.shortName, checkedTheme);
-            })
-            .finally(() => {
-                // @TODO we should probably do this as part of saving the theme
-                // remove extracted dir from gscan
-                // happens in background
-                if (checkedTheme) {
-                    fs.remove(checkedTheme.path)
-                        .catch((err) => {
-                            common.logging.error(new common.errors.GhostError({err: err}));
-                        });
-                }
+                return theme;
             });
     },
 
     download(options) {
-        let themeName = options.name,
-            theme = themeList.get(themeName);
-
-        if (!theme) {
-            return Promise.reject(new common.errors.BadRequestError({message: common.i18n.t('errors.api.themes.invalidThemeName')}));
-        }
+        let themeName = options.name;
 
         return localUtils
         // Permissions
             .handlePermissions('themes', 'read')(options)
             .then(() => {
-                return themeService.storage.serve({
-                    name: themeName
-                });
+                return themeService.settings.getZip(themeName);
             });
     },
 
@@ -177,35 +96,14 @@ themes = {
      * remove theme folder
      */
     destroy(options) {
-        let themeName = options.name,
-            theme;
+        let themeName = options.name;
 
         return localUtils
         // Permissions
             .handlePermissions('themes', 'destroy')(options)
             // Validation
             .then(() => {
-                if (themeName === 'casper') {
-                    throw new common.errors.ValidationError({message: common.i18n.t('errors.api.themes.destroyCasper')});
-                }
-
-                if (themeName === settingsCache.get('active_theme')) {
-                    throw new common.errors.ValidationError({message: common.i18n.t('errors.api.themes.destroyActive')});
-                }
-
-                theme = themeList.get(themeName);
-
-                if (!theme) {
-                    throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.themes.themeDoesNotExist')});
-                }
-
-                // Actually do the deletion here
-                return themeService.storage.delete(themeName);
-            })
-            // And some extra stuff to maintain state here
-            .then(() => {
-                themeList.del(themeName);
-                // Delete returns an empty 204 response
+                return themeService.settings.destroy(themeName);
             });
     }
 };
