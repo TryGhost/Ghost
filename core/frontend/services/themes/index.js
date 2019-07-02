@@ -11,8 +11,6 @@ const engineDefaults = require('./engines/defaults');
 
 let themeStorage;
 
-// @TODO: reduce the amount of things we expose to the outside world
-// Make this a nice clean sensible API we can all understand!
 module.exports = {
     // Init themes module
     // TODO: move this once we're clear what needs to happen here
@@ -78,9 +76,6 @@ module.exports = {
                 common.logging.error(err);
             });
     },
-    // Load themes, soon to be removed and exposed via specific function.
-    loadAll: themeLoader.loadAllThemes,
-    loadOne: themeLoader.loadOneTheme,
     get storage() {
         themeStorage = themeStorage || new Storage();
 

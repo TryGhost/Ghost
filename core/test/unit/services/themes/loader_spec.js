@@ -4,6 +4,7 @@ var should = require('should'),
     tmp = require('tmp'),
     join = require('path').join,
     config = require('../../../../server/config'),
+    loader = require('../../../../frontend/services/themes/loader'),
     themes = require('../../../../frontend/services/themes'),
     themeList = themes.list;
 
@@ -36,7 +37,7 @@ describe('Themes', function () {
                 fs.writeFileSync(join(themePath.name, 'casper', 'index.hbs'));
                 fs.writeFileSync(join(themePath.name, 'casper', 'partials', 'navigation.hbs'));
 
-                themes.loadAll()
+                loader.loadAllThemes()
                     .then(function (result) {
                         var themeResult = themeList.getAll();
 
@@ -69,7 +70,7 @@ describe('Themes', function () {
                     JSON.stringify({name: 'casper', version: '0.1.2'})
                 );
 
-                themes.loadAll()
+                loader.loadAllThemes()
                     .then(function (result) {
                         var themeResult = themeList.getAll();
 
@@ -111,7 +112,7 @@ describe('Themes', function () {
                 fs.mkdirSync(join(themePath.name, 'not-casper'));
                 fs.writeFileSync(join(themePath.name, 'not-casper', 'index.hbs'));
 
-                themes.loadOne('casper')
+                loader.loadOneTheme('casper')
                     .then(function (themeResult) {
                         themeResult.should.eql({
                             name: 'casper',
@@ -129,7 +130,7 @@ describe('Themes', function () {
                 fs.writeFileSync(join(themePath.name, 'casper.zip'));
                 fs.writeFileSync(join(themePath.name, '.DS_Store'));
 
-                themes.loadOne('casper')
+                loader.loadOneTheme('casper')
                     .then(function () {
                         done('Should have thrown an error');
                     })
