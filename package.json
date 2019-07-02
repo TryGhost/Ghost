@@ -116,7 +116,7 @@
     "rss": "1.2.2",
     "sanitize-html": "1.20.1",
     "semver": "6.2.0",
-    "simple-dom": "0.3.2",
+    "simple-dom": "1.4.0",
     "simple-html-tokenizer": "0.5.7",
     "stripe": "^6.22.0",
     "uuid": "3.3.2",
