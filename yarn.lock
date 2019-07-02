@@ -147,12 +147,12 @@
     lodash "^4.17.11"
     node-jose "^1.1.3"
 
-"@tryghost/members-auth-pages@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-auth-pages/-/members-auth-pages-0.2.1.tgz#85c96ad5b5a20fc54e9ddfc07ca6b088921b4cb8"
-  integrity sha512-GlfEH65Pat8NBYh5u39A/KVN6AiWLnio7z/m+SosrV2SgQo5GeFkvfGWaVtVngiQq52x/jfaKlyZsClKvIhBDw==
+"@tryghost/members-auth-pages@0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-auth-pages/-/members-auth-pages-0.2.2.tgz#c26db5afc8fbe676b1b3e3425ad819c42ee12134"
+  integrity sha512-Dbdz7KDG1cQAen5elNQr5+YwCmRbtAj6g6oGgIF6GjiBzMjtJp8E+Yx7fBAJ3stgkP3i5xLd3iQ+Bo/3h81IuA==
   dependencies:
-    "@tryghost/members-gateway-protocol" "^0.1.0"
+    "@tryghost/members-gateway-protocol" "^0.1.2"
     preact "^8.2.1"
     preact-compat "^3.17.0"
     react-stripe-elements "^2.0.3"
@@ -177,15 +177,6 @@
     ghost-ignition "^3.1.0"
     lodash "^4.17.11"
     minivents "^2.2.0"
-
-"@tryghost/members-gateway-protocol@^0.1.0":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-gateway-protocol/-/members-gateway-protocol-0.1.1.tgz#90fa1f5774ea5967c800fbbbce55cba310149a23"
-  integrity sha512-dv5fjZs/L2vMIGdxOUSatVyMvAHoUwUlnFUNdd0SnZ2fBZt5+JpBCsxnDyP43AkxD5R+Lc1cuo4QipAN5Tn9ZA==
-  dependencies:
-    bluebird "^3.5.4"
-    ghost-ignition "^3.1.0"
-    lodash "^4.17.11"
 
 "@tryghost/members-gateway-protocol@^0.1.2":
   version "0.1.2"

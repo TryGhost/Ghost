@@ -42,7 +42,7 @@
     "@nexes/nql": "0.2.2",
     "@tryghost/helpers": "1.1.6",
     "@tryghost/members-api": "0.1.2",
-    "@tryghost/members-auth-pages": "0.2.1",
+    "@tryghost/members-auth-pages": "0.2.2",
     "@tryghost/members-ssr": "0.1.5",
     "@tryghost/members-theme-bindings": "0.2.1",
     "@tryghost/social-urls": "0.1.0",
