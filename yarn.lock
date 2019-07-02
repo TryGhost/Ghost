@@ -1594,9 +1594,10 @@ cssstyle@^1.1.1:
   dependencies:
     cssom "0.3.x"
 
-csv-parser@2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/csv-parser/-/csv-parser-2.1.0.tgz#e42b3c1cdc431b60b75fd38d24eb1685e57bf943"
+csv-parser@2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/csv-parser/-/csv-parser-2.3.0.tgz#d236657dbd33ff3733b74cae6c3d7d7389679174"
+  integrity sha512-yfYRZ9P9LNKuRK0lEFf40Be4HcFxe1XgxWL/QmlkakSE8SHcWbOGFZA/u7YpfGX/hVbRUdbnO5xO8XuYxrcBtA==
   dependencies:
     buffer-alloc "^1.1.0"
     buffer-from "^1.0.0"
