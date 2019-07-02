@@ -4124,7 +4124,7 @@ knex@0.14.6:
     uuid "^3.2.1"
     v8flags "^3.0.2"
 
-knex@^0.16.2, knex@^0.16.3:
+knex@^0.16.3:
   version "0.16.3"
   resolved "https://registry.yarnpkg.com/knex/-/knex-0.16.3.tgz#ca9effd4973655f42b42132b9019b0bc6bd20644"
   dependencies:
@@ -4770,12 +4770,12 @@ mocha@^4.0.0:
     mkdirp "0.5.1"
     supports-color "4.4.0"
 
-mock-knex@0.4.3:
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/mock-knex/-/mock-knex-0.4.3.tgz#52c4a11c4d91398154c577da228b90685a1d407d"
+mock-knex@0.4.5:
+  version "0.4.5"
+  resolved "https://registry.yarnpkg.com/mock-knex/-/mock-knex-0.4.5.tgz#bbfb83fcb7fb8b07c4c80edf0f6403b4a37aa27c"
+  integrity sha512-ZDBTqp5f+SLNOWbydOK/zO6pr1WeWDt3BEvaWI9ohiFz1VKdGsc/kRTntxNADKmQ7+Rql0aZ/1dxseLCV9i2tg==
   dependencies:
     bluebird "^3.4.1"
-    knex "^0.16.2"
     lodash "^4.14.2"
     semver "^5.3.0"
 
