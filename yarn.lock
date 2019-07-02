@@ -809,12 +809,12 @@ bookshelf-relations@1.1.1:
     ghost-ignition "3.1.0"
     lodash "4.17.11"
 
-bookshelf@0.14.2:
-  version "0.14.2"
-  resolved "https://registry.yarnpkg.com/bookshelf/-/bookshelf-0.14.2.tgz#4b50b47a1e3d0265a1bfc118fa2036ad6a7493f2"
+bookshelf@0.15.1:
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/bookshelf/-/bookshelf-0.15.1.tgz#ca545ad8189a6a3be8b25661ad462dbf667222e3"
+  integrity sha512-o+N88s6A1YW2L47gqOmZgoyLD7xBikHexlPdilD/t4c4YG7Pd8RHdicxQAh07PzaGQtMOwMloSBQQoRQVC++cg==
   dependencies:
     bluebird "^3.4.3"
-    colorette "^1.0.7"
     create-error "~0.3.1"
     inflection "^1.5.1"
     lodash "^4.17.10"
@@ -1242,10 +1242,6 @@ color@^3.1.1:
   dependencies:
     color-convert "^1.9.1"
     color-string "^1.5.2"
-
-colorette@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/colorette/-/colorette-1.0.7.tgz#7adf43c445ee63a541b4a4aef7d13f03df1e0cc0"
 
 colormin@^1.0.5:
   version "1.1.2"
