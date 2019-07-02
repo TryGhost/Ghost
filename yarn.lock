@@ -1381,9 +1381,10 @@ config-chain@~1.1.5:
     ini "^1.3.4"
     proto-list "~1.2.1"
 
-connect-slashes@1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/connect-slashes/-/connect-slashes-1.3.1.tgz#95d61830d0f9d5853c8688f0b5f43988b186ac37"
+connect-slashes@1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/connect-slashes/-/connect-slashes-1.4.0.tgz#fe884e9d130e9bd0a40d8ee502c1dfa269f94373"
+  integrity sha512-BJRbgSczzlsRwyF64DxGNIizBTxUf7f/tAsDzq2Nq8eLrm2160vVfm/4vQcjrT4qVFu6qDCqPK+vDaEWJsnSzA==
 
 console-control-strings@^1.0.0, console-control-strings@~1.1.0:
   version "1.1.0"
