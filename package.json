@@ -53,7 +53,7 @@
     "analytics-node": "3.3.0",
     "archiver": "3.0.0",
     "bcryptjs": "2.4.3",
-    "bluebird": "3.5.3",
+    "bluebird": "3.5.5",
     "body-parser": "1.18.3",
     "bookshelf": "0.14.2",
     "bookshelf-relations": "1.1.1",
