@@ -64,7 +64,7 @@
     "compression": "1.7.3",
     "connect-slashes": "1.3.1",
     "cookie": "0.3.1",
-    "cookie-session": "1.3.2",
+    "cookie-session": "1.3.3",
     "cors": "2.8.5",
     "cpy-cli": "2.0.0",
     "csv-parser": "2.1.0",
