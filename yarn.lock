@@ -1392,13 +1392,14 @@ continuable-cache@^0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/continuable-cache/-/continuable-cache-0.3.1.tgz#bd727a7faed77e71ff3985ac93351a912733ad0f"
 
-cookie-session@1.3.2:
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/cookie-session/-/cookie-session-1.3.2.tgz#469dba76308c010b529e9a7cf9d87b649be0190b"
+cookie-session@1.3.3:
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/cookie-session/-/cookie-session-1.3.3.tgz#54fa63881bf87c4961863f7c059670be7517fdae"
+  integrity sha512-GrMdrU1YTQWtmVTo0Rj3peeZRMc2xJrBslFYtZcYTo+hrSLmrcf69OrRkDi84xTfylgCy2wgpRHyY4le6lE5+A==
   dependencies:
-    cookies "0.7.1"
+    cookies "0.7.3"
     debug "2.6.9"
-    on-headers "~1.0.1"
+    on-headers "~1.0.2"
 
 cookie-signature@1.0.6:
   version "1.0.6"
@@ -1412,14 +1413,7 @@ cookiejar@^2.1.0:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/cookiejar/-/cookiejar-2.1.2.tgz#dd8a235530752f988f9a0844f3fc589e3111125c"
 
-cookies@0.7.1:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/cookies/-/cookies-0.7.1.tgz#7c8a615f5481c61ab9f16c833731bcb8f663b99b"
-  dependencies:
-    depd "~1.1.1"
-    keygrip "~1.0.2"
-
-cookies@^0.7.3:
+cookies@0.7.3, cookies@^0.7.3:
   version "0.7.3"
   resolved "https://registry.yarnpkg.com/cookies/-/cookies-0.7.3.tgz#7912ce21fbf2e8c2da70cf1c3f351aecf59dadfa"
   integrity sha512-+gixgxYSgQLTaTIilDHAdlNPZDENDQernEMiIcZpYYP14zgHsCt4Ce1FEjFtcp6GefhozebB6orvhAAWx/IS0A==
@@ -3951,7 +3945,7 @@ jws@^3.2.2:
     jwa "^1.4.1"
     safe-buffer "^5.0.1"
 
-keygrip@~1.0.2, keygrip@~1.0.3:
+keygrip@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/keygrip/-/keygrip-1.0.3.tgz#399d709f0aed2bab0a059e0cdd3a5023a053e1dc"
 
