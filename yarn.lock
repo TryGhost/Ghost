@@ -3979,9 +3979,10 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.2.tgz#01146b36a6218e64e58f3a8d66de5d7fc6f6d051"
 
-knex-migrator@3.2.5:
-  version "3.2.5"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.2.5.tgz#bf5649f5b3ca55d50d0dd634027863c9e10e408d"
+knex-migrator@3.2.6:
+  version "3.2.6"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.2.6.tgz#9d052c6b6eb318dd280e6067e4c495a81aa120ab"
+  integrity sha512-IFvIO1Bq2mkZj9r/u55yD+xSh1DLkOuBUwkahXYJ/O9nNDPGnOrPSPru2bxerBxAwnf01/NL1slFM3w9V3s+QA==
   dependencies:
     bluebird "^3.5.3"
     commander "^2.19.0"
