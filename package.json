@@ -54,7 +54,7 @@
     "archiver": "3.0.0",
     "bcryptjs": "2.4.3",
     "bluebird": "3.5.5",
-    "body-parser": "1.18.3",
+    "body-parser": "1.19.0",
     "bookshelf": "0.14.2",
     "bookshelf-relations": "1.1.1",
     "brute-knex": "3.0.1",
