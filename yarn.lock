@@ -2604,12 +2604,12 @@ fs-extra@3.0.1, fs-extra@^3.0.1:
     jsonfile "^3.0.0"
     universalify "^0.1.0"
 
-fs-extra@^7.0.0:
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-7.0.1.tgz#4f189c44aa123b895f722804f55ea23eadc348e9"
-  integrity sha512-YJDaCJZEnBmcbw13fvdAM9AwNOJwOzrE4pqMqBq5nFiEqXUqHwlK4B+3pUw6JNvfSPtX05xFHtYy/1ni01eGCw==
+fs-extra@^8.0.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-8.1.0.tgz#49d43c45a88cd9677668cb7be1b46efdb8d2e1c0"
+  integrity sha512-yhlQgA6mnOJUKOsRUFsgJdQCvkKhcz8tlZG5HBQfReYZy46OwLcY+Zia0mtdHsOo9y/hP+CxMN0TU9QxoOtG4g==
   dependencies:
-    graceful-fs "^4.1.2"
+    graceful-fs "^4.2.0"
     jsonfile "^4.0.0"
     universalify "^0.1.0"
 
@@ -2895,6 +2895,11 @@ graceful-fs@^4.1.0, graceful-fs@^4.1.11, graceful-fs@^4.1.2, graceful-fs@^4.1.6:
   version "4.1.15"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.1.15.tgz#ffb703e1066e8a0eeaa4c8b80ba9253eeefbfb00"
 
+graceful-fs@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.0.tgz#8d8fdc73977cb04104721cb53666c1ca64cd328b"
+  integrity sha512-jpSvDPV4Cq/bgtpndIWbI5hmYxhQGHPC4d4cqBPb4DLniCfhJokdXhwhaDuLBGLQdvvRum/UiX6ECVIPvDXqdg==
+
 growl@1.10.3:
   version "1.10.3"
   resolved "https://registry.yarnpkg.com/growl/-/growl-1.10.3.tgz#1926ba90cf3edfe2adb4927f5880bc22c66c790f"
@@ -3066,10 +3071,10 @@ grunt@1.0.4:
     path-is-absolute "~1.0.0"
     rimraf "~2.6.2"
 
-gscan@2.6.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.6.0.tgz#3fbbcefa9fcdb386cc1bf6fcc93e3f86d07fbd2c"
-  integrity sha512-qMzGiVUDXpJABqLw0OXbKfBuyLMDSc5XMFD5qE1Ri9F3HGuR7xl1XT3sD0u9WIu8nFlYwM3tk42PHDvmKPyQtg==
+gscan@2.6.2:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.6.2.tgz#a411de170a358417b1f2badf61c1d72b191a4892"
+  integrity sha512-XhH6FstTp9YddvkbS0doAcKVzt6gupoebWCjq68cz0jXTEBT5eT+twnbEWOcLaKtRC3tPlG4aPGAMtXrfKQPbg==
   dependencies:
     "@tryghost/extract-zip" "1.6.6"
     "@tryghost/pretty-cli" "1.2.1"
@@ -3078,12 +3083,12 @@ gscan@2.6.0:
     common-tags "^1.8.0"
     express "^4.16.2"
     express-hbs "1.1.1"
-    fs-extra "^7.0.0"
+    fs-extra "^8.0.0"
     ghost-ignition "3.1.0"
     glob "^7.0.5"
     lodash "^4.17.11"
     multer "^1.1.0"
-    pluralize "^7.0.0"
+    pluralize "^8.0.0"
     require-dir "^1.0.0"
     semver "^6.0.0"
     upath "^1.1.0"
@@ -5429,6 +5434,11 @@ pinkie@^2.0.0:
 pluralize@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/pluralize/-/pluralize-7.0.0.tgz#298b89df8b93b0221dbf421ad2b1b1ea23fc6777"
+
+pluralize@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/pluralize/-/pluralize-8.0.0.tgz#1a6fa16a38d12a1901e0320fa017051c539ce3b1"
+  integrity sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==
 
 pn@^1.1.0:
   version "1.1.0"
