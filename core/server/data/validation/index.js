@@ -190,9 +190,9 @@ validateSchema = function validateSchema(tableName, model, options) {
         }
 
         // check nullable
-        if (schema[tableName][columnKey].hasOwnProperty('nullable') &&
+        if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'nullable') &&
             schema[tableName][columnKey].nullable !== true &&
-            !schema[tableName][columnKey].hasOwnProperty('defaultTo')
+            !Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'defaultTo')
         ) {
             if (validator.empty(strVal)) {
                 message = common.i18n.t('notices.data.validation.index.valueCannotBeBlank', {
@@ -207,7 +207,7 @@ validateSchema = function validateSchema(tableName, model, options) {
         }
 
         // validate boolean columns
-        if (schema[tableName][columnKey].hasOwnProperty('type')
+        if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'type')
             && schema[tableName][columnKey].type === 'bool') {
             if (!(validator.isBoolean(strVal) || validator.empty(strVal))) {
                 message = common.i18n.t('notices.data.validation.index.valueMustBeBoolean', {
@@ -229,7 +229,7 @@ validateSchema = function validateSchema(tableName, model, options) {
         // TODO: check if mandatory values should be enforced
         if (model.get(columnKey) !== null && model.get(columnKey) !== undefined) {
             // check length
-            if (schema[tableName][columnKey].hasOwnProperty('maxlength')) {
+            if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'maxlength')) {
                 if (!validator.isLength(strVal, 0, schema[tableName][columnKey].maxlength)) {
                     message = common.i18n.t('notices.data.validation.index.valueExceedsMaxLength',
                         {
@@ -245,12 +245,12 @@ validateSchema = function validateSchema(tableName, model, options) {
             }
 
             // check validations objects
-            if (schema[tableName][columnKey].hasOwnProperty('validations')) {
+            if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'validations')) {
                 validationErrors = validationErrors.concat(validate(strVal, columnKey, schema[tableName][columnKey].validations, tableName));
             }
 
             // check type
-            if (schema[tableName][columnKey].hasOwnProperty('type')) {
+            if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'type')) {
                 if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(strVal)) {
                     message = common.i18n.t('notices.data.validation.index.valueIsNotInteger', {
                         tableName: tableName,

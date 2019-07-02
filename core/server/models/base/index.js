@@ -312,25 +312,25 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * Exceptions: internal context or importing
      */
     onCreating: function onCreating(model, attr, options) {
-        if (schema.tables[this.tableName].hasOwnProperty('created_by')) {
+        if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_by')) {
             if (!options.importing || (options.importing && !this.get('created_by'))) {
                 this.set('created_by', String(this.contextUser(options)));
             }
         }
 
-        if (schema.tables[this.tableName].hasOwnProperty('updated_by')) {
+        if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'updated_by')) {
             if (!options.importing) {
                 this.set('updated_by', String(this.contextUser(options)));
             }
         }
 
-        if (schema.tables[this.tableName].hasOwnProperty('created_at')) {
+        if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_at')) {
             if (!model.get('created_at')) {
                 model.set('created_at', new Date());
             }
         }
 
-        if (schema.tables[this.tableName].hasOwnProperty('updated_at')) {
+        if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'updated_at')) {
             if (!model.get('updated_at')) {
                 model.set('updated_at', new Date());
             }
@@ -378,20 +378,20 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             model.changed = _.omit(model.changed, this.relationships);
         }
 
-        if (schema.tables[this.tableName].hasOwnProperty('updated_by')) {
+        if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'updated_by')) {
             if (!options.importing && !options.migrating) {
                 this.set('updated_by', String(this.contextUser(options)));
             }
         }
 
         if (options && options.context && !options.context.internal && !options.importing) {
-            if (schema.tables[this.tableName].hasOwnProperty('created_at')) {
+            if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_at')) {
                 if (model.hasDateChanged('created_at', {beforeWrite: true})) {
                     model.set('created_at', this.previous('created_at'));
                 }
             }
 
-            if (schema.tables[this.tableName].hasOwnProperty('created_by')) {
+            if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_by')) {
                 if (model.hasChanged('created_by')) {
                     model.set('created_by', String(this.previous('created_by')));
                 }
@@ -399,7 +399,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         // CASE: do not allow setting only the `updated_at` field, exception: importing
-        if (schema.tables[this.tableName].hasOwnProperty('updated_at') && !options.importing) {
+        if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'updated_at') && !options.importing) {
             if (options.migrating) {
                 model.set('updated_at', model.previous('updated_at'));
             } else if (Object.keys(model.changed).length === 1 && model.changed.updated_at) {
@@ -445,7 +445,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         _.each(attrs, function each(value, key) {
             if (value !== null
-                && schema.tables[self.tableName].hasOwnProperty(key)
+                && Object.prototype.hasOwnProperty.call(schema.tables[self.tableName], key)
                 && schema.tables[self.tableName][key].type === 'dateTime') {
                 attrs[key] = moment(value).format('YYYY-MM-DD HH:mm:ss');
             }
@@ -467,7 +467,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         _.each(attrs, function each(value, key) {
             if (value !== null
-                && schema.tables[self.tableName].hasOwnProperty(key)
+                && Object.prototype.hasOwnProperty.call(schema.tables[self.tableName], key)
                 && schema.tables[self.tableName][key].type === 'dateTime') {
                 dateMoment = moment(value);
 
@@ -488,7 +488,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     fixBools: function fixBools(attrs) {
         var self = this;
         _.each(attrs, function each(value, key) {
-            if (schema.tables[self.tableName].hasOwnProperty(key)
+            if (Object.prototype.hasOwnProperty.call(schema.tables[self.tableName], key)
                 && schema.tables[self.tableName][key].type === 'bool') {
                 attrs[key] = value ? true : false;
             }
@@ -605,7 +605,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
             if (this.relationships) {
                 this.relationships.forEach((relation) => {
-                    if (this._previousRelations && this._previousRelations.hasOwnProperty(relation)) {
+                    if (this._previousRelations && Object.prototype.hasOwnProperty.call(this._previousRelations, relation)) {
                         clonedModel.related(relation).models = this._previousRelations[relation].models;
                     }
                 });
@@ -737,7 +737,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         _.each(data, (value, property) => {
             if (value !== null
-                && schema.tables[tableName].hasOwnProperty(property)
+                && Object.prototype.hasOwnProperty.call(schema.tables[tableName], property)
                 && schema.tables[tableName][property].type === 'dateTime'
                 && typeof value === 'string'
             ) {
@@ -758,7 +758,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 _.each(data[property], (relation, indexInArr) => {
                     _.each(relation, (value, relationProperty) => {
                         if (value !== null
-                            && schema.tables[this.prototype.relationshipBelongsTo[property]].hasOwnProperty(relationProperty)
+                            && Object.prototype.hasOwnProperty.call(schema.tables[this.prototype.relationshipBelongsTo[property]], relationProperty)
                             && schema.tables[this.prototype.relationshipBelongsTo[property]][relationProperty].type === 'dateTime'
                             && typeof value === 'string'
                         ) {
@@ -792,7 +792,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         unfilteredOptions = unfilteredOptions || {};
         filterConfig = filterConfig || {};
 
-        if (unfilteredOptions.hasOwnProperty('include')) {
+        if (Object.prototype.hasOwnProperty.call(unfilteredOptions, 'include')) {
             throw new common.errors.IncorrectUsageError({
                 message: 'The model layer expects using `withRelated`.'
             });

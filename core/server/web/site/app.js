@@ -144,7 +144,7 @@ module.exports = function setupSiteApp(options = {}) {
     config.get('apps:internal').forEach((appName) => {
         const app = require(path.join(config.get('paths').internalAppPath, appName));
 
-        if (app.hasOwnProperty('setupMiddleware')) {
+        if (Object.prototype.hasOwnProperty.call(app, 'setupMiddleware')) {
             app.setupMiddleware(siteApp);
         }
     });
