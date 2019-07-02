@@ -63,7 +63,7 @@
     "cheerio": "0.22.0",
     "compression": "1.7.4",
     "connect-slashes": "1.3.1",
-    "cookie": "0.3.1",
+    "cookie": "0.4.0",
     "cookie-session": "1.3.3",
     "cors": "2.8.5",
     "cpy-cli": "2.0.0",
