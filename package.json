@@ -58,7 +58,7 @@
     "bookshelf": "0.14.2",
     "bookshelf-relations": "1.1.1",
     "brute-knex": "3.0.1",
-    "bson-objectid": "1.2.4",
+    "bson-objectid": "1.2.5",
     "chalk": "2.4.2",
     "cheerio": "0.22.0",
     "compression": "1.7.3",
