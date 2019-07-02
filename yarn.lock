@@ -749,10 +749,6 @@ block-stream@*:
   dependencies:
     inherits "~2.0.0"
 
-bluebird@3.5.3, bluebird@^3.0.5, bluebird@^3.4.1, bluebird@^3.4.3, bluebird@^3.4.6, bluebird@^3.5.1, bluebird@^3.5.3:
-  version "3.5.3"
-  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.3.tgz#7d01c6f9616c9a51ab0f8c549a79dfe6ec33efa7"
-
 bluebird@3.5.4, bluebird@^3.5.4:
   version "3.5.4"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.4.tgz#d6cc661595de30d5b3af5fcedd3c0b3ef6ec5714"
@@ -762,6 +758,10 @@ bluebird@3.5.5, bluebird@^3.5.0:
   version "3.5.5"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.5.tgz#a8d0afd73251effbbd5fe384a77d73003c17a71f"
   integrity sha512-5am6HnnfN+urzt4yfg7IgTbotDjIT/u8AJpEt0sIU9FtXfVeezXAPKswrG+xKUCOYAINpSdgZVDU6QFh+cuH3w==
+
+bluebird@^3.0.5, bluebird@^3.4.1, bluebird@^3.4.3, bluebird@^3.4.6, bluebird@^3.5.1, bluebird@^3.5.3:
+  version "3.5.3"
+  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.3.tgz#7d01c6f9616c9a51ab0f8c549a79dfe6ec33efa7"
 
 body-parser@1.18.3:
   version "1.18.3"
