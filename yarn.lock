@@ -2952,9 +2952,10 @@ grunt-contrib-copy@1.0.0:
     chalk "^1.1.1"
     file-sync-cmp "^0.1.0"
 
-grunt-contrib-symlink@^1.0.0:
+grunt-contrib-symlink@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/grunt-contrib-symlink/-/grunt-contrib-symlink-1.0.0.tgz#c83616c035711a6c0062a2810cf1c77ffc6bed2b"
+  integrity sha1-yDYWwDVxGmwAYqKBDPHHf/xr7Ss=
 
 grunt-contrib-uglify@4.0.1:
   version "4.0.1"
