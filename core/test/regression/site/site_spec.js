@@ -1632,7 +1632,7 @@ describe('Integration - Web - Site', function () {
                         '/about/': 'about',
                         '/podcast/rss/': {
                             templates: ['podcast/rss'],
-                            content_type: 'xml'
+                            content_type: 'text/xml'
                         },
                         '/cooking/': {
                             controller: 'channel',
@@ -3376,7 +3376,7 @@ describe('Integration - Web - Site', function () {
                         '/about/': 'about',
                         '/podcast/rss/': {
                             templates: ['podcast/rss'],
-                            content_type: 'xml'
+                            content_type: 'text/xml'
                         },
                         '/cooking/': {
                             controller: 'channel',
