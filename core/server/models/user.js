@@ -866,31 +866,30 @@ User = ghostBookshelf.Model.extend({
      * @param {Object} object
      * @param {Object} unfilteredOptions
      */
-    changePassword: function changePassword(object, unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'changePassword'),
-            self = this,
-            newPassword = object.newPassword,
-            userId = object.user_id,
-            oldPassword = object.oldPassword,
-            isLoggedInUser = userId === options.context.user,
-            user;
+    async changePassword(object, unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'changePassword');
+        const {newPassword, oldPassword, user_id: userId} = object;
+        const isLoggedInUser = userId === options.context.user;
 
         options.require = true;
 
-        return self.forge({id: userId}).fetch(options)
-            .then(function then(_user) {
-                user = _user;
-
-                if (isLoggedInUser) {
-                    return self.isPasswordCorrect({
-                        plainPassword: oldPassword,
-                        hashedPassword: user.get('password')
-                    });
-                }
-            })
-            .then(function then() {
-                return user.save({password: newPassword});
+        const user = await this.forge({id: userId}).fetch(options);
+        if (isLoggedInUser) {
+            await this.isPasswordCorrect({
+                plainPassword: oldPassword,
+                hashedPassword: user.get('password')
             });
+        }
+
+        const modelResponse = await user.save({password: newPassword});
+
+        const queryOpts = _.pick(options, 'transacting');
+        await ghostBookshelf
+            .model('Session')
+            .where({user_id: userId}, queryOpts)
+            .destroy(queryOpts);
+
+        return modelResponse;
     },
 
     transferOwnership: function transferOwnership(object, unfilteredOptions) {

@@ -462,7 +462,7 @@ describe('User Model', function run() {
                 });
             });
 
-            it('password matches users email adress', function (done) {
+            it('password matches users email address', function (done) {
                 UserModel.changePassword({
                     newPassword: 'jbloggs@example.com',
                     ne2Password: 'jbloggs@example.com',
