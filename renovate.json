@@ -16,6 +16,7 @@
     "automerge": true
   },
   "ignoreDeps": [
+      "moment-timezone",
       "nodemailer",
       "validator",
       "simple-dom"
