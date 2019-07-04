@@ -134,7 +134,7 @@ describe('Request', function () {
         const requestMock = nock('http://nofilehere.com')
             .get('/files/test.txt')
             .times(3)   // 1 original request + 2 default retries
-            .reply(500);
+            .reply(500, {message: 'something awful happened', code: 'AWFUL_ERROR'});
 
         return request(url, options).then(() => {
             throw new Error('Request should have errored with an awful error');
@@ -142,6 +142,8 @@ describe('Request', function () {
             requestMock.isDone().should.be.true();
             should.exist(err);
             err.statusMessage.should.be.equal('Internal Server Error');
+            err.body.should.match(/something awful happened/);
+            err.body.should.match(/AWFUL_ERROR/);
         });
     });
 });
