@@ -4,6 +4,22 @@ const Promise = require('bluebird');
 const request = require('../../lib/request');
 const cheerio = require('cheerio');
 
+// TODO: extract the oembed + unfurl fallback logic into the Koenig repo?
+
+// TODO: memoize this on first access for startup speed?
+const metascraper = require('metascraper')([
+    require('metascraper-title')(),
+    require('metascraper-description')(),
+    require('metascraper-author')(),
+    require('metascraper-date')(),
+    require('metascraper-image')(),
+    require('metascraper-logo')(),
+    require('metascraper-logo-favicon')(),
+    require('metascraper-publisher')(),
+    require('metascraper-lang')(),
+    require('metascraper-amazon')()
+]);
+
 const findUrlWithProvider = (url) => {
     let provider;
 
@@ -45,6 +61,7 @@ module.exports = {
             let {url} = data;
 
             if (!url || !url.trim()) {
+                console.log({url});
                 return Promise.reject(new common.errors.BadRequestError({
                     message: common.i18n.t('errors.api.oembed.noUrlProvided')
                 }));
@@ -80,13 +97,46 @@ module.exports = {
             }).then((response) => {
                 if (response.url !== url) {
                     ({url, provider} = findUrlWithProvider(response.url));
-                    return provider ? knownProvider(url) : unknownProvider();
+                    if (provider) {
+                        return knownProvider(url);
+                    }
                 }
 
                 const oembedUrl = getOembedUrlFromHTML(response.body);
 
                 if (!oembedUrl) {
-                    return unknownProvider();
+                    // attempt to perform a non-oembed unfurl
+                    // TODO: pull this out into it's own function and do proper html generation
+                    // NOTE: styles are required because classes are not available when using an iframe - bookmark card may help here
+                    return metascraper({html: response.body, url}).then((metadata) => {
+                        let html = `
+                            <article style="border: 1px solid; border-radius: .5rem">
+                                <a href="${url}" style="display: flex">
+                                    <article style="display: flex; flex-direction: column; padding: 1.2rem;">
+                                        <span style="font-weight: 500">${metadata.title}</span>
+                                        <span>${metadata.description}</span>
+                                        <span style="display: flex; align-items: center">
+                                            ${metadata.logo ? '<img src="' + metadata.logo + '" style="width: 2rem; margin-right: .8rem">' : ''}
+                                            ${metadata.author}
+                                            ${metadata.author && metadata.publisher ? ' @ ' : ''}
+                                            ${metadata.publisher}
+                                        </span>
+                                        <span style="font-style: italic">${url}</span>
+                                    </article>
+                                    ${metadata.image ? '<img src="' + metadata.image + '" style="max-width: 20rem">' : ''}
+                                </a>
+                            </article>
+                        `;
+
+                        return {
+                            html,
+                            metadata,
+                            type: 'bookmark'
+                        };
+                    }).catch((err) => {
+                        console.log('metascraper err', err);
+                        return unknownProvider();
+                    });
                 }
 
                 return request(oembedUrl, {
@@ -95,7 +145,8 @@ module.exports = {
                 }).then((response) => {
                     return response.body;
                 });
-            }).catch(() => {
+            }).catch((err) => {
+                console.log('request err', err);
                 return unknownProvider();
             });
         }
