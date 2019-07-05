@@ -72,7 +72,7 @@ function createCustomNotification(notification) {
             status: message.status || 'alert',
             type: message.type || 'info',
             id: message.id,
-            dismissible: message.hasOwnProperty('dismissible') ? message.dismissible : true,
+            dismissible: Object.prototype.hasOwnProperty.call(message, 'dismissible') ? message.dismissible : true,
             top: !!message.top,
             message: message.content
         };
@@ -240,7 +240,7 @@ function updateCheckResponse(response) {
              */
             if (_.isArray(response)) {
                 notifications = response;
-            } else if ((response.hasOwnProperty('notifications') && _.isArray(response.notifications))) {
+            } else if ((Object.prototype.hasOwnProperty.call(response, 'notifications') && _.isArray(response.notifications))) {
                 notifications = response.notifications;
             } else {
                 // CASE: default right now

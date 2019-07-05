@@ -137,7 +137,7 @@ common.events.on('settings.notifications.edited', function (settingModel) {
 
     allNotifications = allNotifications.filter(function (notification) {
         // Do not delete the release notification
-        if (notification.hasOwnProperty('custom') && !notification.custom) {
+        if (Object.prototype.hasOwnProperty.call(notification, 'custom') && !notification.custom) {
             return true;
         }
 

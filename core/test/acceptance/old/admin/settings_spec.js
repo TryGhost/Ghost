@@ -161,23 +161,23 @@ describe('Settings API', function () {
             });
     });
 
-    it('Can download routes.yaml', ()=> {
+    it('Can download routes.yaml', () => {
         return request.get(localUtils.API.getApiQuery('settings/routes/yaml/'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/yaml')
             .expect(200)
-            .then((res)=> {
+            .then((res) => {
                 res.headers['content-disposition'].should.eql('Attachment; filename="routes.yaml"');
                 res.headers['content-type'].should.eql('application/yaml; charset=utf-8');
                 res.headers['content-length'].should.eql('138');
             });
     });
 
-    it('Can upload routes.yaml', ()=> {
+    it('Can upload routes.yaml', () => {
         const newRoutesYamlPath = `${os.tmpdir()}/routes.yaml`;
 
         return fs.writeFile(newRoutesYamlPath, 'routes:\ncollections:\ntaxonomies:\n')
-            .then(()=> {
+            .then(() => {
                 return request
                     .post(localUtils.API.getApiQuery('settings/routes/yaml/'))
                     .set('Origin', config.get('url'))
@@ -185,10 +185,10 @@ describe('Settings API', function () {
                     .expect('Content-Type', /application\/json/)
                     .expect(200);
             })
-            .then((res)=> {
+            .then((res) => {
                 res.headers['x-cache-invalidate'].should.eql('/*');
             })
-            .finally(()=> {
+            .finally(() => {
                 return ghostServer.stop();
             });
     });

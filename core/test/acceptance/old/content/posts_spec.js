@@ -114,7 +114,7 @@ describe('Posts Content API', function () {
                     testUtils.DataGenerator.Content.posts[4].id,
                     testUtils.DataGenerator.Content.posts[2].id,
                     testUtils.DataGenerator.Content.posts[1].id,
-                    testUtils.DataGenerator.Content.posts[0].id,
+                    testUtils.DataGenerator.Content.posts[0].id
                 ]);
 
                 // Each post must either be featured or have the tag 'kitchen-sink'
@@ -170,8 +170,13 @@ describe('Posts Content API', function () {
                 });
 
                 primaryAuthors.should.matchAny(/joe-bloggs|ghost'/);
-                _.filter(primaryAuthors, (value) => {return value === 'ghost';}).length.should.eql(7);
-                _.filter(primaryAuthors, (value) => {return value === 'joe-bloggs';}).length.should.eql(4);
+                _.filter(primaryAuthors, (value) => {
+                    return value === 'ghost';
+                }).length.should.eql(7);
+
+                _.filter(primaryAuthors, (value) => {
+                    return value === 'joe-bloggs';
+                }).length.should.eql(4);
 
                 done();
             });

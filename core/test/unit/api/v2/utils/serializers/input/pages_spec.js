@@ -9,7 +9,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
                 apiType: 'content',
                 options: {
                     context: {}
-                },
+                }
             };
 
             serializers.input.pages.browse(apiConfig, frame);
@@ -100,7 +100,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
                         api_key: {
                             id: 1,
                             type: 'content'
-                        },
+                        }
                     }
                 },
                 data: {}
@@ -120,7 +120,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
                         api_key: {
                             id: 1,
                             type: 'admin'
-                        },
+                        }
                     }
                 },
                 data: {}
@@ -156,7 +156,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
                         api_key: {
                             id: 1,
                             type: 'admin'
-                        },
+                        }
                     }
                 },
                 data: {}
@@ -222,7 +222,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
                         {
                             id: 'id1',
                             authors: ['email1', 'email2'],
-                            tags: ['name1', 'name2'],
+                            tags: ['name1', 'name2']
                         }
                     ]
                 }

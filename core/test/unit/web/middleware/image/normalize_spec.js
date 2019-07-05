@@ -47,7 +47,7 @@ describe('normalize', function () {
     it('should not do manipulation without resize flag set', function (done) {
         configUtils.set({
             imageOptimization: {
-                resize: false,
+                resize: false
             }
         });
 
@@ -60,7 +60,7 @@ describe('normalize', function () {
     it('should not create files array when processing fails', function (done) {
         image.manipulator.process.rejects();
 
-        normalize(req, res, ()=> {
+        normalize(req, res, () => {
             common.logging.error.calledOnce.should.be.true();
             req.file.should.not.be.equal(undefined);
             should.not.exist(req.files);

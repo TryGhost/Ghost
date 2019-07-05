@@ -116,7 +116,7 @@ describe('Public API', function () {
                     testUtils.DataGenerator.Content.posts[4].id,
                     testUtils.DataGenerator.Content.posts[2].id,
                     testUtils.DataGenerator.Content.posts[1].id,
-                    testUtils.DataGenerator.Content.posts[0].id,
+                    testUtils.DataGenerator.Content.posts[0].id
                 ]);
 
                 // API does not return drafts
@@ -755,7 +755,7 @@ describe('Public API', function () {
                 // Public api returns all users, but no status! Locked/Inactive users can still have written articles.
                 models.User.findPage(Object.assign({status: 'all'}, testUtils.context.internal))
                     .then((response) => {
-                        _.map(response.data, (model) => model.toJSON()).length.should.eql(7);
+                        _.map(response.data, model => model.toJSON()).length.should.eql(7);
                         done();
                     });
             });
@@ -903,7 +903,7 @@ describe('Public API', function () {
                 const ids = jsonResponse.users
                     .filter(user => (user.slug !== 'ghost'))
                     .filter(user => (user.slug !== 'inactive'))
-                    .map(user=> user.id);
+                    .map(user => user.id);
 
                 ids.should.eql([
                     testUtils.DataGenerator.Content.users[1].id,

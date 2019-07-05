@@ -130,7 +130,7 @@ describe('Posts API', function () {
                 .set('Origin', config.get('url'))
                 .send({
                     posts: [{
-                        title: '',
+                        title: ''
                     }]
                 })
                 .expect('Content-Type', /json/)

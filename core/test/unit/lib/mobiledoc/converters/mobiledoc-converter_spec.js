@@ -53,7 +53,7 @@ describe('Mobiledoc converter', function () {
                     [10, 3],
                     [10, 4],
                     [10, 5],
-                    [1, 'p', []],
+                    [1, 'p', []]
                 ]
             };
 

@@ -214,7 +214,7 @@ describe('Unit: models/session', function () {
                 should.equal(findOneStub.args[0][1], filteredOptions);
 
                 should.deepEqual(editStub.args[0][0], {
-                    session_data: data.session_data,
+                    session_data: data.session_data
                 });
 
                 should.deepEqual(editStub.args[0][1], {

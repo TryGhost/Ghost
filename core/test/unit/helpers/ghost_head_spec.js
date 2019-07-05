@@ -71,14 +71,14 @@ describe('{{ghost_head}} helper', function () {
         }));
 
         /** AUTHORS - related to posts */
-        authors.push(createUser({ // Author 0
+        authors.push(createUser({// Author 0
             profile_image: '/content/images/test-author-image.png',
             website: 'http://authorwebsite.com',
             facebook: 'testuser',
-            twitter: '@testuser',
+            twitter: '@testuser'
         }));
 
-        authors.push(createUser({ // Author 1
+        authors.push(createUser({// Author 1
             name: 'Author name',
             slug: 'author2',
             profile_image: '/content/images/test-author-image.png',
@@ -88,7 +88,7 @@ describe('{{ghost_head}} helper', function () {
             twitter: '@testuser'
         }));
 
-        authors.push(createUser({ // Author 2
+        authors.push(createUser({// Author 2
             name: 'Author name',
             slug: 'author3',
             profile_image: '/content/images/test-author-image.png',
@@ -98,7 +98,7 @@ describe('{{ghost_head}} helper', function () {
             bio: 'Author bio'
         }));
 
-        authors.push(createUser({ // Author 3
+        authors.push(createUser({// Author 3
             name: 'Author name',
             url: 'http://testauthorurl.com',
             slug: 'author4',
@@ -108,11 +108,11 @@ describe('{{ghost_head}} helper', function () {
             twitter: '@testuser'
         }));
 
-        authors.push(createUser({ // Author 4
+        authors.push(createUser({// Author 4
             name: 'Author name'
         }));
 
-        authors.push(createUser({ // Author 5
+        authors.push(createUser({// Author 5
             name: 'Author name',
             url: 'http://testauthorurl.com',
             slug: 'author8',
@@ -124,7 +124,7 @@ describe('{{ghost_head}} helper', function () {
 
         /** POSTS */
 
-        posts.push(createPost({ // Post 0
+        posts.push(createPost({// Post 0
             meta_description: 'all about our blog',
             title: 'About',
             feature_image: '/content/images/test-image-about.png',
@@ -133,7 +133,7 @@ describe('{{ghost_head}} helper', function () {
             primary_author: authors[0]
         }));
 
-        posts.push(createPost({ // Post 1
+        posts.push(createPost({// Post 1
             meta_description: 'all about our blog',
             title: 'About',
             feature_image: '/content/images/test-image-about.png',
@@ -148,7 +148,7 @@ describe('{{ghost_head}} helper', function () {
             primary_author: authors[0]
         }));
 
-        posts.push(createPost({ // Post 2
+        posts.push(createPost({// Post 2
             meta_description: 'blog description',
             title: 'Welcome to Ghost',
             feature_image: '/content/images/test-image.png',
@@ -166,7 +166,7 @@ describe('{{ghost_head}} helper', function () {
             primary_author: authors[1]
         }));
 
-        posts.push(createPost({ // Post 3
+        posts.push(createPost({// Post 3
             meta_description: 'blog description',
             custom_excerpt: 'post custom excerpt',
             title: 'Welcome to Ghost',
@@ -185,7 +185,7 @@ describe('{{ghost_head}} helper', function () {
             primary_author: authors[2]
         }));
 
-        posts.push(createPost({ // Post 4
+        posts.push(createPost({// Post 4
             title: 'Welcome to Ghost',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('This is a short post'),
             authors: [
@@ -194,7 +194,7 @@ describe('{{ghost_head}} helper', function () {
             primary_author: authors[3]
         }));
 
-        posts.push(createPost({ // Post 5
+        posts.push(createPost({// Post 5
             meta_description: 'blog description',
             title: 'Welcome to Ghost',
             feature_image: '/content/images/test-image.png',
@@ -213,7 +213,7 @@ describe('{{ghost_head}} helper', function () {
             primary_author: authors[3]
         }));
 
-        posts.push(createPost({ // Post 6
+        posts.push(createPost({// Post 6
             meta_description: 'blog "test" description',
             title: 'title',
             meta_title: 'Welcome to Ghost "test"',
@@ -229,7 +229,7 @@ describe('{{ghost_head}} helper', function () {
             primary_author: authors[3]
         }));
 
-        posts.push(createPost({ // Post 7
+        posts.push(createPost({// Post 7
             meta_description: 'blog description',
             title: 'Welcome to Ghost',
             feature_image: '/content/images/test-image.png',
@@ -240,7 +240,7 @@ describe('{{ghost_head}} helper', function () {
             primary_author: authors[3]
         }));
 
-        posts.push(createPost({ // Post 8
+        posts.push(createPost({// Post 8
             meta_description: 'blog description',
             title: 'Welcome to Ghost',
             feature_image: null,
@@ -255,7 +255,7 @@ describe('{{ghost_head}} helper', function () {
             primary_author: authors[5]
         }));
 
-        posts.push(createPost({ // Post 9
+        posts.push(createPost({// Post 9
             title: 'Welcome to Ghost',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('This is a short post'),
             tags: [
