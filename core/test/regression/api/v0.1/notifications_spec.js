@@ -144,7 +144,7 @@ describe('Notifications API', function () {
                         .expect('Content-Type', /json/)
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(200)
-                        .then(res => {
+                        .then((res) => {
                             const jsonResponse = res.body;
 
                             jsonResponse.notifications.should.be.an.Array().with.lengthOf(4);
@@ -210,7 +210,7 @@ describe('Notifications API', function () {
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
-                .then(res => {
+                .then((res) => {
                     res.body.errors[0].message.should.equal('Notification does not exist.');
                 });
         });

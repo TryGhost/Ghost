@@ -71,7 +71,7 @@ describe('Themes', function () {
                             level: 'error',
                             rule: 'Replace the <code>{{#if author.cover}}</code> helper with <code>{{#if author.cover_image}}</code>',
                             details: 'The <code>cover</code> attribute was replaced with <code>cover_image</code>.<br>Instead of <code>{{#if author.cover}}</code> you need to use <code>{{#if author.cover_image}}</code>.<br>See the object attributes of <code>author</code> <a href="https://docs.ghost.org/api/handlebars-themes/context/author/#author-object-attributes" target=_blank>here</a>.',
-                            failures: [ {} ],
+                            failures: [{}],
                             code: 'GS001-DEPR-CON-AC'
                         }
                     ]
@@ -99,7 +99,7 @@ describe('Themes', function () {
                             level: 'error',
                             rule: 'Replace the <code>{{#if author.cover}}</code> helper with <code>{{#if author.cover_image}}</code>',
                             details: 'The <code>cover</code> attribute was replaced with <code>cover_image</code>.<br>Instead of <code>{{#if author.cover}}</code> you need to use <code>{{#if author.cover_image}}</code>.<br>See the object attributes of <code>author</code> <a href="https://docs.ghost.org/api/handlebars-themes/context/author/#author-object-attributes" target=_blank>here</a>.',
-                            failures: [ {} ],
+                            failures: [{}],
                             code: 'GS001-DEPR-CON-AC'
                         }
                     ]

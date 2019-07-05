@@ -26,7 +26,7 @@ describe('UNIT > Settings Service:', function () {
             collections: {
               '/': {
                 permalink: '/{slug}/',
-                template: [ 'home', 'index' ]
+                template: ['home', 'index']
               }
             },
             resources: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
@@ -86,7 +86,7 @@ describe('UNIT > Settings Service:', function () {
                 collections: {
                   '/': {
                     permalink: '/{slug}/',
-                    template: [ 'home', 'index' ]
+                    template: ['home', 'index']
                   }
                 },
                 resources: {tag: '/tag/{slug}/', author: '/author/{slug}/'}

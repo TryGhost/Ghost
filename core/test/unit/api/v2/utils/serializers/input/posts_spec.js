@@ -15,7 +15,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                         api_key: {
                             id: 1,
                             type: 'content'
-                        },
+                        }
                     }
                 }
             };
@@ -49,7 +49,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                         api_key: {
                             id: 1,
                             type: 'content'
-                        },
+                        }
                     },
                     filter: 'status:published+tag:eins'
                 }
@@ -69,7 +69,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                         api_key: {
                             id: 1,
                             type: 'content'
-                        },
+                        }
                     },
                     filter: 'page:true+tag:eins'
                 }
@@ -89,7 +89,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                         api_key: {
                             id: 1,
                             type: 'content'
-                        },
+                        }
                     },
                     filter: 'page:true'
                 }
@@ -109,7 +109,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                         api_key: {
                             id: 1,
                             type: 'content'
-                        },
+                        }
                     },
                     filter: '(page:true,page:false)'
                 }
@@ -243,8 +243,8 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                                 api_key: {
                                     id: 1,
                                     type: 'content'
-                                },
-                            },
+                                }
+                            }
                         },
                         data: {
                             posts: [
@@ -271,8 +271,8 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                                 api_key: {
                                     id: 1,
                                     type: 'content'
-                                },
-                            },
+                                }
+                            }
                         },
                         data: {
                             posts: [
@@ -299,7 +299,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                                 api_key: {
                                     id: 1,
                                     type: 'content'
-                                },
+                                }
                             },
                             withRelated: ['tags', 'authors']
                         },
@@ -354,7 +354,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                                 api_key: {
                                     id: 1,
                                     type: 'content'
-                                },
+                                }
                             },
                             withRelated: ['tags', 'authors']
                         },
@@ -471,7 +471,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                         posts: [
                             {
                                 id: 'id1',
-                                html: '<p>this is great feature</p>\n<!--kg-card-begin: html--><div class="custom">My Custom HTML</div><!--kg-card-end: html-->\n<p>custom html preserved!</p>',
+                                html: '<p>this is great feature</p>\n<!--kg-card-begin: html--><div class="custom">My Custom HTML</div><!--kg-card-end: html-->\n<p>custom html preserved!</p>'
                             }
                         ]
                     }
@@ -517,7 +517,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
                             {
                                 id: 'id1',
                                 authors: ['email1', 'email2'],
-                                tags: ['name1', 'name2'],
+                                tags: ['name1', 'name2']
                             }
                         ]
                     }

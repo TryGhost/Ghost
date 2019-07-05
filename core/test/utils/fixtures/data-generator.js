@@ -891,7 +891,7 @@ DataGenerator.forKnex = (function () {
     const api_keys = [
         createBasic(DataGenerator.Content.api_keys[0]),
         createBasic(DataGenerator.Content.api_keys[1]),
-        createBasic(DataGenerator.Content.api_keys[2]),
+        createBasic(DataGenerator.Content.api_keys[2])
     ];
 
     return {

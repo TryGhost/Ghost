@@ -60,7 +60,7 @@ describe('Permissions', function () {
         it('should return api_key and public context if content api_key provided', function () {
             parseContext({api_key: {
                 id: 1,
-                type: 'content',
+                type: 'content'
             }, integration: {id: 2}}).should.eql({
                 internal: false,
                 external: false,
