@@ -10,6 +10,18 @@ const Promise = require('bluebird'),
 
 let Settings, defaultSettings;
 
+const doBlock = fn => fn();
+
+const getMembersKey = doBlock(() => {
+    let UNO_KEYPAIRINO;
+    return function getMembersKey(type) {
+        if (!UNO_KEYPAIRINO) {
+            UNO_KEYPAIRINO = keypair({bits: 1024});
+        }
+        return UNO_KEYPAIRINO[type];
+    };
+});
+
 // For neatness, the defaults file is split into categories.
 // It's much easier for us to work with it as a single level
 // instead of iterating those categories every time
@@ -17,28 +29,29 @@ function parseDefaultSettings() {
     var defaultSettingsInCategories = require('../data/schema/').defaultSettings,
         defaultSettingsFlattened = {},
         dynamicDefault = {
-            db_hash: uuid.v4(),
-            public_hash: crypto.randomBytes(15).toString('hex'),
+            db_hash: () => uuid.v4(),
+            public_hash: () => crypto.randomBytes(15).toString('hex'),
             // @TODO: session_secret would ideally be named "admin_session_secret"
-            session_secret: crypto.randomBytes(32).toString('hex'),
-            members_session_secret: crypto.randomBytes(32).toString('hex'),
-            theme_session_secret: crypto.randomBytes(32).toString('hex')
+            session_secret: () => crypto.randomBytes(32).toString('hex'),
+            members_session_secret: () => crypto.randomBytes(32).toString('hex'),
+            theme_session_secret: () => crypto.randomBytes(32).toString('hex'),
+            members_public_key: () => getMembersKey('public'),
+            members_private_key: () => getMembersKey('private')
         };
-
-    const membersKeypair = keypair({
-        bits: 1024
-    });
-
-    dynamicDefault.members_public_key = membersKeypair.public;
-    dynamicDefault.members_private_key = membersKeypair.private;
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
         _.each(settings, function each(setting, settingName) {
             setting.type = categoryName;
             setting.key = settingName;
-            if (dynamicDefault[setting.key]) {
-                setting.defaultValue = dynamicDefault[setting.key];
-            }
+
+            setting.getDefaultValue = function getDefaultValue() {
+                const getDynamicDefault = dynamicDefault[setting.key];
+                if (getDynamicDefault) {
+                    return getDynamicDefault();
+                } else {
+                    return setting.defaultValue;
+                }
+            };
 
             defaultSettingsFlattened[settingName] = setting;
         });
@@ -209,7 +222,7 @@ Settings = ghostBookshelf.Model.extend({
                 _.each(getDefaultSettings(), function forEachDefault(defaultSetting, defaultSettingKey) {
                     var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
                     if (isMissingFromDB) {
-                        defaultSetting.value = defaultSetting.defaultValue;
+                        defaultSetting.value = defaultSetting.getDefaultValue();
                         insertOperations.push(Settings.forge(defaultSetting).save(null, options));
                     }
                 });
