@@ -6,7 +6,6 @@
     "@tryghost:groupBuildTools",
     "@tryghost:automergeSilentTestLintNonMajor"
   ],
-  "schedule": "before 3am on Tuesday",
   "travis": { "enabled": true },
   "node": {
     "supportPolicy": ["lts"]
