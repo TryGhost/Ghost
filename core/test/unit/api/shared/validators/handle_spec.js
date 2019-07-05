@@ -30,11 +30,11 @@ describe('Unit: api/shared/validators/handle', function () {
             const getStub = sinon.stub();
             const addStub = sinon.stub();
             sinon.stub(shared.validators.input.all, 'all').get(() => {
-return getStub;
-});
+                return getStub;
+            });
             sinon.stub(shared.validators.input.all, 'add').get(() => {
-return addStub;
-});
+                return addStub;
+            });
 
             const apiValidators = {
                 all: {

@@ -171,11 +171,12 @@ describe('Posts Content API', function () {
 
                 primaryAuthors.should.matchAny(/joe-bloggs|ghost'/);
                 _.filter(primaryAuthors, (value) => {
-return value === 'ghost';
-}).length.should.eql(7);
+                    return value === 'ghost';
+                }).length.should.eql(7);
+
                 _.filter(primaryAuthors, (value) => {
-return value === 'joe-bloggs';
-}).length.should.eql(4);
+                    return value === 'joe-bloggs';
+                }).length.should.eql(4);
 
                 done();
             });
