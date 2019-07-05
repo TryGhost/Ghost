@@ -406,26 +406,21 @@ export default Component.extend({
         return {};
     },
 
-    _onDrop(draggableInfo, droppableElem, position) {
+    _onDrop(draggableInfo/*, droppableElem, position*/) {
         // do not allow dropping of non-images
         if (draggableInfo.type !== 'image' && draggableInfo.cardName !== 'image') {
             return false;
         }
 
+        let {insertIndex} = draggableInfo;
         let droppables = Array.from(this.element.querySelectorAll('[data-image]'));
         let draggableIndex = droppables.indexOf(draggableInfo.element);
 
-        if (this._isDropAllowed(draggableIndex, draggableInfo.insertIndex)) {
+        if (this._isDropAllowed(draggableIndex, insertIndex)) {
             if (draggableIndex === -1) {
                 // external image being added
                 let {payload} = draggableInfo;
                 let img = draggableInfo.element.querySelector(`img[src="${payload.src}"]`);
-                let insertIndex = draggableInfo.insertIndex;
-
-                // insert index needs adjusting because we're not shuffling
-                if (position && position.match(/right/)) {
-                    insertIndex += 1;
-                }
 
                 // image card payloads may not have all of the details we need but we can fill them in
                 payload.width = payload.width || img.naturalWidth;
@@ -440,8 +435,9 @@ export default Component.extend({
             } else {
                 // internal image being re-ordered
                 let draggedImage = this.images.findBy('src', draggableInfo.payload.src);
+                let accountForRemoval = draggableIndex < insertIndex && insertIndex ? -1 : 0;
                 this.images.removeObject(draggedImage);
-                this.images.insertAt(draggableInfo.insertIndex, draggedImage);
+                this.images.insertAt(insertIndex + accountForRemoval, draggedImage);
             }
 
             this._recalculateImageRows();
@@ -514,12 +510,8 @@ export default Component.extend({
                 }
             });
 
-            if (position.match(/right/) && draggableIndex > insertIndex) {
+            if (position.match(/right/)) {
                 insertIndex += 1;
-            }
-
-            if (insertIndex >= this.images.length - 1) {
-                insertIndex = this.images.length - 1;
             }
 
             return {
