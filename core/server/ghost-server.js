@@ -45,7 +45,7 @@ GhostServer.prototype.start = function (externalApp) {
         };
 
     return new Promise(function (resolve, reject) {
-        if (config.get('server').hasOwnProperty('socket')) {
+        if (Object.prototype.hasOwnProperty.call(config.get('server'), 'socket')) {
             socketConfig = config.get('server').socket;
 
             if (_.isString(socketConfig)) {

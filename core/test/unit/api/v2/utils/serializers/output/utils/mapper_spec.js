@@ -120,7 +120,7 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
             const frame = {
                 options: {
                     context: {}
-                },
+                }
             };
 
             const tag = tagModel(testUtils.DataGenerator.forKnex.createTag({
@@ -156,7 +156,7 @@ describe('Unit: v2/utils/serializers/output/utils/mapper', () => {
 
             should.exist(mapped.api_keys);
 
-            mapped.api_keys.forEach(key => {
+            mapped.api_keys.forEach((key) => {
                 if (key.type === 'admin') {
                     const [id, secret] = key.secret.split(':');
                     should.exist(id);

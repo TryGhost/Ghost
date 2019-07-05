@@ -121,24 +121,24 @@ const locationHeader = (req, result) => {
         statusQuery;
 
     if (req.method === 'POST') {
-        if (result.hasOwnProperty('posts')) {
+        if (Object.prototype.hasOwnProperty.call(result, 'posts')) {
             newObject = result.posts[0];
             statusQuery = `/?status=${newObject.status}`;
             location = urlUtils.urlJoin(apiRoot, 'posts', newObject.id, statusQuery);
-        } else if (result.hasOwnProperty('notifications')) {
+        } else if (Object.prototype.hasOwnProperty.call(result, 'notifications')) {
             newObject = result.notifications[0];
 
             // CASE: you add one notification, but it's a duplicate, the API will return {notifications: []}
             if (newObject) {
                 location = urlUtils.urlJoin(apiRoot, 'notifications', newObject.id, '/');
             }
-        } else if (result.hasOwnProperty('users')) {
+        } else if (Object.prototype.hasOwnProperty.call(result, 'users')) {
             newObject = result.users[0];
             location = urlUtils.urlJoin(apiRoot, 'users', newObject.id, '/');
-        } else if (result.hasOwnProperty('tags')) {
+        } else if (Object.prototype.hasOwnProperty.call(result, 'tags')) {
             newObject = result.tags[0];
             location = urlUtils.urlJoin(apiRoot, 'tags', newObject.id, '/');
-        } else if (result.hasOwnProperty('webhooks')) {
+        } else if (Object.prototype.hasOwnProperty.call(result, 'webhooks')) {
             newObject = result.webhooks[0];
             location = urlUtils.urlJoin(apiRoot, 'webhooks', newObject.id, '/');
         }

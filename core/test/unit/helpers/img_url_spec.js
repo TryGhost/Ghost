@@ -128,7 +128,7 @@ describe('{{image}} helper', function () {
         it('should output correct url for absolute paths which are internal', function () {
             var rendered = helpers.img_url('http://localhost:82832/content/images/my-coole-img.jpg', {
                 hash: {
-                    size: 'medium',
+                    size: 'medium'
                 },
                 data: {
                     config: {
@@ -146,7 +146,7 @@ describe('{{image}} helper', function () {
         it('should output the correct url for protocol relative urls', function () {
             var rendered = helpers.img_url('//website.com/whatever/my-coole-img.jpg', {
                 hash: {
-                    size: 'medium',
+                    size: 'medium'
                 },
                 data: {
                     config: {
@@ -164,7 +164,7 @@ describe('{{image}} helper', function () {
         it('should output the correct url for relative paths', function () {
             var rendered = helpers.img_url('/content/images/my-coole-img.jpg', {
                 hash: {
-                    size: 'medium',
+                    size: 'medium'
                 },
                 data: {
                     config: {

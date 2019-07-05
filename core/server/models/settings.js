@@ -181,11 +181,11 @@ Settings = ghostBookshelf.Model.extend({
                         return setting.save(item, options);
                     } else {
                         // If we have a value, set it.
-                        if (item.hasOwnProperty('value')) {
+                        if (Object.prototype.hasOwnProperty.call(item, 'value')) {
                             setting.set('value', item.value);
                         }
                         // Internal context can overwrite type (for fixture migrations)
-                        if (options.context && options.context.internal && item.hasOwnProperty('type')) {
+                        if (options.context && options.context.internal && Object.prototype.hasOwnProperty.call(item, 'type')) {
                             setting.set('type', item.type);
                         }
 

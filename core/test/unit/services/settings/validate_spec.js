@@ -257,7 +257,7 @@ describe('UNIT: services/settings/validate', function () {
                 },
                 taxonomies: {
                     tag: '/tags/{slug}/',
-                    author: '/authors/{slug}/',
+                    author: '/authors/{slug}/'
                 }
             });
 
@@ -611,7 +611,7 @@ describe('UNIT: services/settings/validate', function () {
                                     status: 'draft'
                                 }
                             }
-                        },
+                        }
                     }
                 });
 
@@ -1038,7 +1038,7 @@ describe('UNIT: services/settings/validate', function () {
                 },
                 taxonomies: {
                     tag: '/tags/{slug}/',
-                    author: '/authors/{slug}/',
+                    author: '/authors/{slug}/'
                 }
             });
 
@@ -1388,7 +1388,7 @@ describe('UNIT: services/settings/validate', function () {
                                     status: 'draft'
                                 }
                             }
-                        },
+                        }
                     }
                 });
 

@@ -147,7 +147,7 @@ describe('DB API', () => {
         return request.post(localUtils.API.getApiQuery(`db/backup${schedulerQuery}`))
             .expect('Content-Type', /json/)
             .expect(403)
-            .then(res => {
+            .then((res) => {
                 should.exist(res.body.errors);
                 res.body.errors[0].type.should.eql('NoPermissionError');
                 fsStub.called.should.eql(false);
@@ -161,7 +161,7 @@ describe('DB API', () => {
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect(401)
-            .then(res => {
+            .then((res) => {
                 should.exist(res.body.errors);
                 res.body.errors[0].type.should.eql('UnauthorizedError');
                 fsStub.called.should.eql(false);

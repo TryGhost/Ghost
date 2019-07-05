@@ -18,7 +18,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
         it('does not add any extra keys to an object', function () {
             const object = {};
             const options = {
-                columns: [],
+                columns: []
             };
 
             urls.urlsForPost(1, object, options);

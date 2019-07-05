@@ -70,7 +70,7 @@ describe('Integrations API', function () {
                     name: 'Integratatron4000',
                     webhooks: [{
                         event: 'something',
-                        target_url: 'http://example.com',
+                        target_url: 'http://example.com'
                     }]
                 }]
             })
@@ -177,7 +177,7 @@ describe('Integrations API', function () {
                                 should.equal(body.meta.pagination.next, null);
                                 should.equal(body.meta.pagination.prev, null);
 
-                                body.integrations.forEach(integration => {
+                                body.integrations.forEach((integration) => {
                                     should.exist(integration.api_keys);
                                 });
 
@@ -241,7 +241,7 @@ describe('Integrations API', function () {
             .set('Origin', config.get('url'))
             .send({
                 integrations: [{
-                    name: 'Webhook-less Integration',
+                    name: 'Webhook-less Integration'
                 }]
             })
             .expect(201)

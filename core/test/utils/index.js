@@ -500,7 +500,7 @@ fixtures = {
         return Promise.map(DataGenerator.forKnex.api_keys, function (api_key) {
             return models.ApiKey.add(api_key, module.exports.context.internal);
         });
-    },
+    }
 };
 
 /** Test Utility Functions **/
@@ -1132,7 +1132,7 @@ module.exports = {
                 urlService.resetGenerators();
                 urlService.resources.reset({ignoreDBReady: true});
             }
-        },
+        }
     },
     teardown: teardown,
     truncate: truncate,
@@ -1200,7 +1200,7 @@ module.exports = {
         admin: {user: {roles: [DataGenerator.Content.roles[0]]}},
         editor: {user: {roles: [DataGenerator.Content.roles[1]]}},
         author: {user: {roles: [DataGenerator.Content.roles[2]]}},
-        contributor: {user: {roles: [DataGenerator.Content.roles[4]]}},
+        contributor: {user: {roles: [DataGenerator.Content.roles[4]]}}
     },
     users: {
         ids: {

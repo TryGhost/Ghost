@@ -122,7 +122,7 @@ describe('Gallery card', function () {
                     {
                         row: 0,
                         fileName: 'NatGeo02.jpg',
-                        src: '/content/images/2018/08/NatGeo02-10.jpg',
+                        src: '/content/images/2018/08/NatGeo02-10.jpg'
                     },
                     {
                         row: 0,

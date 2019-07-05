@@ -81,7 +81,7 @@ describe('Unit: v2/utils/validators/input/tags', function () {
                     data: {
                         tags: [{
                             what: 'a fail'
-                        }],
+                        }]
                     }
                 };
 
@@ -98,7 +98,7 @@ describe('Unit: v2/utils/validators/input/tags', function () {
                     data: {
                         tags: [{
                             name: 'pass'
-                        }],
+                        }]
                     }
                 };
 
@@ -116,7 +116,7 @@ describe('Unit: v2/utils/validators/input/tags', function () {
                             created_by: 'strip me',
                             updated_at: 'strip me',
                             updated_by: 'strip me'
-                        }],
+                        }]
                     }
                 };
 
@@ -144,7 +144,7 @@ describe('Unit: v2/utils/validators/input/tags', function () {
                 meta_description: [123, new Date(), _.repeat('a', 501)]
             };
 
-            Object.keys(fieldMap).forEach(key => {
+            Object.keys(fieldMap).forEach((key) => {
                 it(`should fail for bad ${key}`, function () {
                     const badValues = fieldMap[key];
 
@@ -232,7 +232,7 @@ describe('Unit: v2/utils/validators/input/tags', function () {
                     data: {
                         tags: [{
                             name: 'pass'
-                        }],
+                        }]
                     }
                 };
 

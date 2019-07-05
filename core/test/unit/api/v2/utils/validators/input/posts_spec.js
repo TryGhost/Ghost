@@ -81,7 +81,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                     data: {
                         posts: [{
                             what: 'a fail'
-                        }],
+                        }]
                     }
                 };
 
@@ -99,7 +99,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                         posts: [{
                             title: 'pass',
                             authors: [{id: 'correct'}]
-                        }],
+                        }]
                     }
                 };
 
@@ -118,7 +118,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                             created_by: 'strip me',
                             updated_by: 'strip me',
                             published_by: 'strip me'
-                        }],
+                        }]
                     }
                 };
 
@@ -147,10 +147,10 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                 locale: [123, new Date(), _.repeat('a', 7)],
                 visibility: [123, new Date(), 'abc'],
                 meta_title: [123, new Date(), _.repeat('a', 301)],
-                meta_description: [123, new Date(), _.repeat('a', 501)],
+                meta_description: [123, new Date(), _.repeat('a', 501)]
             };
 
-            Object.keys(fieldMap).forEach(key => {
+            Object.keys(fieldMap).forEach((key) => {
                 it(`should fail for bad ${key}`, function () {
                     const badValues = fieldMap[key];
 
@@ -302,7 +302,7 @@ describe('Unit: v2/utils/validators/input/posts', function () {
                         posts: [{
                             title: 'pass',
                             updated_at: new Date().toISOString()
-                        }],
+                        }]
                     }
                 };
 

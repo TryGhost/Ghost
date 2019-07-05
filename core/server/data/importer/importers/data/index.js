@@ -48,7 +48,7 @@ DataImporter = {
             }
         };
 
-        if (!importOptions.hasOwnProperty('returnImportedData')) {
+        if (!Object.prototype.hasOwnProperty.call(importOptions, 'returnImportedData')) {
             importOptions.returnImportedData = false;
         }
 

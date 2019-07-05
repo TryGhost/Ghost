@@ -285,7 +285,7 @@ describe('Integration: Importer', function () {
 
             exportData.data.posts_tags = [
                 testUtils.DataGenerator.forKnex.createPostsTags(exportData.data.posts[0].id, exportData.data.tags[0].id),
-                testUtils.DataGenerator.forKnex.createPostsTags(exportData.data.posts[0].id, exportData.data.tags[1].id),
+                testUtils.DataGenerator.forKnex.createPostsTags(exportData.data.posts[0].id, exportData.data.tags[1].id)
             ];
 
             return dataImporter.doImport(exportData, importOptions)
@@ -319,7 +319,7 @@ describe('Integration: Importer', function () {
 
             exportData.data.posts_tags = [
                 testUtils.DataGenerator.forKnex.createPostsTags(exportData.data.posts[0].id, '100'),
-                testUtils.DataGenerator.forKnex.createPostsTags(exportData.data.posts[0].id, '200'),
+                testUtils.DataGenerator.forKnex.createPostsTags(exportData.data.posts[0].id, '200')
             ];
 
             return dataImporter.doImport(exportData, importOptions)
@@ -521,8 +521,8 @@ describe('Integration: Importer', function () {
 
                     importedData.length.should.equal(2, 'Did not get data successfully');
 
-                    const users = importedData[0].data.map((model) => model.toJSON());
-                    const posts = importedData[1].data.map((model) => model.toJSON());
+                    const users = importedData[0].data.map(model => model.toJSON());
+                    const posts = importedData[1].data.map(model => model.toJSON());
 
                     posts.length.should.equal(1, 'Wrong number of posts');
                     users.length.should.equal(2, 'Wrong number of users');
@@ -583,11 +583,11 @@ describe('Integration: Importer', function () {
                 .then(function () {
                     return Promise.all([
                         models.Post.findPage(Object.assign({withRelated: ['tags']}, testUtils.context.internal)),
-                        models.Tag.findPage(Object.assign({order: 'slug ASC'}, testUtils.context.internal)),
+                        models.Tag.findPage(Object.assign({order: 'slug ASC'}, testUtils.context.internal))
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].data.map((model) => model.toJSON());
-                    const tags = result[1].data.map((model) => model.toJSON());
+                    const posts = result[0].data.map(model => model.toJSON());
+                    const tags = result[1].data.map(model => model.toJSON());
 
                     posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
@@ -633,7 +633,7 @@ describe('Integration: Importer', function () {
             exportData.data.roles_users = [
                 testUtils.DataGenerator.forKnex.createUsersRoles(exportData.data.users[0].id, exportData.data.roles[0].id),
                 testUtils.DataGenerator.forKnex.createUsersRoles(exportData.data.users[2].id, exportData.data.roles[2].id),
-                testUtils.DataGenerator.forKnex.createUsersRoles(exportData.data.users[3].id, exportData.data.roles[4].id),
+                testUtils.DataGenerator.forKnex.createUsersRoles(exportData.data.users[3].id, exportData.data.roles[4].id)
             ];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -642,7 +642,7 @@ describe('Integration: Importer', function () {
                 author_id: exportData.data.users[0].id,
                 created_by: exportData.data.users[0].id,
                 updated_by: exportData.data.users[1].id,
-                published_by: exportData.data.users[1].id,
+                published_by: exportData.data.users[1].id
             });
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post2',
@@ -650,7 +650,7 @@ describe('Integration: Importer', function () {
                 author_id: exportData.data.users[3].id,
                 created_by: exportData.data.users[2].id,
                 updated_by: exportData.data.users[0].id,
-                published_by: exportData.data.users[1].id,
+                published_by: exportData.data.users[1].id
             });
             exportData.data.posts[2] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post3',
@@ -658,7 +658,7 @@ describe('Integration: Importer', function () {
                 author_id: exportData.data.users[0].id,
                 created_by: exportData.data.users[3].id,
                 updated_by: exportData.data.users[3].id,
-                published_by: exportData.data.users[3].id,
+                published_by: exportData.data.users[3].id
             });
 
             exportData.data.tags[0] = testUtils.DataGenerator.forKnex.createTag({
@@ -689,9 +689,9 @@ describe('Integration: Importer', function () {
                         models.User.findPage(userOptions)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].data.map((model) => model.toJSON(postOptions));
-                    const tags = result[1].data.map((model) => model.toJSON(tagOptions));
-                    const users = result[2].data.map((model) => model.toJSON(userOptions));
+                    const posts = result[0].data.map(model => model.toJSON(postOptions));
+                    const tags = result[1].data.map(model => model.toJSON(tagOptions));
+                    const users = result[2].data.map(model => model.toJSON(userOptions));
 
                     posts.length.should.equal(exportData.data.posts.length, 'Wrong number of posts');
 
@@ -790,7 +790,7 @@ describe('Integration: Importer', function () {
 
             exportData.data.roles_users = [
                 testUtils.DataGenerator.forKnex.createUsersRoles(exportData.data.users[0].id, exportData.data.roles[0].id),
-                testUtils.DataGenerator.forKnex.createUsersRoles(exportData.data.users[0].id, exportData.data.roles[4].id),
+                testUtils.DataGenerator.forKnex.createUsersRoles(exportData.data.users[0].id, exportData.data.roles[4].id)
             ];
 
             return dataImporter.doImport(exportData, importOptions)
@@ -799,7 +799,7 @@ describe('Integration: Importer', function () {
                         models.User.findPage(Object.assign({withRelated: ['roles']}, testUtils.context.internal))
                     ]);
                 }).then(function (result) {
-                    const users = result[0].data.map((model) => model.toJSON());
+                    const users = result[0].data.map(model => model.toJSON());
 
                     users.length.should.eql(2);
                     users[1].slug.should.eql(exportData.data.users[0].slug);
@@ -831,8 +831,8 @@ describe('Integration: Importer', function () {
                         models.Post.findPage(Object.assign({withRelated: ['tags']}, testUtils.context.internal))
                     ]);
                 }).then(function (result) {
-                    const tags = result[0].data.map((model) => model.toJSON());
-                    const posts = result[1].data.map((model) => model.toJSON());
+                    const tags = result[0].data.map(model => model.toJSON());
+                    const posts = result[1].data.map(model => model.toJSON());
 
                     posts.length.should.eql(1);
                     tags.length.should.eql(1);
@@ -942,7 +942,7 @@ describe('Integration: Importer', function () {
                         models.Post.findPage(testUtils.context.internal)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].data.map((model) => model.toJSON());
+                    const posts = result[0].data.map(model => model.toJSON());
 
                     posts.length.should.eql(2);
                     posts[0].comment_id.should.eql(exportData.data.posts[1].id);
@@ -1017,7 +1017,7 @@ describe('Integration: Importer', function () {
                 testUtils.DataGenerator.forKnex.createPostsAuthors(exportData.data.posts[2].id, exportData.data.users[4].id, 2),
                 testUtils.DataGenerator.forKnex.createPostsAuthors(exportData.data.posts[2].id, exportData.data.users[4].id, 2),
 
-                testUtils.DataGenerator.forKnex.createPostsAuthors(exportData.data.posts[1].id, exportData.data.users[5].id),
+                testUtils.DataGenerator.forKnex.createPostsAuthors(exportData.data.posts[1].id, exportData.data.users[5].id)
             ];
 
             delete exportData.data.posts_authors[9].sort_order;
@@ -1034,8 +1034,8 @@ describe('Integration: Importer', function () {
                         models.User.findPage(testUtils.context.internal)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].data.map((model) => model.toJSON());
-                    const users = result[1].data.map((model) => model.toJSON());
+                    const posts = result[0].data.map(model => model.toJSON());
+                    const users = result[1].data.map(model => model.toJSON());
 
                     // 2 duplicates, 1 owner, 4 imported users
                     users.length.should.eql(exportData.data.users.length - 2 + 1);
@@ -1063,7 +1063,7 @@ describe('Integration: Importer', function () {
                 });
         });
 
-        it('import 2.0 Koenig post format', ()=> {
+        it('import 2.0 Koenig post format', () => {
             const exportData = exportedLatestBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -1075,7 +1075,7 @@ describe('Integration: Importer', function () {
                     cards: [
                         ['image', {
                             src: 'source',
-                            cardWidth: 'wide',
+                            cardWidth: 'wide'
                         }],
                         ['markdown', {
                             cardName: 'markdown',
@@ -1117,7 +1117,7 @@ describe('Integration: Importer', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].data.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map(model => model.toJSON(options));
 
                     posts.length.should.eql(2);
 
@@ -1167,7 +1167,7 @@ describe('Integration: Importer', function () {
             exportData.data.roles_users = [
                 testUtils.DataGenerator.forKnex.createUsersRoles(exportData.data.users[0].id, exportData.data.roles[0].id),
                 testUtils.DataGenerator.forKnex.createUsersRoles(exportData.data.users[2].id, exportData.data.roles[2].id),
-                testUtils.DataGenerator.forKnex.createUsersRoles(exportData.data.users[3].id, exportData.data.roles[4].id),
+                testUtils.DataGenerator.forKnex.createUsersRoles(exportData.data.users[3].id, exportData.data.roles[4].id)
             ];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -1176,7 +1176,7 @@ describe('Integration: Importer', function () {
                 author_id: exportData.data.users[0].id,
                 created_by: exportData.data.users[0].id,
                 updated_by: exportData.data.users[1].id,
-                published_by: exportData.data.users[1].id,
+                published_by: exportData.data.users[1].id
             });
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post2',
@@ -1184,7 +1184,7 @@ describe('Integration: Importer', function () {
                 author_id: exportData.data.users[3].id,
                 created_by: exportData.data.users[2].id,
                 updated_by: exportData.data.users[0].id,
-                published_by: exportData.data.users[1].id,
+                published_by: exportData.data.users[1].id
             });
             exportData.data.posts[2] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post3',
@@ -1192,7 +1192,7 @@ describe('Integration: Importer', function () {
                 author_id: exportData.data.users[0].id,
                 created_by: exportData.data.users[3].id,
                 updated_by: exportData.data.users[3].id,
-                published_by: exportData.data.users[3].id,
+                published_by: exportData.data.users[3].id
             });
 
             exportData.data.tags[0] = testUtils.DataGenerator.forKnex.createTag({
@@ -1258,9 +1258,9 @@ describe('Integration: Importer', function () {
                         models.ClientTrustedDomain.findAll(testUtils.context.internal)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].data.map((model) => model.toJSON(postOptions));
-                    const tags = result[1].data.map((model) => model.toJSON(tagOptions));
-                    const users = result[2].data.map((model) => model.toJSON(userOptions));
+                    const posts = result[0].data.map(model => model.toJSON(postOptions));
+                    const tags = result[1].data.map(model => model.toJSON(tagOptions));
+                    const users = result[2].data.map(model => model.toJSON(userOptions));
 
                     let clients = result[3];
                     let trustedDomains = result[4];
@@ -1325,7 +1325,7 @@ describe('1.0', function () {
                     models.Post.findPage(testUtils.context.internal)
                 ]);
             }).then(function (result) {
-                const posts = result[0].data.map((model) => model.toJSON());
+                const posts = result[0].data.map(model => model.toJSON());
 
                 posts.length.should.eql(2);
                 posts[0].comment_id.should.eql(exportData.data.posts[1].id);
@@ -1334,7 +1334,7 @@ describe('1.0', function () {
     });
 
     describe('migrate mobiledoc/html', () => {
-        it('invalid mobiledoc structure', ()=> {
+        it('invalid mobiledoc structure', () => {
             const exportData = exportedPreviousBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -1356,7 +1356,7 @@ describe('1.0', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].data.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map(model => model.toJSON(options));
 
                     posts.length.should.eql(2);
                     should(posts[0].html).eql(null);
@@ -1367,7 +1367,7 @@ describe('1.0', function () {
                 });
         });
 
-        it('mobiledoc is null, html field is set', ()=> {
+        it('mobiledoc is null, html field is set', () => {
             const exportData = exportedPreviousBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -1385,7 +1385,7 @@ describe('1.0', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].data.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map(model => model.toJSON(options));
 
                     posts.length.should.eql(1);
                     should(posts[0].html).eql(null);
@@ -1411,7 +1411,7 @@ describe('1.0', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].data.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map(model => model.toJSON(options));
 
                     posts.length.should.eql(1);
                     should(posts[0].html).eql(null);
@@ -1436,7 +1436,7 @@ describe('1.0', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].data.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map(model => model.toJSON(options));
 
                     posts.length.should.eql(1);
                     posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="markdown">markdown</h2>\n<!--kg-card-end: markdown-->');
@@ -1444,7 +1444,7 @@ describe('1.0', function () {
                 });
         });
 
-        it('post has "kg-card-markdown" class', ()=> {
+        it('post has "kg-card-markdown" class', () => {
             const exportData = exportedPreviousBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -1461,7 +1461,7 @@ describe('1.0', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].data.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map(model => model.toJSON(options));
 
                     posts.length.should.eql(1);
                     posts[0].html.should.eql('<!--kg-card-begin: markdown--><h1 id="thisismypostcontent">This is my post content</h1>\n<!--kg-card-end: markdown-->');
@@ -1469,7 +1469,7 @@ describe('1.0', function () {
                 });
         });
 
-        it('import old Koenig Beta post format', ()=> {
+        it('import old Koenig Beta post format', () => {
             const exportData = exportedPreviousBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -1523,7 +1523,7 @@ describe('1.0', function () {
                         models.Post.findPage(options)
                     ]);
                 }).then(function (result) {
-                    const posts = result[0].data.map((model) => model.toJSON(options));
+                    const posts = result[0].data.map(model => model.toJSON(options));
 
                     posts.length.should.eql(2);
 

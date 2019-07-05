@@ -235,7 +235,7 @@ _.extend(ImportManager.prototype, {
             baseDir = self.getBaseDirectory(zipDirectory);
 
             _.each(self.handlers, function (handler) {
-                if (importData.hasOwnProperty(handler.type)) {
+                if (Object.prototype.hasOwnProperty.call(importData, handler.type)) {
                     // This limitation is here to reduce the complexity of the importer for now
                     return Promise.reject(new common.errors.UnsupportedMediaTypeError({
                         message: common.i18n.t('errors.data.importer.index.zipContainsMultipleDataFormats')
@@ -326,7 +326,7 @@ _.extend(ImportManager.prototype, {
         importOptions = importOptions || {};
         var ops = [];
         _.each(this.importers, function (importer) {
-            if (importData.hasOwnProperty(importer.type)) {
+            if (Object.prototype.hasOwnProperty.call(importData, importer.type)) {
                 ops.push(function () {
                     return importer.doImport(importData[importer.type], importOptions);
                 });

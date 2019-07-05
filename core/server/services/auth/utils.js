@@ -132,6 +132,6 @@ module.exports.getBearerAutorizationToken = function (req) {
 };
 
 module.exports.hasGrantType = function hasGrantType(req, type) {
-    return req.body && req.body.hasOwnProperty('grant_type') && req.body.grant_type === type
-        || req.query && req.query.hasOwnProperty('grant_type') && req.query.grant_type === type;
+    return req.body && Object.prototype.hasOwnProperty.call(req.body, 'grant_type') && req.body.grant_type === type
+        || req.query && Object.prototype.hasOwnProperty.call(req.query, 'grant_type') && req.query.grant_type === type;
 };

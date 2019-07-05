@@ -3,7 +3,7 @@ const shared = require('../../../../server/api/shared');
 
 describe('Unit: api/shared/headers', function () {
     it('empty headers config', function () {
-        return shared.headers.get().then(result => {
+        return shared.headers.get().then((result) => {
             result.should.eql({});
         });
     });
@@ -11,7 +11,7 @@ describe('Unit: api/shared/headers', function () {
     describe('config.disposition', function () {
         it('json', function () {
             return shared.headers.get({}, {disposition: {type: 'json', value: 'value'}})
-                .then(result => {
+                .then((result) => {
                     result.should.eql({
                         'Content-Disposition': 'Attachment; filename=\"value\"',
                         'Content-Type': 'application/json',
@@ -22,7 +22,7 @@ describe('Unit: api/shared/headers', function () {
 
         it('csv', function () {
             return shared.headers.get({}, {disposition: {type: 'csv', value: 'my.csv'}})
-                .then(result => {
+                .then((result) => {
                     result.should.eql({
                         'Content-Disposition': 'Attachment; filename=\"my.csv\"',
                         'Content-Type': 'text/csv'
@@ -32,7 +32,7 @@ describe('Unit: api/shared/headers', function () {
 
         it('yaml', function () {
             return shared.headers.get('yaml file', {disposition: {type: 'yaml', value: 'my.yaml'}})
-                .then(result => {
+                .then((result) => {
                     result.should.eql({
                         'Content-Disposition': 'Attachment; filename=\"my.yaml\"',
                         'Content-Type': 'application/yaml',
@@ -45,7 +45,7 @@ describe('Unit: api/shared/headers', function () {
     describe('config.cacheInvalidate', function () {
         it('default', function () {
             return shared.headers.get({}, {cacheInvalidate: true})
-                .then(result => {
+                .then((result) => {
                     result.should.eql({
                         'X-Cache-Invalidate': '/*'
                     });
@@ -54,7 +54,7 @@ describe('Unit: api/shared/headers', function () {
 
         it('custom value', function () {
             return shared.headers.get({}, {cacheInvalidate: {value: 'value'}})
-                .then(result => {
+                .then((result) => {
                     result.should.eql({
                         'X-Cache-Invalidate': 'value'
                     });

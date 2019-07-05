@@ -161,7 +161,7 @@ describe('cors', function () {
 
         cors.__set__('urlUtils', urlUtils.getInstance({
             url: 'https://blog',
-            adminUrl: origin,
+            adminUrl: origin
         }));
 
         req.get = sinon.stub().withArgs('origin').returns(origin);

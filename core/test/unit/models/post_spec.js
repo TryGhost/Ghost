@@ -229,7 +229,7 @@ describe('Unit: models/post', function () {
                         'published',
                         'draft',
                         'published',
-                        false,
+                        false
                     ]);
 
                     queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`status` in (?, ?) and `posts`.`status` = ?) and (`posts`.`page` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
@@ -237,7 +237,7 @@ describe('Unit: models/post', function () {
                         'published',
                         'draft',
                         'published',
-                        false,
+                        false
                     ]);
                 });
             });
@@ -252,7 +252,7 @@ describe('Unit: models/post', function () {
         it('ensure mobiledoc revisions are never exposed', function () {
             const post = {
                 mobiledoc: 'test',
-                mobiledoc_revisions: [],
+                mobiledoc_revisions: []
             };
 
             const json = toJSON(post, {formats: ['mobiledoc']});
