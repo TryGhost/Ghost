@@ -17,7 +17,7 @@ var should = require('should'),
     ghost = testUtils.startGhost,
     request;
 
-describe.only('Frontend Routing', function () {
+describe('Frontend Routing', function () {
     function doEnd(done) {
         return function (err, res) {
             if (err) {
@@ -56,7 +56,7 @@ describe.only('Frontend Routing', function () {
 
     describe('Test with Initial Fixtures', function () {
         describe('Error', function () {
-            it.only('should 404 for unknown post', function (done) {
+            it('should 404 for unknown post', function (done) {
                 request.get('/spectacular/')
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
