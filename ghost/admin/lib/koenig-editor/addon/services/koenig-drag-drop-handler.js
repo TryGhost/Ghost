@@ -353,7 +353,6 @@ export default Service.extend({
                 this._currentOverContainer.onDragLeaveDroppable(overDroppableElem);
             }
             this._currentOverDroppableElem = null;
-            this._currentOverDroppablePosition = null;
         }
 
         if (isOverDroppable) {
