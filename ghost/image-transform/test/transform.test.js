@@ -48,7 +48,7 @@ describe('lib/image: manipulator', function () {
             sharpInstance = {
                 resize: sinon.stub().returnsThis(),
                 rotate: sinon.stub().returnsThis(),
-                toBuffer: sinon.stub(),
+                toBuffer: sinon.stub()
             };
 
             sharp = sinon.stub().callsFake(() => {
