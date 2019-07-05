@@ -104,7 +104,7 @@ describe('getTitle', function () {
             pagination: {
                 total: 40,
                 page: 23
-            },
+            }
         }, {
             hash: {
                 page: ' p.%'

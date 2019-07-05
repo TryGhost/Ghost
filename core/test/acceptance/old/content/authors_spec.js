@@ -61,7 +61,7 @@ describe('Authors Content API', function () {
                 // Public api returns all authors, but no status! Locked/Inactive authors can still have written articles.
                 models.Author.findPage(Object.assign({status: 'all'}, testUtils.context.internal))
                     .then((response) => {
-                        _.map(response.data, (model) => model.toJSON()).length.should.eql(3);
+                        _.map(response.data, model => model.toJSON()).length.should.eql(3);
                         done();
                     });
             });
@@ -93,7 +93,7 @@ describe('Authors Content API', function () {
 
                 const ids = jsonResponse.authors
                     .filter(author => (author.slug !== 'ghost'))
-                    .map(user=> user.id);
+                    .map(user => user.id);
 
                 ids.should.eql([
                     testUtils.DataGenerator.Content.users[3].id,

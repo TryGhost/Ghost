@@ -18,7 +18,7 @@ describe('Unit: lib/promise/sequence', function () {
             },
             function c() {
                 return Promise.resolve('chio');
-            },
+            }
         ];
         return sequence(tasks)
             .then(function (result) {

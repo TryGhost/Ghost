@@ -71,7 +71,7 @@ describe('UNIT > Settings Service ensure settings:', function () {
             fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').rejects(fsError);
 
             return ensureSettings(['routes'])
-                .then(()=> {
+                .then(() => {
                     throw new Error('Expected test to fail');
                 })
                 .catch((error) => {

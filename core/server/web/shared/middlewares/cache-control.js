@@ -17,7 +17,7 @@ const cacheControl = (options) => {
 
     let output;
 
-    if (isString(options) && profiles.hasOwnProperty(options)) {
+    if (isString(options) && Object.prototype.hasOwnProperty.call(profiles, options)) {
         output = profiles[options];
     }
 

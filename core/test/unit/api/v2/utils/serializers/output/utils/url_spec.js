@@ -28,7 +28,7 @@ describe('Unit: v2/utils/serializers/output/utils/url', () => {
         it('meta & models & relations', () => {
             const post = pageModel(testUtils.DataGenerator.forKnex.createPost({
                 id: 'id1',
-                feature_image: 'value',
+                feature_image: 'value'
             }));
 
             urlUtil.forPost(post.id, post, {options: {}});

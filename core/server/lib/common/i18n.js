@@ -1,5 +1,3 @@
-/* global Intl */
-
 const supportedLocales = ['en'],
     chalk = require('chalk'),
     fs = require('fs-extra'),

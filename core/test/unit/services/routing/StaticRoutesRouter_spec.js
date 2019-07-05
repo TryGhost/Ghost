@@ -165,7 +165,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             it('initialise with controller+data', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
                     controller: 'channel',
-                    data: {query: {}, router: {}},
+                    data: {query: {}, router: {}}
                 });
 
                 should.not.exist(staticRoutesRouter.getFilter());

@@ -32,7 +32,7 @@ describe('Tags', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
-            .then((res)=> {
+            .then((res) => {
                 localUtils.API.checkResponse(res.body.tags[0], 'tag', null, null, ['id', 'name', 'slug']);
             });
     });
