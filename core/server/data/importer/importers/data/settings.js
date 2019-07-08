@@ -112,6 +112,13 @@ class SettingsImporter extends BaseImporter {
         return super.beforeImport();
     }
 
+    fetchExisting(modelOptions) {
+        return models.Settings.findAll(modelOptions)
+            .then((existingData) => {
+                this.existingData = existingData.toJSON();
+            });
+    }
+
     generateIdentifier() {
         this.stripProperties(['id']);
         return Promise.resolve();
