@@ -5,11 +5,8 @@ const themeLoader = require('./loader');
 const active = require('./active');
 const activate = require('./activate');
 const validate = require('./validate');
-const Storage = require('./Storage');
 const settingsCache = require('../../../server/services/settings/cache');
 const engineDefaults = require('./engines/defaults');
-
-let themeStorage;
 
 module.exports = {
     // Init themes module
@@ -75,11 +72,6 @@ module.exports = {
                 // This is the absolute catch-all, at this point, we do not know what went wrong!
                 common.logging.error(err);
             });
-    },
-    get storage() {
-        themeStorage = themeStorage || new Storage();
-
-        return themeStorage;
     },
     list: require('./list'),
     validate: validate,
