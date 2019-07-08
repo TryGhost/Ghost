@@ -5,6 +5,7 @@ const themeLoader = require('./loader');
 const active = require('./active');
 const activate = require('./activate');
 const validate = require('./validate');
+const list = require('./list');
 const settingsCache = require('../../../server/services/settings/cache');
 const engineDefaults = require('./engines/defaults');
 
@@ -73,7 +74,6 @@ module.exports = {
                 common.logging.error(err);
             });
     },
-    list: require('./list'),
     validate: validate,
     toJSON: require('./to-json'),
     getActive: active.get,
@@ -85,7 +85,7 @@ module.exports = {
         }
     },
     activate: function (themeName) {
-        const loadedTheme = this.list.get(themeName);
+        const loadedTheme = list.get(themeName);
 
         if (!loadedTheme) {
             return Promise.reject(new common.errors.ValidationError({
