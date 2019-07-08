@@ -5,8 +5,7 @@ var should = require('should'),
     join = require('path').join,
     config = require('../../../../server/config'),
     loader = require('../../../../frontend/services/themes/loader'),
-    themes = require('../../../../frontend/services/themes'),
-    themeList = themes.list;
+    themeList = require('../../../../frontend/services/themes/list');
 
 describe('Themes', function () {
     afterEach(function () {
