@@ -262,6 +262,20 @@ describe('Frontend Routing', function () {
                     .expect(301)
                     .end(doEnd(done));
             });
+
+            it('should redirect to regular post with query params when AMP is disabled', function (done) {
+                sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+                    if (key === 'amp' && !options) {
+                        return false;
+                    }
+                    return origCache.get(key, options);
+                });
+
+                request.get('/welcome/amp/?q=a')
+                    .expect('Location', '/welcome/?q=a')
+                    .expect(301)
+                    .end(doEnd(done));
+            });
         });
 
         describe('Static assets', function () {

@@ -1,16 +1,17 @@
-const router = require('./lib/router'),
-    registerHelpers = require('./lib/helpers'),
-    urlUtils = require('../../../server/lib/url-utils'),
+const router = require('./lib/router');
+const registerHelpers = require('./lib/helpers');
+const urlUtils = require('../../../server/lib/url-utils');
 
-    // Dirty requires
-    settingsCache = require('../../../server/services/settings/cache');
+// Dirty requires
+const settingsCache = require('../../../server/services/settings/cache');
 
 function ampRouter(req, res) {
     if (settingsCache.get('amp') === true) {
         return router.apply(this, arguments);
     } else {
         // routeKeywords.amp: 'amp'
-        let redirectUrl = req.originalUrl.replace(/amp\/$/, '');
+        let redirectUrl = req.originalUrl.replace(/\/amp\//, '/');
+
         urlUtils.redirect301(res, redirectUrl);
     }
 }
