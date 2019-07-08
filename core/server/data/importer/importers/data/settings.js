@@ -80,6 +80,10 @@ class SettingsImporter extends BaseImporter {
             return ['core', 'theme'].indexOf(data.type) === -1;
         });
 
+        this.dataToImport = _.filter(this.dataToImport, (data) => {
+            return data.key !== 'is_private';
+        });
+
         _.each(this.dataToImport, (obj) => {
             if (obj.key === 'labs' && obj.value) {
                 // Overwrite the labs setting with our current defaults
