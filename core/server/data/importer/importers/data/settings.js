@@ -80,9 +80,21 @@ class SettingsImporter extends BaseImporter {
             return ['core', 'theme'].indexOf(data.type) === -1;
         });
 
+        const newIsPrivate = _.find(this.dataToImport, {key: 'is_private'});
+        const oldIsPrivate = _.find(this.existingData, {key: 'is_private'});
+
         this.dataToImport = _.filter(this.dataToImport, (data) => {
             return data.key !== 'is_private';
         });
+
+        // Only show warning if we are importing a private site into a non-private site.
+        if (oldIsPrivate === false && newIsPrivate === true) {
+            this.problems.push({
+                message: 'IMPORTANT: Content in this import was previously published on a private Ghost install, but the current site is public. Are your privacy settings up to date?',
+                help: this.modelName,
+                context: JSON.stringify(newIsPrivate)
+            });
+        }
 
         _.each(this.dataToImport, (obj) => {
             if (obj.key === 'labs' && obj.value) {
