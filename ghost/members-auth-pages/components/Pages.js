@@ -5,6 +5,8 @@ export default class Pages extends Component {
     constructor(props) {
         super(props);
         this.state = this.getStateFromBrowser();
+        this.parentOrigin = new URL(document.referrer).origin;
+        window.addEventListener('message', (event) => this.onReceiveMessage(event));
         window.addEventListener("hashchange", () => this.onHashChange(), false);
         this.handleChange = props.onChange || (() => { });
     }
@@ -16,6 +18,15 @@ export default class Pages extends Component {
             query,
             fullMatch
         };
+    }
+
+    onReceiveMessage(event) {
+        if (event.origin !== this.parentOrigin) {
+            return;
+        }
+        const {hash, query} = event.data;
+        const newHash = `${hash}?${query}`;
+        window.location.hash = newHash;
     }
 
     onHashChange() {
