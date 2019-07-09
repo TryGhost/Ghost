@@ -2,9 +2,6 @@ const debug = require('ghost-ignition').debug('web:api:default:app');
 const express = require('express');
 const urlUtils = require('../../lib/url-utils');
 const errorHandler = require('../shared/middlewares/error-handler');
-const membersService = require('../../services/members');
-
-const labs = require('../shared/middlewares/labs');
 
 module.exports = function setupApiApp() {
     debug('Parent API setup start');

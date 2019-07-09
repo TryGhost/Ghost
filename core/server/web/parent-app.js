@@ -4,8 +4,6 @@ const config = require('../config');
 const compress = require('compression');
 const netjet = require('netjet');
 const shared = require('./shared');
-const labs = require('./shared/middlewares/labs');
-const membersService = require('../services/members');
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
@@ -44,10 +42,6 @@ module.exports = function setupParentApp(options = {}) {
     // API
     // @TODO: finish refactoring the API app
     parentApp.use('/ghost/api', require('./api')());
-
-    // MEMBERS
-    parentApp.use('/ghost/members', labs.members, membersService.gateway);
-    parentApp.use('/ghost/members/auth', labs.members, membersService.authPages);
 
     // ADMIN
     parentApp.use('/ghost', require('./admin')());
