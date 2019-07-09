@@ -155,10 +155,10 @@
     lodash "^4.17.11"
     node-jose "^1.1.3"
 
-"@tryghost/members-auth-pages@0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-auth-pages/-/members-auth-pages-0.2.2.tgz#c26db5afc8fbe676b1b3e3425ad819c42ee12134"
-  integrity sha512-Dbdz7KDG1cQAen5elNQr5+YwCmRbtAj6g6oGgIF6GjiBzMjtJp8E+Yx7fBAJ3stgkP3i5xLd3iQ+Bo/3h81IuA==
+"@tryghost/members-auth-pages@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-auth-pages/-/members-auth-pages-1.0.0.tgz#9ba9bd6c608a68d782e8b7fd8c2939d8281386f9"
+  integrity sha512-N/NcSEParuV2dJ3WhGvvcwWLGJRha663l7Hs1XDlSKjAE06EsFlVb5uSSQdCLM27SWUXT0Irx8WKDSNa3J0v2A==
   dependencies:
     "@tryghost/members-gateway-protocol" "^0.1.2"
     preact "^8.2.1"
