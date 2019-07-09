@@ -26,7 +26,7 @@ export default class MembersProvider extends Component {
     }
 
     render({apiUrl, children}) {
-        const src = `${apiUrl}/members/gateway`;
+        const src = `${apiUrl}/static/gateway`;
         return (
             <div>
                 { children }
