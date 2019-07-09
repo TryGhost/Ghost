@@ -11,6 +11,11 @@ module.exports = function layer2(options) {
         container
     });
 
+    function postMessage(frame, data) {
+        var origin = new URL(frame.getAttribute('src')).origin;
+        frame.contentWindow.postMessage(data, origin);
+    }
+
     var loadAuth = loadFrame(authUrl, container).then(function (frame) {
         frame.style.position = 'fixed';
         frame.style.width = '100%';
@@ -24,7 +29,7 @@ module.exports = function layer2(options) {
     function openAuth(hash, query = '') {
         return loadAuth.then(function (frame) {
             return new Promise(function (resolve) {
-                frame.src = `${authUrl}#${hash}?${query}`;
+                postMessage(frame, {hash, query});
                 frame.style.display = 'block';
                 window.addEventListener('message', function messageListener(event) {
                     if (event.source !== frame.contentWindow) {
