@@ -7,7 +7,7 @@ import Modal from './components/Modal';
 export default class App extends Component {
     constructor() {
         super();
-        const apiUrl = window.location.href.substring(0, window.location.href.indexOf('/members/auth'));
+        const apiUrl = window.location.href.substring(0, window.location.href.indexOf('/static/auth'));
 
         this.state = {
             apiUrl
