@@ -8,7 +8,7 @@ module.exports = {
     browse: {
         permissions: true,
         query() {
-            return themeService.settings.get();
+            return themeService.getJSON();
         }
     },
 
@@ -41,7 +41,7 @@ module.exports = {
                         .then(() => checkedTheme);
                 })
                 .then((checkedTheme) => {
-                    return themeService.settings.get(themeName, checkedTheme);
+                    return themeService.getJSON(themeName, checkedTheme);
                 });
         }
     },

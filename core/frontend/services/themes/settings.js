@@ -20,7 +20,6 @@ const getStorage = () => {
 };
 
 module.exports = {
-    get: require('./to-json'),
     getZip: (themeName) => {
         const theme = list.get(themeName);
 

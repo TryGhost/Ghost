@@ -74,6 +74,7 @@ module.exports = {
                 common.logging.error(err);
             });
     },
+    getJSON: require('./to-json'),
     getActive: active.get,
     getApiVersion: function getApiVersion() {
         if (this.getActive()) {
