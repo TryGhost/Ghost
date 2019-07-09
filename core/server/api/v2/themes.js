@@ -8,7 +8,7 @@ module.exports = {
     browse: {
         permissions: true,
         query() {
-            return themeService.settings.get();
+            return themeService.getJSON();
         }
     },
 
@@ -41,7 +41,7 @@ module.exports = {
                         .then(() => checkedTheme);
                 })
                 .then((checkedTheme) => {
-                    return themeService.settings.get(themeName, checkedTheme);
+                    return themeService.getJSON(themeName, checkedTheme);
                 });
         }
     },
@@ -60,7 +60,7 @@ module.exports = {
                 name: frame.file.originalname
             };
 
-            return themeService.settings.setFromZip(zip)
+            return themeService.storage.setFromZip(zip)
                 .then((theme) => {
                     common.events.emit('theme.uploaded');
                     return theme;
@@ -85,7 +85,7 @@ module.exports = {
         query(frame) {
             let themeName = frame.options.name;
 
-            return themeService.settings.getZip(themeName);
+            return themeService.storage.getZip(themeName);
         }
     },
 
@@ -108,7 +108,7 @@ module.exports = {
         query(frame) {
             let themeName = frame.options.name;
 
-            return themeService.settings.destroy(themeName);
+            return themeService.storage.destroy(themeName);
         }
     }
 };
