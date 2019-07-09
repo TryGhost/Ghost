@@ -116,6 +116,11 @@ const siteOrigin = doBlock(() => {
     return `${protocol}//${host}`;
 });
 
+const adminOrigin = doBlock(() => {
+    const {protocol, host} = url.parse(urlUtils.urlFor('admin', true));
+    return `${protocol}//${host}`;
+});
+
 const getApiUrl = ({version, type}) => {
     const {href} = new url.URL(
         urlUtils.getApiPath({version, type}),
@@ -180,7 +185,7 @@ const getSiteConfig = () => {
 const membersApiInstance = MembersApi({
     authConfig: {
         issuer: membersApiUrl,
-        ssoOrigin: siteOrigin,
+        ssoOrigin: adminOrigin,
         publicKey: settingsCache.get('members_public_key'),
         privateKey: settingsCache.get('members_private_key'),
         sessionSecret: settingsCache.get('members_session_secret'),
