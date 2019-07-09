@@ -155,30 +155,30 @@
     lodash "^4.17.11"
     node-jose "^1.1.3"
 
-"@tryghost/members-auth-pages@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-auth-pages/-/members-auth-pages-1.0.0.tgz#9ba9bd6c608a68d782e8b7fd8c2939d8281386f9"
-  integrity sha512-N/NcSEParuV2dJ3WhGvvcwWLGJRha663l7Hs1XDlSKjAE06EsFlVb5uSSQdCLM27SWUXT0Irx8WKDSNa3J0v2A==
+"@tryghost/members-auth-pages@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-auth-pages/-/members-auth-pages-1.1.0.tgz#417d27d009d90a509debfaf1ffd25ab1cc58aece"
+  integrity sha512-1+YeHB9JRYj5O48ItcfMz4CLzwrMj5CjAje7Gt+ytXf2+WE2fQeAT2WcWEKS4lBB0ZskDTYjBkGBv+6KQrGG/w==
   dependencies:
     "@tryghost/members-gateway-protocol" "^0.1.2"
     preact "^8.2.1"
     preact-compat "^3.17.0"
     react-stripe-elements "^2.0.3"
 
-"@tryghost/members-browser-auth@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-browser-auth/-/members-browser-auth-0.1.2.tgz#49a9346ce2c44e27cc7b58fe354941c865051a63"
-  integrity sha512-9Fa0C1iCBdp7BAPSR1GZrNS5ke2ynSLkJED82uZ2tPZqD5saRMwHSPMnoLJJwOvwLLSEWtnAvijXzsKiDael1w==
+"@tryghost/members-browser-auth@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-browser-auth/-/members-browser-auth-0.2.0.tgz#d2d7ad20d5c5566380851a21aa64b59d9e768860"
+  integrity sha512-u2G4TdxJctX0ols/kmOqBFFSHVwPAA9sJRf3DQU5DEM0KiMllSvdhADKl2mbaH7rXO+3dNaTUJAc7yXDEu+TaQ==
   dependencies:
-    "@tryghost/members-gateway-api" "^0.1.3"
+    "@tryghost/members-gateway-api" "^0.1.4"
     bluebird "^3.5.4"
     ghost-ignition "^3.1.0"
     lodash "^4.17.11"
 
-"@tryghost/members-gateway-api@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-gateway-api/-/members-gateway-api-0.1.3.tgz#c0f30534a821c566c69a39849449d5bc61409d7b"
-  integrity sha512-aWXPguGvGSA+Ly0j4C76bDPqsMe/Nzq8O8ytXrWdVmEhh7eXU631swGwrb3rCc8VHOSQvNUn6xPtx6+AMWPXVQ==
+"@tryghost/members-gateway-api@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-gateway-api/-/members-gateway-api-0.1.4.tgz#d458c3ccb574c109861c703a69a4d3e967eb19cc"
+  integrity sha512-AjrnB6htHy4tR6zvRhokxRkxbGRzMJCOg5fOjc05w2dzolMF2HUeYqIsMtyMn4pnogbJb25WBtkiwxq+s59UWA==
   dependencies:
     "@tryghost/members-gateway-protocol" "^0.1.2"
     bluebird "^3.5.4"
@@ -207,12 +207,12 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-theme-bindings@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-theme-bindings/-/members-theme-bindings-0.2.1.tgz#cf49a2b1d35f676c5f11e1d2f107182231a9204e"
-  integrity sha512-pwrHDp+Vvo/0JeHpcmmRvUNOPTREwSgIq3wRRj+bUR75yFr6YXEOrX4QTppoM0MuzwG7ejO/hKHyRaSl1gRNjg==
+"@tryghost/members-theme-bindings@0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-theme-bindings/-/members-theme-bindings-0.2.3.tgz#0f69ec555425a12a8e1436331c62408677354c2d"
+  integrity sha512-uFtAZvKSWJMlNeUv0U+jKQBfCJpXxewP5g+VPAZJPeY52JMM6uLfJIyhUtWWulvhyV+bJC3X9hb5vVHfkTARXQ==
   dependencies:
-    "@tryghost/members-browser-auth" "^0.1.2"
+    "@tryghost/members-browser-auth" "^0.2.0"
     bluebird "^3.5.4"
     ghost-ignition "^3.1.0"
     lodash "^4.17.11"

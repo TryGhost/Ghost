@@ -527,6 +527,10 @@ module.exports = function layer2(options) {
     gatewayUrl: gatewayUrl,
     container: container
   });
+  function postMessage(frame, data) {
+    var origin = new URL(frame.getAttribute('src')).origin;
+    frame.contentWindow.postMessage(data, origin);
+  }
   var loadAuth = loadFrame(authUrl, container).then(function(frame) {
     frame.style.position = 'fixed';
     frame.style.width = '100%';
@@ -540,7 +544,10 @@ module.exports = function layer2(options) {
     var query = arguments[1] !== (void 0) ? arguments[1] : '';
     return loadAuth.then(function(frame) {
       return new Promise(function(resolve) {
-        frame.src = (authUrl + "#" + hash + "?" + query);
+        postMessage(frame, {
+          hash: hash,
+          query: query
+        });
         frame.style.display = 'block';
         window.addEventListener('message', function messageListener(event) {
           if (event.source !== frame.contentWindow) {
