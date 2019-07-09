@@ -217,10 +217,14 @@ module.exports = function MembersApi({
         res.status(200).sendFile(require('path').join(__dirname, './gateway/bundle.js'));
     });
 
-    const apiInstance = {
-        staticRouter,
-        apiRouter
-    };
+    const apiInstance = new Router();
+
+    apiInstance.use(apiRouter);
+    apiInstance.use('/static', staticRouter);
+
+    apiInstance.apiRouter = apiRouter;
+    apiInstance.staticRouter = staticRouter;
+
     apiInstance.members = users;
     apiInstance.getPublicKeys = getPublicKeys;
     apiInstance.getPublicConfig = function () {
