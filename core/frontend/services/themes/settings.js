@@ -3,7 +3,7 @@ const fs = require('fs-extra');
 const activate = require('./activate');
 const validate = require('./validate');
 const list = require('./list');
-const Storage = require('./Storage');
+const ThemeStorage = require('./ThemeStorage');
 const themeLoader = require('./loader');
 const toJSON = require('./to-json');
 
@@ -14,7 +14,7 @@ const debug = require('ghost-ignition').debug('api:themes');
 let themeStorage;
 
 const getStorage = () => {
-    themeStorage = themeStorage || new Storage();
+    themeStorage = themeStorage || new ThemeStorage();
 
     return themeStorage;
 };
