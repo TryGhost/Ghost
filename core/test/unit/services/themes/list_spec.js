@@ -1,8 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
-    themes = require('../../../../frontend/services/themes'),
-    themeList = themes.list;
+    themeList = require('../../../../frontend/services/themes/list');
 
 describe('Themes', function () {
     afterEach(function () {

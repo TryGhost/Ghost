@@ -5,14 +5,10 @@ const themeLoader = require('./loader');
 const active = require('./active');
 const activate = require('./activate');
 const validate = require('./validate');
-const Storage = require('./Storage');
+const list = require('./list');
 const settingsCache = require('../../../server/services/settings/cache');
 const engineDefaults = require('./engines/defaults');
 
-let themeStorage;
-
-// @TODO: reduce the amount of things we expose to the outside world
-// Make this a nice clean sensible API we can all understand!
 module.exports = {
     // Init themes module
     // TODO: move this once we're clear what needs to happen here
@@ -78,17 +74,7 @@ module.exports = {
                 common.logging.error(err);
             });
     },
-    // Load themes, soon to be removed and exposed via specific function.
-    loadAll: themeLoader.loadAllThemes,
-    loadOne: themeLoader.loadOneTheme,
-    get storage() {
-        themeStorage = themeStorage || new Storage();
-
-        return themeStorage;
-    },
-    list: require('./list'),
-    validate: validate,
-    toJSON: require('./to-json'),
+    getJSON: require('./to-json'),
     getActive: active.get,
     getApiVersion: function getApiVersion() {
         if (this.getActive()) {
@@ -98,7 +84,7 @@ module.exports = {
         }
     },
     activate: function (themeName) {
-        const loadedTheme = this.list.get(themeName);
+        const loadedTheme = list.get(themeName);
 
         if (!loadedTheme) {
             return Promise.reject(new common.errors.ValidationError({
@@ -115,6 +101,6 @@ module.exports = {
                 return checkedTheme;
             });
     },
-    settings: require('./settings'),
+    storage: require('./storage'),
     middleware: require('./middleware')
 };

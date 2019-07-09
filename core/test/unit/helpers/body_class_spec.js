@@ -1,5 +1,5 @@
 var should = require('should'),
-    themeList = require('../../../frontend/services/themes').list,
+    themeList = require('../../../frontend/services/themes/list'),
 
 // Stuff we are testing
     helpers = require('../../../frontend/helpers');
