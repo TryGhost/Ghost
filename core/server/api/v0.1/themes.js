@@ -72,7 +72,7 @@ themes = {
             .handlePermissions('themes', 'add')(options)
             // Validation
             .then(() => {
-                return themeService.settings.setFromZip(zip);
+                return themeService.storage.setFromZip(zip);
             })
             .then((theme) => {
                 common.events.emit('theme.uploaded');
@@ -87,7 +87,7 @@ themes = {
         // Permissions
             .handlePermissions('themes', 'read')(options)
             .then(() => {
-                return themeService.settings.getZip(themeName);
+                return themeService.storage.getZip(themeName);
             });
     },
 
@@ -103,7 +103,7 @@ themes = {
             .handlePermissions('themes', 'destroy')(options)
             // Validation
             .then(() => {
-                return themeService.settings.destroy(themeName);
+                return themeService.storage.destroy(themeName);
             });
     }
 };

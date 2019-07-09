@@ -101,6 +101,6 @@ module.exports = {
                 return checkedTheme;
             });
     },
-    settings: require('./settings'),
+    storage: require('./storage'),
     middleware: require('./middleware')
 };
