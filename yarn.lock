@@ -141,10 +141,10 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^0.1.1"
 
-"@tryghost/members-api@0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.1.2.tgz#e7ef303e709d44d4f2dc0dda4f38af4f80c21c24"
-  integrity sha512-s8uKedgycszfRu3LH7ZTnLKk3CO099s+n+Kj0nljyb7thCqABiDGCSJ/Fxs72WxGGPVTtDB2WJAPGLkIe89TLQ==
+"@tryghost/members-api@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.2.0.tgz#1f13dabc39015f8a5447a714dc05162426775027"
+  integrity sha512-fLTQylyUz16ZL0KJ4kBvWnUsQbq1NkLFXVkQjOEo/xFV1SG0iJBKlkVtPWfyncSHyGBSXAv9TcQymiT+9vr7pQ==
   dependencies:
     bluebird "^3.5.4"
     body-parser "^1.19.0"
