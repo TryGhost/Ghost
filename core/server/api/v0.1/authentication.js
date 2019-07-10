@@ -1,5 +1,5 @@
 const Promise = require('bluebird'),
-    {extend, merge, omit, cloneDeep, assign} = require('lodash'),
+    {merge, omit, cloneDeep, assign} = require('lodash'),
     validator = require('validator'),
     config = require('../../config'),
     common = require('../../lib/common'),
@@ -35,26 +35,6 @@ function setupTasks(setupData) {
         });
     }
 
-    function setupUser(userData) {
-        const context = {context: {internal: true}},
-            User = models.User;
-
-        return User.findOne({role: 'Owner', status: 'all'}).then((owner) => {
-            if (!owner) {
-                throw new common.errors.GhostError({
-                    message: common.i18n.t('errors.api.authentication.setupUnableToRun')
-                });
-            }
-
-            return User.setup(userData, extend({id: owner.id}, context));
-        }).then((user) => {
-            return {
-                user: user,
-                userData: userData
-            };
-        });
-    }
-
     function doSettings(data) {
         const user = data.user,
             blogTitle = data.userData.blogTitle,
@@ -80,7 +60,7 @@ function setupTasks(setupData) {
 
     tasks = [
         validateData,
-        setupUser,
+        auth.setup.setupUser,
         doSettings,
         formatResponse
     ];

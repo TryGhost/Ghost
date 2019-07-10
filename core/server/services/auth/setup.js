@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const common = require('../../lib/common');
 const models = require('../../models');
 
@@ -39,7 +40,28 @@ function assertSetupCompleted(status) {
     };
 }
 
+function setupUser(userData) {
+    const context = {context: {internal: true}},
+        User = models.User;
+
+    return User.findOne({role: 'Owner', status: 'all'}).then((owner) => {
+        if (!owner) {
+            throw new common.errors.GhostError({
+                message: common.i18n.t('errors.api.authentication.setupUnableToRun')
+            });
+        }
+
+        return User.setup(userData, _.extend({id: owner.id}, context));
+    }).then((user) => {
+        return {
+            user: user,
+            userData: userData
+        };
+    });
+}
+
 module.exports = {
     checkIsSetup: checkIsSetup,
-    assertSetupCompleted: assertSetupCompleted
+    assertSetupCompleted: assertSetupCompleted,
+    setupUser: setupUser
 };
