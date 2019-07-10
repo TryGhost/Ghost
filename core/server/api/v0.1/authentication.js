@@ -18,35 +18,6 @@ const Promise = require('bluebird'),
 
 let authentication;
 
-/**
- * Allows an assertion to be made about setup status.
- *
- * @param  {Boolean} status True: setup must be complete. False: setup must not be complete.
- * @return {Function} returns a "task ready" function
- */
-function assertSetupCompleted(status) {
-    return function checkPermission(__) {
-        return auth.setup.checkIsSetup().then((isSetup) => {
-            if (isSetup === status) {
-                return __;
-            }
-
-            const completed = common.i18n.t('errors.api.authentication.setupAlreadyCompleted'),
-                notCompleted = common.i18n.t('errors.api.authentication.setupMustBeCompleted');
-
-            function throwReason(reason) {
-                throw new common.errors.NoPermissionError({message: reason});
-            }
-
-            if (isSetup) {
-                throwReason(completed);
-            } else {
-                throwReason(notCompleted);
-            }
-        });
-    };
-}
-
 function setupTasks(setupData) {
     let tasks;
 
@@ -209,7 +180,7 @@ authentication = {
         }
 
         tasks = [
-            assertSetupCompleted(true),
+            auth.setup.assertSetupCompleted(true),
             validateRequest,
             generateToken,
             sendResetNotification,
@@ -338,7 +309,7 @@ authentication = {
 
         tasks = [
             validateRequest,
-            assertSetupCompleted(true),
+            auth.setup.assertSetupCompleted(true),
             extractTokenParts,
             protectBruteForce,
             doReset,
@@ -418,7 +389,7 @@ authentication = {
         }
 
         tasks = [
-            assertSetupCompleted(true),
+            auth.setup.assertSetupCompleted(true),
             validateInvitation,
             processInvitation,
             formatResponse
@@ -462,7 +433,7 @@ authentication = {
 
         tasks = [
             processArgs,
-            assertSetupCompleted(true),
+            auth.setup.assertSetupCompleted(true),
             checkInvitation
         ];
 
@@ -550,7 +521,7 @@ authentication = {
         }
 
         tasks = [
-            assertSetupCompleted(false),
+            auth.setup.assertSetupCompleted(false),
             doSetup,
             sendNotification,
             formatResponse
@@ -594,7 +565,7 @@ authentication = {
 
         tasks = [
             processArgs,
-            assertSetupCompleted(true),
+            auth.setup.assertSetupCompleted(true),
             checkPermission,
             setupTasks,
             formatResponse
