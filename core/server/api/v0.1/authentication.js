@@ -22,10 +22,8 @@ let authentication;
  *
  * @return {Promise<Boolean>}
  */
-function checkSetup() {
-    return authentication.isSetup().then((result) => {
-        return result.setup[0].status;
-    });
+function checkIsSetup() {
+    models.User.isSetup();
 }
 
 /**
@@ -36,7 +34,7 @@ function checkSetup() {
  */
 function assertSetupCompleted(status) {
     return function checkPermission(__) {
-        return checkSetup().then((isSetup) => {
+        return checkIsSetup().then((isSetup) => {
             if (isSetup === status) {
                 return __;
             }
@@ -486,10 +484,6 @@ authentication = {
     isSetup() {
         let tasks;
 
-        function checkSetupStatus() {
-            return models.User.isSetup();
-        }
-
         function formatResponse(isSetup) {
             return {
                 setup: [
@@ -505,7 +499,7 @@ authentication = {
         }
 
         tasks = [
-            checkSetupStatus,
+            checkIsSetup,
             formatResponse
         ];
 
