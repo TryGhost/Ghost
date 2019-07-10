@@ -40,18 +40,17 @@ function assertSetupCompleted(status) {
     };
 }
 
-function setupUser(userData) {
-    const context = {context: {internal: true}},
-        User = models.User;
+async function setupUser(userData) {
+    const context = {context: {internal: true}};
 
-    return User.findOne({role: 'Owner', status: 'all'}).then((owner) => {
+    return models.User.findOne({role: 'Owner', status: 'all'}).then((owner) => {
         if (!owner) {
             throw new common.errors.GhostError({
                 message: common.i18n.t('errors.api.authentication.setupUnableToRun')
             });
         }
 
-        return User.setup(userData, _.extend({id: owner.id}, context));
+        return models.User.setup(userData, _.extend({id: owner.id}, context));
     }).then((user) => {
         return {
             user: user,
