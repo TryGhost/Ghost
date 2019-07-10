@@ -59,9 +59,9 @@ async function setupUser(userData) {
     };
 }
 
-function doSettings(data) {
-    const user = data.user,
-        blogTitle = data.userData.blogTitle;
+async function doSettings(data) {
+    const user = data.user;
+    const blogTitle = data.userData.blogTitle;
 
     let userSettings;
 
@@ -74,10 +74,9 @@ function doSettings(data) {
         {key: 'description', value: common.i18n.t('common.api.authentication.sampleBlogDescription')}
     ];
 
-    return models.Settings.edit(userSettings)
-        .then(() => {
-            return user;
-        });
+    await models.Settings.edit(userSettings);
+
+    return user;
 }
 
 module.exports = {
