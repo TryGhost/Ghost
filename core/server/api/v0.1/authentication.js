@@ -443,38 +443,7 @@ authentication = {
         }
 
         function sendNotification(setupUser) {
-            const data = {
-                ownerEmail: setupUser.email
-            };
-
-            common.events.emit('setup.completed', setupUser);
-
-            if (config.get('sendWelcomeEmail')) {
-                return mail.utils.generateContent({data: data, template: 'welcome'})
-                    .then((content) => {
-                        const message = {
-                                to: setupUser.email,
-                                subject: common.i18n.t('common.api.authentication.mail.yourNewGhostBlog'),
-                                html: content.html,
-                                text: content.text
-                            },
-                            payload = {
-                                mail: [{
-                                    message: message,
-                                    options: {}
-                                }]
-                            };
-
-                        mailAPI.send(payload, {context: {internal: true}})
-                            .catch((err) => {
-                                err.context = common.i18n.t('errors.api.authentication.unableToSendWelcomeEmail');
-                                common.logging.error(err);
-                            });
-                    })
-                    .return(setupUser);
-            }
-
-            return setupUser;
+            return auth.setup.sendNotification(setupUser, mailAPI);
         }
 
         function formatResponse(setupUser) {

@@ -1,6 +1,8 @@
 const _ = require('lodash');
+const config = require('../../config');
 const common = require('../../lib/common');
 const models = require('../../models');
+const mail = require('../../services/mail');
 
 /**
  * Returns setup status
@@ -79,9 +81,45 @@ async function doSettings(data) {
     return user;
 }
 
+function sendNotification(setupUser, mailAPI) {
+    const data = {
+        ownerEmail: setupUser.email
+    };
+
+    common.events.emit('setup.completed', setupUser);
+
+    if (config.get('sendWelcomeEmail')) {
+        return mail.utils.generateContent({data: data, template: 'welcome'})
+            .then((content) => {
+                const message = {
+                        to: setupUser.email,
+                        subject: common.i18n.t('common.api.authentication.mail.yourNewGhostBlog'),
+                        html: content.html,
+                        text: content.text
+                    },
+                    payload = {
+                        mail: [{
+                            message: message,
+                            options: {}
+                        }]
+                    };
+
+                mailAPI.send(payload, {context: {internal: true}})
+                    .catch((err) => {
+                        err.context = common.i18n.t('errors.api.authentication.unableToSendWelcomeEmail');
+                        common.logging.error(err);
+                    });
+            })
+            .return(setupUser);
+    }
+
+    return setupUser;
+}
+
 module.exports = {
     checkIsSetup: checkIsSetup,
     assertSetupCompleted: assertSetupCompleted,
     setupUser: setupUser,
-    doSettings: doSettings
+    doSettings: doSettings,
+    sendNotification: sendNotification
 };
