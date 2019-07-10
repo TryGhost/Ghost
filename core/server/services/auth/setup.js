@@ -59,8 +59,30 @@ async function setupUser(userData) {
     };
 }
 
+function doSettings(data) {
+    const user = data.user,
+        blogTitle = data.userData.blogTitle;
+
+    let userSettings;
+
+    if (!blogTitle || typeof blogTitle !== 'string') {
+        return user;
+    }
+
+    userSettings = [
+        {key: 'title', value: blogTitle.trim()},
+        {key: 'description', value: common.i18n.t('common.api.authentication.sampleBlogDescription')}
+    ];
+
+    return models.Settings.edit(userSettings)
+        .then(() => {
+            return user;
+        });
+}
+
 module.exports = {
     checkIsSetup: checkIsSetup,
     assertSetupCompleted: assertSetupCompleted,
-    setupUser: setupUser
+    setupUser: setupUser,
+    doSettings: doSettings
 };

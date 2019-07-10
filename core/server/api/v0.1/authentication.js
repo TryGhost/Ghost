@@ -35,25 +35,6 @@ function setupTasks(setupData) {
         });
     }
 
-    function doSettings(data) {
-        const user = data.user,
-            blogTitle = data.userData.blogTitle,
-            context = {context: {user: data.user.id}};
-
-        let userSettings;
-
-        if (!blogTitle || typeof blogTitle !== 'string') {
-            return user;
-        }
-
-        userSettings = [
-            {key: 'title', value: blogTitle.trim()},
-            {key: 'description', value: common.i18n.t('common.api.authentication.sampleBlogDescription')}
-        ];
-
-        return settingsAPI.edit({settings: userSettings}, context).return(user);
-    }
-
     function formatResponse(user) {
         return user.toJSON({context: {internal: true}});
     }
@@ -61,7 +42,7 @@ function setupTasks(setupData) {
     tasks = [
         validateData,
         auth.setup.setupUser,
-        doSettings,
+        auth.setup.doSettings,
         formatResponse
     ];
 
