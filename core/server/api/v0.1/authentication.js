@@ -13,8 +13,7 @@ const Promise = require('bluebird'),
     models = require('../../models'),
     web = require('../../web'),
     mailAPI = require('./mail'),
-    settingsAPI = require('./settings'),
-    tokenSecurity = {};
+    settingsAPI = require('./settings');
 
 let authentication;
 
@@ -135,8 +134,7 @@ authentication = {
     resetPassword(object, opts) {
         let tasks,
             tokenIsCorrect,
-            dbHash,
-            tokenParts;
+            dbHash;
         const options = {context: {internal: true}};
 
         function validateRequest() {
@@ -154,35 +152,7 @@ authentication = {
                 });
         }
 
-        function extractTokenParts(options) {
-            options.data.passwordreset[0].token = security.url.decodeBase64(options.data.passwordreset[0].token);
-
-            tokenParts = security.tokens.resetToken.extract({
-                token: options.data.passwordreset[0].token
-            });
-
-            if (!tokenParts) {
-                return Promise.reject(new common.errors.UnauthorizedError({
-                    message: common.i18n.t('errors.api.common.invalidTokenStructure')
-                }));
-            }
-
-            return Promise.resolve(options);
-        }
-
-        // @TODO: use brute force middleware (see https://github.com/TryGhost/Ghost/pull/7579)
-        function protectBruteForce(options) {
-            if (tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`] &&
-                tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`].count >= 10) {
-                return Promise.reject(new common.errors.NoPermissionError({
-                    message: common.i18n.t('errors.models.user.tokenLocked')
-                }));
-            }
-
-            return Promise.resolve(options);
-        }
-
-        function doReset(options) {
+        function doReset({options, tokenParts}) {
             const data = options.data.passwordreset[0],
                 resetToken = data.token,
                 oldPassword = data.oldPassword,
@@ -246,8 +216,8 @@ authentication = {
         tasks = [
             validateRequest,
             auth.setup.assertSetupCompleted(true),
-            extractTokenParts,
-            protectBruteForce,
+            auth.passwordreset.extractTokenParts,
+            auth.passwordreset.protectBruteForce,
             doReset,
             formatResponse
         ];

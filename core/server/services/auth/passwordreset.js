@@ -4,6 +4,8 @@ const constants = require('../../lib/constants');
 const common = require('../../lib/common');
 const models = require('../../models');
 
+const tokenSecurity = {};
+
 function generateToken(email, settingsAPI) {
     const options = {context: {internal: true}};
     let dbHash, token;
@@ -33,6 +35,36 @@ function generateToken(email, settingsAPI) {
         });
 }
 
+function extractTokenParts(options) {
+    options.data.passwordreset[0].token = security.url.decodeBase64(options.data.passwordreset[0].token);
+
+    const tokenParts = security.tokens.resetToken.extract({
+        token: options.data.passwordreset[0].token
+    });
+
+    if (!tokenParts) {
+        return Promise.reject(new common.errors.UnauthorizedError({
+            message: common.i18n.t('errors.api.common.invalidTokenStructure')
+        }));
+    }
+
+    return Promise.resolve({options, tokenParts});
+}
+
+// @TODO: use brute force middleware (see https://github.com/TryGhost/Ghost/pull/7579)
+function protectBruteForce({options, tokenParts}) {
+    if (tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`] &&
+        tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`].count >= 10) {
+        return Promise.reject(new common.errors.NoPermissionError({
+            message: common.i18n.t('errors.models.user.tokenLocked')
+        }));
+    }
+
+    return Promise.resolve({options, tokenParts});
+}
+
 module.exports = {
-    generateToken: generateToken
+    generateToken: generateToken,
+    extractTokenParts: extractTokenParts,
+    protectBruteForce: protectBruteForce
 };
