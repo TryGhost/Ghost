@@ -6,7 +6,7 @@ const models = require('../../models');
  *
  * @return {Promise<Boolean>}
  */
-function checkIsSetup() {
+async function checkIsSetup() {
     return models.User.isSetup();
 }
 
@@ -17,25 +17,25 @@ function checkIsSetup() {
  * @return {Function} returns a "task ready" function
  */
 function assertSetupCompleted(status) {
-    return function checkPermission(__) {
-        return checkIsSetup().then((isSetup) => {
-            if (isSetup === status) {
-                return __;
-            }
+    return async function checkPermission(__) {
+        const isSetup = await checkIsSetup();
 
-            const completed = common.i18n.t('errors.api.authentication.setupAlreadyCompleted'),
-                notCompleted = common.i18n.t('errors.api.authentication.setupMustBeCompleted');
+        if (isSetup === status) {
+            return __;
+        }
 
-            function throwReason(reason) {
-                throw new common.errors.NoPermissionError({message: reason});
-            }
+        const completed = common.i18n.t('errors.api.authentication.setupAlreadyCompleted');
+        const notCompleted = common.i18n.t('errors.api.authentication.setupMustBeCompleted');
 
-            if (isSetup) {
-                throwReason(completed);
-            } else {
-                throwReason(notCompleted);
-            }
-        });
+        function throwReason(reason) {
+            throw new common.errors.NoPermissionError({message: reason});
+        }
+
+        if (isSetup) {
+            throwReason(completed);
+        } else {
+            throwReason(notCompleted);
+        }
     };
 }
 
