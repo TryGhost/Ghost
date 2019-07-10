@@ -43,20 +43,20 @@ function assertSetupCompleted(status) {
 async function setupUser(userData) {
     const context = {context: {internal: true}};
 
-    return models.User.findOne({role: 'Owner', status: 'all'}).then((owner) => {
-        if (!owner) {
-            throw new common.errors.GhostError({
-                message: common.i18n.t('errors.api.authentication.setupUnableToRun')
-            });
-        }
+    const owner = await models.User.findOne({role: 'Owner', status: 'all'});
 
-        return models.User.setup(userData, _.extend({id: owner.id}, context));
-    }).then((user) => {
-        return {
-            user: user,
-            userData: userData
-        };
-    });
+    if (!owner) {
+        throw new common.errors.GhostError({
+            message: common.i18n.t('errors.api.authentication.setupUnableToRun')
+        });
+    }
+
+    const user = await models.User.setup(userData, _.extend({id: owner.id}, context));
+
+    return {
+        user: user,
+        userData: userData
+    };
 }
 
 module.exports = {
