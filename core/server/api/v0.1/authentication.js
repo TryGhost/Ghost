@@ -9,6 +9,7 @@ const Promise = require('bluebird'),
     urlUtils = require('../../lib/url-utils'),
     mail = require('../../services/mail'),
     auth = require('../../services/auth'),
+    invitations = require('../../services/invitations'),
     localUtils = require('./utils'),
     models = require('../../models'),
     web = require('../../web'),
@@ -286,9 +287,7 @@ authentication = {
      * @returns {Promise<Object>}
      */
     acceptInvitation(invitation) {
-        let tasks,
-            invite;
-        const options = {context: {internal: true}};
+        let tasks;
 
         function validateInvitation(invitation) {
             return localUtils.checkObject(invitation, 'invitation')
@@ -313,34 +312,6 @@ authentication = {
                 });
         }
 
-        function processInvitation(invitation) {
-            const data = invitation.invitation[0],
-                inviteToken = security.url.decodeBase64(data.token);
-
-            return models.Invite.findOne({token: inviteToken, status: 'sent'}, options)
-                .then((_invite) => {
-                    invite = _invite;
-
-                    if (!invite) {
-                        throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.invites.inviteNotFound')});
-                    }
-
-                    if (invite.get('expires') < Date.now()) {
-                        throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.invites.inviteExpired')});
-                    }
-
-                    return models.User.add({
-                        email: data.email,
-                        name: data.name,
-                        password: data.password,
-                        roles: [invite.toJSON().role_id]
-                    }, options);
-                })
-                .then(() => {
-                    return invite.destroy(options);
-                });
-        }
-
         function formatResponse() {
             return {
                 invitation: [
@@ -352,7 +323,7 @@ authentication = {
         tasks = [
             auth.setup.assertSetupCompleted(true),
             validateInvitation,
-            processInvitation,
+            invitations.accept,
             formatResponse
         ];
 
