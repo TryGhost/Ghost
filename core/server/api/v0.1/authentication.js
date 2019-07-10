@@ -4,7 +4,6 @@ const Promise = require('bluebird'),
     config = require('../../config'),
     common = require('../../lib/common'),
     security = require('../../lib/security'),
-    constants = require('../../lib/constants'),
     pipeline = require('../../lib/promise/pipeline'),
     urlUtils = require('../../lib/url-utils'),
     mail = require('../../services/mail'),
@@ -79,32 +78,7 @@ authentication = {
         }
 
         function generateToken(email) {
-            const options = {context: {internal: true}};
-            let dbHash, token;
-
-            return settingsAPI.read(merge({key: 'db_hash'}, options))
-                .then((response) => {
-                    dbHash = response.settings[0].value;
-
-                    return models.User.getByEmail(email, options);
-                })
-                .then((user) => {
-                    if (!user) {
-                        throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
-                    }
-
-                    token = security.tokens.resetToken.generateHash({
-                        expires: Date.now() + constants.ONE_DAY_MS,
-                        email: email,
-                        dbHash: dbHash,
-                        password: user.get('password')
-                    });
-
-                    return {
-                        email: email,
-                        resetToken: token
-                    };
-                });
+            return auth.passwordreset.generateToken(email, settingsAPI);
         }
 
         function sendResetNotification(data) {
