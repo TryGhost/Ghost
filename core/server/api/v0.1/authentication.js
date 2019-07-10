@@ -132,9 +132,7 @@ authentication = {
      * @returns {Promise<Object>} message
      */
     resetPassword(object, opts) {
-        let tasks,
-            tokenIsCorrect,
-            dbHash;
+        let tasks;
         const options = {context: {internal: true}};
 
         function validateRequest() {
@@ -153,55 +151,10 @@ authentication = {
         }
 
         function doReset({options, tokenParts}) {
-            const data = options.data.passwordreset[0],
-                resetToken = data.token,
-                oldPassword = data.oldPassword,
-                newPassword = data.newPassword;
-
-            return settingsAPI.read(merge({key: 'db_hash'}, omit(options, 'data')))
-                .then((response) => {
-                    dbHash = response.settings[0].value;
-
-                    return models.User.getByEmail(tokenParts.email, options);
-                })
-                .then((user) => {
-                    if (!user) {
-                        throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
-                    }
-
-                    tokenIsCorrect = security.tokens.resetToken.compare({
-                        token: resetToken,
-                        dbHash: dbHash,
-                        password: user.get('password')
-                    });
-
-                    if (!tokenIsCorrect) {
-                        return Promise.reject(new common.errors.BadRequestError({
-                            message: common.i18n.t('errors.api.common.invalidTokenStructure')
-                        }));
-                    }
-
-                    web.shared.middlewares.api.spamPrevention.userLogin()
-                        .reset(opts.ip, `${tokenParts.email}login`);
-
-                    return models.User.changePassword({
-                        oldPassword: oldPassword,
-                        newPassword: newPassword,
-                        user_id: user.id
-                    }, options);
-                })
-                .then((updatedUser) => {
-                    updatedUser.set('status', 'active');
-                    return updatedUser.save(options);
-                })
-                .catch(common.errors.ValidationError, (err) => {
-                    return Promise.reject(err);
-                })
-                .catch((err) => {
-                    if (common.errors.utils.isIgnitionError(err)) {
-                        return Promise.reject(err);
-                    }
-                    return Promise.reject(new common.errors.UnauthorizedError({err: err}));
+            return auth.passwordreset.doReset(options, tokenParts, settingsAPI)
+                .then((params) => {
+                    web.shared.middlewares.api.spamPrevention.userLogin().reset(opts.ip, `${tokenParts.email}login`);
+                    return params;
                 });
         }
 

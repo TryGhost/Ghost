@@ -63,8 +63,62 @@ function protectBruteForce({options, tokenParts}) {
     return Promise.resolve({options, tokenParts});
 }
 
+function doReset(options, tokenParts, settingsAPI) {
+    let tokenIsCorrect;
+    let dbHash;
+
+    const data = options.data.passwordreset[0];
+    const resetToken = data.token;
+    const oldPassword = data.oldPassword;
+    const newPassword = data.newPassword;
+
+    return settingsAPI.read(_.merge({key: 'db_hash'}, _.omit(options, 'data')))
+        .then((response) => {
+            dbHash = response.settings[0].value;
+
+            return models.User.getByEmail(tokenParts.email, options);
+        })
+        .then((user) => {
+            if (!user) {
+                throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
+            }
+
+            tokenIsCorrect = security.tokens.resetToken.compare({
+                token: resetToken,
+                dbHash: dbHash,
+                password: user.get('password')
+            });
+
+            if (!tokenIsCorrect) {
+                return Promise.reject(new common.errors.BadRequestError({
+                    message: common.i18n.t('errors.api.common.invalidTokenStructure')
+                }));
+            }
+
+            return models.User.changePassword({
+                oldPassword: oldPassword,
+                newPassword: newPassword,
+                user_id: user.id
+            }, options);
+        })
+        .then((updatedUser) => {
+            updatedUser.set('status', 'active');
+            return updatedUser.save(options);
+        })
+        .catch(common.errors.ValidationError, (err) => {
+            return Promise.reject(err);
+        })
+        .catch((err) => {
+            if (common.errors.utils.isIgnitionError(err)) {
+                return Promise.reject(err);
+            }
+            return Promise.reject(new common.errors.UnauthorizedError({err: err}));
+        });
+}
+
 module.exports = {
     generateToken: generateToken,
     extractTokenParts: extractTokenParts,
-    protectBruteForce: protectBruteForce
+    protectBruteForce: protectBruteForce,
+    doReset: doReset
 };
