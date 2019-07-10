@@ -10,6 +10,11 @@ module.exports = {
     get session() {
         return require('./session');
     },
+
+    get setup() {
+        return require('./setup');
+    },
+
     /*
      * TODO: Get rid of these when v0.1 is gone
      */

@@ -8,6 +8,7 @@ const Promise = require('bluebird'),
     pipeline = require('../../lib/promise/pipeline'),
     urlUtils = require('../../lib/url-utils'),
     mail = require('../../services/mail'),
+    auth = require('../../services/auth'),
     localUtils = require('./utils'),
     models = require('../../models'),
     web = require('../../web'),
@@ -18,15 +19,6 @@ const Promise = require('bluebird'),
 let authentication;
 
 /**
- * Returns setup status
- *
- * @return {Promise<Boolean>}
- */
-function checkIsSetup() {
-    models.User.isSetup();
-}
-
-/**
  * Allows an assertion to be made about setup status.
  *
  * @param  {Boolean} status True: setup must be complete. False: setup must not be complete.
@@ -34,7 +26,7 @@ function checkIsSetup() {
  */
 function assertSetupCompleted(status) {
     return function checkPermission(__) {
-        return checkIsSetup().then((isSetup) => {
+        return auth.setup.checkIsSetup().then((isSetup) => {
             if (isSetup === status) {
                 return __;
             }
@@ -499,7 +491,7 @@ authentication = {
         }
 
         tasks = [
-            checkIsSetup,
+            auth.setup.checkIsSetup,
             formatResponse
         ];
 
