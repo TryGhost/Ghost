@@ -1,5 +1,5 @@
 const Promise = require('bluebird'),
-    {merge, omit, cloneDeep, assign} = require('lodash'),
+    {cloneDeep, assign} = require('lodash'),
     validator = require('validator'),
     config = require('../../config'),
     common = require('../../lib/common'),
