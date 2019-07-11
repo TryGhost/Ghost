@@ -2,7 +2,7 @@ const _ = require('lodash');
 const config = require('../../config');
 const common = require('../../lib/common');
 const models = require('../../models');
-const mail = require('../../services/mail');
+const mail = require('../mail');
 
 /**
  * Returns setup status
@@ -61,7 +61,8 @@ async function setupUser(userData) {
     };
 }
 
-async function doSettings(data) {
+async function doSettings(data, settingsAPI) {
+    const context = {context: {user: data.user.id}};
     const user = data.user;
     const blogTitle = data.userData.blogTitle;
 
@@ -76,7 +77,7 @@ async function doSettings(data) {
         {key: 'description', value: common.i18n.t('common.api.authentication.sampleBlogDescription')}
     ];
 
-    await models.Settings.edit(userSettings);
+    await settingsAPI.edit({settings: userSettings}, context);
 
     return user;
 }

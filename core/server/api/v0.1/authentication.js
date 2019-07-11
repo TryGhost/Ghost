@@ -34,6 +34,10 @@ function setupTasks(setupData) {
         });
     }
 
+    function doSettings(data) {
+        return auth.setup.doSettings(data, settingsAPI);
+    }
+
     function formatResponse(user) {
         return user.toJSON({context: {internal: true}});
     }
@@ -41,7 +45,7 @@ function setupTasks(setupData) {
     tasks = [
         validateData,
         auth.setup.setupUser,
-        auth.setup.doSettings,
+        doSettings,
         formatResponse
     ];
 
