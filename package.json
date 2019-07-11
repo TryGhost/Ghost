@@ -56,7 +56,7 @@
     "body-parser": "1.18.3",
     "bookshelf": "0.15.1",
     "bookshelf-relations": "1.1.1",
-    "brute-knex": "3.0.1",
+    "brute-knex": "^4.0.0",
     "bson-objectid": "1.2.4",
     "chalk": "2.4.2",
     "cheerio": "0.22.0",
