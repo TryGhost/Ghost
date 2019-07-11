@@ -92,7 +92,7 @@
     "keypair": "1.0.1",
     "knex": "0.14.6",
     "knex-migrator": "3.3.2",
-    "lodash": "4.17.11",
+    "lodash": "4.17.13",
     "markdown-it": "8.4.2",
     "markdown-it-footnote": "3.0.1",
     "markdown-it-lazy-headers": "0.1.3",
