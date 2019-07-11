@@ -3,6 +3,8 @@ const security = require('../../lib/security');
 const constants = require('../../lib/constants');
 const common = require('../../lib/common');
 const models = require('../../models');
+const urlUtils = require('../../lib/url-utils');
+const mail = require('../mail');
 
 const tokenSecurity = {};
 
@@ -116,9 +118,36 @@ function doReset(options, tokenParts, settingsAPI) {
         });
 }
 
+function sendResetNotification(data, mailAPI) {
+    const adminUrl = urlUtils.urlFor('admin', true),
+        resetUrl = urlUtils.urlJoin(adminUrl, 'reset', security.url.encodeBase64(data.resetToken), '/');
+
+    return mail.utils.generateContent({
+        data: {
+            resetUrl: resetUrl
+        },
+        template: 'reset-password'
+    }).then((content) => {
+        const payload = {
+            mail: [{
+                message: {
+                    to: data.email,
+                    subject: common.i18n.t('common.api.authentication.mail.resetPassword'),
+                    html: content.html,
+                    text: content.text
+                },
+                options: {}
+            }]
+        };
+
+        return mailAPI.send(payload, {context: {internal: true}});
+    });
+}
+
 module.exports = {
     generateToken: generateToken,
     extractTokenParts: extractTokenParts,
     protectBruteForce: protectBruteForce,
-    doReset: doReset
+    doReset: doReset,
+    sendResetNotification: sendResetNotification
 };

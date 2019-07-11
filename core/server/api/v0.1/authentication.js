@@ -3,10 +3,7 @@ const Promise = require('bluebird'),
     validator = require('validator'),
     config = require('../../config'),
     common = require('../../lib/common'),
-    security = require('../../lib/security'),
     pipeline = require('../../lib/promise/pipeline'),
-    urlUtils = require('../../lib/url-utils'),
-    mail = require('../../services/mail'),
     auth = require('../../services/auth'),
     invitations = require('../../services/invitations'),
     localUtils = require('./utils'),
@@ -85,29 +82,7 @@ authentication = {
         }
 
         function sendResetNotification(data) {
-            const adminUrl = urlUtils.urlFor('admin', true),
-                resetUrl = urlUtils.urlJoin(adminUrl, 'reset', security.url.encodeBase64(data.resetToken), '/');
-
-            return mail.utils.generateContent({
-                data: {
-                    resetUrl: resetUrl
-                },
-                template: 'reset-password'
-            }).then((content) => {
-                const payload = {
-                    mail: [{
-                        message: {
-                            to: data.email,
-                            subject: common.i18n.t('common.api.authentication.mail.resetPassword'),
-                            html: content.html,
-                            text: content.text
-                        },
-                        options: {}
-                    }]
-                };
-
-                return mailAPI.send(payload, {context: {internal: true}});
-            });
+            return auth.passwordreset.sendResetNotification(data, mailAPI);
         }
 
         function formatResponse() {
