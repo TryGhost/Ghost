@@ -61,7 +61,11 @@ module.exports = {
             };
 
             return themeService.storage.setFromZip(zip)
-                .then((theme) => {
+                .then(({theme, themeOverriden}) => {
+                    if (themeOverriden) {
+                        // CASE: clear cache
+                        this.headers.cacheInvalidate = true;
+                    }
                     common.events.emit('theme.uploaded');
                     return theme;
                 });

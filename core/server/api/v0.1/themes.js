@@ -74,7 +74,7 @@ themes = {
             .then(() => {
                 return themeService.storage.setFromZip(zip);
             })
-            .then((theme) => {
+            .then(({theme}) => {
                 common.events.emit('theme.uploaded');
                 return theme;
             });
