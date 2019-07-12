@@ -42,16 +42,16 @@
                         <h3>Theme errors</h3>
 
                         <ul class="error-stack-list">
-                            {{#each errorDetails}}
+                            {{#foreach errorDetails}}
                                 <li>
                                     <em class="error-stack-function">{{{rule}}}</em>
 
-                                    {{#each failures}}
+                                    {{#foreach failures}}
                                         <p><span class="error-stack-file">Ref: {{ref}}</span></p>
                                         <p><span class="error-stack-file">Message: {{message}}</span></p>
-                                    {{/each}}
+                                    {{/foreach}}
                                 </li>
-                            {{/each}}
+                            {{/foreach}}
                         </ul>
                     </section>
                 {{/if}}
