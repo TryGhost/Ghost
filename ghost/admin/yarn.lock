@@ -5135,16 +5135,6 @@ ember-concurrency@1.0.0, "ember-concurrency@^0.8.27 || ^0.9.0 || ^0.10.0 || ^1.0
     ember-compatibility-helpers "^1.2.0"
     ember-maybe-import-regenerator "^0.1.5"
 
-ember-concurrency@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-0.9.0.tgz#0016652ff780fb665842e7f47815ee0601122ea1"
-  integrity sha512-JDjvwSlZBUQwv1+qUj6YUqXXe0Y0/to4ppUTNXQ1EEiEAopkHJXQUn0ZcFOiQpEinrYp34Vg6+lUNskoJFL2Vg==
-  dependencies:
-    babel-core "^6.24.1"
-    ember-cli-babel "^6.8.2"
-    ember-compatibility-helpers "^1.2.0"
-    ember-maybe-import-regenerator "^0.1.5"
-
 "ember-cookies@^0.3.0 || ^0.4.0":
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/ember-cookies/-/ember-cookies-0.4.0.tgz#472f405bedd47c7c6f6a4e76ac927b8e7a3605ef"
@@ -5400,27 +5390,27 @@ ember-power-calendar-moment@0.1.7:
     ember-cli-babel "^7.7.3"
     ember-cli-moment-shim "^3.7.1"
 
-ember-power-calendar@^0.12.0:
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/ember-power-calendar/-/ember-power-calendar-0.12.0.tgz#13ff9796d04860033cbfc90a52ebec0636e92565"
-  integrity sha512-pyRnklzJcHLXkl0MmOl6GBjOiMwZeKHRvqrxIGt3LhYevWO7Oh+8kkvXsKaot6t51/XjhuAao8/xeswht+4WYQ==
+ember-power-calendar@^0.13.3:
+  version "0.13.3"
+  resolved "https://registry.yarnpkg.com/ember-power-calendar/-/ember-power-calendar-0.13.3.tgz#daff0f668ffbe65fd59c479aa5569e58c59daafd"
+  integrity sha512-xgXEHke4yzjZ9VUkQ/Cgd5c/lAUtl8chQilKDx7FMV+1z7/uLi9hxG56e1NHHbwEI9KBUPtO+pimuPqbZ3DzEg==
   dependencies:
     ember-assign-helper "^0.2.0"
     ember-cli-babel "^7.2.0"
     ember-cli-element-closest-polyfill "^0.0.1"
     ember-cli-htmlbars "^3.0.1"
-    ember-concurrency "^0.9.0"
+    ember-concurrency "^0.8.27 || ^0.9.0 || ^0.10.0 || ^1.0.0"
 
-ember-power-datepicker@0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/ember-power-datepicker/-/ember-power-datepicker-0.6.0.tgz#f9c6052412c553615bfb9aa59cd0eb8d1ff1b45c"
-  integrity sha512-CG+oz++SEImFVMjjk4i8Q5NbWxDeRhI0J6o2plnzlXl5/i7dgs/emq56+SiMs68LoJoSEbwTb63R082ZsXv7rg==
+ember-power-datepicker@0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/ember-power-datepicker/-/ember-power-datepicker-0.6.1.tgz#8acdf68ea02efc9da582434e2c566f1215245e93"
+  integrity sha512-v5C5DEcxEMUQpYADSiQX+vwqTivyYPY4Ko2cvaeJodeu4forJFc34b9KKBeSYb6Fc1TPyBHnkzZ44S/fRy2hoQ==
   dependencies:
     ember-basic-dropdown "^1.1.2"
     ember-cli-babel "^7.1.2"
     ember-cli-htmlbars "^3.0.0"
     ember-native-dom-helpers "^0.5.10"
-    ember-power-calendar "^0.12.0"
+    ember-power-calendar "^0.13.3"
 
 ember-power-select@2.3.5:
   version "2.3.5"
