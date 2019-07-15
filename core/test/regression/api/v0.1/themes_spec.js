@@ -25,7 +25,7 @@ describe('Themes API', function () {
                 .attach(fieldName, themePath);
         },
         editor: null
-    }, ghostServer, contentFolder = path.join(os.tmpdir(), uuid.v1(), 'ghost-test');
+    }, ghostServer, contentFolder = path.join(os.tmpdir(), uuid.v4(), 'ghost-test');
 
     before(function () {
         return ghost()

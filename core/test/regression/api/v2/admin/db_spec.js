@@ -68,7 +68,7 @@ describe('DB API', () => {
     });
 
     it('can export & import', () => {
-        const exportFolder = path.join(os.tmpdir(), uuid.v1());
+        const exportFolder = path.join(os.tmpdir(), uuid.v4());
         const exportPath = path.join(exportFolder, 'export.json');
 
         return request.put(localUtils.API.getApiQuery('settings/'))
