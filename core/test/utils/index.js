@@ -851,7 +851,7 @@ startGhost = function startGhost(options) {
         forceStart: false,
         copyThemes: true,
         copySettings: true,
-        contentFolder: path.join(os.tmpdir(), uuid.v1(), 'ghost-test'),
+        contentFolder: path.join(os.tmpdir(), uuid.v4(), 'ghost-test'),
         subdir: false
     }, options);
 

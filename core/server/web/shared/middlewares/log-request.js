@@ -7,7 +7,7 @@ const common = require('../../../lib/common');
  */
 module.exports = function logRequest(req, res, next) {
     const startTime = Date.now(),
-        requestId = req.get('X-Request-ID') || uuid.v1();
+        requestId = req.get('X-Request-ID') || uuid.v4();
 
     function logResponse() {
         res.responseTime = (Date.now() - startTime) + 'ms';
