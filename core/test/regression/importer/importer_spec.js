@@ -850,6 +850,7 @@ describe('Integration: Importer', function () {
 
                     posts[0].tags.length.should.eql(3);
                     tags[0].name.should.eql('first tag');
+                    tags[0].slug.should.eql('first-tag');
                     tags[1].name.should.eql('second tag');
                     tags[2].name.should.eql('third tag');
                 });
