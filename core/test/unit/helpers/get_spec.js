@@ -42,8 +42,7 @@ describe('{{#get}} helper', function () {
             inverse.called.should.be.false();
 
             should.exist(result);
-            result.should.be.a.Function();
-            result().should.be.an.Object().with.property(
+            result.should.be.an.Object().with.property(
                 'string',
                 '<script>console.error("The {{#get}} helper requires your theme to have API access. ' +
                 'Please enable the v2 API via your theme\'s package.json file. ' +

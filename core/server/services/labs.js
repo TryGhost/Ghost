@@ -40,14 +40,10 @@ labs.enabledHelper = function enabledHelper(options, callback) {
 
     common.logging.error(new common.errors.DisabledFeatureError(errDetails));
 
-    errString = new SafeString(
-        '<script>console.error("' + _.values(errDetails).join(' ') + '");</script>'
-    );
+    errString = new SafeString(`<script>console.error("${_.values(errDetails).join(' ')}");</script>`);
 
     if (options.async) {
-        return Promise.resolve(function asyncError() {
-            return errString;
-        });
+        return Promise.resolve(errString);
     }
 
     return errString;
