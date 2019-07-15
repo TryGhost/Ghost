@@ -8522,7 +8522,18 @@ markdown-it-terminal@0.1.0:
     lodash.merge "^4.6.0"
     markdown-it "^8.3.1"
 
-markdown-it@8.4.2, markdown-it@^8.3.1, markdown-it@^8.4.2:
+markdown-it@9.0.1:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-9.0.1.tgz#aafe363c43718720b6575fd10625cde6e4ff2d47"
+  integrity sha512-XC9dMBHg28Xi7y5dPuLjM61upIGPJG8AiHNHYqIaXER2KNnn7eKnM5/sF0ImNnyoV224Ogn9b1Pck8VH4k0bxw==
+  dependencies:
+    argparse "^1.0.7"
+    entities "~1.1.1"
+    linkify-it "^2.0.0"
+    mdurl "^1.0.1"
+    uc.micro "^1.0.5"
+
+markdown-it@^8.3.1, markdown-it@^8.4.2:
   version "8.4.2"
   resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-8.4.2.tgz#386f98998dc15a37722aa7722084f4020bdd9b54"
   integrity sha512-GcRz3AWTqSUphY3vsUqQSFMbgR38a4Lh3GWlHRh/7MRwz8mcu9n2IO7HOh+bXHrR9kOPDl5RNCaEsrneb+xhHQ==
