@@ -22,7 +22,7 @@
     "lint:js": "eslint ."
   },
   "engines": {
-    "node": "^8.9.0 || ^10.13.0"
+    "node": "^8.10.0 || ^10.13.0"
   },
   "devDependencies": {
     "@ember/jquery": "0.6.1",
