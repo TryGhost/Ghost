@@ -7,7 +7,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 0 32px;
+    margin: 0 24px;
     padding: 0;
     list-style: none;
 }
@@ -50,12 +50,12 @@
     font-size: 1.3rem;
     font-weight: 400;
     color: var(--darkgrey);
-    padding: 0 8px;
+    padding: 5px 10px 6px 10px;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.01), 0 1px 2px rgba(0, 0, 0, 0.05);
     outline: none;
     border: none;
-    border-radius: 9999px !important;
-    margin-left: 10px;
+    border-right: 1px solid var(--whitegrey-l2);
+    border-radius: 0;
     white-space: nowrap;
     transition: all 0.25s ease;
 }
@@ -64,6 +64,16 @@
     cursor: pointer;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
     color: var(--darkgrey);
+}
+
+.gh-contentfilter-type .gh-contentfilter-menu-trigger {
+    border-top-left-radius: 4px !important;
+    border-bottom-left-radius: 4px !important;
+}
+
+.gh-contentfilter-sort .gh-contentfilter-menu-trigger {
+    border-top-right-radius: 4px !important;
+    border-bottom-right-radius: 4px !important;
 }
 
 .gh-contentfilter-selected .gh-contentfilter-menu-trigger,
