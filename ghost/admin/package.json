@@ -121,7 +121,7 @@
     "postcss-easy-import": "3.0.0",
     "reframe.js": "2.2.5",
     "simplemde": "https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost",
-    "testem": "2.16.0",
+    "testem": "2.17.0",
     "top-gh-contribs": "2.0.4",
     "validator": "7.2.0",
     "walk-sync": "2.0.2"
