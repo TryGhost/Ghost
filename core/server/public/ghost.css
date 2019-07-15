@@ -777,6 +777,7 @@ h2 {
     justify-content: center;
     align-items: center;
     user-select: text;
+    padding: 8vw;
 }
 
 .error-details {
@@ -798,9 +799,11 @@ h2 {
 
 .error-code {
     margin: 0;
-    color: #979797;
-    font-size: 7.8rem;
+    color: #C5D2D9;
+    font-size: 10vw;
+    font-weight: 600;
     line-height: 0.9em;
+    letter-spacing: -0.4vw;
 }
 
 
@@ -808,21 +811,23 @@ h2 {
     margin: 0;
     padding: 0;
     border: none;
-    color: #979797;
-    font-size: 1.9rem;
+    color: #54666D;
+    font-size: 2.3rem;
     font-weight: 300;
+    line-height: 1.3em;
 }
 
 .error-message {
     display: flex;
     flex-direction: column;
     margin: 15px;
+    align-items: center;
 }
 
 .error-message a {
-    margin-top: 5px;
     font-size: 1.4rem;
     line-height: 1;
+    margin: 8px 0;
 }
 
 .error-link {
