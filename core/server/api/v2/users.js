@@ -146,7 +146,7 @@ module.exports = {
             data: {
                 newPassword: {required: true},
                 ne2Password: {required: true},
-                oldPassword: {required: true},
+                oldPassword: {required: false},
                 user_id: {required: true}
             }
         },
