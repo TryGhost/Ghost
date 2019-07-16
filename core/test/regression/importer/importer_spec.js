@@ -809,6 +809,55 @@ describe('Integration: Importer', function () {
                 });
         });
 
+        it('can handle related tags with missing optional fields', function () {
+            const exportData = exportedLatestBody().db[0];
+
+            exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost();
+
+            // NOTE: not including slug, description etc. fields as the only required field
+            // to handle the import of tags is 'name'
+            exportData.data.tags[0] = {
+                id: ObjectId.generate(),
+                name: 'first tag'
+            };
+            exportData.data.tags[1] = {
+                id: ObjectId.generate(),
+                name: 'second tag'
+            };
+            exportData.data.tags[2] = {
+                id: ObjectId.generate(),
+                name: 'third tag'
+            };
+
+            exportData.data.posts_tags = [
+                testUtils.DataGenerator.forKnex.createPostsTags(exportData.data.posts[0].id, exportData.data.tags[0].id),
+                testUtils.DataGenerator.forKnex.createPostsTags(exportData.data.posts[0].id, exportData.data.tags[1].id),
+                testUtils.DataGenerator.forKnex.createPostsTags(exportData.data.posts[0].id, exportData.data.tags[2].id)
+            ];
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function (imported) {
+                    imported.problems.length.should.eql(0);
+
+                    return Promise.all([
+                        models.Tag.findPage(Object.assign({order: 'slug ASC'}, testUtils.context.internal)),
+                        models.Post.findPage(Object.assign({withRelated: ['tags']}, testUtils.context.internal))
+                    ]);
+                }).then(function (result) {
+                    const tags = result[0].data.map(model => model.toJSON());
+                    const posts = result[1].data.map(model => model.toJSON());
+
+                    posts.length.should.eql(1);
+                    tags.length.should.eql(3);
+
+                    posts[0].tags.length.should.eql(3);
+                    tags[0].name.should.eql('first tag');
+                    tags[0].slug.should.eql('first-tag');
+                    tags[1].name.should.eql('second tag');
+                    tags[2].name.should.eql('third tag');
+                });
+        });
+
         it('can handle uppercase tags', function () {
             const exportData = exportedLatestBody().db[0];
 
