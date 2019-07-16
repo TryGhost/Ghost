@@ -102,9 +102,7 @@ class PostsImporter extends BaseImporter {
                 // EDGE CASE: uppercase tag slug was imported and auto modified
                 let importedObject = null;
 
-                if (objectInFile.slug) {
-                    importedObject = _.find(this.requiredImportedData[tableName], {originalSlug: objectInFile.slug});
-                } else if (objectInFile.id) {
+                if (objectInFile.id) {
                     importedObject = _.find(this.requiredImportedData[tableName], {originalId: objectInFile.id});
                 }
 
