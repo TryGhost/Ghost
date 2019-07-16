@@ -814,6 +814,8 @@ describe('Integration: Importer', function () {
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost();
 
+            // NOTE: not including slug, description etc. fields as the only required field
+            // to handle the import of tags is 'name'
             exportData.data.tags[0] = {
                 id: ObjectId.generate(),
                 name: 'first tag'
