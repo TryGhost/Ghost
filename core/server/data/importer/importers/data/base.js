@@ -21,6 +21,7 @@ class Base {
 
         this.dataKeyToImport = options.dataKeyToImport;
         this.dataToImport = _.cloneDeep(allDataFromFile[this.dataKeyToImport] || []);
+        this.originalIdMap = {};
 
         this.importedDataToReturn = [];
         this.importedData = [];
@@ -53,7 +54,7 @@ class Base {
     }
 
     /**
-     * Never ever import these attributes!
+     * Strips attributes of the object
      */
     stripProperties(properties) {
         _.each(this.dataToImport, (obj) => {
@@ -86,7 +87,13 @@ class Base {
 
     generateIdentifier() {
         _.each(this.dataToImport, (obj) => {
-            obj.id = ObjectId.generate();
+            const newId = ObjectId.generate();
+
+            if (obj.id) {
+                this.originalIdMap[newId] = obj.id;
+            }
+
+            obj.id = newId;
         });
     }
 
@@ -95,7 +102,6 @@ class Base {
     }
 
     beforeImport() {
-        this.stripProperties(['id']);
         this.sanitizeValues();
         this.generateIdentifier();
         return Promise.resolve();
@@ -317,6 +323,7 @@ class Base {
                         // for identifier lookup
                         this.importedData.push({
                             id: importedModel.id,
+                            originalId: this.originalIdMap[importedModel.id],
                             slug: importedModel.get('slug'),
                             originalSlug: obj.slug,
                             email: importedModel.get('email')
