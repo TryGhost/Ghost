@@ -204,6 +204,8 @@ const membersApiInstance = MembersApi({
     sendEmail
 });
 
+membersApiInstance.setLogger(common.logging);
+
 const updateSettingFromModel = function updateSettingFromModel(settingModel) {
     if (!['members_subscription_settings', 'title', 'icon'].includes(settingModel.get('key'))) {
         return;
