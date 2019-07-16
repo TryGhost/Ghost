@@ -104,7 +104,7 @@ class PostsImporter extends BaseImporter {
 
                 if (objectInFile.slug) {
                     importedObject = _.find(this.requiredImportedData[tableName], {originalSlug: objectInFile.slug});
-                } else {
+                } else if (objectInFile.id) {
                     importedObject = _.find(this.requiredImportedData[tableName], {originalId: objectInFile.id});
                 }
 
