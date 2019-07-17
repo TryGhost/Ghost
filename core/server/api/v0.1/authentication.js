@@ -1,61 +1,18 @@
 const Promise = require('bluebird'),
-    {extend, merge, omit, cloneDeep, assign} = require('lodash'),
+    {cloneDeep, assign} = require('lodash'),
     validator = require('validator'),
     config = require('../../config'),
     common = require('../../lib/common'),
-    security = require('../../lib/security'),
-    constants = require('../../lib/constants'),
     pipeline = require('../../lib/promise/pipeline'),
-    urlUtils = require('../../lib/url-utils'),
-    mail = require('../../services/mail'),
+    auth = require('../../services/auth'),
+    invitations = require('../../services/invitations'),
     localUtils = require('./utils'),
     models = require('../../models'),
     web = require('../../web'),
     mailAPI = require('./mail'),
-    settingsAPI = require('./settings'),
-    tokenSecurity = {};
+    settingsAPI = require('./settings');
 
 let authentication;
-
-/**
- * Returns setup status
- *
- * @return {Promise<Boolean>}
- */
-function checkSetup() {
-    return authentication.isSetup().then((result) => {
-        return result.setup[0].status;
-    });
-}
-
-/**
- * Allows an assertion to be made about setup status.
- *
- * @param  {Boolean} status True: setup must be complete. False: setup must not be complete.
- * @return {Function} returns a "task ready" function
- */
-function assertSetupCompleted(status) {
-    return function checkPermission(__) {
-        return checkSetup().then((isSetup) => {
-            if (isSetup === status) {
-                return __;
-            }
-
-            const completed = common.i18n.t('errors.api.authentication.setupAlreadyCompleted'),
-                notCompleted = common.i18n.t('errors.api.authentication.setupMustBeCompleted');
-
-            function throwReason(reason) {
-                throw new common.errors.NoPermissionError({message: reason});
-            }
-
-            if (isSetup) {
-                throwReason(completed);
-            } else {
-                throwReason(notCompleted);
-            }
-        });
-    };
-}
 
 function setupTasks(setupData) {
     let tasks;
@@ -74,43 +31,8 @@ function setupTasks(setupData) {
         });
     }
 
-    function setupUser(userData) {
-        const context = {context: {internal: true}},
-            User = models.User;
-
-        return User.findOne({role: 'Owner', status: 'all'}).then((owner) => {
-            if (!owner) {
-                throw new common.errors.GhostError({
-                    message: common.i18n.t('errors.api.authentication.setupUnableToRun')
-                });
-            }
-
-            return User.setup(userData, extend({id: owner.id}, context));
-        }).then((user) => {
-            return {
-                user: user,
-                userData: userData
-            };
-        });
-    }
-
     function doSettings(data) {
-        const user = data.user,
-            blogTitle = data.userData.blogTitle,
-            context = {context: {user: data.user.id}};
-
-        let userSettings;
-
-        if (!blogTitle || typeof blogTitle !== 'string') {
-            return user;
-        }
-
-        userSettings = [
-            {key: 'title', value: blogTitle.trim()},
-            {key: 'description', value: common.i18n.t('common.api.authentication.sampleBlogDescription')}
-        ];
-
-        return settingsAPI.edit({settings: userSettings}, context).return(user);
+        return auth.setup.doSettings(data, settingsAPI);
     }
 
     function formatResponse(user) {
@@ -119,7 +41,7 @@ function setupTasks(setupData) {
 
     tasks = [
         validateData,
-        setupUser,
+        auth.setup.setupUser,
         doSettings,
         formatResponse
     ];
@@ -156,58 +78,11 @@ authentication = {
         }
 
         function generateToken(email) {
-            const options = {context: {internal: true}};
-            let dbHash, token;
-
-            return settingsAPI.read(merge({key: 'db_hash'}, options))
-                .then((response) => {
-                    dbHash = response.settings[0].value;
-
-                    return models.User.getByEmail(email, options);
-                })
-                .then((user) => {
-                    if (!user) {
-                        throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
-                    }
-
-                    token = security.tokens.resetToken.generateHash({
-                        expires: Date.now() + constants.ONE_DAY_MS,
-                        email: email,
-                        dbHash: dbHash,
-                        password: user.get('password')
-                    });
-
-                    return {
-                        email: email,
-                        resetToken: token
-                    };
-                });
+            return auth.passwordreset.generateToken(email, settingsAPI);
         }
 
         function sendResetNotification(data) {
-            const adminUrl = urlUtils.urlFor('admin', true),
-                resetUrl = urlUtils.urlJoin(adminUrl, 'reset', security.url.encodeBase64(data.resetToken), '/');
-
-            return mail.utils.generateContent({
-                data: {
-                    resetUrl: resetUrl
-                },
-                template: 'reset-password'
-            }).then((content) => {
-                const payload = {
-                    mail: [{
-                        message: {
-                            to: data.email,
-                            subject: common.i18n.t('common.api.authentication.mail.resetPassword'),
-                            html: content.html,
-                            text: content.text
-                        },
-                        options: {}
-                    }]
-                };
-
-                return mailAPI.send(payload, {context: {internal: true}});
-            });
+            return auth.passwordreset.sendResetNotification(data, mailAPI);
         }
 
         function formatResponse() {
@@ -219,7 +94,7 @@ authentication = {
         }
 
         tasks = [
-            assertSetupCompleted(true),
+            auth.setup.assertSetupCompleted(true),
             validateRequest,
             generateToken,
             sendResetNotification,
@@ -236,10 +111,7 @@ authentication = {
      * @returns {Promise<Object>} message
      */
     resetPassword(object, opts) {
-        let tasks,
-            tokenIsCorrect,
-            dbHash,
-            tokenParts;
+        let tasks;
         const options = {context: {internal: true}};
 
         function validateRequest() {
@@ -257,84 +129,11 @@ authentication = {
                 });
         }
 
-        function extractTokenParts(options) {
-            options.data.passwordreset[0].token = security.url.decodeBase64(options.data.passwordreset[0].token);
-
-            tokenParts = security.tokens.resetToken.extract({
-                token: options.data.passwordreset[0].token
-            });
-
-            if (!tokenParts) {
-                return Promise.reject(new common.errors.UnauthorizedError({
-                    message: common.i18n.t('errors.api.common.invalidTokenStructure')
-                }));
-            }
-
-            return Promise.resolve(options);
-        }
-
-        // @TODO: use brute force middleware (see https://github.com/TryGhost/Ghost/pull/7579)
-        function protectBruteForce(options) {
-            if (tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`] &&
-                tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`].count >= 10) {
-                return Promise.reject(new common.errors.NoPermissionError({
-                    message: common.i18n.t('errors.models.user.tokenLocked')
-                }));
-            }
-
-            return Promise.resolve(options);
-        }
-
-        function doReset(options) {
-            const data = options.data.passwordreset[0],
-                resetToken = data.token,
-                oldPassword = data.oldPassword,
-                newPassword = data.newPassword;
-
-            return settingsAPI.read(merge({key: 'db_hash'}, omit(options, 'data')))
-                .then((response) => {
-                    dbHash = response.settings[0].value;
-
-                    return models.User.getByEmail(tokenParts.email, options);
-                })
-                .then((user) => {
-                    if (!user) {
-                        throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
-                    }
-
-                    tokenIsCorrect = security.tokens.resetToken.compare({
-                        token: resetToken,
-                        dbHash: dbHash,
-                        password: user.get('password')
-                    });
-
-                    if (!tokenIsCorrect) {
-                        return Promise.reject(new common.errors.BadRequestError({
-                            message: common.i18n.t('errors.api.common.invalidTokenStructure')
-                        }));
-                    }
-
-                    web.shared.middlewares.api.spamPrevention.userLogin()
-                        .reset(opts.ip, `${tokenParts.email}login`);
-
-                    return models.User.changePassword({
-                        oldPassword: oldPassword,
-                        newPassword: newPassword,
-                        user_id: user.id
-                    }, options);
-                })
-                .then((updatedUser) => {
-                    updatedUser.set('status', 'active');
-                    return updatedUser.save(options);
-                })
-                .catch(common.errors.ValidationError, (err) => {
-                    return Promise.reject(err);
-                })
-                .catch((err) => {
-                    if (common.errors.utils.isIgnitionError(err)) {
-                        return Promise.reject(err);
-                    }
-                    return Promise.reject(new common.errors.UnauthorizedError({err: err}));
+        function doReset({options, tokenParts}) {
+            return auth.passwordreset.doReset(options, tokenParts, settingsAPI)
+                .then((params) => {
+                    web.shared.middlewares.api.spamPrevention.userLogin().reset(opts.ip, `${tokenParts.email}login`);
+                    return params;
                 });
         }
 
@@ -348,9 +147,9 @@ authentication = {
 
         tasks = [
             validateRequest,
-            assertSetupCompleted(true),
-            extractTokenParts,
-            protectBruteForce,
+            auth.setup.assertSetupCompleted(true),
+            auth.passwordreset.extractTokenParts,
+            auth.passwordreset.protectBruteForce,
             doReset,
             formatResponse
         ];
@@ -364,9 +163,7 @@ authentication = {
      * @returns {Promise<Object>}
      */
     acceptInvitation(invitation) {
-        let tasks,
-            invite;
-        const options = {context: {internal: true}};
+        let tasks;
 
         function validateInvitation(invitation) {
             return localUtils.checkObject(invitation, 'invitation')
@@ -391,34 +188,6 @@ authentication = {
                 });
         }
 
-        function processInvitation(invitation) {
-            const data = invitation.invitation[0],
-                inviteToken = security.url.decodeBase64(data.token);
-
-            return models.Invite.findOne({token: inviteToken, status: 'sent'}, options)
-                .then((_invite) => {
-                    invite = _invite;
-
-                    if (!invite) {
-                        throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.invites.inviteNotFound')});
-                    }
-
-                    if (invite.get('expires') < Date.now()) {
-                        throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.invites.inviteExpired')});
-                    }
-
-                    return models.User.add({
-                        email: data.email,
-                        name: data.name,
-                        password: data.password,
-                        roles: [invite.toJSON().role_id]
-                    }, options);
-                })
-                .then(() => {
-                    return invite.destroy(options);
-                });
-        }
-
         function formatResponse() {
             return {
                 invitation: [
@@ -428,9 +197,9 @@ authentication = {
         }
 
         tasks = [
-            assertSetupCompleted(true),
+            auth.setup.assertSetupCompleted(true),
             validateInvitation,
-            processInvitation,
+            invitations.accept,
             formatResponse
         ];
 
@@ -472,7 +241,7 @@ authentication = {
 
         tasks = [
             processArgs,
-            assertSetupCompleted(true),
+            auth.setup.assertSetupCompleted(true),
             checkInvitation
         ];
 
@@ -485,10 +254,6 @@ authentication = {
      */
     isSetup() {
         let tasks;
-
-        function checkSetupStatus() {
-            return models.User.isSetup();
-        }
 
         function formatResponse(isSetup) {
             return {
@@ -505,7 +270,7 @@ authentication = {
         }
 
         tasks = [
-            checkSetupStatus,
+            auth.setup.checkIsSetup,
             formatResponse
         ];
 
@@ -525,38 +290,7 @@ authentication = {
         }
 
         function sendNotification(setupUser) {
-            const data = {
-                ownerEmail: setupUser.email
-            };
-
-            common.events.emit('setup.completed', setupUser);
-
-            if (config.get('sendWelcomeEmail')) {
-                return mail.utils.generateContent({data: data, template: 'welcome'})
-                    .then((content) => {
-                        const message = {
-                                to: setupUser.email,
-                                subject: common.i18n.t('common.api.authentication.mail.yourNewGhostBlog'),
-                                html: content.html,
-                                text: content.text
-                            },
-                            payload = {
-                                mail: [{
-                                    message: message,
-                                    options: {}
-                                }]
-                            };
-
-                        mailAPI.send(payload, {context: {internal: true}})
-                            .catch((err) => {
-                                err.context = common.i18n.t('errors.api.authentication.unableToSendWelcomeEmail');
-                                common.logging.error(err);
-                            });
-                    })
-                    .return(setupUser);
-            }
-
-            return setupUser;
+            return auth.setup.sendNotification(setupUser, mailAPI);
         }
 
         function formatResponse(setupUser) {
@@ -564,7 +298,7 @@ authentication = {
         }
 
         tasks = [
-            assertSetupCompleted(false),
+            auth.setup.assertSetupCompleted(false),
             doSetup,
             sendNotification,
             formatResponse
@@ -608,7 +342,7 @@ authentication = {
 
         tasks = [
             processArgs,
-            assertSetupCompleted(true),
+            auth.setup.assertSetupCompleted(true),
             checkPermission,
             setupTasks,
             formatResponse
