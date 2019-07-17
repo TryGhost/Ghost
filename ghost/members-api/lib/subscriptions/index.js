@@ -6,13 +6,16 @@ const adapters = {
 
 module.exports = class PaymentProcessorService {
     constructor(config) {
-        this._ready = new Promise(() => {});
+        this._ready = new Promise((resolve, reject) => {
+            this._resolveReady = resolve;
+            this._rejectReady = reject;
+        });
         process.nextTick(() => this.configure(config));
     }
 
     configure({processors}) {
         this._processors = {};
-        this._ready = Promise.all(processors.map(({
+        Promise.all(processors.map(({
             adapter,
             config
         }) => {
@@ -20,7 +23,7 @@ module.exports = class PaymentProcessorService {
             return this._processors[adapter].configure(config);
         })).then(() => {
             return Object.keys(this._processors);
-        });
+        }).then(this._resolveReady, this._rejectReady);
 
         return this._ready;
     }
