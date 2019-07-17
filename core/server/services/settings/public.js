@@ -9,6 +9,8 @@
 module.exports = {
     title: 'title',
     description: 'description',
+    meta_title: 'meta_title',
+    meta_description: 'meta_description',
     logo: 'logo',
     icon: 'icon',
     cover_image: 'cover_image',

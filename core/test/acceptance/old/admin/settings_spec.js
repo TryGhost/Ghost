@@ -85,7 +85,7 @@ describe('Settings API', function () {
             });
     });
 
-    it('Can edit a setting', function (done) {
+    it.only('Can edit a setting', function (done) {
         request.get(localUtils.API.getApiQuery('settings/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -102,6 +102,10 @@ describe('Settings API', function () {
                             {
                                 key: 'title',
                                 value: changedValue
+                            },
+                            {
+                                key: 'meta_title',
+                                value: 'SEO title'
                             },
                             {
                                 key: 'codeinjection_head',
@@ -143,17 +147,20 @@ describe('Settings API', function () {
                         putBody.settings[0].key.should.eql('title');
                         putBody.settings[0].value.should.eql(JSON.stringify(changedValue));
 
-                        putBody.settings[1].key.should.eql('codeinjection_head');
-                        should.equal(putBody.settings[1].value, null);
+                        putBody.settings[1].key.should.eql('meta_title');
+                        should.equal(putBody.settings[1].value, 'SEO title');
 
-                        putBody.settings[2].key.should.eql('navigation');
-                        should.equal(putBody.settings[2].value, JSON.stringify({label: 'label1'}));
+                        putBody.settings[2].key.should.eql('codeinjection_head');
+                        should.equal(putBody.settings[2].value, null);
 
-                        putBody.settings[3].key.should.eql('slack');
-                        should.equal(putBody.settings[3].value, JSON.stringify({username: 'username'}));
+                        putBody.settings[3].key.should.eql('navigation');
+                        should.equal(putBody.settings[3].value, JSON.stringify({label: 'label1'}));
 
-                        putBody.settings[4].key.should.eql('is_private');
-                        should.equal(putBody.settings[4].value, false);
+                        putBody.settings[4].key.should.eql('slack');
+                        should.equal(putBody.settings[4].value, JSON.stringify({username: 'username'}));
+
+                        putBody.settings[5].key.should.eql('is_private');
+                        should.equal(putBody.settings[5].value, false);
 
                         localUtils.API.checkResponse(putBody, 'settings');
                         done();

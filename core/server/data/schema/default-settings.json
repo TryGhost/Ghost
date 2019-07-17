@@ -99,6 +99,22 @@
         },
         "unsplash": {
             "defaultValue": "{\"isActive\": true}"
+        },
+        "meta_title": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 150
+                }
+            }
+        },
+        "meta_description": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 200
+                }
+            }
         }
     },
     "theme": {
