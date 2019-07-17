@@ -66,7 +66,6 @@ function protectBruteForce({options, tokenParts}) {
 }
 
 function doReset(options, tokenParts, settingsAPI) {
-    let tokenIsCorrect;
     let dbHash;
 
     const data = options.data.passwordreset[0];
@@ -85,7 +84,7 @@ function doReset(options, tokenParts, settingsAPI) {
                 throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
             }
 
-            tokenIsCorrect = security.tokens.resetToken.compare({
+            let tokenIsCorrect = security.tokens.resetToken.compare({
                 token: resetToken,
                 dbHash: dbHash,
                 password: user.get('password')
