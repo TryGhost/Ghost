@@ -149,10 +149,10 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^0.1.1"
 
-"@tryghost/members-api@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.2.0.tgz#1f13dabc39015f8a5447a714dc05162426775027"
-  integrity sha512-fLTQylyUz16ZL0KJ4kBvWnUsQbq1NkLFXVkQjOEo/xFV1SG0iJBKlkVtPWfyncSHyGBSXAv9TcQymiT+9vr7pQ==
+"@tryghost/members-api@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.3.0.tgz#b1fe4c4853237c1af95065f5db2bfb2072a87524"
+  integrity sha512-YtYjQwFGrN6uPuwWB8x1WqSuLe8c2m5wuPsyBpKXcV69yEqFz4QCyLMoYs4c6Y4lnfUf1lZAwnQSuDgczT46XQ==
   dependencies:
     bluebird "^3.5.4"
     body-parser "^1.19.0"
@@ -162,6 +162,7 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
     node-jose "^1.1.3"
+    stripe "^7.4.0"
 
 "@tryghost/members-auth-pages@1.1.0":
   version "1.1.0"
@@ -7413,7 +7414,7 @@ strip-json-comments@2.0.1, strip-json-comments@^2.0.1, strip-json-comments@~2.0.
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
-stripe@^7.0.0:
+stripe@^7.0.0, stripe@^7.4.0:
   version "7.4.0"
   resolved "https://registry.yarnpkg.com/stripe/-/stripe-7.4.0.tgz#d40834f7763ebe775fe944db94bd3f31f291b0fc"
   integrity sha512-eurSZJw45MvnV7PjmFHMgJMkCihHgqGHr11OHpFdMh+5CCyYvbVlA5uP5VoVQakhYjSLCObs0dbXtGYhIAMKvw==
