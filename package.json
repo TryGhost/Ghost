@@ -118,7 +118,6 @@
     "semver": "6.2.0",
     "simple-dom": "0.3.2",
     "simple-html-tokenizer": "0.5.7",
-    "stripe": "^7.0.0",
     "uuid": "3.3.2",
     "validator": "6.3.0",
     "xml": "1.0.1"
