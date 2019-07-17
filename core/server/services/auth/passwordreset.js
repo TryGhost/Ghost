@@ -118,30 +118,30 @@ function doReset(options, tokenParts, settingsAPI) {
         });
 }
 
-function sendResetNotification(data, mailAPI) {
-    const adminUrl = urlUtils.urlFor('admin', true),
-        resetUrl = urlUtils.urlJoin(adminUrl, 'reset', security.url.encodeBase64(data.resetToken), '/');
+async function sendResetNotification(data, mailAPI) {
+    const adminUrl = urlUtils.urlFor('admin', true);
+    const resetUrl = urlUtils.urlJoin(adminUrl, 'reset', security.url.encodeBase64(data.resetToken), '/');
 
-    return mail.utils.generateContent({
+    const content = await mail.utils.generateContent({
         data: {
             resetUrl: resetUrl
         },
         template: 'reset-password'
-    }).then((content) => {
-        const payload = {
-            mail: [{
-                message: {
-                    to: data.email,
-                    subject: common.i18n.t('common.api.authentication.mail.resetPassword'),
-                    html: content.html,
-                    text: content.text
-                },
-                options: {}
-            }]
-        };
-
-        return mailAPI.send(payload, {context: {internal: true}});
     });
+
+    const payload = {
+        mail: [{
+            message: {
+                to: data.email,
+                subject: common.i18n.t('common.api.authentication.mail.resetPassword'),
+                html: content.html,
+                text: content.text
+            },
+            options: {}
+        }]
+    };
+
+    return mailAPI.send(payload, {context: {internal: true}});
 }
 
 module.exports = {
