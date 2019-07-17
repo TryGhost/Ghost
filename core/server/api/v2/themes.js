@@ -61,8 +61,8 @@ module.exports = {
             };
 
             return themeService.storage.setFromZip(zip)
-                .then(({theme, themeOverriden}) => {
-                    if (themeOverriden) {
+                .then(({theme, themeOverridden}) => {
+                    if (themeOverridden) {
                         // CASE: clear cache
                         this.headers.cacheInvalidate = true;
                     }
