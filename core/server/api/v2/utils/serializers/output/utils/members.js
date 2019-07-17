@@ -23,7 +23,7 @@ function hideMembersOnlyContent(attrs, frame) {
     }
 
     const memberHasPlan = !!(frame.original.context.member.plans || []).length;
-    if (!membersService.api.isPaymentConfigured()) {
+    if (!membersService.isPaymentConfigured()) {
         return PERMIT_CONTENT;
     }
     if (memberHasPlan) {
