@@ -29,6 +29,10 @@ const withBodyAndCookies = (fn, cookieConfig) => (req, res) => {
     });
 };
 
+const get = (value) => {
+    return typeof value === 'function' ? value() : value;
+};
+
 module.exports = function create(options = EMPTY) {
     if (options === EMPTY) {
         throw new Error('Must pass options');
@@ -56,7 +60,7 @@ module.exports = function create(options = EMPTY) {
         secure: cookieSecure
     };
 
-    const verifyJwt = token => membersApi.getPublicConfig().then(({publicKey, issuer}) => {
+    const verifyJwt = token => get(membersApi).getPublicConfig().then(({publicKey, issuer}) => {
         return new Promise((resolve, reject) => {
             jwt.verify(token, publicKey, {
                 algorithms: ['RS512'],
