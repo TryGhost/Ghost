@@ -184,9 +184,9 @@ module.exports = function apiRoutes() {
     router.post('/authentication/passwordreset',
         shared.middlewares.brute.globalReset,
         shared.middlewares.brute.userReset,
-        api.http(api.authentication.generateResetToken)
+        api.http(apiv2.authentication.generateResetToken)
     );
-    router.put('/authentication/passwordreset', shared.middlewares.brute.globalBlock, api.http(api.authentication.resetPassword));
+    router.put('/authentication/passwordreset', shared.middlewares.brute.globalBlock, api.http(apiv2.authentication.resetPassword));
     router.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
     router.get('/authentication/invitation', api.http(api.authentication.isInvitation));
     router.post('/authentication/setup', api.http(api.authentication.setup));
