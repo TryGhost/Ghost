@@ -110,7 +110,7 @@ module.exports = function create(options = EMPTY) {
                 signed: true
             });
             return verifyJwt(token).then((claims) => {
-                return membersApi.getMember(claims.sub, token);
+                return get(membersApi).getMember(claims.sub, token);
             });
         } catch (e) {
             return Promise.reject(new BadRequestError({
