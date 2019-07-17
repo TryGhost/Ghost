@@ -1,4 +1,5 @@
 const {Router} = require('express');
+const {EventEmitter} = require('events');
 const body = require('body-parser');
 
 const {getData, handleError} = require('./lib/util');
@@ -7,6 +8,7 @@ const Cookies = require('./lib/cookies');
 const Tokens = require('./lib/tokens');
 const Users = require('./lib/users');
 const Subscriptions = require('./lib/subscriptions');
+const common = require('./lib/common');
 
 module.exports = function MembersApi({
     authConfig: {
@@ -218,6 +220,15 @@ module.exports = function MembersApi({
     });
 
     const apiInstance = new Router();
+    const eventBus = new EventEmitter();
+
+    subscriptions._ready.then(() => {
+        eventBus.emit('ready');
+    }, (err) => {
+        eventBus.emit('error', err);
+    });
+
+    apiInstance.bus = eventBus;
 
     apiInstance.use(apiRouter);
     apiInstance.use('/static', staticRouter);
@@ -238,22 +249,8 @@ module.exports = function MembersApi({
             return users.get({id});
         });
     };
-    apiInstance.reconfigureSettings = function (data) {
-        subscriptions = new Subscriptions(data.paymentConfig);
-        users = Users({
-            subscriptions,
-            createMember,
-            updateMember,
-            getMember,
-            deleteMember,
-            validateMember,
-            sendEmail,
-            encodeToken,
-            listMembers,
-            decodeToken
-        });
-        siteConfig = data.siteConfig;
-    };
+
+    apiInstance.setLogger = common.logging.setLogger;
 
     return apiInstance;
 };

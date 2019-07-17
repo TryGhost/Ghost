@@ -1,3 +1,5 @@
+const common = require('./common');
+
 function getData(...props) {
     return function (req, res, next) {
         if (!req.body) {
@@ -35,7 +37,8 @@ function getData(...props) {
 }
 
 function handleError(status, res) {
-    return function () {
+    return function (err) {
+        common.logging.error(err);
         res.writeHead(status);
         res.end();
     };
