@@ -67,19 +67,29 @@
 }
 
 .gh-user-name {
-    margin: -2px 8px 5px 0;
+    margin: -2px 8px 2px 0;
+    padding: 0 0 3px 0;
     word-break: break-all;
     font-weight: 600;
     line-height: 1.1em;
+    max-width: 160px;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    white-space: nowrap;
 }
 
 .gh-user-email {
-    margin: -1px 8px 0 0;
+    margin: -1px 8px -3px 0;
+    padding: 0 0 3px 0;
     word-break: break-all;
     font-size: 1.25rem;
     font-weight: 400;
     line-height: 1.1em;
     color: var(--middarkgrey);
+    max-width: 160px;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    white-space: nowrap;
 }
 
 /* Global Nav
