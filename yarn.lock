@@ -203,10 +203,10 @@
     ghost-ignition "^3.1.0"
     lodash "^4.17.11"
 
-"@tryghost/members-ssr@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.1.5.tgz#531a36233ac4d7e23b2582ec2e48698aba739c00"
-  integrity sha512-nhceqbnoSZwJJN2xdEBPfRZu2fCDMuDnBLA84h+k8+RGoU+8qxzHDCLR1vgOlt8vVWUAP8HRS1/C4GyhuaUNXQ==
+"@tryghost/members-ssr@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.2.1.tgz#156846832caeeaaa831206522dcc1e5b94e1335b"
+  integrity sha512-pr3IYDymyDm++428LNJn3cfhZmW8j2Qtr/AmyPpmRIDSmpzbEk5wl28Dc+jWpH6ij36DbOwwfVUNZ9SW1Lwi3w==
   dependencies:
     bluebird "^3.5.3"
     concat-stream "^2.0.0"
