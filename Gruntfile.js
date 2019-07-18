@@ -78,6 +78,7 @@ const configureGrunt = function (grunt) {
                 files: [
                     'core/ghost-server.js',
                     'core/server/**/*.js',
+                    'core/frontend/**/*.js',
                     'config.*.json',
                     '!config.testing.json'
                 ],
