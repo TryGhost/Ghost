@@ -104,7 +104,7 @@
             "defaultValue": null,
             "validations": {
                 "isLength": {
-                    "max": 150
+                    "max": 300
                 }
             }
         },
@@ -112,7 +112,55 @@
             "defaultValue": null,
             "validations": {
                 "isLength": {
-                    "max": 200
+                    "max": 500
+                }
+            }
+        },
+        "og_image": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 2000
+                }
+            }
+        },
+        "og_title": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 300
+                }
+            }
+        },
+        "og_description": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 300
+                }
+            }
+        },
+        "twitter_image": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 2000
+                }
+            }
+        },
+        "twitter_title": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 300
+                }
+            }
+        },
+        "twitter_description": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 300
                 }
             }
         }
