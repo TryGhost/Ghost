@@ -5,7 +5,7 @@ function getTitle(data, root, options) {
     var title = '',
         context = root ? root.context : null,
         postSdTitle,
-        blogTitle = settingsCache.get('title'),
+        blogTitle = settingsCache.get('meta_title') || settingsCache.get('title'),
         pagination = root ? root.pagination : null,
         pageString = '';
 

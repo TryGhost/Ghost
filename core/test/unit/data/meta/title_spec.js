@@ -32,6 +32,14 @@ describe('getTitle', function () {
         title.should.equal('My blog title');
     });
 
+    it('should return blog meta_title if on home and mata_title present', function () {
+        localSettingsCache.title = 'My blog title';
+        localSettingsCache.meta_title = 'My blog meta title';
+
+        var title = getTitle({}, {context: 'home'});
+        title.should.equal('My blog meta title');
+    });
+
     it('should return author name - blog title if on data author page', function () {
         localSettingsCache.title = 'My blog title 2';
 
