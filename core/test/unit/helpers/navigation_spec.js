@@ -21,6 +21,8 @@ describe('{{navigation}} helper', function () {
 
         // The navigation partial expects this helper
         // @TODO: change to register with Ghost's own registration tools
+        hbs.registerHelper('link_class', helpers.link_class);
+        hbs.registerHelper('concat', helpers.concat);
         hbs.registerHelper('url', helpers.url);
         hbs.registerHelper('foreach', helpers.foreach);
     });
