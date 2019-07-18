@@ -118,6 +118,38 @@ describe('Settings API', function () {
                             {
                                 key: 'is_private',
                                 value: false
+                            },
+                            {
+                                key: 'meta_title',
+                                value: 'SEO title'
+                            },
+                            {
+                                key: 'meta_description',
+                                value: 'SEO description'
+                            },
+                            {
+                                key: 'og_image',
+                                value: '/content/images/2019/07/facebook.png'
+                            },
+                            {
+                                key: 'og_title',
+                                value: 'facebook title'
+                            },
+                            {
+                                key: 'og_description',
+                                value: 'facebook description'
+                            },
+                            {
+                                key: 'twitter_image',
+                                value: '/content/images/2019/07/twitter.png'
+                            },
+                            {
+                                key: 'twitter_title',
+                                value: 'twitter title'
+                            },
+                            {
+                                key: 'twitter_description',
+                                value: 'twitter description'
                             }
                         ]
                     };
@@ -154,6 +186,33 @@ describe('Settings API', function () {
 
                         putBody.settings[4].key.should.eql('is_private');
                         should.equal(putBody.settings[4].value, false);
+
+                        putBody.settings[5].key.should.eql('meta_title');
+                        should.equal(putBody.settings[5].value, 'SEO title');
+
+                        putBody.settings[6].key.should.eql('meta_description');
+                        should.equal(putBody.settings[6].value, 'SEO description');
+
+                        putBody.settings[6].key.should.eql('meta_description');
+                        should.equal(putBody.settings[6].value, 'SEO description');
+
+                        putBody.settings[7].key.should.eql('og_image');
+                        should.equal(putBody.settings[7].value, '/content/images/2019/07/facebook.png');
+
+                        putBody.settings[8].key.should.eql('og_title');
+                        should.equal(putBody.settings[8].value, 'facebook title');
+
+                        putBody.settings[9].key.should.eql('og_description');
+                        should.equal(putBody.settings[9].value, 'facebook description');
+
+                        putBody.settings[10].key.should.eql('twitter_image');
+                        should.equal(putBody.settings[10].value, '/content/images/2019/07/twitter.png');
+
+                        putBody.settings[11].key.should.eql('twitter_title');
+                        should.equal(putBody.settings[11].value, 'twitter title');
+
+                        putBody.settings[12].key.should.eql('twitter_description');
+                        should.equal(putBody.settings[12].value, 'twitter description');
 
                         localUtils.API.checkResponse(putBody, 'settings');
                         done();

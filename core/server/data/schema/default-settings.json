@@ -99,6 +99,70 @@
         },
         "unsplash": {
             "defaultValue": "{\"isActive\": true}"
+        },
+        "meta_title": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 300
+                }
+            }
+        },
+        "meta_description": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 500
+                }
+            }
+        },
+        "og_image": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 2000
+                }
+            }
+        },
+        "og_title": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 300
+                }
+            }
+        },
+        "og_description": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 300
+                }
+            }
+        },
+        "twitter_image": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 2000
+                }
+            }
+        },
+        "twitter_title": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 300
+                }
+            }
+        },
+        "twitter_description": {
+            "defaultValue": null,
+            "validations": {
+                "isLength": {
+                    "max": 300
+                }
+            }
         }
     },
     "theme": {
