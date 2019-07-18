@@ -15,7 +15,8 @@ module.exports = function setupMembersApiApp() {
     apiApp.use('/static/auth', membersService.authPages);
 
     // Set up the api endpoints and the gateway
-    apiApp.use(membersService.api);
+    // NOTE: this is wrapped in a function to ensure we always go via the getter
+    apiApp.use((req, res, next) => membersService.api(req, res, next));
 
     // API error handling
     apiApp.use(shared.middlewares.errorHandler.resourceNotFound);
