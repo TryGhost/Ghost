@@ -113,7 +113,7 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
-                    eventSpy.callCount.should.equal(62);
+                    eventSpy.callCount.should.equal(78);
 
                     eventSpy.args[1][0].should.equal('settings.db_hash.added');
                     eventSpy.args[1][1].attributes.type.should.equal('core');
