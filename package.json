@@ -41,9 +41,9 @@
   "dependencies": {
     "@nexes/nql": "0.2.2",
     "@tryghost/helpers": "1.1.6",
-    "@tryghost/members-api": "0.2.0",
+    "@tryghost/members-api": "0.3.0",
     "@tryghost/members-auth-pages": "1.1.0",
-    "@tryghost/members-ssr": "0.1.5",
+    "@tryghost/members-ssr": "0.2.1",
     "@tryghost/members-theme-bindings": "0.2.3",
     "@tryghost/social-urls": "0.1.0",
     "@tryghost/string": "^0.1.3",
@@ -118,7 +118,6 @@
     "semver": "6.2.0",
     "simple-dom": "0.3.2",
     "simple-html-tokenizer": "0.5.7",
-    "stripe": "^7.0.0",
     "uuid": "3.3.2",
     "validator": "6.3.0",
     "xml": "1.0.1"

@@ -2,7 +2,6 @@ const url = require('url');
 const settingsCache = require('../settings/cache');
 const urlUtils = require('../../lib/url-utils');
 const MembersApi = require('@tryghost/members-api');
-const MembersSSR = require('@tryghost/members-ssr');
 const common = require('../../lib/common');
 const models = require('../../models');
 const mail = require('../mail');
@@ -182,50 +181,32 @@ const getSiteConfig = () => {
     };
 };
 
-const membersApiInstance = MembersApi({
-    authConfig: {
-        issuer: membersApiUrl,
-        ssoOrigin: adminOrigin,
-        publicKey: settingsCache.get('members_public_key'),
-        privateKey: settingsCache.get('members_private_key'),
-        sessionSecret: settingsCache.get('members_session_secret'),
-        accessControl
-    },
-    paymentConfig: {
-        processors: getSubscriptionSettings().paymentProcessors
-    },
-    siteConfig: getSiteConfig(),
-    createMember,
-    getMember,
-    deleteMember,
-    listMembers,
-    validateMember,
-    updateMember,
-    sendEmail
-});
+module.exports = createApiInstance;
 
-const updateSettingFromModel = function updateSettingFromModel(settingModel) {
-    if (!['members_subscription_settings', 'title', 'icon'].includes(settingModel.get('key'))) {
-        return;
-    }
-
-    membersApiInstance.reconfigureSettings({
+function createApiInstance() {
+    const membersApiInstance = MembersApi({
+        authConfig: {
+            issuer: membersApiUrl,
+            ssoOrigin: adminOrigin,
+            publicKey: settingsCache.get('members_public_key'),
+            privateKey: settingsCache.get('members_private_key'),
+            sessionSecret: settingsCache.get('members_session_secret'),
+            accessControl
+        },
         paymentConfig: {
             processors: getSubscriptionSettings().paymentProcessors
         },
-        siteConfig: getSiteConfig()
+        siteConfig: getSiteConfig(),
+        createMember,
+        getMember,
+        deleteMember,
+        listMembers,
+        validateMember,
+        updateMember,
+        sendEmail
     });
-};
 
-// Bind to events to automatically keep subscription info up-to-date from settings
-common.events.on('settings.edited', updateSettingFromModel);
+    membersApiInstance.setLogger(common.logging);
 
-module.exports = membersApiInstance;
-module.exports.ssr = MembersSSR({
-    cookieSecure: urlUtils.isSSL(siteUrl),
-    cookieKeys: [settingsCache.get('theme_session_secret')],
-    membersApi: membersApiInstance
-});
-module.exports.isPaymentConfigured = function () {
-    return getSubscriptionSettings().paymentProcessors.length !== 0;
-};
+    return membersApiInstance;
+}
