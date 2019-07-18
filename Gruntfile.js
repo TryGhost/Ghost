@@ -343,27 +343,6 @@ const configureGrunt = function (grunt) {
             grunt.log.writeln('Type `grunt --help` to get the details of available grunt tasks.');
         });
 
-    // ### Documentation
-    // Run `grunt docs` to generate annotated source code using the documentation described in the code comments.
-    grunt.registerTask('docs', 'Generate Docs', ['docker']);
-
-    // Run `grunt watch-docs` to setup livereload & watch whilst you're editing the docs
-    grunt.registerTask('watch-docs', function () {
-        grunt.config.merge({
-            watch: {
-                docs: {
-                    files: ['core/server/**/*', 'index.js', 'Gruntfile.js'],
-                    tasks: ['docker'],
-                    options: {
-                        livereload: true
-                    }
-                }
-            }
-        });
-
-        grunt.task.run('watch:docs');
-    });
-
     // ## Testing
 
     // Ghost has an extensive set of test suites. The following section documents the various types of tests
