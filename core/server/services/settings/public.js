@@ -18,5 +18,13 @@ module.exports = {
     active_timezone: 'timezone',
     ghost_head: 'ghost_head',
     ghost_foot: 'ghost_foot',
-    navigation: 'navigation'
+    navigation: 'navigation',
+    meta_title: 'meta_title',
+    meta_description: 'meta_description',
+    og_image: 'og_image',
+    og_title: 'og_title',
+    og_description: 'og_description',
+    twitter_image: 'twitter_image',
+    twitter_title: 'twitter_title',
+    twitter_description: 'twitter_description'
 };
