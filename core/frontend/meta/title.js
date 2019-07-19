@@ -1,13 +1,14 @@
-var _ = require('lodash'),
-    settingsCache = require('../../server/services/settings/cache');
+const _ = require('lodash');
+const settingsCache = require('../../server/services/settings/cache');
 
 function getTitle(data, root, options) {
-    var title = '',
-        context = root ? root.context : null,
-        postSdTitle,
-        siteTitle = settingsCache.get('meta_title') || settingsCache.get('title'),
-        pagination = root ? root.pagination : null,
-        pageString = '';
+    const context = root ? root.context : null;
+    const siteTitle = settingsCache.get('meta_title') || settingsCache.get('title');
+    const pagination = root ? root.pagination : null;
+
+    let title = '';
+    let postSdTitle;
+    let pageString = '';
 
     options = options ? options : {};
 
