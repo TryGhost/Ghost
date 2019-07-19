@@ -40,6 +40,34 @@ describe('getTitle', function () {
         title.should.equal('My blog meta title');
     });
 
+    it('should return facebook blog title if in home context', function () {
+        localSettingsCache.title = 'My blog title';
+        localSettingsCache.og_title = 'My blog facebook meta title';
+
+        var title = getTitle({
+        }, {
+            context: ['home']
+        }, {
+            property: 'og'
+        });
+
+        title.should.equal('My blog facebook meta title');
+    });
+
+    it('should return twitter blog title if in home context', function () {
+        localSettingsCache.title = 'My blog title';
+        localSettingsCache.twitter_title = 'My blog twitter meta title';
+
+        var title = getTitle({
+        }, {
+            context: ['home']
+        }, {
+            property: 'twitter'
+        });
+
+        title.should.equal('My blog twitter meta title');
+    });
+
     it('should return author name - blog title if on data author page', function () {
         localSettingsCache.title = 'My blog title 2';
 

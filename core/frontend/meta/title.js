@@ -20,7 +20,12 @@ function getTitle(data, root, options) {
         title = data.meta_title;
     // Home title
     } else if (_.includes(context, 'home')) {
-        title = blogTitle;
+        if (options && options.property) {
+            const siteSdTitle = options.property + '_title';
+            title = settingsCache.get(siteSdTitle) || '';
+        } else {
+            title = siteTitle;
+        }
     // Author title, paged
     } else if (_.includes(context, 'author') && data.author && _.includes(context, 'paged')) {
         title = data.author.name + ' - ' + blogTitle + pageString;
