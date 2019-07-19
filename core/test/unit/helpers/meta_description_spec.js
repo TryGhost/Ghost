@@ -5,122 +5,164 @@ var should = require('should'),
     settingsCache = require('../../../server/services/settings/cache');
 
 describe('{{meta_description}} helper', function () {
-    before(function () {
-        sinon.stub(settingsCache, 'get').returns('The professional publishing platform');
+    describe('no meta_description', function () {
+        before(function () {
+            sinon.stub(settingsCache, 'get').callsFake(function (key) {
+                return {
+                    description: 'The professional publishing platform'
+                }[key];
+            });
+        });
+
+        after(function () {
+            configUtils.restore();
+            sinon.restore();
+        });
+
+        it('returns correct blog description', function () {
+            var rendered = helpers.meta_description.call(
+                {},
+                {data: {root: {context: ['home', 'index']}}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('The professional publishing platform');
+        });
+
+        it('returns empty description on paginated page', function () {
+            var rendered = helpers.meta_description.call(
+                {},
+                {data: {root: {context: ['index', 'paged']}}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('');
+        });
+
+        it('returns empty description for a tag page', function () {
+            var rendered = helpers.meta_description.call(
+                {tag: {name: 'Rasper Red'}},
+                {data: {root: {context: ['tag']}}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('');
+        });
+
+        it('returns empty description for a paginated tag page', function () {
+            var rendered = helpers.meta_description.call(
+                {tag: {name: 'Rasper Red'}},
+                {data: {root: {context: ['tag', 'paged']}}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('');
+        });
+
+        it('returns tag meta_description if present for a tag page', function () {
+            var rendered = helpers.meta_description.call(
+                {tag: {name: 'Rasper Red', meta_description: 'Rasper is the Cool Red Casper'}},
+                {data: {root: {context: ['tag']}}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('Rasper is the Cool Red Casper');
+        });
+
+        it('returns empty description on paginated tag page that has meta data', function () {
+            var rendered = helpers.meta_description.call(
+                {tag: {name: 'Rasper Red', meta_description: 'Rasper is the Cool Red Casper'}},
+                {data: {root: {context: ['tag', 'paged']}}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('');
+        });
+
+        it('returns empty description for an author page', function () {
+            var rendered = helpers.meta_description.call(
+                {author: {bio: 'I am a Duck.'}},
+                {data: {root: {context: ['author']}}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('');
+        });
+
+        it('returns empty description for a paginated author page', function () {
+            var rendered = helpers.meta_description.call(
+                {author: {name: 'Donald Duck'}},
+                {data: {root: {context: ['author', 'paged']}}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('');
+        });
+
+        it('returns empty description when meta_description is not set', function () {
+            var rendered = helpers.meta_description.call(
+                {post: {title: 'Post Title', html: 'Very nice post indeed.'}},
+                {data: {root: {context: ['post']}}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('');
+        });
+
+        it('returns meta_description on post with meta_description set', function () {
+            var rendered = helpers.meta_description.call(
+                {post: {title: 'Post Title', meta_description: 'Nice post about stuff.'}},
+                {data: {root: {context: ['post']}}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('Nice post about stuff.');
+        });
+
+        it('returns meta_description on post when used within {{#foreach posts}}', function () {
+            var rendered = helpers.meta_description.call(
+                {meta_description: 'Nice post about stuff.'},
+                {data: {root: {context: ['home']}}}
+            );
+
+            should.exist(rendered);
+            String(rendered).should.equal('Nice post about stuff.');
+        });
     });
 
-    after(function () {
-        configUtils.restore();
-        sinon.restore();
-    });
+    describe('with meta_description', function () {
+        before(function () {
+            sinon.stub(settingsCache, 'get').callsFake(function (key) {
+                return {
+                    description: 'The professional publishing platform',
+                    meta_description: 'Meta description of the professional publishing platform'
+                }[key];
+            });
+        });
 
-    it('returns correct blog description', function () {
-        var rendered = helpers.meta_description.call(
-            {},
-            {data: {root: {context: ['home', 'index']}}}
-        );
+        after(function () {
+            configUtils.restore();
+            sinon.restore();
+        });
 
-        should.exist(rendered);
-        String(rendered).should.equal('The professional publishing platform');
-    });
+        it('returns correct blog description', function () {
+            var rendered = helpers.meta_description.call(
+                {},
+                {data: {root: {context: ['home', 'index']}}}
+            );
 
-    it('returns empty description on paginated page', function () {
-        var rendered = helpers.meta_description.call(
-            {},
-            {data: {root: {context: ['index', 'paged']}}}
-        );
+            should.exist(rendered);
+            String(rendered).should.equal('Meta description of the professional publishing platform');
+        });
 
-        should.exist(rendered);
-        String(rendered).should.equal('');
-    });
+        it('returns tag meta_description if present for a tag page', function () {
+            var rendered = helpers.meta_description.call(
+                {tag: {name: 'Rasper Red', meta_description: 'Rasper is the Cool Red Casper'}},
+                {data: {root: {context: ['tag']}}}
+            );
 
-    it('returns empty description for a tag page', function () {
-        var rendered = helpers.meta_description.call(
-            {tag: {name: 'Rasper Red'}},
-            {data: {root: {context: ['tag']}}}
-        );
-
-        should.exist(rendered);
-        String(rendered).should.equal('');
-    });
-
-    it('returns empty description for a paginated tag page', function () {
-        var rendered = helpers.meta_description.call(
-            {tag: {name: 'Rasper Red'}},
-            {data: {root: {context: ['tag', 'paged']}}}
-        );
-
-        should.exist(rendered);
-        String(rendered).should.equal('');
-    });
-
-    it('returns tag meta_description if present for a tag page', function () {
-        var rendered = helpers.meta_description.call(
-            {tag: {name: 'Rasper Red', meta_description: 'Rasper is the Cool Red Casper'}},
-            {data: {root: {context: ['tag']}}}
-        );
-
-        should.exist(rendered);
-        String(rendered).should.equal('Rasper is the Cool Red Casper');
-    });
-
-    it('returns empty description on paginated tag page that has meta data', function () {
-        var rendered = helpers.meta_description.call(
-            {tag: {name: 'Rasper Red', meta_description: 'Rasper is the Cool Red Casper'}},
-            {data: {root: {context: ['tag', 'paged']}}}
-        );
-
-        should.exist(rendered);
-        String(rendered).should.equal('');
-    });
-
-    it('returns empty description for an author page', function () {
-        var rendered = helpers.meta_description.call(
-            {author: {bio: 'I am a Duck.'}},
-            {data: {root: {context: ['author']}}}
-        );
-
-        should.exist(rendered);
-        String(rendered).should.equal('');
-    });
-
-    it('returns empty description for a paginated author page', function () {
-        var rendered = helpers.meta_description.call(
-            {author: {name: 'Donald Duck'}},
-            {data: {root: {context: ['author', 'paged']}}}
-        );
-
-        should.exist(rendered);
-        String(rendered).should.equal('');
-    });
-
-    it('returns empty description when meta_description is not set', function () {
-        var rendered = helpers.meta_description.call(
-            {post: {title: 'Post Title', html: 'Very nice post indeed.'}},
-            {data: {root: {context: ['post']}}}
-        );
-
-        should.exist(rendered);
-        String(rendered).should.equal('');
-    });
-
-    it('returns meta_description on post with meta_description set', function () {
-        var rendered = helpers.meta_description.call(
-            {post: {title: 'Post Title', meta_description: 'Nice post about stuff.'}},
-            {data: {root: {context: ['post']}}}
-        );
-
-        should.exist(rendered);
-        String(rendered).should.equal('Nice post about stuff.');
-    });
-
-    it('returns meta_description on post when used within {{#foreach posts}}', function () {
-        var rendered = helpers.meta_description.call(
-            {meta_description: 'Nice post about stuff.'},
-            {data: {root: {context: ['home']}}}
-        );
-
-        should.exist(rendered);
-        String(rendered).should.equal('Nice post about stuff.');
+            should.exist(rendered);
+            String(rendered).should.equal('Rasper is the Cool Red Casper');
+        });
     });
 });

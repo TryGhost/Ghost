@@ -5,7 +5,7 @@ function getDescription(data, root, options) {
     var description = '',
         postSdDescription,
         context = root ? root.context : null,
-        blogDescription = settingsCache.get('description');
+        blogDescription = settingsCache.get('meta_description') || settingsCache.get('description');
 
     options = options ? options : {};
 
