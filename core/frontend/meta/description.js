@@ -1,16 +1,16 @@
-var _ = require('lodash'),
-    settingsCache = require('../../server/services/settings/cache');
+const _ = require('lodash');
+const settingsCache = require('../../server/services/settings/cache');
 
 function getDescription(data, root, options) {
-    var description = '',
-        postSdDescription,
-        context = root ? root.context : null,
-        blogDescription = settingsCache.get('meta_description') || settingsCache.get('description');
+    const context = root ? root.context : null;
+    const siteDescription = settingsCache.get('meta_description') || settingsCache.get('description');
+
+    let description = '';
+    let postSdDescription;
 
     options = options ? options : {};
 
-    // We only return meta_description if provided. Only exception is the Blog
-    // description, which doesn't rely on meta_description.
+    // We only return meta_description if provided
     if (data.meta_description) {
         description = data.meta_description;
     } else if (_.includes(context, 'paged')) {
@@ -20,7 +20,7 @@ function getDescription(data, root, options) {
             const blogSdDescription = options.property + '_description';
             description = settingsCache.get(blogSdDescription) || '';
         } else {
-            description = blogDescription;
+            description = siteDescription;
         }
     } else if (_.includes(context, 'author') && data.author) {
         // The usage of meta data fields for author is currently not implemented.
