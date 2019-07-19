@@ -1,7 +1,46 @@
-var should = require('should'),
-    getMetaDescription = require('../../../../frontend/meta/description');
+const should = require('should');
+const sinon = require('sinon');
+const getMetaDescription = require('../../../../frontend/meta/description');
+const settingsCache = require('../../../../server/services/settings/cache');
 
 describe('getMetaDescription', function () {
+    let localSettingsCache = {};
+
+    before(function () {
+        sinon.stub(settingsCache, 'get').callsFake(function (key) {
+            return localSettingsCache[key];
+        });
+    });
+
+    after(function () {
+        sinon.restore();
+    });
+
+    afterEach(function () {
+        localSettingsCache = {};
+    });
+
+    it('should return site description when in home context', function () {
+        localSettingsCache.description = 'Site description';
+
+        var description = getMetaDescription({
+        }, {
+            context: ['home']
+        });
+        description.should.equal('Site description');
+    });
+
+    it('should return site meta_description when it is defined and in home context', function () {
+        localSettingsCache.description = 'Site description';
+        localSettingsCache.meta_description = 'Site meta description';
+
+        var description = getMetaDescription({
+        }, {
+            context: ['home']
+        });
+        description.should.equal('Site meta description');
+    });
+
     it('should return meta_description if on data root', function () {
         var description = getMetaDescription({
             meta_description: 'My test description.'
