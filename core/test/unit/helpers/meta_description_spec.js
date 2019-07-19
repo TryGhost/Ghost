@@ -1,22 +1,24 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    configUtils = require('../../utils/configUtils'),
-    helpers = require('../../../frontend/helpers'),
-    settingsCache = require('../../../server/services/settings/cache');
+const should = require('should');
+const sinon = require('sinon');
+const helpers = require('../../../frontend/helpers');
+const settingsCache = require('../../../server/services/settings/cache');
 
 describe('{{meta_description}} helper', function () {
+    const localSettingsCache = {};
+
+    before(function () {
+        sinon.stub(settingsCache, 'get').callsFake(function (key) {
+            return localSettingsCache[key];
+        });
+    });
+
+    after(function () {
+        sinon.restore();
+    });
+
     describe('no meta_description', function () {
         before(function () {
-            sinon.stub(settingsCache, 'get').callsFake(function (key) {
-                return {
-                    description: 'The professional publishing platform'
-                }[key];
-            });
-        });
-
-        after(function () {
-            configUtils.restore();
-            sinon.restore();
+            localSettingsCache.description = 'The professional publishing platform';
         });
 
         it('returns correct blog description', function () {
@@ -132,17 +134,7 @@ describe('{{meta_description}} helper', function () {
 
     describe('with meta_description', function () {
         before(function () {
-            sinon.stub(settingsCache, 'get').callsFake(function (key) {
-                return {
-                    description: 'The professional publishing platform',
-                    meta_description: 'Meta description of the professional publishing platform'
-                }[key];
-            });
-        });
-
-        after(function () {
-            configUtils.restore();
-            sinon.restore();
+            localSettingsCache.meta_description = 'Meta description of the professional publishing platform';
         });
 
         it('returns correct blog description', function () {
