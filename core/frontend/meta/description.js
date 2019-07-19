@@ -16,7 +16,12 @@ function getDescription(data, root, options) {
     } else if (_.includes(context, 'paged')) {
         description = '';
     } else if (_.includes(context, 'home')) {
-        description = blogDescription;
+        if (options && options.property) {
+            const blogSdDescription = options.property + '_description';
+            description = settingsCache.get(blogSdDescription) || '';
+        } else {
+            description = blogDescription;
+        }
     } else if (_.includes(context, 'author') && data.author) {
         // The usage of meta data fields for author is currently not implemented.
         // We do have meta_description and meta_title fields

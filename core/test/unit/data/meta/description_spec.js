@@ -30,6 +30,30 @@ describe('getMetaDescription', function () {
         description.should.equal('Site description');
     });
 
+    it('should return site OG description when in home context', function () {
+        localSettingsCache.og_description = 'My site Facebook description';
+
+        var description = getMetaDescription({
+        }, {
+            context: ['home']
+        }, {
+            property: 'og'
+        });
+        description.should.equal('My site Facebook description');
+    });
+
+    it('should return site twitter description when in home context', function () {
+        localSettingsCache.twitter_description = 'My site Twitter description';
+
+        var description = getMetaDescription({
+        }, {
+            context: ['home']
+        }, {
+            property: 'twitter'
+        });
+        description.should.equal('My site Twitter description');
+    });
+
     it('should return site meta_description when it is defined and in home context', function () {
         localSettingsCache.description = 'Site description';
         localSettingsCache.meta_description = 'Site meta description';
