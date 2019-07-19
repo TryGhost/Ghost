@@ -5,7 +5,7 @@ const settingsCache = require('../../../../server/services/settings/cache');
 
 describe('getOgImage', function () {
     describe('[home]', function () {
-        it('should return null if not post context [home] and no og_image set', function () {
+        it('should return null if [home] context and no og_image set', function () {
             sinon.stub(settingsCache, 'get').callsFake(function (key) {
                 return {
                     og_image: null
@@ -21,7 +21,7 @@ describe('getOgImage', function () {
             sinon.restore();
         });
 
-        it('should return null if not post context [home] and no og_image set', function () {
+        it('should return image URL if [home] context and og_image set', function () {
             sinon.stub(settingsCache, 'get').callsFake(function (key) {
                 return {
                     og_image: '/content/images/home-og.jpg'
