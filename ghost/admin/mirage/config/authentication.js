@@ -10,7 +10,6 @@ export default function mockAuthentication(server) {
 
     server.post('/authentication/passwordreset', function (schema, request) {
         let {passwordreset} = JSON.parse(request.requestBody);
-        // eslint-disable-next-line ember-suave/prefer-destructuring
         let email = passwordreset[0].email;
 
         if (email === 'unknown@example.com') {
