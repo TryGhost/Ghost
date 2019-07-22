@@ -11,7 +11,7 @@ module.exports = function registerHelpers(ghost) {
             flagKey: 'subscribers',
             flagName: 'Subscribers',
             helperName: 'subscribe_form',
-            helpUrl: 'https://docs.ghost.org/faq/enable-subscribers-feature/'
+            helpUrl: 'https://ghost.org/faq/enable-subscribers-feature/'
         }, () => {
             return require('./subscribe_form').apply(self, args);
         });

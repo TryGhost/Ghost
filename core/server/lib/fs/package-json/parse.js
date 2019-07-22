@@ -30,7 +30,7 @@ function parsePackageJson(path) {
                 if (!hasRequiredKeys) {
                     err = new Error(common.i18n.t('errors.utils.parsepackagejson.nameOrVersionMissing'));
                     err.context = path;
-                    err.help = common.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://docs.ghost.org/api/handlebars-themes/'});
+                    err.help = common.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/api/v2/handlebars-themes/'});
 
                     return Promise.reject(err);
                 }
@@ -39,7 +39,7 @@ function parsePackageJson(path) {
             } catch (parseError) {
                 err = new Error(common.i18n.t('errors.utils.parsepackagejson.themeFileIsMalformed'));
                 err.context = path;
-                err.help = common.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://docs.ghost.org/api/handlebars-themes/'});
+                err.help = common.i18n.t('errors.utils.parsepackagejson.willBeRequired', {url: 'https://ghost.org/docs/api/v2/handlebars-themes/'});
 
                 return Promise.reject(err);
             }
