@@ -25,13 +25,13 @@
     color: #fff;
     font-size: 1.4rem;
     line-height: 1.25em;
-    opacity: 0.88;
+    /* opacity: 0.88; */
     transition: opacity 0.3s ease;
 }
 
 .gh-notification:hover {
     cursor: pointer;
-    opacity: 0.95;
+    /* opacity: 0.95; */
 }
 
 .gh-notification-content {
