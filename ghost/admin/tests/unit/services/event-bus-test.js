@@ -10,11 +10,11 @@ describe('Unit: Service: event-bus', function () {
         let service = this.owner.lookup('service:event-bus');
         let eventHandler = sinon.spy();
 
-        service.subscribe('test-event', eventHandler);
+        service.subscribe('test-event', this, eventHandler);
 
         service.publish('test-event', 'test');
 
-        service.unsubscribe('test-event', eventHandler);
+        service.unsubscribe('test-event', this, eventHandler);
 
         service.publish('test-event', 'test two');
 
