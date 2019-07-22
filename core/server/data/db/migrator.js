@@ -58,7 +58,7 @@ module.exports.isDbCompatible = (connection) => {
                 message: 'Your database version is not compatible with Ghost 2.0.',
                 help: 'Want to keep your DB? Use Ghost < 1.0.0 or the "0.11" branch.' +
                       '\n\n\n' +
-                      'Want to migrate Ghost 0.11 to 2.0? Please visit https://docs.ghost.org/v1/docs/migrating-to-ghost-1-0-0'
+                      'Want to migrate Ghost 0.11 to 2.0? Please visit https://ghost.org/faq/upgrade-to-ghost-1-0/'
             });
         })
         .catch((err) => {

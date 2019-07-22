@@ -4,6 +4,6 @@ Potential security vulnerabilities can be reported directly us at `security@ghos
 
 The full, up-to-date details of our security policy and procedure can always be found in our documentation:
 
-https://docs.ghost.org/security/
+https://ghost.org/docs/concepts/security/
 
 Please refer to this before emailing us. Thanks for helping make Ghost safe for everyone 🙏.

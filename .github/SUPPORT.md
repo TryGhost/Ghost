@@ -7,7 +7,7 @@ Please **_do not_** raise an issue on GitHub.
 We have a **help** category in our **[forum](https://forum.ghost.org/)** where you can get quick answers,
 help with debugging weird issues, and general help with any aspect of Ghost. There's also an **ideas** category for feature requests.
 
-Our extensive **documentation** can be found at https://docs.ghost.org/.
+Our extensive **documentation** can be found at https://ghost.org/docs/.
 
 Please go to https://forum.ghost.org and signup to join our community.
 You can create a new account, or signup using Google, Twitter or Facebook.
