@@ -15,7 +15,7 @@ function rand(min, max) {
     var key, value, arr = new Uint8Array(max);
     getRandomValues(arr);
     for (key in arr) {
-        if (arr.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(arr, key)) {
             value = arr[key];
             if (value > min && value < max) {
                 return value;
