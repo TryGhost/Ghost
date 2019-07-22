@@ -98,18 +98,6 @@ const Integration = ghostBookshelf.Model.extend({
         }
 
         return options;
-    },
-
-    findOne(data, unfilteredOptions) {
-        const options = this.filterOptions(unfilteredOptions, 'findOne');
-        data = this.filterData(data);
-        const item = this.forge(data);
-
-        if (options.filter) {
-            item.applyDefaultAndCustomFilters(options);
-        }
-
-        return item.fetch(options);
     }
 });
 
