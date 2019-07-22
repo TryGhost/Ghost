@@ -5257,10 +5257,10 @@ ember-router-generator@^1.2.3:
   dependencies:
     recast "^0.11.3"
 
-ember-simple-auth@1.9.1:
-  version "1.9.1"
-  resolved "https://registry.yarnpkg.com/ember-simple-auth/-/ember-simple-auth-1.9.1.tgz#3a286f907d886ee6f18b1fc8978e3b633415302a"
-  integrity sha512-VzS9aZIDDGrRSjKGYG999BgW4KePXfutXx2J5qWPOQvFrMux9GnmZ7T/qo2ETy52TeGg5fE1ZN9ntKVH35bQwQ==
+ember-simple-auth@1.9.2:
+  version "1.9.2"
+  resolved "https://registry.yarnpkg.com/ember-simple-auth/-/ember-simple-auth-1.9.2.tgz#ee8b1b0ec4c5c0e08bc94560cb90552d4ae7fd5d"
+  integrity sha512-WTG2uGe8+TIfwsy5eaS7uIszEmyQ/pjKLUMjyq6YYkU9d9erSXVRiuO4h46OxTEbVI3c17mjAu/4kTxc+BOFZw==
   dependencies:
     base-64 "^0.1.0"
     broccoli-file-creator "^2.0.0"
