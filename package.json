@@ -51,7 +51,7 @@
     "ajv": "6.10.2",
     "amperize": "0.5.2",
     "analytics-node": "3.3.0",
-    "archiver": "3.0.0",
+    "archiver": "3.0.3",
     "bcryptjs": "2.4.3",
     "bluebird": "3.5.5",
     "body-parser": "1.19.0",
