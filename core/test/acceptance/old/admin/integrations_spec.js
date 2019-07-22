@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
 const config = require('../../../../server/config');
@@ -33,8 +34,14 @@ describe('Integrations API', function () {
                 }
 
                 should.equal(body.integrations.length, 2);
-                should.equal(body.integrations[0].name, 'Zapier');
-                should.equal(body.integrations[1].name, 'Test Integration');
+
+                // there is no enforced order for integrations which makes order different on SQLite and MySQL
+                const zapierIntegration = _.find(body.integrations, {name: 'Zapier'}); // from migrations
+                should.exist(zapierIntegration);
+
+                const testIntegration = _.find(body.integrations, {name: 'Test Integration'}); // from fixtures
+                should.exist(testIntegration);
+
                 done();
             });
     });
