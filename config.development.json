@@ -1,3 +1,7 @@
 {
-   "enableDeveloperExperiments": true
+   "enableDeveloperExperiments": true,
+   "url": "http://site.egg",
+   "admin": {
+       "url": "http://site.ghost.egg"
+   }
 }
