@@ -8,7 +8,7 @@ const ghost = testUtils.startGhost;
 let request;
 
 describe('User API', function () {
-    let editor, author, ghostServer, inactiveUser, admin;
+    let editor, author, ghostServer, otherAuthor, admin;
 
     describe('As Owner', function () {
         before(function () {
@@ -20,17 +20,17 @@ describe('User API', function () {
                 .then(function () {
                     // create inactive user
                     return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org', status: 'inactive'}),
+                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org'}),
                         role: testUtils.DataGenerator.Content.roles[2].name
                     });
                 })
                 .then(function (_user) {
-                    inactiveUser = _user;
+                    otherAuthor = _user;
 
                     // create admin user
                     return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+admin@ghost.org', slug: 'admin'}),
-                        role: testUtils.DataGenerator.Content.roles[0].name
+                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+admin@ghost.org', slug: 'owner'}),
+                        role: testUtils.DataGenerator.Content.roles[3].name
                     });
                 })
                 .then(function (_user) {
@@ -98,6 +98,30 @@ describe('User API', function () {
                             'code',
                             'id'
                         ]);
+                        done();
+                    });
+            });
+        });
+
+        describe('Edit', function () {
+            it('can change the other users password', function (done) {
+                request.put(localUtils.API.getApiQuery('users/password/'))
+                    .set('Origin', config.get('url'))
+                    .send({
+                        password: [{
+                            newPassword: 'superSecure',
+                            ne2Password: 'superSecure',
+                            user_id: otherAuthor.id
+                        }]
+                    })
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
                         done();
                     });
             });
