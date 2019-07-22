@@ -333,7 +333,7 @@ describe('UNIT: url redirects', function () {
 
             it('url and admin url are different, protocol is different, request is not secure', function (done) {
                 urlRedirects.__set__('urlUtils', urlUtils.getInstance({
-                    url: 'http://blog.ghost.org',
+                    url: 'http://ghost.org/blog/',
                     adminUrl: 'http://something.com'
                 }));
 
@@ -350,7 +350,7 @@ describe('UNIT: url redirects', function () {
 
             it('url and admin url are different, protocol is different, request is secure', function (done) {
                 urlRedirects.__set__('urlUtils', urlUtils.getInstance({
-                    url: 'http://blog.ghost.org',
+                    url: 'http://ghost.org/blog/',
                     adminUrl: 'http://something.com'
                 }));
 
