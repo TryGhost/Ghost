@@ -2,7 +2,7 @@
 
 ### routes.yaml
 
-To find out more about `routes.yaml` configuration and how to use it visit [documentation](https://docs.ghost.org/api/handlebars-themes/routing/#base-configuration).
+To find out more about `routes.yaml` configuration and how to use it visit [documentation](https://ghost.org/docs/api/v2/handlebars-themes/routing/).
 
 This is how the default `routes.yaml` file looks like:
 

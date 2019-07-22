@@ -49,7 +49,7 @@ function updateCheckError(err) {
     }, internal);
 
     err.context = common.i18n.t('errors.updateCheck.checkingForUpdatesFailed.error');
-    err.help = common.i18n.t('errors.updateCheck.checkingForUpdatesFailed.help', {url: 'https://docs.ghost.org'});
+    err.help = common.i18n.t('errors.updateCheck.checkingForUpdatesFailed.help', {url: 'https://ghost.org/docs/'});
     common.logging.error(err);
 }
 
@@ -131,7 +131,7 @@ function updateCheckData() {
  * With the privacy setting `useUpdateCheck` you can control if you want to expose data/stats from your blog to the
  * service. Enabled or disabled, you will receive the latest notification available from the service.
  *
- * @see https://docs.ghost.org/concepts/config/#privacy
+ * @see https://ghost.org/docs/concepts/config/#privacy
  * @returns {Promise}
  */
 function updateCheckRequest() {

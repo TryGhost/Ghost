@@ -42,7 +42,7 @@ const authenticate = {
             return next(new common.errors.UnauthorizedError({
                 message: common.i18n.t('errors.middleware.auth.accessDenied'),
                 context: common.i18n.t('errors.middleware.auth.clientCredentialsNotProvided'),
-                help: common.i18n.t('errors.middleware.auth.forInformationRead', {url: 'https://api.ghost.org/docs/client-authentication'})
+                help: common.i18n.t('errors.middleware.auth.forInformationRead', {url: 'https://ghost.org/faq/upgrade-to-ghost-2-0/'})
             }));
         }
 
@@ -60,7 +60,7 @@ const authenticate = {
                     return next(new common.errors.UnauthorizedError({
                         message: common.i18n.t('errors.middleware.auth.accessDenied'),
                         context: common.i18n.t('errors.middleware.auth.clientCredentialsNotValid'),
-                        help: common.i18n.t('errors.middleware.auth.forInformationRead', {url: 'https://api.ghost.org/docs/client-authentication'})
+                        help: common.i18n.t('errors.middleware.auth.forInformationRead', {url: 'https://ghost.org/faq/upgrade-to-ghost-2-0/'})
                     }));
                 }
 

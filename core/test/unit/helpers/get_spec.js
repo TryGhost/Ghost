@@ -46,7 +46,7 @@ describe('{{#get}} helper', function () {
                 'string',
                 '<script>console.error("The {{#get}} helper requires your theme to have API access. ' +
                 'Please enable the v2 API via your theme\'s package.json file. ' +
-                'See https://docs.ghost.org/api/handlebars-themes/packagejson/");</script>'
+                'See https://ghost.org/docs/api/v2/handlebars-themes/packagejson/");</script>'
             );
 
             done();

@@ -110,7 +110,7 @@ describe('{{amp_content}} helper', function () {
 
     describe('Transforms and sanitizes HTML', function () {
         beforeEach(function () {
-            ampContentHelper.__set__('urlUtils', urlUtils.getInstance({url: 'https://blog.ghost.org/'}));
+            ampContentHelper.__set__('urlUtils', urlUtils.getInstance({url: 'https://ghost.org/blog/'}));
         });
 
         afterEach(function () {
@@ -120,7 +120,7 @@ describe('{{amp_content}} helper', function () {
         it('can transform img tags to amp-img', function (done) {
             const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
 
-            nock('https://blog.ghost.org')
+            nock('https://ghost.org/blog/')
                 .get('/content/images/2019/06/test.jpg')
                 .reply(200, GIF1x1);
 
@@ -129,7 +129,7 @@ describe('{{amp_content}} helper', function () {
                     updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
                     id: 1
                 },
-                expectedResult = '<amp-img src="https://blog.ghost.org/content/images/2019/06/test.jpg" alt="The Ghost Logo" width="1" height="1" layout="fixed"></amp-img>',
+                expectedResult = '<amp-img src="https://ghost.org/blog/content/images/2019/06/test.jpg" alt="The Ghost Logo" width="1" height="1" layout="fixed"></amp-img>',
                 ampResult = ampContentHelper.call(testData);
 
             ampResult.then(function (rendered) {
@@ -189,7 +189,7 @@ describe('{{amp_content}} helper', function () {
                     updated_at: 'Wed Jul 27 2016 18:17:22 GMT+0200 (CEST)',
                     id: 1
                 },
-                expectedResult = '<amp-img src="https://blog.ghost.org/content/images/2016/08/aileen_small.jpg" width="50" ' +
+                expectedResult = '<amp-img src="https://ghost.org/blog/content/images/2016/08/aileen_small.jpg" width="50" ' +
                                  'height="50" layout="responsive"></amp-img><p align="right">Hello</p>' +
                                  '<table><tr bgcolor="tomato"><th>Name:</th> ' +
                                  '<td colspan="2">Bill Gates</td></tr><tr><th rowspan="2" valign="center">Telephone:</th> ' +
@@ -260,7 +260,7 @@ describe('{{amp_content}} helper', function () {
                 should.exist(rendered);
                 rendered.string.should.equal('');
                 should.exist(ampedHTML);
-                ampedHTML.should.be.equal('<img src="https://blog.ghost.org/content/images/does-not-exist.jpg" alt="The Ghost Logo">');
+                ampedHTML.should.be.equal('<img src="https://ghost.org/blog/content/images/does-not-exist.jpg" alt="The Ghost Logo">');
                 should.exist(sanitizedHTML);
                 sanitizedHTML.should.be.equal('');
                 done();

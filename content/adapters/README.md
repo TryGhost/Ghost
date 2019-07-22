@@ -18,5 +18,5 @@ This default adapter can be found in `core/server/adapters/scheduling/Scheduling
 To override any of the default adapters, you have to add a folder (`content/adapters/storage` or `content/adapters/scheduling`) and copy your adapter to it.
 
 Please follow our detailed guides:
-https://docs.ghost.org/v1/docs/using-a-custom-storage-module
-https://docs.ghost.org/v1/docs/using-a-custom-scheduling-module
+https://ghost.org/docs/concepts/storage-adapters/
+https://ghost.org/docs/concepts/custom-schedulers/

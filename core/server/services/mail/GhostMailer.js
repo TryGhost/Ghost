@@ -48,7 +48,7 @@ GhostMailer.prototype.getDomain = function () {
 GhostMailer.prototype.send = function (message) {
     var self = this,
         to,
-        help = common.i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://docs.ghost.org/mail/'}),
+        help = common.i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://ghost.org/docs/concepts/config/#mail'}),
         errorMessage = common.i18n.t('errors.mail.failedSendingEmail.error');
 
     // important to clone message as we modify it
