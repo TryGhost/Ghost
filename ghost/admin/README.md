@@ -4,9 +4,9 @@
 
 This is the home of Ember.js based admin client that ships with [Ghost](https://github.com/tryghost/ghost).
 
-**Do you want to set up a Ghost blog?** Check the [getting started guide](https://docs.ghost.org/concepts/introduction/)
+**Do you want to set up a Ghost blog?** Check the [getting started guide](https://ghost.org/docs/concepts/introduction/)
 
-**Do you want to modify or contribute to Ghost-Admin?** Please read how to [install from source](https://docs.ghost.org/install/source/) and swing by our [forum](https://forum.ghost.org) if you need any help 😄
+**Do you want to modify or contribute to Ghost-Admin?** Please read how to [install from source](https://ghost.org/docs/install/source/) and swing by our [forum](https://forum.ghost.org) if you need any help 😄
 
 ## Have a bug or issue?
 
