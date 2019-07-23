@@ -44,7 +44,6 @@ Post = ghostBookshelf.Model.extend({
             uuid: uuid.v4(),
             status: 'draft',
             featured: false,
-            page: false,
             type: 'post',
             visibility: 'public'
         };
