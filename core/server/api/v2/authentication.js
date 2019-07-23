@@ -3,7 +3,7 @@ const api = require('./index');
 const web = require('../../web');
 
 module.exports = {
-    docName: 'passwordreset',
+    docName: 'authentication',
 
     generateResetToken: {
         permissions: true,
@@ -24,6 +24,14 @@ module.exports = {
         }
     },
     resetPassword: {
+        validation: {
+            docName: 'passwordreset',
+            data: {
+                token: {required: true},
+                newPassword: {required: true},
+                ne2Password: {required: true}
+            }
+        },
         permissions: false,
         options: [
             'ip'
@@ -34,7 +42,6 @@ module.exports = {
                     return auth.setup.assertSetupCompleted(true);
                 })
                 .then(() => {
-                    // correct arguments used here
                     return auth.passwordreset.extractTokenParts(frame);
                 })
                 .then((params) => {
@@ -44,7 +51,6 @@ module.exports = {
                     options = Object.assign(options, {context: {internal: true}});
                     return auth.passwordreset.doReset(options, tokenParts, api.settings)
                         .then((params) => {
-                            // TODO: check opts.ip in frame!
                             web.shared.middlewares.api.spamPrevention.userLogin().reset(frame.options.ip, `${tokenParts.email}login`);
                             return params;
                         });

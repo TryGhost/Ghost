@@ -1,4 +1,8 @@
 module.exports = {
+    get passwordreset() {
+        return require('./passwordreset');
+    },
+
     get posts() {
         return require('./posts');
     },
