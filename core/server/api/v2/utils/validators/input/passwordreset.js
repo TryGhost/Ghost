@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const debug = require('ghost-ignition').debug('api:v2:utils:validators:input:users');
+const debug = require('ghost-ignition').debug('api:v2:utils:validators:input:passwordreset');
 const common = require('../../../../../lib/common');
 
 module.exports = {
