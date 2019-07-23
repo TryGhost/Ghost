@@ -45,6 +45,7 @@ Post = ghostBookshelf.Model.extend({
             status: 'draft',
             featured: false,
             page: false,
+            type: 'post',
             visibility: 'public'
         };
     },
