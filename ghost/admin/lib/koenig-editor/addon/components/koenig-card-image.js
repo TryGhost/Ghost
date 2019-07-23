@@ -5,7 +5,7 @@ import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
-import {computed, set, setProperties} from '@ember/object';
+import {action, computed, set, setProperties} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {htmlSafe} from '@ember/string';
 import {isEmpty} from '@ember/utils';
@@ -29,6 +29,7 @@ export default Component.extend({
 
     // properties
     handlesDragDrop: true,
+    isEditingAlt: false,
 
     // closure actions
     selectCard() {},
@@ -139,6 +140,11 @@ export default Component.extend({
                 delete this.payload.files;
             });
         }
+
+        // switch back to displaying caption when card is not selected
+        if (!this.isSelected) {
+            this.set('isEditingAlt', false);
+        }
     },
 
     actions: {
@@ -149,10 +155,6 @@ export default Component.extend({
             this.editor.run(() => {
                 this._updatePayloadAttr('src', image.url);
             });
-        },
-
-        updateCaption(caption) {
-            this._updatePayloadAttr('caption', caption);
         },
 
         /**
@@ -213,6 +215,18 @@ export default Component.extend({
             this.editor.focus();
         }
     },
+
+    updateCaption: action(function (caption) {
+        this._updatePayloadAttr('caption', caption);
+    }),
+
+    toggleAltEditing: action(function () {
+        this.toggleProperty('isEditingAlt');
+    }),
+
+    updateAlt: action(function (alt) {
+        this._updatePayloadAttr('alt', alt);
+    }),
 
     dragOver(event) {
         if (!event.dataTransfer) {
