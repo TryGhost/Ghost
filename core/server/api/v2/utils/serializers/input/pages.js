@@ -55,9 +55,9 @@ function defaultFormat(frame) {
  */
 const forcePageFilter = (frame) => {
     if (frame.options.filter) {
-        frame.options.filter = `(${frame.options.filter})+page:true`;
+        frame.options.filter = `(${frame.options.filter})+type:page`;
     } else {
-        frame.options.filter = 'page:true';
+        frame.options.filter = 'type:page';
     }
 };
 
@@ -123,7 +123,7 @@ module.exports = {
 
         // @NOTE: force storing page
         if (options.add) {
-            frame.data.pages[0].page = true;
+            frame.data.pages[0].type = 'page';
         }
 
         // CASE: Transform short to long format
@@ -163,7 +163,7 @@ module.exports = {
     destroy(apiConfig, frame) {
         frame.options.destroyBy = {
             id: frame.options.id,
-            page: true
+            type: 'page'
         };
 
         defaultFormat(frame);
