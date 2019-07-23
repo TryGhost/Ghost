@@ -187,5 +187,10 @@ module.exports = {
     changePassword() {
         debug('validate changePassword');
         return this.add(...arguments);
+    },
+
+    resetPassword() {
+        debug('validate resetPassword');
+        return this.add(...arguments);
     }
 };

@@ -253,6 +253,22 @@ describe.only('Authentication API v2', function () {
                 .catch(done);
         });
 
+        it('reset password: invalid passwords', function () {
+            return request.put(localUtils.API.getApiQuery('authentication/passwordreset'))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .send({
+                    passwordreset: [{
+                        token: 'doesntmatter',
+                        newPassword: 'thisissupersafe',
+                        ne2Password: 'thisissupersafebutdoesntmatch'
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422);
+        });
+
         it('reset password: invalid token', function () {
             return request
                 .put(localUtils.API.getApiQuery('authentication/passwordreset'))
