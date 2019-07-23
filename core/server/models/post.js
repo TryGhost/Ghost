@@ -75,10 +75,10 @@ Post = ghostBookshelf.Model.extend({
 
     emitChange: function emitChange(event, options = {}) {
         let eventToTrigger;
-        let resourceType = this.get('page') ? 'page' : 'post';
+        let resourceType = this.get('type');
 
         if (options.usePreviousAttribute) {
-            resourceType = this.previous('page') ? 'page' : 'post';
+            resourceType = this.previous('type');
         }
 
         eventToTrigger = resourceType + '.' + event;
@@ -119,7 +119,7 @@ Post = ghostBookshelf.Model.extend({
         model.isScheduled = model.get('status') === 'scheduled';
         model.wasPublished = model.previous('status') === 'published';
         model.wasScheduled = model.previous('status') === 'scheduled';
-        model.resourceTypeChanging = model.get('page') !== model.previous('page');
+        model.resourceTypeChanging = model.get('type') !== model.previous('type');
         model.publishedAtHasChanged = model.hasDateChanged('published_at');
         model.needsReschedule = model.publishedAtHasChanged && model.isScheduled;
 
@@ -600,7 +600,7 @@ Post = ghostBookshelf.Model.extend({
             return null;
         }
 
-        return options.context && options.context.public ? 'page:false' : 'page:false+status:published';
+        return options.context && options.context.public ? 'type:post' : 'type:post+status:published';
     },
 
     /**
@@ -621,9 +621,9 @@ Post = ghostBookshelf.Model.extend({
                 options.staticPages = _.includes(['true', '1'], options.staticPages);
             }
 
-            filter = `page:${options.staticPages}`;
+            filter = `type:${options.staticPages ? 'page' : 'post'}`;
         } else if (options.staticPages === 'all') {
-            filter = 'page:[true, false]';
+            filter = 'type:[post, page]';
         }
 
         // CASE: "status" is passed, combine filters
