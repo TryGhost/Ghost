@@ -31,6 +31,8 @@ const expectedProperties = {
         .without('visibility')
         .without('locale')
         .without('page')
+        // v2 API doesn't return new type field
+        .without('type')
         // deprecated
         .without('author_id')
         // always returns computed properties
@@ -46,6 +48,8 @@ const expectedProperties = {
         .without('visibility')
         .without('locale')
         .without('page')
+        // v2 API doesn't return new type field
+        .without('type')
         // deprecated
         .without('author_id')
         // always returns computed properties
