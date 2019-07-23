@@ -64,9 +64,9 @@ function defaultFormat(frame) {
  */
 const forcePageFilter = (frame) => {
     if (frame.options.filter) {
-        frame.options.filter = `(${frame.options.filter})+page:false`;
+        frame.options.filter = `(${frame.options.filter})+type:post`;
     } else {
-        frame.options.filter = 'page:false';
+        frame.options.filter = 'type:post';
     }
 };
 
@@ -158,7 +158,7 @@ module.exports = {
 
         // @NOTE: force adding post
         if (options.add) {
-            frame.data.posts[0].page = false;
+            frame.data.posts[0].type = 'post';
         }
 
         // CASE: Transform short to long format
@@ -196,7 +196,7 @@ module.exports = {
     destroy(apiConfig, frame) {
         frame.options.destroyBy = {
             id: frame.options.id,
-            page: false
+            type: 'post'
         };
 
         defaultFormat(frame);
