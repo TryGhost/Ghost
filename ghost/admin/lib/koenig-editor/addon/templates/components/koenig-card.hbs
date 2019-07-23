@@ -4,12 +4,19 @@
     {{/sticky-element}}
 {{/if}}
 
-{{yield (hash captionInput=(component "koenig-caption-input"
-    captureInput=isSelected
-    addParagraphAfterCard=addParagraphAfterCard
-    moveCursorToPrevSection=moveCursorToPrevSection
-    moveCursorToNextSection=moveCursorToNextSection
-))}}
+{{yield (hash
+    captionInput=(component "koenig-caption-input"
+        captureInput=isSelected
+        addParagraphAfterCard=addParagraphAfterCard
+        moveCursorToPrevSection=moveCursorToPrevSection
+        moveCursorToNextSection=moveCursorToNextSection
+    )
+    altInput=(component "koenig-alt-input"
+        addParagraphAfterCard=addParagraphAfterCard
+        moveCursorToPrevSection=moveCursorToPrevSection
+        moveCursorToNextSection=moveCursorToNextSection
+    )
+)}}
 
 {{#if toolbar}}
     {{#kg-action-bar class="absolute" style=toolbarStyle isVisible=shouldShowToolbar}}
