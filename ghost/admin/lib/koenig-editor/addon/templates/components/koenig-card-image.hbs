@@ -65,11 +65,27 @@
     {{/gh-uploader}}
 
     {{#if (or isSelected (clean-basic-html payload.caption))}}
-        {{card.captionInput
-            caption=payload.caption
-            update=(action "updateCaption")
-            placeholder="Type caption for image (optional)"
-        }}
+        {{#if this.isEditingAlt}}
+            <card.altInput
+                @alt={{this.payload.alt}}
+                @update={{this.updateAlt}}
+                @placeholder="Type alt text for image (optional)" />
+        {{else}}
+            <card.captionInput
+                @caption={{payload.caption}}
+                @update={{this.updateCaption}}
+                @placeholder="Type caption for image (optional)" />
+        {{/if}}
+
+        {{#if isSelected}}
+            <button
+                title="Toggle between editing alt text and caption"
+                class="absolute right-0 bottom-0 ma2 pl1 pr1 ba br3 f7 sans-serif fw4 lh-title tracked-2 {{if this.isEditingAlt "bg-blue b--blue white" "b--midlightgrey midlightgrey"}}"
+                {{on "click" this.toggleAltEditing passive=true}}
+            >
+                Alt
+            </button>
+        {{/if}}
     {{/if}}
 
     {{#if imageSelector}}
