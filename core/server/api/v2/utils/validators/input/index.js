@@ -15,6 +15,10 @@ module.exports = {
         return require('./invites');
     },
 
+    get invitations() {
+        return require('./invitations');
+    },
+
     get settings() {
         return require('./settings');
     },
