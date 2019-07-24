@@ -1,5 +1,6 @@
 const api = require('./index');
 const web = require('../../web');
+const models = require('../../models');
 const auth = require('../../services/auth');
 const invitations = require('../../services/invitations');
 
@@ -71,6 +72,24 @@ module.exports = {
                 })
                 .then(() => {
                     return invitations.accept(frame.data);
+                });
+        }
+    },
+
+    isInvitation: {
+        validation: {
+            docName: 'invitations'
+        },
+        permissions: false,
+        query(frame) {
+            return Promise.resolve()
+                .then(() => {
+                    return auth.setup.assertSetupCompleted(true);
+                })
+                .then(() => {
+                    const email = frame.data.email;
+
+                    return models.Invite.findOne({email: email, status: 'sent'}, frame.options)
                 });
         }
     }

@@ -397,6 +397,36 @@ describe.only('Authentication API v2', function () {
                 });
         });
 
+        it('check invite with invalid email', function () {
+            return request
+                .get(localUtils.API.getApiQuery('authentication/invitation?email=invalidemail'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect(400);
+        });
+
+        it('check valid invite', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`authentication/invitation?email=${testUtils.DataGenerator.forKnex.invites[0].email}`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .then((res) => {
+                    res.body.invitation[0].valid.should.equal(true);
+                });
+        });
+
+        it('check invalid invite', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`authentication/invitation?email=notinvited@example.org`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .then((res) => {
+                    res.body.invitation[0].valid.should.equal(false);
+                });
+        });
+
         it('try to accept without invite', function () {
             return request
                 .post(localUtils.API.getApiQuery('authentication/invitation'))
