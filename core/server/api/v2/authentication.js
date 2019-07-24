@@ -89,7 +89,7 @@ module.exports = {
                 .then(() => {
                     const email = frame.data.email;
 
-                    return models.Invite.findOne({email: email, status: 'sent'}, frame.options)
+                    return models.Invite.findOne({email: email, status: 'sent'}, frame.options);
                 });
         }
     }
