@@ -7,6 +7,33 @@ const invitations = require('../../services/invitations');
 module.exports = {
     docName: 'authentication',
 
+    setup: {
+        permissions: false,
+        validation: {
+            docName: 'setup'
+        },
+        query(frame) {
+            return Promise.resolve()
+                .then(() => {
+                    return auth.setup.assertSetupCompleted(false)();
+                })
+                .then(() => {
+                    const setupDetails = {
+                        name: frame.data.setup[0].name,
+                        email: frame.data.setup[0].email,
+                        password: frame.data.setup[0].password,
+                        blogTitle: frame.data.setup[0].blogTitle,
+                        status: 'active'
+                    };
+
+                    return auth.setup.setupUser(setupDetails);
+                })
+                .then((data) => {
+                    return auth.setup.doSettings(data, api.settings);
+                });
+        }
+    },
+
     generateResetToken: {
         permissions: true,
         options: [
@@ -15,7 +42,7 @@ module.exports = {
         query(frame) {
             return Promise.resolve()
                 .then(() => {
-                    return auth.setup.assertSetupCompleted(true);
+                    return auth.setup.assertSetupCompleted(true)();
                 })
                 .then(() => {
                     return auth.passwordreset.generateToken(frame.data.email, api.settings);
@@ -25,6 +52,7 @@ module.exports = {
                 });
         }
     },
+
     resetPassword: {
         validation: {
             docName: 'passwordreset',
@@ -41,7 +69,7 @@ module.exports = {
         query(frame) {
             return Promise.resolve()
                 .then(() => {
-                    return auth.setup.assertSetupCompleted(true);
+                    return auth.setup.assertSetupCompleted(true)();
                 })
                 .then(() => {
                     return auth.passwordreset.extractTokenParts(frame);
@@ -68,7 +96,7 @@ module.exports = {
         query(frame) {
             return Promise.resolve()
                 .then(() => {
-                    return auth.setup.assertSetupCompleted(true);
+                    return auth.setup.assertSetupCompleted(true)();
                 })
                 .then(() => {
                     return invitations.accept(frame.data);
@@ -84,7 +112,7 @@ module.exports = {
         query(frame) {
             return Promise.resolve()
                 .then(() => {
-                    return auth.setup.assertSetupCompleted(true);
+                    return auth.setup.assertSetupCompleted(true)();
                 })
                 .then(() => {
                     const email = frame.data.email;
