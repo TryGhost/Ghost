@@ -46,6 +46,14 @@ describe('Integrations API', function () {
             });
     });
 
+    it('Can not read internal integration', function () {
+        return request.get(localUtils.API.getApiQuery(`integrations/${testUtils.DataGenerator.Content.integrations[1].id}/`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(404);
+    });
+
     it('Can successfully create a single integration with auto generated content and admin api key', function (done) {
         request.post(localUtils.API.getApiQuery('integrations/'))
             .set('Origin', config.get('url'))

@@ -379,6 +379,12 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             name: 'Test Integration',
             slug: 'test-integration'
+        },
+        {
+            id: ObjectId.generate(),
+            name: 'Test Internal Integration',
+            slug: 'test-internal-integration',
+            type: 'internal'
         }
     ],
 
@@ -885,7 +891,8 @@ DataGenerator.forKnex = (function () {
     ];
 
     const integrations = [
-        createBasic(DataGenerator.Content.integrations[0])
+        createBasic(DataGenerator.Content.integrations[0]),
+        createBasic(DataGenerator.Content.integrations[1])
     ];
 
     const api_keys = [
