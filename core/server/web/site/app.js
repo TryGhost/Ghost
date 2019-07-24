@@ -4,6 +4,7 @@ const express = require('express');
 
 // App requires
 const config = require('../../config');
+const common = require('../../lib/common');
 const apps = require('../../services/apps');
 const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
@@ -97,6 +98,7 @@ module.exports = function setupSiteApp(options = {}) {
             res.writeHead(200);
             res.end();
         }).catch((err) => {
+            common.logging.error(err);
             res.writeHead(err.statusCode);
             res.end(err.message);
         });
@@ -106,6 +108,7 @@ module.exports = function setupSiteApp(options = {}) {
             res.writeHead(204);
             res.end();
         }).catch((err) => {
+            common.logging.error(err);
             res.writeHead(err.statusCode);
             res.end(err.message);
         });
@@ -114,8 +117,8 @@ module.exports = function setupSiteApp(options = {}) {
         membersService.ssr.getMemberDataFromSession(req, res).then((member) => {
             req.member = member;
             next();
-        }).catch(() => {
-            // @TODO log error?
+        }).catch((err) => {
+            common.logging.error(err);
             req.member = null;
             next();
         });
