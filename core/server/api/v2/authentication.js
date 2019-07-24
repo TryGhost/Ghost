@@ -1,6 +1,7 @@
-const auth = require('../../services/auth');
 const api = require('./index');
 const web = require('../../web');
+const auth = require('../../services/auth');
+const invitations = require('../../services/invitations');
 
 module.exports = {
     docName: 'authentication',
@@ -54,6 +55,22 @@ module.exports = {
                             web.shared.middlewares.api.spamPrevention.userLogin().reset(frame.options.ip, `${tokenParts.email}login`);
                             return params;
                         });
+                });
+        }
+    },
+
+    acceptInvitation: {
+        validation: {
+            docName: 'invitations'
+        },
+        permissions: false,
+        query(frame) {
+            return Promise.resolve()
+                .then(() => {
+                    return auth.setup.assertSetupCompleted(true);
+                })
+                .then(() => {
+                    return invitations.accept(frame.data);
                 });
         }
     }
