@@ -28,6 +28,49 @@ export function createParserPlugins(_options = {}) {
         };
     }
 
+    // HELPERS -----------------------------------------------------------------
+
+    function _readFigCaptionFromNode(node, payload) {
+        let figcaption = node.querySelector('figcaption');
+
+        if (figcaption) {
+            let cleanHtml = cleanBasicHtml(figcaption.innerHTML, options);
+            payload.caption = payload.caption ? `${payload.caption} / ${cleanHtml}` : cleanHtml;
+            figcaption.remove(); // cleanup this processed element
+        }
+    }
+
+    function _readGalleryImageFromNode(node, imgNum) {
+        let fileName = node.src.match(/[^/]*$/)[0];
+        let image = {
+            fileName,
+            row: Math.floor(imgNum / 3),
+            src: node.src
+        };
+
+        if (node.width) {
+            image.width = node.width;
+        } else if (node.dataset && node.dataset.width) {
+            image.width = parseInt(node.dataset.width, 10);
+        }
+
+        if (node.height) {
+            image.height = node.height;
+        } else if (node.dataset && node.dataset.height) {
+            image.height = parseInt(node.dataset.height, 10);
+        }
+
+        if (node.alt) {
+            image.alt = node.alt;
+        }
+
+        if (node.title) {
+            image.title = node.title;
+        }
+
+        return image;
+    }
+
     // PLUGINS -----------------------------------------------------------------
 
     // https://github.com/TryGhost/Koenig/issues/1
@@ -82,13 +125,68 @@ export function createParserPlugins(_options = {}) {
         node.nodeValue = node.nodeValue.replace(/^\n/, '');
     }
 
+    const kgGalleryCardToCard = (node, builder, {addSection, nodeFinished}) => {
+        if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
+            return;
+        }
+
+        if (!node.className.match(/kg-gallery-card/)) {
+            return;
+        }
+
+        let payload = {};
+        let imgs = Array.from(node.querySelectorAll('img'));
+
+        // Process nodes into the payload
+        payload.images = imgs.map(_readGalleryImageFromNode);
+
+        _readFigCaptionFromNode(node, payload);
+
+        let cardSection = builder.createCardSection('gallery', payload);
+        addSection(cardSection);
+        nodeFinished();
+    };
+
+    function grafGalleryToCard(node, builder, {addSection, nodeFinished}) {
+        function isGrafGallery(node) {
+            return node.nodeType === 1 && node.tagName === 'DIV' && node.dataset && node.dataset.paragraphCount && node.querySelectorAll('img').length > 0;
+        }
+
+        if (!isGrafGallery(node)) {
+            return;
+        }
+
+        let payload = {};
+
+        // These galleries exist in multiple divs. Read the images and cation from the first one...
+        let imgs = Array.from(node.querySelectorAll('img'));
+        _readFigCaptionFromNode(node, payload);
+
+        // ...and then iterate over any remaining divs until we run out of matches
+        let nextNode = node.nextSibling;
+        while (nextNode && isGrafGallery(nextNode)) {
+            let currentNode = nextNode;
+            imgs = imgs.concat(Array.from(currentNode.querySelectorAll('img')));
+            _readFigCaptionFromNode(currentNode, payload);
+            nextNode = currentNode.nextSibling;
+            // remove nodes as we go so that they don't go through the parser
+            currentNode.remove();
+        }
+
+        // Process nodes into the payload
+        payload.images = imgs.map(_readGalleryImageFromNode);
+
+        let cardSection = builder.createCardSection('gallery', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+
     function figureToImageCard(node, builder, {addSection, nodeFinished}) {
         if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
             return;
         }
 
         let img = node.querySelector('img');
-        let figcaption = node.querySelector('figcaption');
         let kgClass = node.className.match(/kg-width-(wide|full)/);
         let grafClass = node.className.match(/graf--layout(FillWidth|OutsetCenter)/);
 
@@ -108,10 +206,7 @@ export function createParserPlugins(_options = {}) {
             payload.cardWidth = grafClass[1] === 'FillWidth' ? 'full' : 'wide';
         }
 
-        if (figcaption) {
-            let cleanHtml = cleanBasicHtml(figcaption.innerHTML, options);
-            payload.caption = cleanHtml;
-        }
+        _readFigCaptionFromNode(node, payload);
 
         let cardSection = builder.createCardSection('image', payload);
         addSection(cardSection);
@@ -156,7 +251,6 @@ export function createParserPlugins(_options = {}) {
         }
 
         let src = iframe.src;
-        let figcaption = node.querySelector('figcaption');
 
         // If we don't have a src, or it's not an absolute URL, we can't handle this
         if (!src || !src.match(/^https?:\/\//i)) {
@@ -167,10 +261,7 @@ export function createParserPlugins(_options = {}) {
             url: src
         };
 
-        if (figcaption) {
-            payload.caption = cleanBasicHtml(figcaption.innerHTML, options);
-            node.removeChild(figcaption);
-        }
+        _readFigCaptionFromNode(node, payload);
 
         payload.html = node.innerHTML;
 
@@ -191,7 +282,6 @@ export function createParserPlugins(_options = {}) {
             return;
         }
 
-        let figcaption = node.querySelector('figcaption');
         let url = link.href;
 
         // If we don't have a url, or it's not an absolute URL, we can't handle this
@@ -203,10 +293,7 @@ export function createParserPlugins(_options = {}) {
             url: url
         };
 
-        if (figcaption) {
-            payload.caption = cleanBasicHtml(figcaption.innerHTML, options);
-            node.removeChild(figcaption);
-        }
+        _readFigCaptionFromNode(node, payload);
 
         payload.html = node.innerHTML;
 
@@ -236,9 +323,10 @@ export function createParserPlugins(_options = {}) {
         }
 
         let payload = {
-            code: code.textContent,
-            caption: cleanBasicHtml(figcaption.innerHTML, options)
+            code: code.textContent
         };
+
+        _readFigCaptionFromNode(node, payload);
 
         let preClass = pre.getAttribute('class') || '';
         let codeClass = code.getAttribute('class') || '';
@@ -298,7 +386,9 @@ export function createParserPlugins(_options = {}) {
         kgHtmlCardToCard,
         brToSoftBreakAtom,
         removeLeadingNewline,
+        kgGalleryCardToCard,
         figureBlockquoteToEmbedCard, // I think these can contain images
+        grafGalleryToCard,
         figureToImageCard,
         imgToCard,
         hrToCard,
