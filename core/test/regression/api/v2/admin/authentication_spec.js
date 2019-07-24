@@ -426,7 +426,10 @@ describe.only('Authentication API v2', function () {
                     }]
                 })
                 .expect('Content-Type', /json/)
-                .expect(200);
+                .expect(200)
+                .then((res) => {
+                    res.body.invitation[0].message.should.equal('Invitation accepted.');
+                });
         });
     });
 });
