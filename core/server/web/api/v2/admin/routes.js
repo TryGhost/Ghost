@@ -189,7 +189,7 @@ module.exports = function apiRoutes() {
     router.put('/authentication/passwordreset', shared.middlewares.brute.globalBlock, api.http(apiv2.authentication.resetPassword));
     router.post('/authentication/invitation', api.http(apiv2.authentication.acceptInvitation));
     router.get('/authentication/invitation', api.http(apiv2.authentication.isInvitation));
-    router.post('/authentication/setup', api.http(api.authentication.setup));
+    router.post('/authentication/setup', api.http(apiv2.authentication.setup));
     router.put('/authentication/setup', mw.authAdminApi, api.http(api.authentication.updateSetup));
     router.get('/authentication/setup', api.http(api.authentication.isSetup));
 
