@@ -43,7 +43,7 @@ describe('Settings Content API', function () {
 
                 // Verify we have the right keys for settings
                 settings.should.have.properties(_.values(publicSettings));
-                Object.keys(settings).length.should.equal(22);
+                Object.keys(settings).length.should.equal(23);
 
                 // Verify that we are returning the defaults for each value
                 _.forEach(settings, (value, key) => {
@@ -57,6 +57,12 @@ describe('Settings Content API', function () {
                      * This is just a hack to be able to alias ghost_head & ghost_foot quickly.
                      */
                     if (['codeinjection_head', 'codeinjection_foot'].includes(key)) {
+                        return;
+                    }
+
+                    // `url` does not come from the settings cache
+                    if (key === 'url') {
+                        should(value).eql(`${config.get('url')}/`);
                         return;
                     }
 
