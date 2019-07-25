@@ -366,6 +366,39 @@ describe('Authentication API', function () {
                 .expect('Content-Type', /json/)
                 .expect(403);
         });
+
+        it('update setup', function () {
+            return localUtils.doAuth(request)
+                .then((ownerAccessToken) => {
+                    return request
+                        .put(localUtils.API.getApiQuery('authentication/setup'))
+                        .set('Authorization', 'Bearer ' + ownerAccessToken)
+                        .set('Origin', config.get('url'))
+                        .send({
+                            setup: [{
+                                name: 'test user edit',
+                                email: 'test-edited@example.com',
+                                password: 'thisissupersafe',
+                                blogTitle: 'a test blog'
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect(200);
+                })
+                .then((res) => {
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.users);
+                    should.not.exist(jsonResponse.meta);
+
+                    jsonResponse.users.should.have.length(1);
+                    localUtils.API.checkResponse(jsonResponse.users[0], 'user');
+
+                    const newUser = jsonResponse.users[0];
+                    newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
+                    newUser.name.should.equal('test user edit');
+                    newUser.email.should.equal('test-edited@example.com');
+                });
+        });
     });
 
     describe('Invitation', function () {
