@@ -21,7 +21,7 @@ describe('{{meta_description}} helper', function () {
             localSettingsCache.description = 'The professional publishing platform';
         });
 
-        it('returns correct blog description', function () {
+        it('returns correct site description', function () {
             var rendered = helpers.meta_description.call(
                 {},
                 {data: {root: {context: ['home', 'index']}}}
@@ -137,7 +137,7 @@ describe('{{meta_description}} helper', function () {
             localSettingsCache.meta_description = 'Meta description of the professional publishing platform';
         });
 
-        it('returns correct blog description', function () {
+        it('returns correct site description', function () {
             var rendered = helpers.meta_description.call(
                 {},
                 {data: {root: {context: ['home', 'index']}}}

@@ -370,7 +370,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta structured data on homepage with site metadata defined', function (done) {
-            settingsCache.get.withArgs('meta_description').returns('blog SEO description');
+            settingsCache.get.withArgs('meta_description').returns('site SEO description');
 
             settingsCache.get.withArgs('og_title').returns('facebook site title');
             settingsCache.get.withArgs('og_description').returns('facebook site description');
@@ -391,7 +391,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/" \/>/);
                 rendered.string.should.match(/<meta name="referrer" content="no-referrer-when-downgrade" \/>/);
-                rendered.string.should.match(/<meta name="description" content="blog SEO description" \/>/);
+                rendered.string.should.match(/<meta name="description" content="site SEO description" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
                 rendered.string.should.match(/<meta property="og:title" content="facebook site title" \/>/);
@@ -411,7 +411,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/"/);
                 rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/blog-cover.png"/);
-                rendered.string.should.match(/"description": "blog SEO description"/);
+                rendered.string.should.match(/"description": "site SEO description"/);
 
                 done();
             }).catch(done);
