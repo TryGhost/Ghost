@@ -11,6 +11,12 @@ module.exports = {
         };
     },
 
+    isSetup(data, apiConfig, frame) {
+        frame.response = {
+            setup: [data]
+        };
+    },
+
     acceptInvitation(data, apiConfig, frame) {
         debug('acceptInvitation');
 

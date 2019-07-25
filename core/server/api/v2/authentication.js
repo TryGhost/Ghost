@@ -1,4 +1,5 @@
 const api = require('./index');
+const config = require('../../config');
 const web = require('../../web');
 const models = require('../../models');
 const auth = require('../../services/auth');
@@ -30,6 +31,22 @@ module.exports = {
                 })
                 .then((data) => {
                     return auth.setup.doSettings(data, api.settings);
+                });
+        }
+    },
+
+    isSetup: {
+        permissions: false,
+        query() {
+            return auth.setup.checkIsSetup()
+                .then((isSetup) => {
+                    return {
+                        status: isSetup,
+                        // Pre-populate from config if, and only if the values exist in config.
+                        title: config.title || undefined,
+                        name: config.user_name || undefined,
+                        email: config.user_email || undefined
+                    };
                 });
         }
     },
