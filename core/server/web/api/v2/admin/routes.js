@@ -191,7 +191,7 @@ module.exports = function apiRoutes() {
     router.get('/authentication/invitation', api.http(apiv2.authentication.isInvitation));
     router.post('/authentication/setup', api.http(apiv2.authentication.setup));
     router.put('/authentication/setup', mw.authAdminApi, api.http(api.authentication.updateSetup));
-    router.get('/authentication/setup', api.http(api.authentication.isSetup));
+    router.get('/authentication/setup', api.http(apiv2.authentication.isSetup));
 
     // ## Images
     router.post('/images/upload',
