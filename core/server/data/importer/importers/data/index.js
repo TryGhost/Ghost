@@ -59,14 +59,14 @@ DataImporter = {
         if (!importData.meta) {
             throw new common.errors.IncorrectUsageError({
                 message: 'Wrong importer structure. `meta` is missing.',
-                help: 'https://ghost.org/docs/api/v2/migration/#json-file-structure'
+                help: 'https://ghost.org/docs/api/migration/#json-file-structure'
             });
         }
 
         if (!importData.meta.version) {
             throw new common.errors.IncorrectUsageError({
                 message: 'Wrong importer structure. `meta.version` is missing.',
-                help: 'https://ghost.org/docs/api/v2/migration/#json-file-structure'
+                help: 'https://ghost.org/docs/api/migration/#json-file-structure'
             });
         }
 

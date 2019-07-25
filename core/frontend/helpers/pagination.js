@@ -19,7 +19,7 @@ pagination = function (options) {
         throw new errors.IncorrectUsageError({
             level: 'normal',
             message: i18n.t('warnings.helpers.pagination.invalidData'),
-            help: 'https://ghost.org/docs/api/v2/handlebars-themes/helpers/pagination/'
+            help: 'https://ghost.org/docs/api/handlebars-themes/helpers/pagination/'
         });
     }
 

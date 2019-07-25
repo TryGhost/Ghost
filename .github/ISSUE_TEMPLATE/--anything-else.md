@@ -17,8 +17,8 @@ Alternatively, check out these resources below. Thanks! 😁.
 
 - [Forum](https://forum.ghost.org/c/help)
 - [Theme Support](https://forum.ghost.org/c/themes)
-- [Theme Docs](https://ghost.org/docs/api/v2/handlebars-themes/)
-- [API Docs](https://ghost.org/docs/api/v2/)
+- [Theme Docs](https://ghost.org/docs/api/handlebars-themes/)
+- [API Docs](https://ghost.org/docs/api/)
 - [Feature Requests / Ideas](https://forum.ghost.org/c/Ideas)
 - [Contributing Guide](https://ghost.org/docs/concepts/contributing/)
 - [Self-hoster Docs](https://ghost.org/docs/)

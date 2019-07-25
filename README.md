@@ -85,7 +85,7 @@ $ ghost install
 
 &nbsp;
 
-Check out our [official documentation](https://ghost.org/docs/) for more information about our [recommended hosting stack](https://ghost.org/docs/concepts/hosting/) & properly [upgrading Ghost](https://ghost.org/faq/upgrade-to-ghost-2-0/), plus everything you need to develop your own Ghost [themes](https://ghost.org/docs/api/v2/handlebars-themes/) or work with [our API](https://ghost.org/docs/api/v2/).
+Check out our [official documentation](https://ghost.org/docs/) for more information about our [recommended hosting stack](https://ghost.org/docs/concepts/hosting/) & properly [upgrading Ghost](https://ghost.org/faq/upgrade-to-ghost-2-0/), plus everything you need to develop your own Ghost [themes](https://ghost.org/docs/api/handlebars-themes/) or work with [our API](https://ghost.org/docs/api/).
 
 &nbsp;
 
