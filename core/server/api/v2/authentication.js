@@ -1,5 +1,6 @@
 const api = require('./index');
 const config = require('../../config');
+const common = require('../../lib/common');
 const web = require('../../web');
 const models = require('../../models');
 const auth = require('../../services/auth');
@@ -31,6 +32,38 @@ module.exports = {
                 })
                 .then((data) => {
                     return auth.setup.doSettings(data, api.settings);
+                });
+        }
+    },
+
+    updateSetup: {
+        permissions: (frame) => {
+            return models.User.findOne({role: 'Owner', status: 'all'})
+                .then((owner) => {
+                    if (owner.id !== frame.options.context.user) {
+                        throw new common.errors.NoPermissionError({message: common.i18n.t('errors.api.authentication.notTheBlogOwner')});
+                    }
+                });
+        },
+        validation: {
+            docName: 'setup'
+        },
+        query(frame) {
+            return Promise.resolve()
+                .then(() => {
+                    return auth.setup.assertSetupCompleted(true)();
+                })
+                .then(() => {
+                    const setupDetails = {
+                        name: frame.data.setup[0].name,
+                        email: frame.data.setup[0].email,
+                        password: frame.data.setup[0].password,
+                        blogTitle: frame.data.setup[0].blogTitle,
+                        status: 'active'
+                    };
+
+                    return auth.setup.setupUser(setupDetails)
+                        .then(({user}) => user);
                 });
         }
     },
