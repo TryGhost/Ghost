@@ -25,15 +25,51 @@ describe('getTitle', function () {
         title.should.equal('My test title');
     });
 
-    it('should return blog title if on home', function () {
-        localSettingsCache.title = 'My blog title';
+    it('should return site title if on home', function () {
+        localSettingsCache.title = 'My site title';
 
         var title = getTitle({}, {context: 'home'});
-        title.should.equal('My blog title');
+        title.should.equal('My site title');
     });
 
-    it('should return author name - blog title if on data author page', function () {
-        localSettingsCache.title = 'My blog title 2';
+    it('should return site meta_title if on home and mata_title present', function () {
+        localSettingsCache.title = 'My site title';
+        localSettingsCache.meta_title = 'My site meta title';
+
+        var title = getTitle({}, {context: 'home'});
+        title.should.equal('My site meta title');
+    });
+
+    it('should return facebook site title if in home context', function () {
+        localSettingsCache.title = 'My site title';
+        localSettingsCache.og_title = 'My site facebook meta title';
+
+        var title = getTitle({
+        }, {
+            context: ['home']
+        }, {
+            property: 'og'
+        });
+
+        title.should.equal('My site facebook meta title');
+    });
+
+    it('should return twitter site title if in home context', function () {
+        localSettingsCache.title = 'My site title';
+        localSettingsCache.twitter_title = 'My site twitter meta title';
+
+        var title = getTitle({
+        }, {
+            context: ['home']
+        }, {
+            property: 'twitter'
+        });
+
+        title.should.equal('My site twitter meta title');
+    });
+
+    it('should return author name - site title if on data author page', function () {
+        localSettingsCache.title = 'My site title 2';
 
         var title = getTitle({
             author: {
@@ -41,11 +77,11 @@ describe('getTitle', function () {
             }
         }, {context: ['author']});
 
-        title.should.equal('Author Name - My blog title 2');
+        title.should.equal('Author Name - My site title 2');
     });
 
     it('should return author page title if on data author page with more then one page', function () {
-        localSettingsCache.title = 'My blog title 2';
+        localSettingsCache.title = 'My site title 2';
 
         var title = getTitle({
             author: {
@@ -59,11 +95,11 @@ describe('getTitle', function () {
             }
         });
 
-        title.should.equal('Author Name - My blog title 2 (Page 3)');
+        title.should.equal('Author Name - My site title 2 (Page 3)');
     });
 
-    it('should return tag name - blog title if on data tag page no meta_title', function () {
-        localSettingsCache.title = 'My blog title 3';
+    it('should return tag name - site title if on data tag page no meta_title', function () {
+        localSettingsCache.title = 'My site title 3';
 
         var title = getTitle({
             tag: {
@@ -71,11 +107,11 @@ describe('getTitle', function () {
             }
         }, {context: ['tag']});
 
-        title.should.equal('Tag Name - My blog title 3');
+        title.should.equal('Tag Name - My site title 3');
     });
 
-    it('should return tag name - blog title if on data tag page no meta_title (Page #)', function () {
-        localSettingsCache.title = 'My blog title 3';
+    it('should return tag name - site title if on data tag page no meta_title (Page #)', function () {
+        localSettingsCache.title = 'My site title 3';
 
         var title = getTitle({
             tag: {
@@ -89,11 +125,11 @@ describe('getTitle', function () {
             }
         });
 
-        title.should.equal('Tag Name - My blog title 3 (Page 39)');
+        title.should.equal('Tag Name - My site title 3 (Page 39)');
     });
 
     it('should return translated pagination-string if passed in options object', function () {
-        localSettingsCache.title = 'This is my blog title';
+        localSettingsCache.title = 'This is my site title';
 
         var title = getTitle({
             tag: {
@@ -111,7 +147,7 @@ describe('getTitle', function () {
             }
         });
 
-        title.should.equal('Tag Name - This is my blog title p.23');
+        title.should.equal('Tag Name - This is my site title p.23');
     });
 
     it('should return tag meta_title if in tag data', function () {
@@ -242,8 +278,8 @@ describe('getTitle', function () {
         title.should.equal('My Tag Meta Title Post!');
     });
 
-    it('should return blog title with page if unknown type', function () {
-        localSettingsCache.title = 'My blog title 4';
+    it('should return site title with page if unknown type', function () {
+        localSettingsCache.title = 'My site title 4';
 
         var title = getTitle({}, {
             context: ['paged'],
@@ -253,6 +289,6 @@ describe('getTitle', function () {
             }
         });
 
-        title.should.equal('My blog title 4 (Page 35)');
+        title.should.equal('My site title 4 (Page 35)');
     });
 });
