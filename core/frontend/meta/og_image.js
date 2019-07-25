@@ -6,7 +6,7 @@ const settingsCache = require('../../server/services/settings/cache');
 function getOgImage(data) {
     const context = data.context ? data.context : null;
     const contextObject = getContextObject(data, context);
-    const blogOgImage = settingsCache.get('og_image');
+    const siteOgImage = settingsCache.get('og_image');
 
     if (_.includes(context, 'post') || _.includes(context, 'page') || _.includes(context, 'amp')) {
         if (contextObject.og_image) {
@@ -16,8 +16,8 @@ function getOgImage(data) {
         }
     }
 
-    if (_.includes(context, 'home') && blogOgImage) {
-        return urlUtils.urlFor('image', {image: blogOgImage}, true);
+    if (_.includes(context, 'home') && siteOgImage) {
+        return urlUtils.urlFor('image', {image: siteOgImage}, true);
     }
 
     return null;

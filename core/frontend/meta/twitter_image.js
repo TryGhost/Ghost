@@ -6,7 +6,7 @@ const settingsCache = require('../../server/services/settings/cache');
 function getTwitterImage(data) {
     const context = data.context ? data.context : null;
     const contextObject = getContextObject(data, context);
-    const blogOgImage = settingsCache.get('twitter_image');
+    const siteTwitterImage = settingsCache.get('twitter_image');
 
     if (_.includes(context, 'post') || _.includes(context, 'page') || _.includes(context, 'amp')) {
         if (contextObject.twitter_image) {
@@ -16,8 +16,8 @@ function getTwitterImage(data) {
         }
     }
 
-    if (_.includes(context, 'home') && blogOgImage) {
-        return urlUtils.urlFor('image', {image: blogOgImage}, true);
+    if (_.includes(context, 'home') && siteTwitterImage) {
+        return urlUtils.urlFor('image', {image: siteTwitterImage}, true);
     }
 
     return null;
