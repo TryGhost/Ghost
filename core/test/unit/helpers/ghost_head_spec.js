@@ -369,6 +369,54 @@ describe('{{ghost_head}} helper', function () {
             }).catch(done);
         });
 
+        it('returns meta structured data on homepage with site metadata defined', function (done) {
+            settingsCache.get.withArgs('meta_description').returns('site SEO description');
+
+            settingsCache.get.withArgs('og_title').returns('facebook site title');
+            settingsCache.get.withArgs('og_description').returns('facebook site description');
+            settingsCache.get.withArgs('og_image').returns('/content/images/facebook-image.png');
+
+            settingsCache.get.withArgs('twitter_title').returns('twitter site title');
+            settingsCache.get.withArgs('twitter_description').returns('twitter site description');
+            settingsCache.get.withArgs('twitter_image').returns('/content/images/twitter-image.png');
+
+            helpers.ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
+                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/" \/>/);
+                rendered.string.should.match(/<meta name="referrer" content="no-referrer-when-downgrade" \/>/);
+                rendered.string.should.match(/<meta name="description" content="site SEO description" \/>/);
+                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
+                rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
+                rendered.string.should.match(/<meta property="og:title" content="facebook site title" \/>/);
+                rendered.string.should.match(/<meta property="og:description" content="facebook site description" \/>/);
+                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/" \/>/);
+                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/facebook-image.png" \/>/);
+                rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
+                rendered.string.should.match(/<meta name="twitter:title" content="twitter site title" \/>/);
+                rendered.string.should.match(/<meta name="twitter:description" content="twitter site description" \/>/);
+                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/" \/>/);
+                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/twitter-image.png" \/>/);
+                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
+                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
+                rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
+                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
+                rendered.string.should.match(/"@type": "WebSite"/);
+                rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
+                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/"/);
+                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/blog-cover.png"/);
+                rendered.string.should.match(/"description": "site SEO description"/);
+
+                done();
+            }).catch(done);
+        });
+
         it('returns structured data on static page', function (done) {
             var renderObject = {
                 post: posts[0]
