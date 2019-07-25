@@ -11,6 +11,14 @@ module.exports = {
         };
     },
 
+    updateSetup(user, apiConfig, frame) {
+        frame.response = {
+            users: [
+                mapper.mapUser(user, {options: {context: {internal: true}}})
+            ]
+        };
+    },
+
     isSetup(data, apiConfig, frame) {
         frame.response = {
             setup: [data]
