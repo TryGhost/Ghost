@@ -1,8 +1,45 @@
-var should = require('should'),
-    getOgImage = require('../../../../frontend/meta/og_image');
+const should = require('should');
+const sinon = require('sinon');
+const getOgImage = require('../../../../frontend/meta/og_image');
+const settingsCache = require('../../../../server/services/settings/cache');
 
 describe('getOgImage', function () {
-    it('[home] should return null if not post context [home]', function () {
+    describe('[home]', function () {
+        it('should return null if [home] context and no og_image set', function () {
+            sinon.stub(settingsCache, 'get').callsFake(function (key) {
+                return {
+                    og_image: null
+                }[key];
+            });
+
+            var ogImageUrl = getOgImage({
+                context: ['home'],
+                home: {}
+            });
+            should(ogImageUrl).equal(null);
+
+            sinon.restore();
+        });
+
+        it('should return image URL if [home] context and og_image set', function () {
+            sinon.stub(settingsCache, 'get').callsFake(function (key) {
+                return {
+                    og_image: '/content/images/home-og.jpg'
+                }[key];
+            });
+
+            var ogImageUrl = getOgImage({
+                context: ['home'],
+                home: {}
+            });
+            ogImageUrl.should.not.equal('/content/images/home-og.jpg');
+            ogImageUrl.should.match(/\/content\/images\/home-og\.jpg$/);
+
+            sinon.restore();
+        });
+    });
+
+    it('[home] should return null if not post context [home] and no og_image set', function () {
         var ogImageUrl = getOgImage({
             context: ['home'],
             home: {}

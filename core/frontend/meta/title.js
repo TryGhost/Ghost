@@ -1,13 +1,14 @@
-var _ = require('lodash'),
-    settingsCache = require('../../server/services/settings/cache');
+const _ = require('lodash');
+const settingsCache = require('../../server/services/settings/cache');
 
 function getTitle(data, root, options) {
-    var title = '',
-        context = root ? root.context : null,
-        postSdTitle,
-        blogTitle = settingsCache.get('title'),
-        pagination = root ? root.pagination : null,
-        pageString = '';
+    const context = root ? root.context : null;
+    const siteTitle = settingsCache.get('meta_title') || settingsCache.get('title');
+    const pagination = root ? root.pagination : null;
+
+    let title = '';
+    let postSdTitle;
+    let pageString = '';
 
     options = options ? options : {};
 
@@ -20,19 +21,24 @@ function getTitle(data, root, options) {
         title = data.meta_title;
     // Home title
     } else if (_.includes(context, 'home')) {
-        title = blogTitle;
+        if (options && options.property) {
+            const siteSdTitle = options.property + '_title';
+            title = settingsCache.get(siteSdTitle) || '';
+        } else {
+            title = siteTitle;
+        }
     // Author title, paged
     } else if (_.includes(context, 'author') && data.author && _.includes(context, 'paged')) {
-        title = data.author.name + ' - ' + blogTitle + pageString;
+        title = data.author.name + ' - ' + siteTitle + pageString;
     // Author title, index
     } else if (_.includes(context, 'author') && data.author) {
-        title = data.author.name + ' - ' + blogTitle;
+        title = data.author.name + ' - ' + siteTitle;
     // Tag title, paged
     } else if (_.includes(context, 'tag') && data.tag && _.includes(context, 'paged')) {
-        title = data.tag.meta_title || data.tag.name + ' - ' + blogTitle + pageString;
+        title = data.tag.meta_title || data.tag.name + ' - ' + siteTitle + pageString;
     // Tag title, index
     } else if (_.includes(context, 'tag') && data.tag) {
-        title = data.tag.meta_title || data.tag.name + ' - ' + blogTitle;
+        title = data.tag.meta_title || data.tag.name + ' - ' + siteTitle;
     // Post title
     } else if (_.includes(context, 'post') && data.post) {
         if (options && options.property) {
@@ -59,7 +65,7 @@ function getTitle(data, root, options) {
         }
     // Fallback
     } else {
-        title = blogTitle + pageString;
+        title = siteTitle + pageString;
     }
 
     return (title || '').trim();
