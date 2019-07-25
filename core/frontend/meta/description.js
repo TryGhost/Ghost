@@ -17,8 +17,8 @@ function getDescription(data, root, options) {
         description = '';
     } else if (_.includes(context, 'home')) {
         if (options && options.property) {
-            const blogSdDescription = options.property + '_description';
-            description = settingsCache.get(blogSdDescription) || '';
+            const siteSdDescription = options.property + '_description';
+            description = settingsCache.get(siteSdDescription) || '';
         } else {
             description = siteDescription;
         }
