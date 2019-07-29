@@ -98,7 +98,7 @@ module.exports = function setupSiteApp(options = {}) {
             res.writeHead(200);
             res.end();
         }).catch((err) => {
-            common.logging.error(err);
+            common.logging.warn(err.message);
             res.writeHead(err.statusCode);
             res.end(err.message);
         });
@@ -108,7 +108,7 @@ module.exports = function setupSiteApp(options = {}) {
             res.writeHead(204);
             res.end();
         }).catch((err) => {
-            common.logging.error(err);
+            common.logging.warn(err.message);
             res.writeHead(err.statusCode);
             res.end(err.message);
         });
@@ -118,7 +118,7 @@ module.exports = function setupSiteApp(options = {}) {
             req.member = member;
             next();
         }).catch((err) => {
-            common.logging.error(err);
+            common.logging.warn(err.message);
             req.member = null;
             next();
         });
