@@ -2509,7 +2509,25 @@ broccoli-clean-css@^1.1.0:
     inline-source-map-comment "^1.0.5"
     json-stable-stringify "^1.0.0"
 
-broccoli-concat@3.7.3, broccoli-concat@^3.2.2, broccoli-concat@^3.7.3:
+broccoli-concat@3.7.4:
+  version "3.7.4"
+  resolved "https://registry.yarnpkg.com/broccoli-concat/-/broccoli-concat-3.7.4.tgz#7371e846eb7a97cb44ccff10f68582bcadcafacd"
+  integrity sha512-9gRv1tyCQuq2+48DT9DQyxRNLOuwDtHybDeYuWA3g26HFqZd0PGAOeXcLXHpKRhxzrEbU6Gm28dZ/KolMr04cQ==
+  dependencies:
+    broccoli-debug "^0.6.5"
+    broccoli-kitchen-sink-helpers "^0.3.1"
+    broccoli-plugin "^1.3.0"
+    ensure-posix-path "^1.0.2"
+    fast-sourcemap-concat "^1.4.0"
+    find-index "^1.1.0"
+    fs-extra "^4.0.3"
+    fs-tree-diff "^0.5.7"
+    lodash.merge "^4.6.2"
+    lodash.omit "^4.1.0"
+    lodash.uniq "^4.2.0"
+    walk-sync "^0.3.2"
+
+broccoli-concat@^3.2.2, broccoli-concat@^3.7.3:
   version "3.7.3"
   resolved "https://registry.yarnpkg.com/broccoli-concat/-/broccoli-concat-3.7.3.tgz#0dca01311567ffb13180e6b4eb111824628e4885"
   integrity sha512-2Ma9h81EJ0PRb9n4sW0i8KZlcnpTQfKxcj87zvi5DFe1fd8CTDEdseHDotK2beuA2l+LbgVPfd8EHaBJKm/Y8g==
@@ -4787,7 +4805,7 @@ ember-cli-htmlbars-inline-precompile@2.1.0, ember-cli-htmlbars-inline-precompile
     heimdalljs-logger "^0.1.9"
     silent-error "^1.1.0"
 
-ember-cli-htmlbars@3.1.0, ember-cli-htmlbars@^3.0.0, ember-cli-htmlbars@^3.0.1:
+ember-cli-htmlbars@3.1.0, ember-cli-htmlbars@^3.0.0, ember-cli-htmlbars@^3.0.1, ember-cli-htmlbars@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-3.1.0.tgz#87806c2a0bca2ab52d4fb8af8e2215c1ca718a99"
   integrity sha512-cgvRJM73IT0aePUG7oQ/afB7vSRBV3N0wu9BrWhHX2zkR7A7cUBI7KC9VPk6tbctCXoM7BRGsCC4aIjF7yrfXA==
@@ -5362,14 +5380,6 @@ ember-moment@7.8.1:
     ember-getowner-polyfill "^2.2.0"
     ember-macro-helpers "^2.1.0"
 
-ember-native-dom-helpers@^0.5.10:
-  version "0.5.10"
-  resolved "https://registry.yarnpkg.com/ember-native-dom-helpers/-/ember-native-dom-helpers-0.5.10.tgz#9c7172e4ddfa5dd86830c46a936e2f8eca3e5896"
-  integrity sha512-bPJX49vlgnBGwFn/3WJPPJjjyd7/atvzW5j01u1dbyFf3bXvHg9Rs1qaZJdk8js0qZ1FINadIEC9vWtgN3w7tg==
-  dependencies:
-    broccoli-funnel "^1.1.0"
-    ember-cli-babel "^6.6.0"
-
 ember-one-way-select@4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/ember-one-way-select/-/ember-one-way-select-4.0.0.tgz#4da2a8b8abb3360feaa69099ea31989ad3068e89"
@@ -5399,15 +5409,14 @@ ember-power-calendar@^0.13.3:
     ember-cli-htmlbars "^3.0.1"
     ember-concurrency "^0.8.27 || ^0.9.0 || ^0.10.0 || ^1.0.0"
 
-ember-power-datepicker@0.6.1:
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/ember-power-datepicker/-/ember-power-datepicker-0.6.1.tgz#8acdf68ea02efc9da582434e2c566f1215245e93"
-  integrity sha512-v5C5DEcxEMUQpYADSiQX+vwqTivyYPY4Ko2cvaeJodeu4forJFc34b9KKBeSYb6Fc1TPyBHnkzZ44S/fRy2hoQ==
+ember-power-datepicker@0.6.2:
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/ember-power-datepicker/-/ember-power-datepicker-0.6.2.tgz#5fd2da3b3871787fee825ac51cdc6d5bf7148607"
+  integrity sha512-pE6ntPAQUlQRbymQyLzxrufmQUEwBMUTZ+BMYnihWjIAJWPMaqXagBwhVnfZ65N/KSXF3IylFuLitgsri4lUHg==
   dependencies:
     ember-basic-dropdown "^1.1.2"
-    ember-cli-babel "^7.1.2"
-    ember-cli-htmlbars "^3.0.0"
-    ember-native-dom-helpers "^0.5.10"
+    ember-cli-babel "^7.8.0"
+    ember-cli-htmlbars "^3.1.0"
     ember-power-calendar "^0.13.3"
 
 ember-power-select@2.3.5:
@@ -8369,7 +8378,7 @@ lodash.memoize@^4.1.2:
   resolved "https://registry.yarnpkg.com/lodash.memoize/-/lodash.memoize-4.1.2.tgz#bcc6c49a42a2840ed997f323eada5ecd182e0bfe"
   integrity sha1-vMbEmkKihA7Zl/Mj6tpezRguC/4=
 
-lodash.merge@^4.3.1, lodash.merge@^4.4.0, lodash.merge@^4.6.0:
+lodash.merge@^4.3.1, lodash.merge@^4.4.0, lodash.merge@^4.6.0, lodash.merge@^4.6.2:
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
   integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
