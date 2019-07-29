@@ -37,10 +37,17 @@ describe('{{link}} helper', function () {
     });
 
     describe('basic behaviour: simple links without context', function () {
-        it('basic <a> tag with default url', function () {
-            compile('{{#link}}text{{/link}}')
-                .with({})
-                .should.eql('<a href="/">text</a>');
+        it('throws an error for missing href=""', function () {
+            (function compileWith() {
+                compile('{{#link}}text{{/link}}')
+                    .with({});
+            }).should.throw();
+        });
+
+        it('silently accepts an empty href...', function () {
+            compile('{{#link href=tag.slug}}text{{/link}}')
+                .with({tag: null})
+                .should.eql('<a href="">text</a>');
         });
 
         it('<a> tag with a specific URL', function () {
@@ -336,20 +343,6 @@ describe('{{link}} helper', function () {
                 compile('{{#link href="/about/" activeClass=false parentActiveClass="parent"}}parent{{/link}}{{#link href="/about/team/" activeClass=false}}child{{/link}}')
                     .with({relativeUrl: '/about/team/'})
                     .should.eql('<a class="parent" href="/about/">parent</a><a href="/about/team/">child</a>');
-            });
-        });
-
-        describe('custom tag', function () {
-            it('can change tag', function () {
-                compile('{{#link href="/about/" class="my-class" tagName="li"}}text{{/link}}')
-                    .with({relativeUrl: '/about/'})
-                    .should.eql('<li class="my-class nav-current" href="/about/">text</li>');
-            });
-
-            it('can change tag and disable href', function () {
-                compile('{{#link href="/about/" class="my-class" tagName="li" nohref=true}}text{{/link}}')
-                    .with({relativeUrl: '/about/'})
-                    .should.eql('<li class="my-class nav-current">text</li>');
             });
         });
     });

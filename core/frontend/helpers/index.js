@@ -23,6 +23,7 @@ coreHelpers.is = require('./is');
 coreHelpers.has = require('./has');
 coreHelpers.lang = require('./lang');
 coreHelpers.link = require('./link');
+coreHelpers.link_class = require('./link_class');
 coreHelpers.meta_description = require('./meta_description');
 coreHelpers.meta_title = require('./meta_title');
 coreHelpers.navigation = require('./navigation');
@@ -57,6 +58,7 @@ registerAllCoreHelpers = function registerAllCoreHelpers() {
     registerThemeHelper('img_url', coreHelpers.img_url);
     registerThemeHelper('lang', coreHelpers.lang);
     registerThemeHelper('link', coreHelpers.link);
+    registerThemeHelper('link_class', coreHelpers.link_class);
     registerThemeHelper('meta_description', coreHelpers.meta_description);
     registerThemeHelper('meta_title', coreHelpers.meta_title);
     registerThemeHelper('navigation', coreHelpers.navigation);
