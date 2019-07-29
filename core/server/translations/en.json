@@ -596,6 +596,12 @@
             "is": {
                 "invalidAttribute": "Invalid or no attribute given to is helper"
             },
+            "link": {
+                "hrefIsRequired": "The \\{\\{#link\\}\\}\\{\\{/link\\}\\} helper requires an href=\"\" attribute."
+            },
+            "link_class": {
+                "forIsRequired": "The \\{\\{link_class\\}\\} helper requires a for=\"\" attribute."
+            },
             "navigation": {
                 "invalidData": "navigation data is not an object or is a function",
                 "valuesMustBeDefined": "All values must be defined for label, url and current",
