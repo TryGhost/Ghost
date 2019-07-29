@@ -94,6 +94,12 @@ function detectInternalImage(requestedImageUrl) {
 }
 
 function getImageWithSize(imagePath, requestedSize, imageSizes) {
+    const hasLeadingSlash = imagePath[0] === '/';
+
+    if (hasLeadingSlash) {
+        return '/' + getImageWithSize(imagePath.slice(1), requestedSize, imageSizes);
+    }
+
     if (!requestedSize) {
         return imagePath;
     }
