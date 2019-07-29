@@ -1,51 +1,9 @@
 // # link helper
 const _ = require('lodash');
-const {config, SafeString} = require('./proxy');
+const {config, SafeString, errors, i18n} = require('./proxy');
+const {buildLinkClasses} = require('./utils');
 
-const managedAttributes = ['href', 'class', 'activeClass', 'parentActiveClass', 'tagName', 'nohref'];
-
-function _getHref(hash) {
-    let href = hash.href || '/';
-    return href.string ? href.string : href;
-}
-
-function _clean(url) {
-    // Strips anchors and leading and trailing slashes
-    return url.replace(/#.*?$/, '').replace(/^\/|\/$/g, '');
-}
-
-// strips trailing slashes and compares urls
-function _urlMatch(href, location) {
-    if (!location) {
-        return false;
-    }
-
-    const strippedHref = _clean(href);
-    const strippedLocation = _clean(location);
-
-    return strippedHref === strippedLocation;
-}
-
-// We want to check if the first part of the current url is a match for href
-function _parentMatch(href, location) {
-    if (!location) {
-        return false;
-    }
-
-    let parent = false;
-    let locParts = _clean(location).split('/');
-    let hrefParts = _clean(href).split('/');
-
-    if (locParts.length <= hrefParts.length) {
-        return false;
-    }
-
-    for (let i = 0; i < hrefParts.length; i += 1) {
-        parent = hrefParts[i] === locParts[i];
-    }
-
-    return parent;
-}
+const managedAttributes = ['href', 'class', 'activeClass', 'parentActiveClass'];
 
 function _formatAttrs(attributes) {
     let attributeString = '';
@@ -64,13 +22,23 @@ module.exports = function link(options) {
     options.hash = options.hash || {};
     options.data = options.data || {};
 
-    let href = _getHref(options.hash);
-    let location = options.data.root.relativeUrl;
-    let tagName = options.hash.tagName || 'a';
-    let activeClass = _.has(options.hash, 'activeClass') ? options.hash.activeClass : 'nav-current';
-    let parentActiveClass = _.has(options.hash, 'parentActiveClass') ? options.hash.parentActiveClass : `${activeClass || 'nav-current'}-parent`;
-    let classes = options.hash.class ? options.hash.class.toString().split(' ') : [];
-    let noHref = _.has(options.hash, 'nohref') ? options.hash.nohref : false;
+    // If there is no href provided, this is theme dev error, so we throw an error to make this clear.
+    if (!_.has(options.hash, 'href')) {
+        throw new errors.IncorrectUsageError({
+            message: i18n.t('warnings.helpers.link.hrefIsRequired')
+        });
+    }
+    // If the href attribute is empty, this is probably a dynamic data problem, hard for theme devs to track down
+    // E.g. {{#link for=slug}}{{/link}} in a context where slug returns an empty string
+    // Error's here aren't useful (same as with empty get helper filters) so we fallback gracefully
+    if (!options.hash.href) {
+        options.hash.href = '';
+    }
+
+    let href = options.hash.href.string || options.hash.href;
+
+    // Calculate dynamic properties
+    let classes = buildLinkClasses(config.get('url'), href, options);
 
     // Remove all the attributes we don't want to do a one-to-one mapping of
     managedAttributes.forEach((attr) => {
@@ -80,20 +48,13 @@ module.exports = function link(options) {
     // Setup our one-to-one mapping of attributes;
     let attributes = options.hash;
 
-    // Calculate dynamic properties
-    let relativeHref = href.replace(config.get('url'), '');
-    if (_urlMatch(relativeHref, location) && activeClass) {
-        classes.push(activeClass);
-    } else if (_parentMatch(relativeHref, location) && parentActiveClass) {
-        classes.push(parentActiveClass);
-    }
-
     // Prepare output
     let classString = classes.length > 0 ? `class="${classes.join(' ')}"` : '';
-    let hrefString = !noHref ? `href="${href}"` : '';
+    let hrefString = `href="${href}"`;
     let attributeString = _.size(attributes) > 0 ? _formatAttrs(attributes) : '';
-    let openingTag = `<${tagName} ${classString} ${hrefString} ${attributeString}>`;
-    let closingTag = `</${tagName}>`;
+    let openingTag = `<a ${classString} ${hrefString} ${attributeString}>`;
+    let closingTag = `</a>`;
+
     // Clean up any extra spaces
     openingTag = openingTag.replace(/\s{2,}/g, ' ').replace(/\s>/, '>');
 
