@@ -128,12 +128,12 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.4.1.tgz#117d7226996d362db553e97895f32801aec38925"
-  integrity sha512-nh6P4EAdtzUy46q1SXHaCU6OPxfjRWOs5oq26Z/sd4iOYGKwWkZgJDHxQX9OYF0Rr1qoGGVSmffGFCf19a+c9w==
+"@tryghost/html-to-mobiledoc@0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.5.0.tgz#af66b1e5f38130534d8798e7782cb0ad0ee0a745"
+  integrity sha512-LQaxEZvP2YFtAg4nRHKGlEE1lQKvT8QvJHprZ6bAQuLB0WUIxNw0OXhslLTXlE3CmEjCcAzdNZxcC3aTfJd72Q==
   dependencies:
-    "@tryghost/kg-parser-plugins" "^0.5.0"
+    "@tryghost/kg-parser-plugins" "0.6.0"
     "@tryghost/mobiledoc-kit" "^0.11.2-ghost.4"
     jsdom "14.1.0"
 
@@ -142,10 +142,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-0.1.1.tgz#a065a5771c29af47d7e681fc6ac2db445b839daf"
   integrity sha512-pHszGBQMo6r9YTg9VTDJsn0+i+rRNTs09dAMI8ZbD11AP0ten5XJxIqLQuDJJwIrchZ91J2rl+LMgnQo1yIyNw==
 
-"@tryghost/kg-parser-plugins@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-0.5.0.tgz#def06ea586e1a075105531f289d49f9c91996203"
-  integrity sha512-0Vq0lfSXKkn8mLYb4Wz0VlK7pNtrhoioPQnG8o+/Juu8r4CHtHiLgGqTPWzPntd4wXNnBLAS3SppPE5GRM1Wng==
+"@tryghost/kg-parser-plugins@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-0.6.0.tgz#c1c82910be93869beeceb35b8e2dc373db6b522d"
+  integrity sha512-/Q5Pmb/ndVmmCdfOFKVtsyacwrWgmQK4LtRVjxN6X83V8cYLnTypy3of/gRXL6HI8c+eq/I7CBIti3lTBeR1jg==
   dependencies:
     "@tryghost/kg-clean-basic-html" "^0.1.1"
 
