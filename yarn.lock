@@ -420,17 +420,17 @@ alphanum-sort@^1.0.1, alphanum-sort@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/alphanum-sort/-/alphanum-sort-1.0.2.tgz#97a1119649b211ad33691d9f9f486a8ec9fbe0a3"
 
-amperize@0.5.2:
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/amperize/-/amperize-0.5.2.tgz#405233bf8b5a4c6ced48522be32aeb417b11db27"
-  integrity sha512-Y6MWCov1dnN+WYlWSp07qRWjdZYWtlOA+j6OOy/Lb73sPpKkcgxGXa91RjE5h+MGHFeamd0nWuLFngjcHbLWZA==
+amperize@0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/amperize/-/amperize-0.6.0.tgz#f5abef6894f3e76709c2791e089fdecec4aeb546"
+  integrity sha512-rcTMEpV5126y8NFbwKxyRtElltiYRy3xwzJLPW3bNAbwKceH8t/qwcPpG3V6JEoRxZ54K151f4JAMdbXiuXcJA==
   dependencies:
     async "^3.0.1"
     domutils "^1.7.0"
     emits "^3.0.0"
     htmlparser2 "^3.9.2"
     image-size "^0.7.4"
-    lodash "^4.17.4"
+    lodash "^4.17.11"
     probe-image-size "^4.0.0"
     request "^2.83.0"
     request-promise "^4.2.4"
