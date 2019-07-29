@@ -4328,10 +4328,10 @@ knex-migrator@3.3.2:
     mysql "^2.16.0"
     sqlite3 "^4.0.6"
 
-knex@0.19.0:
-  version "0.19.0"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.19.0.tgz#3c0383e70f01b35836079b8ef837fc6566c1aab3"
-  integrity sha512-4acpjPAugogM5KmffJ6wG2e9nrmDq6Xg4tWk0pEHJKfAnqBefMPD0Si9oA2aYzg3Fsfey5FvZYXEDNBsNHeVkw==
+knex@0.19.1:
+  version "0.19.1"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-0.19.1.tgz#a73b88697fe0d8ed1d7520d8ce390728444508f2"
+  integrity sha512-Y25eu5xMv8h/2/98YQqGMPzzo0AYs/HluST6BR8vkGfRyhme0A51jyCde4y4QInJo2GokrUzrXqlKDqqERg+nQ==
   dependencies:
     bluebird "^3.5.5"
     colorette "1.0.8"
@@ -4341,7 +4341,7 @@ knex@0.19.0:
     inherits "~2.0.4"
     interpret "^1.2.0"
     liftoff "3.1.0"
-    lodash "^4.17.14"
+    lodash "^4.17.15"
     mkdirp "^0.5.1"
     pg-connection-string "2.0.0"
     tarn "^2.0.0"
@@ -4623,7 +4623,7 @@ lodash@4.17.11, lodash@^4.13.1, lodash@^4.14.2, lodash@^4.16.4, lodash@^4.17.10,
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
 
-lodash@4.17.15:
+lodash@4.17.15, lodash@^4.17.15:
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
   integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
