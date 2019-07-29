@@ -179,5 +179,24 @@ describe('{{image}} helper', function () {
             should.exist(rendered);
             rendered.should.equal('/content/images/size/w400/my-coole-img.jpg');
         });
+
+        it('should output the correct url for relative paths without leading slash', function () {
+            var rendered = helpers.img_url('content/images/my-coole-img.jpg', {
+                hash: {
+                    size: 'medium'
+                },
+                data: {
+                    config: {
+                        image_sizes: {
+                            medium: {
+                                width: 400
+                            }
+                        }
+                    }
+                }
+            });
+            should.exist(rendered);
+            rendered.should.equal('content/images/size/w400/my-coole-img.jpg');
+        });
     });
 });

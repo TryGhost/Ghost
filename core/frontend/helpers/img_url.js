@@ -11,7 +11,7 @@ const url = require('url');
 const _ = require('lodash');
 const proxy = require('./proxy');
 const urlUtils = proxy.urlUtils;
-const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
+const STATIC_IMAGE_URL_PREFIX = `${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 
 module.exports = function imgUrl(requestedImageUrl, options) {
     // CASE: if no url is passed, e.g. `{{img_url}}` we show a warning
@@ -94,6 +94,12 @@ function detectInternalImage(requestedImageUrl) {
 }
 
 function getImageWithSize(imagePath, requestedSize, imageSizes) {
+    const hasLeadingSlash = imagePath[0] === '/';
+
+    if (hasLeadingSlash) {
+        return '/' + getImageWithSize(imagePath.slice(1), requestedSize, imageSizes);
+    }
+
     if (!requestedSize) {
         return imagePath;
     }
