@@ -12,14 +12,6 @@ let request;
 describe.only('Authentication API v2', function () {
     let ghostServer;
 
-    beforeEach(function () {
-        sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
-    });
-
-    afterEach(function () {
-        sinon.restore();
-    });
-
     describe('Blog setup', function () {
         before(function () {
             return ghost({forceStart: true})
@@ -27,6 +19,14 @@ describe.only('Authentication API v2', function () {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('url'));
                 });
+        });
+
+        beforeEach(function () {
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+        });
+
+        afterEach(function () {
+            sinon.restore();
         });
 
         it('is setup? no', function () {
