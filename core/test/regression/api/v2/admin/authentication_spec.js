@@ -1,15 +1,18 @@
 const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
-const testUtils = require('../../../../utils/index');
 const localUtils = require('./utils');
+const testUtils = require('../../../../utils/index');
+const models = require('../../../../../server/models/index');
+const security = require('../../../../../server/lib/security/index');
+const settingsCache = require('../../../../../server/services/settings/cache');
 const config = require('../../../../../server/config/index');
 const mailService = require('../../../../../server/services/mail/index');
 
 let ghost = testUtils.startGhost;
 let request;
 
-describe.only('Authentication API v2', function () {
+describe('Authentication API v2', function () {
     let ghostServer;
 
     describe('Blog setup', function () {
@@ -206,6 +209,103 @@ describe.only('Authentication API v2', function () {
                 .expect(200)
                 .then((res) => {
                     res.body.invitation[0].message.should.equal('Invitation accepted.');
+                });
+        });
+    });
+
+    describe('Password reset', function () {
+        const user = testUtils.DataGenerator.forModel.users[0];
+
+        before(function () {
+            return ghost({forceStart: true})
+                .then(() =>  {
+                    request = supertest.agent(config.get('url'));
+                })
+                .then(() => {
+                    return localUtils.doAuth(request);
+                });
+        });
+
+        beforeEach(function () {
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('reset password', function (done) {
+            models.User.getOwnerUser(testUtils.context.internal)
+                .then(function (ownerUser) {
+                    var token = security.tokens.resetToken.generateHash({
+                        expires: Date.now() + (1000 * 60),
+                        email: user.email,
+                        dbHash: settingsCache.get('db_hash'),
+                        password: ownerUser.get('password')
+                    });
+
+                    request.put(localUtils.API.getApiQuery('authentication/passwordreset'))
+                        .set('Origin', config.get('url'))
+                        .set('Accept', 'application/json')
+                        .send({
+                            passwordreset: [{
+                                token: token,
+                                newPassword: 'thisissupersafe',
+                                ne2Password: 'thisissupersafe'
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            const jsonResponse = res.body;
+                            should.exist(jsonResponse.passwordreset[0].message);
+                            jsonResponse.passwordreset[0].message.should.equal('Password changed successfully.');
+                            done();
+                        });
+                })
+                .catch(done);
+        });
+
+        it('reset password: invalid token', function () {
+            return request
+                .put(localUtils.API.getApiQuery('authentication/passwordreset'))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .send({
+                    passwordreset: [{
+                        token: 'invalid',
+                        newPassword: 'thisissupersafe',
+                        ne2Password: 'thisissupersafe'
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(401);
+        });
+
+        it('reset password: generate reset token', function () {
+            return request
+                .post(localUtils.API.getApiQuery('authentication/passwordreset'))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .send({
+                    passwordreset: [{
+                        email: user.email
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.passwordreset[0].message);
+                    jsonResponse.passwordreset[0].message.should.equal('Check your email for further instructions.');
+                    mailService.GhostMailer.prototype.send.args[0][0].to.should.equal(user.email);
                 });
         });
     });
