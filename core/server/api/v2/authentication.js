@@ -66,8 +66,10 @@ module.exports = {
                         status: 'active'
                     };
 
-                    return auth.setup.setupUser(setupDetails)
-                        .then(({user}) => user);
+                    return auth.setup.setupUser(setupDetails);
+                })
+                .then((data) => {
+                    return auth.setup.doSettings(data, api.settings);
                 });
         }
     },
