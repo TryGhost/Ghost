@@ -87,8 +87,6 @@ function sendNotification(setupUser, mailAPI) {
         ownerEmail: setupUser.email
     };
 
-    common.events.emit('setup.completed', setupUser);
-
     if (config.get('sendWelcomeEmail')) {
         return mail.utils.generateContent({data: data, template: 'welcome'})
             .then((content) => {
