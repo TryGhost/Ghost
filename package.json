@@ -156,5 +156,8 @@
     "sinon": "7.2.3",
     "supertest": "4.0.2",
     "tmp": "0.0.33"
+  },
+  "resolutions": {
+    "moment-timezone": "0.5.23"
   }
 }
