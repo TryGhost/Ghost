@@ -1,14 +1,24 @@
 const should = require('should');
+const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../../../../utils/index');
 const localUtils = require('./utils');
 const config = require('../../../../../server/config/index');
+const mailService = require('../../../../../server/services/mail/index');
 
 let ghost = testUtils.startGhost;
 let request;
 
 describe.only('Authentication API v2', function () {
     let ghostServer;
+
+    beforeEach(function () {
+        sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+    });
+
+    afterEach(function () {
+        sinon.restore();
+    });
 
     describe('Blog setup', function () {
         before(function () {
@@ -56,6 +66,9 @@ describe.only('Authentication API v2', function () {
                     newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
                     newUser.name.should.equal('test user');
                     newUser.email.should.equal('test@example.com');
+
+                    mailService.GhostMailer.prototype.send.called.should.be.true();
+                    mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('test@example.com');
                 });
         });
 
