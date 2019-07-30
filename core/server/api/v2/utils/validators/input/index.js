@@ -3,6 +3,10 @@ module.exports = {
         return require('./passwordreset');
     },
 
+    get setup() {
+        return require('./setup');
+    },
+
     get posts() {
         return require('./posts');
     },
