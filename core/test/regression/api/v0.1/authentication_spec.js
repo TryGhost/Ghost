@@ -32,7 +32,12 @@ describe('Authentication API', function () {
                 });
         });
 
+        beforeEach(function () {
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+        });
+
         afterEach(function () {
+            sinon.restore();
             return testUtils.clearBruteData();
         });
 
@@ -269,6 +274,27 @@ describe('Authentication API', function () {
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(401);
+        });
+
+        it('reset password: send reset password', function () {
+            return request
+                .post(localUtils.API.getApiQuery('authentication/passwordreset/'))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .send({
+                    passwordreset: [{
+                        email: user.email
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.passwordreset[0].message);
+                    jsonResponse.passwordreset[0].message.should.equal('Check your email for further instructions.');
+                    mailService.GhostMailer.prototype.send.args[0][0].to.should.equal(user.email);
+                });
         });
 
         it('revoke token', function () {

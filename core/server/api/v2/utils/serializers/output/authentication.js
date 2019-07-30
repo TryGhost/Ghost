@@ -25,6 +25,22 @@ module.exports = {
         };
     },
 
+    generateResetToken(data, apiConfig, frame) {
+        frame.response = {
+            passwordreset: [{
+                message: common.i18n.t('common.api.authentication.mail.checkEmailForInstructions')
+            }]
+        };
+    },
+
+    resetPassword(data, apiConfig, frame) {
+        frame.response = {
+            passwordreset: [{
+                message: common.i18n.t('common.api.authentication.mail.passwordChanged')
+            }]
+        };
+    },
+
     acceptInvitation(data, apiConfig, frame) {
         debug('acceptInvitation');
 
