@@ -91,6 +91,9 @@ module.exports = {
     },
 
     generateResetToken: {
+        validation: {
+            docName: 'passwordreset'
+        },
         permissions: true,
         options: [
             'email'
@@ -101,7 +104,7 @@ module.exports = {
                     return auth.setup.assertSetupCompleted(true)();
                 })
                 .then(() => {
-                    return auth.passwordreset.generateToken(frame.data.email, api.settings);
+                    return auth.passwordreset.generateToken(frame.data.passwordreset[0].email, api.settings);
                 })
                 .then((token) => {
                     return auth.passwordreset.sendResetNotification(token, api.mail);
@@ -113,7 +116,6 @@ module.exports = {
         validation: {
             docName: 'passwordreset',
             data: {
-                token: {required: true},
                 newPassword: {required: true},
                 ne2Password: {required: true}
             }
