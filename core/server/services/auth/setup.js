@@ -82,7 +82,7 @@ async function doSettings(data, settingsAPI) {
     return user;
 }
 
-function sendNotification(email, mailAPI) {
+function sendWelcomeEmail(email, mailAPI) {
     if (config.get('sendWelcomeEmail')) {
         const data = {
             ownerEmail: email
@@ -117,5 +117,5 @@ module.exports = {
     assertSetupCompleted: assertSetupCompleted,
     setupUser: setupUser,
     doSettings: doSettings,
-    sendNotification: sendNotification
+    sendWelcomeEmail: sendWelcomeEmail
 };
