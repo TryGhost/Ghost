@@ -32,6 +32,11 @@ module.exports = {
                 })
                 .then((data) => {
                     return auth.setup.doSettings(data, api.settings);
+                })
+                .then((user) => {
+                    const notificationUser = user.toJSON({context: {internal: true}});
+                    return auth.setup.sendNotification(notificationUser, api.mail)
+                        .then(() => user);
                 });
         }
     },
