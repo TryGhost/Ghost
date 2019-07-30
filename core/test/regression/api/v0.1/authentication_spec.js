@@ -1,4 +1,5 @@
 var should = require('should'),
+    sinon = require('sinon'),
     supertest = require('supertest'),
     testUtils = require('../../../utils/index'),
     localUtils = require('./utils'),
@@ -9,6 +10,7 @@ var should = require('should'),
     config = require('../../../../server/config/index'),
     security = require('../../../../server/lib/security/index'),
     settingsCache = require('../../../../server/services/settings/cache'),
+    mailService = require('../../../../server/services/mail/index'),
     ghost = testUtils.startGhost,
     request;
 
@@ -300,6 +302,14 @@ describe('Authentication API', function () {
                 });
         });
 
+        beforeEach(function () {
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
         it('is setup? no', function () {
             return request
                 .get(localUtils.API.getApiQuery('authentication/setup'))
@@ -337,6 +347,9 @@ describe('Authentication API', function () {
                     newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
                     newUser.name.should.equal('test user');
                     newUser.email.should.equal('test@example.com');
+
+                    mailService.GhostMailer.prototype.send.called.should.be.true();
+                    mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('test@example.com');
                 });
         });
 
