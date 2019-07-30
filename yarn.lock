@@ -258,15 +258,15 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.1.3.tgz#fe8034635c50cc6de3e9115e8a333f79293e31e2"
-  integrity sha512-H4P4HnXRL+R/0uet54LOZybGkzs6jP4XrSPBdFZWHqdsvsfhP8xpUnoZZZwvxrn8WbVpsYolL9gEYRJthYVvzg==
+"@tryghost/url-utils@0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.1.4.tgz#52e93092bb5f830fb3afc770c5d708b781b936ca"
+  integrity sha512-1PIIIlDvQmJXS8fM5QLbKp0Xdx3M4Hk53AzskRQWlYiK6BISX5U+4LxwzRg+rWQHhUltMQuQk00DWOZwoe4Ajg==
   dependencies:
     cheerio "0.22.0"
     lodash "4.17.11"
     moment "2.24.0"
-    moment-timezone "0.5.26"
+    moment-timezone "0.5.23"
 
 "@types/bluebird@^3.5.25":
   version "3.5.25"
@@ -5083,7 +5083,7 @@ module-not-found-error@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/module-not-found-error/-/module-not-found-error-1.0.1.tgz#cf8b4ff4f29640674d6cdd02b0e3bc523c2bbdc0"
 
-moment-timezone@0.5.23, moment-timezone@0.5.26:
+moment-timezone@0.5.23:
   version "0.5.23"
   resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.23.tgz#7cbb00db2c14c71b19303cb47b0fb0a6d8651463"
   dependencies:
