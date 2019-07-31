@@ -311,6 +311,10 @@ export default Component.extend({
     // - I think this was because updates were being wrapped up to save
     // computation but that hypothesis needs testing
     _updateProgress() {
+        if (this.isDestroyed || this.isDestroying) {
+            return;
+        }
+
         let trackers = this._uploadTrackers;
         let totalSize = trackers.reduce((total, tracker) => total + tracker.get('total'), 0);
         let uploadedSize = trackers.reduce((total, tracker) => total + tracker.get('loaded'), 0);
