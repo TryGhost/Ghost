@@ -43,7 +43,10 @@ module.exports = {
             'fields',
             'formats',
             'debug',
-            'absolute_urls'
+            'absolute_urls',
+            // NOTE: only for internal context
+            'forUpdate',
+            'transacting'
         ],
         data: [
             'id',
@@ -113,7 +116,10 @@ module.exports = {
         headers: {},
         options: [
             'include',
-            'id'
+            'id',
+            // NOTE: only for internal context
+            'forUpdate',
+            'transacting'
         ],
         validation: {
             options: {

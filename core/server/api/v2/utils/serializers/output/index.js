@@ -31,6 +31,10 @@ module.exports = {
         return require('./slugs');
     },
 
+    get schedules() {
+        return require('./schedules');
+    },
+
     get webhooks() {
         return require('./webhooks');
     },

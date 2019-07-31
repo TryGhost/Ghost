@@ -15,7 +15,7 @@ _private.normalize = function normalize(options) {
     const {model, apiUrl, client} = options;
 
     return {
-        // NOTE: The scheduler expects a unix timestmap.
+        // NOTE: The scheduler expects a unix timestamp.
         time: moment(model.get('published_at')).valueOf(),
         // @TODO: We are still using API v0.1
         url: `${urlUtils.urlJoin(apiUrl, 'schedules', 'posts', model.get('id'))}?client_id=${client.get('slug')}&client_secret=${client.get('secret')}`,
@@ -41,6 +41,7 @@ _private.loadClient = function loadClient() {
  * @return {Promise}
  */
 _private.loadScheduledPosts = function () {
+    // TODO: make this version aware?
     const api = require('../../../api');
     return api.schedules.getScheduledPosts()
         .then((result) => {

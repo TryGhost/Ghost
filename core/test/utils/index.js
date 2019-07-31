@@ -948,6 +948,10 @@ startGhost = function startGhost(options) {
                     })
                     .then((tags) => {
                         module.exports.existingData.tags = tags.toJSON();
+                        return models.ApiKey.findAll({withRelated: 'integration'});
+                    })
+                    .then((keys) => {
+                        module.exports.existingData.apiKeys = keys.toJSON(module.exports.context.internal);
                     })
                     .return(ghostServer);
             });
@@ -1022,6 +1026,11 @@ startGhost = function startGhost(options) {
                 })
                 .then((tags) => {
                     module.exports.existingData.tags = tags.toJSON();
+
+                    return models.ApiKey.findAll({columns: ['id', 'secret']});
+                })
+                .then((keys) => {
+                    module.exports.existingData.apiKeys = keys.toJSON();
                 })
                 .return(ghostServer);
         });
