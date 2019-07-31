@@ -3,7 +3,6 @@ const api = require('../../../../api');
 const apiv2 = require('../../../../api/v2');
 const mw = require('./middleware');
 
-const auth = require('../../../../services/auth');
 const shared = require('../../../shared');
 
 // Handling uploads & imports
@@ -50,10 +49,7 @@ module.exports = function apiRoutes() {
     router.del('/integrations/:id', mw.authAdminApi, http(apiv2.integrations.destroy));
 
     // ## Schedules
-    router.put('/schedules/posts/:id', [
-        auth.authenticate.authenticateClient,
-        auth.authenticate.authenticateUser
-    ], api.http(api.schedules.publishPost));
+    router.put('/schedules/:resource/:id', mw.authAdminApi, http(apiv2.schedules.publish));
 
     // ## Settings
     router.get('/settings/routes/yaml', mw.authAdminApi, http(apiv2.settings.download));

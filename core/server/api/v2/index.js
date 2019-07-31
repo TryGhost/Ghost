@@ -23,6 +23,10 @@ module.exports = {
         return require('./session');
     },
 
+    get schedules() {
+        return shared.pipeline(require('./schedules'), localUtils);
+    },
+
     get pages() {
         return shared.pipeline(require('./pages'), localUtils);
     },

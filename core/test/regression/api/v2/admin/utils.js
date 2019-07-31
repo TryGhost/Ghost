@@ -102,10 +102,12 @@ module.exports = {
         return testUtils.API.doAuth(`${API_URL}session/`, ...args);
     },
 
-    getValidAdminToken(endpoint) {
+    getValidAdminToken(endpoint, key) {
         const jwt = require('jsonwebtoken');
+        key = key || testUtils.DataGenerator.Content.api_keys[0];
+
         const JWT_OPTIONS = {
-            keyid: testUtils.DataGenerator.Content.api_keys[0].id,
+            keyid: key.id,
             algorithm: 'HS256',
             expiresIn: '5m',
             audience: endpoint
@@ -113,7 +115,7 @@ module.exports = {
 
         return jwt.sign(
             {},
-            Buffer.from(testUtils.DataGenerator.Content.api_keys[0].secret, 'hex'),
+            Buffer.from(key.secret, 'hex'),
             JWT_OPTIONS
         );
     }
