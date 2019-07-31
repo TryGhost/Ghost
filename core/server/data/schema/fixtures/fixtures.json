@@ -70,6 +70,10 @@
                 {
                     "name": "DB Backup Integration",
                     "description": "Internal DB Backup Client"
+                },
+                {
+                    "name": "Scheduler Integration",
+                    "description": "Internal Scheduler Client"
                 }
             ]
         },
@@ -139,6 +143,11 @@
                 {
                     "name": "Delete posts",
                     "action_type": "destroy",
+                    "object_type": "post"
+                },
+                {
+                    "name": "Publish posts",
+                    "action_type": "publish",
                     "object_type": "post"
                 },
                 {
@@ -584,6 +593,13 @@
                     "description": "Internal DB Backup integration",
                     "type": "internal",
                     "api_keys": [{"type": "admin", "role": "DB Backup Integration"}]
+                },
+                {
+                    "slug": "ghost-scheduler",
+                    "name": "Ghost Scheduler",
+                    "description": "Internal Scheduler integration",
+                    "type": "internal",
+                    "api_keys": [{"type": "admin", "role": "Scheduler Integration"}]
                 }
             ]
         }
@@ -623,6 +639,9 @@
                 },
                 "DB Backup Integration": {
                     "db": "all"
+                },
+                "Scheduler Integration": {
+                    "post": "publish"
                 },
                 "Admin Integration": {
                     "mail": "all",

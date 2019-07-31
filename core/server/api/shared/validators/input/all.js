@@ -197,5 +197,10 @@ module.exports = {
     setup() {
         debug('validate setup');
         return this.add(...arguments);
+    },
+
+    publish() {
+        debug('validate schedule');
+        return this.browse(...arguments);
     }
 };
