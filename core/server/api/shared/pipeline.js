@@ -12,8 +12,8 @@ const STAGES = {
          *
          * We call the shared validator which runs the request through:
          *
-         * 1. Shared serializers
-         * 2. Custom API serializers
+         * 1. Shared validator
+         * 2. Custom API validators
          *
          * @param {Object} apiUtils - Local utils of target API version.
          * @param {Object} apiConfig - Docname & Method of ctrl.
