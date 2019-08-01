@@ -40,7 +40,7 @@
     "cli": "^1.9.0"
   },
   "dependencies": {
-    "@nexes/nql": "0.2.2",
+    "@nexes/nql": "0.3.0",
     "@tryghost/helpers": "1.1.7",
     "@tryghost/members-api": "0.3.0",
     "@tryghost/members-auth-pages": "1.1.0",
