@@ -10,6 +10,7 @@ module.exports = {
     docName: 'authentication',
 
     setup: {
+        statusCode: 201,
         permissions: false,
         validation: {
             docName: 'setup'
@@ -163,6 +164,9 @@ module.exports = {
     },
 
     isInvitation: {
+        data: [
+            'email'
+        ],
         validation: {
             docName: 'invitations'
         },
