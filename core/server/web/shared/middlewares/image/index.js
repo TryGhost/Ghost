@@ -4,5 +4,8 @@ module.exports = {
     },
     get handleImageSizes() {
         return require('./handle-image-sizes');
+    },
+    get handleImageOriginal() {
+        return require('./handle-image-original');
     }
 };

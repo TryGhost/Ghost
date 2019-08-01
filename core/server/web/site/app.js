@@ -81,7 +81,9 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(shared.middlewares.servePublicFile('public/404-ghost.png', 'png', constants.ONE_HOUR_S));
 
     // Serve blog images using the storage adapter
-    siteApp.use(STATIC_IMAGE_URL_PREFIX, shared.middlewares.image.handleImageSizes, storage.getStorage().serve());
+    siteApp.use(STATIC_IMAGE_URL_PREFIX,
+        shared.middlewares.image.handleImageOriginal,
+        shared.middlewares.image.handleImageSizes, storage.getStorage().serve());
 
     // @TODO find this a better home
     // We do this here, at the top level, because helpers require so much stuff.
