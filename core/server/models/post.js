@@ -620,9 +620,9 @@ Post = ghostBookshelf.Model.extend({
                 options.staticPages = _.includes(['true', '1'], options.staticPages);
             }
 
-            filter = `type:${options.staticPages ? 'page' : 'post'}`;
+            filter = `page:${options.staticPages ? 'true' : 'false'}`;
         } else if (options.staticPages === 'all') {
-            filter = 'type:[post, page]';
+            filter = 'page:[true, false]';
         }
 
         // CASE: "status" is passed, combine filters
