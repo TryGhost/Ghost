@@ -54,15 +54,7 @@ module.exports = function (req, res, next) {
         }
 
         const imagePath = path.relative(sizeImageDir, req.url);
-        const {dir, name, ext} = path.parse(imagePath);
-        const [imageNameMatched, imageName, imageNumber] = name.match(/^(.+?)(-\d+)?$/) || [null];
-
-        if (!imageNameMatched) {
-            // CASE: Image name does not contain any characters?
-            // RESULT: Hand off to `next()` which will 404
-            return;
-        }
-        const unoptimizedImagePath = path.join(dir, `${imageName}_o${imageNumber || ''}${ext}`);
+        const unoptimizedImagePath = path.join('original', imagePath);
 
         return storageInstance.exists(unoptimizedImagePath)
             .then((unoptimizedImageExists) => {
