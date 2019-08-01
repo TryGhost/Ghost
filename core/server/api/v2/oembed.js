@@ -44,12 +44,6 @@ module.exports = {
         query({data}) {
             let {url} = data;
 
-            if (!url || !url.trim()) {
-                return Promise.reject(new common.errors.BadRequestError({
-                    message: common.i18n.t('errors.api.oembed.noUrlProvided')
-                }));
-            }
-
             function unknownProvider() {
                 return Promise.reject(new common.errors.ValidationError({
                     message: common.i18n.t('errors.api.oembed.unknownProvider'),
