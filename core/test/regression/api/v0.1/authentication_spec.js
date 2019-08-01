@@ -1,4 +1,5 @@
 var should = require('should'),
+    sinon = require('sinon'),
     supertest = require('supertest'),
     testUtils = require('../../../utils/index'),
     localUtils = require('./utils'),
@@ -9,6 +10,7 @@ var should = require('should'),
     config = require('../../../../server/config/index'),
     security = require('../../../../server/lib/security/index'),
     settingsCache = require('../../../../server/services/settings/cache'),
+    mailService = require('../../../../server/services/mail/index'),
     ghost = testUtils.startGhost,
     request;
 
@@ -30,7 +32,12 @@ describe('Authentication API', function () {
                 });
         });
 
+        beforeEach(function () {
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+        });
+
         afterEach(function () {
+            sinon.restore();
             return testUtils.clearBruteData();
         });
 
@@ -269,6 +276,27 @@ describe('Authentication API', function () {
                 .expect(401);
         });
 
+        it('reset password: send reset password', function () {
+            return request
+                .post(localUtils.API.getApiQuery('authentication/passwordreset/'))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .send({
+                    passwordreset: [{
+                        email: user.email
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    var jsonResponse = res.body;
+                    should.exist(jsonResponse.passwordreset[0].message);
+                    jsonResponse.passwordreset[0].message.should.equal('Check your email for further instructions.');
+                    mailService.GhostMailer.prototype.send.args[0][0].to.should.equal(user.email);
+                });
+        });
+
         it('revoke token', function () {
             return request
                 .post(localUtils.API.getApiQuery('authentication/revoke'))
@@ -298,6 +326,14 @@ describe('Authentication API', function () {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('url'));
                 });
+        });
+
+        beforeEach(function () {
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+        });
+
+        afterEach(function () {
+            sinon.restore();
         });
 
         it('is setup? no', function () {
@@ -337,6 +373,9 @@ describe('Authentication API', function () {
                     newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
                     newUser.name.should.equal('test user');
                     newUser.email.should.equal('test@example.com');
+
+                    mailService.GhostMailer.prototype.send.called.should.be.true();
+                    mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('test@example.com');
                 });
         });
 
@@ -365,6 +404,39 @@ describe('Authentication API', function () {
                 })
                 .expect('Content-Type', /json/)
                 .expect(403);
+        });
+
+        it('update setup', function () {
+            return localUtils.doAuth(request)
+                .then((ownerAccessToken) => {
+                    return request
+                        .put(localUtils.API.getApiQuery('authentication/setup'))
+                        .set('Authorization', 'Bearer ' + ownerAccessToken)
+                        .set('Origin', config.get('url'))
+                        .send({
+                            setup: [{
+                                name: 'test user edit',
+                                email: 'test-edited@example.com',
+                                password: 'thisissupersafe',
+                                blogTitle: 'a test blog'
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect(200);
+                })
+                .then((res) => {
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.users);
+                    should.not.exist(jsonResponse.meta);
+
+                    jsonResponse.users.should.have.length(1);
+                    localUtils.API.checkResponse(jsonResponse.users[0], 'user');
+
+                    const newUser = jsonResponse.users[0];
+                    newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
+                    newUser.name.should.equal('test user edit');
+                    newUser.email.should.equal('test-edited@example.com');
+                });
         });
     });
 
