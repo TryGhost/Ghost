@@ -42,10 +42,10 @@
     debug "^4.1.0"
     lodash "^4.17.10"
 
-"@nexes/mongo-utils@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@nexes/mongo-utils/-/mongo-utils-0.2.0.tgz#28b483e88f2433ee269aa6b91f7339b7ab1e7d45"
-  integrity sha512-AZ5jBPZeUf7fKuu4bqfT96bv4OYm69inf12EOhUB4PbFmvBcB9mYHixXlG1NElfPDNSY121p0/A2lXn5SLnbPg==
+"@nexes/mongo-utils@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@nexes/mongo-utils/-/mongo-utils-0.2.1.tgz#746d004fc17741b50e945d76e9ab53496ffab15b"
+  integrity sha512-g/8IpnxldGbog3yTwZg1tD+6zRLbGmYDkotZiDg3O5eLxQxNXZzoP0lmv4DDfPU1Bc8sh9JlSjt+xPrOoXlIXw==
   dependencies:
     bluebird "^3.5.3"
     ghost-ignition "^2.9.6"
@@ -56,13 +56,13 @@
   resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
   integrity sha1-oTwCOHP5vBG55OKERJxs++zMgBE=
 
-"@nexes/nql@0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.2.2.tgz#436b149e604777ae0e622f6c1ca3e7b81294ddff"
-  integrity sha512-M4jBzzL1wGBgBilB4TLhg6Q5JS7fcWXk6Pic+Yjt9h1b5wy1msg3NXOusmyJq3Q4pRTG2pzN088GB4AKUI+twg==
+"@nexes/nql@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.3.0.tgz#12a0506b3e112561503091a9aad8cdca9784d80d"
+  integrity sha512-Y5DxRwoZKyk/HsX4ZDrIjcqeaR9le+x/Sfbw08/GlPiITnO4ukoqua9Cs0LgJ/cuvlo6DDDW4g+z/1y9+U0ZCA==
   dependencies:
     "@nexes/mongo-knex" "0.3.0"
-    "@nexes/mongo-utils" "0.2.0"
+    "@nexes/mongo-utils" "0.2.1"
     "@nexes/nql-lang" "0.0.1"
     mingo "2.2.2"
 
