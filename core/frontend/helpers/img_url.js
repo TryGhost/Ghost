@@ -98,21 +98,27 @@ function getImageWithSize(imagePath, requestedSize, imageSizes) {
         return imagePath;
     }
 
-    if (!imageSizes || !imageSizes[requestedSize]) {
-        return imagePath;
-    }
+    let sizeDirectoryName;
 
-    const {width, height} = imageSizes[requestedSize];
+    if (requestedSize === 'original') {
+        sizeDirectoryName = '/original/';
+    } else {
+        if (!imageSizes || !imageSizes[requestedSize]) {
+            return imagePath;
+        }
 
-    if (!width && !height) {
-        return imagePath;
+        const {width, height} = imageSizes[requestedSize];
+
+        if (!width && !height) {
+            return imagePath;
+        }
+
+        sizeDirectoryName = '/size/' + prefixIfPresent('w', width) + prefixIfPresent('h', height);
     }
 
     const [imgBlogUrl, imageName] = imagePath.split(STATIC_IMAGE_URL_PREFIX);
 
-    const sizeDirectoryName = prefixIfPresent('w', width) + prefixIfPresent('h', height);
-
-    return [imgBlogUrl, STATIC_IMAGE_URL_PREFIX, `/size/${sizeDirectoryName}`, imageName].join('');
+    return [imgBlogUrl, STATIC_IMAGE_URL_PREFIX, sizeDirectoryName, imageName].join('');
 }
 
 function prefixIfPresent(prefix, string) {
