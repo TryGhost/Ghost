@@ -82,18 +82,16 @@ async function doSettings(data, settingsAPI) {
     return user;
 }
 
-function sendNotification(setupUser, mailAPI) {
-    const data = {
-        ownerEmail: setupUser.email
-    };
-
-    common.events.emit('setup.completed', setupUser);
-
+function sendWelcomeEmail(email, mailAPI) {
     if (config.get('sendWelcomeEmail')) {
+        const data = {
+            ownerEmail: email
+        };
+
         return mail.utils.generateContent({data: data, template: 'welcome'})
             .then((content) => {
                 const message = {
-                        to: setupUser.email,
+                        to: email,
                         subject: common.i18n.t('common.api.authentication.mail.yourNewGhostBlog'),
                         html: content.html,
                         text: content.text
@@ -110,11 +108,8 @@ function sendNotification(setupUser, mailAPI) {
                         err.context = common.i18n.t('errors.api.authentication.unableToSendWelcomeEmail');
                         common.logging.error(err);
                     });
-            })
-            .return(setupUser);
+            });
     }
-
-    return setupUser;
 }
 
 module.exports = {
@@ -122,5 +117,5 @@ module.exports = {
     assertSetupCompleted: assertSetupCompleted,
     setupUser: setupUser,
     doSettings: doSettings,
-    sendNotification: sendNotification
+    sendWelcomeEmail: sendWelcomeEmail
 };

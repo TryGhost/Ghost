@@ -290,7 +290,8 @@ authentication = {
         }
 
         function sendNotification(setupUser) {
-            return auth.setup.sendNotification(setupUser, mailAPI);
+            return auth.setup.sendWelcomeEmail(setupUser.email, mailAPI)
+                .then(() => setupUser);
         }
 
         function formatResponse(setupUser) {

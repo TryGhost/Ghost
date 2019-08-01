@@ -3,6 +3,10 @@ module.exports = {
         return require('./all');
     },
 
+    get authentication() {
+        return require('./authentication');
+    },
+
     get db() {
         return require('./db');
     },
