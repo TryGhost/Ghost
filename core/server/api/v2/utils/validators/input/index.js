@@ -25,5 +25,9 @@ module.exports = {
 
     get images() {
         return require('./images');
+    },
+
+    get oembed() {
+        return require('./oembed');
     }
 };
