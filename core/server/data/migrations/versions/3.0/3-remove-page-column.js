@@ -3,7 +3,7 @@ const commands = require('../../../schema').commands;
 
 const createLog = type => msg => common.logging[type](msg);
 
-function createColumnMigration({table, column, dbIsInCorrectState, operation, operationVerb}) {
+function createColumnMigration({table, column, dbIsInCorrectState, operation, operationVerb, columnDefinition}) {
     return function columnMigrations({transacting}) {
         return transacting.schema.hasColumn(table, column)
             .then(dbIsInCorrectState)
@@ -13,7 +13,7 @@ function createColumnMigration({table, column, dbIsInCorrectState, operation, op
                 log(`${operationVerb} ${table}.${column}`);
 
                 if (!isInCorrectState) {
-                    return operation(table, column, transacting);
+                    return operation(table, column, transacting, columnDefinition);
                 }
             });
     };
@@ -36,7 +36,12 @@ module.exports.down = createColumnMigration({
         return columnExists === true;
     },
     operation: commands.addColumn,
-    operationVerb: 'Adding'
+    operationVerb: 'Adding',
+    columnDefinition: {
+        type: 'bool',
+        nullable: false,
+        defaultTo: false
+    }
 });
 
 module.exports.config = {
