@@ -572,6 +572,13 @@
                     "description": "Built-in Zapier integration",
                     "type": "builtin",
                     "api_keys": [{"type": "admin"}]
+                },
+                {
+                    "slug": "ghost-backup",
+                    "name": "Ghost Backup",
+                    "description": "Internal DB Backup integration",
+                    "type": "internal",
+                    "api_keys": [{"type": "admin", "role": "DB Backup Integration"}]
                 }
             ]
         }
