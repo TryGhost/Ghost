@@ -15,7 +15,7 @@
     "lib/"
   ],
   "scripts": {
-    "dev": "echo \"Implement me!\"",
+    "dev": "rollup -c -w",
     "build": "rollup -c",
     "prepare": "NODE_ENV=production yarn build",
     "pretest": "yarn build",
