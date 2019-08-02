@@ -5,9 +5,8 @@ var _ = require('lodash'),
     schema = require('./schema'),
     clients = require('./clients');
 
-function addTableColumn(tableName, table, columnName) {
-    var column,
-        columnSpec = schema[tableName][columnName];
+function addTableColumn(tableName, table, columnName, columnSpec = schema[tableName][columnName]) {
+    var column;
 
     // creation distinguishes between text with fieldtype, string with maxlength and all others
     if (columnSpec.type === 'text' && Object.prototype.hasOwnProperty.call(columnSpec, 'fieldtype')) {
@@ -48,9 +47,9 @@ function addTableColumn(tableName, table, columnName) {
     }
 }
 
-function addColumn(tableName, column, transaction) {
+function addColumn(tableName, column, transaction, columnSpec) {
     return (transaction || db.knex).schema.table(tableName, function (table) {
-        addTableColumn(tableName, table, column);
+        addTableColumn(tableName, table, column, columnSpec);
     });
 }
 
