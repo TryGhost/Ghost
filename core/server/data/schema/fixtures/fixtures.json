@@ -66,6 +66,10 @@
                 {
                     "name": "Admin Integration",
                     "description": "External Apps"
+                },
+                {
+                    "name": "DB Backup Integration",
+                    "description": "Internal DB Backup Client"
                 }
             ]
         },
@@ -604,6 +608,9 @@
                     "api_key": "all",
                     "action": "all",
                     "member": "all"
+                },
+                "DB Backup Integration": {
+                    "db": "all"
                 },
                 "Admin Integration": {
                     "mail": "all",
