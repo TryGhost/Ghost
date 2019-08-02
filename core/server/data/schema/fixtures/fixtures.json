@@ -66,6 +66,10 @@
                 {
                     "name": "Admin Integration",
                     "description": "External Apps"
+                },
+                {
+                    "name": "DB Backup Integration",
+                    "description": "Internal DB Backup Client"
                 }
             ]
         },
@@ -568,6 +572,13 @@
                     "description": "Built-in Zapier integration",
                     "type": "builtin",
                     "api_keys": [{"type": "admin"}]
+                },
+                {
+                    "slug": "ghost-backup",
+                    "name": "Ghost Backup",
+                    "description": "Internal DB Backup integration",
+                    "type": "internal",
+                    "api_keys": [{"type": "admin", "role": "DB Backup Integration"}]
                 }
             ]
         }
@@ -604,6 +615,9 @@
                     "api_key": "all",
                     "action": "all",
                     "member": "all"
+                },
+                "DB Backup Integration": {
+                    "db": "all"
                 },
                 "Admin Integration": {
                     "mail": "all",
