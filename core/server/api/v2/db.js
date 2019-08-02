@@ -46,9 +46,7 @@ module.exports = {
                 value: () => (exporter.fileName())
             }
         },
-        permissions: {
-            method: 'exportContent'
-        },
+        permissions: true,
         query(frame) {
             return Promise.resolve()
                 .then(() => exporter.doExport({include: frame.options.withRelated}))
@@ -69,9 +67,7 @@ module.exports = {
                 }
             }
         },
-        permissions: {
-            method: 'importContent'
-        },
+        permissions: true,
         query(frame) {
             return importer.importFromFile(frame.file, {include: frame.options.withRelated});
         }
@@ -79,9 +75,7 @@ module.exports = {
 
     deleteAllContent: {
         statusCode: 204,
-        permissions: {
-            method: 'deleteAllContent'
-        },
+        permissions: true,
         query() {
             /**
              * @NOTE:
