@@ -114,6 +114,10 @@ class SettingsImporter extends BaseImporter {
             return data.key !== 'is_private';
         });
 
+        this.dataToImport = _.filter(this.dataToImport, (data) => {
+            return data.key !== 'password';
+        });
+
         // Only show warning if we are importing a private site into a non-private site.
         if (isFalse(oldIsPrivate) && isTrue(newIsPrivate)) {
             this.problems.push({
