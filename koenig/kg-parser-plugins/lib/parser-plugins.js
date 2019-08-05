@@ -73,6 +73,41 @@ export function createParserPlugins(_options = {}) {
 
     // PLUGINS -----------------------------------------------------------------
 
+    // @TODO: rework this once we have bookmark cards
+    function mixtapeEmbed(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 1 || node.tagName !== 'DIV' || !node.className.match(/graf--mixtapeEmbed/)) {
+            return;
+        }
+
+        let anchor = node.querySelector('.markup--mixtapeEmbed-anchor').href;
+        let title = node.querySelector('.markup--mixtapeEmbed-strong');
+        let desc = node.querySelector('.markup--mixtapeEmbed-em');
+        let img = node.querySelector('.mixtapeImage');
+        let imgSrc = false;
+
+        // Image is optional,
+        // The element usually still exists with an additional has.mixtapeImage--empty class and has no background image
+        if (img && img.style['background-image']) {
+            imgSrc = img.style['background-image'].match(/url\(([^)]*?)\)/)[1];
+        }
+
+        // Format our preferred structure.
+        let html = `<figure class="mixtape">
+        <a href="${anchor}" class="mixtape-url">
+            <div class="mixtape-content">
+                ${title ? `<div class="mixtape-title"><strong>${title.innerHTML}</strong></div>` : ''}
+                ${desc ? `<div class="mixtape-description"><small>${desc.innerHTML}</small></div>` : ''}
+            </div>
+            ${imgSrc ? `<div class="mixtape-thumbnail"><img src="${imgSrc}" /></div>` : ''}
+        </a>
+        </figure>`;
+
+        let payload = {html: html};
+        let cardSection = builder.createCardSection('html', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+
     // https://github.com/TryGhost/Koenig/issues/1
     // allows arbitrary HTML blocks wrapped in our card comments to be extracted
     // into a HTML card rather than being put through the normal parse+plugins
@@ -383,6 +418,7 @@ export function createParserPlugins(_options = {}) {
     }
 
     return [
+        mixtapeEmbed,
         kgHtmlCardToCard,
         brToSoftBreakAtom,
         removeLeadingNewline,
