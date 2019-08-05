@@ -111,7 +111,11 @@ class StaticRoutesRouter extends ParentRouter {
         res.routerOptions = {
             type: 'custom',
             templates: this.templates,
-            defaultTemplate: 'default',
+            defaultTemplate: () => {
+                throw new common.errors.IncorrectUsageError({
+                    message: `Missing template ${res.routerOptions.templates.map(x => `${x}.hbs`).join(', ')} for route "${req.originalUrl}".`
+                });
+            },
             data: this.data.query,
             context: [this.routerName],
             contentType: this.contentType
