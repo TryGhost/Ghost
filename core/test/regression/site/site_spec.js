@@ -396,7 +396,9 @@ describe('Integration - Web - Site', function () {
                 before(function () {
                     sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
-                            '/': 'home'
+                            '/': {
+                                templates: ['home']
+                            }
                         },
 
                         collections: {
@@ -418,7 +420,7 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sinon);
+                    testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
@@ -454,7 +456,7 @@ describe('Integration - Web - Site', function () {
                     return testUtils.mocks.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
-                            response.template.should.eql('default');
+                            response.template.should.eql('home');
                         });
                 });
 
@@ -487,7 +489,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('serve collection: podcast', function () {
+                it('serve collection: podcast with default template', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -506,7 +508,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('serve collection: something', function () {
+                it('serve collection: something with custom template', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -519,9 +521,7 @@ describe('Integration - Web - Site', function () {
                             const $ = cheerio.load(response.body);
 
                             response.statusCode.should.eql(200);
-                            response.template.should.eql('index');
-
-                            $('.post-card').length.should.equal(2);
+                            response.template.should.eql('something');
                         });
                 });
             });
@@ -530,14 +530,14 @@ describe('Integration - Web - Site', function () {
                 before(function () {
                     sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
-                            '/test/': 'test'
+                            '/something/': {templates: ['something']}
                         },
                         collections: {},
                         taxonomies: {}
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sinon);
+                    testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
@@ -566,14 +566,14 @@ describe('Integration - Web - Site', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
-                        url: '/test/',
+                        url: '/something/',
                         host: 'example.com'
                     };
 
                     return testUtils.mocks.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
-                            response.template.should.eql('default');
+                            response.template.should.eql('something');
                         });
                 });
             });
@@ -1614,7 +1614,6 @@ describe('Integration - Web - Site', function () {
             before(function () {
                 sinon.stub(frontendSettingsService, 'get').returns({
                     routes: {
-                        '/about/': 'about',
                         '/podcast/rss/': {
                             templates: ['podcast/rss'],
                             content_type: 'text/xml'
@@ -2147,7 +2146,7 @@ describe('Integration - Web - Site', function () {
                 before(function () {
                     sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
-                            '/': 'home'
+                            '/': {templates: ['home']}
                         },
 
                         collections: {
@@ -2169,7 +2168,7 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sinon);
+                    testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
@@ -2205,7 +2204,7 @@ describe('Integration - Web - Site', function () {
                     return testUtils.mocks.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
-                            response.template.should.eql('default');
+                            response.template.should.eql('home');
                         });
                 });
 
@@ -2238,7 +2237,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('serve collection: podcast', function () {
+                it('serve collection: podcast with default template', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -2257,7 +2256,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('serve collection: something', function () {
+                it('serve collection: something with custom template', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -2270,9 +2269,7 @@ describe('Integration - Web - Site', function () {
                             const $ = cheerio.load(response.body);
 
                             response.statusCode.should.eql(200);
-                            response.template.should.eql('index');
-
-                            $('.post-card').length.should.equal(2);
+                            response.template.should.eql('something');
                         });
                 });
             });
@@ -2281,14 +2278,14 @@ describe('Integration - Web - Site', function () {
                 before(function () {
                     sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
-                            '/test/': 'test'
+                            '/something/': {templates: ['something']}
                         },
                         collections: {},
                         taxonomies: {}
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sinon);
+                    testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
@@ -2317,14 +2314,14 @@ describe('Integration - Web - Site', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
-                        url: '/test/',
+                        url: '/something/',
                         host: 'example.com'
                     };
 
                     return testUtils.mocks.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
-                            response.template.should.eql('default');
+                            response.template.should.eql('something');
                         });
                 });
             });
@@ -2642,7 +2639,8 @@ describe('Integration - Web - Site', function () {
                                     router: {
                                         pages: [{redirect: true, slug: 'static-page-test'}]
                                     }
-                                }
+                                },
+                                templates: ['page']
                             }
                         },
 
@@ -3343,7 +3341,6 @@ describe('Integration - Web - Site', function () {
             before(function () {
                 sinon.stub(frontendSettingsService, 'get').returns({
                     routes: {
-                        '/about/': 'about',
                         '/podcast/rss/': {
                             templates: ['podcast/rss'],
                             content_type: 'text/xml'
@@ -3876,7 +3873,7 @@ describe('Integration - Web - Site', function () {
                 before(function () {
                     sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
-                            '/': 'home'
+                            '/': {templates: ['home']}
                         },
 
                         collections: {
@@ -3898,7 +3895,7 @@ describe('Integration - Web - Site', function () {
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sinon);
+                    testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
@@ -3934,7 +3931,7 @@ describe('Integration - Web - Site', function () {
                     return testUtils.mocks.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
-                            response.template.should.eql('default');
+                            response.template.should.eql('home');
                         });
                 });
 
@@ -3967,7 +3964,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('serve collection: podcast', function () {
+                it('serve collection: podcast with default template', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -3986,7 +3983,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('serve collection: something', function () {
+                it('serve collection: something with custom template', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -3999,9 +3996,7 @@ describe('Integration - Web - Site', function () {
                             const $ = cheerio.load(response.body);
 
                             response.statusCode.should.eql(200);
-                            response.template.should.eql('index');
-
-                            $('.post-card').length.should.equal(2);
+                            response.template.should.eql('something');
                         });
                 });
             });
@@ -4010,14 +4005,16 @@ describe('Integration - Web - Site', function () {
                 before(function () {
                     sinon.stub(frontendSettingsService, 'get').returns({
                         routes: {
-                            '/test/': 'test'
+                            '/something/': {
+                                templates: ['something']
+                            }
                         },
                         collections: {},
                         taxonomies: {}
                     });
 
                     testUtils.integrationTesting.urlService.resetGenerators();
-                    testUtils.integrationTesting.defaultMocks(sinon);
+                    testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
                     return testUtils.integrationTesting.initGhost()
                         .then(function () {
@@ -4046,14 +4043,14 @@ describe('Integration - Web - Site', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
-                        url: '/test/',
+                        url: '/something/',
                         host: 'example.com'
                     };
 
                     return testUtils.mocks.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
-                            response.template.should.eql('default');
+                            response.template.should.eql('something');
                         });
                 });
             });
@@ -4371,7 +4368,8 @@ describe('Integration - Web - Site', function () {
                                     router: {
                                         pages: [{redirect: true, slug: 'static-page-test'}]
                                     }
-                                }
+                                },
+                                templates: ['page']
                             }
                         },
 
@@ -5072,7 +5070,6 @@ describe('Integration - Web - Site', function () {
             before(function () {
                 sinon.stub(frontendSettingsService, 'get').returns({
                     routes: {
-                        '/about/': 'about',
                         '/podcast/rss/': {
                             templates: ['podcast/rss'],
                             content_type: 'text/xml'
