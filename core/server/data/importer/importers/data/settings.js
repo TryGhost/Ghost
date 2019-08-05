@@ -6,6 +6,33 @@ const debug = require('ghost-ignition').debug('importer:settings'),
     defaultSettings = require('../../../schema').defaultSettings,
     labsDefaults = JSON.parse(defaultSettings.blog.labs.defaultValue);
 
+const isFalse = (value) => {
+    // Catches false, null, undefined, empty string
+    if (!value) {
+        return true;
+    }
+    if (value === 'false') {
+        return true;
+    }
+    if (value === '0') {
+        return true;
+    }
+    return false;
+};
+
+const isTrue = (value) => {
+    if (value === true) {
+        return true;
+    }
+    if (value === 'true') {
+        return true;
+    }
+    if (value === '1') {
+        return true;
+    }
+    return false;
+};
+
 class SettingsImporter extends BaseImporter {
     constructor(allDataFromFile) {
         super(allDataFromFile, {
@@ -88,7 +115,7 @@ class SettingsImporter extends BaseImporter {
         });
 
         // Only show warning if we are importing a private site into a non-private site.
-        if (oldIsPrivate === false && newIsPrivate === true) {
+        if (isFalse(oldIsPrivate) && isTrue(newIsPrivate)) {
             this.problems.push({
                 message: 'IMPORTANT: Content in this import was previously published on a private Ghost install, but the current site is public. Are your privacy settings up to date?',
                 help: this.modelName,
