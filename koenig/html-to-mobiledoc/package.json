@@ -17,7 +17,7 @@
   "devDependencies": {
     "mocha": "6.2.0",
     "should": "13.2.3",
-    "sinon": "7.3.2"
+    "sinon": "7.4.0"
   },
   "dependencies": {
     "@tryghost/kg-parser-plugins": "0.6.0",
