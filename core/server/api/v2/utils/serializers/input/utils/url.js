@@ -12,7 +12,7 @@ const handleCanonicalUrl = (canonicalUrl) => {
     // Blog URL incl. the same protocol. This allows users to keep e.g. Facebook comments after
     // a http -> https switch
     if (absolute.startsWith(blogDomain) && isSameProtocol) {
-        return urlUtils.absoluteToRelative(canonicalUrl, {withoutSubdirectory: true});
+        return urlUtils.absoluteToRelative(canonicalUrl);
     }
 
     return canonicalUrl;
