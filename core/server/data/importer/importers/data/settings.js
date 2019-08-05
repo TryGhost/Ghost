@@ -119,7 +119,7 @@ class SettingsImporter extends BaseImporter {
         });
 
         // Only show warning if we are importing a private site into a non-private site.
-        if (isFalse(oldIsPrivate) && isTrue(newIsPrivate)) {
+        if (oldIsPrivate && newIsPrivate && isFalse(oldIsPrivate.value) && isTrue(newIsPrivate.value)) {
             this.problems.push({
                 message: 'IMPORTANT: Content in this import was previously published on a private Ghost install, but the current site is public. Are your privacy settings up to date?',
                 help: this.modelName,
