@@ -149,7 +149,7 @@
     "mocha": "6.1.4",
     "mock-knex": "0.4.6",
     "nock": "10.0.6",
-    "proxyquire": "2.1.0",
+    "proxyquire": "2.1.1",
     "rewire": "4.0.1",
     "should": "13.2.3",
     "should-http": "0.1.1",
