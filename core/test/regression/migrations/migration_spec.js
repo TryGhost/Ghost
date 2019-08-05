@@ -35,11 +35,11 @@ describe('Database Migration (special functions)', function () {
 
             // DB
             permissions[0].name.should.eql('Export database');
-            permissions[0].should.be.AssignedToRoles(['Administrator']);
+            permissions[0].should.be.AssignedToRoles(['Administrator', 'DB Backup Integration']);
             permissions[1].name.should.eql('Import database');
-            permissions[1].should.be.AssignedToRoles(['Administrator']);
+            permissions[1].should.be.AssignedToRoles(['Administrator', 'DB Backup Integration']);
             permissions[2].name.should.eql('Delete all content');
-            permissions[2].should.be.AssignedToRoles(['Administrator']);
+            permissions[2].should.be.AssignedToRoles(['Administrator', 'DB Backup Integration']);
 
             // Mail
             permissions[3].name.should.eql('Send mail');
@@ -260,13 +260,14 @@ describe('Database Migration (special functions)', function () {
 
                     // Roles
                     should.exist(result.roles);
-                    result.roles.length.should.eql(6);
+                    result.roles.length.should.eql(7);
                     result.roles.at(0).get('name').should.eql('Administrator');
                     result.roles.at(1).get('name').should.eql('Editor');
                     result.roles.at(2).get('name').should.eql('Author');
                     result.roles.at(3).get('name').should.eql('Contributor');
                     result.roles.at(4).get('name').should.eql('Owner');
                     result.roles.at(5).get('name').should.eql('Admin Integration');
+                    result.roles.at(6).get('name').should.eql('DB Backup Integration');
 
                     // Permissions
                     result.permissions.length.should.eql(70);
