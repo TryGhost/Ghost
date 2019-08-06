@@ -3,15 +3,15 @@ const url = require('url');
 const urlUtils = require('../../../../../../lib/url-utils');
 
 const handleCanonicalUrl = (canonicalUrl) => {
-    const blogURl = urlUtils.getBlogUrl();
-    const isSameProtocol = url.parse(canonicalUrl).protocol === url.parse(blogURl).protocol;
-    const blogDomain = blogURl.replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+    const siteUrl = urlUtils.getSiteUrl();
+    const isSameProtocol = url.parse(canonicalUrl).protocol === url.parse(siteUrl).protocol;
+    const siteDomain = siteUrl.replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     const absolute = canonicalUrl.replace(/^http(s?):\/\//, '');
 
     // We only want to transform to a relative URL when the canonical URL matches the current
-    // Blog URL incl. the same protocol. This allows users to keep e.g. Facebook comments after
+    // Site URL incl. the same protocol. This allows users to keep e.g. Facebook comments after
     // a http -> https switch
-    if (absolute.startsWith(blogDomain) && isSameProtocol) {
+    if (absolute.startsWith(siteDomain) && isSameProtocol) {
         return urlUtils.absoluteToRelative(canonicalUrl);
     }
 
@@ -19,9 +19,9 @@ const handleCanonicalUrl = (canonicalUrl) => {
 };
 
 const handleImageUrl = (imageUrl) => {
-    const blogDomain = urlUtils.getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+    const siteDomain = urlUtils.getSiteUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
     const imageUrlAbsolute = imageUrl.replace(/^http(s?):\/\//, '');
-    const imagePathRe = new RegExp(`^${blogDomain}/${urlUtils.STATIC_IMAGE_URL_PREFIX}`);
+    const imagePathRe = new RegExp(`^${siteDomain}/${urlUtils.STATIC_IMAGE_URL_PREFIX}`);
 
     if (imagePathRe.test(imageUrlAbsolute)) {
         return urlUtils.absoluteToRelative(imageUrl);
@@ -31,8 +31,8 @@ const handleImageUrl = (imageUrl) => {
 };
 
 const handleContentUrls = (content) => {
-    const blogDomain = urlUtils.getBlogUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
-    const imagePathRe = new RegExp(`(http(s?)://)?${blogDomain}/${urlUtils.STATIC_IMAGE_URL_PREFIX}`, 'g');
+    const siteDomain = urlUtils.getSiteUrl().replace(/^http(s?):\/\//, '').replace(/\/$/, '');
+    const imagePathRe = new RegExp(`(http(s?)://)?${siteDomain}/${urlUtils.STATIC_IMAGE_URL_PREFIX}`, 'g');
 
     const matches = _.uniq(content.match(imagePathRe));
 
