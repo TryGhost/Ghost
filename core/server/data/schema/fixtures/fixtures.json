@@ -146,11 +146,6 @@
                     "object_type": "post"
                 },
                 {
-                    "name": "Publish posts",
-                    "action_type": "publish",
-                    "object_type": "post"
-                },
-                {
                     "name": "Browse settings",
                     "action_type": "browse",
                     "object_type": "setting"
@@ -439,6 +434,11 @@
                     "name": "Delete Members",
                     "action_type": "destroy",
                     "object_type": "member"
+                },
+                {
+                    "name": "Publish posts",
+                    "action_type": "publish",
+                    "object_type": "post"
                 }
             ]
         },
