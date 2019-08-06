@@ -3,6 +3,10 @@ const sinon = require('sinon');
 const brute = require('../../../../../server/web/shared/middlewares/brute');
 
 describe('brute middleware', function () {
+    after(function () {
+        sinon.restore();
+    });
+
     it('exports a contentApiKey method', function () {
         should.equal(typeof brute.contentApiKey, 'function');
     });
@@ -20,7 +24,6 @@ describe('brute middleware', function () {
                 // I don't care
             } finally {
                 should.equal(contentApiKeyStub.called, true);
-                contentApiKeyStub.reset();
             }
         });
     });
