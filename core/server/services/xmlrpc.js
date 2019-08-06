@@ -27,7 +27,7 @@ function ping(post) {
         title = post.title,
         url = urlService.getUrlByResourceId(post.id, {absolute: true});
 
-    if (post.page || config.isPrivacyDisabled('useRpcPing') || settingsCache.get('is_private')) {
+    if (post.type === 'page' || config.isPrivacyDisabled('useRpcPing') || settingsCache.get('is_private')) {
         return;
     }
 
