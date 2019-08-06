@@ -421,7 +421,7 @@ describe('Importer', function () {
         });
 
         it('can load a file (subdirectory)', function (done) {
-            ImageHandler.__set__('urlUtils', urlUtils.getInstance({url: 'http://localhost:82832/subdir'}));
+            ImageHandler.__set__('urlUtils', urlUtils.getInstance({url: 'http://localhost:65535/subdir'}));
 
             var filename = 'test-image.jpeg',
                 file = [{
