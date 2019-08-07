@@ -159,7 +159,7 @@ module.exports = function apiRoutes() {
     );
     router.del('/db', mw.authAdminApi, http(apiv2.db.deleteAllContent));
     router.post('/db/backup',
-        mw.authenticateClient('Ghost Backup'),
+        mw.authAdminApi,
         http(apiv2.db.backupContent)
     );
 
