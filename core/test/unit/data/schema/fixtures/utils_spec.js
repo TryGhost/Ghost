@@ -258,10 +258,10 @@ describe('Migration Fixture Utils', function () {
         it('should fetch a fixture with multiple entries', function () {
             var foundFixture = fixtureUtils.findModelFixtures('Permission', {object_type: 'db'});
             foundFixture.should.be.an.Object();
-            foundFixture.entries.should.be.an.Array().with.lengthOf(3);
+            foundFixture.entries.should.be.an.Array().with.lengthOf(4);
             foundFixture.entries[0].should.eql({
-                name: 'Export database',
-                action_type: 'exportContent',
+                name: 'Backup database',
+                action_type: 'backupContent',
                 object_type: 'db'
             });
         });
