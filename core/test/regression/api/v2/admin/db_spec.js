@@ -17,8 +17,8 @@ let request;
 let eventsTriggered;
 
 describe('DB API', () => {
-    let backupClient;
-    let schedulerClient;
+    let backupKey;
+    let schedulerKey;
 
     before(() => {
         return ghost()
@@ -29,12 +29,8 @@ describe('DB API', () => {
                 return localUtils.doAuth(request);
             })
             .then(() => {
-                return models.Client.findAll();
-            })
-            .then((result) => {
-                const clients = result.toJSON();
-                backupClient = _.find(clients, {slug: 'ghost-backup'});
-                schedulerClient = _.find(clients, {slug: 'ghost-scheduler'});
+                backupKey = _.find(testUtils.existingData.apiKeys, {integration: {slug: 'ghost-backup'}});
+                schedulerKey = _.find(testUtils.existingData.apiKeys, {integration: {slug: 'ghost-scheduler'}});
             });
     });
 
@@ -126,11 +122,13 @@ describe('DB API', () => {
             .expect(415);
     });
 
-    it('export can be triggered by backup client', () => {
-        const backupQuery = `?client_id=${backupClient.slug}&client_secret=${backupClient.secret}&filename=test`;
+    it('export can be triggered by backup integration', () => {
+        const backupQuery = `?filename=test`;
         const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
         return request.post(localUtils.API.getApiQuery(`db/backup${backupQuery}`))
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v2/admin/', backupKey)}`)
+            .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect(200)
             .then((res) => {
@@ -140,11 +138,12 @@ describe('DB API', () => {
             });
     });
 
-    it('export can not be triggered by client other than backup', () => {
-        const schedulerQuery = `?client_id=${schedulerClient.slug}&client_secret=${schedulerClient.secret}`;
+    it('export can not be triggered by integration other than backup', () => {
         const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
-        return request.post(localUtils.API.getApiQuery(`db/backup${schedulerQuery}`))
+        return request.post(localUtils.API.getApiQuery(`db/backup`))
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v2/admin/', schedulerKey)}`)
+            .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect(403)
             .then((res) => {
@@ -154,17 +153,12 @@ describe('DB API', () => {
             });
     });
 
-    it('export can not be triggered by regular authentication', () => {
+    it('export can be triggered by Admin authentication', () => {
         const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
         return request.post(localUtils.API.getApiQuery(`db/backup`))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .expect(401)
-            .then((res) => {
-                should.exist(res.body.errors);
-                res.body.errors[0].type.should.eql('UnauthorizedError');
-                fsStub.called.should.eql(false);
-            });
+            .expect(200);
     });
 });
