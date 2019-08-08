@@ -163,6 +163,9 @@
                     "max": 300
                 }
             }
+        },
+        "image_sizes": {
+            "defaultValue": "{\"amp_publisher_logo\":{\"width\":600,\"height\":60,\"type\":\"core\"},\"amp_feature_image\":{\"width\":600,\"height\":400,\"type\":\"core\"}}"
         }
     },
     "theme": {
