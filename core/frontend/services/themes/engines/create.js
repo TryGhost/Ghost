@@ -23,7 +23,7 @@ const allowedKeys = ['ghost-api'];
 module.exports = (packageJson) => {
     let themeEngines = _.cloneDeep(DEFAULTS);
 
-    if (packageJson && packageJson.hasOwnProperty('engines')) {
+    if (packageJson && Object.prototype.hasOwnProperty.call(packageJson, 'engines')) {
         // CASE: validate
         if (packageJson.engines['ghost-api']) {
             const availableApiVersions = {};

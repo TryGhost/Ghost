@@ -79,12 +79,12 @@ class Queue extends EventEmitter {
      * @param {function} fn
      */
     register(options, fn) {
-        if (!options.hasOwnProperty('tolerance')) {
+        if (!Object.prototype.hasOwnProperty.call(options, 'tolerance')) {
             options.tolerance = 0;
         }
 
         // CASE: nobody has initialised the queue event yet
-        if (!this.queue.hasOwnProperty(options.event)) {
+        if (!Object.prototype.hasOwnProperty.call(this.queue, options.event)) {
             this.queue[options.event] = {
                 tolerance: options.tolerance,
                 requiredSubscriberCount: options.requiredSubscriberCount || 0,
@@ -178,7 +178,7 @@ class Queue extends EventEmitter {
         // CASE: nobody is in the event queue waiting yet
         // e.g. all resources are fetched already, but no subscribers (bootstrap)
         // happens only for high tolerant events
-        if (!this.queue.hasOwnProperty(options.event)) {
+        if (!Object.prototype.hasOwnProperty.call(this.queue, options.event)) {
             this.queue[options.event] = {
                 tolerance: options.tolerance || 0,
                 requiredSubscriberCount: options.requiredSubscriberCount || 0,

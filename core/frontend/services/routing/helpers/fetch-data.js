@@ -90,11 +90,11 @@ function fetchData(pathOptions, routerOptions, locals) {
         postQuery.options.order = routerOptions.order;
     }
 
-    if (pathOptions.hasOwnProperty('page')) {
+    if (Object.prototype.hasOwnProperty.call(pathOptions, 'page')) {
         postQuery.options.page = pathOptions.page;
     }
 
-    if (pathOptions.hasOwnProperty('limit')) {
+    if (Object.prototype.hasOwnProperty.call(pathOptions, 'limit')) {
         postQuery.options.limit = pathOptions.limit;
     }
 
