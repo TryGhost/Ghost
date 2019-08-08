@@ -9,7 +9,7 @@ const moment = require('moment-timezone');
 module.exports = function (date, options) {
     let timezone;
 
-    if (!options && date.hasOwnProperty('hash')) {
+    if (!options && Object.prototype.hasOwnProperty.call(date, 'hash')) {
         options = date;
         date = undefined;
         timezone = options.data.blog.timezone;

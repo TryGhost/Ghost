@@ -13,7 +13,7 @@ _private.validateTemplate = function validateTemplate(object) {
         };
     }
 
-    if (!object.hasOwnProperty('template')) {
+    if (!Object.prototype.hasOwnProperty.call(object, 'template')) {
         object.templates = [];
         return object;
     }
@@ -29,7 +29,7 @@ _private.validateTemplate = function validateTemplate(object) {
 };
 
 _private.validateData = function validateData(object) {
-    if (!object.hasOwnProperty('data')) {
+    if (!Object.prototype.hasOwnProperty.call(object, 'data')) {
         return object;
     }
 
@@ -51,7 +51,7 @@ _private.validateData = function validateData(object) {
         let [resourceKey, slug] = shortForm.split('.');
 
         if (!RESOURCE_CONFIG.QUERY[resourceKey] ||
-            (RESOURCE_CONFIG.QUERY[resourceKey].hasOwnProperty('internal') && RESOURCE_CONFIG.QUERY[resourceKey].internal === true)) {
+            (Object.prototype.hasOwnProperty.call(RESOURCE_CONFIG.QUERY[resourceKey], 'internal') && RESOURCE_CONFIG.QUERY[resourceKey].internal === true)) {
             throw new common.errors.ValidationError({
                 message: `Resource key not supported. ${resourceKey}`,
                 help: 'Please use: tag, user, post or page.'
@@ -130,7 +130,7 @@ _private.validateData = function validateData(object) {
             };
 
             _.each(requiredQueryFields, (option) => {
-                if (!object.data[key].hasOwnProperty(option)) {
+                if (!Object.prototype.hasOwnProperty.call(object.data[key], option)) {
                     throw new common.errors.ValidationError({
                         message: common.i18n.t('errors.services.settings.yaml.validate', {
                             at: JSON.stringify(object.data[key]),
@@ -162,7 +162,7 @@ _private.validateData = function validateData(object) {
                 data.query[key].options = _.defaults(data.query[key].options, DEFAULT_RESOURCE.options);
             }
 
-            if (!data.router.hasOwnProperty(DEFAULT_RESOURCE.resourceAlias || DEFAULT_RESOURCE.resource)) {
+            if (!Object.prototype.hasOwnProperty.call(data.router, DEFAULT_RESOURCE.resourceAlias || DEFAULT_RESOURCE.resource)) {
                 data.router[DEFAULT_RESOURCE.resourceAlias || DEFAULT_RESOURCE.resource] = [];
             }
 
@@ -244,7 +244,7 @@ _private.validateCollections = function validateCollections(collections) {
             });
         }
 
-        if (!routingTypeObject.hasOwnProperty('permalink')) {
+        if (!Object.prototype.hasOwnProperty.call(routingTypeObject, 'permalink')) {
             throw new common.errors.ValidationError({
                 message: common.i18n.t('errors.services.settings.yaml.validate', {
                     at: routingTypeObjectKey,

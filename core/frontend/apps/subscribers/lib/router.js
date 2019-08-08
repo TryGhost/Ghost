@@ -45,7 +45,7 @@ function errorHandler(error, req, res, next) {
 }
 
 function honeyPot(req, res, next) {
-    if (!req.body.hasOwnProperty('confirm') || req.body.confirm !== '') {
+    if (!Object.prototype.hasOwnProperty.call(req.body, 'confirm') || req.body.confirm !== '') {
         return next(new Error('Oops, something went wrong!'));
     }
 

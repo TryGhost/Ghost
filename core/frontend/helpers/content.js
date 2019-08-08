@@ -15,7 +15,7 @@ module.exports = function content(options = {}) {
     let runTruncate = false;
 
     for (const key of ['words', 'characters']) {
-        if (hash.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(hash, key)) {
             runTruncate = true;
             truncateOptions[key] = parseInt(hash[key], 10);
         }
