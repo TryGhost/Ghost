@@ -113,7 +113,7 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
-                    eventSpy.callCount.should.equal(78);
+                    eventSpy.callCount.should.equal(80);
 
                     eventSpy.args[1][0].should.equal('settings.db_hash.added');
                     eventSpy.args[1][1].attributes.type.should.equal('core');
@@ -122,7 +122,10 @@ describe('Unit: models/settings', function () {
                     eventSpy.args[13][1].attributes.type.should.equal('blog');
                     eventSpy.args[13][1].attributes.value.should.equal('The professional publishing platform');
 
-                    eventSpy.args[77][0].should.equal('settings.members_subscription_settings.added');
+                    eventSpy.args[62][0].should.equal('settings.added');
+                    eventSpy.args[62][1].attributes.key.should.equal('image_sizes');
+
+                    eventSpy.args[79][0].should.equal('settings.members_subscription_settings.added');
                 });
         });
 
@@ -136,7 +139,7 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
-                    eventSpy.callCount.should.equal(76);
+                    eventSpy.callCount.should.equal(78);
 
                     eventSpy.args[13][0].should.equal('settings.logo.added');
                 });
