@@ -5,7 +5,7 @@ var _ = require('lodash'),
 module.exports.create = function configLoader(packageJson) {
     var config = _.cloneDeep(defaultConfig);
 
-    if (packageJson && packageJson.hasOwnProperty('config')) {
+    if (packageJson && Object.prototype.hasOwnProperty.call(packageJson, 'config')) {
         config = _.assign(config, _.pick(packageJson.config, allowedKeys));
     }
 

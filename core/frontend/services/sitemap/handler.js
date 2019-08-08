@@ -5,7 +5,7 @@ const config = require('../../../server/config'),
 // Responsible for handling requests for sitemap files
 module.exports = function handler(siteApp) {
     const verifyResourceType = function verifyResourceType(req, res, next) {
-        if (!manager.hasOwnProperty(req.params.resource)) {
+        if (!Object.prototype.hasOwnProperty.call(manager, req.params.resource)) {
             return res.sendStatus(404);
         }
 
