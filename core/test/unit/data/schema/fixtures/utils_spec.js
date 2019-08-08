@@ -260,6 +260,11 @@ describe('Migration Fixture Utils', function () {
             foundFixture.should.be.an.Object();
             foundFixture.entries.should.be.an.Array().with.lengthOf(4);
             foundFixture.entries[0].should.eql({
+                name: 'Export database',
+                action_type: 'exportContent',
+                object_type: 'db'
+            });
+            foundFixture.entries[3].should.eql({
                 name: 'Backup database',
                 action_type: 'backupContent',
                 object_type: 'db'

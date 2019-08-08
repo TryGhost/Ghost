@@ -81,11 +81,6 @@
             "name": "Permission",
             "entries": [
                 {
-                    "name": "Backup database",
-                    "action_type": "backupContent",
-                    "object_type": "db"
-                },
-                {
                     "name": "Export database",
                     "action_type": "exportContent",
                     "object_type": "db"
@@ -439,6 +434,11 @@
                     "name": "Publish posts",
                     "action_type": "publish",
                     "object_type": "post"
+                },
+                {
+                    "name": "Backup database",
+                    "action_type": "backupContent",
+                    "object_type": "db"
                 }
             ]
         },
