@@ -26,5 +26,6 @@ module.exports = {
     og_description: 'og_description',
     twitter_image: 'twitter_image',
     twitter_title: 'twitter_title',
-    twitter_description: 'twitter_description'
+    twitter_description: 'twitter_description',
+    image_sizes: 'image_sizes'
 };
