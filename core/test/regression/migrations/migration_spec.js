@@ -209,6 +209,10 @@ describe('Database Migration (special functions)', function () {
             // Posts
             permissions[70].name.should.eql('Publish posts');
             permissions[70].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration', 'Scheduler Integration']);
+
+            // DB
+            permissions[71].name.should.eql('Backup database');
+            permissions[71].should.be.AssignedToRoles(['Administrator', 'DB Backup Integration']);
         });
 
         describe('Populate', function () {
