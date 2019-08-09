@@ -1,0 +1,24 @@
+
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "images",
+    "title": "images",
+    "description": "Base images definitions",
+    "definitions": {
+        "image": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "purpose": {
+                    "type": "string",
+                    "enum": ["image", "profile_image", "icon"],
+                    "default": "image"
+                },
+                "ref": {
+                    "type": ["string", "null"],
+                    "maxLength": 2000
+                }
+            }
+        }
+    }
+}

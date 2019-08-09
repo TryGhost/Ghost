@@ -67,7 +67,12 @@
     },
     "api": {
         "versions": {
-            "all": ["v0.1", "v2"],
+            "all": ["v0.1", "v2", "canary"],
+            "canary": {
+                "admin": "canary/admin",
+                "content": "canary/content",
+                "members": "canary/members"
+            },
             "v2": {
                 "admin": "v2/admin",
                 "content": "v2/content",
