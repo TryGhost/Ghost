@@ -369,6 +369,72 @@ describe('{{#get}} helper', function () {
         });
     });
 
+    describe('users canary', function () {
+        let browseUsersStub;
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            locals = {root: {_locals: {apiVersion: 'canary'}}};
+
+            browseUsersStub = sinon.stub(api["canary"], 'authorsPublic').get(() => {
+                return {
+                    browse: sinon.stub().resolves({authors: [], meta: meta})
+                };
+            });
+        });
+
+        it('browse users', function (done) {
+            helpers.get.call(
+                {},
+                'users',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                // We don't use the labs helper for canary
+                labsStub.calledOnce.should.be.false();
+
+                fn.called.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('authors');
+                fn.firstCall.args[0].authors.should.eql([]);
+                inverse.called.should.be.false();
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('authors canary', function () {
+        let browseUsersStub;
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            locals = {root: {_locals: {apiVersion: 'canary'}}};
+
+            browseUsersStub = sinon.stub(api["canary"], 'authorsPublic').get(() => {
+                return {
+                    browse: sinon.stub().resolves({authors: [], meta: meta})
+                };
+            });
+        });
+
+        it('browse users', function (done) {
+            helpers.get.call(
+                {},
+                'authors',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                // We don't use the labs helper for canary
+                labsStub.calledOnce.should.be.false();
+
+                fn.called.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('authors');
+                fn.firstCall.args[0].authors.should.eql([]);
+                inverse.called.should.be.false();
+
+                done();
+            }).catch(done);
+        });
+    });
+
     describe('general error handling', function () {
         it('should return an error for an unknown resource', function (done) {
             helpers.get.call(

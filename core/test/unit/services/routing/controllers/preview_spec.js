@@ -209,4 +209,74 @@ describe('Unit - services/routing/controllers/preview', function () {
             }).catch(done);
         });
     });
+
+    describe('canary', function () {
+        let previewStub;
+
+        beforeEach(function () {
+            post = testUtils.DataGenerator.forKnex.createPost({status: 'draft'});
+
+            apiResponse = {
+                preview: [post]
+            };
+
+            req = {
+                path: '/',
+                params: {
+                    uuid: 'something'
+                },
+                route: {}
+            };
+
+            res = {
+                routerOptions: {
+                    query: {controller: 'preview', resource: 'preview'}
+                },
+                locals: {
+                    apiVersion: 'canary'
+                },
+                render: sinon.spy(),
+                redirect: sinon.spy(),
+                set: sinon.spy()
+            };
+
+            secureStub = sinon.stub();
+
+            sinon.stub(urlUtils, 'redirectToAdmin');
+            sinon.stub(urlUtils, 'redirect301');
+            sinon.stub(urlService, 'getUrlByResourceId');
+
+            sinon.stub(helpers, 'secure').get(function () {
+                return secureStub;
+            });
+
+            renderStub = sinon.stub();
+            sinon.stub(helpers, 'renderEntry').get(function () {
+                return function () {
+                    return renderStub;
+                };
+            });
+
+            previewStub = sinon.stub();
+            previewStub.withArgs({
+                uuid: req.params.uuid,
+                status: 'all',
+                include: 'author,authors,tags'
+            }).resolves(apiResponse);
+
+            sinon.stub(api.canary, 'preview').get(() => {
+                return {
+                    read: previewStub
+                };
+            });
+        });
+
+        it('should render post', function (done) {
+            controllers.preview(req, res, failTest(done)).then(function () {
+                renderStub.called.should.be.true();
+                secureStub.called.should.be.true();
+                done();
+            }).catch(done);
+        });
+    });
 });

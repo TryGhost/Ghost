@@ -246,6 +246,16 @@ describe('getTitle', function () {
         title.should.equal('My awesome page!');
     });
 
+    it('canary: should return page title if in page context', function () {
+        var title = getTitle({
+            page: {
+                title: 'My awesome page!'
+            }
+        }, {context: ['page']});
+
+        title.should.equal('My awesome page!');
+    });
+
     it('should return post title if in amp and page context', function () {
         var title = getTitle({
             post: {
