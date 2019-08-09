@@ -252,6 +252,31 @@ describe('Integration: Importer', function () {
                 });
         });
 
+        it('does not treat posts without slug as duplicate', function () {
+            let exportData = exportedLatestBody().db[0];
+
+            exportData.data.posts[0] = {
+                title: "duplicate title"
+            };
+
+            exportData.data.posts[1] = {
+                title: "duplicate title"
+            };
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function (importResult) {
+                    should.exist(importResult.data.posts);
+                    importResult.data.posts.length.should.equal(2);
+                    importResult.problems.length.should.eql(0);
+
+                    importResult.data.posts[0].title.should.equal('duplicate title');
+                    importResult.data.posts[1].title.should.equal('duplicate title');
+
+                    importResult.data.posts[0].slug.should.equal('duplicate-title');
+                    importResult.data.posts[1].slug.should.equal('duplicate-title-2');
+                });
+        });
+
         it('can import user with missing allowed fields', function () {
             let exportData = exportedLatestBody().db[0];
 

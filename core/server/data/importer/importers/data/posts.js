@@ -200,7 +200,7 @@ class PostsImporter extends BaseImporter {
         // For any further future duplication detection, see https://github.com/TryGhost/Ghost/issues/8717.
         let slugs = [];
         this.dataToImport = _.filter(this.dataToImport, (post) => {
-            if (slugs.indexOf(post.slug) !== -1) {
+            if (!!post.slug && slugs.indexOf(post.slug) !== -1) {
                 this.problems.push({
                     message: 'Entry was not imported and ignored. Detected duplicated entry.',
                     help: this.modelName,
