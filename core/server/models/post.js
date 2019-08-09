@@ -782,6 +782,12 @@ Post = ghostBookshelf.Model.extend({
     edit: function edit(data, unfilteredOptions) {
         let options = this.filterOptions(unfilteredOptions, 'edit', {extraAllowedProperties: ['id']});
 
+        // @TODO DELETE THIS (and the failing regression tests) when v0.1 is ded
+        if (Object.prototype.hasOwnProperty.call(data, 'page')) {
+            data.type = data.page ? 'page' : 'post';
+            delete data.page;
+        }
+
         const editPost = () => {
             options.forUpdate = true;
 

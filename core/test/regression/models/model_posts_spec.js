@@ -532,7 +532,7 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('draft');
-                    edited.attributes.page.should.equal(true);
+                    edited.attributes.type.should.equal('page');
 
                     Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['post.deleted']);
@@ -542,7 +542,7 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('draft');
-                    edited.attributes.page.should.equal(false);
+                    edited.attributes.type.should.equal('post');
 
                     Object.keys(eventsTriggered).length.should.eql(4);
                     should.exist(eventsTriggered['post.deleted']);
@@ -569,7 +569,7 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('scheduled');
-                    edited.attributes.page.should.equal(true);
+                    edited.attributes.type.should.equal('page');
 
                     Object.keys(eventsTriggered).length.should.eql(3);
                     should.exist(eventsTriggered['post.deleted']);
@@ -580,7 +580,7 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('scheduled');
-                    edited.attributes.page.should.equal(false);
+                    edited.attributes.type.should.equal('post');
 
                     Object.keys(eventsTriggered).length.should.eql(7);
                     should.exist(eventsTriggered['page.unscheduled']);
@@ -606,7 +606,7 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('published');
-                    edited.attributes.page.should.equal(true);
+                    edited.attributes.type.should.equal('page');
 
                     Object.keys(eventsTriggered).length.should.eql(4);
                     should.exist(eventsTriggered['post.unpublished']);
@@ -618,7 +618,7 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('published');
-                    edited.attributes.page.should.equal(false);
+                    edited.attributes.type.should.equal('post');
 
                     Object.keys(eventsTriggered).length.should.eql(8);
                     should.exist(eventsTriggered['page.unpublished']);
@@ -644,7 +644,7 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('published');
-                    edited.attributes.page.should.equal(true);
+                    edited.attributes.type.should.equal('page');
 
                     Object.keys(eventsTriggered).length.should.eql(5);
                     should.exist(eventsTriggered['post.deleted']);
@@ -657,7 +657,7 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('draft');
-                    edited.attributes.page.should.equal(false);
+                    edited.attributes.type.should.equal('post');
 
                     Object.keys(eventsTriggered).length.should.eql(8);
                     should.exist(eventsTriggered['page.unpublished']);
@@ -1175,7 +1175,7 @@ describe('Post Model', function () {
                     page = results.toJSON();
                     page.id.should.equal(firstItemData.id);
                     page.status.should.equal('published');
-                    page.page.should.be.true();
+                    page.type.should.equal('page');
 
                     // Destroy the page
                     return results.destroy(firstItemData);
