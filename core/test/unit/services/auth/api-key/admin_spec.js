@@ -31,7 +31,7 @@ describe('Admin API Key Auth', function () {
         sinon.restore();
     });
 
-    it('should authenticate known+valid API key', function (done) {
+    it('should authenticate known+valid v2 API key', function (done) {
         const token = jwt.sign({
         }, this.secret, {
             keyid: this.fakeApiKey.id,
@@ -42,7 +42,32 @@ describe('Admin API Key Auth', function () {
         });
 
         const req = {
-            originalUrl: '/test/',
+            originalUrl: '/ghost/api/v2/admin/',
+            headers: {
+                authorization: `Ghost ${token}`
+            }
+        };
+        const res = {};
+
+        apiKeyAuth.admin.authenticate(req, res, (err) => {
+            should.not.exist(err);
+            req.api_key.should.eql(this.fakeApiKey);
+            done();
+        });
+    });
+
+    it('should authenticate known+valid canary API key', function (done) {
+        const token = jwt.sign({
+        }, this.secret, {
+            keyid: this.fakeApiKey.id,
+            algorithm: 'HS256',
+            expiresIn: '5m',
+            audience: '/canary/admin/',
+            issuer: this.fakeApiKey.id
+        });
+
+        const req = {
+            originalUrl: '/ghost/api/canary/admin/',
             headers: {
                 authorization: `Ghost ${token}`
             }
@@ -103,7 +128,7 @@ describe('Admin API Key Auth', function () {
         });
 
         const req = {
-            originalUrl: '/test/',
+            originalUrl: '/ghost/api/v2/admin/',
             headers: {
                 authorization: `Ghost ${token}`
             }
@@ -132,7 +157,7 @@ describe('Admin API Key Auth', function () {
         });
 
         const req = {
-            originalUrl: '/test/',
+            originalUrl: '/ghost/api/v2/admin/',
             headers: {
                 authorization: `Ghost ${token}`
             }
@@ -162,7 +187,7 @@ describe('Admin API Key Auth', function () {
         });
 
         const req = {
-            originalUrl: '/test/',
+            originalUrl: '/ghost/api/v2/admin/',
             headers: {
                 authorization: `Ghost ${token}`
             }
@@ -190,7 +215,7 @@ describe('Admin API Key Auth', function () {
         });
 
         const req = {
-            originalUrl: '/test/',
+            originalUrl: '/ghost/api/v2/admin/',
             headers: {
                 authorization: `Ghost ${token}`
             }
