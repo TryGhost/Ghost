@@ -151,6 +151,15 @@ describe('{{body_class}} helper', function () {
             rendered.string.should.equal('page-template page-about');
         });
 
+        it('canary: a static page', function () {
+            var rendered = callBodyClassWithContext(
+                ['page'],
+                {relativeUrl: '/about', page: {page: true, slug: 'about'}}
+            );
+
+            rendered.string.should.equal('page-template page-about');
+        });
+
         it('a static page with custom template (is now the same as one without)', function () {
             var rendered = callBodyClassWithContext(
                 ['page'],

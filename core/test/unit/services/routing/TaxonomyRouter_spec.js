@@ -5,7 +5,8 @@ const should = require('should'),
     common = require('../../../../server/lib/common'),
     controllers = require('../../../../frontend/services/routing/controllers'),
     TaxonomyRouter = require('../../../../frontend/services/routing/TaxonomyRouter'),
-    RESOURCE_CONFIG = require('../../../../frontend/services/routing/config/v2');
+    RESOURCE_CONFIG = require('../../../../frontend/services/routing/config/v2'),
+    RESOURCE_CONFIG_CANARY = require('../../../../frontend/services/routing/config/canary');
 
 describe('UNIT - services/routing/TaxonomyRouter', function () {
     let req, res, next;
@@ -61,8 +62,26 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
         taxonomyRouter.mountRoute.args[2][1].should.eql(taxonomyRouter._redirectEditOption.bind(taxonomyRouter));
     });
 
-    it('fn: _prepareContext', function () {
+    it('v2:fn: _prepareContext', function () {
         const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG);
+        taxonomyRouter._prepareContext(req, res, next);
+        next.calledOnce.should.eql(true);
+
+        res.routerOptions.should.eql({
+            type: 'channel',
+            name: 'tag',
+            permalinks: '/tag/:slug/',
+            resourceType: RESOURCE_CONFIG.QUERY.tag.resource,
+            data: {tag: RESOURCE_CONFIG.QUERY.tag},
+            filter: RESOURCE_CONFIG.TAXONOMIES.tag.filter,
+            context: ['tag'],
+            slugTemplate: true,
+            identifier: taxonomyRouter.identifier
+        });
+    });
+
+    it('canary:fn: _prepareContext', function () {
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG_CANARY);
         taxonomyRouter._prepareContext(req, res, next);
         next.calledOnce.should.eql(true);
 
