@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const url = require('url');
 const models = require('../../../models');
 const common = require('../../../lib/common');
 
@@ -90,10 +91,12 @@ const authenticate = (req, res, next) => {
         // https://github.com/auth0/node-jsonwebtoken/issues/208#issuecomment-231861138
         const secret = Buffer.from(apiKey.get('secret'), 'hex');
 
-        // @TODO When v3 api hits we should check against the api actually being used
-        // ensure the token was meant for this api
+        const {pathname} = url.parse(req.originalUrl);
+        const [hasMatch, version = 'v2', api = 'admin'] = pathname.match(/ghost\/api\/([^/]+)\/([^/]+)\/(.+)*/); // eslint-disable-line no-unused-vars
+
+        // ensure the token was meant for this api version
         const options = Object.assign({
-            audience: '/v2/admin/'
+            audience: new RegExp(`\/?${version}\/${api}\/?$`) // eslint-disable-line no-useless-escape
         }, JWT_OPTIONS);
 
         try {
