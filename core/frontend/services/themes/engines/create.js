@@ -14,7 +14,8 @@ const allowedKeys = ['ghost-api'];
  * 2.0.0
  * v2
  * v0.1
- *
+ * canary
+ * 
  * Goal: Extract major version from input.
  *
  * @param packageJson
@@ -27,13 +28,16 @@ module.exports = (packageJson) => {
         // CASE: validate
         if (packageJson.engines['ghost-api']) {
             const availableApiVersions = {};
-
             config.get('api:versions:all').forEach((version) => {
-                availableApiVersions[semver(semver.coerce(version).version).major] = version;
+                if (version === 'canary') {
+                    availableApiVersions.canary = version;
+                } else {
+                    availableApiVersions[semver(semver.coerce(version).version).major] = version;
+                }
             });
 
             const apiVersion = packageJson.engines['ghost-api'];
-            const apiVersionMajor = semver(semver.coerce(apiVersion).version).major;
+            const apiVersionMajor = apiVersion === 'canary' ? 'canary' : semver(semver.coerce(apiVersion).version).major;
 
             if (availableApiVersions[apiVersionMajor]) {
                 packageJson.engines['ghost-api'] = availableApiVersions[apiVersionMajor];
