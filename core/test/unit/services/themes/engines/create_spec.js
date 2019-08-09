@@ -98,5 +98,17 @@ describe('Themes: engines', function () {
                 'ghost-api': 'v0.1'
             });
         });
+
+        it('canary', function () {
+            const engines = themeEngines.create({
+                engines: {
+                    'ghost-api': 'canary'
+                }
+            });
+
+            engines.should.eql({
+                'ghost-api': 'canary'
+            });
+        });
     });
 });
