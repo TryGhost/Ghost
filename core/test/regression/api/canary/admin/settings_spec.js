@@ -163,6 +163,7 @@ describe('Settings API', function () {
                 const imageSizesJSON = JSON.parse(jsonResponse.settings[0].value);
 
                 Object.keys(imageSizesJSON).length.should.equal(8);
+
                 // core image sizes
                 should.exist(imageSizesJSON.publisher_logo);
                 should.exist(imageSizesJSON.amp_feature_image);
@@ -170,6 +171,15 @@ describe('Settings API', function () {
                 // casper image sizes
                 should.exist(imageSizesJSON.s);
                 should.exist(imageSizesJSON.xs);
+
+                // TODO: image sizes should be checked by 'checkObject' test helper
+                imageSizesJSON.publisher_logo.width.should.equal(600);
+                imageSizesJSON.publisher_logo.height.should.equal(60);
+                imageSizesJSON.publisher_logo.type.should.equal('core');
+
+                imageSizesJSON.s.width.should.equal(300);
+                should.not.exist(imageSizesJSON.s.height);
+                imageSizesJSON.s.type.should.equal('api');
 
                 done();
             });

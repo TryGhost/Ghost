@@ -73,6 +73,20 @@ module.exports.forSettings = (attrs, frame) => {
             ghostFoot.key = 'codeinjection_foot';
             attrs.push(ghostFoot);
         }
+
+        const imageSizes = _.find(attrs, {key: 'image_sizes'});
+
+        if (imageSizes && imageSizes.value) {
+            const sizes = JSON.parse(imageSizes.value);
+
+            Object.keys(sizes).forEach((key) => {
+                if (sizes[key].type !== 'core') {
+                    sizes[key].type = 'api';
+                }
+            });
+
+            imageSizes.value = JSON.stringify(sizes);
+        }
     } else {
         attrs.codeinjection_head = attrs.ghost_head;
         attrs.codeinjection_foot = attrs.ghost_foot;
