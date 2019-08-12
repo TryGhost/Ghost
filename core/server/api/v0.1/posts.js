@@ -16,27 +16,21 @@ const Promise = require('bluebird'),
     ],
     unsafeAttrs = ['author_id', 'status', 'authors'];
 
-const mongo = require('../v2/utils/serializers/input/utils/mongo.js');
+const mapNQLKeyValues = require('nql-map-key-values');
 
-/*
- * Replaces references of "page" in filters
- * with the correct column "type"
- */
-function replacePageWithType(mongoJSON) {
-    return mongo.mapKeysAndValues(mongoJSON, {
-        key: {
-            from: 'page',
-            to: 'type'
-        },
-        values: [{
-            from: false,
-            to: 'post'
-        }, {
-            from: true,
-            to: 'page'
-        }]
-    });
-}
+const replacePageWithType = mapNQLKeyValues({
+    key: {
+        from: 'page',
+        to: 'type'
+    },
+    values: [{
+        from: false,
+        to: 'post'
+    }, {
+        from: true,
+        to: 'page'
+    }]
+});
 
 function convertTypeToPage(model) {
     // Respect include param
