@@ -124,7 +124,7 @@ function getAmperizeHTML(html, post) {
     amperize = amperize || new Amperize();
 
     // make relative URLs abolute
-    html = urlUtils.makeAbsoluteUrls(html, urlUtils.urlFor('home', true), post.url).html();
+    html = urlUtils.htmlRelativeToAbsolute(html, urlUtils.urlFor('home', true), post.url).html();
 
     if (!amperizeCache[post.id] || moment(new Date(amperizeCache[post.id].updated_at)).diff(new Date(post.updated_at)) < 0) {
         return new Promise((resolve) => {

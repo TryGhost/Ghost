@@ -21,9 +21,19 @@ const getInstance = (options) => {
 
 const stubUrlUtils = (options, sandbox) => {
     const stubInstance = getInstance(options);
+    const classPropNames = Object.getOwnPropertyNames(Object.getPrototypeOf(urlUtils))
+        .filter(name => name !== 'constructor');
 
-    Object.keys(urlUtils).forEach((key) => {
-        sandbox.stub(urlUtils, key).callsFake(stubInstance[key]);
+    classPropNames.forEach((key) => {
+        if (typeof urlUtils[key] === 'function') {
+            sandbox.stub(urlUtils, key).callsFake(function () {
+                return stubInstance[key](...arguments);
+            });
+        } else {
+            sandbox.stub(urlUtils, key).get(function () {
+                return stubInstance[key];
+            });
+        }
     });
 };
 
