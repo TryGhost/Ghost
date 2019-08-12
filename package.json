@@ -94,7 +94,7 @@
     "knex": "0.19.1",
     "knex-migrator": "3.3.3",
     "lodash": "4.17.15",
-    "markdown-it": "9.0.1",
+    "markdown-it": "9.1.0",
     "markdown-it-footnote": "3.0.2",
     "markdown-it-lazy-headers": "0.1.3",
     "markdown-it-mark": "2.0.0",
