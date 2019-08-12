@@ -4,7 +4,8 @@
     "demo": "https://demo.ghost.io",
     "version": "2.4.2",
     "engines": {
-        "ghost": ">=2.0.0"
+        "ghost": ">=2.0.0",
+        "ghost-api": "v2"
     },
     "license": "MIT",
     "screenshots": {
@@ -52,6 +53,26 @@
         "postcss-easy-import": "1.0.1"
     },
     "config": {
-        "posts_per_page": 25
+        "posts_per_page": 25,
+        "image_sizes": {
+            "xxs": {
+                "width": 30
+            },
+            "xs": {
+                "width": 100
+            },
+            "s": {
+                "width": 300
+            },
+            "m": {
+                "width": 600
+            },
+            "l": {
+                "width": 1000
+            },
+            "xl": {
+                "width": 2000
+            }
+        }
     }
 }

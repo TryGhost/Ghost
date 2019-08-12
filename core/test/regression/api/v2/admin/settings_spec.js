@@ -25,7 +25,7 @@ describe('Settings API', function () {
         return ghostServer.stop();
     });
 
-    it('Can\'t read core setting', function () {
+    it('can\'t read core setting', function () {
         return request
             .get(localUtils.API.getApiQuery('settings/db_hash/'))
             .set('Origin', config.get('url'))
@@ -34,7 +34,7 @@ describe('Settings API', function () {
             .expect(403);
     });
 
-    it('Can\'t read permalinks', function (done) {
+    it('can\'t read permalinks', function (done) {
         request.get(localUtils.API.getApiQuery('settings/permalinks/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -145,6 +145,36 @@ describe('Settings API', function () {
             });
     });
 
+    it('can read default image_sizes', function (done) {
+        request.get(localUtils.API.getApiQuery('settings/image_sizes/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                var jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.settings);
+
+                const imageSizesJSON = JSON.parse(jsonResponse.settings[0].value);
+
+                Object.keys(imageSizesJSON).length.should.equal(8);
+                // core image sizes
+                should.exist(imageSizesJSON.publisher_logo);
+                should.exist(imageSizesJSON.amp_feature_image);
+
+                // casper image sizes
+                should.exist(imageSizesJSON.s);
+                should.exist(imageSizesJSON.xs);
+
+                done();
+            });
+    });
+
     it('can\'t edit image_sizes', function (done) {
         request.get(localUtils.API.getApiQuery('settings/'))
             .set('Origin', config.get('url'))
@@ -192,7 +222,7 @@ describe('Settings API', function () {
             });
     });
 
-    it('Will transform "1"', function (done) {
+    it('will transform "1"', function (done) {
         request.get(localUtils.API.getApiQuery('settings/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
