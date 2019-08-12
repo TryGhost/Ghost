@@ -78,4 +78,21 @@ describe('Content API Key Auth', function () {
             done();
         });
     });
+
+    it('shouldn\'t authenticate with invalid request', function (done) {
+        const req = {
+            query: {
+                key: [this.fakeApiKey.secret, '']
+            }
+        };
+        const res = {};
+
+        authenticateContentApiKey(req, res, function next(err) {
+            should.exist(err);
+            should.equal(err instanceof common.errors.BadRequestError, true);
+            err.code.should.eql('INVALID_REQUEST');
+            should.not.exist(req.api_key);
+            done();
+        });
+    });
 });
