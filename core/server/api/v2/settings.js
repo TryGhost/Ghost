@@ -92,6 +92,12 @@ module.exports = {
                             message: common.i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
                         }));
                     }
+
+                    if (setting.key === 'image_sizes' && !(frame.options.context && frame.options.context.internal)) {
+                        errors.push(new common.errors.NoPermissionError({
+                            message: common.i18n.t('errors.api.settings.noPermissionToEditSettings')
+                        }));
+                    }
                 });
 
                 if (errors.length) {

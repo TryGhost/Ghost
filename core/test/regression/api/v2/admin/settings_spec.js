@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
 const config = require('../../../../../server/config');
@@ -121,6 +122,53 @@ describe('Settings API', function () {
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        jsonResponse = res.body;
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        should.exist(jsonResponse.errors);
+                        testUtils.API.checkResponseValue(jsonResponse.errors[0], [
+                            'message',
+                            'context',
+                            'type',
+                            'details',
+                            'property',
+                            'help',
+                            'code',
+                            'id'
+                        ]);
+                        done();
+                    });
+            });
+    });
+
+    it('can\'t edit image_sizes', function (done) {
+        request.get(localUtils.API.getApiQuery('settings/'))
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                var jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.settings);
+                should.exist(_.find(jsonResponse.settings, {key: 'image_sizes'}));
+
+                jsonResponse.settings = [{key: 'image_sizes', value: 'test value'}];
+
+                request.put(localUtils.API.getApiQuery('settings/'))
+                    .set('Origin', config.get('url'))
+                    .send(jsonResponse)
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(403)
                     .end(function (err, res) {
                         if (err) {
                             return done(err);
