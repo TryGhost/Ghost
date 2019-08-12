@@ -117,8 +117,6 @@ export function isThemeValidationError(errorOrStatus, payload) {
 let ajaxService = AjaxService.extend({
     session: service(),
 
-    isTesting: undefined,
-
     // flag to tell our ESA authenticator not to try an invalidate DELETE request
     // because it's been triggered by this service's 401 handling which means the
     // DELETE would fail and get stuck in an infinite loop
@@ -126,16 +124,10 @@ let ajaxService = AjaxService.extend({
     skipSessionDeletion: false,
 
     get headers() {
-        let headers = {};
-
-        headers['X-Ghost-Version'] = config.APP.version;
-        headers['App-Pragma'] = 'no-cache';
-
-        if (this.session.isAuthenticated && this.isTesting) {
-            headers.Authorization = 'Test';
-        }
-
-        return headers;
+        return {
+            'X-Ghost-Version': config.APP.version,
+            'App-Pragma': 'no-cache'
+        };
     },
 
     init() {

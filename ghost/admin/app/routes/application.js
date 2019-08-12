@@ -60,18 +60,13 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             this.set('appLoadTransition', transition);
             transition.send('loadServerNotifications');
 
-            let configPromise = this.config.fetchAuthenticated();
-            let featurePromise = this.feature.fetch();
-            let settingsPromise = this.settings.fetch();
-            let tourPromise = this.tour.fetchViewed();
-
             // return the feature/settings load promises so that we block until
             // they are loaded to enable synchronous access everywhere
             return RSVP.all([
-                configPromise,
-                featurePromise,
-                settingsPromise,
-                tourPromise
+                this.config.fetchAuthenticated(),
+                this.feature.fetch(),
+                this.settings.fetch(),
+                this.tour.fetchViewed()
             ]).then((results) => {
                 this._appLoaded = true;
                 return results;
