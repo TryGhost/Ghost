@@ -31,11 +31,11 @@
     "@babel/preset-env": "7.4.4",
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.3",
     "jsdom": "15.0.0",
-    "mocha": "5.2.0",
+    "mocha": "6.2.0",
     "rollup": "1.10.1",
     "rollup-plugin-babel": "4.3.2",
     "should": "13.2.3",
-    "sinon": "6.3.5"
+    "sinon": "7.4.1"
   },
   "dependencies": {
     "@tryghost/kg-clean-basic-html": "^0.1.1"
