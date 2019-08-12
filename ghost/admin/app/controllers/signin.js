@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import Controller, {inject as controller} from '@ember/controller';
-import RSVP from 'rsvp';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {alias} from '@ember/object/computed';
 import {isArray as isEmberArray} from '@ember/array';
@@ -34,23 +33,15 @@ export default Controller.extend(ValidationEngine, {
 
     actions: {
         authenticate() {
-            this.validateAndAuthenticate.perform();
+            return this.validateAndAuthenticate.perform();
         }
     },
 
     authenticate: task(function* (authStrategy, authentication) {
         try {
-            let authResult = yield this.session
-                .authenticate(authStrategy, ...authentication);
-            let promises = [];
-
-            promises.pushObject(this.settings.fetch());
-            promises.pushObject(this.config.fetchAuthenticated());
-
-            // fetch settings and private config for synchronous access
-            yield RSVP.all(promises);
-
-            return authResult;
+            return yield this.session
+                .authenticate(authStrategy, ...authentication)
+                .then(() => true); // ensure task button transitions to "success" state
         } catch (error) {
             if (isVersionMismatchError(error)) {
                 return this.notifications.showAPIError(error);
@@ -72,6 +63,7 @@ export default Controller.extend(ValidationEngine, {
                     this.get('signin.errors').add('password', '');
                 }
             } else {
+                console.error(error); // eslint-disable-line no-console
                 // Connection errors don't return proper status message, only req.body
                 this.notifications.showAlert(
                     'There was a problem on the server.',
@@ -96,7 +88,8 @@ export default Controller.extend(ValidationEngine, {
         try {
             yield this.validate({property: 'signin'});
             return yield this.authenticate
-                .perform(authStrategy, [signin.get('identification'), signin.get('password')]);
+                .perform(authStrategy, [signin.get('identification'), signin.get('password')])
+                .then(() => true);
         } catch (error) {
             this.set('flowErrors', 'Please fill out the form to sign in.');
         }

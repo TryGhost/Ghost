@@ -32,6 +32,7 @@ const GhTaskButton = Component.extend({
     buttonText: 'Save',
     idleClass: '',
     runningClass: '',
+    showSuccess: true, // set to false if you want the spinner to show until a transition occurs
     successText: 'Saved',
     successClass: 'gh-btn-green',
     failureText: 'Retry',
@@ -40,7 +41,6 @@ const GhTaskButton = Component.extend({
     // Allowed actions
     action: () => {},
 
-    isRunning: reads('task.last.isRunning'),
     runningText: reads('buttonText'),
 
     // hasRun is needed so that a newly rendered button does not show the last
@@ -53,12 +53,22 @@ const GhTaskButton = Component.extend({
         return this.isIdle ? this.idleClass : '';
     }),
 
+    isRunning: computed('task.last.isRunning', 'hasRun', 'showSuccess', function () {
+        let isRunning = this.get('task.last.isRunning');
+
+        if (this.hasRun && this.get('task.last.value') && !this.showSuccess) {
+            isRunning = true;
+        }
+
+        return isRunning;
+    }),
+
     isRunningClass: computed('isRunning', function () {
         return this.isRunning ? (this.runningClass || this.idleClass) : '';
     }),
 
     isSuccess: computed('hasRun', 'isRunning', 'task.last.value', function () {
-        if (!this.hasRun || this.isRunning) {
+        if (!this.hasRun || this.isRunning || !this.showSuccess) {
             return false;
         }
 
