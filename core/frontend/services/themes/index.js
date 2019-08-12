@@ -9,6 +9,24 @@ const list = require('./list');
 const settingsCache = require('../../../server/services/settings/cache');
 const engineDefaults = require('./engines/defaults');
 
+const syncImageSizes = () => {
+    const apiVersion = active.get().engine('ghost-api');
+    const imageSizes = active.get().config('image_sizes');
+
+    if (imageSizes && (apiVersion === 'v2' || apiVersion === 'canary')) {
+        const api = require('../../../server/api')[apiVersion];
+
+        return api.settings.edit({
+            settings: [{
+                key: 'image_sizes',
+                value: imageSizes
+            }]
+        }, {context: {internal: true}});
+    }
+
+    return Promise.resolve();
+};
+
 module.exports = {
     // Init themes module
     // TODO: move this once we're clear what needs to happen here
@@ -20,6 +38,7 @@ module.exports = {
         // Register a listener for server-start to load all themes
         common.events.on('server.start', function readAllThemesOnServerStart() {
             themeLoader.loadAllThemes();
+            syncImageSizes();
         });
 
         // Just read the active theme for now
@@ -98,7 +117,8 @@ module.exports = {
                 debug('Activating theme (method B on API "activate")', themeName);
                 activate(loadedTheme, checkedTheme);
 
-                return checkedTheme;
+                return syncImageSizes()
+                    .then(() => checkedTheme);
             });
     },
     storage: require('./storage'),
