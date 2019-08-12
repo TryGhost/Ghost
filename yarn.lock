@@ -5717,6 +5717,12 @@ npm-run-path@^2.0.0:
     gauge "~2.7.3"
     set-blocking "~2.0.0"
 
+nql-map-key-values@./core/shared/nql-map-key-values:
+  version "0.0.0"
+  dependencies:
+    "@nexes/nql" "0.3.0"
+    lodash "4.17.15"
+
 nth-check@~1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/nth-check/-/nth-check-1.0.2.tgz#b2bd295c37e3dd58a3bf0700376663ba4d9cf05c"
