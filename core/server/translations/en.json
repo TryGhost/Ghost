@@ -75,6 +75,7 @@
                 "unknownContentApiKey": "Unknown Content API Key",
                 "adminApiKidMissing": "Admin API kid missing.",
                 "invalidApiKeyType": "Invalid API Key type",
+                "invalidRequest": "Invalid Request",
                 "invalidToken": "Invalid token",
                 "invalidTokenWithMessage": "Invalid token: {message}",
                 "incorrectAuthHeaderFormat": "Authorization header format is \"Authorization: Ghost [token]\""

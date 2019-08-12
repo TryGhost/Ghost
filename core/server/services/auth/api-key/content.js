@@ -7,6 +7,13 @@ const authenticateContentApiKey = function authenticateContentApiKey(req, res, n
         return next();
     }
 
+    if (req.query.key.constructor === Array) {
+        return next(new common.errors.BadRequestError({
+            message: common.i18n.t('errors.middleware.auth.invalidRequest'),
+            code: 'INVALID_REQUEST'
+        }));
+    }
+
     let key = req.query.key;
 
     models.ApiKey.findOne({secret: key}).then((apiKey) => {
