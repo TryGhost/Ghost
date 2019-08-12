@@ -67,9 +67,10 @@ describe('Acceptance: Error Handling', function () {
             });
 
             it('displays alert and aborts the transition when an ember-ajax error is thrown whilst navigating', async function () {
+                await visit('/tags');
+
                 this.server.get('/settings/', versionMismatchResponse);
 
-                await visit('/tags');
                 await click('[data-test-nav="settings"]');
 
                 // navigation is blocked

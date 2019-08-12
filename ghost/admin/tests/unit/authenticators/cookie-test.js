@@ -13,6 +13,34 @@ const mockAjax = Service.extend({
     }
 });
 
+const mockConfig = Service.extend({
+    init() {
+        this._super(...arguments);
+        this.fetchAuthenticated = sinon.stub().resolves();
+    }
+});
+
+const mockFeature = Service.extend({
+    init() {
+        this._super(...arguments);
+        this.fetch = sinon.stub().resolves();
+    }
+});
+
+const mockSettings = Service.extend({
+    init() {
+        this._super(...arguments);
+        this.fetch = sinon.stub().resolves();
+    }
+});
+
+const mockTour = Service.extend({
+    init() {
+        this._super(...arguments);
+        this.fetchViewed = sinon.stub().resolves();
+    }
+});
+
 const mockGhostPaths = Service.extend({
     apiRoot: '/ghost/api/v2/admin'
 });
@@ -22,6 +50,10 @@ describe('Unit: Authenticator: cookie', () => {
 
     beforeEach(function () {
         this.owner.register('service:ajax', mockAjax);
+        this.owner.register('service:config', mockConfig);
+        this.owner.register('service:feature', mockFeature);
+        this.owner.register('service:settings', mockSettings);
+        this.owner.register('service:tour', mockTour);
         this.owner.register('service:ghost-paths', mockGhostPaths);
     });
 
@@ -35,6 +67,11 @@ describe('Unit: Authenticator: cookie', () => {
         it('posts the username and password to the sessionEndpoint and returns the promise', function () {
             let authenticator = this.owner.lookup('authenticator:cookie');
             let post = authenticator.ajax.post;
+
+            let config = this.owner.lookup('service:config');
+            let feature = this.owner.lookup('service:feature');
+            let settings = this.owner.lookup('service:settings');
+            let tour = this.owner.lookup('service:tour');
 
             return authenticator.authenticate('AzureDiamond', 'hunter2').then(() => {
                 expect(post.args[0][0]).to.equal('/ghost/api/v2/admin/session');
@@ -50,6 +87,12 @@ describe('Unit: Authenticator: cookie', () => {
                 expect(post.args[0][1]).to.deep.include({
                     contentType: 'application/json;charset=utf-8'
                 });
+
+                // ensure our pre-loading calls have been made
+                expect(config.fetchAuthenticated.calledOnce, 'config.fetchAuthenticated called').to.be.true;
+                expect(feature.fetch.calledOnce, 'feature.fetch called').to.be.true;
+                expect(settings.fetch.calledOnce, 'settings.fetch called').to.be.true;
+                expect(tour.fetchViewed.calledOnce, 'tour.fetchViewed called').to.be.true;
             });
         });
     });
