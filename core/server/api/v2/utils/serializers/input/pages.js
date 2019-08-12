@@ -1,29 +1,23 @@
 const _ = require('lodash');
+const mapNQLKeyValues = require('nql-map-key-values');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:pages');
 const converters = require('../../../../../lib/mobiledoc/converters');
 const url = require('./utils/url');
 const localUtils = require('../../index');
-const mongo = require('./utils/mongo');
 
-/*
- * Replaces references of "page" in filters
- * with the correct column "type"
- */
-function replacePageWithType(mongoJSON) {
-    return mongo.mapKeysAndValues(mongoJSON, {
-        key: {
-            from: 'page',
-            to: 'type'
-        },
-        values: [{
-            from: false,
-            to: 'post'
-        }, {
-            from: true,
-            to: 'page'
-        }]
-    });
-}
+const replacePageWithType = mapNQLKeyValues({
+    key: {
+        from: 'page',
+        to: 'type'
+    },
+    values: [{
+        from: false,
+        to: 'post'
+    }, {
+        from: true,
+        to: 'page'
+    }]
+});
 
 function removeMobiledocFormat(frame) {
     if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
