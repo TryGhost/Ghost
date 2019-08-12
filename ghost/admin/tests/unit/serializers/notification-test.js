@@ -17,7 +17,7 @@ describe('Unit: Serializer: notification', function () {
     });
 
     it('converts location->key when deserializing', function () {
-        server.get('/ghost/api/v2/admin/notifications', function () {
+        server.get('/ghost/api/canary/admin/notifications', function () {
             let response = {
                 notifications: [{
                     id: 1,
