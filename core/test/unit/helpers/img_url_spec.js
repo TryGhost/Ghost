@@ -22,7 +22,7 @@ describe('{{image}} helper', function () {
 
         before(function () {
             sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://localhost:82832/'}, sandbox);
+            urlUtils.stubUrlUtils({url: 'http://localhost:65535/'}, sandbox);
         });
 
         after(function () {
@@ -37,7 +37,7 @@ describe('{{image}} helper', function () {
         });
 
         it('should output relative url of image if the input is absolute', function () {
-            var rendered = helpers.img_url('http://localhost:82832/content/images/image-relative-url.png', {});
+            var rendered = helpers.img_url('http://localhost:65535/content/images/image-relative-url.png', {});
             should.exist(rendered);
             rendered.should.equal('/content/images/image-relative-url.png');
             logWarnStub.called.should.be.false();
@@ -46,7 +46,7 @@ describe('{{image}} helper', function () {
         it('should output absolute url of image if the option is present ', function () {
             var rendered = helpers.img_url('/content/images/image-relative-url.png', {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.should.equal('http://localhost:82832/content/images/image-relative-url.png');
+            rendered.should.equal('http://localhost:65535/content/images/image-relative-url.png');
             logWarnStub.called.should.be.false();
         });
 
@@ -87,7 +87,7 @@ describe('{{image}} helper', function () {
 
         before(function () {
             sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://localhost:82832/blog'}, sandbox);
+            urlUtils.stubUrlUtils({url: 'http://localhost:65535/blog'}, sandbox);
         });
 
         after(function () {
@@ -103,7 +103,7 @@ describe('{{image}} helper', function () {
         it('should output absolute url of image if the option is present ', function () {
             var rendered = helpers.img_url('/blog/content/images/image-relative-url.png', {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.should.equal('http://localhost:82832/blog/content/images/image-relative-url.png');
+            rendered.should.equal('http://localhost:65535/blog/content/images/image-relative-url.png');
         });
 
         it('should not change output for an external url', function () {
@@ -118,7 +118,7 @@ describe('{{image}} helper', function () {
 
         before(function () {
             sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://localhost:82832/'}, sandbox);
+            urlUtils.stubUrlUtils({url: 'http://localhost:65535/'}, sandbox);
         });
 
         after(function () {
@@ -126,7 +126,7 @@ describe('{{image}} helper', function () {
         });
 
         it('should output correct url for absolute paths which are internal', function () {
-            var rendered = helpers.img_url('http://localhost:82832/content/images/my-coole-img.jpg', {
+            var rendered = helpers.img_url('http://localhost:65535/content/images/my-coole-img.jpg', {
                 hash: {
                     size: 'medium'
                 },

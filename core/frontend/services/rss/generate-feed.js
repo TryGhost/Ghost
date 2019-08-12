@@ -22,7 +22,7 @@ generateTags = function generateTags(data) {
 
 generateItem = function generateItem(post, siteUrl, secure) {
     var itemUrl = urlService.getUrlByResourceId(post.id, {secure: secure, absolute: true}),
-        htmlContent = urlUtils.makeAbsoluteUrls(post.html, siteUrl, itemUrl),
+        htmlContent = urlUtils.htmlRelativeToAbsolute(post.html, siteUrl, itemUrl),
         item = {
             title: post.title,
             // @TODO: DRY this up with data/meta/index & other excerpt code
