@@ -9,7 +9,7 @@ describe('Unit: v2/utils/serializers/output/utils/url', () => {
     beforeEach(() => {
         sinon.stub(urlService, 'getUrlByResourceId').returns('getUrlByResourceId');
         sinon.stub(urlUtils, 'urlFor').returns('urlFor');
-        sinon.stub(urlUtils, 'makeAbsoluteUrls').returns({html: sinon.stub()});
+        sinon.stub(urlUtils, 'htmlRelativeToAbsolute').returns({html: sinon.stub()});
     });
 
     afterEach(() => {
@@ -39,8 +39,8 @@ describe('Unit: v2/utils/serializers/output/utils/url', () => {
             urlUtils.urlFor.getCall(0).args.should.eql(['image', {image: 'value'}, true]);
             urlUtils.urlFor.getCall(1).args.should.eql(['home', true]);
 
-            urlUtils.makeAbsoluteUrls.callCount.should.eql(1);
-            urlUtils.makeAbsoluteUrls.getCall(0).args.should.eql([
+            urlUtils.htmlRelativeToAbsolute.callCount.should.eql(1);
+            urlUtils.htmlRelativeToAbsolute.getCall(0).args.should.eql([
                 '## markdown',
                 'urlFor',
                 'getUrlByResourceId',

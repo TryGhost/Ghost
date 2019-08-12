@@ -1,5 +1,5 @@
 const urlService = require('../../../../frontend/services/url');
-const {urlFor, makeAbsoluteUrls} = require('../../../lib/url-utils');
+const urlUtils = require('../../../lib/url-utils');
 
 const urlsForPost = (id, attrs, options) => {
     attrs.url = urlService.getUrlByResourceId(id);
@@ -10,23 +10,23 @@ const urlsForPost = (id, attrs, options) => {
 
     if (options && options.context && options.context.public && options.absolute_urls) {
         if (attrs.feature_image) {
-            attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
+            attrs.feature_image = urlUtils.urlFor('image', {image: attrs.feature_image}, true);
         }
 
         if (attrs.og_image) {
-            attrs.og_image = urlFor('image', {image: attrs.og_image}, true);
+            attrs.og_image = urlUtils.urlFor('image', {image: attrs.og_image}, true);
         }
 
         if (attrs.twitter_image) {
-            attrs.twitter_image = urlFor('image', {image: attrs.twitter_image}, true);
+            attrs.twitter_image = urlUtils.urlFor('image', {image: attrs.twitter_image}, true);
         }
 
         if (attrs.html) {
-            attrs.html = makeAbsoluteUrls(attrs.html, urlFor('home', true), attrs.url).html();
+            attrs.html = urlUtils.htmlRelativeToAbsolute(attrs.html, urlUtils.urlFor('home', true), attrs.url).html();
         }
 
         if (attrs.url) {
-            attrs.url = urlFor({relativeUrl: attrs.url}, true);
+            attrs.url = urlUtils.urlFor({relativeUrl: attrs.url}, true);
         }
     }
 
@@ -54,16 +54,16 @@ const urlsForPost = (id, attrs, options) => {
 
 const urlsForUser = (id, attrs, options) => {
     if (options && options.context && options.context.public && options.absolute_urls) {
-        attrs.url = urlFor({
+        attrs.url = urlUtils.urlFor({
             relativeUrl: urlService.getUrlByResourceId(id)
         }, true);
 
         if (attrs.profile_image) {
-            attrs.profile_image = urlFor('image', {image: attrs.profile_image}, true);
+            attrs.profile_image = urlUtils.urlFor('image', {image: attrs.profile_image}, true);
         }
 
         if (attrs.cover_image) {
-            attrs.cover_image = urlFor('image', {image: attrs.cover_image}, true);
+            attrs.cover_image = urlUtils.urlFor('image', {image: attrs.cover_image}, true);
         }
     }
 
@@ -72,12 +72,12 @@ const urlsForUser = (id, attrs, options) => {
 
 const urlsForTag = (id, attrs, options) => {
     if (options && options.context && options.context.public && options.absolute_urls) {
-        attrs.url = urlFor({
+        attrs.url = urlUtils.urlFor({
             relativeUrl: urlService.getUrlByResourceId(attrs.id)
         }, true);
 
         if (attrs.feature_image) {
-            attrs.feature_image = urlFor('image', {image: attrs.feature_image}, true);
+            attrs.feature_image = urlUtils.urlFor('image', {image: attrs.feature_image}, true);
         }
     }
 

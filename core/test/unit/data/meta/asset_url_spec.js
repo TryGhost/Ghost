@@ -81,7 +81,7 @@ describe('getAssetUrl', function () {
 
     describe('with /blog subdirectory', function () {
         beforeEach(function () {
-            getAssetUrl.__set__('urlUtils', urlUtils.getInstance({url: 'http://localhost:82832/blog'}));
+            getAssetUrl.__set__('urlUtils', urlUtils.getInstance({url: 'http://localhost:65535/blog'}));
         });
 
         it('should return asset url with just context', function () {

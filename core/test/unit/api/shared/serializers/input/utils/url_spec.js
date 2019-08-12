@@ -6,7 +6,7 @@ const url = require('../../../../../../../server/api/v2/utils/serializers/input/
 describe('Unit: v2/utils/serializers/input/utils/url', function () {
     describe('forPost', function () {
         beforeEach(function () {
-            sinon.stub(urlUtils, 'getBlogUrl')
+            sinon.stub(urlUtils, 'getSiteUrl')
                 .returns('https://blogurl.com');
         });
 

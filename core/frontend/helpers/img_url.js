@@ -81,7 +81,7 @@ function getImageSizeOptions(options) {
 }
 
 function detectInternalImage(requestedImageUrl) {
-    const siteUrl = urlUtils.getBlogUrl();
+    const siteUrl = urlUtils.getSiteUrl();
     const isAbsoluteImage = /https?:\/\//.test(requestedImageUrl);
     const isAbsoluteInternalImage = isAbsoluteImage && requestedImageUrl.startsWith(siteUrl);
 

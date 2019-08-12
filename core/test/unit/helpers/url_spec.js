@@ -29,7 +29,7 @@ describe('{{url}} helper', function () {
     describe('no subdir', function () {
         before(function () {
             sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://localhost:82832/'}, sandbox);
+            urlUtils.stubUrlUtils({url: 'http://localhost:65535/'}, sandbox);
         });
 
         after(function () {
@@ -63,11 +63,11 @@ describe('{{url}} helper', function () {
                 created_at: new Date(0)
             });
 
-            urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, secure: undefined, withSubdirectory: true}).returns('http://localhost:82832/slug/');
+            urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, secure: undefined, withSubdirectory: true}).returns('http://localhost:65535/slug/');
 
             rendered = helpers.url.call(post, {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.string.should.equal('http://localhost:82832/slug/');
+            rendered.string.should.equal('http://localhost:65535/slug/');
         });
 
         it('should output an absolute URL with https if the option is present and secure', function () {
@@ -81,11 +81,11 @@ describe('{{url}} helper', function () {
                 secure: true
             });
 
-            urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, secure: true, withSubdirectory: true}).returns('https://localhost:82832/slug/');
+            urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, secure: true, withSubdirectory: true}).returns('https://localhost:65535/slug/');
 
             rendered = helpers.url.call(post, {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.string.should.equal('https://localhost:82832/slug/');
+            rendered.string.should.equal('https://localhost:65535/slug/');
         });
 
         it('should return the slug with a prefixed /tag/ if the context is a tag', function () {
@@ -137,7 +137,7 @@ describe('{{url}} helper', function () {
                 {url: '/bar', label: 'Bar', slug: 'bar', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.string.should.equal('http://localhost:82832/bar');
+            rendered.string.should.equal('http://localhost:65535/bar');
         });
 
         it('should return an absolute url with https if context is secure', function () {
@@ -145,7 +145,7 @@ describe('{{url}} helper', function () {
                 {url: '/bar', label: 'Bar', slug: 'bar', current: true, secure: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.string.should.equal('https://localhost:82832/bar');
+            rendered.string.should.equal('https://localhost:65535/bar');
         });
 
         it('external urls should be retained in a nav context', function () {
@@ -158,40 +158,40 @@ describe('{{url}} helper', function () {
 
         it('should handle hosted urls in a nav context', function () {
             rendered = helpers.url.call(
-                {url: 'http://localhost:82832/qux', label: 'Qux', slug: 'qux', current: true},
+                {url: 'http://localhost:65535/qux', label: 'Qux', slug: 'qux', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.string.should.equal('http://localhost:82832/qux');
+            rendered.string.should.equal('http://localhost:65535/qux');
         });
 
         it('should handle hosted urls in a nav context with secure', function () {
             rendered = helpers.url.call(
                 {
-                    url: 'http://localhost:82832/qux', label: 'Qux', slug: 'qux', current: true,
+                    url: 'http://localhost:65535/qux', label: 'Qux', slug: 'qux', current: true,
                     secure: true
                 },
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.string.should.equal('https://localhost:82832/qux');
+            rendered.string.should.equal('https://localhost:65535/qux');
         });
 
         it('should handle hosted https urls in a nav context with secure', function () {
             rendered = helpers.url.call(
                 {
-                    url: 'https://localhost:82832/qux', label: 'Qux', slug: 'qux', current: true,
+                    url: 'https://localhost:65535/qux', label: 'Qux', slug: 'qux', current: true,
                     secure: true
                 },
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.string.should.equal('https://localhost:82832/qux');
+            rendered.string.should.equal('https://localhost:65535/qux');
         });
 
         it('should handle hosted urls with the wrong protocol in a nav context', function () {
             rendered = helpers.url.call(
-                {url: 'https://localhost:82832/quux', label: 'Quux', slug: 'quux', current: true},
+                {url: 'https://localhost:65535/quux', label: 'Quux', slug: 'quux', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.string.should.equal('http://localhost:82832/quux');
+            rendered.string.should.equal('http://localhost:65535/quux');
         });
 
         it('should pass through protocol-less URLs regardless of absolute setting', function () {
@@ -275,7 +275,7 @@ describe('{{url}} helper', function () {
 
         before(function () {
             sandbox = sinon.createSandbox();
-            urlUtils.stubUrlUtils({url: 'http://localhost:82832/blog'}, sandbox);
+            urlUtils.stubUrlUtils({url: 'http://localhost:65535/blog'}, sandbox);
         });
 
         after(function () {
@@ -295,7 +295,7 @@ describe('{{url}} helper', function () {
                 {url: '/xyzzy', label: 'xyzzy', slug: 'xyzzy', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
-            rendered.string.should.equal('http://localhost:82832/blog/xyzzy');
+            rendered.string.should.equal('http://localhost:65535/blog/xyzzy');
         });
     });
 });
