@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const mockDb = require('mock-knex');
 const models = require('../../../server/models');
 const {knex} = require('../../../server/data/db');
+const defaultSettings = require('../../../server/data/schema').defaultSettings.blog.image_sizes.defaultValue;
 const common = require('../../../server/lib/common');
 
 describe('Unit: models/settings', function () {
@@ -170,6 +171,42 @@ describe('Unit: models/settings', function () {
 
             returns = setting.parse({key: 'something', value: 'null'});
             should.equal(returns.value, 'null');
+        });
+    });
+
+    describe('merge image_sizes', function () {
+        it('incoming values should not override "core" values', function () {
+            const setting = models.Settings.forge();
+
+            const merged = setting.mergeImageSizes(defaultSettings, JSON.stringify({publisher_logo: {width: 333}}));
+
+            should.equal(merged, defaultSettings);
+        });
+
+        it('incoming "theme" values should merge with override "core" values', function () {
+            const setting = models.Settings.forge();
+
+            const merged = setting.mergeImageSizes(defaultSettings, JSON.stringify({xl: {width: 2000, type: 'theme'}}));
+
+            should.equal(merged, JSON.stringify(Object.assign({xl: {width: 2000, type: 'theme'}}, JSON.parse(defaultSettings))));
+        });
+
+        it('mix of incoming "theme" and "core" values should merge with override "core" values', function () {
+            const setting = models.Settings.forge();
+
+            const merged = setting.mergeImageSizes(defaultSettings, JSON.stringify({xl: {width: 2000, type: 'theme'}, publisher_logo: {width: 333}}));
+
+            should.equal(merged, JSON.stringify(Object.assign({xl: {width: 2000, type: 'theme'}}, JSON.parse(defaultSettings))));
+        });
+
+        it('incoming values should override non-"core" values', function () {
+            const setting = models.Settings.forge();
+            const nonCoreValue = JSON.stringify({xl: {width: 2000, type: 'theme'}});
+            const incomingNonCoreValue = JSON.stringify({xl: {width: 333, type: 'theme'}});
+
+            const merged = setting.mergeImageSizes(nonCoreValue, incomingNonCoreValue);
+
+            should.equal(merged, incomingNonCoreValue);
         });
     });
 });

@@ -115,6 +115,21 @@ Settings = ghostBookshelf.Model.extend({
             });
     },
 
+    mergeImageSizes: function mergeImageSizes(original, attrs) {
+        const parsedOriginal = JSON.parse(original);
+        const parsedIncoming = JSON.parse(attrs);
+        let merged;
+
+        Object.keys(parsedOriginal).forEach((key) => {
+            if (parsedOriginal[key].type !== 'core' && parsedIncoming[key]){
+                delete parsedOriginal[key];
+            }
+        });
+
+        merged = Object.assign({}, parsedIncoming, parsedOriginal);
+        return JSON.stringify(merged);
+    },
+
     format() {
         const attrs = ghostBookshelf.Model.prototype.format.apply(this, arguments);
 
@@ -182,7 +197,13 @@ Settings = ghostBookshelf.Model.extend({
                     } else {
                         // If we have a value, set it.
                         if (Object.prototype.hasOwnProperty.call(item, 'value')) {
-                            setting.set('value', item.value);
+                            let value = item.value;
+
+                            if (setting.get('key') === 'image_sizes') {
+                                value = this.mergeImageSizes(setting.get('value'), value);
+                            }
+
+                            setting.set('value', value);
                         }
                         // Internal context can overwrite type (for fixture migrations)
                         if (options.context && options.context.internal && Object.prototype.hasOwnProperty.call(item, 'type')) {
