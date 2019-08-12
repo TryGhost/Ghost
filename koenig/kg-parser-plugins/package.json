@@ -27,8 +27,8 @@
     "access": "public"
   },
   "devDependencies": {
-    "@babel/core": "7.4.4",
-    "@babel/preset-env": "7.4.4",
+    "@babel/core": "7.5.5",
+    "@babel/preset-env": "7.5.5",
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.3",
     "jsdom": "15.0.0",
     "mocha": "6.2.0",
