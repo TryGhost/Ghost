@@ -29,7 +29,7 @@
   "devDependencies": {
     "@babel/core": "7.5.5",
     "@babel/preset-env": "7.5.5",
-    "@tryghost/mobiledoc-kit": "0.11.2-ghost.3",
+    "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
     "jsdom": "15.1.1",
     "mocha": "6.2.0",
     "rollup": "1.19.4",
