@@ -10,7 +10,7 @@ const config = require('../../../../../server/config');
 const ghost = testUtils.startGhost;
 let request;
 
-describe('Posts', function () {
+describe('api/canary/content/posts', function () {
     before(function () {
         return ghost()
             .then(function () {
