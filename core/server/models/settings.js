@@ -120,6 +120,13 @@ Settings = ghostBookshelf.Model.extend({
         const parsedIncoming = JSON.parse(attrs);
         let merged;
 
+        // don't allow modifications with "core" sizes
+        Object.keys(parsedIncoming).forEach((key) => {
+            if (parsedIncoming[key].type === 'core'){
+                delete parsedIncoming[key];
+            }
+        });
+
         Object.keys(parsedOriginal).forEach((key) => {
             if (parsedOriginal[key].type !== 'core' && parsedIncoming[key]){
                 delete parsedOriginal[key];

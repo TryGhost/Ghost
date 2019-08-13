@@ -208,5 +208,14 @@ describe('Unit: models/settings', function () {
 
             should.equal(merged, incomingNonCoreValue);
         });
+
+        it('incoming values should not be able to define new "core" values', function () {
+            const setting = models.Settings.forge();
+            const incomingNonCoreValue = JSON.stringify({xl: {width: 333, type: 'core'}});
+
+            const merged = setting.mergeImageSizes(defaultSettings, incomingNonCoreValue);
+
+            should.equal(merged, defaultSettings);
+        });
     });
 });
