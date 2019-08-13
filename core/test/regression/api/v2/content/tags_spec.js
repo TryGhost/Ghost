@@ -8,7 +8,7 @@ const config = require('../../../../../server/config');
 const ghost = testUtils.startGhost;
 let request;
 
-describe('Tags', function () {
+describe('api/v2/content/tags', function () {
     before(function () {
         return ghost()
             .then(function () {
