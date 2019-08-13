@@ -35,6 +35,10 @@ const mapPost = (model, frame) => {
     url.forPost(model.id, jsonModel, frame);
 
     if (utils.isContentAPI(frame)) {
+        // Content api v2 still expects page prop
+        if (jsonModel.type === 'page') {
+            jsonModel.page = true;
+        }
         date.forPost(jsonModel);
         members.forPost(jsonModel, frame);
     }
