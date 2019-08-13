@@ -127,6 +127,16 @@ Settings = ghostBookshelf.Model.extend({
             }
         });
 
+        // CASE: "theme" type overrides ALL previous "theme" sizes
+        const hasThemeSizes = !!(_.find(parsedIncoming, {type: 'theme'}));
+        if (hasThemeSizes) {
+            Object.keys(parsedOriginal).forEach((key) => {
+                if (parsedOriginal[key].type === 'theme'){
+                    delete parsedOriginal[key];
+                }
+            });
+        }
+
         Object.keys(parsedOriginal).forEach((key) => {
             if (parsedOriginal[key].type !== 'core' && parsedIncoming[key]){
                 delete parsedOriginal[key];

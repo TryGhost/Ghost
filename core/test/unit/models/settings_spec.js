@@ -217,5 +217,28 @@ describe('Unit: models/settings', function () {
 
             should.equal(merged, defaultSettings);
         });
+
+        it('incoming "theme" values should overwrite all existing "theme" values', function () {
+            const setting = models.Settings.forge();
+            const existingThemeValue = JSON.stringify({xl: {width: 2000, type: 'theme'}});
+            const incomingThemeValue = JSON.stringify({m: {width: 333, type: 'theme'}});
+
+            const merged = setting.mergeImageSizes(existingThemeValue, incomingThemeValue);
+
+            should.equal(merged, incomingThemeValue);
+        });
+
+        it('existing "theme" values stay untouched if no new "theme" values are incoming', function () {
+            const setting = models.Settings.forge();
+            const existingThemeValue = {xl: {width: 2000, type: 'theme'}};
+            const incomingThemeValue = {m: {width: 333, type: 'api'}};
+
+            const merged = setting.mergeImageSizes(JSON.stringify(existingThemeValue), JSON.stringify(incomingThemeValue));
+
+            should.equal(merged, JSON.stringify({
+                m: {width: 333, type: 'api'},
+                xl: {width: 2000, type: 'theme'}
+            }));
+        });
     });
 });
