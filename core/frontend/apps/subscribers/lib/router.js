@@ -59,6 +59,9 @@ function santizeUrl(url) {
 }
 
 function handleSource(req, res, next) {
+    if (!req.body.location) {
+        return next(new Error('Missing location property'));
+    }
     req.body.subscribed_url = santizeUrl(req.body.location);
     req.body.subscribed_referrer = santizeUrl(req.body.referrer);
 
