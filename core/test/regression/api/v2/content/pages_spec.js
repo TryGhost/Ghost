@@ -8,7 +8,7 @@ const config = require('../../../../../server/config');
 const ghost = testUtils.startGhost;
 let request;
 
-describe('Pages Content API', function () {
+describe('api/v2/content/pages', function () {
     before(function () {
         return ghost()
             .then(function () {

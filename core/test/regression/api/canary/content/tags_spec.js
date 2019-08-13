@@ -8,7 +8,7 @@ const config = require('../../../../../server/config');
 const ghost = testUtils.startGhost;
 let request;
 
-describe('Tags', function () {
+describe('api/canary/content/tags', function () {
     before(function () {
         return ghost()
             .then(function () {
