@@ -709,9 +709,9 @@ Post = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['columns', 'importing', 'withRelated', 'require', 'filter'],
+                findOne: ['importing', 'withRelated', 'require', 'filter'],
                 findPage: ['status', 'staticPages'],
-                findAll: ['columns', 'filter'],
+                findAll: ['filter'],
                 destroy: ['destroyAll', 'destroyBy'],
                 edit: ['filter']
             };
