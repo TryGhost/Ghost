@@ -1,4 +1,4 @@
-const postScheduling = require(__dirname + '/post-scheduling');
+const postScheduling = require('./post-scheduling');
 
 /**
  * @description Initialise all scheduler modules.
