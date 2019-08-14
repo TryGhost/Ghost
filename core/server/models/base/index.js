@@ -228,35 +228,18 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             }
         });
 
-        [
-            'fetching',
-            'fetching:collection',
-            'fetched',
-            'fetched:collection',
-            'creating',
-            'created',
-            'updating',
-            'updated',
-            'destroying',
-            'destroyed',
-            'saving',
-            'saved'
-        ].forEach(function (eventName) {
-            var functionName = 'on' + eventName[0].toUpperCase() + eventName.slice(1);
-
-            if (functionName.indexOf(':') !== -1) {
-                functionName = functionName.slice(0, functionName.indexOf(':'))
-                    + functionName[functionName.indexOf(':') + 1].toUpperCase()
-                    + functionName.slice(functionName.indexOf(':') + 2);
-                functionName = functionName.replace(':', '');
-            }
-
-            if (!self[functionName]) {
-                return;
-            }
-
-            self.on(eventName, self[functionName]);
-        });
+        self.on('fetched', self.onFetched);
+        self.on('fetching', self.onFetching);
+        self.on('fetched:collection', self.onFetchedCollection);
+        self.on('fetching:collection', self.onFetchingCollection);
+        self.on('creating', self.onCreating);
+        self.on('created', self.onCreated);
+        self.on('updating', self.onUpdating);
+        self.on('updated', self.onUpdated);
+        self.on('destroying', self.onDestroying);
+        self.on('destroyed', self.onDestroyed);
+        self.on('saving', self.onSaving);
+        self.on('saved', self.onSaved);
 
         // @NOTE: Please keep here. If we don't initialize the parent, bookshelf-relations won't work.
         proto.initialize.call(this);
@@ -271,6 +254,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return validation.validateSchema(this.tableName, this, options);
     },
 
+    onFetched() {},
+
     /**
      * http://knexjs.org/#Builder-forUpdate
      * https://dev.mysql.com/doc/refman/5.7/en/innodb-locking-reads.html
@@ -284,18 +269,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
     },
 
+    onFetchedCollection() {},
+
     onFetchingCollection: function onFetchingCollection(model, columns, options) {
         if (options.forUpdate && options.transacting) {
             options.query.forUpdate();
         }
     },
 
-    onSaving: function onSaving() {
-        // Remove any properties which don't belong on the model
-        this.attributes = this.pick(this.permittedAttributes());
+    onCreated(model, attrs, options) {
+        addAction(model, 'added', options);
     },
-
-    onDestroying() {},
 
     /**
      * Adding resources implies setting these properties on the server side
@@ -354,6 +338,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             });
     },
 
+    onUpdated(model, attrs, options) {
+        addAction(model, 'edited', options);
+    },
+
     /**
      * Changing resources implies setting these properties on the server side
      * - set `updated_by` based on the context
@@ -408,13 +396,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return Promise.resolve(this.onValidate(model, attr, options));
     },
 
-    onCreated(model, attrs, options) {
-        addAction(model, 'added', options);
+    onSaved() {},
+
+    onSaving: function onSaving() {
+        // Remove any properties which don't belong on the model
+        this.attributes = this.pick(this.permittedAttributes());
     },
 
-    onUpdated(model, attrs, options) {
-        addAction(model, 'edited', options);
-    },
+    onDestroying() {},
 
     onDestroyed(model, options) {
         if (!model._changed) {
@@ -428,8 +417,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         addAction(model, 'deleted', options);
     },
-
-    onSaved() {},
 
     /**
      * before we insert dates into the database, we have to normalize
