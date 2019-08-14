@@ -17,18 +17,5 @@ module.exports = {
 
     get passwordreset() {
         return require('./passwordreset');
-    },
-
-    /*
-     * TODO: Get rid of these when v0.1 is gone
-     */
-    get init() {
-        return (options) => {
-            require('./oauth').init(options);
-            return require('./passport').init(options);
-        };
-    },
-    get oauth() {
-        return require('./oauth');
     }
 };

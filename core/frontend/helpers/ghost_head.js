@@ -43,18 +43,6 @@ function finaliseStructuredData(metaData) {
     return head;
 }
 
-function getAjaxHelper(clientId, clientSecret) {
-    return '<script src="' +
-        getAssetUrl('public/ghost-sdk.js', true) +
-        '"></script>\n' +
-        '<script>\n' +
-        'ghost.init({\n' +
-        '\tclientId: "' + clientId + '",\n' +
-        '\tclientSecret: "' + clientSecret + '"\n' +
-        '});\n' +
-        '</script>';
-}
-
 function getMembersHelper() {
     return `
         <script src="${getAssetUrl('public/members-theme-bindings.js')}"></script>
@@ -83,7 +71,7 @@ function getMembersHelper() {
  * hbs forwards the data to any hbs helper like this
  * {
  *   data: {
- *     blog: {},
+ *     site: {},
  *     labs: {},
  *     config: {},
  *     root: {
@@ -93,7 +81,7 @@ function getMembersHelper() {
  *     }
  *  }
  *
- * `blog`, `labs` and `config` are the templateOptions, search for `hbs.updateTemplateOptions` in the code base.
+ * `site`, `labs` and `config` are the templateOptions, search for `hbs.updateTemplateOptions` in the code base.
  *  Also see how the root object gets created, https://github.com/wycats/handlebars.js/blob/v4.0.6/lib/handlebars/runtime.js#L259
  */
 // We use the name ghost_head to match the helper for consistency:
@@ -174,10 +162,6 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                             JSON.stringify(metaData.schema, null, '    ') +
                             '\n    </script>\n');
                     }
-                }
-
-                if (client && client.id && client.secret && !_.includes(context, 'amp')) {
-                    head.push(getAjaxHelper(client.id, client.secret));
                 }
 
                 if (!_.includes(context, 'amp') && labs.isSet('members')) {

@@ -47,11 +47,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                     options.withRelated = [];
                 }
 
-                if (options.withRelated.indexOf('author') !== -1) {
-                    options.withRelated.splice(options.withRelated.indexOf('author'), 1);
-                    options.withRelated.push('authors');
-                }
-
                 if (options.forUpdate &&
                     ['onFetching', 'onFetchingCollection'].indexOf(fnName) !== -1 &&
                     options.withRelated.indexOf('authors') === -1) {
@@ -105,11 +100,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
         // @NOTE: triggered before creating and before updating
         onSaving: function (model, attrs, options) {
             const ops = [];
-
-            /**
-             * @deprecated: `author`, will be removed in Ghost 3.0, drop v0.1
-             */
-            model.unset('author');
 
             // CASE: you can't delete all authors
             if (model.get('authors') && !model.get('authors').length) {
@@ -186,28 +176,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             // CASE: you delete a model without fetching before
             if (!this._originalOptions) {
                 this._originalOptions = {};
-            }
-
-            /**
-             * CASE: `author` was requested, `posts.authors` must exist
-             * @deprecated: `author`, will be removed in Ghost 3.0
-             */
-            if (this._originalOptions.withRelated && this._originalOptions.withRelated && this._originalOptions.withRelated.indexOf('author') !== -1) {
-                if (!authors.models.length) {
-                    throw new common.errors.ValidationError({
-                        message: 'The target post has no primary author.'
-                    });
-                }
-
-                attrs.author = attrs.authors[0];
-                delete attrs.author_id;
-            } else {
-                // CASE: we return `post.author=id` with or without requested columns.
-                // @NOTE: this serialization should be moved into api layer, it's not being moved as it's deprecated
-                if (!options.columns || (options.columns && options.columns.indexOf('author') !== -1)) {
-                    attrs.author = attrs.author_id;
-                    delete attrs.author_id;
-                }
             }
 
             // CASE: `posts.authors` was not requested, but fetched in specific cases (see top)

@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const config = require('../../../../server/config');
 
 // The default settings for a default post query
-// @TODO: get rid of this config and use v0.1 or v2 config
+// @TODO: get rid of this config and use version specific config
 const queryDefaults = {
     type: 'browse',
     resource: 'posts',
@@ -20,11 +20,7 @@ const queryDefaults = {
  */
 const defaultQueryOptions = {
     options: {
-        /**
-         * @deprecated: `author`, will be removed in Ghost 3.0
-         * @TODO: Remove "author" when we drop v0.1
-         */
-        include: 'author,authors,tags'
+        include: 'authors,tags'
     }
 };
 

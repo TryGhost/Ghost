@@ -37,20 +37,9 @@ function getDescription(data, root, options) {
             description = data.post.meta_description || '';
         }
     } else if (_.includes(context, 'page') && data.post) {
-        // @NOTE: v0.1
-        if (options && options.property) {
-            postSdDescription = options.property + '_description';
-            description = data.post[postSdDescription] || '';
-        } else {
-            description = data.post.meta_description || '';
-        }
+        description = data.post.meta_description || '';
     } else if (_.includes(context, 'page') && data.page) {
-        if (options && options.property) {
-            postSdDescription = options.property + '_description';
-            description = data.page[postSdDescription] || '';
-        } else {
-            description = data.page.meta_description || '';
-        }
+        description = data.page.meta_description || '';
     }
 
     return (description || '').trim();

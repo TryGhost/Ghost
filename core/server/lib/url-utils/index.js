@@ -4,6 +4,7 @@ const config = require('../../config');
 const urlUtils = new UrlUtils({
     url: config.get('url'),
     adminUrl: config.get('admin:url'),
+    defaultApiVersion: 'v2',
     apiVersions: config.get('api:versions'),
     slugs: config.get('slugs').protected,
     redirectCacheMaxAge: config.get('caching:301:maxAge'),

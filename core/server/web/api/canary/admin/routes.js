@@ -1,5 +1,4 @@
 const express = require('express');
-const api = require('../../../../api');
 const apiCanary = require('../../../../api/canary');
 const mw = require('./middleware');
 
@@ -109,9 +108,6 @@ module.exports = function apiRoutes() {
     // ## Roles
     router.get('/roles/', mw.authAdminApi, http(apiCanary.roles.browse));
 
-    // ## Clients
-    router.get('/clients/slug/:slug', api.http(api.clients.read));
-
     // ## Slugs
     router.get('/slugs/:type/:name', mw.authAdminApi, http(apiCanary.slugs.generate));
 
@@ -167,14 +163,14 @@ module.exports = function apiRoutes() {
     router.post('/slack/test', mw.authAdminApi, http(apiCanary.slack.sendTest));
 
     // ## Sessions
-    router.get('/session', mw.authAdminApi, api.http(apiCanary.session.read));
+    router.get('/session', mw.authAdminApi, apiCanary.http(apiCanary.session.read));
     // We don't need auth when creating a new session (logging in)
     router.post('/session',
         shared.middlewares.brute.globalBlock,
         shared.middlewares.brute.userLogin,
-        api.http(apiCanary.session.add)
+        apiCanary.http(apiCanary.session.add)
     );
-    router.del('/session', mw.authAdminApi, api.http(apiCanary.session.delete));
+    router.del('/session', mw.authAdminApi, apiCanary.http(apiCanary.session.delete));
 
     // ## Authentication
     router.post('/authentication/passwordreset',

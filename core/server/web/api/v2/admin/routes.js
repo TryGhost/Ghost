@@ -1,5 +1,4 @@
 const express = require('express');
-const api = require('../../../../api');
 const apiv2 = require('../../../../api/v2');
 const mw = require('./middleware');
 
@@ -109,9 +108,6 @@ module.exports = function apiRoutes() {
     // ## Roles
     router.get('/roles/', mw.authAdminApi, http(apiv2.roles.browse));
 
-    // ## Clients
-    router.get('/clients/slug/:slug', api.http(api.clients.read));
-
     // ## Slugs
     router.get('/slugs/:type/:name', mw.authAdminApi, http(apiv2.slugs.generate));
 
@@ -167,14 +163,14 @@ module.exports = function apiRoutes() {
     router.post('/slack/test', mw.authAdminApi, http(apiv2.slack.sendTest));
 
     // ## Sessions
-    router.get('/session', mw.authAdminApi, api.http(apiv2.session.read));
+    router.get('/session', mw.authAdminApi, apiv2.http(apiv2.session.read));
     // We don't need auth when creating a new session (logging in)
     router.post('/session',
         shared.middlewares.brute.globalBlock,
         shared.middlewares.brute.userLogin,
-        api.http(apiv2.session.add)
+        apiv2.http(apiv2.session.add)
     );
-    router.del('/session', mw.authAdminApi, api.http(apiv2.session.delete));
+    router.del('/session', mw.authAdminApi, apiv2.http(apiv2.session.delete));
 
     // ## Authentication
     router.post('/authentication/passwordreset',

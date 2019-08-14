@@ -48,9 +48,6 @@ module.exports = function setupSiteApp(options = {}) {
     // @TODO make sure all of these have a local 404 error handler
     // Favicon
     siteApp.use(shared.middlewares.serveFavicon());
-    // /public/ghost-sdk.js
-    siteApp.use(shared.middlewares.servePublicFile('public/ghost-sdk.js', 'application/javascript', constants.ONE_HOUR_S));
-    siteApp.use(shared.middlewares.servePublicFile('public/ghost-sdk.min.js', 'application/javascript', constants.ONE_YEAR_S));
 
     // /public/members.js
     siteApp.get('/public/members-theme-bindings.js',
@@ -174,9 +171,6 @@ module.exports = function setupSiteApp(options = {}) {
             return publicCacheControl(req, res, next);
         }
     });
-
-    // Fetch the frontend client into res.locals
-    siteApp.use(shared.middlewares.frontendClient);
 
     debug('General middleware done');
 

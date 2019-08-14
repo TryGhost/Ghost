@@ -55,66 +55,6 @@ _private.loadScheduledPosts = function () {
  * @return {*}
  */
 exports.init = function init(options = {}) {
-    const {apiUrl} = options;
-    let adapter = null,
-        client = null;
-
-    if (!Object.keys(options).length) {
-        return Promise.reject(new common.errors.IncorrectUsageError({message: 'post-scheduling: no config was provided'}));
-    }
-
-    if (!apiUrl) {
-        return Promise.reject(new common.errors.IncorrectUsageError({message: 'post-scheduling: no apiUrl was provided'}));
-    }
-
-    return _private.loadClient()
-        .then((_client) => {
-            client = _client;
-            return localUtils.createAdapter(options);
-        })
-        .then((_adapter) => {
-            adapter = _adapter;
-
-            if (!adapter.rescheduleOnBoot) {
-                return [];
-            }
-
-            return _private.loadScheduledPosts();
-        })
-        .then((scheduledPosts) => {
-            if (!scheduledPosts.length) {
-                return;
-            }
-
-            scheduledPosts.forEach((model) => {
-                // NOTE: We are using reschedule, because custom scheduling adapter could use a database, which needs to be updated
-                //       and not an in-process implementation!
-                adapter.reschedule(_private.normalize({model, apiUrl, client}), {bootstrap: true});
-            });
-        })
-        .then(() => {
-            adapter.run();
-        })
-        .then(() => {
-            common.events.onMany([
-                'post.scheduled',
-                'page.scheduled'
-            ], (model) => {
-                adapter.schedule(_private.normalize({model, apiUrl, client}));
-            });
-
-            common.events.onMany([
-                'post.rescheduled',
-                'page.rescheduled'
-            ], (model) => {
-                adapter.reschedule(_private.normalize({model, apiUrl, client}));
-            });
-
-            common.events.onMany([
-                'post.unscheduled',
-                'page.unscheduled'
-            ], (model) => {
-                adapter.unschedule(_private.normalize({model, apiUrl, client}));
-            });
-        });
+    // @TODO Fix scheduler to work without v0.1
+    return Promise.resolve();
 };

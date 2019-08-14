@@ -51,10 +51,8 @@ function updateGlobalTemplateOptions(req, res, next) {
     };
 
     // @TODO: only do this if something changed?
-    // @TODO: remove blog if we drop v0.1 (Ghost 3.0)
     hbs.updateTemplateOptions({
         data: {
-            blog: siteData,
             site: siteData,
             labs: labsData,
             config: themeData
@@ -81,8 +79,7 @@ function updateLocalTemplateOptions(req, res, next) {
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
         data: {
             member: req.member,
-            site: siteData,
-            blog: siteData
+            site: siteData
         }
     }));
 

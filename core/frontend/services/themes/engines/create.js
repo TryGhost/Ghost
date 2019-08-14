@@ -7,15 +7,12 @@ const allowedKeys = ['ghost-api'];
 /**
  * Valid definitions for "ghost-api":
  *
- * ^0.1
  * ^2
- * ^0.1.0
  * ^2.0.0
  * 2.0.0
  * v2
- * v0.1
  * canary
- * 
+ *
  * Goal: Extract major version from input.
  *
  * @param packageJson
@@ -42,7 +39,7 @@ module.exports = (packageJson) => {
             if (availableApiVersions[apiVersionMajor]) {
                 packageJson.engines['ghost-api'] = availableApiVersions[apiVersionMajor];
             } else {
-                packageJson.engines['ghost-api'] = 'v0.1';
+                packageJson.engines['ghost-api'] = 'v2';
             }
         }
 

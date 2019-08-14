@@ -572,13 +572,6 @@ Post = ghostBookshelf.Model.extend({
         // CASE: never expose the revisions
         delete attrs.mobiledoc_revisions;
 
-        // expose canonical_url only for API v2 calls
-        // NOTE: this can be removed when API v0.1 is dropped. A proper solution for field
-        //       differences on resources like this would be an introduction of API output schema
-        if (!_.get(unfilteredOptions, 'extraProperties', []).includes('canonical_url')) {
-            delete attrs.canonical_url;
-        }
-
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
             // ... attach a computed property of primary_tag which is the first tag if it is public, else null
@@ -602,28 +595,12 @@ Post = ghostBookshelf.Model.extend({
         return options.context && options.context.public ? 'page:false' : 'page:false+status:published';
     },
 
-    /**
-     * You can pass an extra `status=VALUES` or "staticPages" field.
-     * Long-Term: We should deprecate these short cuts and force users to use the filter param.
-     */
     extraFilters: function extraFilters(options) {
-        if (!options.staticPages && !options.status) {
+        if (!options.status) {
             return null;
         }
 
         let filter = null;
-
-        // CASE: "staticPages" is passed
-        if (options.staticPages && options.staticPages !== 'all') {
-            // CASE: convert string true/false to boolean
-            if (!_.isBoolean(options.staticPages)) {
-                options.staticPages = _.includes(['true', '1'], options.staticPages);
-            }
-
-            filter = `page:${options.staticPages}`;
-        } else if (options.staticPages === 'all') {
-            filter = 'page:[true, false]';
-        }
 
         // CASE: "status" is passed, combine filters
         if (options.status && options.status !== 'all') {
@@ -643,7 +620,6 @@ Post = ghostBookshelf.Model.extend({
         }
 
         delete options.status;
-        delete options.staticPages;
         return filter;
     },
 
@@ -710,7 +686,7 @@ Post = ghostBookshelf.Model.extend({
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
                 findOne: ['columns', 'importing', 'withRelated', 'require', 'filter'],
-                findPage: ['status', 'staticPages'],
+                findPage: ['status'],
                 findAll: ['columns', 'filter'],
                 destroy: ['destroyAll', 'destroyBy'],
                 edit: ['filter']
@@ -762,11 +738,6 @@ Post = ghostBookshelf.Model.extend({
      * **See:** [ghostBookshelf.Model.findOne](base.js.html#Find%20One)
      */
     findOne: function findOne(data = {}, options = {}) {
-        // @TODO: remove when we drop v0.1
-        if (!options.filter && !data.status) {
-            data.status = 'published';
-        }
-
         if (data.status === 'all') {
             delete data.status;
         }
