@@ -659,7 +659,7 @@ Post = ghostBookshelf.Model.extend({
         return {
             event: event,
             resource_id: this.id || this.previous('id'),
-            resource_type: this.tableName.replace(/s$/, ''),
+            resource_type: 'post',
             actor_id: actor.id,
             actor_type: actor.type
         };
