@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:input:posts');
-const mapNQLKeyValues = require('nql-map-key-values');
+const mapNQLKeyValues = require('../../../../../../shared/nql-map-key-values');
 const url = require('./utils/url');
 const localUtils = require('../../index');
 const labs = require('../../../../../services/labs');

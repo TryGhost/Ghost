@@ -16,7 +16,7 @@ const Promise = require('bluebird'),
     ],
     unsafeAttrs = ['author_id', 'status', 'authors'];
 
-const mapNQLKeyValues = require('nql-map-key-values');
+const mapNQLKeyValues = require('../../../shared/nql-map-key-values');
 
 const replacePageWithType = mapNQLKeyValues({
     key: {
