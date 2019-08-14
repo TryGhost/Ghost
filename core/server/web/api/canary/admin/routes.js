@@ -222,7 +222,7 @@ module.exports = function apiRoutes() {
     router.get('/oembed', mw.authAdminApi, http(apiCanary.oembed.read));
 
     // ## Actions
-    router.get('/actions/:type/:id', mw.authAdminApi, http(apiCanary.actions.browse));
+    router.get('/actions', mw.authAdminApi, http(apiCanary.actions.browse));
 
     return router;
 };
