@@ -23,7 +23,7 @@ const _ = require('lodash'),
         replacement: 'primary_author.slug'
     }];
 
-const mapNQLKeyValues = require('nql-map-key-values');
+const mapNQLKeyValues = require('../../../shared/nql-map-key-values');
 
 /**
  * The UrlGenerator class is responsible to generate urls based on a router's conditions.

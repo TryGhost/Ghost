@@ -107,7 +107,6 @@
     "netjet": "1.3.0",
     "node-jose": "1.1.3",
     "nodemailer": "0.7.1",
-    "nql-map-key-values": "./core/shared/nql-map-key-values",
     "oauth2orize": "1.11.0",
     "oembed-parser": "1.2.2",
     "passport": "0.4.0",

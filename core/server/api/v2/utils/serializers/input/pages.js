@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const mapNQLKeyValues = require('nql-map-key-values');
+const mapNQLKeyValues = require('../../../../../../shared/nql-map-key-values');
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:pages');
 const converters = require('../../../../../lib/mobiledoc/converters');
 const url = require('./utils/url');
