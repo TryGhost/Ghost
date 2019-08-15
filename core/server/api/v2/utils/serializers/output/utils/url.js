@@ -60,7 +60,7 @@ const forPost = (id, attrs, frame) => {
             urlUtils.urlFor('home', true),
             attrs.url,
             urlOptions
-        ).html();
+        );
     }
 
     if (frame.options.columns && !frame.options.columns.includes('url')) {
