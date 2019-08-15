@@ -22,7 +22,7 @@ const urlsForPost = (id, attrs, options) => {
         }
 
         if (attrs.html) {
-            attrs.html = urlUtils.htmlRelativeToAbsolute(attrs.html, urlUtils.urlFor('home', true), attrs.url).html();
+            attrs.html = urlUtils.htmlRelativeToAbsolute(attrs.html, urlUtils.urlFor('home', true), attrs.url);
         }
 
         if (attrs.url) {
