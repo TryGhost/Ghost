@@ -267,10 +267,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.2.0.tgz#d32b23122ea78b23a63c6ab25d160cbf4f65e53e"
-  integrity sha512-/Ex9z8RUAfAek8z7EMvnDBIV5P88jwL1X4KwXxZy5udn0aQShvSwsO5euOpUcjBOn2ZsUT3aXYsB+pz7uXm8hw==
+"@tryghost/url-utils@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.3.0.tgz#59f101945f56b0e53d8b8ad394c47538beb33d0b"
+  integrity sha512-a0MKw054P6VRAbqqx2C61Tj2RskRouBMt31+tVFCT+Lyy+FxaQD18I/n+pwlnNd6Z5BF+Bi2etSnS3ldRsOfQg==
   dependencies:
     cheerio "0.22.0"
     lodash "4.17.11"
