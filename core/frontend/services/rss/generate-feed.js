@@ -1,5 +1,6 @@
 var downsize = require('downsize'),
     Promise = require('bluebird'),
+    cheerio = require('cheerio'),
     RSS = require('rss'),
     urlUtils = require('../../../server/lib/url-utils'),
     urlService = require('../url'),
@@ -22,7 +23,7 @@ generateTags = function generateTags(data) {
 
 generateItem = function generateItem(post, siteUrl, secure) {
     var itemUrl = urlService.getUrlByResourceId(post.id, {secure: secure, absolute: true}),
-        htmlContent = urlUtils.htmlRelativeToAbsolute(post.html, siteUrl, itemUrl),
+        htmlContent = cheerio.load(urlUtils.htmlRelativeToAbsolute(post.html, siteUrl, itemUrl), {decodeEntities: false}),
         item = {
             title: post.title,
             // @TODO: DRY this up with data/meta/index & other excerpt code
