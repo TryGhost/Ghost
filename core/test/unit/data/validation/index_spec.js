@@ -81,22 +81,26 @@ describe('Validation', function () {
             });
 
             it('transforms 0 and 1', function () {
-                const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'test', featured: 0}));
+                const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'test', featured: 0, page: 1}));
                 post.get('featured').should.eql(0);
+                post.get('page').should.eql(1);
 
                 return validation.validateSchema('posts', post, {method: 'insert'})
                     .then(function () {
                         post.get('featured').should.eql(false);
+                        post.get('page').should.eql(true);
                     });
             });
 
             it('keeps true or false', function () {
-                const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'test', featured: true}));
+                const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'test', featured: true, page: false}));
                 post.get('featured').should.eql(true);
+                post.get('page').should.eql(false);
 
                 return validation.validateSchema('posts', post, {method: 'insert'})
                     .then(function () {
                         post.get('featured').should.eql(true);
+                        post.get('page').should.eql(false);
                     });
             });
         });
