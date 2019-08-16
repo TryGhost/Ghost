@@ -80,7 +80,7 @@ describe('Schedules API', function () {
                     published_at: moment().add(30, 'seconds').toDate(),
                     status: 'scheduled',
                     slug: 'fifth',
-                    type: 'page'
+                    page: true
                 }));
 
                 return Promise.mapSeries(resources, function (post) {
