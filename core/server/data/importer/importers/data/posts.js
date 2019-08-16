@@ -1,9 +1,9 @@
-const debug = require('ghost-ignition').debug('importer:posts'),
-    _ = require('lodash'),
-    uuid = require('uuid'),
-    BaseImporter = require('./base'),
-    converters = require('../../../../lib/mobiledoc/converters'),
-    validation = require('../../../validation');
+const debug = require('ghost-ignition').debug('importer:posts');
+const _ = require('lodash');
+const uuid = require('uuid');
+const BaseImporter = require('./base');
+const converters = require('../../../../lib/mobiledoc/converters');
+const validation = require('../../../validation');
 
 class PostsImporter extends BaseImporter {
     constructor(allDataFromFile) {
@@ -20,6 +20,16 @@ class PostsImporter extends BaseImporter {
         _.each(this.dataToImport, (obj) => {
             if (!validation.validator.isUUID(obj.uuid || '')) {
                 obj.uuid = uuid.v4();
+            }
+
+            // we used to have post.page=true/false
+            // we now have post.type='page'/'post'
+            // give precedence to post.type if both are present
+            if (_.has(obj, 'page')) {
+                if (_.isEmpty(obj.type)) {
+                    obj.type = obj.page ? 'page' : 'post';
+                }
+                delete obj.page;
             }
         });
     }
