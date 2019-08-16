@@ -21,7 +21,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('type:post');
+            frame.options.filter.should.eql('page:false');
         });
 
         it('should not work for non public context', function () {
@@ -36,7 +36,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            should.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled]');
+            should.equal(frame.options.filter, '(page:false)+status:[draft,published,scheduled]');
         });
 
         it('combine filters', function () {
@@ -56,7 +56,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(status:published+tag:eins)+type:post');
+            frame.options.filter.should.eql('(status:published+tag:eins)+page:false');
         });
 
         it('combine filters', function () {
@@ -76,7 +76,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(page:true+tag:eins)+type:post');
+            frame.options.filter.should.eql('(page:true+tag:eins)+page:false');
         });
 
         it('combine filters', function () {
@@ -96,7 +96,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(page:true)+type:post');
+            frame.options.filter.should.eql('(page:true)+page:false');
         });
 
         it('combine filters', function () {
@@ -116,7 +116,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('((page:true,page:false))+type:post');
+            frame.options.filter.should.eql('((page:true,page:false))+page:false');
         });
 
         it('remove mobiledoc option from formats', function () {
@@ -137,7 +137,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
     });
 
     describe('read', function () {
-        it('with apiType of "content" it forces type filter', function () {
+        it('with apiType of "content" it forces page filter', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -146,24 +146,24 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('type:post');
+            frame.options.filter.should.eql('page:false');
         });
 
-        it('with apiType of "content" it forces type:post filter', function () {
+        it('with apiType of "content" it forces page false filter', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
                 options: {
-                    filter: 'type:page'
+                    filter: 'page:true'
                 },
                 data: {}
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('(type:page)+type:post');
+            frame.options.filter.should.eql('(page:true)+page:false');
         });
 
-        it('with apiType of "admin" it forces type & status false filter', function () {
+        it('with apiType of "admin" it forces page & status false filter', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'admin',
@@ -179,10 +179,10 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('(type:post)+status:[draft,published,scheduled]');
+            frame.options.filter.should.eql('(page:false)+status:[draft,published,scheduled]');
         });
 
-        it('with apiType of "admin" it forces type:post filter & respects custom status filter', function () {
+        it('with apiType of "admin" it forces page filter & respects custom status filter', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'admin',
@@ -199,7 +199,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('(status:draft)+type:post');
+            frame.options.filter.should.eql('(status:draft)+page:false');
         });
 
         it('remove mobiledoc option from formats', function () {

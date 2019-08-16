@@ -83,7 +83,7 @@ describe('Pages API', function () {
             .then((model) => {
                 model.get('title').should.eql(page.title);
                 model.get('status').should.eql(page.status);
-                model.get('type').should.eql('page');
+                model.get('page').should.eql(true);
             });
     });
 
@@ -116,7 +116,7 @@ describe('Pages API', function () {
                 }, testUtils.context.internal);
             })
             .then((model) => {
-                model.get('type').should.eql('page');
+                model.get('page').should.eql(true);
             });
     });
 

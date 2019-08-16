@@ -21,16 +21,6 @@ class PostsImporter extends BaseImporter {
             if (!validation.validator.isUUID(obj.uuid || '')) {
                 obj.uuid = uuid.v4();
             }
-
-            // we used to have post.page=true/false
-            // we now have post.type='page'/'post'
-            // give precedence to post.type if both are present
-            if (_.has(obj, 'page')) {
-                if (_.isEmpty(obj.type)) {
-                    obj.type = obj.page ? 'page' : 'post';
-                }
-                delete obj.page;
-            }
         });
     }
 
@@ -162,6 +152,14 @@ class PostsImporter extends BaseImporter {
         this.addNestedRelations();
 
         _.each(this.dataToImport, (model) => {
+            // during 2.28.x we had `post.type` in place of `post.page`
+            // this needs normalising back to `post.page`
+            // TODO: switch back to `post.page->type` in v3
+            if (_.has(model, 'type')) {
+                model.page = model.type === 'post' ? false : true;
+                delete model.type;
+            }
+
             // NOTE: we remember the original post id for disqus
             // (see https://github.com/TryGhost/Ghost/issues/8963)
 

@@ -192,7 +192,7 @@ describe('Slack', function () {
         });
 
         it('does not make a request if post is a page', function () {
-            const post = testUtils.DataGenerator.forKnex.createPost({type: 'page'});
+            const post = testUtils.DataGenerator.forKnex.createPost({page: true});
             isPostStub.returns(true);
             settingsCacheStub.withArgs('slack').returns(slackObjWithUrl);
 
