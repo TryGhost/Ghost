@@ -668,11 +668,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         case 'edit':
             return baseOptions.concat(extraOptions, ['id', 'require']);
         case 'findOne':
-            return baseOptions.concat(extraOptions, ['columns', 'require', 'mongoTransformer']);
+            return baseOptions.concat(extraOptions, ['columns', 'require']);
         case 'findAll':
-            return baseOptions.concat(extraOptions, ['columns', 'mongoTransformer']);
+            return baseOptions.concat(extraOptions, ['columns']);
         case 'findPage':
-            return baseOptions.concat(extraOptions, ['filter', 'order', 'page', 'limit', 'columns', 'mongoTransformer']);
+            return baseOptions.concat(extraOptions, ['filter', 'order', 'page', 'limit', 'columns']);
         default:
             return baseOptions.concat(extraOptions);
         }
