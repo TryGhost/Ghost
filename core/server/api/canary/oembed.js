@@ -7,121 +7,12 @@ const domino = require('domino');
 const {getMetadata} = require('page-metadata-parser');
 
 function generateBookmarkHtml(data)  {
-    const html = `
-    <style>
-    html {
-        font-family: -apple-system, BlinkMacSystemFont,
-                    'avenir next', avenir,
-                    'helvetica neue', helvetica,
-                    ubuntu,
-                    roboto, noto,
-                    'segoe ui', arial,
-                    sans-serif;
-        font-size: 62.5%;
-        line-height: 1.65;
-        letter-spacing: 0.2px;
-    }
+    const html = `<span> Clean me! </span>`;
 
-    body {
-        color: #343f44;
-        font-size: 1.4rem;
-        -webkit-font-smoothing: antialiased;
-        text-rendering: optimizeLegibility;
-    }
-
-    figure {
-        margin: 0;
-        padding: 0;
-    }
-
-    .kg-bookmark-card {
-        box-sizing: border-box;
-        border: 1px solid #E5EFF5;
-        background: #FFF;
-    }
-
-    .kg-bookmark-container a {
-        display: flex;
-        color: #222;
-        text-decoration: none;
-    }
-
-    .kg-bookmark-content {
-        display: flex;
-        flex-wrap: wrap;
-        flex-basis: 67%;
-        align-items: start;
-        align-content: flex-start;
-        padding: 20px;
-    }
-
-    .kg-bookmark-title {
-        flex-grow: 1;
-        font-size: 1.5rem;
-        line-height: 1.5em;
-        font-weight: 600;
-    }
-
-    .kg-bookmark-container a:hover .kg-bookmark-title {
-        color: #3EB0EF;
-    }
-
-    .kg-bookmark-description {
-        line-height: 1.4em;
-        margin-top: 12px;
-        color: #54666D;
-    }
-
-    .kg-bookmark-thumbnail {
-        flex-basis: 33%;
-        max-height: 100%;
-    }
-
-    .kg-bookmark-thumbnail img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .kg-bookmark-metadata {
-        display: flex;
-        align-items: center;
-        margin-top: 12px;
-    }
-
-    .kg-bookmark-logo {
-        width: 20px;
-        height: 20px;
-        margin-right: 6px;
-    }
-
-    .kg-bookmark-author:after {
-        content: "•";
-        margin: 0 6px;
-    }
-    </style>
-    
-    <figure class="kg-card kg-bookmark-card">
-  <div class="kg-bookmark-container">
-    <a href="${data.url}">
-      <div class="kg-bookmark-content">
-        <div class="kg-bookmark-title">${escape_HTML(data.title)}</div>
-        <div class="kg-bookmark-description">${escape_HTML(data.description)}</div>
-        <div class="kg-bookmark-metadata">
-          <img src="${data.icon}" class="kg-bookmark-logo">
-          <span class="kg-bookmark-author">${data.type}</span>
-          <span class="kg-bookmark-url">${data.provider}</span>
-        </div>
-      </div>
-      <div class="kg-bookmark-thumbnail">
-        <img src="${data.image}"> </img>
-      </div>
-    </a>
-    </div>
-    </figure>
-`;
-
-    return html;
+    return {
+        html,
+        metadata: data
+    };
 }
 
 function escape_HTML(html_str) {
@@ -150,12 +41,12 @@ async function fetchBookmarkData(url, html) {
     const metadata = getMetadata(doc, url);
 
     if (metadata.title && metadata.description) {
-        let bookmarkHtml = generateBookmarkHtml(metadata);
-        let bookmarkData = {
+        let bookmarkData = generateBookmarkHtml(metadata);
+        return Promise.resolve({
             type: "bookmark",
-            html: bookmarkHtml
-        };
-        return Promise.resolve(bookmarkData);
+            html: bookmarkData.html,
+            metadata: bookmarkData.metadata
+        });
     }
     return Promise.resolve();
 }
