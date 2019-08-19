@@ -4584,10 +4584,10 @@ knex-migrator@3.3.3:
     mysql "^2.16.0"
     sqlite3 "^4.0.6"
 
-knex@0.19.1:
-  version "0.19.1"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.19.1.tgz#a73b88697fe0d8ed1d7520d8ce390728444508f2"
-  integrity sha512-Y25eu5xMv8h/2/98YQqGMPzzo0AYs/HluST6BR8vkGfRyhme0A51jyCde4y4QInJo2GokrUzrXqlKDqqERg+nQ==
+knex@0.19.2:
+  version "0.19.2"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-0.19.2.tgz#056efdb33fb8c77d3d76266b5d1d12dc483c21b5"
+  integrity sha512-TVYvlp2esS4LjjJSz8XuE48bPJq4N3lWnETQVgJ3hXPEqjiDjxcTa3bCn6F5ipQuBaMAAaFHNrqsZm7BttogdA==
   dependencies:
     bluebird "^3.5.5"
     colorette "1.0.8"
