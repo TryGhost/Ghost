@@ -25,10 +25,10 @@ describe('{{pagination}} helper', function () {
 
     it('should throw if pagination data is incorrect', function () {
         var runHelper = function (data) {
-            return function () {
-                helpers.pagination.call(data);
-            };
-        }, expectedMessage = 'The {{pagination}} helper was used outside of a paginated context. See https://ghost.org/docs/api/handlebars-themes/helpers/pagination/.';
+                return function () {
+                    helpers.pagination.call(data);
+                };
+            }, expectedMessage = 'The {{pagination}} helper was used outside of a paginated context. See https://ghost.org/docs/api/handlebars-themes/helpers/pagination/.';
 
         runHelper('not an object').should.throwError(expectedMessage);
         runHelper(function () {

@@ -87,9 +87,9 @@ describe('Authors Content API', function () {
                 localUtils.API.checkResponse(jsonResponse.authors[0], 'author', ['count', 'url'], null, null);
 
                 // Each user should have the correct count and be more than 0
-                _.find(jsonResponse.authors, {slug:'joe-bloggs'}).count.posts.should.eql(4);
-                _.find(jsonResponse.authors, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(1);
-                _.find(jsonResponse.authors, {slug:'ghost'}).count.posts.should.eql(7);
+                _.find(jsonResponse.authors, {slug: 'joe-bloggs'}).count.posts.should.eql(4);
+                _.find(jsonResponse.authors, {slug: 'slimer-mcectoplasm'}).count.posts.should.eql(1);
+                _.find(jsonResponse.authors, {slug: 'ghost'}).count.posts.should.eql(7);
 
                 const ids = jsonResponse.authors
                     .filter(author => (author.slug !== 'ghost'))

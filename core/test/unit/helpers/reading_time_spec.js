@@ -1,6 +1,6 @@
 var should = require('should'),
 
-// Stuff we are testing
+    // Stuff we are testing
     helpers = require('../../../frontend/helpers');
 
 var almostOneMinute =
@@ -71,10 +71,10 @@ describe('{{reading_time}} helper', function () {
 
     it('[success] adds time for feature image', function () {
         var data = {
-            html: almostOneAndAHalfMinute,
-            title: 'Test',
-            slug: 'slug',
-            feature_image: '/content/images/someimage.jpg'
+                html: almostOneAndAHalfMinute,
+                title: 'Test',
+                slug: 'slug',
+                feature_image: '/content/images/someimage.jpg'
             },
             result = helpers.reading_time.call(data);
 
@@ -85,10 +85,10 @@ describe('{{reading_time}} helper', function () {
 
     it('[success] adds time for inline images', function () {
         var data = {
-            html: almostOneAndAHalfMinute +
+                html: almostOneAndAHalfMinute +
                   '<img src="test.png">',
-            title: 'Test',
-            slug: 'slug'
+                title: 'Test',
+                slug: 'slug'
             },
             result = helpers.reading_time.call(data);
 

@@ -40,8 +40,8 @@ describe('{{concat}} helper', function () {
 
     it('can correctly concat things that resolve to empty', function () {
         compile('{{concat tag.slug slug}}')
-        .with({tag: {}})
-        .should.eql('');
+            .with({tag: {}})
+            .should.eql('');
     });
 
     it('can concat simple strings', function () {

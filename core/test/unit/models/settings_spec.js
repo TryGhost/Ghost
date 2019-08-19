@@ -48,9 +48,9 @@ describe('Unit: models/settings', function () {
             });
 
             return models.Settings.edit({
-                    key: 'description',
-                    value: 'added value'
-                })
+                key: 'description',
+                value: 'added value'
+            })
                 .then(() => {
                     eventSpy.calledTwice.should.be.true();
                     eventSpy.firstCall.calledWith('settings.added').should.be.true();
@@ -63,7 +63,7 @@ describe('Unit: models/settings', function () {
                 return [
                     function fetchEditQuery() {
                         query.response([{
-                            id: 1,    // NOTE: `id` imitates existing value for 'edit' event
+                            id: 1, // NOTE: `id` imitates existing value for 'edit' event
                             key: 'description',
                             value: 'db value'
                         }]);
@@ -72,9 +72,9 @@ describe('Unit: models/settings', function () {
             });
 
             return models.Settings.edit({
-                    key: 'description',
-                    value: 'edited value'
-                })
+                key: 'description',
+                value: 'edited value'
+            })
                 .then(() => {
                     eventSpy.calledTwice.should.be.true();
                     eventSpy.firstCall.calledWith('settings.edited').should.be.true();

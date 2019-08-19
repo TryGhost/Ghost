@@ -4,7 +4,7 @@ const configUtils = require('../../../utils/configUtils');
 const controller = require('../../../../server/web/admin/controller');
 
 describe('Admin App', function () {
-   describe('controller', function () {
+    describe('controller', function () {
         const req = {};
         let res;
 
@@ -41,5 +41,5 @@ describe('Admin App', function () {
                 sinon.match.hasNested('headers.X-Frame-Options')
             ).should.be.false();
         });
-   });
+    });
 });

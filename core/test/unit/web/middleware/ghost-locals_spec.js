@@ -12,11 +12,11 @@ describe('Theme Handler', function () {
         next = sinon.spy();
 
         sinon.stub(themeService, 'getActive').callsFake(() => {
-           return {
-               engine() {
-                   return 'v0.1';
-               }
-           };
+            return {
+                engine() {
+                    return 'v0.1';
+                }
+            };
         });
     });
 
