@@ -1,7 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
 
-// Stuff we are testing
+    // Stuff we are testing
     helpers = require('../../../frontend/helpers');
 
 describe('{{#has}} helper', function () {

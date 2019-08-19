@@ -250,7 +250,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 .catch((err) => {
                     should.exist(err);
                 });
-            });
+        });
     });
 
     describe('read', function () {

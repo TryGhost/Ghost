@@ -21,7 +21,7 @@ describe('RSS: Renderer', function () {
     });
 
     afterEach(function () {
-       sinon.restore();
+        sinon.restore();
     });
 
     it('calls the cache and attempts to render, even without data', function (done) {

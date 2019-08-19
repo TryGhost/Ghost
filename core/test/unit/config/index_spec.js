@@ -23,7 +23,7 @@ describe('Config', function () {
 
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available
-            process.env['paths__contentPath'] = 'content/';
+            process.env.paths__contentPath = 'content/';
         });
 
         afterEach(function () {
@@ -32,7 +32,7 @@ describe('Config', function () {
         });
 
         it('env parameter is stronger than file', function () {
-            process.env['database__client'] = 'test';
+            process.env.database__client = 'test';
 
             customConfig = config.loadNconf({
                 baseConfigPath: path.join(__dirname, '../../utils/fixtures/config'),
@@ -43,7 +43,7 @@ describe('Config', function () {
         });
 
         it('argv is stronger than env parameter', function () {
-            process.env['database__client'] = 'test';
+            process.env.database__client = 'test';
             process.argv[2] = '--database:client=stronger';
 
             customConfig = config.loadNconf({
@@ -55,7 +55,7 @@ describe('Config', function () {
         });
 
         it('argv or env is NOT stronger than overrides', function () {
-            process.env['paths__corePath'] = 'try-to-override';
+            process.env.paths__corePath = 'try-to-override';
             process.argv[2] = '--paths:corePath=try-to-override';
 
             customConfig = config.loadNconf({

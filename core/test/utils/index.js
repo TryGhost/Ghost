@@ -195,9 +195,9 @@ fixtures = {
             let tags = results[1].toJSON();
 
             const injectionTagId = _.chain(tags)
-                    .filter({name: 'injection'})
-                    .map('id')
-                    .value()[0];
+                .filter({name: 'injection'})
+                .map('id')
+                .value()[0];
 
             if (max > posts.length) {
                 throw new Error('Trying to add more posts_tags than the number of posts.');
@@ -291,7 +291,7 @@ fixtures = {
     },
 
     createUsersWithoutOwner: function createUsersWithoutOwner() {
-        var usersWithoutOwner =  _.cloneDeep(DataGenerator.forKnex.users.slice(1));
+        var usersWithoutOwner = _.cloneDeep(DataGenerator.forKnex.users.slice(1));
 
         return Promise.map(usersWithoutOwner, function (user) {
             let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {user_id: user.id});
@@ -317,7 +317,7 @@ fixtures = {
 
     createExtraUsers: function createExtraUsers() {
         // grab 3 more users
-        var extraUsers =  _.cloneDeep(DataGenerator.Content.users.slice(2, 6));
+        var extraUsers = _.cloneDeep(DataGenerator.Content.users.slice(2, 6));
         extraUsers = _.map(extraUsers, function (user) {
             return DataGenerator.forKnex.createUser(_.extend({}, user, {
                 id: ObjectId.generate(),
@@ -338,7 +338,7 @@ fixtures = {
         DataGenerator.Content.extraUsers = extraUsers;
 
         return Promise.map(extraUsers, function (user) {
-            user.roles =  roles[user.id];
+            user.roles = roles[user.id];
             return models.User.add(user, module.exports.context.internal);
         });
     },
@@ -401,7 +401,7 @@ fixtures = {
     },
 
     permissionsFor: function permissionsFor(obj) {
-        var permsToInsert =  _.cloneDeep(fixtureUtils.findModelFixtures('Permission', {object_type: obj}).entries),
+        var permsToInsert = _.cloneDeep(fixtureUtils.findModelFixtures('Permission', {object_type: obj}).entries),
             permsRolesToInsert = fixtureUtils.findPermissionRelationsForObject(obj).entries,
             actions = [],
             permissionsRoles = {},

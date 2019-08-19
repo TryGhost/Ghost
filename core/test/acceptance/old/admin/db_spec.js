@@ -14,11 +14,11 @@ let ghost = testUtils.startGhost;
 let request;
 let eventsTriggered;
 
-describe('DB API', () => {
+describe('DB API', function () {
     let backupClient;
     let schedulerClient;
 
-    before(() => {
+    before(function () {
         return ghost()
             .then(() => {
                 request = supertest.agent(config.get('url'));
@@ -36,7 +36,7 @@ describe('DB API', () => {
             });
     });
 
-    beforeEach(() => {
+    beforeEach(function () {
         eventsTriggered = {};
 
         sinon.stub(common.events, 'emit').callsFake((eventName, eventObj) => {
@@ -48,11 +48,11 @@ describe('DB API', () => {
         });
     });
 
-    afterEach(() => {
+    afterEach(function () {
         sinon.restore();
     });
 
-    it('Can export a JSON database', () => {
+    it('Can export a JSON database', function () {
         return request.get(localUtils.API.getApiQuery(`db/`))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -70,7 +70,7 @@ describe('DB API', () => {
             });
     });
 
-    it('Can import a JSON database', () => {
+    it('Can import a JSON database', function () {
         return Promise.resolve()
             .then(() => {
                 return request.delete(localUtils.API.getApiQuery('db/'))
@@ -106,7 +106,7 @@ describe('DB API', () => {
             });
     });
 
-    it('Can delete all content', () => {
+    it('Can delete all content', function () {
         return request
             .get(localUtils.API.getApiQuery('posts/'))
             .set('Origin', config.get('url'))

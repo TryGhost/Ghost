@@ -4,37 +4,37 @@ var should = require('should'),
 describe('getStructuredData', function () {
     it('should return structured data from metadata per post', function (done) {
         var metadata = {
-            blog: {
-                title: 'Blog Title',
-                facebook: 'testuser',
-                twitter: '@testuser'
-            },
-            authorName: 'Test User',
-            ogType: 'article',
-            metaTitle: 'Post Title',
-            canonicalUrl: 'http://mysite.com/post/my-post-slug/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z',
-            coverImage: {
-                url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
-                dimensions: {
-                    width: 500,
-                    height: 500
-                }
-            },
-            ogImage: {
-                url: null
-            },
-            twitterImage: null,
-            ogTitle: '',
-            ogDescription: '',
-            twitterTitle: '',
-            twitterDescription: '',
-            authorFacebook: 'testpage',
-            creatorTwitter: '@twitterpage',
-            keywords: ['one', 'two', 'tag'],
-            metaDescription: 'Post meta description'
-        },  structuredData = getStructuredData(metadata);
+                blog: {
+                    title: 'Blog Title',
+                    facebook: 'testuser',
+                    twitter: '@testuser'
+                },
+                authorName: 'Test User',
+                ogType: 'article',
+                metaTitle: 'Post Title',
+                canonicalUrl: 'http://mysite.com/post/my-post-slug/',
+                publishedDate: '2015-12-25T05:35:01.234Z',
+                modifiedDate: '2016-01-21T22:13:05.412Z',
+                coverImage: {
+                    url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
+                    dimensions: {
+                        width: 500,
+                        height: 500
+                    }
+                },
+                ogImage: {
+                    url: null
+                },
+                twitterImage: null,
+                ogTitle: '',
+                ogDescription: '',
+                twitterTitle: '',
+                twitterDescription: '',
+                authorFacebook: 'testpage',
+                creatorTwitter: '@twitterpage',
+                keywords: ['one', 'two', 'tag'],
+                metaDescription: 'Post meta description'
+            }, structuredData = getStructuredData(metadata);
 
         should.deepEqual(structuredData, {
             'article:modified_time': '2016-01-21T22:13:05.412Z',
@@ -67,34 +67,34 @@ describe('getStructuredData', function () {
 
     it('should return structured data from metadata with provided og and twitter images only per post', function (done) {
         var metadata = {
-            blog: {
-                title: 'Blog Title',
-                facebook: 'testuser',
-                twitter: '@testuser'
-            },
-            authorName: 'Test User',
-            ogType: 'article',
-            metaTitle: 'Post Title',
-            canonicalUrl: 'http://mysite.com/post/my-post-slug/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z',
-            ogImage: {
-                url: 'http://mysite.com/content/image/mypostogimage.jpg',
-                dimensions: {
-                    width: 20,
-                    height: 100
-                }
-            },
-            twitterImage: 'http://mysite.com/content/image/myposttwitterimage.jpg',
-            ogTitle: 'Custom Facebook title',
-            ogDescription: 'Custom Facebook description',
-            twitterTitle: 'Custom Twitter title',
-            twitterDescription: 'Custom Twitter description',
-            authorFacebook: 'testpage',
-            creatorTwitter: '@twitterpage',
-            keywords: ['one', 'two', 'tag'],
-            metaDescription: 'Post meta description'
-        },  structuredData = getStructuredData(metadata);
+                blog: {
+                    title: 'Blog Title',
+                    facebook: 'testuser',
+                    twitter: '@testuser'
+                },
+                authorName: 'Test User',
+                ogType: 'article',
+                metaTitle: 'Post Title',
+                canonicalUrl: 'http://mysite.com/post/my-post-slug/',
+                publishedDate: '2015-12-25T05:35:01.234Z',
+                modifiedDate: '2016-01-21T22:13:05.412Z',
+                ogImage: {
+                    url: 'http://mysite.com/content/image/mypostogimage.jpg',
+                    dimensions: {
+                        width: 20,
+                        height: 100
+                    }
+                },
+                twitterImage: 'http://mysite.com/content/image/myposttwitterimage.jpg',
+                ogTitle: 'Custom Facebook title',
+                ogDescription: 'Custom Facebook description',
+                twitterTitle: 'Custom Twitter title',
+                twitterDescription: 'Custom Twitter description',
+                authorFacebook: 'testpage',
+                creatorTwitter: '@twitterpage',
+                keywords: ['one', 'two', 'tag'],
+                metaDescription: 'Post meta description'
+            }, structuredData = getStructuredData(metadata);
 
         should.deepEqual(structuredData, {
             'article:modified_time': '2016-01-21T22:13:05.412Z',
@@ -127,32 +127,32 @@ describe('getStructuredData', function () {
 
     it('should return structured data from metadata with no nulls', function (done) {
         var metadata = {
-            blog: {
-                title: 'Blog Title',
-                facebook: '',
-                twitter: ''
-            },
-            authorName: 'Test User',
-            ogType: 'article',
-            metaTitle: 'Post Title',
-            canonicalUrl: 'http://mysite.com/post/my-post-slug/',
-            modifiedDate: '2016-01-21T22:13:05.412Z',
-            authorFacebook: null,
-            creatorTwitter: null,
-            coverImage: {
-                url: undefined
-            },
-            ogImage: {
-                url: null
-            },
-            twitterImage: null,
-            ogTitle: null,
-            ogDescription: null,
-            twitterTitle: null,
-            twitterDescription: null,
-            keywords: null,
-            metaDescription: null
-        },  structuredData = getStructuredData(metadata);
+                blog: {
+                    title: 'Blog Title',
+                    facebook: '',
+                    twitter: ''
+                },
+                authorName: 'Test User',
+                ogType: 'article',
+                metaTitle: 'Post Title',
+                canonicalUrl: 'http://mysite.com/post/my-post-slug/',
+                modifiedDate: '2016-01-21T22:13:05.412Z',
+                authorFacebook: null,
+                creatorTwitter: null,
+                coverImage: {
+                    url: undefined
+                },
+                ogImage: {
+                    url: null
+                },
+                twitterImage: null,
+                ogTitle: null,
+                ogDescription: null,
+                twitterTitle: null,
+                twitterDescription: null,
+                keywords: null,
+                metaDescription: null
+            }, structuredData = getStructuredData(metadata);
 
         should.deepEqual(structuredData, {
             'article:modified_time': '2016-01-21T22:13:05.412Z',

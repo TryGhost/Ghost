@@ -1,6 +1,6 @@
 var should = require('should'),
 
-// Stuff we are testing
+    // Stuff we are testing
     helpers = require('../../../frontend/helpers'),
     moment = require('moment-timezone');
 

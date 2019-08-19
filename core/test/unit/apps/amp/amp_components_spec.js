@@ -1,6 +1,6 @@
 var should = require('should'),
 
-// Stuff we are testing
+    // Stuff we are testing
     ampComponentsHelper = require('../../../../frontend/apps/amp/lib/helpers/amp_components');
 
 describe('{{amp_components}} helper', function () {

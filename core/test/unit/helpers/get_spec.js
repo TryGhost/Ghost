@@ -63,10 +63,10 @@ describe('{{#get}} helper', function () {
             meta = {pagination: {}};
 
         beforeEach(function () {
-            browsePostsStub = sinon.stub(api["v0.1"].posts, 'browse');
-            readPostsStub = sinon.stub(api["v0.1"].posts, 'read');
-            readTagsStub = sinon.stub(api["v0.1"].tags, 'read').returns(new Promise.resolve({tags: []}));
-            readUsersStub = sinon.stub(api["v0.1"].users, 'read').returns(new Promise.resolve({users: []}));
+            browsePostsStub = sinon.stub(api['v0.1'].posts, 'browse');
+            readPostsStub = sinon.stub(api['v0.1'].posts, 'read');
+            readTagsStub = sinon.stub(api['v0.1'].tags, 'read').returns(new Promise.resolve({tags: []}));
+            readUsersStub = sinon.stub(api['v0.1'].users, 'read').returns(new Promise.resolve({users: []}));
 
             browsePostsStub.returns(new Promise.resolve({posts: testPostsArr, meta: meta}));
             browsePostsStub.withArgs({limit: '3'}).returns(new Promise.resolve({
@@ -258,7 +258,7 @@ describe('{{#get}} helper', function () {
         const meta = {pagination: {}};
 
         beforeEach(function () {
-            browseUsersStub = sinon.stub(api["v0.1"].users, 'browse');
+            browseUsersStub = sinon.stub(api['v0.1'].users, 'browse');
             browseUsersStub.returns(new Promise.resolve({users: [], meta: meta}));
         });
 
@@ -285,7 +285,7 @@ describe('{{#get}} helper', function () {
         const meta = {pagination: {}};
 
         beforeEach(function () {
-            browseUsersStub = sinon.stub(api["v0.1"].users, 'browse');
+            browseUsersStub = sinon.stub(api['v0.1'].users, 'browse');
             browseUsersStub.returns(new Promise.resolve({users: [], meta: meta}));
         });
 
@@ -310,7 +310,7 @@ describe('{{#get}} helper', function () {
         beforeEach(function () {
             locals = {root: {_locals: {apiVersion: 'v2'}}};
 
-            browseUsersStub = sinon.stub(api["v2"], 'authorsPublic').get(() => {
+            browseUsersStub = sinon.stub(api.v2, 'authorsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({authors: [], meta: meta})
                 };
@@ -343,7 +343,7 @@ describe('{{#get}} helper', function () {
         beforeEach(function () {
             locals = {root: {_locals: {apiVersion: 'v2'}}};
 
-            browseUsersStub = sinon.stub(api["v2"], 'authorsPublic').get(() => {
+            browseUsersStub = sinon.stub(api.v2, 'authorsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({authors: [], meta: meta})
                 };
@@ -376,7 +376,7 @@ describe('{{#get}} helper', function () {
         beforeEach(function () {
             locals = {root: {_locals: {apiVersion: 'canary'}}};
 
-            browseUsersStub = sinon.stub(api["canary"], 'authorsPublic').get(() => {
+            browseUsersStub = sinon.stub(api.canary, 'authorsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({authors: [], meta: meta})
                 };
@@ -409,7 +409,7 @@ describe('{{#get}} helper', function () {
         beforeEach(function () {
             locals = {root: {_locals: {apiVersion: 'canary'}}};
 
-            browseUsersStub = sinon.stub(api["canary"], 'authorsPublic').get(() => {
+            browseUsersStub = sinon.stub(api.canary, 'authorsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({authors: [], meta: meta})
                 };
@@ -490,8 +490,8 @@ describe('{{#get}} helper', function () {
             };
 
         beforeEach(function () {
-            browseStub = sinon.stub(api["v0.1"].posts, 'browse').returns(new Promise.resolve());
-            readStub = sinon.stub(api["v0.1"].posts, 'read').returns(new Promise.resolve());
+            browseStub = sinon.stub(api['v0.1'].posts, 'browse').returns(new Promise.resolve());
+            readStub = sinon.stub(api['v0.1'].posts, 'read').returns(new Promise.resolve());
         });
 
         it('should resolve post.tags alias', function (done) {
@@ -554,7 +554,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 resource,
                 'posts',
-                {hash: {filter: "published_at:<='{{post.published_at}}'"}, data: locals, fn: fn, inverse: inverse}
+                {hash: {filter: 'published_at:<=\'{{post.published_at}}\''}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
                 browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
                 browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');

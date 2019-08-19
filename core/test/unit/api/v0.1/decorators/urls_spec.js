@@ -45,7 +45,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
             const options = {
                 absolute_urls: true,
                 context: {
-                  public: true
+                    public: true
                 }
             };
 
@@ -63,7 +63,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
             const options = {
                 absolute_urls: true,
                 context: {
-                  public: true
+                    public: true
                 }
             };
 
@@ -82,7 +82,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
             const options = {
                 absolute_urls: true,
                 context: {
-                  public: true
+                    public: true
                 }
             };
 
@@ -101,7 +101,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
             const options = {
                 absolute_urls: true,
                 context: {
-                  public: true
+                    public: true
                 }
             };
 
@@ -121,7 +121,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
             const options = {
                 absolute_urls: true,
                 context: {
-                  public: true
+                    public: true
                 }
             };
             urlService.getUrlByResourceId.withArgs(object.id).returns('url');
@@ -140,7 +140,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
             const options = {
                 absolute_urls: true,
                 context: {
-                  public: true
+                    public: true
                 }
             };
 
@@ -158,7 +158,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
             const options = {
                 absolute_urls: true,
                 context: {
-                  public: true
+                    public: true
                 }
             };
 
@@ -176,7 +176,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
             const options = {
                 absolute_urls: true,
                 context: {
-                  public: true
+                    public: true
                 }
             };
             urlService.getUrlByResourceId.withArgs(object.id).returns('url');
@@ -195,7 +195,7 @@ describe('Unit: api:v0.1:decorators:urls', function () {
             const options = {
                 absolute_urls: true,
                 context: {
-                  public: true
+                    public: true
                 }
             };
 

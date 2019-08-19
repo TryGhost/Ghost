@@ -66,7 +66,7 @@ const expectedProperties = {
         .without('token')
     ,
     webhook: _(schema.webhooks)
-            .keys()
+        .keys()
 };
 
 _.each(expectedProperties, (value, key) => {

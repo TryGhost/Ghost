@@ -251,7 +251,7 @@ describe('Settings API', function () {
             });
     });
 
-    it('can download routes.yaml', () => {
+    it('can download routes.yaml', function () {
         return request.get(localUtils.API.getApiQuery('settings/routes/yaml/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .set('Accept', 'application/yaml')
@@ -263,7 +263,7 @@ describe('Settings API', function () {
             });
     });
 
-    it('can upload routes.yaml', () => {
+    it('can upload routes.yaml', function () {
         const newRoutesYamlPath = `${os.tmpdir()}/routes.yaml`;
 
         return fs.writeFile(newRoutesYamlPath, 'routes:\ncollections:\ntaxonomies:\n')

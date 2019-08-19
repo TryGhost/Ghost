@@ -5,27 +5,27 @@ const urlService = require('../../../../../../../../frontend/services/url');
 const urlUtils = require('../../../../../../../../server/lib/url-utils');
 const urlUtil = require('../../../../../../../../server/api/canary/utils/serializers/output/utils/url');
 
-describe('Unit: canary/utils/serializers/output/utils/url', () => {
-    beforeEach(() => {
+describe('Unit: canary/utils/serializers/output/utils/url', function () {
+    beforeEach(function () {
         sinon.stub(urlService, 'getUrlByResourceId').returns('getUrlByResourceId');
         sinon.stub(urlUtils, 'urlFor').returns('urlFor');
         sinon.stub(urlUtils, 'htmlRelativeToAbsolute').returns({html: sinon.stub()});
     });
 
-    afterEach(() => {
+    afterEach(function () {
         sinon.restore();
     });
 
-    describe('Ensure calls url service', () => {
+    describe('Ensure calls url service', function () {
         let pageModel;
 
-        beforeEach(() => {
+        beforeEach(function () {
             pageModel = (data) => {
                 return Object.assign(data, {toJSON: sinon.stub().returns(data)});
             };
         });
 
-        it('meta & models & relations', () => {
+        it('meta & models & relations', function () {
             const post = pageModel(testUtils.DataGenerator.forKnex.createPost({
                 id: 'id1',
                 feature_image: 'value'

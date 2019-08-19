@@ -38,7 +38,7 @@ describe('Public API', function () {
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
                     .then(() => {});
-        });
+            });
     });
 
     afterEach(function () {
@@ -892,13 +892,13 @@ describe('Public API', function () {
                 localUtils.API.checkResponse(jsonResponse.users[0], 'user', ['count'], null, null, {public: true});
 
                 // Each user should have the correct count
-                _.find(jsonResponse.users, {slug:'joe-bloggs'}).count.posts.should.eql(4);
-                _.find(jsonResponse.users, {slug:'contributor'}).count.posts.should.eql(0);
-                _.find(jsonResponse.users, {slug:'slimer-mcectoplasm'}).count.posts.should.eql(1);
-                _.find(jsonResponse.users, {slug:'jimothy-bogendath'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug: 'joe-bloggs'}).count.posts.should.eql(4);
+                _.find(jsonResponse.users, {slug: 'contributor'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug: 'slimer-mcectoplasm'}).count.posts.should.eql(1);
+                _.find(jsonResponse.users, {slug: 'jimothy-bogendath'}).count.posts.should.eql(0);
                 _.find(jsonResponse.users, {slug: 'smith-wellingsworth'}).count.posts.should.eql(0);
-                _.find(jsonResponse.users, {slug:'ghost'}).count.posts.should.eql(7);
-                _.find(jsonResponse.users, {slug:'inactive'}).count.posts.should.eql(0);
+                _.find(jsonResponse.users, {slug: 'ghost'}).count.posts.should.eql(7);
+                _.find(jsonResponse.users, {slug: 'inactive'}).count.posts.should.eql(0);
 
                 const ids = jsonResponse.users
                     .filter(user => (user.slug !== 'ghost'))
@@ -1005,6 +1005,7 @@ describe('Public API', function () {
         function createFilter(publishedAt, op) {
             // This line deliberately uses double quotes because GQL cannot handle either double quotes
             // or escaped singles, see TryGhost/GQL#34
+            // eslint-disable-next-line quotes
             return encodeURIComponent("published_at:" + op + "'" + publishedAt + "'");
         }
 

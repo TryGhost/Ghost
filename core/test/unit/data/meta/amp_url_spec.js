@@ -20,7 +20,7 @@ describe('getAmpUrl', function () {
     });
 
     afterEach(function () {
-       sinon.restore();
+        sinon.restore();
     });
 
     it('should return amp url for post', function () {

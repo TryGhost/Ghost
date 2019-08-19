@@ -1,7 +1,7 @@
 const should = require('should');
 const serializers = require('../../../../../../../server/api/v2/utils/serializers');
 
-describe('Unit: v2/utils/serializers/output/all', () => {
+describe('Unit: v2/utils/serializers/output/all', function () {
     describe('after', function () {
         it('x_by', function () {
             const apiConfig = {};

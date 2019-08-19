@@ -91,7 +91,7 @@ describe('Frontend Routing', function () {
 
             it('should 404 for unknown file', function (done) {
                 request.get('/content/images/some/file/that/doesnt-exist.jpg')
-                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .expect(/404 Image not found/)
                     .end(doEnd(done));

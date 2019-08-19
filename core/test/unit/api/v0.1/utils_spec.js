@@ -518,7 +518,7 @@ describe('API Utils', function () {
 
                 apiUtils.checkObject(_.cloneDeep(object), 'posts')
                     .then(function () {
-                        "Test should fail".should.eql(false);
+                        'Test should fail'.should.eql(false);
                     })
                     .catch(function (err) {
                         (err instanceof common.errors.BadRequestError).should.be.true;
@@ -557,7 +557,7 @@ describe('API Utils', function () {
 
                 apiUtils.checkObject(_.cloneDeep(object), 'posts')
                     .then(function () {
-                        "Test should fail".should.eql(false);
+                        'Test should fail'.should.eql(false);
                     })
                     .catch(function (err) {
                         (err instanceof common.errors.BadRequestError).should.be.true;

@@ -218,7 +218,7 @@ describe('Authentication API v3', function () {
 
         before(function () {
             return ghost({forceStart: true})
-                .then(() =>  {
+                .then(() => {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(() => {

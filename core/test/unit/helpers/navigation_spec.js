@@ -1,8 +1,8 @@
-const  should = require('should');
-const  hbs = require('../../../frontend/services/themes/engine');
-const  configUtils = require('../../utils/configUtils');
-const  path = require('path');
-const  helpers = require('../../../frontend/helpers');
+const should = require('should');
+const hbs = require('../../../frontend/services/themes/engine');
+const configUtils = require('../../utils/configUtils');
+const path = require('path');
+const helpers = require('../../../frontend/helpers');
 
 const runHelper = data => helpers.navigation.call({}, data);
 const runHelperThunk = data => () => runHelper(data);

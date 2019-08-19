@@ -272,7 +272,7 @@ describe('Posts Content API', function () {
         function createFilter(publishedAt, op) {
             // This line deliberately uses double quotes because GQL cannot handle either double quotes
             // or escaped singles, see TryGhost/GQL#34
-            return encodeURIComponent("published_at:" + op + "'" + publishedAt + "'");
+            return encodeURIComponent('published_at:' + op + '\'' + publishedAt + '\'');
         }
 
         request

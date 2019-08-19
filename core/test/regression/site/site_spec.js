@@ -18,7 +18,7 @@ describe('Integration - Web - Site', function () {
     before(testUtils.setup('users:roles', 'posts'));
 
     describe('v0.1', function () {
-        const api = require('../../../server/api')["v0.1"];
+        const api = require('../../../server/api')['v0.1'];
 
         describe('default routes.yaml', function () {
             before(function () {

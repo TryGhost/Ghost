@@ -1,6 +1,6 @@
 var should = require('should'),
 
-// Stuff we are testing
+    // Stuff we are testing
     helpers = require('../../../frontend/helpers');
 
 describe('{{page_url}} helper', function () {

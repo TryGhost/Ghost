@@ -142,7 +142,7 @@ describe('Unit: services/url/Queue', function () {
             });
 
             common.logging.error.calledOnce.should.be.true();
-            queue.toNotify['nachos'].notified.length.should.eql(0);
+            queue.toNotify.nachos.notified.length.should.eql(0);
         });
     });
 

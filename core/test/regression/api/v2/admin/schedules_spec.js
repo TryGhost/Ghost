@@ -94,8 +94,8 @@ describe('Schedules API', function () {
     describe('publish', function () {
         let schedulerKey;
 
-        before(() => {
-             schedulerKey = _.find(testUtils.existingData.apiKeys, {integration: {slug: 'ghost-scheduler'}});
+        before(function () {
+            schedulerKey = _.find(testUtils.existingData.apiKeys, {integration: {slug: 'ghost-scheduler'}});
         });
 
         it('publishes posts', function () {

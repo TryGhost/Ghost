@@ -136,11 +136,11 @@ describe('Posts API', function () {
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
-            .then((res) => {
-                should.exist(res.body.posts);
-                should.exist(res.body.posts[0].title);
-                res.body.posts[0].title.should.equal('(Untitled)');
-            });
+                .then((res) => {
+                    should.exist(res.body.posts);
+                    should.exist(res.body.posts[0].title);
+                    res.body.posts[0].title.should.equal('(Untitled)');
+                });
         });
     });
 

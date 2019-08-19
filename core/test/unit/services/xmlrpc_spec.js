@@ -138,7 +138,7 @@ describe('XMLRPC', function () {
         it('captures && logs XML errors from requests with newlines between tags', function (done) {
             var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
                 ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200,
-                `<?xml version="1.0"?>
+                    `<?xml version="1.0"?>
                  <methodResponse>
                    <params>
                      <param>
@@ -179,7 +179,7 @@ describe('XMLRPC', function () {
         it('captures && logs XML errors from requests without newlines between tags', function (done) {
             var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
                 ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200,
-                (`<?xml version="1.0"?>
+                    (`<?xml version="1.0"?>
                  <methodResponse>
                    <params>
                      <param>
@@ -220,7 +220,7 @@ describe('XMLRPC', function () {
         it('does not error with responses that have 0 as flerror value', function (done) {
             var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
                 ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200,
-                `<?xml version="1.0"?>
+                    `<?xml version="1.0"?>
                     <methodResponse>
                       <params>
                         <param>
