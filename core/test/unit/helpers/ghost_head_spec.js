@@ -1,3 +1,4 @@
+/* eslint-disable no-regex-spaces */
 const should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
@@ -517,8 +518,8 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on post page with author image and post cover image', function (done) {
             var renderObject = {
-                post: posts[2]
-            }, postBk = _.cloneDeep(renderObject.post);
+                    post: posts[2]
+                }, postBk = _.cloneDeep(renderObject.post);
 
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
@@ -586,8 +587,8 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on post page with custom excerpt for description and meta description', function (done) {
             var renderObject = {
-                post: posts[3]
-            }, postBk = _.cloneDeep(renderObject.post);
+                    post: posts[3]
+                }, postBk = _.cloneDeep(renderObject.post);
 
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
@@ -646,8 +647,8 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on post page with fall back excerpt if no meta description provided', function (done) {
             var renderObject = {
-                post: posts[4]
-            }, postBk = _.cloneDeep(renderObject.post);
+                    post: posts[4]
+                }, postBk = _.cloneDeep(renderObject.post);
 
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
@@ -695,8 +696,8 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on AMP post page with author image and post cover image', function (done) {
             var renderObject = {
-                post: posts[5]
-            }, postBk = _.cloneDeep(renderObject.post);
+                    post: posts[5]
+                }, postBk = _.cloneDeep(renderObject.post);
 
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,

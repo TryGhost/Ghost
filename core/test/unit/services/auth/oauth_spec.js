@@ -59,8 +59,8 @@ describe('OAuth', function () {
 
             sinon.stub(models.User, 'check')
                 .withArgs({email: 'username', password: 'password'}).returns(Promise.resolve({
-                id: 1
-            }));
+                    id: 1
+                }));
 
             sinon.stub(authUtils, 'createTokens')
                 .returns(Promise.resolve({
@@ -160,8 +160,8 @@ describe('OAuth', function () {
 
             sinon.stub(models.User, 'check')
                 .withArgs({email: 'username', password: 'password'}).returns(new Promise.resolve({
-                id: 1
-            }));
+                    id: 1
+                }));
 
             sinon.stub(authUtils, 'createTokens')
                 .returns(new Promise.reject({
@@ -201,12 +201,12 @@ describe('OAuth', function () {
 
             sinon.stub(models.Refreshtoken, 'findOne')
                 .withArgs({token: 'token'}).returns(new Promise.resolve({
-                toJSON: function () {
-                    return {
-                        expires: Date.now() + 3600
-                    };
-                }
-            }));
+                    toJSON: function () {
+                        return {
+                            expires: Date.now() + 3600
+                        };
+                    }
+                }));
 
             sinon.stub(authUtils, 'createTokens')
                 .returns(new Promise.resolve({
@@ -270,12 +270,12 @@ describe('OAuth', function () {
 
             sinon.stub(models.Refreshtoken, 'findOne')
                 .withArgs({token: 'token'}).returns(new Promise.resolve({
-                toJSON: function () {
-                    return {
-                        expires: Date.now() - 3600
-                    };
-                }
-            }));
+                    toJSON: function () {
+                        return {
+                            expires: Date.now() - 3600
+                        };
+                    }
+                }));
 
             oAuth.generateAccessToken(req, res, function (err) {
                 err.errorType.should.eql('UnauthorizedError');
@@ -297,12 +297,12 @@ describe('OAuth', function () {
 
             sinon.stub(models.Refreshtoken, 'findOne')
                 .withArgs({token: 'token'}).returns(new Promise.resolve({
-                toJSON: function () {
-                    return {
-                        expires: Date.now() + 3600
-                    };
-                }
-            }));
+                    toJSON: function () {
+                        return {
+                            expires: Date.now() + 3600
+                        };
+                    }
+                }));
 
             sinon.stub(authUtils, 'createTokens').callsFake(function () {
                 return Promise.reject(new Error('DB error'));

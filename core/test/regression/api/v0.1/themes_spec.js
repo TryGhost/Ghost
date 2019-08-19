@@ -13,19 +13,19 @@ var should = require('should'),
 
 describe('Themes API', function () {
     var scope = {
-        ownerAccessToken: '',
-        editorAccessToken: '',
-        uploadTheme: function uploadTheme(options) {
-            var themePath = options.themePath,
-                fieldName = options.fieldName || 'theme',
-                accessToken = options.accessToken || scope.ownerAccessToken;
+            ownerAccessToken: '',
+            editorAccessToken: '',
+            uploadTheme: function uploadTheme(options) {
+                var themePath = options.themePath,
+                    fieldName = options.fieldName || 'theme',
+                    accessToken = options.accessToken || scope.ownerAccessToken;
 
-            return request.post(localUtils.API.getApiQuery('themes/upload'))
-                .set('Authorization', 'Bearer ' + accessToken)
-                .attach(fieldName, themePath);
-        },
-        editor: null
-    }, ghostServer, contentFolder = path.join(os.tmpdir(), uuid.v4(), 'ghost-test');
+                return request.post(localUtils.API.getApiQuery('themes/upload'))
+                    .set('Authorization', 'Bearer ' + accessToken)
+                    .attach(fieldName, themePath);
+            },
+            editor: null
+        }, ghostServer, contentFolder = path.join(os.tmpdir(), uuid.v4(), 'ghost-test');
 
     before(function () {
         return ghost()

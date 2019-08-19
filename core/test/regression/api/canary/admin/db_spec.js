@@ -16,11 +16,11 @@ let ghost = testUtils.startGhost;
 let request;
 let eventsTriggered;
 
-describe('DB API', () => {
+describe('DB API', function () {
     let backupKey;
     let schedulerKey;
 
-    before(() => {
+    before(function () {
         return ghost()
             .then(() => {
                 request = supertest.agent(config.get('url'));
@@ -34,7 +34,7 @@ describe('DB API', () => {
             });
     });
 
-    beforeEach(() => {
+    beforeEach(function () {
         eventsTriggered = {};
 
         sinon.stub(common.events, 'emit').callsFake((eventName, eventObj) => {
@@ -46,11 +46,11 @@ describe('DB API', () => {
         });
     });
 
-    afterEach(() => {
+    afterEach(function () {
         sinon.restore();
     });
 
-    it('can export the database with more tables', () => {
+    it('can export the database with more tables', function () {
         return request.get(localUtils.API.getApiQuery('db/?include=clients,client_trusted_domains'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -63,7 +63,7 @@ describe('DB API', () => {
             });
     });
 
-    it('can export & import', () => {
+    it('can export & import', function () {
         const exportFolder = path.join(os.tmpdir(), uuid.v4());
         const exportPath = path.join(exportFolder, 'export.json');
 
@@ -106,7 +106,7 @@ describe('DB API', () => {
             });
     });
 
-    it('import should fail without file', () => {
+    it('import should fail without file', function () {
         return request.post(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
@@ -114,7 +114,7 @@ describe('DB API', () => {
             .expect(422);
     });
 
-    it('import should fail with unsupported file', () => {
+    it('import should fail with unsupported file', function () {
         return request.post(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -122,7 +122,7 @@ describe('DB API', () => {
             .expect(415);
     });
 
-    it('export can be triggered by backup integration', () => {
+    it('export can be triggered by backup integration', function () {
         const backupQuery = `?filename=test`;
         const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
@@ -138,7 +138,7 @@ describe('DB API', () => {
             });
     });
 
-    it('export can not be triggered by integration other than backup', () => {
+    it('export can not be triggered by integration other than backup', function () {
         const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
         return request.post(localUtils.API.getApiQuery(`db/backup`))
@@ -153,7 +153,7 @@ describe('DB API', () => {
             });
     });
 
-    it('export can be triggered by Admin authentication', () => {
+    it('export can be triggered by Admin authentication', function () {
         const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
         return request.post(localUtils.API.getApiQuery(`db/backup`))

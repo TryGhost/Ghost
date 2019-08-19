@@ -11,10 +11,10 @@ const config = require('../../../../../server/config');
 const ghost = testUtils.startGhost;
 let request;
 
-describe('Redirects API', () => {
+describe('Redirects API', function () {
     let originalContentPath;
 
-    before(() => {
+    before(function () {
         return ghost({redirectsFile: true})
             .then(() => {
                 request = supertest.agent(config.get('url'));
@@ -27,12 +27,12 @@ describe('Redirects API', () => {
             });
     });
 
-    describe('Download', () => {
-        afterEach(() => {
+    describe('Download', function () {
+        afterEach(function () {
             configUtils.config.set('paths:contentPath', originalContentPath);
         });
 
-        it('file does not exist', () => {
+        it('file does not exist', function () {
             // Just set any content folder, which does not contain a redirects file.
             configUtils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures/data'));
 
@@ -50,7 +50,7 @@ describe('Redirects API', () => {
                 });
         });
 
-        it('file exists', () => {
+        it('file exists', function () {
             return request
                 .get(localUtils.API.getApiQuery('redirects/json/?client_id=ghost-admin&client_secret=not_available'))
                 .set('Origin', config.get('url'))
@@ -68,9 +68,9 @@ describe('Redirects API', () => {
         });
     });
 
-    describe('Upload', () => {
-        describe('Error cases', () => {
-            it('syntax error', () => {
+    describe('Upload', function () {
+        describe('Error cases', function () {
+            it('syntax error', function () {
                 fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), 'something');
 
                 return request
@@ -81,7 +81,7 @@ describe('Redirects API', () => {
                     .expect(400);
             });
 
-            it('wrong format: no array', () => {
+            it('wrong format: no array', function () {
                 fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), JSON.stringify({
                     from: 'c',
                     to: 'd'
@@ -95,7 +95,7 @@ describe('Redirects API', () => {
                     .expect(422);
             });
 
-            it('wrong format: no from/to', () => {
+            it('wrong format: no from/to', function () {
                 fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), JSON.stringify([{to: 'd'}]));
 
                 return request
@@ -107,7 +107,7 @@ describe('Redirects API', () => {
             });
         });
 
-        describe('Ensure re-registering redirects works', () => {
+        describe('Ensure re-registering redirects works', function () {
             const startGhost = (options) => {
                 return ghost(options)
                     .then(() => {
@@ -118,7 +118,7 @@ describe('Redirects API', () => {
                     });
             };
 
-            it('no redirects file exists', () => {
+            it('no redirects file exists', function () {
                 return startGhost({redirectsFile: false, forceStart: true})
                     .then(() => {
                         return request
@@ -155,7 +155,7 @@ describe('Redirects API', () => {
                     });
             });
 
-            it('override', () => {
+            it('override', function () {
                 return startGhost({forceStart: true})
                     .then(() => {
                         return request

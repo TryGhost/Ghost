@@ -41,9 +41,9 @@ describe('Unit - services/routing/controllers/channel', function () {
         sinon.stub(themeService, 'getActive').returns({
             updateTemplateOptions: sinon.stub(),
             config: function (key) {
-               key.should.eql('posts_per_page');
-               return postsPerPage;
-           }
+                key.should.eql('posts_per_page');
+                return postsPerPage;
+            }
         });
 
         sinon.stub(helpers, 'renderEntries').returns(renderStub);

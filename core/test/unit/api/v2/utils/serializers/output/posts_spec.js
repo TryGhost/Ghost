@@ -4,10 +4,10 @@ const testUtils = require('../../../../../../utils');
 const mapper = require('../../../../../../../server/api/v2/utils/serializers/output/utils/mapper');
 const serializers = require('../../../../../../../server/api/v2/utils/serializers');
 
-describe('Unit: v2/utils/serializers/output/posts', () => {
+describe('Unit: v2/utils/serializers/output/posts', function () {
     let postModel;
 
-    beforeEach(() => {
+    beforeEach(function () {
         postModel = (data) => {
             return Object.assign(data, {toJSON: sinon.stub().returns(data)});
         };
@@ -15,11 +15,11 @@ describe('Unit: v2/utils/serializers/output/posts', () => {
         sinon.stub(mapper, 'mapPost').returns({});
     });
 
-    afterEach(() => {
+    afterEach(function () {
         sinon.restore();
     });
 
-    it('calls the mapper', () => {
+    it('calls the mapper', function () {
         const apiConfig = {};
         const frame = {
             options: {

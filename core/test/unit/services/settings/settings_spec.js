@@ -24,10 +24,10 @@ describe('UNIT > Settings Service:', function () {
         const settingsStubFile = {
             routes: null,
             collections: {
-              '/': {
-                permalink: '/{slug}/',
-                template: ['home', 'index']
-              }
+                '/': {
+                    permalink: '/{slug}/',
+                    template: ['home', 'index']
+                }
             },
             resources: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
         };
@@ -84,10 +84,10 @@ describe('UNIT > Settings Service:', function () {
         const settingsStubFile1 = {
                 routes: null,
                 collections: {
-                  '/': {
-                    permalink: '/{slug}/',
-                    template: ['home', 'index']
-                  }
+                    '/': {
+                        permalink: '/{slug}/',
+                        template: ['home', 'index']
+                    }
                 },
                 resources: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
             },
