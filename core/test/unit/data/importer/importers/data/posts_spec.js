@@ -2,7 +2,7 @@ const should = require('should');
 const find = require('lodash/find');
 const PostsImporter = require('../../../../../../server/data/importer/importers/data/posts');
 
-describe.only('PostsImporter', function () {
+describe('PostsImporter', function () {
     describe('#beforeImport', function () {
         it('converts post.page to post.type', function () {
             const fakePosts = [{
