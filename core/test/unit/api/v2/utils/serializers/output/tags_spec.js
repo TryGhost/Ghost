@@ -4,10 +4,10 @@ const testUtils = require('../../../../../../utils');
 const mapper = require('../../../../../../../server/api/v2/utils/serializers/output/utils/mapper');
 const serializers = require('../../../../../../../server/api/v2/utils/serializers');
 
-describe('Unit: v2/utils/serializers/output/tags', () => {
+describe('Unit: v2/utils/serializers/output/tags', function () {
     let tagModel;
 
-    beforeEach(() => {
+    beforeEach(function () {
         tagModel = (data) => {
             return Object.assign(data, {toJSON: sinon.stub().returns(data)});
         };
@@ -15,11 +15,11 @@ describe('Unit: v2/utils/serializers/output/tags', () => {
         sinon.stub(mapper, 'mapTag').returns({});
     });
 
-    afterEach(() => {
+    afterEach(function () {
         sinon.restore();
     });
 
-    it('calls the mapper when single tag present', () => {
+    it('calls the mapper when single tag present', function () {
         const apiConfig = {};
         const frame = {
             options: {
@@ -35,7 +35,7 @@ describe('Unit: v2/utils/serializers/output/tags', () => {
         mapper.mapTag.getCall(0).args.should.eql([ctrlResponse, frame]);
     });
 
-    it('calls the mapper with multiple tags', () => {
+    it('calls the mapper with multiple tags', function () {
         const apiConfig = {};
         const frame = {
             options: {

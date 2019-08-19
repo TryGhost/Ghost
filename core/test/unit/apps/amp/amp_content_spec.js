@@ -76,10 +76,10 @@ describe('{{amp_content}} helper', function () {
                     id: 1
                 },
                 testData2 = {
-                        html: 'Hello Ghost',
-                        updated_at: 'Wed Jul 30 2016 18:17:22 GMT+0200 (CEST)',
-                        id: 1
-                    },
+                    html: 'Hello Ghost',
+                    updated_at: 'Wed Jul 30 2016 18:17:22 GMT+0200 (CEST)',
+                    id: 1
+                },
                 ampResult = ampContentHelper.call(testData1),
                 amperizeCache = ampContentHelper.__get__('amperizeCache');
 

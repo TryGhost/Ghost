@@ -1,7 +1,7 @@
 var should = require('should'),
     themeList = require('../../../frontend/services/themes/list'),
 
-// Stuff we are testing
+    // Stuff we are testing
     helpers = require('../../../frontend/helpers');
 
 describe('{{body_class}} helper', function () {

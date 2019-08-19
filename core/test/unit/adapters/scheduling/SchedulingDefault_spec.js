@@ -95,10 +95,10 @@ describe('Scheduling Default Adapter', function () {
             const time = moment().add(20, 'milliseconds').valueOf();
 
             scope.adapter.reschedule({
-               time: time,
+                time: time,
                 url: 'something',
                 extra: {
-                   oldTime: time,
+                    oldTime: time,
                     method: 'PUT'
                 }
             }, {bootstrap: true});

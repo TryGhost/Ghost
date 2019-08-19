@@ -49,9 +49,9 @@ describe('Request', function () {
         const requestMock = nock('http://some-website.com')
             .get('/endpoint/')
             .reply(301, 'Oops, got redirected',
-            {
-                location: 'http://someredirectedurl.com/files/'
-            });
+                {
+                    location: 'http://someredirectedurl.com/files/'
+                });
 
         const secondRequestMock = nock('http://someredirectedurl.com')
             .get('/files/')
@@ -133,7 +133,7 @@ describe('Request', function () {
 
         const requestMock = nock('http://nofilehere.com')
             .get('/files/test.txt')
-            .times(3)   // 1 original request + 2 default retries
+            .times(3) // 1 original request + 2 default retries
             .reply(500, {message: 'something awful happened', code: 'AWFUL_ERROR'});
 
         return request(url, options).then(() => {

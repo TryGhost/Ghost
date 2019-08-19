@@ -1,7 +1,7 @@
 // We use the name input_password to match the helper for consistency:
 var should = require('should'),
 
-// Stuff we are testing
+    // Stuff we are testing
     input_password = require('../../../../frontend/apps/private-blogging/lib/helpers/input_password');
 
 describe('{{input_password}} helper', function () {

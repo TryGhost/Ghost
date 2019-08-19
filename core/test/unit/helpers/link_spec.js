@@ -102,14 +102,14 @@ describe('{{link}} helper', function () {
 
         it('can handle classes that come from variables', function () {
             compile('{{#link href="#myheading" class=slug}}text{{/link}}')
-            .with({slug: 'fred'})
-            .should.eql('<a class="fred" href="#myheading">text</a>');
+                .with({slug: 'fred'})
+                .should.eql('<a class="fred" href="#myheading">text</a>');
         });
 
         it('can handle classes that come from helpers', function () {
             compile('{{#link href="#myheading" class=(concat "my-" slug)}}text{{/link}}')
-            .with({slug: 'fred'})
-            .should.eql('<a class="my-fred" href="#myheading">text</a>');
+                .with({slug: 'fred'})
+                .should.eql('<a class="my-fred" href="#myheading">text</a>');
         });
 
         it('supports multiple attributes', function () {

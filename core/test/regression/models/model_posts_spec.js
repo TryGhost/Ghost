@@ -81,104 +81,104 @@ describe('Post Model', function () {
                     it('can findPage, with various options', function (done) {
                         models.Post.findPage({page: 2})
                             .then(function (paginationResult) {
-                            paginationResult.meta.pagination.page.should.equal(2);
-                            paginationResult.meta.pagination.limit.should.equal(15);
-                            paginationResult.meta.pagination.pages.should.equal(4);
-                            paginationResult.data.length.should.equal(15);
+                                paginationResult.meta.pagination.page.should.equal(2);
+                                paginationResult.meta.pagination.limit.should.equal(15);
+                                paginationResult.meta.pagination.pages.should.equal(4);
+                                paginationResult.data.length.should.equal(15);
 
-                            return models.Post.findPage({page: 5});
-                        }).then(function (paginationResult) {
-                            paginationResult.meta.pagination.page.should.equal(5);
-                            paginationResult.meta.pagination.limit.should.equal(15);
-                            paginationResult.meta.pagination.pages.should.equal(4);
-                            paginationResult.data.length.should.equal(0);
+                                return models.Post.findPage({page: 5});
+                            }).then(function (paginationResult) {
+                                paginationResult.meta.pagination.page.should.equal(5);
+                                paginationResult.meta.pagination.limit.should.equal(15);
+                                paginationResult.meta.pagination.pages.should.equal(4);
+                                paginationResult.data.length.should.equal(0);
 
-                            return models.Post.findPage({limit: 30});
-                        }).then(function (paginationResult) {
-                            paginationResult.meta.pagination.page.should.equal(1);
-                            paginationResult.meta.pagination.limit.should.equal(30);
-                            paginationResult.meta.pagination.pages.should.equal(2);
-                            paginationResult.data.length.should.equal(30);
+                                return models.Post.findPage({limit: 30});
+                            }).then(function (paginationResult) {
+                                paginationResult.meta.pagination.page.should.equal(1);
+                                paginationResult.meta.pagination.limit.should.equal(30);
+                                paginationResult.meta.pagination.pages.should.equal(2);
+                                paginationResult.data.length.should.equal(30);
 
-                            // Test both boolean formats
-                            return models.Post.findPage({limit: 10, staticPages: true});
-                        }).then(function (paginationResult) {
-                            paginationResult.meta.pagination.page.should.equal(1);
-                            paginationResult.meta.pagination.limit.should.equal(10);
-                            paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.data.length.should.equal(1);
+                                // Test both boolean formats
+                                return models.Post.findPage({limit: 10, staticPages: true});
+                            }).then(function (paginationResult) {
+                                paginationResult.meta.pagination.page.should.equal(1);
+                                paginationResult.meta.pagination.limit.should.equal(10);
+                                paginationResult.meta.pagination.pages.should.equal(1);
+                                paginationResult.data.length.should.equal(1);
 
-                            // Test both boolean formats
-                            return models.Post.findPage({limit: 10, staticPages: '1'});
-                        }).then(function (paginationResult) {
-                            paginationResult.meta.pagination.page.should.equal(1);
-                            paginationResult.meta.pagination.limit.should.equal(10);
-                            paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.data.length.should.equal(1);
+                                // Test both boolean formats
+                                return models.Post.findPage({limit: 10, staticPages: '1'});
+                            }).then(function (paginationResult) {
+                                paginationResult.meta.pagination.page.should.equal(1);
+                                paginationResult.meta.pagination.limit.should.equal(10);
+                                paginationResult.meta.pagination.pages.should.equal(1);
+                                paginationResult.data.length.should.equal(1);
 
-                            // Test featured pages
-                            return models.Post.findPage({limit: 10, filter: 'featured:true'});
-                        }).then(function (paginationResult) {
-                            paginationResult.meta.pagination.page.should.equal(1);
-                            paginationResult.meta.pagination.limit.should.equal(10);
-                            paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.data.length.should.equal(2);
+                                // Test featured pages
+                                return models.Post.findPage({limit: 10, filter: 'featured:true'});
+                            }).then(function (paginationResult) {
+                                paginationResult.meta.pagination.page.should.equal(1);
+                                paginationResult.meta.pagination.limit.should.equal(10);
+                                paginationResult.meta.pagination.pages.should.equal(1);
+                                paginationResult.data.length.should.equal(2);
 
-                            // Test both boolean formats for featured pages
-                            return models.Post.findPage({limit: 10, filter: 'featured:1'});
-                        }).then(function (paginationResult) {
-                            paginationResult.meta.pagination.page.should.equal(1);
-                            paginationResult.meta.pagination.limit.should.equal(10);
-                            paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.data.length.should.equal(2);
+                                // Test both boolean formats for featured pages
+                                return models.Post.findPage({limit: 10, filter: 'featured:1'});
+                            }).then(function (paginationResult) {
+                                paginationResult.meta.pagination.page.should.equal(1);
+                                paginationResult.meta.pagination.limit.should.equal(10);
+                                paginationResult.meta.pagination.pages.should.equal(1);
+                                paginationResult.data.length.should.equal(2);
 
-                            return models.Post.findPage({limit: 10, page: 2, status: 'all'});
-                        }).then(function (paginationResult) {
-                            paginationResult.meta.pagination.pages.should.equal(11);
+                                return models.Post.findPage({limit: 10, page: 2, status: 'all'});
+                            }).then(function (paginationResult) {
+                                paginationResult.meta.pagination.pages.should.equal(11);
 
-                            return models.Post.findPage({limit: 'all', status: 'all'});
-                        }).then(function (paginationResult) {
-                            paginationResult.meta.pagination.page.should.equal(1);
-                            paginationResult.meta.pagination.limit.should.equal('all');
-                            paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.data.length.should.equal(108);
+                                return models.Post.findPage({limit: 'all', status: 'all'});
+                            }).then(function (paginationResult) {
+                                paginationResult.meta.pagination.page.should.equal(1);
+                                paginationResult.meta.pagination.limit.should.equal('all');
+                                paginationResult.meta.pagination.pages.should.equal(1);
+                                paginationResult.data.length.should.equal(108);
 
-                            done();
-                        }).catch(done);
+                                done();
+                            }).catch(done);
                     });
 
                     it('can findPage for tag, with various options', function (done) {
                         // Test tag filter
                         models.Post.findPage({page: 1, filter: 'tags:bacon'})
                             .then(function (paginationResult) {
-                            paginationResult.meta.pagination.page.should.equal(1);
-                            paginationResult.meta.pagination.limit.should.equal(15);
-                            paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.data.length.should.equal(2);
+                                paginationResult.meta.pagination.page.should.equal(1);
+                                paginationResult.meta.pagination.limit.should.equal(15);
+                                paginationResult.meta.pagination.pages.should.equal(1);
+                                paginationResult.data.length.should.equal(2);
 
-                            return models.Post.findPage({page: 1, filter: 'tags:kitchen-sink'});
-                        }).then(function (paginationResult) {
-                            paginationResult.meta.pagination.page.should.equal(1);
-                            paginationResult.meta.pagination.limit.should.equal(15);
-                            paginationResult.meta.pagination.pages.should.equal(1);
-                            paginationResult.data.length.should.equal(2);
+                                return models.Post.findPage({page: 1, filter: 'tags:kitchen-sink'});
+                            }).then(function (paginationResult) {
+                                paginationResult.meta.pagination.page.should.equal(1);
+                                paginationResult.meta.pagination.limit.should.equal(15);
+                                paginationResult.meta.pagination.pages.should.equal(1);
+                                paginationResult.data.length.should.equal(2);
 
-                            return models.Post.findPage({page: 1, filter: 'tags:injection'});
-                        }).then(function (paginationResult) {
-                            paginationResult.meta.pagination.page.should.equal(1);
-                            paginationResult.meta.pagination.limit.should.equal(15);
-                            paginationResult.meta.pagination.pages.should.equal(2);
-                            paginationResult.data.length.should.equal(15);
+                                return models.Post.findPage({page: 1, filter: 'tags:injection'});
+                            }).then(function (paginationResult) {
+                                paginationResult.meta.pagination.page.should.equal(1);
+                                paginationResult.meta.pagination.limit.should.equal(15);
+                                paginationResult.meta.pagination.pages.should.equal(2);
+                                paginationResult.data.length.should.equal(15);
 
-                            return models.Post.findPage({page: 2, filter: 'tags:injection'});
-                        }).then(function (paginationResult) {
-                            paginationResult.meta.pagination.page.should.equal(2);
-                            paginationResult.meta.pagination.limit.should.equal(15);
-                            paginationResult.meta.pagination.pages.should.equal(2);
-                            paginationResult.data.length.should.equal(10);
+                                return models.Post.findPage({page: 2, filter: 'tags:injection'});
+                            }).then(function (paginationResult) {
+                                paginationResult.meta.pagination.page.should.equal(2);
+                                paginationResult.meta.pagination.limit.should.equal(15);
+                                paginationResult.meta.pagination.pages.should.equal(2);
+                                paginationResult.data.length.should.equal(10);
 
-                            done();
-                        }).catch(done);
+                                done();
+                            }).catch(done);
                     });
                 });
             });
@@ -1024,37 +1024,37 @@ describe('Post Model', function () {
                         return models.Post.add(secondPost, context);
                     }).then(function (createdSecondPost) {
                     // Store the slug for comparison later
-                    secondPost.slug = createdSecondPost.get('slug');
+                        secondPost.slug = createdSecondPost.get('slug');
 
-                    Object.keys(eventsTriggered).length.should.eql(2);
-                    should.exist(eventsTriggered['post.added']);
-                    should.exist(eventsTriggered['user.attached']);
+                        Object.keys(eventsTriggered).length.should.eql(2);
+                        should.exist(eventsTriggered['post.added']);
+                        should.exist(eventsTriggered['user.attached']);
 
-                    // Update with a conflicting slug from the first post
-                    return createdSecondPost.save({
-                        slug: firstPost.slug
-                    }, context);
-                }).then(function (updatedSecondPost) {
+                        // Update with a conflicting slug from the first post
+                        return createdSecondPost.save({
+                            slug: firstPost.slug
+                        }, context);
+                    }).then(function (updatedSecondPost) {
                     // Should have updated from original
-                    updatedSecondPost.get('slug').should.not.equal(secondPost.slug);
-                    // Should not have a conflicted slug from the first
-                    updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
+                        updatedSecondPost.get('slug').should.not.equal(secondPost.slug);
+                        // Should not have a conflicted slug from the first
+                        updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
 
-                    Object.keys(eventsTriggered).length.should.eql(3);
-                    should.exist(eventsTriggered['post.edited']);
+                        Object.keys(eventsTriggered).length.should.eql(3);
+                        should.exist(eventsTriggered['post.edited']);
 
-                    return models.Post.findOne({
-                        id: updatedSecondPost.id,
-                        status: 'all'
-                    });
-                }).then(function (foundPost) {
+                        return models.Post.findOne({
+                            id: updatedSecondPost.id,
+                            status: 'all'
+                        });
+                    }).then(function (foundPost) {
                     // Should have updated from original
-                    foundPost.get('slug').should.not.equal(secondPost.slug);
-                    // Should not have a conflicted slug from the first
-                    foundPost.get('slug').should.not.equal(firstPost.slug);
+                        foundPost.get('slug').should.not.equal(secondPost.slug);
+                        // Should not have a conflicted slug from the first
+                        foundPost.get('slug').should.not.equal(firstPost.slug);
 
-                    done();
-                }).catch(done);
+                        done();
+                    }).catch(done);
             });
         });
 

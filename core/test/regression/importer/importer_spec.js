@@ -24,7 +24,7 @@ const exportedLatestBody = () => {
         db: [{
             meta: {
                 exported_on: 1504269105806,
-                version: "2.0.0"
+                version: '2.0.0'
             },
             data: {
                 app_fields: [],
@@ -55,7 +55,7 @@ const exportedPreviousBody = () => {
         db: [{
             meta: {
                 exported_on: 1504269105806,
-                version: "1.20.0"
+                version: '1.20.0'
             },
             data: {
                 app_fields: [],
@@ -86,7 +86,7 @@ const exportedLegacyBody = () => {
         db: [{
             meta: {
                 exported_on: 1504269105806,
-                version: "300"
+                version: '300'
             },
             data: {
                 app_fields: [],
@@ -131,7 +131,7 @@ describe('Integration: Importer', function () {
         it('ensure return structure', function () {
             let exportData;
 
-             return dataImporter.doImport(exportedLatestBody().db[0], importOptions)
+            return dataImporter.doImport(exportedLatestBody().db[0], importOptions)
                 .then(function (importResult) {
                     should.exist(importResult);
                     importResult.hasOwnProperty('data').should.be.true();
@@ -143,8 +143,8 @@ describe('Integration: Importer', function () {
             let exportData = exportedLatestBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
-                created_at: "00-00-0000 00:00:00",
-                updated_at: "Fri, 18 Oct 2013 23:58:44 +0000",
+                created_at: '00-00-0000 00:00:00',
+                updated_at: 'Fri, 18 Oct 2013 23:58:44 +0000',
                 published_at: 1388318310783
             });
 
@@ -163,7 +163,7 @@ describe('Integration: Importer', function () {
             });
 
             exportData.data.tags[0] = testUtils.DataGenerator.forKnex.createTag({
-                updated_at: "2016-07-17T12:02:54.000Z"
+                updated_at: '2016-07-17T12:02:54.000Z'
             });
 
             return dataImporter.doImport(exportData, importOptions)
@@ -192,8 +192,8 @@ describe('Integration: Importer', function () {
             let exportData = exportedLatestBody().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
-                key: "active_theme",
-                value: "mytheme",
+                key: 'active_theme',
+                value: 'mytheme',
                 type: 'theme'
             });
 
@@ -212,9 +212,9 @@ describe('Integration: Importer', function () {
             let exportData = exportedLatestBody().db[0];
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser({
-                name: "Joe Bloggs",
-                slug: "joe-bloggs",
-                email: "jbloggs@example.com"
+                name: 'Joe Bloggs',
+                slug: 'joe-bloggs',
+                email: 'jbloggs@example.com'
             });
 
             exportData.data.users[1] = testUtils.DataGenerator.forKnex.createUser();
@@ -234,11 +234,11 @@ describe('Integration: Importer', function () {
             let exportData = exportedLatestBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
-                slug: "same"
+                slug: 'same'
             });
 
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({
-                slug: "same"
+                slug: 'same'
             });
 
             return dataImporter.doImport(exportData, importOptions)
@@ -256,11 +256,11 @@ describe('Integration: Importer', function () {
             let exportData = exportedLatestBody().db[0];
 
             exportData.data.posts[0] = {
-                title: "duplicate title"
+                title: 'duplicate title'
             };
 
             exportData.data.posts[1] = {
-                title: "duplicate title"
+                title: 'duplicate title'
             };
 
             return dataImporter.doImport(exportData, importOptions)
@@ -1137,7 +1137,7 @@ describe('Integration: Importer', function () {
                 });
         });
 
-        it('import 2.0 Koenig post format', () => {
+        it('import 2.0 Koenig post format', function () {
             const exportData = exportedLatestBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -1407,8 +1407,8 @@ describe('1.0', function () {
             });
     });
 
-    describe('migrate mobiledoc/html', () => {
-        it('invalid mobiledoc structure', () => {
+    describe('migrate mobiledoc/html', function () {
+        it('invalid mobiledoc structure', function () {
             const exportData = exportedPreviousBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -1441,7 +1441,7 @@ describe('1.0', function () {
                 });
         });
 
-        it('mobiledoc is null, html field is set', () => {
+        it('mobiledoc is null, html field is set', function () {
             const exportData = exportedPreviousBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -1518,7 +1518,7 @@ describe('1.0', function () {
                 });
         });
 
-        it('post has "kg-card-markdown" class', () => {
+        it('post has "kg-card-markdown" class', function () {
             const exportData = exportedPreviousBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -1543,7 +1543,7 @@ describe('1.0', function () {
                 });
         });
 
-        it('import old Koenig Beta post format', () => {
+        it('import old Koenig Beta post format', function () {
             const exportData = exportedPreviousBody().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -1620,7 +1620,7 @@ describe('LTS', function () {
 
         return dataImporter.doImport(exportData, importOptions)
             .then(function () {
-                "0".should.eql(1, 'LTS import should fail');
+                '0'.should.eql(1, 'LTS import should fail');
             })
             .catch(function (err) {
                 err.message.should.eql('Detected unsupported file structure.');

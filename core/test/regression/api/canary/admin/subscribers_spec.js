@@ -129,7 +129,7 @@ describe('Subscribers API', function () {
             .then((newSubscriber) => {
                 return request
                     .put(localUtils.API.getApiQuery(`subscribers/${newSubscriber.id}/`))
-                    .send({subscribers:[subscriberChanged]})
+                    .send({subscribers: [subscriberChanged]})
                     .set('Origin', config.get('url'))
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)

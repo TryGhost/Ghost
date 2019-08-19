@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const extraAttrsUtil = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/extra-attrs');
 
-describe('Unit: v2/utils/serializers/output/utils/extra-attrs', () => {
+describe('Unit: v2/utils/serializers/output/utils/extra-attrs', function () {
     const frame = {
         options: {}
     };
@@ -16,7 +16,7 @@ describe('Unit: v2/utils/serializers/output/utils/extra-attrs', () => {
     });
 
     describe('for post', function () {
-        it('respects custom excerpt', () => {
+        it('respects custom excerpt', function () {
             const attrs = {custom_excerpt: 'custom excerpt'};
 
             extraAttrsUtil.forPost(frame, model, attrs);
@@ -25,7 +25,7 @@ describe('Unit: v2/utils/serializers/output/utils/extra-attrs', () => {
             attrs.excerpt.should.eql(attrs.custom_excerpt);
         });
 
-        it('no custom excerpt', () => {
+        it('no custom excerpt', function () {
             const attrs = {};
 
             extraAttrsUtil.forPost(frame, model, attrs);
@@ -34,7 +34,7 @@ describe('Unit: v2/utils/serializers/output/utils/extra-attrs', () => {
             attrs.excerpt.should.eql(new Array(501).join('A'));
         });
 
-        it('has excerpt when plaintext is null', () => {
+        it('has excerpt when plaintext is null', function () {
             model.get.withArgs('plaintext').returns(null);
 
             const attrs = {};

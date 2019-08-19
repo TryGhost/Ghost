@@ -1,6 +1,6 @@
-var should        = require('should'),
-    getBlogLogo   = require('../../../../frontend/meta/blog_logo'),
-    sinon         = require('sinon'),
+var should = require('should'),
+    getBlogLogo = require('../../../../frontend/meta/blog_logo'),
+    sinon = require('sinon'),
     settingsCache = require('../../../../server/services/settings/cache');
 
 describe('getBlogLogo', function () {

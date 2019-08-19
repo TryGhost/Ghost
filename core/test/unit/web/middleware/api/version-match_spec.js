@@ -1,5 +1,5 @@
-var should  = require('should'),
-    sinon   = require('sinon'),
+var should = require('should'),
+    sinon = require('sinon'),
     versionMatch = require('../../../../../server/web/shared/middlewares/api/version-match');
 
 describe('Version Mismatch', function () {
