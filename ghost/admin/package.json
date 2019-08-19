@@ -28,7 +28,7 @@
     "@ember/jquery": "0.6.1",
     "@ember/optional-features": "0.7.0",
     "@ember/render-modifiers": "1.0.0",
-    "@html-next/vertical-collection": "1.0.0-beta.14",
+    "@html-next/vertical-collection": "1.0.0",
     "@tryghost/helpers": "1.1.7",
     "@tryghost/kg-clean-basic-html": "0.1.1",
     "@tryghost/kg-parser-plugins": "0.6.0",
