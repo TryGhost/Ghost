@@ -110,6 +110,7 @@ function sendWelcomeEmail(email, mailAPI) {
                     });
             });
     }
+    return Promise.resolve();
 }
 
 module.exports = {

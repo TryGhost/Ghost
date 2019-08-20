@@ -8,6 +8,7 @@ const security = require('../../../../../server/lib/security/index');
 const settingsCache = require('../../../../../server/services/settings/cache');
 const config = require('../../../../../server/config/index');
 const mailService = require('../../../../../server/services/mail/index');
+const configUtils = require('../../../../utils/configUtils');
 
 let ghost = testUtils.startGhost;
 let request;
@@ -15,7 +16,7 @@ let request;
 describe('Authentication API v2', function () {
     let ghostServer;
 
-    describe('Blog setup', function () {
+    describe('Blog setup: default config', function () {
         before(function () {
             return ghost({forceStart: true})
                 .then(function (_ghostServer) {
@@ -72,6 +73,129 @@ describe('Authentication API v2', function () {
 
                     mailService.GhostMailer.prototype.send.called.should.be.true();
                     mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('test@example.com');
+                });
+        });
+
+        it('is setup? yes', function () {
+            return request
+                .get(localUtils.API.getApiQuery('authentication/setup'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .then((res) => {
+                    res.body.setup[0].status.should.be.true();
+                });
+        });
+
+        it('complete setup again', function () {
+            return request
+                .post(localUtils.API.getApiQuery('authentication/setup'))
+                .set('Origin', config.get('url'))
+                .send({
+                    setup: [{
+                        name: 'test user',
+                        email: 'test-leo@example.com',
+                        password: 'thisissupersafe',
+                        blogTitle: 'a test blog'
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect(403);
+        });
+
+        it('update setup', function () {
+            return localUtils.doAuth(request)
+                .then(() => {
+                    return request
+                        .put(localUtils.API.getApiQuery('authentication/setup'))
+                        .set('Origin', config.get('url'))
+                        .send({
+                            setup: [{
+                                name: 'test user edit',
+                                email: 'test-edit@example.com',
+                                password: 'thisissupersafe',
+                                blogTitle: 'a test blog'
+                            }]
+                        })
+                        .expect('Content-Type', /json/)
+                        .expect(200);
+                })
+                .then((res) => {
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.users);
+                    should.not.exist(jsonResponse.meta);
+
+                    jsonResponse.users.should.have.length(1);
+                    localUtils.API.checkResponse(jsonResponse.users[0], 'user');
+
+                    const newUser = jsonResponse.users[0];
+                    newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
+                    newUser.name.should.equal('test user edit');
+                    newUser.email.should.equal('test-edit@example.com');
+                });
+        });
+    });
+
+    describe('Blog setup: custom config', function () {
+        before(function () {
+            return ghost({forceStart: true})
+                .then(function (_ghostServer) {
+                    ghostServer = _ghostServer;
+                    request = supertest.agent(config.get('url'));
+                });
+        });
+
+        beforeEach(function () {
+            configUtils.set({
+                sendWelcomeEmail: false // Default value is false in pro
+            });
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+        });
+
+        afterEach(function () {
+            configUtils.restore();
+            sinon.restore();
+        });
+
+        it('is setup? no', function () {
+            return request
+                .get(localUtils.API.getApiQuery('authentication/setup'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .then((res) => {
+                    res.body.setup[0].status.should.be.false();
+                });
+        });
+
+        it('complete setup', function () {
+            return request
+                .post(localUtils.API.getApiQuery('authentication/setup'))
+                .set('Origin', config.get('url'))
+                .send({
+                    setup: [{
+                        name: 'test user',
+                        email: 'test@example.com',
+                        password: 'thisissupersafe',
+                        blogTitle: 'a test blog'
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect(201)
+                .then((res) => {
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.users);
+                    should.not.exist(jsonResponse.meta);
+
+                    jsonResponse.users.should.have.length(1);
+                    localUtils.API.checkResponse(jsonResponse.users[0], 'user');
+
+                    const newUser = jsonResponse.users[0];
+                    newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
+                    newUser.name.should.equal('test user');
+                    newUser.email.should.equal('test@example.com');
+
+                    mailService.GhostMailer.prototype.send.called.should.be.false();
                 });
         });
 
@@ -218,7 +342,7 @@ describe('Authentication API v2', function () {
 
         before(function () {
             return ghost({forceStart: true})
-                .then(() =>  {
+                .then(() => {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(() => {
