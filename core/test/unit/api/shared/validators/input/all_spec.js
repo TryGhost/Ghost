@@ -271,7 +271,7 @@ describe('Unit: api/shared/validators/input/all', function () {
     });
 
     describe('add', function () {
-        it('fails', function () {
+        it('fails when docName is missing from frame data', function () {
             const frame = {
                 data: {}
             };
@@ -287,7 +287,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 });
         });
 
-        it('fails', function () {
+        it('fails when docName in frame data is invalid', function () {
             const frame = {
                 data: {
                     docName: true
@@ -305,7 +305,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 });
         });
 
-        it('fails', function () {
+        it('fails when required field is missing', function () {
             const frame = {
                 data: {
                     docName: [{
@@ -331,7 +331,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 });
         });
 
-        it('fails', function () {
+        it('fails when required field is null', function () {
             const frame = {
                 data: {
                     docName: [{

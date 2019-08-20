@@ -282,19 +282,19 @@ describe('UNIT - services/routing/ParentRouter', function () {
     });
 
     describe('fn: isRedirectEnabled', function () {
-        it('no data key defined', function () {
+        it('undefined data key', function () {
             const parentRouter = new ParentRouter();
             parentRouter.data = undefined;
             parentRouter.isRedirectEnabled('tags', 'bacon').should.be.false();
         });
 
-        it('no data key defined', function () {
+        it('empty keys in data', function () {
             const parentRouter = new ParentRouter();
             parentRouter.data = {query: {}, router: {}};
             should.not.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
         });
 
-        it('no redirect', function () {
+        it('no redirect when slug is not specified', function () {
             const parentRouter = new ParentRouter();
 
             parentRouter.data = {
@@ -307,7 +307,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
             should.not.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
         });
 
-        it('no redirect', function () {
+        it('no redirect when slug doesnt exist', function () {
             const parentRouter = new ParentRouter();
 
             parentRouter.data = {
@@ -320,7 +320,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
             should.not.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
         });
 
-        it('no redirect', function () {
+        it('no redirect when redirect is false', function () {
             const parentRouter = new ParentRouter();
 
             parentRouter.data = {
@@ -333,7 +333,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
             should.not.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
         });
 
-        it('redirect', function () {
+        it('redirect (tags)', function () {
             const parentRouter = new ParentRouter();
 
             parentRouter.data = {
@@ -346,7 +346,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
             should.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
         });
 
-        it('redirect', function () {
+        it('redirect (pages)', function () {
             const parentRouter = new ParentRouter();
 
             parentRouter.data = {

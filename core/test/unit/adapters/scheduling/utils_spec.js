@@ -6,7 +6,7 @@ var should = require('should'),
 
 describe('Scheduling: utils', function () {
     describe('success', function () {
-        it('create good adapter', function (done) {
+        it('create good adapter from default file', function (done) {
             schedulingUtils.createAdapter({
                 active: __dirname + '/../../../../server/adapters/scheduling/SchedulingDefault'
             }).then(function (adapter) {
@@ -15,7 +15,7 @@ describe('Scheduling: utils', function () {
             }).catch(done);
         });
 
-        it('create good adapter', function (done) {
+        it('create good adapter from custom file', function (done) {
             var jsFile = '' +
                 'var util = require(\'util\');' +
                 'var SchedulingBase = require(__dirname + \'/../../../../server/adapters/scheduling/SchedulingBase\');' +

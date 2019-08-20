@@ -35,7 +35,7 @@ describe('Errors', function () {
             ghostError.obj.should.eql(someError.obj);
         });
 
-        it('with custom attribute', function () {
+        it('with custom attribute (context)', function () {
             var someError = new Error(), ghostError;
 
             someError.context = 'test';
@@ -48,7 +48,7 @@ describe('Errors', function () {
             ghostError.context.should.eql('test');
         });
 
-        it('with custom attribute', function () {
+        it('with custom attribute (message)', function () {
             var someError = new Error(), ghostError;
 
             ghostError = new common.errors.GhostError({

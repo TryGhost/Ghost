@@ -190,7 +190,7 @@ describe('{{#has}} helper', function () {
             inverse.called.should.be.false();
         });
 
-        it('should handle tags and authors like an OR query (pass)', function () {
+        it('should handle tags and authors like an OR query (pass) (authors)', function () {
             thisCtx = {authors: [{name: 'sam'}], tags: [{name: 'foo'}, {name: 'bar'}, {name: 'baz'}]};
 
             callHasHelper(thisCtx, {author: 'joe, sam, pat', tag: 'much, such, wow'});
@@ -199,7 +199,7 @@ describe('{{#has}} helper', function () {
             inverse.called.should.be.false();
         });
 
-        it('should handle tags and authors like an OR query (pass)', function () {
+        it('should handle tags and authors like an OR query (pass) (both)', function () {
             thisCtx = {authors: [{name: 'sam'}], tags: [{name: 'much'}, {name: 'bar'}, {name: 'baz'}]};
 
             callHasHelper(thisCtx, {author: 'joe, sam, pat', tag: 'much, such, wow'});
@@ -235,7 +235,7 @@ describe('{{#has}} helper', function () {
             inverse.called.should.be.false();
         });
 
-        it('count:>1', function () {
+        it('count:>1 (fail)', function () {
             thisCtx = {authors: [{name: 'fred'}]};
 
             callHasHelper(thisCtx, {author: 'count:>1'});
@@ -244,7 +244,7 @@ describe('{{#has}} helper', function () {
             inverse.called.should.be.true();
         });
 
-        it('count:>1', function () {
+        it('count:>1 (pass)', function () {
             thisCtx = {authors: [{name: 'fred'}, {name: 'sam'}]};
 
             callHasHelper(thisCtx, {author: 'count:>1'});

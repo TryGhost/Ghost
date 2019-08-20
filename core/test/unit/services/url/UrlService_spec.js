@@ -90,7 +90,7 @@ describe('Unit: services/url/UrlService', function () {
     });
 
     describe('fn: getResource', function () {
-        it('no resource for url found', function () {
+        it('no resource for url found (throws InternalServerError)', function () {
             urlService.finished = false;
             urlService.urls.getByUrl.withArgs('/blog-post/').returns([]);
 
@@ -116,7 +116,7 @@ describe('Unit: services/url/UrlService', function () {
             urlService.getResource('/blog-post/').should.eql(resource);
         });
 
-        it('two resources for url found', function () {
+        it('two resources for url found (second resource)', function () {
             const object1 = {generatorId: 1, resource: {a: 1}};
             const object2 = {generatorId: 0, resource: {a: 2}};
 
@@ -134,7 +134,7 @@ describe('Unit: services/url/UrlService', function () {
             urlService.getResource('/blog-post/').should.eql(object2.resource);
         });
 
-        it('two resources for url found', function () {
+        it('two resources for url found (first resource)', function () {
             const object1 = {generatorId: 0, resource: {a: 1}};
             const object2 = {generatorId: 1, resource: {a: 2}};
 
@@ -154,7 +154,7 @@ describe('Unit: services/url/UrlService', function () {
     });
 
     describe('fn: getPermalinkByUrl', function () {
-        it('found', function () {
+        it('found (primary tag)', function () {
             const permalinkStub1 = sinon.stub().returns({
                 getValue: sinon.stub().returns('/:slug/')
             });
@@ -184,7 +184,7 @@ describe('Unit: services/url/UrlService', function () {
             urlService.getPermalinkByUrl('/blog-post/').should.eql('/:primary_tag/');
         });
 
-        it('found', function () {
+        it('found (slug)', function () {
             const permalinkStub1 = sinon.stub().returns({
                 getValue: sinon.stub().returns('/:slug/')
             });

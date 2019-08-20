@@ -58,7 +58,7 @@ describe('Utils: tokens', function () {
         tokenIsCorrect.should.eql(false);
     });
 
-    it('extract', function () {
+    it('extract from plain password', function () {
         var expires = Date.now() + 60 * 1000,
             dbHash = uuid.v4(), token, parts, email = 'test1@ghost.org';
 
@@ -79,7 +79,7 @@ describe('Utils: tokens', function () {
         should.not.exist(parts.dbHash);
     });
 
-    it('extract', function () {
+    it('extract from hashed password', function () {
         var expires = Date.now() + 60 * 1000,
             dbHash = uuid.v4(), token, parts, email = 'test3@ghost.org';
 

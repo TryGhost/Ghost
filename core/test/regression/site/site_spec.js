@@ -359,7 +359,7 @@ describe('Integration - Web - Site', function () {
             });
 
             describe('assets', function () {
-                it('blog is https, request is http', function () {
+                it('blog is https, request is http (js)', function () {
                     const req = {
                         secure: false,
                         method: 'GET',
@@ -374,7 +374,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('blog is https, request is http', function () {
+                it('blog is https, request is http (png)', function () {
                     const req = {
                         secure: false,
                         method: 'GET',
@@ -389,7 +389,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('blog is https, request is http', function () {
+                it('blog is https, request is http (css)', function () {
                     const req = {
                         secure: false,
                         method: 'GET',
@@ -638,7 +638,7 @@ describe('Integration - Web - Site', function () {
                     sinon.restore();
                 });
 
-                it('serve post', function () {
+                it('serve 404 for non-existent post', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -841,7 +841,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('post without tag', function () {
+                it('post without tag in subdir', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -1580,7 +1580,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('serve html-ipsum: redirect', function () {
+                it('serve static-page-test: redirect', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -2125,7 +2125,7 @@ describe('Integration - Web - Site', function () {
             });
 
             describe('assets', function () {
-                it('blog is https, request is http', function () {
+                it('blog is https, request is http (js)', function () {
                     const req = {
                         secure: false,
                         method: 'GET',
@@ -2140,7 +2140,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('blog is https, request is http', function () {
+                it('blog is https, request is http (png)', function () {
                     const req = {
                         secure: false,
                         method: 'GET',
@@ -2155,7 +2155,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('blog is https, request is http', function () {
+                it('blog is https, request is http (css)', function () {
                     const req = {
                         secure: false,
                         method: 'GET',
@@ -2404,7 +2404,7 @@ describe('Integration - Web - Site', function () {
                     sinon.restore();
                 });
 
-                it('serve post', function () {
+                it('serve 404 for non-existent post', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -2607,7 +2607,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('post without tag', function () {
+                it('post without tag in subdir', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -3869,7 +3869,7 @@ describe('Integration - Web - Site', function () {
             });
 
             describe('assets', function () {
-                it('blog is https, request is http', function () {
+                it('blog is https, request is http (js)', function () {
                     const req = {
                         secure: false,
                         method: 'GET',
@@ -3884,7 +3884,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('blog is https, request is http', function () {
+                it('blog is https, request is http (png)', function () {
                     const req = {
                         secure: false,
                         method: 'GET',
@@ -3899,7 +3899,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('blog is https, request is http', function () {
+                it('blog is https, request is http (css)', function () {
                     const req = {
                         secure: false,
                         method: 'GET',
@@ -4148,7 +4148,7 @@ describe('Integration - Web - Site', function () {
                     sinon.restore();
                 });
 
-                it('serve post', function () {
+                it('serve 404 for non-existent post', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -4351,7 +4351,7 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('post without tag', function () {
+                it('post without tag in subdir', function () {
                     const req = {
                         secure: true,
                         method: 'GET',

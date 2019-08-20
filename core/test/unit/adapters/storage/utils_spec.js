@@ -166,7 +166,7 @@ describe('storage utils', function () {
             result.should.be.equal(true);
         });
 
-        it('should return true when relative URL and local file', function () {
+        it('should return true when relative URL and local file with subdir', function () {
             var url = '/blog/content/images/2017/07/ghost-logo.png',
                 result;
 

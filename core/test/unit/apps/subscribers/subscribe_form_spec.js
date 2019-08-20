@@ -42,7 +42,7 @@ describe('{{subscribe_form}} helper', function () {
         rendered.string.should.match(/button id="" class="button-class" type="submit"/);
     });
 
-    it('returns adds classes when passed as parameters', function () {
+    it('returns adds ids when passed as parameters', function () {
         var rendered = subscribe_form({data: {root: ''}, hash: {
             form_id: 'form-id',
             button_id: 'button-id'

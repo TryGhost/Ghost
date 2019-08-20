@@ -72,7 +72,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             staticRoutesRouter.mountRoute.args[0][1].should.eql(controllers.static);
         });
 
-        it('fn: _prepareStaticRouteContext', function () {
+        it('fn: _prepareStaticRouteContext (subdir)', function () {
             const staticRoutesRouter = new StaticRoutesRouter('/about/', {templates: []});
 
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);
@@ -88,7 +88,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             should.not.exist(res.locals.slug);
         });
 
-        it('fn: _prepareStaticRouteContext', function () {
+        it('fn: _prepareStaticRouteContext (root)', function () {
             const staticRoutesRouter = new StaticRoutesRouter('/', {templates: []});
 
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);

@@ -49,7 +49,7 @@ describe('api/canary/content/posts', function () {
             });
     });
 
-    it('browse posts with basic page filter should not return pages', function (done) {
+    it('browse posts with multiple basic filters should not return pages', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=page:true,featured:true`))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)

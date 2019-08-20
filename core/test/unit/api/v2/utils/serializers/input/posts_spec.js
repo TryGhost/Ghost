@@ -39,7 +39,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             should.equal(frame.options.filter, '(page:false)+status:[draft,published,scheduled]');
         });
 
-        it('combine filters', function () {
+        it('combine filters (status and tag)', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -59,7 +59,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             frame.options.filter.should.eql('(status:published+tag:eins)+page:false');
         });
 
-        it('combine filters', function () {
+        it('combine filters (page and tag)', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -79,7 +79,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             frame.options.filter.should.eql('(page:true+tag:eins)+page:false');
         });
 
-        it('combine filters', function () {
+        it('combine filters (page)', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -99,7 +99,7 @@ describe('Unit: v2/utils/serializers/input/posts', function () {
             frame.options.filter.should.eql('(page:true)+page:false');
         });
 
-        it('combine filters', function () {
+        it('combine filters (multiple page)', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',

@@ -170,7 +170,7 @@ describe('Unit: services/url/Queue', function () {
             });
         });
 
-        it('start twice', function (done) {
+        it('start twice (subscriber in-between)', function (done) {
             let notified = 0;
             let called = 0;
 
@@ -206,7 +206,7 @@ describe('Unit: services/url/Queue', function () {
             });
         });
 
-        it('start twice', function (done) {
+        it('start twice (no subscribers)', function (done) {
             let notified = 0;
             let called = 0;
 

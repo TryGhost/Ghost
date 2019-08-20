@@ -176,7 +176,7 @@ describe('Upload Icon API', function () {
                     done();
                 });
         });
-        it('import should fail, if png icon dimensions are too small', function (done) {
+        it('import should fail, if ico icon dimensions are too small', function (done) {
             request.post(localUtils.API.getApiQuery('uploads/icon'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)

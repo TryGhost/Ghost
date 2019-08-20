@@ -745,7 +745,7 @@ describe('Frontend Routing', function () {
                     });
             });
 
-            it('with query params', function (done) {
+            it('with query params in subdir', function (done) {
                 request.get('/post/10/a-nice-blog-post?a=b')
                     .expect(302)
                     .expect('Cache-Control', testUtils.cacheRules.public)

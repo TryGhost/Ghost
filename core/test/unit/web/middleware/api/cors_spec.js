@@ -156,7 +156,7 @@ describe('cors', function () {
         done();
     });
 
-    it('should be enabled if the origin matches config.url', function (done) {
+    it('should be enabled if the origin matches config.url (with adminUrl)', function (done) {
         var origin = 'http://admin:2222';
 
         cors.__set__('urlUtils', urlUtils.getInstance({

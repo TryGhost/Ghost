@@ -37,7 +37,7 @@ describe('Unit: api/shared/frame', function () {
             should.exist(frame.data.posts);
         });
 
-        it('transform', function () {
+        it('transform (context, body, params, query)', function () {
             const original = {
                 context: {user: 'id'},
                 body: {posts: []},
@@ -60,7 +60,7 @@ describe('Unit: api/shared/frame', function () {
             should.exist(frame.data.posts);
         });
 
-        it('transform', function () {
+        it('transform (context, options)', function () {
             const original = {
                 context: {user: 'id'},
                 options: {
@@ -78,7 +78,7 @@ describe('Unit: api/shared/frame', function () {
             should.exist(frame.options.slug);
         });
 
-        it('transform', function () {
+        it('transform (context, options, body)', function () {
             const original = {
                 context: {user: 'id'},
                 options: {

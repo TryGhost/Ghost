@@ -67,7 +67,7 @@ describe('getTwitterImage', function () {
         twitterImageUrl.should.match(/\/content\/images\/my-special-twitter-image\.jpg$/);
     });
 
-    it('should return absolute url for Twitter image in post context', function () {
+    it('should return absolute url for Twitter image in news context', function () {
         var twitterImageUrl = getTwitterImage({
             context: ['news', 'post'],
             post: {

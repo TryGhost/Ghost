@@ -16,7 +16,7 @@ describe('handleImageSizes middleware', function () {
         });
     });
 
-    it('calls next immediately if the url does not match /size/something/', function (done) {
+    it('calls next immediately if the url does not match /url/whatever/', function (done) {
         const fakeReq = {
             url: '/url/whatever/'
         };
@@ -29,7 +29,7 @@ describe('handleImageSizes middleware', function () {
         });
     });
 
-    it('calls next immediately if the url does not match /size/something/', function (done) {
+    it('calls next immediately if the url does not match /size//', function (done) {
         const fakeReq = {
             url: '/size//'
         };

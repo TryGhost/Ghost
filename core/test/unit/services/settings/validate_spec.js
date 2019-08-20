@@ -878,7 +878,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without leading and trailing slashes (routes)', function () {
             try {
                 validate({
                     routes: {
@@ -893,7 +893,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without trailing slashes (routes)', function () {
             try {
                 validate({
                     routes: {
@@ -908,7 +908,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without leading slashes (routes)', function () {
             try {
                 validate({
                     routes: {
@@ -923,7 +923,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without leading slashes (collections)', function () {
             try {
                 validate({
                     collections: {
@@ -940,7 +940,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without leading and trailing slashes (collections)', function () {
             try {
                 validate({
                     collections: {
@@ -957,7 +957,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without trailing slashes (collections)', function () {
             try {
                 validate({
                     collections: {
@@ -974,7 +974,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without trailing slashes (collections - permalink)', function () {
             try {
                 validate({
                     collections: {
@@ -991,7 +991,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without leading and trailing slashes (collections - permalink)', function () {
             try {
                 validate({
                     collections: {
@@ -1666,7 +1666,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without trailing slashes (routes)', function () {
             try {
                 validate({
                     routes: {
@@ -1681,7 +1681,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without leading slashes (routes)', function () {
             try {
                 validate({
                     routes: {
@@ -1696,7 +1696,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without leading slashes (collections)', function () {
             try {
                 validate({
                     collections: {
@@ -1713,7 +1713,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without leading and trailing slashes (collections)', function () {
             try {
                 validate({
                     collections: {
@@ -1730,7 +1730,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without trailing slashes (collections)', function () {
             try {
                 validate({
                     collections: {
@@ -1747,7 +1747,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without trailing slashes (collections - permalink)', function () {
             try {
                 validate({
                     collections: {
@@ -1764,7 +1764,7 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
 
-        it('throws error without leading or trailing slashes', function () {
+        it('throws error without leading and trailing slashes (collections - permalink)', function () {
             try {
                 validate({
                     collections: {

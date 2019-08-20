@@ -16,7 +16,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             frame.options.filter.should.eql('page:true');
         });
 
-        it('combine filters', function () {
+        it('combine filters (status and tag)', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -30,7 +30,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             frame.options.filter.should.eql('(status:published+tag:eins)+page:true');
         });
 
-        it('combine filters', function () {
+        it('combine filters (page and tag)', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -44,7 +44,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             frame.options.filter.should.eql('(page:false+tag:eins)+page:true');
         });
 
-        it('combine filters', function () {
+        it('combine filters (page)', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -90,7 +90,7 @@ describe('Unit: v2/utils/serializers/input/pages', function () {
             frame.options.filter.should.eql('page:true');
         });
 
-        it('content api default', function () {
+        it('content api default (with options)', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
