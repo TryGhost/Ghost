@@ -47,7 +47,8 @@ function updateGlobalTemplateOptions(req, res, next) {
     const labsData = _.cloneDeep(settingsCache.get('labs'));
     const themeData = {
         posts_per_page: activeTheme.get().config('posts_per_page'),
-        image_sizes: activeTheme.get().config('image_sizes')
+        image_sizes: activeTheme.get().config('image_sizes'),
+        theme: activeTheme.get().config('theme')
     };
 
     // @TODO: only do this if something changed?
