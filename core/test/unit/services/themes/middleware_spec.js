@@ -112,7 +112,7 @@ describe('Themes middleware', function () {
     });
 
     it('calls updateTemplateOptions with correct data', function (done) {
-        const themeDataExpectedProps = ['posts_per_page', 'image_sizes'];
+        const themeDataExpectedProps = ['posts_per_page', 'image_sizes', 'theme'];
 
         executeMiddleware(middleware, req, res, function next(err) {
             should.not.exist(err);
