@@ -40,7 +40,7 @@ _private.removeGhostBackupIntegration = (options) => {
                 return;
             }
 
-            return integration.destroy().then(() => {
+            return integration.destroy(options).then(() => {
                 logging.info(message);
             });
         });
