@@ -160,22 +160,6 @@ describe('{{#get}} helper', function () {
             }).catch(done);
         });
 
-        it('should handle browse posts call with limit 1', function (done) {
-            helpers.get.call(
-                {},
-                'posts',
-                {hash: {limit: '1'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                fn.calledOnce.should.be.true();
-                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
-                fn.firstCall.args[0].posts.should.have.lengthOf(1);
-                fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(0, 1));
-                inverse.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-
         it('should handle browse post call with explicit tag', function (done) {
             helpers.get.call(
                 {},

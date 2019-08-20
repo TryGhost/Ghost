@@ -349,16 +349,6 @@ describe('API Utils', function () {
             }).catch(done);
         });
 
-        it('passed through a simple, correct object', function (done) {
-            var object = {test: [{id: 1}]};
-            apiUtils.checkObject(_.cloneDeep(object), 'test').then(function (data) {
-                should.exist(data);
-                data.should.have.ownProperty('test');
-                object.should.eql(data);
-                done();
-            }).catch(done);
-        });
-
         it('[DEPRECATED] should do author_id to author conversion for posts', function (done) {
             var object = {posts: [{id: 1, author: 4}]};
             apiUtils.checkObject(_.cloneDeep(object), 'posts').then(function (data) {
