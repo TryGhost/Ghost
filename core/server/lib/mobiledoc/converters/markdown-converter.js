@@ -2,7 +2,8 @@ var MarkdownIt = require('markdown-it'),
     converter = new MarkdownIt({
         html: true,
         breaks: true,
-        linkify: true
+        linkify: true,
+        typographer: true
     })
         .use(require('markdown-it-footnote'))
         .use(require('markdown-it-lazy-headers'))
