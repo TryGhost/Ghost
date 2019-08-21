@@ -29,5 +29,13 @@ export default Model.extend(ValidationEngine, {
             return {isActive: true};
         }
     }),
-    membersSubscriptionSettings: attr('string')
+    membersSubscriptionSettings: attr('string'),
+    metaTitle: attr('string'),
+    metaDescription: attr('string'),
+    twitterTitle: attr('string'),
+    twitterDescription: attr('string'),
+    twitterImage: attr('string'),
+    ogTitle: attr('string'),
+    ogDescription: attr('string'),
+    ogImage: attr('string')
 });

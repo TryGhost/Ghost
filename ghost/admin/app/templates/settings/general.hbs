@@ -98,7 +98,6 @@
         </div>
 
         <div class="gh-setting-header">Publication identity</div>
-
         <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5">
             <div class="gh-setting-first" data-test-setting="icon">
                 {{#gh-uploader
@@ -196,6 +195,202 @@
                     </div>
                 </div>
                 {{/gh-uploader}}
+            </div>
+        </div>
+
+        <div class="gh-setting-header">Site meta settings</div>
+        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5">
+            <div class="gh-setting-first flex-column">
+                <div class="flex flex-row justify-between w-100">
+                    <div class="gh-setting-content">
+                        <div class="gh-setting-title">Meta data</div>
+                        <div class="gh-setting-desc">Extra content for search engines</div>
+                    </div>
+                    <div class="gh-setting-action">
+                        <button type="button" class="gh-btn" {{action (toggle "metaDataOpen" this)}} data-test-toggle-meta><span>{{if metaDataOpen "Close" "Expand"}}</span></button>
+                    </div>
+                </div>
+                {{#liquid-if metaDataOpen}}
+                    <div class="gh-setting-content-extended">
+                        <div class="flex flex-column flex-row-ns">
+                            <div class="flex-basis-1-2-m flex-basis-2-3-l mr5">
+                                {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="metaTitle"}}
+                                    <label for="metaTitle">Meta title</label>
+                                    {{gh-text-input
+                                        id="metaTitle"
+                                        type="text"
+                                        placeholder=(truncate this.settings.title 70)
+                                        value=(readonly this.settings.metaTitle)
+                                        input=(action (mut this.settings.metaTitle) value="target.value")
+                                        data-test-input="metaTitle"
+                                    }}
+                                    {{gh-error-message errors=this.settings.errors property="metaTitle" data-test-error="metaTitle"}}
+                                    <p>Recommended: <b>70</b> characters. You’ve used <b>{{gh-count-down-characters this.settings.metaTitle 70}}</b></p>
+                                {{/gh-form-group}}
+                                {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="metaDescription"}}
+                                    <label for="metaDescription">Meta description</label>
+                                    {{gh-textarea
+                                        id="metaDescription"
+                                        type="text"
+                                        placeholder=(truncate this.settings.description 300)
+                                        value=(readonly this.settings.metaDescription)
+                                        input=(action (mut this.settings.metaDescription) value="target.value")
+                                        data-test-input="metaDescription"
+                                    }}
+                                    {{gh-error-message errors=this.settings.errors property="metaDescription" data-test-error="metaDescription"}}
+                                    <p>Recommended: <b>156</b> characters. You’ve used <b>{{gh-count-down-characters this.settings.metaDescription 156}}</b></p>
+                                {{/gh-form-group}}
+                            </div>
+                            <div class="flex-basis-1-2-m flex-basis-1-3-l">
+                                <label>Search engine result preview</label>
+                                <div class="seo-preview">
+                                    <div class="seo-preview-title">{{truncate (or this.settings.metaTitle this.settings.title) 70}}</div>
+                                    <div class="seo-preview-link">{{truncate this.config.blogUrl 70}}</div>
+                                    <div class="seo-preview-description">{{truncate (or this.settings.metaDescription this.settings.description) 300}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {{/liquid-if}}
+            </div>
+            <div class="gh-setting flex-column">
+                <div class="flex flex-row justify-between w-100">
+                    <div class="gh-setting-content">
+                        <div class="gh-setting-title">Twitter card</div>
+                        <div class="gh-setting-desc">Customise structured data of your site for Twitter</div>
+                    </div>
+                    <div class="gh-setting-action">
+                        <button type="button" class="gh-btn" {{action (toggle "twitterCardOpen" this)}} data-test-toggle-twitter><span>{{if twitterCardOpen "Close" "Expand"}}</span></button>
+                    </div>
+                </div>
+                {{#liquid-if twitterCardOpen}}
+                    <div class="gh-setting-content-extended">
+                        <div class="flex flex-column flex-row-ns">
+                            <div class="flex-basis-1-2-m flex-basis-2-3-l mr5 nudge-top--7">
+                                {{#gh-form-group}}
+                                    {{gh-image-uploader-with-preview
+                                        image=this.settings.twitterImage
+                                        text="Add Twitter image"
+                                        allowUnsplash=true
+                                        update=(action (mut this.settings.twitterImage))
+                                        remove=(action (mut this.settings.twitterImage ""))
+                                    }}
+                                {{/gh-form-group}}
+                                {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="twitterTitle"}}
+                                    <label for="twitterTitle">Twitter title</label>
+                                    {{gh-text-input
+                                        id="twitterTitle"
+                                        type="text"
+                                        placeholder=(truncate this.settings.title 70)
+                                        value=(readonly this.settings.twitterTitle)
+                                        input=(action (mut this.settings.twitterTitle) value="target.value")
+                                        data-test-input="twitterTitle"
+                                    }}
+                                    {{gh-error-message errors=this.settings.errors property="twitterTitle" data-test-error="twitterTitle"}}
+                                {{/gh-form-group}}
+                                {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="twitterDescription"}}
+                                    <label for="twitterDescription">Twitter description</label>
+                                    {{gh-textarea
+                                        id="twitterDescription"
+                                        placeholder=(truncate this.settings.description 300)
+                                        value=(readonly this.settings.twitterDescription)
+                                        input=(action (mut this.settings.twitterDescription) value="target.value")
+                                        data-test-input="twitterDescription"
+                                    }}
+                                    {{gh-error-message errors=this.settings.errors property="twitterDescription" data-test-error="twitterDescription"}}
+                                {{/gh-form-group}}
+                            </div>
+                            <div class="flex-basis-1-2-m flex-basis-1-3-l nt4-ns">
+                                <label>Preview</label>
+                                <div class="gh-twitter-preview">
+                                    {{#if this.settings.twitterImage}}
+                                    <div class="gh-twitter-preview-image" style={{background-image-style this.settings.twitterImage}}></div>
+                                    {{/if}}
+                                    <div class="gh-twitter-preview-content">
+                                        <div class="gh-twitter-preview-title">{{or this.settings.twitterTitle this.settings.title}}</div>
+                                        <div class="gh-twitter-preview-description">{{truncate (or this.settings.twitterDescription this.settings.description) 155}}</div>
+                                        <div class="gh-twitter-preview-footer">
+                                            <div class="gh-twitter-preview-footer-left">
+                                                {{this.config.blogDomain}}
+                                            </div>
+                                            <div class="gh-twitter-preview-footer-right">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{/liquid-if}}
+            </div>
+            <div class="gh-setting-last flex-column">
+                <div class="flex flex-row justify-between w-100">
+                    <div class="gh-setting-content">
+                        <div class="gh-setting-title">Facebook card</div>
+                        <div class="gh-setting-desc">Customise structured data of your site</div>
+                    </div>
+                    <div class="gh-setting-action">
+                        <button type="button" class="gh-btn" {{action (toggle "facebookCardOpen" this)}} data-test-toggle-facebook><span>{{if facebookCardOpen "Close" "Expand"}}</span></button>
+                    </div>
+                </div>
+                {{#liquid-if facebookCardOpen}}
+                    <div class="gh-setting-content-extended">
+                        <div class="flex flex-column flex-row-ns">
+                            <div class="flex-basis-1-2-m flex-basis-2-3-l mr5 nudge-top--7">
+                                {{#gh-form-group}}
+                                    {{gh-image-uploader-with-preview
+                                        image=this.settings.ogImage
+                                        text="Add Facebook image"
+                                        allowUnsplash=true
+                                        update=(action (mut this.settings.ogImage))
+                                        remove=(action (mut this.settings.ogImage ""))
+                                    }}
+                                {{/gh-form-group}}
+                                {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="ogTitle"}}
+                                    <label for="ogTitle">Facebook title</label>
+                                    {{gh-text-input
+                                        id="ogTitle"
+                                        type="text"
+                                        placeholder=(truncate this.settings.title 70)
+                                        value=(readonly this.settings.ogTitle)
+                                        input=(action (mut this.settings.ogTitle) value="target.value")
+                                        data-test-input="ogTitle"
+                                    }}
+                                    {{gh-error-message errors=this.settings.errors property="ogTitle" data-test-error="ogTitle"}}
+                                {{/gh-form-group}}
+                                {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="ogDescription"}}
+                                    <label for="ogDescription">Facebook description</label>
+                                    {{gh-textarea
+                                        id="ogDescription"
+                                        placeholder=(truncate this.settings.description 300)
+                                        value=(readonly this.settings.ogDescription)
+                                        input=(action (mut this.settings.ogDescription) value="target.value")
+                                        data-test-input="ogDescription"
+                                    }}
+                                    {{gh-error-message errors=this.settings.errors property="ogDescription" data-test-error="ogDescription"}}
+                                {{/gh-form-group}}
+                            </div>
+                            <div class="flex-basis-1-2-m flex-basis-1-3-l nt4-ns">
+                                <label>Preview</label>
+                                <div class="gh-og-preview">
+                                    {{#if this.settings.ogImage}}
+                                    <div class="gh-og-preview-image" style={{background-image-style this.settings.ogImage}}></div>
+                                    {{/if}}
+                                    <div class="gh-og-preview-content">
+                                        <div class="gh-og-preview-title">{{truncate (or this.settings.ogTitle this.settings.title) 88}}</div>
+                                        <div class="gh-og-preview-description">{{truncate (or this.settings.ogDescription this.settings.description) 300}}</div>
+                                        <div class="gh-og-preview-footer">
+                                            <div class="gh-og-preview-footer-left">
+                                                {{this.config.blogDomain}}
+                                            </div>
+                                            <div class="gh-og-preview-footer-right"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{/liquid-if}}
             </div>
         </div>
 

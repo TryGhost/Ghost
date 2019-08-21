@@ -70,6 +70,26 @@
     margin: 1px 0 0 0;
 }
 
+.gh-setting-content-extended label {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--darkgrey);
+    margin-bottom: 4px;
+}
+
+.gh-setting-content-extended textarea {
+    font-size: 1.5rem;
+    line-height: 1.4em;
+    max-width: initial;
+}
+
+.gh-setting-content-extended .gh-image-uploader {
+    margin: 0;
+    border: 1px solid var(--lightgrey);
+}
+
+
 /* Images */
 
 .gh-setting-action-smallimg {
@@ -693,7 +713,7 @@
     margin-left: -17px;
 }
 
-.theme-fatal-error .theme-validation-type-label::before, 
+.theme-fatal-error .theme-validation-type-label::before,
 .theme-error .theme-validation-type-label::before {
     background: color-mod(var(--red) alpha(0.85));
 }
