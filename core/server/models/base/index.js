@@ -160,6 +160,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return _.keys(schema.tables[this.tableName]);
     },
 
+    // When loading an instance, subclasses can specify default to fetch
+    defaultColumnsToFetch: function defaultColumnsToFetch() {
+        return [];
+    },
+
     /**
      * @NOTE
      * We have to remember the `_previousAttributes` attributes, because when destroying resources
@@ -865,6 +870,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // and append default columns to fetch
         if (options.columns) {
             options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
+            options.columns = _.union(options.columns, this.prototype.defaultColumnsToFetch());
         }
 
         if (options.order) {

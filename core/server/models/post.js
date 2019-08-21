@@ -514,6 +514,38 @@ Post = ghostBookshelf.Model.extend({
     },
 
     /**
+     * @NOTE:
+     * If you are requesting models with `columns`, you try to only receive some fields of the model/s.
+     * But the model layer is complex and needs specific fields in specific situations.
+     *
+     * ### url generation was removed but default columns need to be checked before removal
+     *   - @TODO: with dynamic routing, we no longer need default columns to fetch
+     *   - because with static routing Ghost generated the url on runtime and needed the following attributes:
+     *     - `slug`: /:slug/
+     *     - `published_at`: /:year/:slug
+     *     - `author_id`: /:author/:slug, /:primary_author/:slug
+     *     - now, the UrlService pre-generates urls based on the resources
+     *     - you can ask `urlService.getUrlByResourceId(post.id)`
+     *
+     * ### events
+     *   - you call `findAll` with `columns: id`
+     *   - then you trigger `post.save()` on the response
+     *   - bookshelf events (`onSaving`) and model events (`emitChange`) are triggered
+     *   - but you only fetched the id column, this will trouble (!), because the event hooks require more
+     *     data than just the id
+     *   - @TODO: we need to disallow this (!)
+     *   - you should use `models.Post.edit(..)`
+     *      - this disallows using the `columns` option
+     *   - same for destroy - you should use `models.Post.destroy(...)`
+     *
+     * @IMPORTANT: This fn should **never** be used when updating models (models.Post.edit)!
+     *            Because the events for updating a resource require most of the fields.
+     *            This is protected by the fn `permittedOptions`.
+     */
+    defaultColumnsToFetch: function defaultColumnsToFetch() {
+        return ['id', 'published_at', 'slug', 'author_id'];
+    },
+    /**
      * If the `formats` option is not used, we return `html` be default.
      * Otherwise we return what is requested e.g. `?formats=mobiledoc,plaintext`
      */
@@ -677,9 +709,9 @@ Post = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['importing', 'withRelated', 'require', 'filter'],
+                findOne: ['columns', 'importing', 'withRelated', 'require', 'filter'],
                 findPage: ['status', 'staticPages'],
-                findAll: ['filter'],
+                findAll: ['columns', 'filter'],
                 destroy: ['destroyAll', 'destroyBy'],
                 edit: ['filter']
             };
