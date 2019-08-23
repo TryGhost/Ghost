@@ -98,7 +98,9 @@
         {{#gh-basic-dropdown horizontalPosition="left" verticalPosition="top" calculatePosition=userDropdownPosition as |dropdown|}}
             {{#dropdown.trigger tagName="div" class="flex items-center outline-0 pointer space-between pa2 pl4 pr3"}}
                 <div class="flex-auto flex items-center">
-                    <div class="gh-user-avatar" style={{background-image-style session.user.profileImageUrl}}></div>
+                    <div class="gh-user-avatar relative" style={{background-image-style session.user.profileImageUrl}}>
+                        {{#if this.whatsNew.hasNew}}<span class="absolute dib bg-blue ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
+                    </div>
                     <div class="flex flex-column items-start justify-center">
                         <span class="gh-user-name {{if session.user.name "mb1"}}" title="{{session.user.name}}">{{session.user.name}}</span>
                         <span class="gh-user-email" title="{{session.user.email}}">{{session.user.email}}</span>
@@ -114,7 +116,15 @@
                         {{#link-to "about" classNames="dropdown-item" role="menuitem" tabindex="-1" data-test-nav="about"}}
                             {{svg-jar "store"}} About Ghost
                         {{/link-to}}
-                        </li>
+                    </li>
+                    <li role="presentation">
+                        <button class="dropdown-item" role="menuitem" tabindex="-1" {{on "click" this.whatsNew.showModal}}>
+                            {{svg-jar "gift"}} What's new?
+                            {{#if this.whatsNew.hasNew}}
+                                <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-blue br-100"></span></div>
+                            {{/if}}
+                        </button>
+                    </li>
                     <li class="divider"></li>
                     <li role="presentation">
                         {{#link-to "staff.user" session.user.slug classNames="dropdown-item" role="menuitem" tabindex="-1" data-test-nav="user-profile"}}
