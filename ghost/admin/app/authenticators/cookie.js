@@ -10,6 +10,7 @@ export default Authenticator.extend({
     ghostPaths: service(),
     settings: service(),
     tour: service(),
+    whatsNew: service(),
 
     sessionEndpoint: computed('ghostPaths.apiRoot', function () {
         return `${this.ghostPaths.apiRoot}/session`;
@@ -36,6 +37,11 @@ export default Authenticator.extend({
                 this.settings.fetch(),
                 this.tour.fetchViewed()
             ];
+
+            // kick off background update of "whats new"
+            // - we don't want to block the router for this
+            // - we need the user details to know what the user has seen
+            this.whatsNew.fetchLatest.perform();
 
             return RSVP.all(preloadPromises).then(() => {
                 return authResult;

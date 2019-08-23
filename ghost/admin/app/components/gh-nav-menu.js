@@ -14,6 +14,7 @@ export default Component.extend(ShortcutsMixin, {
     router: service(),
     session: service(),
     ui: service(),
+    whatsNew: service(),
 
     tagName: 'nav',
     classNames: ['gh-nav'],
