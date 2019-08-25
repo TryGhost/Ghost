@@ -12,7 +12,8 @@ const metascraper = require('metascraper')([
     require('metascraper-author')(),
     require('metascraper-publisher')(),
     require('metascraper-image')(),
-    require('metascraper-logo')()
+    require('metascraper-logo')(),
+    require('metascraper-logo-favicon')()
 ]);
 function generateBookmarkHtml(data)  {
     const html = `<span> Clean me! </span>`;

@@ -20,7 +20,7 @@
 
 const createCard = require('../create-card');
 
-function createElement(dom, elem, classNames = '', attributes = [], innerHtml) {
+function createElement(dom, elem, classNames = '', attributes = [], text) {
     let element = dom.createElement(elem);
     if (classNames) {
         element.setAttribute('class', classNames)
@@ -28,8 +28,8 @@ function createElement(dom, elem, classNames = '', attributes = [], innerHtml) {
     attributes.forEach((attr) => {
         element.setAttribute(attr.key, attr.value);
     })
-    if (innerHtml) {
-        element.innerHTML = innerHtml;
+    if (text) {
+        element.appendChild(dom.createTextNode(text))
     }
     return element;
 }
@@ -43,7 +43,6 @@ module.exports = createCard({
         }
 
         let {payload, env: {dom}} = opts;
-
         let figure = createElement(dom, 'figure', 'kg-card kg-bookmark-card');
         let containerDiv = createElement(dom, 'div', 'kg-bookmark-container');
         let linkTag = createElement(dom, 'a', '', [{
@@ -63,7 +62,7 @@ module.exports = createCard({
         let thumbnailDiv = createElement(dom, 'div', 'kg-bookmark-thumbnail');
         let thumbnailImg = createElement(dom, 'img', 'kg-bookmark-logo', [{
             key: 'src',
-            value: payload.metadata.logo
+            value: payload.metadata.image
         }]);
         thumbnailDiv.appendChild(thumbnailImg);
         metadataDiv.appendChild(imgLogo);
