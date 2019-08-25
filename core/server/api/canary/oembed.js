@@ -15,14 +15,6 @@ const metascraper = require('metascraper')([
     require('metascraper-logo')(),
     require('metascraper-logo-favicon')()
 ]);
-function generateBookmarkHtml(data)  {
-    const html = `<span> Clean me! </span>`;
-    console.log("Data", data);
-    return {
-        html,
-        metadata: data
-    };
-}
 
 async function fetchBookmarkData(url, html) {
     if (!html) {
@@ -38,11 +30,10 @@ async function fetchBookmarkData(url, html) {
     const metadata = await metascraper({ html, url })
 
     if (metadata.title && metadata.description) {
-        let bookmarkData = generateBookmarkHtml(metadata);
         return Promise.resolve({
             type: "bookmark",
-            html: bookmarkData.html,
-            metadata: bookmarkData.metadata
+            url,
+            metadata
         });
     }
     return Promise.resolve();
