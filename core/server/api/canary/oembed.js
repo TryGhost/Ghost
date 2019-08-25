@@ -5,27 +5,22 @@ const request = require('../../lib/request');
 const cheerio = require('cheerio');
 const domino = require('domino');
 const {getMetadata} = require('page-metadata-parser');
-
+const metascraper = require('metascraper')([
+    require('metascraper-url')(),
+    require('metascraper-title')(),
+    require('metascraper-description')(),
+    require('metascraper-author')(),
+    require('metascraper-publisher')(),
+    require('metascraper-image')(),
+    require('metascraper-logo')()
+]);
 function generateBookmarkHtml(data)  {
     const html = `<span> Clean me! </span>`;
-
+    console.log("Data", data);
     return {
         html,
         metadata: data
     };
-}
-
-function escape_HTML(html_str) {
-
-    return html_str.replace(/[&<>"]/g, function (tag) {
-		var chars_to_replace = {
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;'
-        };
-
-		return chars_to_replace[tag] || tag;
-	});
 }
 
 async function fetchBookmarkData(url, html) {
@@ -37,8 +32,9 @@ async function fetchBookmarkData(url, html) {
         });
         html = response.body;
     }
-    const doc = domino.createWindow(html).document;
-    const metadata = getMetadata(doc, url);
+    // const doc = domino.createWindow(html).document;
+    // const metadata = getMetadata(doc, url);
+    const metadata = await metascraper({ html, url })
 
     if (metadata.title && metadata.description) {
         let bookmarkData = generateBookmarkHtml(metadata);
@@ -153,71 +149,9 @@ module.exports = {
                     return unknownProvider(url);
                 }
                 return response;
-            }).catch((err) => {
-                console.log("ERROR", err);
+            }).catch(() => {
                 return unknownProvider(url);
             });
-
-            // fetchFromKnownProvider(url).then((response) => {
-            //     if (!response) {
-            //         const oembedUrl = getOembedUrlFromHTML(response.body);
-            //         if (oembedUrl) {
-            //             return request(oembedUrl, {
-            //                 method: 'GET',
-            //                 json: true
-            //             }).then((response) => {
-            //                 return response.body;
-            //             });
-            //         }
-            //         return fetchBookmark();
-            //     }
-            //     return response;
-            // }).then((response) => {
-            //     if (!response) {
-            //         return unknownProvider(url);
-            //     }
-            //     return response;
-            // }).catch(() => {
-            //     return unknownProvider(url);
-            // });
-
-
-            // let provider;
-            // ({ url, provider } = findUrlWithProvider(url));
-
-            // if (provider) {
-            //     return knownProvider(url);
-            // }
-
-            // // see if the URL is a redirect to cater for shortened urls
-            // return request(url, {
-            //     method: 'GET',
-            //     timeout: 2 * 1000,
-            //     followRedirect: true
-            // }).then((response) => {
-            //     if (response.url !== url) {
-            //         ({ url, provider } = findUrlWithProvider(response.url));
-            //         if (provider) {
-            //             return knownProvider(url)
-            //         }
-            //         // return provider ? knownProvider(url) : unknownProvider();
-            //     }
-
-            //     const oembedUrl = getOembedUrlFromHTML(response.body);
-
-            //     if (!oembedUrl) {
-            //         return unknownProvider();
-            //     }
-
-            //     return request(oembedUrl, {
-            //         method: 'GET',
-            //         json: true
-            //     }).then((response) => {
-            //         return response.body;
-            //     });
-            // }).catch(() => {
-            //     return unknownProvider();
-            // });
         }
     }
 };
