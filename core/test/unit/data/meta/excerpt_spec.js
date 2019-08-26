@@ -5,9 +5,9 @@ describe('getExcerpt', function () {
     it('should return html excerpt with no html', function () {
         var html = '<p>There are <br />10<br> types<br/> of people in <img src="a">the world:' +
                 '<img src=b alt="c"> those who <img src="@" onclick="javascript:alert(\'hello\');">' +
-                'understand trinary</p>, those who don\'t <div style="" class=~/\'-,._?!|#>and' +
+                'understand trinary,</p> those who don\'t <div style="" class=~/\'-,._?!|#>and' +
                 '< test > those<<< test >>> who mistake it &lt;for&gt; binary.',
-            expected = 'There are 10 types of people in the world: those who understand trinary, those who ' +
+            expected = 'There are 10  types of people in the world: those who understand trinary,  those who ' +
                 'don\'t and those>> who mistake it &lt;for&gt; binary.';
 
         getExcerpt(html, {}).should.equal(expected);
@@ -61,9 +61,9 @@ describe('getExcerpt', function () {
         function () {
             var html = '<p>There are <br />10<br> types<br/> of people in <img src="a">the world:' +
                     '<img src=b alt="c"> those who <img src="@" onclick="javascript:alert(\'hello\');">' +
-                    'understand trinary</p>, those who don\'t <div style="" class=~/\'-,._?!|#>and' +
+                    'understand trinary,</p> those who don\'t <div style="" class=~/\'-,._?!|#>and' +
                     '< test > those<<< test >>> who mistake it &lt;for&gt; binary.',
-                expected = 'There are 10 types of people in the world: those who understand trinary, those who ' +
+                expected = 'There are 10  types of people in the world: those who understand trinary,  those who ' +
                     'don\'t and those>> who mistake it &lt;for&gt; binary.';
 
             getExcerpt(html).should.equal(expected);
