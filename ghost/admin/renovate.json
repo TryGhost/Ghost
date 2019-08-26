@@ -1,10 +1,7 @@
 {
   "extends": [
-    "config:base",
-    "group:jsTestMonMajor",
-    "group:linters",
-    ":maintainLockFilesWeekly",
-    "schedule:earlyMondays"
+    "@tryghost:base",
+    "@tryghost:automergeSilentTestLintNonMajor"
   ],
   "ignoreDeps": [
     "ember-drag-drop",
@@ -12,7 +9,6 @@
     "validator",
     "ember-in-viewport"
   ],
-  "prHourlyLimit": 0,
   "ignorePaths": ["lib/koenig-editor/package.json"],
   "travis": { "enabled": true },
   "node": {
