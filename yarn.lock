@@ -6729,10 +6729,10 @@ proxy-addr@~2.0.5:
     forwarded "~0.1.2"
     ipaddr.js "1.9.0"
 
-proxyquire@2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/proxyquire/-/proxyquire-2.1.2.tgz#287acf81330723fdb7ab1be69907169e61a4e19f"
-  integrity sha512-ovE7O5UhsDE3pBtf8YgTr+w3S0xCMYAbUAbJUbqHODB+JK1jyZnvjbSGKe54ewyyEHXc6uZfZNYhlSxYJDZQ8A==
+proxyquire@2.1.3:
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/proxyquire/-/proxyquire-2.1.3.tgz#2049a7eefa10a9a953346a18e54aab2b4268df39"
+  integrity sha512-BQWfCqYM+QINd+yawJz23tbBM40VIGXOdDw3X344KcclI/gtBbdWF6SlQ4nK/bYhF9d27KYug9WzljHC6B9Ysg==
   dependencies:
     fill-keys "^1.0.2"
     module-not-found-error "^1.0.1"
