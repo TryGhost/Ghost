@@ -32,6 +32,10 @@
       "packageNames": ["ember-mocha", "ember-exam", "testem"]
     },
     {
+      "groupName": "ember-basic-dropdown addons",
+      "packagePatterns": ["^ember-basic", "^ember-power"]
+    },
+    {
       "groupName": "ember addons",
       "packagePatterns": ["^ember", "^@ember", "^broccoli", "^liquid"],
       "excludePackageNames": ["ember-source", "ember-cli", "ember-data", "ember-mocha", "ember-exam"]
