@@ -24,21 +24,20 @@
   },
   "packageRules": [
     {
-      "groupName": "ember core",
-      "packageNames": ["ember-source", "ember-cli", "ember-data"]
-    },
-    {
-      "groupName": "ember testing",
-      "packageNames": ["ember-mocha", "ember-exam", "testem"]
+      "groupName": "ember addons",
+      "packagePatterns": ["^ember", "^@ember", "^broccoli", "^liquid"]
     },
     {
       "groupName": "ember-basic-dropdown addons",
       "packagePatterns": ["^ember-basic", "^ember-power"]
     },
     {
-      "groupName": "ember addons",
-      "packagePatterns": ["^ember", "^@ember", "^broccoli", "^liquid"],
-      "excludePackageNames": ["ember-source", "ember-cli", "ember-data", "ember-mocha", "ember-exam"]
+      "groupName": "ember core",
+      "packageNames": ["ember-source", "ember-cli", "ember-data"]
+    },
+    {
+      "groupName": "ember testing",
+      "packageNames": ["ember-mocha", "ember-exam", "testem"]
     },
     {
       "groupName": "css processors",
