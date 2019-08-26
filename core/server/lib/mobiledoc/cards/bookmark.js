@@ -65,14 +65,22 @@ module.exports = createCard({
             value: payload.metadata.image
         }]);
         thumbnailDiv.appendChild(thumbnailImg);
-        metadataDiv.appendChild(imgLogo);
-        metadataDiv.appendChild(authorSpan);
-        metadataDiv.appendChild(publisherSpan);
+        if (payload.metadata.logo) {
+            metadataDiv.appendChild(imgLogo);
+        }
+        if (payload.metadata.author) {
+            metadataDiv.appendChild(authorSpan);
+        }
+        if (payload.metadata.publisher) {
+            metadataDiv.appendChild(publisherSpan);
+        }
         contentDiv.appendChild(titleDiv);
         contentDiv.appendChild(descriptionDiv);
         contentDiv.appendChild(metadataDiv);
         linkTag.appendChild(contentDiv);
-        linkTag.appendChild(thumbnailDiv);
+        if (payload.metadata.image) {
+            linkTag.appendChild(thumbnailDiv);
+        }
         containerDiv.appendChild(linkTag);
         figure.appendChild(containerDiv);
 
