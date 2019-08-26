@@ -119,7 +119,7 @@
     "semver": "6.3.0",
     "simple-dom": "0.3.2",
     "simple-html-tokenizer": "0.5.8",
-    "uuid": "3.3.2",
+    "uuid": "3.3.3",
     "validator": "6.3.0",
     "xml": "1.0.1"
   },
