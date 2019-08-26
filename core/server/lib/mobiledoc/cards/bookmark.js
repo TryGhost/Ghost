@@ -60,7 +60,7 @@ module.exports = createCard({
         let authorSpan = createElement(dom, 'span', 'kg-bookmark-author', [] , payload.metadata.author);
         let publisherSpan = createElement(dom, 'span', 'kg-bookmark-url', [] , payload.metadata.publisher);
         let thumbnailDiv = createElement(dom, 'div', 'kg-bookmark-thumbnail');
-        let thumbnailImg = createElement(dom, 'img', 'kg-bookmark-logo', [{
+        let thumbnailImg = createElement(dom, 'img', '', [{
             key: 'src',
             value: payload.metadata.image
         }]);
