@@ -27,6 +27,10 @@ function ampComponents() {
         components.push('<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>');
     }
 
+    if (html.indexOf('youtube.com/embed') !== -1) {
+        components.push('<script async custom-element="amp-youtube" src="https://cdn.ampproject.org/v0/amp-youtube-0.1.js"></script>');
+    }
+
     if (html.indexOf('<audio') !== -1) {
         components.push('<script async custom-element="amp-audio" src="https://cdn.ampproject.org/v0/amp-audio-0.1.js"></script>');
     }
