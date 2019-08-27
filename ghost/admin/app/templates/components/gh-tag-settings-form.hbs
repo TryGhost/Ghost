@@ -1,116 +1,102 @@
-<div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane tag-settings-pane">
-    <div class="settings-menu-header {{if isMobile 'subview'}}">
-        {{#if isMobile}}
-            {{#link-to 'tags' class="back settings-menu-header-action"}}{{svg-jar "arrow-left"}}<span class="hidden">Back</span>{{/link-to}}
-            <h4>{{title}}</h4>
-            <div style="width:23px;">{{!flexbox space-between}}</div>
-        {{else}}
-            <h4>{{title}}</h4>
-        {{/if}}
-    </div>
-    <div class="settings-menu-content">
-        {{gh-image-uploader-with-preview
-            image=tag.featureImage
-            text="Upload tag image"
-            allowUnsplash=true
-            update=(action "setCoverImage")
-            remove=(action "clearCoverImage")}}
-        <form>
-            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="name"}}
-                <label for="tag-name">Name</label>
-                {{gh-text-input
+<h4 class="midlightgrey f-small fw5 ttu">Basic settings</h4>
+<div class="pa5 pt4 br4 shadow-1 bg-grouped-table mt2 flex flex-column flex-row-ns items-start justify-between gh-tag-basic-settings-form">
+    <div class="order-1 flex flex-column items-start mr5 w-100 w-50-m w-two-thirds-l">
+        {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="name"}}
+        <label for="tag-name">Name</label>
+        {{gh-text-input
                     id="tag-name"
                     name="name"
                     value=(readonly scratchName)
+                    tabindex="1"
                     input=(action (mut scratchName) value="target.value")
                     focus-out=(action 'setProperty' 'name' scratchName)}}
-                {{gh-error-message errors=tag.errors property="name"}}
-            {{/gh-form-group}}
+        <p class="description">Start with # to create internal tags. <a
+                href="https://ghost.org/docs/concepts/tags/#internal-tag" target="_blank" rel="noreferrer">Learn
+                more</a></p>
+        {{gh-error-message errors=tag.errors property="name"}}
+        {{/gh-form-group}}
 
-            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="slug"}}
-                <label for="tag-slug">URL</label>
-                {{gh-text-input
+        {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="slug"}}
+        <label for="tag-slug">Slug</label>
+        {{gh-text-input
                     value=(readonly scratchSlug)
                     id="tag-slug"
                     name="slug"
+                    tabindex="2"
                     focus-out=(action 'setProperty' 'slug' scratchSlug)
                     input=(action (mut scratchSlug) value="target.value")}}
-                {{gh-url-preview prefix="tag" slug=scratchSlug tagName="p" classNames="description"}}
-                {{gh-error-message errors=activeTag.errors property="slug"}}
-            {{/gh-form-group}}
+        {{gh-url-preview prefix="tag" slug=scratchSlug tagName="p" classNames="description"}}
+        {{gh-error-message errors=activeTag.errors property="slug"}}
+        {{/gh-form-group}}
 
-            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="description"}}
-                <label for="tag-description">Description</label>
-                {{gh-textarea
+        {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="description"}}
+        <label for="tag-description">Description</label>
+        {{gh-textarea
                     id="tag-description"
                     name="description"
+                    class="gh-tag-details-textarea"
+                    tabindex="3"
                     value=(readonly scratchDescription)
                     input=(action (mut scratchDescription) value="target.value")
                     focus-out=(action 'setProperty' 'description' scratchDescription)
                 }}
-                {{gh-error-message errors=tag.errors property="description"}}
-                <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchDescription 500}}</p>
-            {{/gh-form-group}}
-
-            <ul class="nav-list nav-list-block">
-                <li class="nav-list-item" {{action 'openMeta'}}>
-                    <button type="button" class="meta-data-button">
-                        <b>Meta Data</b>
-                        <span>Extra content for SEO and social media.</span>
-                    </button>
-                    {{svg-jar "arrow-right"}}
-                </li>
-            </ul>
-
-            {{#unless tag.isNew}}
-                <button type="button" class="gh-btn gh-btn-hover-red gh-btn-icon settings-menu-delete-button" {{action "deleteTag"}}><span>{{svg-jar "trash"}} Delete Tag</span></button>
-            {{/unless}}
-        </form>
+        {{gh-error-message errors=tag.errors property="description"}}
+        <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchDescription 500}}</p>
+        {{/gh-form-group}}
     </div>
-</div>{{! .settings-menu-pane }}
-
-<div class="{{if isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane tag-meta-settings-pane">
-    <div class="settings-menu-header subview">
-        <button {{action "closeMeta"}} class="back settings-menu-header-action">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
-        <h4>Meta Data</h4>
-        <div style="width:23px;">{{!flexbox space-between}}</div>
+    <div class="order-0 mb6 mb0-ns order-2-ns w-100 w-50-m w-third-l">
+        <label for="tag-image">Tag image</label>
+        {{gh-image-uploader-with-preview
+                                image=tag.featureImage
+                                text="Upload tag image"
+                                class="gh-tag-image-uploader"
+                                allowUnsplash=true
+                                update=(action "setCoverImage")
+                                remove=(action "clearCoverImage")}}
     </div>
+</div>
 
-    <div class="settings-menu-content">
-        <form>
-            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="metaTitle"}}
-                <label for="meta-title">Meta Title</label>
-                {{gh-text-input
+<h4 class="midlightgrey f-small fw5 ttu mt15">Meta data</h4>
+<div class="pa5 pt4 br4 shadow-1 bg-grouped-table mt2 flex flex-column flex-row-ns items-start justify-between">
+    <div class="flex flex-column items-start mr5 w-100 w-50-m w-two-thirds-l">
+        {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="metaTitle"}}
+        <label for="meta-title">Meta Title</label>
+        {{gh-text-input
                     id="meta-title"
                     name="metaTitle"
+                    placeholder=scratchName
+                    tabindex="4"
                     value=(readonly scratchMetaTitle)
                     input=(action (mut scratchMetaTitle) value="target.value")
                     focus-out=(action "setProperty" "metaTitle" scratchMetaTitle)}}
-                {{gh-error-message errors=tag.errors property="metaTitle"}}
-                <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters scratchMetaTitle 70}}</p>
-            {{/gh-form-group}}
+        {{gh-error-message errors=tag.errors property="metaTitle"}}
+        <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters scratchMetaTitle 70}}</p>
+        {{/gh-form-group}}
 
-            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="metaDescription"}}
-                <label for="meta-description">Meta Description</label>
-                {{gh-textarea
+        {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="metaDescription"}}
+        <label for="meta-description">Meta Description</label>
+        {{gh-textarea
                     id="meta-description"
                     name="metaDescription"
+                    class="gh-tag-details-textarea"
+                    placeholder=scratchDescription
+                    tabindex="5"
                     value=(readonly scratchMetaDescription)
                     input=(action (mut scratchMetaDescription) value="target.value")
                     focus-out=(action "setProperty" "metaDescription" scratchMetaDescription)
                 }}
-                {{gh-error-message errors=tag.errors property="metaDescription"}}
-                <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters scratchMetaDescription 156}}</p>
-            {{/gh-form-group}}
-
-            <div class="form-group">
-                <label>Search Engine Result Preview</label>
-                <div class="seo-preview">
-                    <div class="seo-preview-title">{{seoTitle}}</div>
-                    <div class="seo-preview-link">{{seoURL}}</div>
-                    <div class="seo-preview-description">{{seoDescription}}</div>
-                </div>
+        {{gh-error-message errors=tag.errors property="metaDescription"}}
+        <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters scratchMetaDescription 156}}</p>
+        {{/gh-form-group}}
+    </div>
+    <div class="w-100 w-50-m w-third-l">
+        <div class="form-group">
+            <label>Search Engine Result Preview</label>
+            <div class="seo-preview">
+                <div class="seo-preview-title">{{seoTitle}}</div>
+                <div class="seo-preview-link">{{seoURL}}</div>
+                <div class="seo-preview-description">{{seoDescription}}</div>
             </div>
-        </form>
+        </div>
     </div>
 </div>

@@ -17,7 +17,7 @@ let mediaQueriesStub = Service.extend({
     maxWidth600: false
 });
 
-describe('Integration: Component: gh-tag-settings-form', function () {
+describe.skip('Integration: Component: gh-tag-settings-form', function () {
     setupRenderingTest();
 
     beforeEach(function () {

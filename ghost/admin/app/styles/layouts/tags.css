@@ -1,152 +1,34 @@
-/* Tag Management /ghost/tags/
+/* Tag list
 /* ---------------------------------------------------------- */
+
+.gh-tags-count:hover {
+    color: color-mod(var(--blue) l(-25%) s(+15%));
+    font-weight: 500;
+}
+
+textarea.gh-tag-details-textarea {
+    max-width: 100%;
+}
+
+.gh-tag-image-uploader .gh-image-uploader {
+    margin: 4px 0 0;
+    border: 1px solid var(--lightgrey);
+    min-height: 147px;
+}
+
+.gh-tags-placeholder {
+    width: 118px;
+    margin: -30px 0 15px;
+}
+
+.gh-tag-list-slug {
+    white-space: nowrap;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 .tags-view {
     max-width: 1220px;
     margin: 0 auto;
 }
-
-.tags-container {
-    background: var(--white);
-    border-radius: 5px;
-    box-shadow: var(--shadow-1);
-    margin: 0 24px 24px;
-}
-
-
-/* Tag
-/* ---------------------------------------------------------- */
-
-.settings-tag {
-    position: relative;
-    display: block;
-    padding: 0 60px 0 0;
-    border-bottom: var(--lightgrey) 1px solid;
-}
-
-.settings-tag .tag-edit-button {
-    display: block;
-    padding: 16px 20px;
-    width: calc(100% + 60px);
-    text-align: left;
-}
-
-.settings-tag .tag-edit-button.active {
-    border-left: 4px solid;
-    padding-left: 16px;
-    background: var(--whitegrey-l2);
-}
-
-.settings-tag .label {
-    display: inline-block;
-    overflow: hidden;
-    max-width: 100%;
-    vertical-align: middle;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.settings-tag .label-alt {
-    text-transform: uppercase;
-}
-
-.settings-tag .tag-title {
-    color: var(--darkgrey);
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-.settings-tag .tag-description {
-    margin: 0;
-    color: var(--middarkgrey);
-    word-wrap: break-word;
-    font-size: 13px;
-}
-
-.settings-tag .tags-count {
-    position: absolute;
-    top: calc(50% - 11px);
-    right: 20px;
-    color: var(--midgrey);
-    font-size: 1.4rem;
-}
-
-/* Tag List (Left pane)
-/* ---------------------------------------------------------- */
-
-.tag-list {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    overflow: auto;
-    max-width: calc(100% - 350px);
-    width: 66%;
-    border-right: var(--lightgrey) 1px solid;
-}
-
-@media (max-width: 600px) {
-    .tag-list {
-        max-width: 100%;
-        width: 100%;
-    }
-
-    .settings-tag .tag-edit-button.active {
-        border-left: none;
-    }
-}
-
-/* Tag Settings (Right pane)
-/* ---------------------------------------------------------- */
-
-.tag-settings {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    min-width: 350px;
-    width: 34%;
-    border: none;
-    transform: none;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-    box-shadow: none;
-    background: var(--white);
-}
-
-.tag-settings .no-posts {
-    padding: 1em;
-}
-
-.tag-settings .no-posts h3 {
-    text-align: center;
-}
-
-.tag-settings .settings-menu-pane {
-    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-}
-
-.tag-settings .gh-image-uploader {
-    background: var(--whitegrey-l2);
-}
-
-@media (max-width: 600px) {
-    .tag-settings {
-        min-width: 0;
-        width: 100%;
-        transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-        transform: translate3d(100%, 0px, 0px);
-
-        transform-style: preserve-3d;
-    }
-
-    .tag-settings-in {
-        transform: translate3d(0px, 0px, 0px);
-    }
-}
-
-/* New tag list
-/* ---------------------------------------------------------- */
