@@ -132,6 +132,24 @@ export default Component.extend({
                     postEditor.cancelSnapshot();
                 }
             });
+        },
+
+        insertAsBookmark(payload) {
+            let {range} = this.editor;
+
+            this.editor.run((postEditor) => {
+                let cardSection = this.env.postModel;
+                let bookmarkCard = postEditor.builder.createCardSection('bookmark', payload);
+
+                postEditor.replaceSection(cardSection, bookmarkCard);
+
+                // if a user is typing further on in the doc (possible if embed
+                // was created automatically via paste of URL) then return the
+                // cursor so the card->link change doesn't cause a cursor jump
+                if (range.headSection !== cardSection) {
+                    postEditor.setRange(range);
+                }
+            });
         }
     },
 
@@ -143,17 +161,25 @@ export default Component.extend({
 
         try {
             let oembedEndpoint = this.ghostPaths.url.api('oembed');
+            let requestData = {
+                url
+            };
+            if (!this.payload.isDirectUrl) {
+                requestData.type = 'embed';
+            }
             let response = yield this.ajax.request(oembedEndpoint, {
-                data: {
-                    url
-                }
+                data: requestData
             });
-
+            if (response.type === 'bookmark') {
+                this.send('insertAsBookmark', response);
+                return;
+            }
             if (!response.html) {
                 throw 'No HTML returned';
             }
 
             set(this.payload, 'linkOnError', undefined);
+            set(this.payload, 'isDirectUrl', undefined);
             set(this.payload, 'html', response.html);
             set(this.payload, 'type', response.type);
             this.saveCard(this.payload, false);
