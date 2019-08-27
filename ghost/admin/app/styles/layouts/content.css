@@ -359,12 +359,6 @@
     }
 }
 
-@media (min-width: 901px) {
-    .content-list .active a {
-        box-shadow: var(--blue) 3px 0 0 inset;
-    }
-}
-
 
 /* Empty State
 /* ---------------------------------------------------------- */
