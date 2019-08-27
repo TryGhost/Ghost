@@ -98,6 +98,27 @@
     text-align: right;
 }
 
+.gh-list-cellwidth-2-3 {
+    width: 67%;
+}
+
+.gh-list-cellwidth-1-2 {
+    width: 50%;
+}
+
+.gh-list-cellwidth-1-3 {
+    width: 33%;
+}
+
+/* Typography
+/* --------------------------------------------------- */
+.gh-list h3 {
+    margin: 0 0 3px 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+
 /* Helpers for smaller sizes
 /* --------------------------------------------------- */
 

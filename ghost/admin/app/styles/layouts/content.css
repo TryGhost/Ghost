@@ -134,10 +134,9 @@
     text-decoration: none;
 }
 
-.content-list .gh-list-header:first-child {
+.content-list .gh-list-header.no-padding {
     padding: 0 !important;
 }
-
 .gh-posts-title-header {
     padding-left: 10px;
 }

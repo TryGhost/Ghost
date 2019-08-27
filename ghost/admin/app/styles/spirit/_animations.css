@@ -49,6 +49,13 @@
 }
 
 
+/* Underline */
+
+.underline:hover {
+  text-decoration: underline;
+}
+
+
 /*
 
   Lighter variation

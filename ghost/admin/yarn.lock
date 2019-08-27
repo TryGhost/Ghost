@@ -1019,6 +1019,13 @@
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
 
+"@tryghost/string@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.5.tgz#adc67ce449e66e61a2d14b0815a14a5174465549"
+  integrity sha512-zbD/C+I7PXZfRkki80yK+jWMyNaklKLj7wdoQd81+r5ARGGar0XtWL/T1zc6G2UI/v9UW+dLQ5mDxpsxQIEFlA==
+  dependencies:
+    unidecode "^0.1.8"
+
 "@tryghost/timezone-data@0.2.7":
   version "0.2.7"
   resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.7.tgz#92b3f878c74431d7dcc3ed7814d11b244451ef52"
@@ -6707,7 +6714,6 @@ gonzales-pe@4.2.4:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  uid "275cb75249f038492094a499756a73719ae071fd"
   resolved "https://github.com/acburdine/google-caja-bower#275cb75249f038492094a499756a73719ae071fd"
 
 got@^8.0.1:
@@ -7878,7 +7884,6 @@ just-extend@^4.0.2:
 
 "keymaster@https://github.com/madrobby/keymaster.git":
   version "1.6.3"
-  uid f8f43ddafad663b505dc0908e72853bcf8daea49
   resolved "https://github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
 
 keyv@3.0.0:
@@ -10947,7 +10952,6 @@ simple-swizzle@^0.2.2:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  uid "4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
   resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
 
 sinon@^7.3.2:
@@ -11917,6 +11921,11 @@ unicode-property-aliases-ecmascript@^1.0.4:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/unicode-property-aliases-ecmascript/-/unicode-property-aliases-ecmascript-1.0.5.tgz#a9cc6cc7ce63a0a3023fc99e341b94431d405a57"
   integrity sha512-L5RAqCfXqAwR3RriF8pM0lU0w4Ryf/GgzONwi6KnL1taJQa7x1TCxdJnILX59WIGOwR57IVxn7Nej0fz1Ny6fw==
+
+unidecode@^0.1.8:
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/unidecode/-/unidecode-0.1.8.tgz#efbb301538bc45246a9ac8c559d72f015305053e"
+  integrity sha1-77swFTi8RSRqmsjFWdcvAVMFBT4=
 
 union-value@^1.0.0:
   version "1.0.1"
