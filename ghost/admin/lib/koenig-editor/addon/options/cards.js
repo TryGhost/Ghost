@@ -9,6 +9,7 @@ export const CARD_COMPONENT_MAP = {
     html: 'koenig-card-html',
     code: 'koenig-card-code',
     embed: 'koenig-card-embed',
+    bookmark: 'koenig-card-bookmark',
     gallery: 'koenig-card-gallery'
 };
 
@@ -21,6 +22,7 @@ export const CARD_ICON_MAP = {
     html: 'koenig/kg-card-type-html',
     code: 'koenig/kg-card-type-gen-embed',
     embed: 'koenig/kg-card-type-gen-embed',
+    bookmark: 'koenig/kg-card-type-bookmark',
     gallery: 'koenig/kg-card-type-gallery'
 };
 
@@ -30,6 +32,7 @@ export default [
     createComponentCard('card-markdown'), // backwards-compat with markdown editor
     createComponentCard('code', {deleteIfEmpty: 'payload.code'}),
     createComponentCard('embed', {hasEditMode: false, deleteIfEmpty: 'payload.html'}),
+    createComponentCard('bookmark', {hasEditMode: false, deleteIfEmpty: 'payload.metadata'}),
     createComponentCard('hr', {hasEditMode: false, selectAfterInsert: false}),
     createComponentCard('html', {deleteIfEmpty: 'payload.html'}),
     createComponentCard('image', {hasEditMode: false, deleteIfEmpty(card) {
@@ -82,6 +85,14 @@ export const CARD_MENU = [
             matches: ['divider', 'horizontal-rule', 'hr'],
             type: 'card',
             replaceArg: 'hr'
+        },
+        {
+            label: 'Bookmark',
+            icon: 'koenig/kg-card-type-bookmark',
+            matches: ['bookmark'],
+            type: 'card',
+            replaceArg: 'bookmark',
+            params: ['url']
         }]
     },
     {

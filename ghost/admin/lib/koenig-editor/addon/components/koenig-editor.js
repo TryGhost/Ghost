@@ -886,7 +886,7 @@ export default Component.extend({
             if (range && range.isCollapsed && range.headSection.isBlank && !range.headSection.isListItem) {
                 if (!this._modifierKeys.shift) {
                     editor.run((postEditor) => {
-                        let payload = {url: text, linkOnError: true};
+                        let payload = {url: text, linkOnError: true, isDirectUrl: true};
                         let card = postEditor.builder.createCardSection('embed', payload);
                         let nextSection = range.headSection.next;
 
