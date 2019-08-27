@@ -23,7 +23,14 @@ async function fetchBookmarkData(url, html) {
         });
         html = response.body;
     }
-    const metadata = await metascraper({html, url});
+    const scraperResponse = await metascraper({html, url});
+    const metadata = Object.assign({}, scraperResponse, {
+        thumbnail: metadata.image,
+        icon: metadata.logo
+    });
+    // We want to use standard naming for image and logo
+    delete metadata.image;
+    delete metadata.logo;
 
     if (metadata.title && metadata.description) {
         return Promise.resolve({

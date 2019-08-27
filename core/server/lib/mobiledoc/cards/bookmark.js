@@ -1,18 +1,18 @@
 /**
-<figure class="kg-card kg-bookmark-card">
+ <figure class="kg-card kg-bookmark-card">
   <div class="kg-bookmark-container">
     <a href="[URL]">
       <div class="kg-bookmark-content">
         <div class="kg-bookmark-title">[TITLE]</div>
         <div class="kg-bookmark-description">[DESCRIPTION]</div>
         <div class="kg-bookmark-metadata">
-          <img src="[LOGO]" class="kg-bookmark-logo">
+          <img src="[ICON]" class="kg-bookmark-icon">
           <span class="kg-bookmark-author">[AUTHOR]</span>
-          <span class="kg-bookmark-url">[URL/DOMAIN]</span>
+          <span class="kg-bookmark-publisher">[PUBLISHER]</span>
         </div>
       </div>
       <div class="kg-bookmark-thumbnail">
-        [THUMBNAIL]
+        <img src="[THUMBNAIL]">
       </div>
     </a>
 </figure> 
@@ -44,8 +44,7 @@ module.exports = createCard({
 
         let {payload, env: {dom}} = opts;
         let figure = createElement(dom, 'figure', 'kg-card kg-bookmark-card');
-        let containerDiv = createElement(dom, 'div', 'kg-bookmark-container');
-        let linkTag = createElement(dom, 'a', '', [{
+        let linkTag = createElement(dom, 'a', 'kg-bookmark-container', [{
             key: 'href', 
             value: payload.metadata.url
         }]);
@@ -53,20 +52,20 @@ module.exports = createCard({
         let titleDiv = createElement(dom, 'div', 'kg-bookmark-title', [] , payload.metadata.title);
         let descriptionDiv = createElement(dom, 'div', 'kg-bookmark-description', [] , payload.metadata.description);
         let metadataDiv = createElement(dom, 'div', 'kg-bookmark-metadata');
-        let imgLogo = createElement(dom, 'img', 'kg-bookmark-logo', [{
+        let imgIcon = createElement(dom, 'img', 'kg-bookmark-icon', [{
             key: 'src',
-            value: payload.metadata.logo
+            value: payload.metadata.icon
         }]);
         let authorSpan = createElement(dom, 'span', 'kg-bookmark-author', [] , payload.metadata.author);
         let publisherSpan = createElement(dom, 'span', 'kg-bookmark-url', [] , payload.metadata.publisher);
         let thumbnailDiv = createElement(dom, 'div', 'kg-bookmark-thumbnail');
         let thumbnailImg = createElement(dom, 'img', '', [{
             key: 'src',
-            value: payload.metadata.image
+            value: payload.metadata.thumbnail
         }]);
         thumbnailDiv.appendChild(thumbnailImg);
-        if (payload.metadata.logo) {
-            metadataDiv.appendChild(imgLogo);
+        if (payload.metadata.icon) {
+            metadataDiv.appendChild(imgIcon);
         }
         if (payload.metadata.author) {
             metadataDiv.appendChild(authorSpan);
@@ -78,11 +77,10 @@ module.exports = createCard({
         contentDiv.appendChild(descriptionDiv);
         contentDiv.appendChild(metadataDiv);
         linkTag.appendChild(contentDiv);
-        if (payload.metadata.image) {
+        if (payload.metadata.thumbnail) {
             linkTag.appendChild(thumbnailDiv);
         }
-        containerDiv.appendChild(linkTag);
-        figure.appendChild(containerDiv);
+        figure.appendChild(linkTag);
 
         if (payload.caption) {
             let figcaption = dom.createElement('figcaption');
