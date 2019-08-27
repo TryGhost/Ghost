@@ -96,7 +96,6 @@
             {{#each postsInfinityModel as |page|}}
                 {{gh-posts-list-item
                     post=page
-                    onDoubleClick=(action "openEditor")
                     data-test-page-id=page.id}}
             {{else}}
                 <li class="no-posts-box">
