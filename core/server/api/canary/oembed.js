@@ -25,8 +25,8 @@ async function fetchBookmarkData(url, html) {
     }
     const scraperResponse = await metascraper({html, url});
     const metadata = Object.assign({}, scraperResponse, {
-        thumbnail: metadata.image,
-        icon: metadata.logo
+        thumbnail: scraperResponse.image,
+        icon: scraperResponse.logo
     });
     // We want to use standard naming for image and logo
     delete metadata.image;
