@@ -23,13 +23,13 @@ const createCard = require('../create-card');
 function createElement(dom, elem, classNames = '', attributes = [], text) {
     let element = dom.createElement(elem);
     if (classNames) {
-        element.setAttribute('class', classNames)
+        element.setAttribute('class', classNames);
     }
     attributes.forEach((attr) => {
         element.setAttribute(attr.key, attr.value);
-    })
+    });
     if (text) {
-        element.appendChild(dom.createTextNode(text))
+        element.appendChild(dom.createTextNode(text));
     }
     return element;
 }

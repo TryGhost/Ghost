@@ -1,10 +1,8 @@
 const common = require('../../lib/common');
-const { extract, hasProvider } = require('oembed-parser');
+const {extract, hasProvider} = require('oembed-parser');
 const Promise = require('bluebird');
 const request = require('../../lib/request');
 const cheerio = require('cheerio');
-const domino = require('domino');
-const {getMetadata} = require('page-metadata-parser');
 const metascraper = require('metascraper')([
     require('metascraper-url')(),
     require('metascraper-title')(),
@@ -25,13 +23,11 @@ async function fetchBookmarkData(url, html) {
         });
         html = response.body;
     }
-    // const doc = domino.createWindow(html).document;
-    // const metadata = getMetadata(doc, url);
-    const metadata = await metascraper({ html, url })
+    const metadata = await metascraper({html, url});
 
     if (metadata.title && metadata.description) {
         return Promise.resolve({
-            type: "bookmark",
+            type: 'bookmark',
             url,
             metadata
         });
@@ -60,7 +56,7 @@ const findUrlWithProvider = (url) => {
         }
     }
 
-    return { url, provider };
+    return {url, provider};
 };
 
 const getOembedUrlFromHTML = (html) => {
@@ -84,7 +80,7 @@ function knownProvider(url) {
 
 function fetchOembedData(url) {
     let provider;
-    ({ url, provider } = findUrlWithProvider(url));
+    ({url, provider} = findUrlWithProvider(url));
     if (provider) {
         return knownProvider(url);
     }
@@ -97,7 +93,7 @@ function fetchOembedData(url) {
         }
     }).then((response) => {
         if (response.url !== url) {
-            ({ url, provider } = findUrlWithProvider(response.url));
+            ({url, provider} = findUrlWithProvider(response.url));
         }
         if (provider) {
             return knownProvider(url);
@@ -111,7 +107,7 @@ function fetchOembedData(url) {
                 return response.body;
             }).catch(() => {});
         }
-    })
+    });
 }
 
 module.exports = {
@@ -124,10 +120,10 @@ module.exports = {
             'type'
         ],
         options: [],
-        query({ data }) {
-            let { url, type } = data;
+        query({data}) {
+            let {url, type} = data;
 
-            if (type === "bookmark") {
+            if (type === 'bookmark') {
                 return fetchBookmarkData(url);
             }
 
