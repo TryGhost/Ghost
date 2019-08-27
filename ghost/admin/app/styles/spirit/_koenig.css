@@ -891,6 +891,12 @@
 
 .kg-bookmark-publisher {
     color: var(--blue);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 240px;
+    white-space: nowrap;
+    display: block;
+    line-height: 1.0em;
 }
 
 
