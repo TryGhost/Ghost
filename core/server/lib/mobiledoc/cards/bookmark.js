@@ -1,21 +1,20 @@
 /**
- <figure class="kg-card kg-bookmark-card">
-  <div class="kg-bookmark-container">
-    <a href="[URL]">
-      <div class="kg-bookmark-content">
-        <div class="kg-bookmark-title">[TITLE]</div>
-        <div class="kg-bookmark-description">[DESCRIPTION]</div>
-        <div class="kg-bookmark-metadata">
-          <img src="[ICON]" class="kg-bookmark-icon">
-          <span class="kg-bookmark-author">[AUTHOR]</span>
-          <span class="kg-bookmark-publisher">[PUBLISHER]</span>
-        </div>
+<figure class="kg-card kg-bookmark-card">
+  <a href="[URL]" class="kg-bookmark-container">
+    <div class="kg-bookmark-content">
+      <div class="kg-bookmark-title">[TITLE]</div>
+      <div class="kg-bookmark-description">[DESCRIPTION]</div>
+      <div class="kg-bookmark-metadata">
+        <img src="[ICON]" class="kg-bookmark-icon">
+        <span class="kg-bookmark-author">[AUTHOR]</span>
+        <span class="kg-bookmark-publisher">[PUBLISHER]</span>
       </div>
-      <div class="kg-bookmark-thumbnail">
-        <img src="[THUMBNAIL]">
-      </div>
-    </a>
-</figure> 
+    </div>
+    <div class="kg-bookmark-thumbnail">
+      <img src="[THUMBNAIL]">
+    </div>
+  </a>
+</figure>
  */
 
 const createCard = require('../create-card');
@@ -45,7 +44,7 @@ module.exports = createCard({
         let {payload, env: {dom}} = opts;
         let figure = createElement(dom, 'figure', 'kg-card kg-bookmark-card');
         let linkTag = createElement(dom, 'a', 'kg-bookmark-container', [{
-            key: 'href', 
+            key: 'href',
             value: payload.metadata.url
         }]);
         let contentDiv = createElement(dom, 'div', 'kg-bookmark-content');
