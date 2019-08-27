@@ -44,7 +44,7 @@ Post = ghostBookshelf.Model.extend({
             uuid: uuid.v4(),
             status: 'draft',
             featured: false,
-            page: false,
+            type: 'post',
             visibility: 'public'
         };
     },
@@ -74,10 +74,10 @@ Post = ghostBookshelf.Model.extend({
 
     emitChange: function emitChange(event, options = {}) {
         let eventToTrigger;
-        let resourceType = this.get('page') ? 'page' : 'post';
+        let resourceType = this.get('type');
 
         if (options.usePreviousAttribute) {
-            resourceType = this.previous('page') ? 'page' : 'post';
+            resourceType = this.previous('type');
         }
 
         eventToTrigger = resourceType + '.' + event;
@@ -118,7 +118,7 @@ Post = ghostBookshelf.Model.extend({
         model.isScheduled = model.get('status') === 'scheduled';
         model.wasPublished = model.previous('status') === 'published';
         model.wasScheduled = model.previous('status') === 'scheduled';
-        model.resourceTypeChanging = model.get('page') !== model.previous('page');
+        model.resourceTypeChanging = model.get('type') !== model.previous('type');
         model.publishedAtHasChanged = model.hasDateChanged('published_at');
         model.needsReschedule = model.publishedAtHasChanged && model.isScheduled;
 
@@ -592,7 +592,7 @@ Post = ghostBookshelf.Model.extend({
             return null;
         }
 
-        return options.context && options.context.public ? 'page:false' : 'page:false+status:published';
+        return options.context && options.context.public ? 'type:post' : 'type:post+status:published';
     },
 
     extraFilters: function extraFilters(options) {
@@ -752,6 +752,12 @@ Post = ghostBookshelf.Model.extend({
      */
     edit: function edit(data, unfilteredOptions) {
         let options = this.filterOptions(unfilteredOptions, 'edit', {extraAllowedProperties: ['id']});
+
+        // @TODO DELETE THIS (and the failing regression tests) when v0.1 is ded
+        if (Object.prototype.hasOwnProperty.call(data, 'page')) {
+            data.type = data.page ? 'page' : 'post';
+            delete data.page;
+        }
 
         const editPost = () => {
             options.forUpdate = true;

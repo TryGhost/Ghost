@@ -25,6 +25,7 @@ const expectedProperties = {
         .without('status')
         // @TODO: https://github.com/TryGhost/Ghost/issues/10335
         // .without('page')
+        .without('type')
         // v2 returns a calculated excerpt field
         .concat('excerpt')
     ,
