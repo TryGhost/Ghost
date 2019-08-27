@@ -10,8 +10,8 @@ const metascraper = require('metascraper')([
     require('metascraper-author')(),
     require('metascraper-publisher')(),
     require('metascraper-image')(),
-    require('metascraper-logo')(),
-    require('metascraper-logo-favicon')()
+    require('metascraper-logo-favicon')(),
+    require('metascraper-logo')()
 ]);
 
 async function fetchBookmarkData(url, html) {
