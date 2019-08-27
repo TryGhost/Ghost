@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import Component from '@ember/component';
 import {alias, equal} from '@ember/object/computed';
 import {computed} from '@ember/object';
