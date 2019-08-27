@@ -10,7 +10,6 @@ form label {
 }
 
 form .word-count {
-    float: right;
     font-weight: bold;
 }
 
@@ -169,7 +168,8 @@ select:focus {
     background: color-mod(var(--input-bg-color) l(-3%));
 }
 
-textarea {
+textarea,
+textarea.gh-input {
     width: 100%;
     height: auto;
     min-width: 250px;

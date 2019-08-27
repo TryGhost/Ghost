@@ -370,8 +370,25 @@ Usage: CTA buttons grouped together horizontally.
     margin-left: 15px;
 }
 
+.gh-btn-group .gh-btn {
+    margin: 0;
+    border-radius: 0 0 0 0;
+    border: none;
+    border-left: 1px solid var(--whitegrey);
+}
+
 .gh-btn-group .gh-btn:first-of-type {
-    margin-left: 0;
+    border-radius: 5px 0 0 5px;
+    border: none;
+}
+
+.gh-btn-group .gh-btn:last-of-type {
+    border-radius: 0 5px 5px 0;
+}
+
+.gh-btn-group .gh-btn-group-selected span {
+    color: var(--blue);
+    font-weight: 500;
 }
 
 .gh-btn-block + .gh-btn-block {

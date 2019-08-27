@@ -1,28 +1,51 @@
-<section class="gh-view tags-view">
-    <header class="view-header">
+{{#unless selectedTag}}
+<section class="gh-canvas tags-view">
+    <header class="gh-canvas-header">
         {{#gh-view-title}}<span>Tags</span>{{/gh-view-title}}
         <section class="view-actions">
+            <div class="gh-contentfilter gh-btn-group">
+                <button class="gh-btn {{if (eq type "public") "gh-btn-group-selected"}}" {{action "changeType" "public"}}><span>Public tags</span></button>
+                <button class="gh-btn {{if (eq type "internal") "gh-btn-group-selected"}}" {{action "changeType" "internal"}}><span>Internal tags</span></button>
+            </div>
             {{#link-to "tags.new" class="gh-btn gh-btn-green"}}<span>New tag</span>{{/link-to}}
         </section>
     </header>
 
-    {{#gh-tags-management-container tags=tags selectedTag=selectedTag enteredMobile="enteredMobile" leftMobile=(action "leftMobile") as |container|}}
-    <div class="tag-list">
-        <section class="tag-list-content settings-tags {{if tagListFocused 'keyboard-focused'}}">
-            {{#vertical-collection sortedTags
-                    estimateHeight=16
-                    minHeight=67
-                    bufferSize=5
-                    containerSelector=".tag-list"
+    <section class="content-list">
+        <ol class="tags-list gh-list {{unless sortedTags "no-posts"}}">
+            {{#if sortedTags}}
+                <li class="gh-list-row header">
+                    <div class="gh-list-header gh-list-cellwidth-1-2">Tag</div>
+                    <div class="gh-list-header">Slug</div>
+                    <div class="gh-list-header">No. of posts</div>
+                    <div class="gh-list-header"></div>
+                </li>
+                {{#vertical-collection
+                    items=sortedTags
+                    key="id"
+                    containerSelector=".gh-main"
+                    estimateHeight=60
+                    bufferSize=20
                     as |tag|
                 }}
-            {{gh-tag tag=tag}}
-            {{/vertical-collection}}
-        </section>
-    </div>
-    <section
-        class="settings-menu-container tag-settings {{if tagContentFocused 'keyboard-focused'}} {{if container.displaySettingsPane 'tag-settings-in'}}">
-        {{outlet}}
+                    {{gh-tags-list-item
+                        tag=tag
+                        data-test-tag-id=tag.id
+                    }}
+                {{/vertical-collection}}
+            {{else}}
+                <li class="no-posts-box">
+                    <div class="no-posts">
+                            {{svg-jar "tags-placeholder" class="gh-tags-placeholder"}}
+                            <h3>You haven't created any {{type}} tags yet!</h3>
+                            {{#link-to "tags.new" class="gh-btn gh-btn-green gh-btn-lg"}}
+                                <span>Create a new tag</span>
+                            {{/link-to}}
+                    </div>
+                </li>
+            {{/if}}
+        </ol>
     </section>
-    {{/gh-tags-management-container}}
 </section>
+{{/unless}}
+{{outlet}}
