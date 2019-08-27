@@ -1,7 +1,7 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
-import {currentURL, find, findAll, triggerEvent, visit} from '@ember/test-helpers';
+import {currentURL, find, findAll, visit} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -95,11 +95,6 @@ describe('Acceptance: Content', function () {
             // expect(find(`[data-test-post-id="${authorPost.id}"]`), 'author post').to.exist;
 
             // TODO: test tags dropdown
-
-            // Double-click on a post opens editor
-            await triggerEvent(`[data-test-post-id="${authorPost.id}"]`, 'dblclick');
-
-            expect(currentURL(), 'url after double-click').to.equal(`/editor/post/${authorPost.id}`);
         });
 
         // TODO: skipped due to consistently random failures on Travis
