@@ -81,7 +81,7 @@ export default Component.extend({
 
         // TODO: replace with Spirit classes
         let baseStyles = 'cursor: default; caret-color: auto;';
-        this.set('_style', htmlSafe(`${baseStyles} ${this.style}`));
+        this.set('_style', htmlSafe(`${baseStyles} ${this.style || ''}`));
 
         if (isSelected !== this._lastIsSelected) {
             if (isSelected) {
