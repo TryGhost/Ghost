@@ -168,8 +168,7 @@ select:focus {
     background: color-mod(var(--input-bg-color) l(-3%));
 }
 
-textarea,
-textarea.gh-input {
+textarea {
     width: 100%;
     height: auto;
     min-width: 250px;
@@ -178,6 +177,10 @@ textarea.gh-input {
     line-height: 1.5;
     user-select: text;
     resize: vertical;
+}
+
+textarea.gh-input {
+    line-height: 1.5em;
 }
 
 
