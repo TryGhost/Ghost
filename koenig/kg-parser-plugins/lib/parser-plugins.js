@@ -73,7 +73,6 @@ export function createParserPlugins(_options = {}) {
 
     // PLUGINS -----------------------------------------------------------------
 
-    // @TODO: rework this once we have bookmark cards
     function mixtapeEmbed(node, builder, {addSection, nodeFinished}) {
         if (node.nodeType !== 1 || node.tagName !== 'DIV' || !node.className.match(/graf--mixtapeEmbed/)) {
             return;
@@ -92,18 +91,15 @@ export function createParserPlugins(_options = {}) {
         }
 
         // Format our preferred structure.
-        let html = `<figure class="mixtape">
-        <a href="${anchor}" class="mixtape-url">
-            <div class="mixtape-content">
-                ${title ? `<div class="mixtape-title"><strong>${title.innerHTML}</strong></div>` : ''}
-                ${desc ? `<div class="mixtape-description"><small>${desc.innerHTML}</small></div>` : ''}
-            </div>
-            ${imgSrc ? `<div class="mixtape-thumbnail"><img src="${imgSrc}" /></div>` : ''}
-        </a>
-        </figure>`;
+        let metadata = {
+            url: anchor,
+            title: title,
+            description: desc,
+            thumbnail: imgSrc
+        };
 
-        let payload = {html: html};
-        let cardSection = builder.createCardSection('html', payload);
+        let payload = {metadata, url: metadata.url, type: 'bookmark'};
+        let cardSection = builder.createCardSection('bookmark', payload);
         addSection(cardSection);
         nodeFinished();
     }
