@@ -40,7 +40,7 @@ export default Component.extend({
     imageUrl: computed('photo.urls.regular', function () {
         let url = this.get('photo.urls.regular');
 
-        url = url.replace(/&w=1080/, '&w=1200');
+        url = url.replace('&w=1080', '&w=1200');
 
         return url;
     }),
