@@ -23,12 +23,15 @@ function ampComponents() {
         components.push('<script async custom-element="amp-anim" src="https://cdn.ampproject.org/v0/amp-anim-0.1.js"></script>');
     }
 
-    if (html.indexOf('<iframe') !== -1) {
-        components.push('<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>');
+    let count_iframe = (html.match(/<iframe/g) || []).length,
+        count_youtube = (html.match(/youtube.com\/embed/g) || []).length;
+
+    if (count_youtube) {
+        components.push('<script async custom-element="amp-youtube" src="https://cdn.ampproject.org/v0/amp-youtube-0.1.js"></script>');
     }
 
-    if (html.indexOf('youtube.com/embed') !== -1) {
-        components.push('<script async custom-element="amp-youtube" src="https://cdn.ampproject.org/v0/amp-youtube-0.1.js"></script>');
+    if (count_iframe > count_youtube) {
+        components.push('<script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>');
     }
 
     if (html.indexOf('<audio') !== -1) {
