@@ -999,7 +999,12 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/kg-clean-basic-html@0.1.2", "@tryghost/kg-clean-basic-html@^0.1.2":
+"@tryghost/kg-clean-basic-html@0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-0.1.3.tgz#0d7f1db1cfb258607b88e6df4cab020572dfbc74"
+  integrity sha512-97FByxvdc7lmnb6vV1pZpT1XWNZONLKTKfNSquPsbzmaUBkAMJnS4Um3oSkK/EkcIZgrB/HVMmTR130gIKx5IQ==
+
+"@tryghost/kg-clean-basic-html@^0.1.2":
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-0.1.2.tgz#7baf29fd37589dcaeaeb28c380130c18fc5b5d05"
   integrity sha512-wLuYmqVrm9pjfWqiURVAdx/nWoTVzbs8zBRoaE0Y29+F3wFeutp88MnZlfE5Ze2tJ2RRzMCWXQLhbZzFkYzTrg==
