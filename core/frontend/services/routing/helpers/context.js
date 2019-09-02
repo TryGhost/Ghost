@@ -7,7 +7,7 @@
  *
  * Contexts are determined based on 3 pieces of information
  * 1. res.locals.relativeUrl - which never includes the subdirectory
- * 2. req.params.page - always has the page parameter, regardless of if the URL contains a keyword (RSS pages don't)
+ * 2. req.params.page - always has the page parameter, regardless of if the URL contains a keyword
  * 3. data - used for telling the difference between posts and pages
  */
 const labs = require('../../../../server/services/labs'),

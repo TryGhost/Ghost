@@ -143,107 +143,6 @@ describe('Dynamic Routing', function () {
                     .end(doEnd(done));
             });
         });
-
-        describe.skip('Paged', function () {
-            // Inserting more posts takes a bit longer
-            this.timeout(20000);
-
-            // Add enough posts to trigger pages for both the index (25 pp) and rss (15 pp)
-            before(function (done) {
-                testUtils.initData().then(function () {
-                    return testUtils.fixtures.insertPostsAndTags();
-                }).then(function () {
-                    return testUtils.fixtures.insertExtraPosts(25);
-                }).then(function () {
-                    done();
-                }).catch(done);
-            });
-
-            after(testUtils.teardown);
-
-            it('should redirect without slash', function (done) {
-                request.get('/page/2')
-                    .expect('Location', '/page/2/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
-            });
-
-            it('should respond with html', function (done) {
-                request.get('/page/2/')
-                    .expect('Content-Type', /html/)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(200)
-                    .end(doEnd(done));
-            });
-
-            it('should not allow chars after the page number', function (done) {
-                request.get('/page/2abc/')
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(404)
-                    .expect(/Page not found/)
-                    .end(doEnd(done));
-            });
-
-            it('should redirect page 1', function (done) {
-                request.get('/page/1/')
-                    .expect('Location', '/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
-            });
-
-            it('should 404 if page too high', function (done) {
-                // We have 7 default welcome posts + 8 fixture posts + 25 more posts = 40 (5 pages per post is default). So the 9th page 404's.
-                request.get('/page/9/')
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(404)
-                    .expect(/Page not found/)
-                    .end(doEnd(done));
-            });
-
-            it('should 404 if page is zero', function (done) {
-                request.get('/page/0/')
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(404)
-                    .expect(/Page not found/)
-                    .end(doEnd(done));
-            });
-
-            it('should 404 if page is less than zero', function (done) {
-                request.get('/page/-5/')
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(404)
-                    .expect(/Page not found/)
-                    .end(doEnd(done));
-            });
-
-            it('should 404 if page is NaN', function (done) {
-                request.get('/page/one/')
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(404)
-                    .expect(/Page not found/)
-                    .end(doEnd(done));
-            });
-
-            describe('RSS', function () {
-                it('should redirect without slash', function (done) {
-                    request.get('/rss/2')
-                        .expect('Location', '/rss/2/')
-                        .expect('Cache-Control', testUtils.cacheRules.year)
-                        .expect(301)
-                        .end(doEnd(done));
-                });
-
-                it('should respond with xml', function (done) {
-                    request.get('/rss/2/')
-                        .expect('Content-Type', /xml/)
-                        .expect('Cache-Control', testUtils.cacheRules.public)
-                        .expect(200)
-                        .end(doEnd(done));
-                });
-            });
-        });
     });
 
     describe('Collection Entry', function () {
@@ -447,24 +346,24 @@ describe('Dynamic Routing', function () {
             });
 
             describe('RSS', function () {
-                it('should redirect page 1', function (done) {
-                    request.get('/tag/getting-started/rss/1/')
-                        .expect('Location', '/tag/getting-started/rss/')
-                        .expect('Cache-Control', testUtils.cacheRules.year)
-                        .expect(301)
-                        .end(doEnd(done));
-                });
-
-                it('should 404 if page too high', function (done) {
-                    request.get('/tag/getting-started/rss/2/')
+                it('should 404 if index attempted with 0', function (done) {
+                    request.get('/tag/getting-started/rss/0/')
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
                         .expect(/Page not found/)
                         .end(doEnd(done));
                 });
 
-                it('should 404 if page too low', function (done) {
-                    request.get('/tag/getting-started/rss/0/')
+                it('should 404 if index attempted with 1', function (done) {
+                    request.get('/tag/getting-started/rss/1/')
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(404)
+                        .expect(/Page not found/)
+                        .end(doEnd(done));
+                });
+
+                it('should 404 for other pages', function (done) {
+                    request.get('/tag/getting-started/rss/2/')
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
                         .expect(/Page not found/)
@@ -672,24 +571,24 @@ describe('Dynamic Routing', function () {
             });
 
             describe('RSS', function () {
-                it('should redirect page 1', function (done) {
-                    request.get('/author/ghost-owner/rss/1/')
-                        .expect('Location', '/author/ghost-owner/rss/')
-                        .expect('Cache-Control', testUtils.cacheRules.year)
-                        .expect(301)
-                        .end(doEnd(done));
-                });
-
-                it('should 404 if page too high', function (done) {
-                    request.get('/author/ghost-owner/rss/3/')
+                it('should 404 if index attempted with 0', function (done) {
+                    request.get('/author/ghost-owner/rss/0/')
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
                         .expect(/Page not found/)
                         .end(doEnd(done));
                 });
 
-                it('should 404 if page too low', function (done) {
-                    request.get('/author/ghost-owner/rss/0/')
+                it('should 404 if index attempted with 1', function (done) {
+                    request.get('/author/ghost-owner/rss/1/')
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(404)
+                        .expect(/Page not found/)
+                        .end(doEnd(done));
+                });
+
+                it('should 404 for other pages', function (done) {
+                    request.get('/author/ghost-owner/rss/2/')
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
                         .expect(/Page not found/)

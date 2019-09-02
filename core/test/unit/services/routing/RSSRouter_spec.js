@@ -24,8 +24,6 @@ describe('UNIT - services/routing/RSSRouter', function () {
         });
 
         it('default', function () {
-            urlUtils.urlJoin.withArgs('/rss/', ':page(\\d+)').returns('/rss-pagination/');
-
             const rssRouter = new RSSRouter();
 
             should.exist(rssRouter.router);
@@ -34,21 +32,16 @@ describe('UNIT - services/routing/RSSRouter', function () {
             common.events.emit.calledOnce.should.be.false();
             common.events.on.calledOnce.should.be.false();
 
-            rssRouter.mountRoute.callCount.should.eql(3);
+            rssRouter.mountRoute.callCount.should.eql(2);
 
             rssRouter.mountRoute.args[0][0].should.eql('/rss/');
             rssRouter.mountRoute.args[0][1].should.eql(controllers.rss);
 
-            rssRouter.mountRoute.args[1][0].should.eql('/rss-pagination/');
-            rssRouter.mountRoute.args[1][1].should.eql(controllers.rss);
-
-            rssRouter.mountRoute.args[2][0].should.eql('/feed/');
+            rssRouter.mountRoute.args[1][0].should.eql('/feed/');
         });
 
         it('subdirectory is enabled', function () {
             configUtils.set('url', 'http://localhost:22222/blog/');
-            urlUtils.urlJoin.withArgs('/rss/', ':page(\\d+)').returns('/rss-pagination/');
-
             const rssRouter = new RSSRouter();
 
             should.exist(rssRouter.router);
@@ -57,15 +50,12 @@ describe('UNIT - services/routing/RSSRouter', function () {
             common.events.emit.calledOnce.should.be.false();
             common.events.on.calledOnce.should.be.false();
 
-            rssRouter.mountRoute.callCount.should.eql(3);
+            rssRouter.mountRoute.callCount.should.eql(2);
 
             rssRouter.mountRoute.args[0][0].should.eql('/rss/');
             rssRouter.mountRoute.args[0][1].should.eql(controllers.rss);
 
-            rssRouter.mountRoute.args[1][0].should.eql('/rss-pagination/');
-            rssRouter.mountRoute.args[1][1].should.eql(controllers.rss);
-
-            rssRouter.mountRoute.args[2][0].should.eql('/feed/');
+            rssRouter.mountRoute.args[1][0].should.eql('/feed/');
         });
     });
 });

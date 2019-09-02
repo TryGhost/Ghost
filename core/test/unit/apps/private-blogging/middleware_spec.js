@@ -300,23 +300,6 @@ describe('Private Blogging', function () {
                     (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
                 });
 
-                it('filterPrivateRoutes should 404 for tag rss with pagination requests', function () {
-                    var salt = Date.now().toString();
-                    req.url = req.path = '/tag/welcome/rss/2';
-
-                    req.session = {
-                        token: hash('rightpassword', salt),
-                        salt: salt
-                    };
-
-                    res.isPrivateBlog = true;
-                    res.redirect = sinon.spy();
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
-                    (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
-                });
-
                 it('filterPrivateRoutes should return next if tag contains rss', function () {
                     var salt = Date.now().toString();
                     req.url = req.path = '/tag/rss-test/';

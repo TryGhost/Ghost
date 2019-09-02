@@ -296,21 +296,6 @@ describe('Integration - Web - Site', function () {
                                 response.headers.location.should.eql('/rss/');
                             });
                     });
-
-                    it('redirect /rss/1/ to /rss/', function () {
-                        const req = {
-                            secure: false,
-                            host: 'example.com',
-                            method: 'GET',
-                            url: '/rss/1/'
-                        };
-
-                        return testUtils.mocks.express.invoke(app, req)
-                            .then(function (response) {
-                                response.statusCode.should.eql(301);
-                                response.headers.location.should.eql('/rss/');
-                            });
-                    });
                 });
             });
         });
@@ -2062,21 +2047,6 @@ describe('Integration - Web - Site', function () {
                                 response.headers.location.should.eql('/rss/');
                             });
                     });
-
-                    it('redirect /rss/1/ to /rss/', function () {
-                        const req = {
-                            secure: false,
-                            host: 'example.com',
-                            method: 'GET',
-                            url: '/rss/1/'
-                        };
-
-                        return testUtils.mocks.express.invoke(app, req)
-                            .then(function (response) {
-                                response.statusCode.should.eql(301);
-                                response.headers.location.should.eql('/rss/');
-                            });
-                    });
                 });
             });
         });
@@ -3798,21 +3768,6 @@ describe('Integration - Web - Site', function () {
                             host: 'example.com',
                             method: 'GET',
                             url: '/feed/'
-                        };
-
-                        return testUtils.mocks.express.invoke(app, req)
-                            .then(function (response) {
-                                response.statusCode.should.eql(301);
-                                response.headers.location.should.eql('/rss/');
-                            });
-                    });
-
-                    it('redirect /rss/1/ to /rss/', function () {
-                        const req = {
-                            secure: false,
-                            host: 'example.com',
-                            method: 'GET',
-                            url: '/rss/1/'
                         };
 
                         return testUtils.mocks.express.invoke(app, req)
