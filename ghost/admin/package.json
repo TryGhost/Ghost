@@ -31,7 +31,7 @@
     "@html-next/vertical-collection": "1.0.0",
     "@tryghost/helpers": "1.1.8",
     "@tryghost/kg-clean-basic-html": "0.1.3",
-    "@tryghost/kg-parser-plugins": "0.7.0",
+    "@tryghost/kg-parser-plugins": "0.8.0",
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
     "@tryghost/string": "0.1.5",
     "@tryghost/timezone-data": "0.2.7",
