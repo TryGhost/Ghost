@@ -18,7 +18,7 @@ const expectedProperties = {
         // canary doesn't return author_id OR author
         .without('author_id', 'author')
         // and always returns computed properties: url, primary_tag, primary_author
-        .concat('url', 'primary_tag', 'primary_author')
+        .concat('url')
         // canary API doesn't return unused fields
         .without('locale', 'visibility')
         // These fields aren't useful as they always have known values

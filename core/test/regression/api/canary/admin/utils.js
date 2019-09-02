@@ -27,6 +27,8 @@ const expectedProperties = {
         .without('page')
         .without('author_id')
         // always returns computed properties
+        // primary_tag and primary_author properties are included
+        // only because authors and tags are always included
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         .concat('authors', 'tags')
     ,
