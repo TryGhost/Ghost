@@ -92,7 +92,7 @@
     "ember-sinon": "4.0.0",
     "ember-source": "3.12.0",
     "ember-sticky-element": "0.2.3",
-    "ember-svg-jar": "2.2.1",
+    "ember-svg-jar": "2.1.0",
     "ember-test-selectors": "2.1.0",
     "ember-truth-helpers": "2.1.0",
     "ember-useragent": "0.9.1",
