@@ -28,6 +28,94 @@ describe('api/canary/content/posts', function () {
 
     const validKey = localUtils.getValidKey();
 
+    it('browse posts', function (done) {
+        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                res.headers.vary.should.eql('Accept-Encoding');
+                should.exist(res.headers['access-control-allow-origin']);
+                should.not.exist(res.headers['x-cache-invalidate']);
+
+                var jsonResponse = res.body;
+                should.exist(jsonResponse.posts);
+                localUtils.API.checkResponse(jsonResponse, 'posts');
+                jsonResponse.posts.should.have.length(11);
+                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+
+                // Default order 'published_at desc' check
+                jsonResponse.posts[0].slug.should.eql('welcome');
+                jsonResponse.posts[6].slug.should.eql('themes');
+
+                // check meta response for this test
+                jsonResponse.meta.pagination.page.should.eql(1);
+                jsonResponse.meta.pagination.limit.should.eql(15);
+                jsonResponse.meta.pagination.pages.should.eql(1);
+                jsonResponse.meta.pagination.total.should.eql(11);
+                jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
+                jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
+                should.not.exist(jsonResponse.meta.pagination.next);
+                should.not.exist(jsonResponse.meta.pagination.prev);
+
+                done();
+            });
+    });
+
+    it('browse posts with related authors/tags also returns primary_author/primary_tag', function (done) {
+        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&include=authors,tags`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                res.headers.vary.should.eql('Accept-Encoding');
+                should.exist(res.headers['access-control-allow-origin']);
+                should.not.exist(res.headers['x-cache-invalidate']);
+
+                var jsonResponse = res.body;
+                should.exist(jsonResponse.posts);
+                localUtils.API.checkResponse(jsonResponse, 'posts');
+                jsonResponse.posts.should.have.length(11);
+                localUtils.API.checkResponse(
+                    jsonResponse.posts[0],
+                    'post',
+                    ['authors', 'tags', 'primary_tag', 'primary_author'],
+                    null
+                );
+
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+
+                // Default order 'published_at desc' check
+                jsonResponse.posts[0].slug.should.eql('welcome');
+                jsonResponse.posts[6].slug.should.eql('themes');
+
+                // check meta response for this test
+                jsonResponse.meta.pagination.page.should.eql(1);
+                jsonResponse.meta.pagination.limit.should.eql(15);
+                jsonResponse.meta.pagination.pages.should.eql(1);
+                jsonResponse.meta.pagination.total.should.eql(11);
+                jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
+                jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
+                should.not.exist(jsonResponse.meta.pagination.next);
+                should.not.exist(jsonResponse.meta.pagination.prev);
+
+                done();
+            });
+    });
+
     it('browse posts with basic page filter should not return pages', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=page:true`))
             .expect('Content-Type', /json/)
