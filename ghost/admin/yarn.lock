@@ -1024,7 +1024,7 @@
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
 
-"@tryghost/string@^0.1.5":
+"@tryghost/string@0.1.5":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.5.tgz#adc67ce449e66e61a2d14b0815a14a5174465549"
   integrity sha512-zbD/C+I7PXZfRkki80yK+jWMyNaklKLj7wdoQd81+r5ARGGar0XtWL/T1zc6G2UI/v9UW+dLQ5mDxpsxQIEFlA==
