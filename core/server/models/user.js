@@ -215,7 +215,6 @@ User = ghostBookshelf.Model.extend({
 
         // remove password hash for security reasons
         delete attrs.password;
-        delete attrs.ghost_auth_access_token;
 
         // NOTE: We don't expose the email address for for external, app and public context.
         // @TODO: Why? External+Public is actually the same context? Was also mentioned here https://github.com/TryGhost/Ghost/issues/9043
@@ -233,7 +232,6 @@ User = ghostBookshelf.Model.extend({
             delete attrs.updated_by;
             delete attrs.last_seen;
             delete attrs.status;
-            delete attrs.ghost_auth_id;
         }
 
         return attrs;
