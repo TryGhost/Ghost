@@ -1,0 +1,35 @@
+{
+  "name": "@tryghost/magic-link",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Members/tree/master/packages/magic-link",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.3.3",
+    "@types/node": "^12.7.3",
+    "@types/nodemailer": "^6.2.1",
+    "mocha": "6.2.0",
+    "should": "13.2.3",
+    "sinon": "7.4.1"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.5",
+    "ghost-ignition": "^3.1.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.15"
+  }
+}
