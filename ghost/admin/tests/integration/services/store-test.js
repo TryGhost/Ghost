@@ -21,7 +21,7 @@ describe('Integration: Service: store', function () {
         let {version} = config.APP;
         let store = this.owner.lookup('service:store');
 
-        server.get('/ghost/api/canary/admin/posts/1/', function () {
+        server.get('/ghost/api/v3/admin/posts/1/', function () {
             return [
                 404,
                 {'Content-Type': 'application/json'},

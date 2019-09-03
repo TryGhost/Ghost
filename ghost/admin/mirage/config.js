@@ -25,7 +25,7 @@ export default function () {
     this.passthrough('/ghost/assets/**');
 
     // this.urlPrefix = '';    // make this `http://localhost:8080`, for example, if your API is on a different server
-    this.namespace = '/ghost/api/canary/admin'; // make this `api`, for example, if your API is namespaced
+    this.namespace = '/ghost/api/v3/admin'; // make this `api`, for example, if your API is namespaced
     this.timing = 1000; // delay for each request, automatically set to 0 during testing
     this.logging = true;
 
@@ -49,7 +49,7 @@ export default function () {
 // Mock all endpoints here as there is no real API during testing
 export function testConfig() {
     // this.urlPrefix = '';    // make this `http://localhost:8080`, for example, if your API is on a different server
-    this.namespace = '/ghost/api/canary/admin'; // make this `api`, for example, if your API is namespaced
+    this.namespace = '/ghost/api/v3/admin'; // make this `api`, for example, if your API is namespaced
     // this.timing = 400;      // delay for each request, automatically set to 0 during testing
     this.logging = false;
 

@@ -5,7 +5,7 @@ import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
 function stubSlugEndpoint(server, type, slug) {
-    server.get('/ghost/api/canary/admin/slugs/:type/:slug/', function (request) {
+    server.get('/ghost/api/v3/admin/slugs/:type/:slug/', function (request) {
         expect(request.params.type).to.equal(type);
         expect(request.params.slug).to.equal(slug);
 

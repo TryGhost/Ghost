@@ -23,7 +23,7 @@ describe('Unit: Model: invite', function () {
             let model = store.createRecord('invite');
             let role;
 
-            server.post('/ghost/api/canary/admin/invites/', function () {
+            server.post('/ghost/api/v3/admin/invites/', function () {
                 return [200, {}, '{}'];
             });
 
