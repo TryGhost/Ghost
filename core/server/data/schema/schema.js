@@ -385,8 +385,6 @@ module.exports = {
     members: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
-        name: {type: 'string', maxlength: 191, nullable: false},
-        password: {type: 'string', maxlength: 60, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
