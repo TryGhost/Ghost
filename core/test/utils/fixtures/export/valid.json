@@ -1511,8 +1511,6 @@
                         "id": "5951f5fca366002ebd5dbef7",
                         "name": "Joe Blogg's Brother",
                         "slug": "joe-bloggs-brother",
-                        "ghost_auth_access_token": null,
-                        "ghost_auth_id": null,
                         "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKABC",
                         "email": "jbloggsbrother@example.com",
                         "profile_image": "/content/images/2017/05/authorlogo.jpeg",

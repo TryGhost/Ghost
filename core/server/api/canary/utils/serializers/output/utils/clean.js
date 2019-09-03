@@ -68,7 +68,6 @@ const author = (attrs, frame) => {
     // @NOTE: unused fields
     delete attrs.visibility;
     delete attrs.locale;
-    delete attrs.ghost_auth_id;
 
     return attrs;
 };
