@@ -1,10 +1,8 @@
 const concat = require('concat-stream');
 const Cookies = require('cookies');
-const jwt = require('jsonwebtoken');
 const ignition = require('ghost-ignition');
 
 const {
-    UnauthorizedError,
     BadRequestError
 } = ignition.errors;
 
@@ -60,22 +58,9 @@ module.exports = function create(options = EMPTY) {
         secure: cookieSecure
     };
 
-    const verifyJwt = token => get(membersApi).getPublicConfig().then(({publicKey, issuer}) => {
-        return new Promise((resolve, reject) => {
-            jwt.verify(token, publicKey, {
-                algorithms: ['RS512'],
-                issuer,
-                audience: issuer
-            }, (err, claims) => {
-                if (err) {
-                    reject(new UnauthorizedError({err}));
-                }
-                resolve(claims);
-            });
-        });
-    });
+    const getMemberDataFromToken = token => get(membersApi).getMemberDataFromMagicLinkToken(token);
 
-    const exchangeTokenForSession = withBodyAndCookies((req, res, {body, cookies}) => {
+    const exchangeTokenForSession = withBodyAndCookies(async (_req, _res, {body, cookies}) => {
         const token = body;
         if (!body || typeof body !== 'string') {
             return Promise.reject(new BadRequestError({
@@ -83,18 +68,17 @@ module.exports = function create(options = EMPTY) {
             }));
         }
 
-        return verifyJwt(token).then(() => {
-            cookies.set(cookieName, token, {
-                signed: true,
-                httpOnly: true,
-                sameSite: 'lax',
-                maxAge: cookieMaxAge,
-                path: cookiePath
-            });
+        const member = await getMemberDataFromToken(token);
+        cookies.set(cookieName, member.email, {
+            signed: true,
+            httpOnly: true,
+            sameSite: 'lax',
+            maxAge: cookieMaxAge,
+            path: cookiePath
         });
     }, cookieConfig);
 
-    const deleteSession = withCookies((req, res, {cookies}) => {
+    const deleteSession = withCookies((_req, _res, {cookies}) => {
         cookies.set(cookieName, {
             signed: true,
             httpOnly: true,
@@ -104,24 +88,36 @@ module.exports = function create(options = EMPTY) {
         });
     }, cookieConfig);
 
-    const getMemberDataFromSession = withCookies((req, res, {cookies}) => {
+    const getMemberDataFromSession = withCookies(async (_req, _res, {cookies}) => {
         try {
-            const token = cookies.get(cookieName, {
+            const email = cookies.get(cookieName, {
                 signed: true
             });
-            return verifyJwt(token).then((claims) => {
-                return get(membersApi).getMember(claims.sub, token);
-            });
+            return get(membersApi).getMemberIdentityData(email);
         } catch (e) {
-            return Promise.reject(new BadRequestError({
+            throw new BadRequestError({
                 message: `Cookie ${cookieName} not found`
-            }));
+            });
         }
     }, cookieConfig);
+
+    const getIdentityTokenForMemberFromSession = withCookies(async (_req, _res, {cookies}) => {
+        try {
+            const email = cookies.get(cookieName, {
+                signed: true
+            });
+            return get(membersApi).getMemberIdentityToken(email);
+        } catch (e) {
+            throw new BadRequestError({
+                message: `Cookie ${cookieName} not found`
+            });
+        }
+    });
 
     return {
         exchangeTokenForSession,
         deleteSession,
-        getMemberDataFromSession
+        getMemberDataFromSession,
+        getIdentityTokenForMemberFromSession
     };
 };
