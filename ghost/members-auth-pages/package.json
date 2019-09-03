@@ -35,7 +35,7 @@
     "@tryghost/members-gateway-protocol": "^0.1.2",
     "preact": "^8.2.1",
     "preact-compat": "^3.17.0",
-    "react-stripe-elements": "^2.0.3"
+    "react-stripe-elements": "^5.0.0"
   },
   "publishConfig": {
     "access": "public"
