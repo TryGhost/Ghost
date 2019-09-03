@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-auth-pages",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-gateway-protocol",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -32,7 +32,7 @@
     "preact-cli": "3.0.0-rc.5"
   },
   "dependencies": {
-    "@tryghost/members-gateway-protocol": "^0.1.2",
+    "@tryghost/members-gateway-protocol": "^0.1.3",
     "preact": "^8.2.1",
     "preact-compat": "^3.17.0",
     "react-stripe-elements": "^5.0.0"
