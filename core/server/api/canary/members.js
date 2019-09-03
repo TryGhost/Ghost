@@ -1,6 +1,7 @@
 // NOTE: We must not cache references to membersService.api
 // as it is a getter and may change during runtime.
 const membersService = require('../../services/members');
+const common = require('../../lib/common');
 
 const members = {
     docName: 'members',
@@ -28,8 +29,14 @@ const members = {
         ],
         validation: {},
         permissions: true,
-        query(frame) {
-            return membersService.api.members.get(frame.data, frame.options);
+        async query(frame) {
+            const member = await membersService.api.members.get(frame.data, frame.options);
+            if (!member) {
+                throw new common.errors.NotFoundError({
+                    message: common.i18n.t('errors.api.members.memberNotFound')
+                });
+            }
+            return member;
         }
     },
 
