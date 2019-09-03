@@ -24,7 +24,7 @@
     "autoprefixer": "9.4.2",
     "cssnano": "4.1.7",
     "grunt": "1.0.4",
-    "grunt-shell": "2.1.0",
+    "grunt-shell": "3.0.1",
     "postcss-color-mod-function": "3.0.3",
     "postcss-css-variables": "0.11.0",
     "postcss-custom-properties": "8.0.9",
