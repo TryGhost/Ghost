@@ -1,5 +1,3 @@
-const {static} = require('express');
-const path = require('path');
 const MembersSSR = require('@tryghost/members-ssr');
 
 const createMembersApiInstance = require('./api');
@@ -47,14 +45,7 @@ const membersService = {
         // This is passed as a function so that updates to the instance
         // are picked up in the ssr module
         membersApi: () => membersApi
-    }),
-
-    authPages: static(
-        path.join(
-            require.resolve('@tryghost/members-auth-pages'),
-            '../dist'
-        )
-    )
+    })
 };
 
 module.exports = membersService;

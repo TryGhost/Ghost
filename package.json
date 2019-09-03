@@ -32,8 +32,7 @@
     "lint:test": "eslint -c core/test/.eslintrc.json --ignore-path core/test/.eslintignore 'core/test/**/*.js'",
     "lint": "yarn lint:server && yarn lint:frontend && yarn lint:test",
     "posttest": "yarn lint",
-    "fixmodulenotdefined": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../",
-    "postinstall": "cpy node_modules/@tryghost/members-theme-bindings/build/members-theme-bindings.js core/server/public/"
+    "fixmodulenotdefined": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../"
   },
   "engines": {
     "node": "^8.10.0 || ^10.13.0",
@@ -43,9 +42,7 @@
     "@nexes/nql": "0.3.0",
     "@tryghost/helpers": "1.1.8",
     "@tryghost/members-api": "0.4.1",
-    "@tryghost/members-auth-pages": "1.1.0",
     "@tryghost/members-ssr": "0.3.0",
-    "@tryghost/members-theme-bindings": "0.2.3",
     "@tryghost/social-urls": "0.1.2",
     "@tryghost/string": "^0.1.3",
     "@tryghost/url-utils": "0.3.0",
