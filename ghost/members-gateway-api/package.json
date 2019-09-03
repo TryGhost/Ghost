@@ -19,7 +19,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "eslint": "5.16.0",
+    "eslint": "6.3.0",
     "eslint-plugin-ghost": "0.5.0",
     "mocha": "6.2.0",
     "should": "13.2.3",
