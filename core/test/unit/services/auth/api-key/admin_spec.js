@@ -81,6 +81,31 @@ describe('Admin API Key Auth', function () {
         });
     });
 
+    it('should authenticate known+valid v3 API key', function (done) {
+        const token = jwt.sign({
+        }, this.secret, {
+            keyid: this.fakeApiKey.id,
+            algorithm: 'HS256',
+            expiresIn: '5m',
+            audience: '/v3/admin/',
+            issuer: this.fakeApiKey.id
+        });
+
+        const req = {
+            originalUrl: '/ghost/api/v3/admin/',
+            headers: {
+                authorization: `Ghost ${token}`
+            }
+        };
+        const res = {};
+
+        apiKeyAuth.admin.authenticate(req, res, (err) => {
+            should.not.exist(err);
+            req.api_key.should.eql(this.fakeApiKey);
+            done();
+        });
+    });
+
     it('shouldn\'t authenticate with missing Ghost token', function (done) {
         const token = '';
         const req = {

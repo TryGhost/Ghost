@@ -221,4 +221,15 @@ describe('getMetaDescription', function () {
         });
         description.should.equal('Best page ever!');
     });
+
+    it('v3: should return data page meta description if on root context contains page', function () {
+        var description = getMetaDescription({
+            page: {
+                meta_description: 'Best page ever!'
+            }
+        }, {
+            context: ['page']
+        });
+        description.should.equal('Best page ever!');
+    });
 });
