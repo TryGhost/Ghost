@@ -9,7 +9,7 @@ module.exports = function ({
     const keyStore = jose.JWK.createKeyStore();
     const keyStoreReady = keyStore.add(privateKey, 'pem');
 
-    function encodeToken({sub, aud = issuer, plans, exp}) {
+    function encodeAPIToken({sub, aud = issuer, plans, exp}) {
         return keyStoreReady.then(jwk => jwt.sign({
             sub,
             plans,
@@ -18,6 +18,18 @@ module.exports = function ({
             algorithm: 'RS512',
             audience: aud,
             expiresIn: exp,
+            issuer
+        }));
+    }
+
+    function encodeIdentityToken({sub}) {
+        return keyStoreReady.then(jwk => jwt.sign({
+            sub,
+            kid: jwk.kid
+        }, privateKey, {
+            algorithm: 'RS512',
+            audience: issuer,
+            expiresIn: '10m',
             issuer
         }));
     }
@@ -37,7 +49,8 @@ module.exports = function ({
     }
 
     return {
-        encodeToken,
+        encodeAPIToken,
+        encodeIdentityToken,
         decodeToken,
         getPublicKeys
     };
