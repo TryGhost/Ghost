@@ -54,7 +54,7 @@ module.exports.down = createColumnMigrations([
         columnDefinition: {
             type: 'string',
             nullable: true,
-            maxLength: 32
+            maxlength: 32
         }
     },
     {
@@ -68,7 +68,7 @@ module.exports.down = createColumnMigrations([
         columnDefinition: {
             type: 'string',
             nullable: true,
-            maxLength: 24
+            maxlength: 24
         }
     }
 ]);
