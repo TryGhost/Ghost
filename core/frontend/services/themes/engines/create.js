@@ -12,6 +12,7 @@ const allowedKeys = ['ghost-api'];
  * ^0.1.0
  * ^2.0.0
  * 2.0.0
+ * v3
  * v2
  * v0.1
  * canary
