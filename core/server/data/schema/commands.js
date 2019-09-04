@@ -133,6 +133,40 @@ function checkTables(transaction) {
     }
 }
 
+const createLog = type => msg => common.logging[type](msg);
+
+function createColumnMigration(...migrations) {
+    async function runColumnMigration(conn, migration) {
+        const {
+            table,
+            column,
+            dbIsInCorrectState,
+            operation,
+            operationVerb,
+            columnDefinition
+        } = migration;
+
+        const hasColumn = await conn.schema.hasColumn(table, column);
+        const isInCorrectState = dbIsInCorrectState(hasColumn);
+
+        const log = createLog(isInCorrectState ? 'info' : 'warn');
+
+        log(`${operationVerb} ${table}.${column}`);
+
+        if (!isInCorrectState) {
+            await operation(table, column, conn, columnDefinition);
+        }
+    }
+
+    return async function columnMigration(options) {
+        const conn = options.transacting || options.connection;
+
+        for (const migration of migrations) {
+            await runColumnMigration(conn, migration);
+        }
+    };
+}
+
 module.exports = {
     checkTables: checkTables,
     createTable: createTable,
@@ -143,5 +177,6 @@ module.exports = {
     dropUnique: dropUnique,
     addColumn: addColumn,
     dropColumn: dropColumn,
-    getColumns: getColumns
+    getColumns: getColumns,
+    createColumnMigration
 };
