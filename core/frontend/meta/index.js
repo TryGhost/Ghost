@@ -58,7 +58,7 @@ function getMetaData(data, root) {
             modifiedDate: getModifiedDate(data),
             ogType: getOgType(data),
             // @TODO: pass into each meta helper - wrap each helper
-            blog: {
+            site: {
                 title: settingsCache.get('title'),
                 description: settingsCache.get('description'),
                 url: urlUtils.urlFor('home', true),
