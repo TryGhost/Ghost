@@ -119,7 +119,7 @@ module.exports = function has(options) {
 
     var self = this,
         attrs = _.pick(options.hash, validAttrs),
-        data = _.pick(options.data, ['blog', 'config', 'labs']),
+        data = _.pick(options.data, ['site', 'config', 'labs']),
         checks = {
             tag: function () {
                 return handleTag(self, attrs);
