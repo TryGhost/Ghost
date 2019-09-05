@@ -29,30 +29,6 @@ describe('{{#get}} helper', function () {
         sinon.restore();
     });
 
-    it('errors correctly if labs flag not set', function (done) {
-        labsStub.returns(false);
-
-        helpers.get.call(
-            {},
-            'posts',
-            {hash: {}, data: locals, fn: fn, inverse: inverse}
-        ).then(function (result) {
-            labsStub.calledOnce.should.be.true();
-            fn.called.should.be.false();
-            inverse.called.should.be.false();
-
-            should.exist(result);
-            result.should.be.an.Object().with.property(
-                'string',
-                '<script>console.error("The {{#get}} helper requires your theme to have API access. ' +
-                'Please enable the v2 API via your theme\'s package.json file. ' +
-                'See https://ghost.org/docs/api/handlebars-themes/packagejson/");</script>'
-            );
-
-            done();
-        }).catch(done);
-    });
-
     describe('posts v0.1', function () {
         var browsePostsStub, readPostsStub, readTagsStub, readUsersStub, testPostsArr = [
                 {id: 1, title: 'Test Post 1', author: {slug: 'cameron'}},

@@ -209,27 +209,4 @@ get = function get(resource, options) {
     });
 };
 
-module.exports = function getLabsWrapper() {
-    const self = this;
-    const args = arguments;
-    const apiVersion = _.get(args, '[1].data.root._locals.apiVersion');
-
-    // If the API version is v0.1 return the labs enabled version of the helper
-    if (apiVersion === 'v0.1') {
-        return labs.enabledHelper({
-            flagKey: 'publicAPI',
-            flagName: 'Public API',
-            helperName: 'get',
-            // Even though this is a labs enabled helper, really we want users to upgrade to v2 API.
-            errMessagePath: 'warnings.helpers.get.apiRequired.message',
-            errContextPath: 'warnings.helpers.get.apiRequired.context',
-            helpUrl: 'https://ghost.org/docs/api/handlebars-themes/packagejson/',
-            async: true
-        }, function executeHelper() {
-            return get.apply(self, args);
-        });
-    }
-
-    // Else, we just apply the helper normally
-    return get.apply(self, args);
-};
+module.exports = get;
