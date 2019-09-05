@@ -11,7 +11,7 @@ forms.forEach(function (form){
             return;
         }
 
-        fetch('{{admin-url}}/api/v2/members/send-magic-link/', {
+        fetch('{{admin-url}}/api/canary/members/send-magic-link/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
