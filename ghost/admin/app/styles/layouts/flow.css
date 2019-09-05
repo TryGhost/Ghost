@@ -118,6 +118,10 @@
     stroke-width: 2px;
 }
 
+.gh-flow-nav .step svg path {
+    stroke: #fff;
+}
+
 .gh-flow-nav .active ~ li:not(divider) .step {
     border: #e3e3e3 2px solid;
     background: transparent;
