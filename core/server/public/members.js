@@ -1,5 +1,5 @@
-const form = document.querySelector('form[data-members-form]');
-if (form) {
+const forms = [...document.querySelectorAll('form[data-members-form]')];
+forms.forEach(function (form){
     form.addEventListener('submit', function (event) {
         event.preventDefault();
         form.classList.remove('success', 'invalid', 'error');
@@ -27,7 +27,7 @@ if (form) {
             }
         });
     });
-}
+});
 
 const magicLinkRegEx = /token=([a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+)/;
 const [isMagicLink, token] = location.search.match(magicLinkRegEx) || [false, null];
