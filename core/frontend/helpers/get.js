@@ -13,7 +13,6 @@ var proxy = require('./proxy'),
     createFrame = proxy.hbs.handlebars.createFrame,
 
     api = proxy.api,
-    labs = proxy.labs,
     pathAliases,
     get;
 

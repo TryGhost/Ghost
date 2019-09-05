@@ -10,7 +10,7 @@ var should = require('should'),
     labs = require('../../../server/services/labs');
 
 describe('{{#get}} helper', function () {
-    var fn, inverse, labsStub;
+    var fn, inverse;
     let locals = {};
 
     before(function () {
@@ -20,7 +20,6 @@ describe('{{#get}} helper', function () {
     beforeEach(function () {
         fn = sinon.spy();
         inverse = sinon.spy();
-        labsStub = sinon.stub(labs, 'isSet').returns(true);
 
         locals = {root: {_locals: {apiVersion: 'v2'}}, globalProp: {foo: 'bar'}};
     });
@@ -49,9 +48,6 @@ describe('{{#get}} helper', function () {
                 'users',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                // We don't use the labs helper for v2
-                labsStub.calledOnce.should.be.false();
-
                 fn.called.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('authors');
                 fn.firstCall.args[0].authors.should.eql([]);
@@ -82,9 +78,6 @@ describe('{{#get}} helper', function () {
                 'authors',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                // We don't use the labs helper for v2
-                labsStub.calledOnce.should.be.false();
-
                 fn.called.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('authors');
                 fn.firstCall.args[0].authors.should.eql([]);
@@ -115,9 +108,6 @@ describe('{{#get}} helper', function () {
                 'users',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                // We don't use the labs helper for canary
-                labsStub.calledOnce.should.be.false();
-
                 fn.called.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('authors');
                 fn.firstCall.args[0].authors.should.eql([]);
@@ -148,9 +138,6 @@ describe('{{#get}} helper', function () {
                 'authors',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                // We don't use the labs helper for canary
-                labsStub.calledOnce.should.be.false();
-
                 fn.called.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('authors');
                 fn.firstCall.args[0].authors.should.eql([]);
@@ -181,9 +168,6 @@ describe('{{#get}} helper', function () {
                 'users',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                // We don't use the labs helper for v3
-                labsStub.calledOnce.should.be.false();
-
                 fn.called.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('authors');
                 fn.firstCall.args[0].authors.should.eql([]);
@@ -214,9 +198,6 @@ describe('{{#get}} helper', function () {
                 'authors',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             ).then(function () {
-                // We don't use the labs helper for v3
-                labsStub.calledOnce.should.be.false();
-
                 fn.called.should.be.true();
                 fn.firstCall.args[0].should.be.an.Object().with.property('authors');
                 fn.firstCall.args[0].authors.should.eql([]);
