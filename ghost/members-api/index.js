@@ -94,6 +94,8 @@ module.exports = function MembersApi({
         });
     };
 
+    apiInstance.members = users;
+
     apiInstance.bus = new (require('events').EventEmitter)();
     process.nextTick(() => apiInstance.bus.emit('ready'));
 
