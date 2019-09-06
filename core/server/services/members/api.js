@@ -59,6 +59,30 @@ const membersApiUrl = getApiUrl({version: 'v2', type: 'members'});
 
 const ghostMailer = new mail.GhostMailer();
 
+function getStripePaymentConfig() {
+    const subscriptionSettings = settingsCache.get('members_subscription_settings');
+    if (!subscriptionSettings || subscriptionSettings.isPaid === false) {
+        return null;
+    }
+
+    const stripePaymentProcessor = subscriptionSettings.paymentProcessors.find(
+        paymentProcessor => paymentProcessor.adapter === 'stripe'
+    );
+
+    if (!stripePaymentProcessor || !stripePaymentProcessor.config) {
+        return null;
+    }
+
+    return {
+        publicKey: stripePaymentProcessor.config.public_token,
+        secretKey: stripePaymentProcessor.config.secret_token,
+        checkoutSuccessUrl: siteUrl,
+        checkoutCancelUrl: siteUrl,
+        product: stripePaymentProcessor.config.product,
+        plans: stripePaymentProcessor.config.plans
+    };
+}
+
 module.exports = createApiInstance;
 
 function createApiInstance() {
@@ -81,6 +105,9 @@ function createApiInstance() {
                     return ghostMailer.send(Object.assign({subject: 'Signin'}, message));
                 }
             }
+        },
+        paymentConfig: {
+            stripe: getStripePaymentConfig()
         },
         createMember,
         getMember,
