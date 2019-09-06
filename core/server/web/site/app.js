@@ -93,6 +93,16 @@ module.exports = function setupSiteApp(options = {}) {
 
     // @TODO only loads this stuff if members is enabled
     // Set req.member & res.locals.member if a cookie is set
+    siteApp.get('/members/ssr', shared.middlewares.labs.members, function (req, res) {
+        membersService.ssr.getIdentityTokenForMemberFromSession(req, res).then((token) => {
+            res.writeHead(200);
+            res.end(token);
+        }).catch((err) => {
+            common.logging.warn(err.message);
+            res.writeHead(err.statusCode);
+            res.end(err.message);
+        });
+    });
     siteApp.post('/members/ssr', shared.middlewares.labs.members, function (req, res) {
         membersService.ssr.exchangeTokenForSession(req, res).then(() => {
             res.writeHead(200);

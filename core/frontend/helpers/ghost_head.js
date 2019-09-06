@@ -57,6 +57,7 @@ function getAjaxHelper(clientId, clientSecret) {
 
 function getMembersHelper() {
     return `
+        <script src="https://js.stripe.com/v3/"></script>
         <script defer src="${getAssetUrl('public/members.js')}"></script>
     `;
 }

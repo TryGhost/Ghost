@@ -9,7 +9,7 @@ let membersApi;
 
 // Bind to events to automatically keep subscription info up-to-date from settings
 common.events.on('settings.edited', function updateSettingFromModel(settingModel) {
-    if (!['members_subscription_settings', 'title', 'icon'].includes(settingModel.get('key'))) {
+    if (!['members_subscription_settings'].includes(settingModel.get('key'))) {
         return;
     }
 
