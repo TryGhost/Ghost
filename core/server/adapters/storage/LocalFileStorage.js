@@ -123,6 +123,14 @@ class LocalFileStore extends StorageBase {
                         }));
                     }
 
+                    if (err.statusCode === 400) {
+                        return next(new common.errors.BadRequestError({err: err}));
+                    }
+
+                    if (err.statusCode === 403) {
+                        return next(new common.errors.NoPermissionError({err: err}));
+                    }
+
                     return next(new common.errors.GhostError({err: err}));
                 }
 
