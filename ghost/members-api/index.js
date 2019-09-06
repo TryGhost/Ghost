@@ -1,6 +1,7 @@
 const {Router} = require('express');
 const body = require('body-parser');
 const MagicLink = require('@tryghost/magic-link');
+const StripePaymentProcessor = require('./lib/stripe');
 
 const Tokens = require('./lib/tokens');
 const Users = require('./lib/users');
@@ -15,6 +16,7 @@ module.exports = function MembersApi({
     auth: {
         getSigninURL
     },
+    paymentConfig,
     mail: {
         transporter
     },
@@ -23,7 +25,23 @@ module.exports = function MembersApi({
     deleteMember,
     listMembers
 }) {
-    const {encodeIdentityToken} = Tokens({privateKey, publicKey, issuer});
+    const {encodeIdentityToken, decodeToken} = Tokens({privateKey, publicKey, issuer});
+
+    const stripe = paymentConfig.stripe ? new StripePaymentProcessor(paymentConfig.stripe) : null;
+
+    async function ensureStripe(_req, res, next) {
+        if (!stripe) {
+            res.writeHead(400);
+            return res.end('Stripe not configured');
+        }
+        try {
+            await stripe.ready();
+            next();
+        } catch (err) {
+            res.writeHead(500);
+            return res.end('There was an error configuring stripe');
+        }
+    }
 
     let users = Users({
         createMember,
@@ -81,6 +99,44 @@ module.exports = function MembersApi({
         }
     });
 
+    apiInstance.post('/create-stripe-checkout-session', ensureStripe, async function (req, res) {
+        const plan = req.body.plan;
+        const identity = req.body.identity;
+
+        if (!plan || !identity) {
+            res.writeHead(400);
+            return res.end('Bad Request.');
+        }
+
+        let email;
+        try {
+            const claims = await decodeToken(identity);
+            email = claims.sub;
+        } catch (err) {
+            res.writeHead(401);
+            return res.end('Unauthorized');
+        }
+
+        const member = await users.get({email});
+
+        // Do not allow members already with a plan to initiate a new checkout session
+        if (member.plans.length > 0) {
+            res.writeHead(403);
+            return res.end('No permission');
+        }
+
+        const session = await stripe.createCheckoutSession(member, plan);
+
+        res.writeHead(200, {
+            'Content-Type': 'application/json'
+        });
+
+        res.end(JSON.stringify({
+            sessionId: session.id,
+            publicKey: stripe.getPublicConfig().publicKey
+        }));
+    });
+
     apiInstance.getMemberDataFromMagicLinkToken = getMemberDataFromMagicLinkToken;
     apiInstance.getMemberIdentityData = getMemberIdentityData;
     apiInstance.getMemberIdentityToken = getMemberIdentityToken;
@@ -95,9 +151,17 @@ module.exports = function MembersApi({
     };
 
     apiInstance.members = users;
-
     apiInstance.bus = new (require('events').EventEmitter)();
-    process.nextTick(() => apiInstance.bus.emit('ready'));
+
+    if (stripe) {
+        stripe.ready().then(() => {
+            apiInstance.bus.emit('ready');
+        }).catch((err) => {
+            apiInstance.bus.emit('error', err);
+        });
+    } else {
+        process.nextTick(() => apiInstance.bus.emit('ready'));
+    }
 
     return apiInstance;
 };
