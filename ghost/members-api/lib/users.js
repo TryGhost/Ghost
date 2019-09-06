@@ -31,10 +31,21 @@ module.exports = function ({
         }
     }
 
+    async function destroy(data, options) {
+        const member = await getMember(data, options);
+        if (!member) {
+            return;
+        }
+        if (stripe) {
+            await stripe.removeCustomer(member);
+        }
+        return deleteMember(data, options);
+    }
+
     return {
         create: createMember,
         list: listMembers,
         get,
-        destroy: deleteMember
+        destroy
     };
 };
