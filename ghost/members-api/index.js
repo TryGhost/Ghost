@@ -44,6 +44,7 @@ module.exports = function MembersApi({
     }
 
     let users = Users({
+        stripe,
         createMember,
         getMember,
         deleteMember,
