@@ -1,10 +1,9 @@
-const forms = [...document.querySelectorAll('form[data-members-form]')];
-forms.forEach(function (form){
+Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form){
     form.addEventListener('submit', function (event) {
         event.preventDefault();
         form.classList.remove('success', 'invalid', 'error');
-        const input = event.target.querySelector('input[data-members-email]');
-        const email = input.value;
+        var input = event.target.querySelector('input[data-members-email]');
+        var email = input.value;
 
         if (!email.includes('@')) {
             form.classList.add('invalid')
@@ -17,7 +16,7 @@ forms.forEach(function (form){
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                email
+                email: email
             })
         }).then(function (res) {
             if (res.ok) {
@@ -29,15 +28,11 @@ forms.forEach(function (form){
     });
 });
 
-const subscriptionButtons = [...document.querySelectorAll('[data-members-subscription]')];
-
-subscriptionButtons.forEach(function (button) {
+Array.prototype.forEach.call(document.querySelectorAll('[data-members-subscription]'), function (button) {
     button.addEventListener('click', function (event) {
         event.preventDefault();
 
-        const {
-            membersSubscriptionPlan: plan
-        } = event.target.dataset;
+        var plan = event.target.dataset.membersSubscriptionPlan;
 
         fetch('{{blog-url}}/members/ssr', {
             credentials: 'same-origin'
@@ -53,7 +48,8 @@ subscriptionButtons.forEach(function (button) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    plan, identity
+                    plan: plan,
+                    identity: identity
                 })
             }).then(function (res) {
                 if (!res.ok) {
@@ -61,17 +57,19 @@ subscriptionButtons.forEach(function (button) {
                 }
                 return res.json();
             });
-        }).then(function ({sessionId, publicKey}) {
-            const stripe = Stripe(publicKey);
+        }).then(function (result) {
+            var stripe = Stripe(result.publicKey);
             return stripe.redirectToCheckout({
-                sessionId
+                sessionId: result.sessionId
             });
         });
     });
 });
 
-const magicLinkRegEx = /token=([a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+)/;
-const [isMagicLink, token] = location.search.match(magicLinkRegEx) || [false, null];
+var magicLinkRegEx = /token=([a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+)/;
+var match = location.search.match(magicLinkRegEx);
+var isMagicLink = !!match
+var token = match && match[1];
 
 if (isMagicLink) {
     fetch('{{blog-url}}/members/ssr', {
