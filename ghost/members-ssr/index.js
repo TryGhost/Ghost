@@ -112,7 +112,7 @@ module.exports = function create(options = EMPTY) {
                 message: `Cookie ${cookieName} not found`
             });
         }
-    });
+    }, cookieConfig);
 
     return {
         exchangeTokenForSession,
