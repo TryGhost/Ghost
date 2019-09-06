@@ -1,5 +1,5 @@
-const form = document.querySelector('form[data-members-form]');
-if (form) {
+const forms = [...document.querySelectorAll('form[data-members-form]')];
+forms.forEach(function (form){
     form.addEventListener('submit', function (event) {
         event.preventDefault();
         form.classList.remove('success', 'invalid', 'error');
@@ -11,7 +11,7 @@ if (form) {
             return;
         }
 
-        fetch('{{admin-url}}/api/v2/members/send-magic-link/', {
+        fetch('{{admin-url}}/api/canary/members/send-magic-link/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -27,7 +27,48 @@ if (form) {
             }
         });
     });
-}
+});
+
+const subscriptionButtons = [...document.querySelectorAll('[data-members-subscription]')];
+
+subscriptionButtons.forEach(function (button) {
+    button.addEventListener('click', function (event) {
+        event.preventDefault();
+
+        const {
+            membersSubscriptionPlan: plan
+        } = event.target.dataset;
+
+        fetch('{{blog-url}}/members/ssr', {
+            credentials: 'same-origin'
+        }).then(function (res) {
+            if (!res.ok) {
+                throw new Error('Could not get identity token');
+            }
+            return res.text();
+        }).then(function (identity) {
+            return fetch('{{admin-url}}/api/canary/members/create-stripe-checkout-session/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    plan, identity
+                })
+            }).then(function (res) {
+                if (!res.ok) {
+                    throw new Error('Could not create stripe checkout session');
+                }
+                return res.json();
+            });
+        }).then(function ({sessionId, publicKey}) {
+            const stripe = Stripe(publicKey);
+            return stripe.redirectToCheckout({
+                sessionId
+            });
+        });
+    });
+});
 
 const magicLinkRegEx = /token=([a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+)/;
 const [isMagicLink, token] = location.search.match(magicLinkRegEx) || [false, null];
