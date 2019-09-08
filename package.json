@@ -127,6 +127,7 @@
     "simple-html-tokenizer": "0.5.8",
     "uuid": "3.3.3",
     "validator": "6.3.0",
+    "vhost": "3.0.2",
     "xml": "1.0.1"
   },
   "optionalDependencies": {
