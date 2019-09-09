@@ -22,7 +22,7 @@
   ],
   "devDependencies": {
     "autoprefixer": "9.6.1",
-    "cssnano": "4.1.7",
+    "cssnano": "4.1.10",
     "grunt": "1.0.4",
     "grunt-shell": "3.0.1",
     "postcss-color-mod-function": "3.0.3",
