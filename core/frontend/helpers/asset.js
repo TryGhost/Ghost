@@ -2,13 +2,18 @@
 // Usage: `{{asset "css/screen.css"}}`
 //
 // Returns the path to the specified asset.
-const proxy = require('./proxy');
+const {SafeString, metaData, errors, i18n} = require('./proxy');
 const get = require('lodash/get');
-const {SafeString} = proxy;
-const {getAssetUrl} = proxy.metaData;
+const {getAssetUrl} = metaData;
 
 module.exports = function asset(path, options) {
     const hasMinFile = get(options, 'hash.hasMinFile');
+
+    if (!path) {
+        throw new errors.IncorrectUsageError({
+            message: i18n.t('warnings.helpers.asset.pathIsRequired')
+        });
+    }
 
     return new SafeString(
         getAssetUrl(path, hasMinFile)
