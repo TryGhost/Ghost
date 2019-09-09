@@ -11,7 +11,7 @@ var defaultOptions = {
 };
 
 module.exports = function request(url, options) {
-    if (_.isEmpty(url) || !validator.isURL(url)) {
+    if (_.isEmpty(url) || !validator.isURL(url, {require_protocol: false, require_tld: false})) {
         return Promise.reject(new common.errors.InternalServerError({
             message: 'URL empty or invalid.',
             code: 'URL_MISSING_INVALID',
