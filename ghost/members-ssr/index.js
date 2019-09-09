@@ -8,6 +8,7 @@ const {
 
 const EMPTY = {};
 const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 184;
+const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 
 const withCookies = (fn, cookieConfig) => (req, res) => {
     return new Promise((resolve) => {
@@ -40,6 +41,8 @@ module.exports = function create(options = EMPTY) {
         cookieMaxAge = SIX_MONTHS_MS,
         cookieSecure = true,
         cookieName = 'members-ssr',
+        cookieCacheName = 'members-ssr-cache',
+        cookieCacheMaxAge = ONE_DAY_MS,
         cookiePath = '/',
         cookieKeys,
         membersApi
@@ -76,6 +79,13 @@ module.exports = function create(options = EMPTY) {
             maxAge: cookieMaxAge,
             path: cookiePath
         });
+        cookies.set(cookieCacheName, JSON.stringify(member), {
+            signed: true,
+            httpOnly: true,
+            sameSite: 'lax',
+            maxAge: cookieCacheMaxAge,
+            path: cookiePath
+        });
     }, cookieConfig);
 
     const deleteSession = withCookies((_req, _res, {cookies}) => {
@@ -86,19 +96,56 @@ module.exports = function create(options = EMPTY) {
             maxAge: cookieMaxAge,
             path: cookiePath
         });
+        cookies.set(cookieCacheName, {
+            signed: true,
+            httpOnly: true,
+            sameSite: 'lax',
+            maxAge: cookieCacheMaxAge,
+            path: cookiePath
+        });
     }, cookieConfig);
 
     const getMemberDataFromSession = withCookies(async (_req, _res, {cookies}) => {
-        try {
-            const email = cookies.get(cookieName, {
-                signed: true
-            });
-            return get(membersApi).getMemberIdentityData(email);
-        } catch (e) {
+        const email = cookies.get(cookieName, {
+            signed: true
+        });
+
+        if (!email) {
             throw new BadRequestError({
                 message: `Cookie ${cookieName} not found`
             });
         }
+
+        const cachedMember = cookies.get(cookieCacheName, {
+            signed: true
+        });
+
+        if (cachedMember) {
+            try {
+                return JSON.parse(cachedMember);
+            } catch (e) {
+                cookies.set(cookieCacheName, {
+                    signed: true,
+                    httpOnly: true,
+                    sameSite: 'lax',
+                    maxAge: cookieCacheMaxAge,
+                    path: cookiePath
+                });
+                throw new BadRequestError({
+                    message: `Invalid JSON found in cookie ${cookieCacheName}`
+                });
+            }
+        }
+        const member = await get(membersApi).getMemberIdentityData(email);
+        cookies.set(cookieCacheName, JSON.stringify(member), {
+            signed: true,
+            httpOnly: true,
+            sameSite: 'lax',
+            maxAge: cookieCacheMaxAge,
+            path: cookiePath
+        });
+
+        return member;
     }, cookieConfig);
 
     const getIdentityTokenForMemberFromSession = withCookies(async (_req, _res, {cookies}) => {
