@@ -226,16 +226,6 @@ describe('getTitle', function () {
         title.should.equal('My awesome post!');
     });
 
-    it('v0.1: should return post title if in page context', function () {
-        var title = getTitle({
-            post: {
-                title: 'My awesome page!'
-            }
-        }, {context: ['page']});
-
-        title.should.equal('My awesome page!');
-    });
-
     it('v2: should return page title if in page context', function () {
         var title = getTitle({
             page: {
@@ -268,7 +258,7 @@ describe('getTitle', function () {
 
     it('should return post title if in amp and page context', function () {
         var title = getTitle({
-            post: {
+            page: {
                 title: 'My awesome page!'
             }
         }, {context: ['amp', 'page']});

@@ -77,7 +77,7 @@ function getMetaData(data, root) {
         fallbackExcerpt;
 
     // TODO: cleanup these if statements
-    if (data.post) {
+    if (data.post || data.page) {
         // There's a specific order for description fields (not <meta name="description" /> !!) in structured data
         // and schema.org which is used the description fields (see https://github.com/TryGhost/Ghost/issues/8793):
         // 1. CASE: custom_excerpt is populated via the UI
@@ -86,9 +86,10 @@ function getMetaData(data, root) {
         // @NOTE: v2 returns a calculated `post.excerpt`. v0.1 does not
         // See https://github.com/TryGhost/Ghost/issues/10062.
         // @TODO: simplify or remove if we drop v0.1 re
-        customExcerpt = data.post.excerpt || data.post.custom_excerpt;
-        metaDescription = data.post.meta_description;
-        fallbackExcerpt = data.post.html ? getExcerpt(data.post.html, {words: 50}) : '';
+        const prop = data.post ? 'post' : 'page';
+        customExcerpt = data[prop].excerpt || data[prop].custom_excerpt;
+        metaDescription = data[prop].meta_description;
+        fallbackExcerpt = data[prop].html ? getExcerpt(data[prop].html, {words: 50}) : '';
 
         metaData.excerpt = customExcerpt ? customExcerpt : metaDescription ? metaDescription : fallbackExcerpt;
     }
