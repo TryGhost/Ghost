@@ -10,6 +10,7 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
             return;
         }
 
+        form.classList.add('loading');
         fetch('{{admin-url}}/api/canary/members/send-magic-link/', {
             method: 'POST',
             headers: {
@@ -19,6 +20,7 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
                 email: email
             })
         }).then(function (res) {
+            form.classList.remove('loading');
             if (res.ok) {
                 form.classList.add('success')
             } else {
@@ -34,6 +36,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-subscripti
 
         var plan = event.target.dataset.membersSubscriptionPlan;
 
+        button.classList.add('loading');
         fetch('{{blog-url}}/members/ssr', {
             credentials: 'same-origin'
         }).then(function (res) {
@@ -62,6 +65,10 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-subscripti
             return stripe.redirectToCheckout({
                 sessionId: result.sessionId
             });
+        }, function (_err) {
+            console.error(_err);
+            button.classList.remove('loading');
+            button.classList.add('error');
         });
     });
 });
