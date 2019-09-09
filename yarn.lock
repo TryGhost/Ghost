@@ -163,26 +163,26 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.5.1.tgz#b3a3dbf71b287538ac9581e05953c0d6e2c9a01f"
-  integrity sha512-nCE9Ou0ExRhAO08PJgFLow0F1ISj/t2AyCdQZgi4ZcTSw7SRF7vhkWhMwoLqGTwxy+fhnFu9PvVvtXztx9FGXw==
+"@tryghost/html-to-mobiledoc@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.6.0.tgz#fc57e4f0deed0d5f045a08acc1e32143d37aecad"
+  integrity sha512-DCT63/9VvGwahm+GbrdeKhVA+SKF/VXK2NaCLgn27ZQ+Cpw6i2VQEUgqHNaNEYvsSbXoQhq8KHwNyX8liIPrGA==
   dependencies:
-    "@tryghost/kg-parser-plugins" "0.6.0"
+    "@tryghost/kg-parser-plugins" "0.8.0"
     "@tryghost/mobiledoc-kit" "^0.11.2-ghost.4"
     jsdom "14.1.0"
 
-"@tryghost/kg-clean-basic-html@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-0.1.1.tgz#a065a5771c29af47d7e681fc6ac2db445b839daf"
-  integrity sha512-pHszGBQMo6r9YTg9VTDJsn0+i+rRNTs09dAMI8ZbD11AP0ten5XJxIqLQuDJJwIrchZ91J2rl+LMgnQo1yIyNw==
+"@tryghost/kg-clean-basic-html@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-0.1.3.tgz#0d7f1db1cfb258607b88e6df4cab020572dfbc74"
+  integrity sha512-97FByxvdc7lmnb6vV1pZpT1XWNZONLKTKfNSquPsbzmaUBkAMJnS4Um3oSkK/EkcIZgrB/HVMmTR130gIKx5IQ==
 
-"@tryghost/kg-parser-plugins@0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-0.6.0.tgz#c1c82910be93869beeceb35b8e2dc373db6b522d"
-  integrity sha512-/Q5Pmb/ndVmmCdfOFKVtsyacwrWgmQK4LtRVjxN6X83V8cYLnTypy3of/gRXL6HI8c+eq/I7CBIti3lTBeR1jg==
+"@tryghost/kg-parser-plugins@0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-0.8.0.tgz#405cf712310c70313bc09c1735c239e49cb9eb40"
+  integrity sha512-DUrZKcQ/X/zmUrLoU0VaI3KlqI1rc4NPkLLNwuCtlBGdz8cJsaopNKYWHf+IlQAhQtrz2DoY/rQVoW/o0pPjhQ==
   dependencies:
-    "@tryghost/kg-clean-basic-html" "^0.1.1"
+    "@tryghost/kg-clean-basic-html" "^0.1.3"
 
 "@tryghost/magic-link@^0.1.0":
   version "0.1.0"
