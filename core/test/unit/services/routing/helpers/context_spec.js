@@ -286,7 +286,7 @@ describe('Contexts', function () {
 
         it('should correctly identify AMP page', function () {
             res.locals.relativeUrl = '/welcome-to-ghost/amp/';
-            data.post = testUtils.DataGenerator.forKnex.createPost({page: true});
+            data.page = testUtils.DataGenerator.forKnex.createPost({page: true});
 
             delete res.routerOptions;
             helpers.context(req, res, data);
