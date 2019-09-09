@@ -24,7 +24,7 @@
     "@types/nodemailer": "6.2.1",
     "mocha": "6.2.0",
     "should": "13.2.3",
-    "sinon": "7.4.1"
+    "sinon": "7.4.2"
   },
   "dependencies": {
     "bluebird": "^3.5.5",
