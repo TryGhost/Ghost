@@ -1026,10 +1026,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.2.7":
-  version "0.2.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.7.tgz#92b3f878c74431d7dcc3ed7814d11b244451ef52"
-  integrity sha512-nnK55915T16PFFPSK5ZX36axufsFDR01WgEr5ePcB8qN5O5bYWKGWag+tLTlkkOtsLyz87fjwzubIyngolV95w==
+"@tryghost/timezone-data@0.2.8":
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.8.tgz#37929e3e4b76beb89dfaa20c5faa67de98b1a7b2"
+  integrity sha512-uIXrkkMe5G+ag9M1K7INMYbSXsCBO9HwhZMTr0pKOd+HzvLcsTMasV3YKjWxpO/pLbLnJrbi5rkBYqwSqaKezQ==
 
 "@types/acorn@^4.0.3":
   version "4.0.5"
