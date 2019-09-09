@@ -124,9 +124,9 @@ class UrlService {
      * @param {Object} options
      * @returns {Object}
      */
-    getResource(url, options) {
-        options = options || {};
-
+    getResource(url, options = {}) {
+        const { returnEverything } = options;
+        
         let objects = this.urls.getByUrl(url);
 
         if (!objects.length) {
@@ -158,11 +158,7 @@ class UrlService {
             }, []);
         }
 
-        if (options.returnEverything) {
-            return objects[0];
-        }
-
-        return objects[0].resource;
+        return returnEverything ? objects[0] : objects[0].resource;
     }
 
     /**
@@ -205,29 +201,29 @@ class UrlService {
      * @param {Object} options
      * @returns {String}
      */
-    getUrlByResourceId(id, options) {
-        options = options || {};
+    getUrlByResourceId(id, options = {}) {
+        const { absolute, secure, withSubdirectory} = options;
 
         const obj = this.urls.getByResourceId(id);
 
         if (obj) {
-            if (options.absolute) {
-                return this.utils.createUrl(obj.url, options.absolute, options.secure);
+            if (absolute) {
+                return this.utils.createUrl(obj.url, absolute, secure);
             }
 
-            if (options.withSubdirectory) {
-                return this.utils.createUrl(obj.url, false, options.secure, true);
+            if (withSubdirectory) {
+                return this.utils.createUrl(obj.url, false, secure, true);
             }
 
             return obj.url;
         }
 
-        if (options.absolute) {
-            return this.utils.createUrl('/404/', options.absolute, options.secure);
+        if (absolute) {
+            return this.utils.createUrl('/404/', absolute, secure);
         }
 
-        if (options.withSubdirectory) {
-            return this.utils.createUrl('/404/', false, options.secure);
+        if (withSubdirectory) {
+            return this.utils.createUrl('/404/', false, secure);
         }
 
         return '/404/';
@@ -266,9 +262,7 @@ class UrlService {
      * @param {object} options
      * @returns {*}
      */
-    getPermalinkByUrl(url, options) {
-        options = options || {};
-
+    getPermalinkByUrl(url, options = {}) {
         const object = this.getResource(url, {returnEverything: true});
 
         if (!object) {
@@ -294,6 +288,8 @@ class UrlService {
      * @param {Object} options
      */
     reset(options = {}) {
+        const { keepListeners } = options;
+        
         debug('reset');
         this.urlGenerators = [];
 
@@ -301,7 +297,7 @@ class UrlService {
         this.queue.reset();
         this.resources.reset();
 
-        if (!options.keepListeners) {
+        if (!keepListeners) {
             this._onQueueStartedListener && this.queue.removeListener('started', this._onQueueStartedListener);
             this._onQueueEndedListener && this.queue.removeListener('ended', this._onQueueEndedListener);
             this._onRouterAddedListener && common.events.removeListener('router.created', this._onRouterAddedListener);
@@ -314,17 +310,15 @@ class UrlService {
      * @param {Object} options
      */
     resetGenerators(options = {}) {
+        const { releaseResourcesOnly } = options;
+        
         debug('resetGenerators');
         this.finished = false;
         this.urlGenerators = [];
         this.urls.reset();
         this.queue.reset();
 
-        if (options.releaseResourcesOnly) {
-            this.resources.releaseAll();
-        } else {
-            this.resources.softReset();
-        }
+        return releaseResourcesOnly ? this.resources.releaseAll() : this.resources.softReset();
     }
 
     /**
