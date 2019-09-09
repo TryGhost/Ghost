@@ -34,7 +34,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-subscripti
     el.addEventListener('click', function (event) {
         event.preventDefault();
 
-        var plan = event.target.dataset.membersSubscriptionPlan;
+        var plan = el.dataset.membersSubscriptionPlan;
 
         el.classList.add('loading');
         fetch('{{blog-url}}/members/ssr', {
