@@ -16,12 +16,6 @@ var proxy = require('./proxy'),
     pathAliases,
     get;
 
-/**
- * v0.1: users, posts, tags
- * v2: authors, pagesPublic, posts, tagsPublic
- *
- * @NOTE: if you use "users" in v2, we should fallback to authors
- */
 const RESOURCES = {
     posts: {
         alias: 'postsPublic',
@@ -30,10 +24,6 @@ const RESOURCES = {
     tags: {
         alias: 'tagsPublic',
         resource: 'tags'
-    },
-    users: {
-        alias: 'authorsPublic',
-        resource: 'users'
     },
     pages: {
         alias: 'pagesPublic',
