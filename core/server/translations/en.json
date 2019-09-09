@@ -578,6 +578,9 @@
             "flagMustBeEnabled": "The {flagName} flag must be enabled in labs if you wish to use the \\{\\{{helperName}\\}\\} helper.",
             "seeLink": "See {url}",
             "mustBeCalledAsBlock": "The \\{\\{{helperName}\\}\\} helper must be called as a block. E.g.  \\{\\{#{helperName}\\}\\} \\{\\{/{helperName}\\}\\}",
+            "asset": {
+                "pathIsRequired": "The \\{\\{asset\\}\\} helper must be passed a path"
+            },
             "foreach": {
                 "iteratorNeeded": "Need to pass an iterator to #foreach"
             },
