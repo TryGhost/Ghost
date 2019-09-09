@@ -186,7 +186,7 @@ const privateBlog = () => {
         extend({
             attachResetToRequest: false,
             failCallback(req, res, next, nextValidRequestDate) {
-                common.logging.error(new common.errors.GhostError({
+                common.logging.error(new common.errors.TooManyRequestsError({
                     message: common.i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error',
                         {
                             rateSigninAttempts: spamPrivateBlog.freeRetries + 1 || 5,
@@ -195,7 +195,7 @@ const privateBlog = () => {
                     context: common.i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
                 }));
 
-                return next(new common.errors.GhostError({
+                return next(new common.errors.TooManyRequestsError({
                     message: `Too many private sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`
                 }));
             },
