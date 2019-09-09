@@ -30,13 +30,13 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
     });
 });
 
-Array.prototype.forEach.call(document.querySelectorAll('[data-members-subscription]'), function (button) {
-    button.addEventListener('click', function (event) {
+Array.prototype.forEach.call(document.querySelectorAll('[data-members-subscription]'), function (el) {
+    el.addEventListener('click', function (event) {
         event.preventDefault();
 
         var plan = event.target.dataset.membersSubscriptionPlan;
 
-        button.classList.add('loading');
+        el.classList.add('loading');
         fetch('{{blog-url}}/members/ssr', {
             credentials: 'same-origin'
         }).then(function (res) {
@@ -67,8 +67,8 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-subscripti
             });
         }, function (_err) {
             console.error(_err);
-            button.classList.remove('loading');
-            button.classList.add('error');
+            el.classList.remove('loading');
+            el.classList.add('error');
         });
     });
 });
