@@ -75,7 +75,7 @@ validator.extend('isTimezone', function isTimezone(str) {
 });
 
 validator.extend('isEmptyOrURL', function isEmptyOrURL(str) {
-    return (_.isEmpty(str) || validator.isURL(str, {require_protocol: false}));
+    return (_.isEmpty(str) || validator.isURL(str, {require_protocol: false, require_tld: false}));
 });
 
 validator.extend('isSlug', function isSlug(str) {
