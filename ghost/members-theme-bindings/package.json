@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-theme-bindings",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-theme-bindings",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -31,7 +31,7 @@
     "sinon": "7.4.2"
   },
   "dependencies": {
-    "@tryghost/members-browser-auth": "^0.2.1",
+    "@tryghost/members-browser-auth": "^0.2.2",
     "bluebird": "^3.5.4",
     "ghost-ignition": "^3.1.0",
     "lodash": "^4.17.11"

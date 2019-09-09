@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-browser-auth",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-browser-auth",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "sinon": "7.4.2"
   },
   "dependencies": {
-    "@tryghost/members-gateway-api": "^0.1.5",
+    "@tryghost/members-gateway-api": "^0.1.6",
     "bluebird": "^3.5.4",
     "ghost-ignition": "^3.1.0",
     "lodash": "^4.17.11"
