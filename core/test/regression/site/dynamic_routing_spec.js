@@ -370,7 +370,7 @@ describe('Dynamic Routing', function () {
 
             it('should redirect to tag settings', function (done) {
                 request.get('/tag/getting-started/edit/')
-                    .expect('Location', '/ghost/#/settings/tags/getting-started/')
+                    .expect('Location', 'http://127.0.0.1:2369/ghost/#/settings/tags/getting-started/')
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(302)
                     .end(doEnd(done));
@@ -597,7 +597,7 @@ describe('Dynamic Routing', function () {
 
             it('should redirect to editor', function (done) {
                 request.get('/author/ghost-owner/edit/')
-                    .expect('Location', '/ghost/#/team/ghost-owner/')
+                    .expect('Location', 'http://127.0.0.1:2369/ghost/#/team/ghost-owner/')
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(302)
                     .end(doEnd(done));
