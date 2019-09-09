@@ -71,7 +71,8 @@ module.exports = function MembersApi({
         if (member) {
             return member;
         }
-        return users.create({email});
+        await users.create({email});
+        return getMemberIdentityData(email);
     }
     async function getMemberIdentityData(email){
         return users.get({email});
