@@ -1,6 +1,8 @@
 const debug = require('ghost-ignition').debug('web:site:app');
 const path = require('path');
 const express = require('express');
+const cors = require('cors');
+const {URL} = require('url');
 
 // App requires
 const config = require('../../config');
@@ -20,6 +22,39 @@ const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 
 let router;
 
+const corsOptionsDelegate = function corsOptionsDelegate(req, callback) {
+    const origin = req.header('Origin');
+    const corsOptions = {
+        origin: false, // disallow cross-origin requests by default
+        credentials: true // required to allow admin-client to login to private sites
+    };
+
+    if (origin) {
+        const originUrl = new URL(origin);
+
+        // allow all localhost and 127.0.0.1 requests no matter the port
+        if (originUrl.hostname === 'localhost' || originUrl.hostname === '127.0.0.1') {
+            corsOptions.origin = true;
+        }
+
+        // allow the configured host through on any protocol
+        const siteUrl = new URL(config.get('url'));
+        if (originUrl.host === siteUrl.host) {
+            corsOptions.origin = true;
+        }
+
+        // allow the configured admin:url host through on any protocol
+        if (config.get('admin:url')) {
+            const adminUrl = new URL(config.get('admin:url'));
+            if (originUrl.host === adminUrl.host) {
+                corsOptions.origin = true;
+            }
+        }
+    }
+
+    callback(null, corsOptions);
+};
+
 function SiteRouter(req, res, next) {
     router(req, res, next);
 }
@@ -32,6 +67,9 @@ module.exports = function setupSiteApp(options = {}) {
     // ## App - specific code
     // set the view engine
     siteApp.set('view engine', 'hbs');
+
+    // enable CORS headers (allows admin client to hit front-end when configured on separate URLs)
+    siteApp.use(cors(corsOptionsDelegate));
 
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
