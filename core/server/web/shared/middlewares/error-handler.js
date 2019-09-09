@@ -39,6 +39,14 @@ _private.prepareError = (err, req, res, next) => {
             err = new common.errors.NotFoundError({
                 err: err
             });
+        } else if (err instanceof TypeError && err.stack.match(/node_modules\/handlebars\//)) {
+            // Temporary handling of theme errors from handlebars
+            // @TODO remove this when #10496 is solved properly
+            err = new common.errors.IncorrectUsageError({
+                err: err,
+                message: '{{#if}} or {{#unless}} helper is malformed',
+                statusCode: err.statusCode
+            });
         } else {
             err = new common.errors.GhostError({
                 err: err,
