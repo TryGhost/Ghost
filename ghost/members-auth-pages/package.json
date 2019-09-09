@@ -26,7 +26,7 @@
     "grunt": "1.0.4",
     "grunt-shell": "3.0.1",
     "postcss-color-mod-function": "3.0.3",
-    "postcss-css-variables": "0.11.0",
+    "postcss-css-variables": "0.13.0",
     "postcss-custom-properties": "8.0.9",
     "postcss-import": "12.0.1",
     "preact-cli": "3.0.0-rc.5"
