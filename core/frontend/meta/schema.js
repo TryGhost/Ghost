@@ -76,8 +76,8 @@ function getPostSchema(metaData, data) {
         '@type': 'Article',
         publisher: {
             '@type': 'Organization',
-            name: escapeExpression(metaData.blog.title),
-            logo: schemaImageObject(metaData.blog.logo) || null
+            name: escapeExpression(metaData.site.title),
+            logo: schemaImageObject(metaData.site.logo) || null
         },
         author: {
             '@type': 'Person',
@@ -99,7 +99,7 @@ function getPostSchema(metaData, data) {
         description: description,
         mainEntityOfPage: {
             '@type': 'WebPage',
-            '@id': metaData.blog.url || null
+            '@id': metaData.site.url || null
         }
     };
     schema.author = trimSchema(schema.author);
@@ -112,14 +112,14 @@ function getHomeSchema(metaData) {
         '@type': 'WebSite',
         publisher: {
             '@type': 'Organization',
-            name: escapeExpression(metaData.blog.title),
-            logo: schemaImageObject(metaData.blog.logo) || null
+            name: escapeExpression(metaData.site.title),
+            logo: schemaImageObject(metaData.site.logo) || null
         },
         url: metaData.url,
         image: schemaImageObject(metaData.coverImage),
         mainEntityOfPage: {
             '@type': 'WebPage',
-            '@id': metaData.blog.url || null
+            '@id': metaData.site.url || null
         },
         description: metaData.metaDescription ?
             escapeExpression(metaData.metaDescription) :
@@ -134,15 +134,15 @@ function getTagSchema(metaData, data) {
         '@type': 'Series',
         publisher: {
             '@type': 'Organization',
-            name: escapeExpression(metaData.blog.title),
-            logo: schemaImageObject(metaData.blog.logo) || null
+            name: escapeExpression(metaData.site.title),
+            logo: schemaImageObject(metaData.site.logo) || null
         },
         url: metaData.url,
         image: schemaImageObject(metaData.coverImage),
         name: data.tag.name,
         mainEntityOfPage: {
             '@type': 'WebPage',
-            '@id': metaData.blog.url || null
+            '@id': metaData.site.url || null
         },
         description: metaData.metaDescription ?
             escapeExpression(metaData.metaDescription) :
@@ -162,7 +162,7 @@ function getAuthorSchema(metaData, data) {
         image: schemaImageObject(metaData.coverImage),
         mainEntityOfPage: {
             '@type': 'WebPage',
-            '@id': metaData.blog.url || null
+            '@id': metaData.site.url || null
         },
         description: metaData.metaDescription ?
             escapeExpression(metaData.metaDescription) :
