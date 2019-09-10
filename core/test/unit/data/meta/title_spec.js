@@ -256,6 +256,7 @@ describe('getTitle', function () {
         title.should.equal('My awesome page!');
     });
 
+    // NOTE: this case is unlikely as Ghost doesn't support AMP for static pages
     it('should return post title if in amp and page context', function () {
         var title = getTitle({
             page: {
