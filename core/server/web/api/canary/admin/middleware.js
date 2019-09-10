@@ -56,3 +56,13 @@ module.exports.authAdminApi = [
     shared.middlewares.prettyUrls,
     notImplemented
 ];
+
+/**
+ * Middleware for public admin endpoints
+ */
+module.exports.publicAdminApi = [
+    shared.middlewares.api.cors,
+    shared.middlewares.urlRedirects.adminRedirect,
+    shared.middlewares.prettyUrls,
+    notImplemented
+];
