@@ -1,6 +1,10 @@
 Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form){
+    var errorEl = form.querySelector('[data-members-error]');
     form.addEventListener('submit', function (event) {
         event.preventDefault();
+        if (errorEl) {
+            errorEl.innerText = '';
+        }
         form.classList.remove('success', 'invalid', 'error');
         var input = event.target.querySelector('input[data-members-email]');
         var email = input.value;
@@ -24,18 +28,25 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
             if (res.ok) {
                 form.classList.add('success')
             } else {
+                if (errorEl) {
+                    errorEl.innerText = 'There was an error sending the email, please try again';
+                }
                 form.classList.add('error')
             }
         });
     });
 });
 
-Array.prototype.forEach.call(document.querySelectorAll('[data-members-subscription]'), function (el) {
+Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), function (el) {
+    var errorEl = el.querySelector('[data-members-error]');
     el.addEventListener('click', function (event) {
         event.preventDefault();
 
-        var plan = el.dataset.membersSubscriptionPlan;
+        var plan = el.dataset.membersPlan;
 
+        if (errorEl) {
+            errorEl.innerText = '';
+        }
         el.classList.add('loading');
         fetch('{{blog-url}}/members/ssr', {
             credentials: 'same-origin'
@@ -65,9 +76,16 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-subscripti
             return stripe.redirectToCheckout({
                 sessionId: result.sessionId
             });
-        }, function (_err) {
-            console.error(_err);
+        }).then(function (result) {
+            if (result.error) {
+                throw new Error(result.error.message);
+            }
+        }).catch(function (err) {
+            console.error(err);
             el.classList.remove('loading');
+            if (errorEl) {
+                errorEl.innerText = err.message;
+            }
             el.classList.add('error');
         });
     });
