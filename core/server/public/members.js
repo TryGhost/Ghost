@@ -91,6 +91,24 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
     });
 });
 
+Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]'), function (el) {
+    el.addEventListener('click', function (event) {
+        event.preventDefault();
+        el.classList.remove('error');
+        el.classList.add('loading');
+        fetch('{{blog-url}}/members/ssr', {
+            method: 'DELETE'
+        }).then(function (res) {
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                el.classList.remove('loading');
+                el.classList.add('error');
+            }
+        });
+    });
+});
+
 var magicLinkRegEx = /token=([a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+)/;
 var match = location.search.match(magicLinkRegEx);
 var isMagicLink = !!match
