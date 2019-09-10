@@ -16,7 +16,7 @@ describe('Integration: services/url/UrlService', function () {
         models.init();
 
         sinon.stub(themes, 'getActive').returns({
-            engine: () => 'v0.1'
+            engine: () => 'v2'
         });
     });
 
@@ -148,11 +148,11 @@ describe('Integration: services/url/UrlService', function () {
                 }
 
                 if (generator.router.getResourceType() === 'tags') {
-                    generator.getUrls().length.should.eql(5);
+                    generator.getUrls().length.should.eql(3);
                 }
 
                 if (generator.router.getResourceType() === 'authors') {
-                    generator.getUrls().length.should.eql(5);
+                    generator.getUrls().length.should.eql(2);
                 }
             });
 
@@ -175,25 +175,22 @@ describe('Integration: services/url/UrlService', function () {
             url.should.eql('/tag/chorizo/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
-            url.should.eql('/tag/pollo/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[4].id);
-            url.should.eql('/tag/injection/');
+            url.should.eql('/404/'); // tags with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
             url.should.eql('/author/joe-bloggs/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
-            url.should.eql('/author/smith-wellingsworth/');
+            url.should.eql('/404/'); // users with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
-            url.should.eql('/author/jimothy-bogendath/');
+            url.should.eql('/404/'); // users with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
             url.should.eql('/author/slimer-mcectoplasm/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
-            url.should.eql('/author/contributor/');
+            url.should.eql('/404/'); // users with no posts should not be public
         });
 
         it('getResource', function () {
@@ -356,11 +353,11 @@ describe('Integration: services/url/UrlService', function () {
                 }
 
                 if (generator.router.getResourceType() === 'tags') {
-                    generator.getUrls().length.should.eql(5);
+                    generator.getUrls().length.should.eql(3);
                 }
 
                 if (generator.router.getResourceType() === 'authors') {
-                    generator.getUrls().length.should.eql(5);
+                    generator.getUrls().length.should.eql(2);
                 }
             });
 
@@ -384,25 +381,22 @@ describe('Integration: services/url/UrlService', function () {
             url.should.eql('/category/chorizo/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
-            url.should.eql('/category/pollo/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[4].id);
-            url.should.eql('/category/injection/');
+            url.should.eql('/404/'); // tags with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
             url.should.eql('/persons/joe-bloggs/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
-            url.should.eql('/persons/smith-wellingsworth/');
+            url.should.eql('/404/'); // users with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
-            url.should.eql('/persons/jimothy-bogendath/');
+            url.should.eql('/404/'); // users with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
             url.should.eql('/persons/slimer-mcectoplasm/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
-            url.should.eql('/persons/contributor/');
+            url.should.eql('/404/'); // users with no posts should not be public
         });
     });
 
@@ -553,11 +547,11 @@ describe('Integration: services/url/UrlService', function () {
                 }
 
                 if (generator.router.getResourceType() === 'tags') {
-                    generator.getUrls().length.should.eql(5);
+                    generator.getUrls().length.should.eql(3);
                 }
 
-                if (generator.router.getResourceType() === 'users') {
-                    generator.getUrls().length.should.eql(5);
+                if (generator.router.getResourceType() === 'authors') {
+                    generator.getUrls().length.should.eql(2);
                 }
             });
 
@@ -581,25 +575,22 @@ describe('Integration: services/url/UrlService', function () {
             url.should.eql('/category/chorizo/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[3].id);
-            url.should.eql('/category/pollo/');
-
-            url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.tags[4].id);
-            url.should.eql('/category/injection/');
+            url.should.eql('/404/'); // tags with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[0].id);
             url.should.eql('/persons/joe-bloggs/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[1].id);
-            url.should.eql('/persons/smith-wellingsworth/');
+            url.should.eql('/404/'); // users with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[2].id);
-            url.should.eql('/persons/jimothy-bogendath/');
+            url.should.eql('/404/'); // users with no posts should not be public
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[3].id);
             url.should.eql('/persons/slimer-mcectoplasm/');
 
             url = urlService.getUrlByResourceId(testUtils.DataGenerator.forKnex.users[4].id);
-            url.should.eql('/persons/contributor/');
+            url.should.eql('/404/'); // users with no posts should not be public
         });
     });
 });

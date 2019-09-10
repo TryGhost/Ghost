@@ -14,14 +14,17 @@ function failTest(done) {
 }
 
 describe('Unit - services/routing/controllers/static', function () {
-    let req, res, secureStub, renderStub, handleErrorStub, formatResponseStub, posts, postsPerPage;
+    let req,
+        res,
+        secureStub,
+        renderStub,
+        handleErrorStub,
+        formatResponseStub,
+        postsPerPage,
+        tagsReadStub;
 
     beforeEach(function () {
         postsPerPage = 5;
-
-        posts = [
-            testUtils.DataGenerator.forKnex.createPost()
-        ];
 
         secureStub = sinon.stub();
         renderStub = sinon.stub();
@@ -29,7 +32,12 @@ describe('Unit - services/routing/controllers/static', function () {
         formatResponseStub = sinon.stub();
         formatResponseStub.entries = sinon.stub();
 
-        sinon.stub(api.tags, 'read');
+        tagsReadStub = sinon.stub().resolves();
+        sinon.stub(api.v2, 'tagsPublic').get(() => {
+            return {
+                read: tagsReadStub
+            };
+        });
 
         sinon.stub(helpers, 'secure').get(function () {
             return secureStub;
@@ -66,7 +74,7 @@ describe('Unit - services/routing/controllers/static', function () {
             render: sinon.spy(),
             redirect: sinon.spy(),
             locals: {
-                apiVersion: 'v0.1'
+                apiVersion: 'v2'
             }
         };
     });
@@ -78,7 +86,7 @@ describe('Unit - services/routing/controllers/static', function () {
     it('no extra data to fetch', function (done) {
         helpers.renderer.callsFake(function () {
             helpers.formatResponse.entries.calledOnce.should.be.true();
-            api.tags.read.called.should.be.false();
+            tagsReadStub.called.should.be.false();
             helpers.secure.called.should.be.false();
             done();
         });
@@ -89,7 +97,7 @@ describe('Unit - services/routing/controllers/static', function () {
     it('extra data to fetch', function (done) {
         res.routerOptions.data = {
             tag: {
-                controller: 'tags',
+                controller: 'tagsPublic',
                 resource: 'tags',
                 type: 'read',
                 options: {
@@ -98,10 +106,10 @@ describe('Unit - services/routing/controllers/static', function () {
             }
         };
 
-        api.tags.read.resolves({tags: [{slug: 'bacon'}]});
+        tagsReadStub = sinon.stub().resolves({tags: [{slug: 'bacon'}]});
 
         helpers.renderer.callsFake(function () {
-            api.tags.read.called.should.be.true();
+            tagsReadStub.called.should.be.true();
             helpers.formatResponse.entries.calledOnce.should.be.true();
             helpers.secure.calledOnce.should.be.true();
             done();

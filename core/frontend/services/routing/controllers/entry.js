@@ -67,13 +67,6 @@ module.exports = function entryController(req, res, next) {
              * @NOTE:
              *
              * Ensure we redirect to the correct post url including subdirectory.
-             *
-             * @NOTE:
-             * Keep in mind, that the logic here is used for v0.1 and v2.
-             * v0.1 returns relative urls, v2 returns absolute urls.
-             *
-             * @TODO:
-             * Simplify if we drop v0.1.
              */
             if (urlUtils.absoluteToRelative(entry.url, {withoutSubdirectory: true}) !== req.path) {
                 debug('redirect');

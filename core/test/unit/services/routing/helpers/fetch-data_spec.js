@@ -1,11 +1,12 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    api = require('../../../../../server/api')['v0.1'],
-    helpers = require('../../../../../frontend/services/routing/helpers'),
-    testUtils = require('../../../../utils');
+const should = require('should');
+const sinon = require('sinon');
+const api = require('../../../../../server/api').v2;
+const helpers = require('../../../../../frontend/services/routing/helpers');
+const testUtils = require('../../../../utils');
 
 describe('Unit - services/routing/helpers/fetch-data', function () {
     let posts, tags, locals;
+    let browsePostsStub, readTagsStub;
 
     beforeEach(function () {
         posts = [
@@ -22,19 +23,28 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             testUtils.DataGenerator.forKnex.createTag()
         ];
 
-        sinon.stub(api.posts, 'browse')
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 2
-                    }
+        browsePostsStub = sinon.stub().resolves({
+            posts: posts,
+            meta: {
+                pagination: {
+                    pages: 2
                 }
-            });
+            }
+        });
+        sinon.stub(api, 'postsPublic').get(() => {
+            return {
+                browse: browsePostsStub
+            };
+        });
 
-        sinon.stub(api.tags, 'read').resolves({tags: tags});
+        readTagsStub = sinon.stub().resolves({tags: tags});
+        sinon.stub(api, 'tagsPublic').get(() => {
+            return {
+                read: readTagsStub
+            };
+        });
 
-        locals = {apiVersion: 'v0.1'};
+        locals = {apiVersion: 'v2'};
     });
 
     afterEach(function () {
@@ -47,10 +57,10 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             result.should.be.an.Object().with.properties('posts', 'meta');
             result.should.not.have.property('data');
 
-            api.posts.browse.calledOnce.should.be.true();
-            api.posts.browse.firstCall.args[0].should.be.an.Object();
-            api.posts.browse.firstCall.args[0].should.have.property('include');
-            api.posts.browse.firstCall.args[0].should.not.have.property('filter');
+            browsePostsStub.calledOnce.should.be.true();
+            browsePostsStub.firstCall.args[0].should.be.an.Object();
+            browsePostsStub.firstCall.args[0].should.have.property('include');
+            browsePostsStub.firstCall.args[0].should.not.have.property('filter');
 
             done();
         }).catch(done);
@@ -64,11 +74,11 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
 
             result.posts.length.should.eql(posts.length);
 
-            api.posts.browse.calledOnce.should.be.true();
-            api.posts.browse.firstCall.args[0].should.be.an.Object();
-            api.posts.browse.firstCall.args[0].should.have.property('include');
-            api.posts.browse.firstCall.args[0].should.have.property('limit', 10);
-            api.posts.browse.firstCall.args[0].should.have.property('page', 2);
+            browsePostsStub.calledOnce.should.be.true();
+            browsePostsStub.firstCall.args[0].should.be.an.Object();
+            browsePostsStub.firstCall.args[0].should.have.property('include');
+            browsePostsStub.firstCall.args[0].should.have.property('limit', 10);
+            browsePostsStub.firstCall.args[0].should.have.property('page', 2);
 
             done();
         }).catch(done);
@@ -102,11 +112,10 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             // @TODO v3 will deprecate this style (featured.posts)
             result.data.featured.posts.length.should.eql(posts.length);
 
-            api.posts.browse.calledTwice.should.be.true();
-            api.posts.browse.firstCall.args[0].should.have.property('include', 'author,authors,tags');
-
-            api.posts.browse.secondCall.args[0].should.have.property('filter', 'featured:true');
-            api.posts.browse.secondCall.args[0].should.have.property('limit', 3);
+            browsePostsStub.calledTwice.should.be.true();
+            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags');
+            browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
+            browsePostsStub.secondCall.args[0].should.have.property('limit', 3);
             done();
         }).catch(done);
     });
@@ -139,11 +148,11 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             // @TODO v3 will deprecate this style (featured.posts)
             result.data.featured.posts.length.should.eql(posts.length);
 
-            api.posts.browse.calledTwice.should.be.true();
-            api.posts.browse.firstCall.args[0].should.have.property('include', 'author,authors,tags');
-            api.posts.browse.firstCall.args[0].should.have.property('page', 2);
-            api.posts.browse.secondCall.args[0].should.have.property('filter', 'featured:true');
-            api.posts.browse.secondCall.args[0].should.have.property('limit', 3);
+            browsePostsStub.calledTwice.should.be.true();
+            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags');
+            browsePostsStub.firstCall.args[0].should.have.property('page', 2);
+            browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
+            browsePostsStub.secondCall.args[0].should.have.property('limit', 3);
             done();
         }).catch(done);
     });
@@ -157,7 +166,7 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             filter: 'tags:%s',
             data: {
                 tag: {
-                    controller: 'tags',
+                    controller: 'tagsPublic',
                     type: 'read',
                     resource: 'tags',
                     options: {slug: '%s'}
@@ -173,11 +182,11 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             result.posts.length.should.eql(posts.length);
             result.data.tag.length.should.eql(tags.length);
 
-            api.posts.browse.calledOnce.should.be.true();
-            api.posts.browse.firstCall.args[0].should.have.property('include');
-            api.posts.browse.firstCall.args[0].should.have.property('filter', 'tags:testing');
-            api.posts.browse.firstCall.args[0].should.not.have.property('slug');
-            api.tags.read.firstCall.args[0].should.have.property('slug', 'testing');
+            browsePostsStub.calledOnce.should.be.true();
+            browsePostsStub.firstCall.args[0].should.have.property('include');
+            browsePostsStub.firstCall.args[0].should.have.property('filter', 'tags:testing');
+            browsePostsStub.firstCall.args[0].should.not.have.property('slug');
+            readTagsStub.firstCall.args[0].should.have.property('slug', 'testing');
             done();
         }).catch(done);
     });

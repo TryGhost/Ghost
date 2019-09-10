@@ -394,10 +394,28 @@ describe('Dynamic Routing', function () {
                 return testUtils.initData();
             }).then(function () {
                 return testUtils.fixtures.overrideOwnerUser(ownerSlug);
+            }).then(function (insertedUser) {
+                return testUtils.fixtures.insertPosts([
+                    testUtils.DataGenerator.forKnex.createPost({
+                        author_id: insertedUser.id
+                    })
+                ]);
             }).then(function () {
                 return testUtils.fixtures.insertOneUser(lockedUser);
-            }).then(function () {
+            }).then(function (insertedUser) {
+                return testUtils.fixtures.insertPosts([
+                    testUtils.DataGenerator.forKnex.createPost({
+                        author_id: insertedUser.id
+                    })
+                ]);
+            }).then(() => {
                 return testUtils.fixtures.insertOneUser(suspendedUser);
+            }).then(function (insertedUser) {
+                return testUtils.fixtures.insertPosts([
+                    testUtils.DataGenerator.forKnex.createPost({
+                        author_id: insertedUser.id
+                    })
+                ]);
             }).then(function () {
                 done();
             }).catch(done);

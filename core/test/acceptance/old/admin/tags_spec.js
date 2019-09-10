@@ -43,7 +43,9 @@ describe('Tag API', function () {
                 jsonResponse.meta.pagination.should.have.property('next', null);
                 jsonResponse.meta.pagination.should.have.property('prev', null);
 
-                jsonResponse.tags[0].url.should.eql(`${config.get('url')}/tag/pollo/`);
+                // returns 404 because this tag has no published posts
+                jsonResponse.tags[0].url.should.eql(`${config.get('url')}/404/`);
+                jsonResponse.tags[1].url.should.eql(`${config.get('url')}/tag/kitchen-sink/`);
 
                 should.exist(jsonResponse.tags[0].count.posts);
             });

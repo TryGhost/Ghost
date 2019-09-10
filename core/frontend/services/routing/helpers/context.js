@@ -43,7 +43,7 @@ function setResponseContext(req, res, data) {
     }
 
     // Add context 'amp' to either post or page, if we have an `*/amp` route
-    if (ampPattern.test(res.locals.relativeUrl) && data.post) {
+    if (ampPattern.test(res.locals.relativeUrl) && (data.post || data.page)) {
         res.locals.context.push('amp');
     }
 
@@ -64,12 +64,7 @@ function setResponseContext(req, res, data) {
         }
     }
 
-    // @TODO: remove first if condition when we drop v0.1
-    if (data && data.post && data.post.page) {
-        if (!res.locals.context.includes('page')) {
-            res.locals.context.push('page');
-        }
-    } else if (data && data.post) {
+    if (data && data.post) {
         if (!res.locals.context.includes('post')) {
             res.locals.context.push('post');
         }

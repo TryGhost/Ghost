@@ -40,11 +40,7 @@ function entryLookup(postUrl, routerOptions, locals) {
     }
 
     let options = {
-        /**
-         * @deprecated: `author`, will be removed in Ghost 3.0
-         * @TODO: Remove "author" when we drop v0.1
-         */
-        include: 'author,authors,tags'
+        include: 'authors,tags'
     };
 
     if (config.get('enableDeveloperExperiments')) {
