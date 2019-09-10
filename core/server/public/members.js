@@ -1,6 +1,7 @@
 Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form){
     var errorEl = form.querySelector('[data-members-error]');
-    form.addEventListener('submit', function (event) {
+    function submitHandler(event) {
+        form.removeEventListener('submit', submitHandler);
         event.preventDefault();
         if (errorEl) {
             errorEl.innerText = '';
@@ -11,6 +12,7 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
 
         if (!email.includes('@')) {
             form.classList.add('invalid')
+            form.addEventListener('submit', submitHandler);
             return;
         }
 
@@ -24,6 +26,7 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
                 email: email
             })
         }).then(function (res) {
+            form.addEventListener('submit', submitHandler);
             form.classList.remove('loading');
             if (res.ok) {
                 form.classList.add('success')
@@ -34,12 +37,14 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
                 form.classList.add('error')
             }
         });
-    });
+    }
+    form.addEventListener('submit', submitHandler);
 });
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), function (el) {
     var errorEl = el.querySelector('[data-members-error]');
-    el.addEventListener('click', function (event) {
+    function clickHandler(event) {
+        el.removeEventListener('click', clickHandler);
         event.preventDefault();
 
         var plan = el.dataset.membersPlan;
@@ -82,17 +87,20 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
             }
         }).catch(function (err) {
             console.error(err);
+            el.addEventListener('click', clickHandler);
             el.classList.remove('loading');
             if (errorEl) {
                 errorEl.innerText = err.message;
             }
             el.classList.add('error');
         });
-    });
+    }
+    el.addEventListener('click', clickHandler);
 });
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]'), function (el) {
-    el.addEventListener('click', function (event) {
+    function clickHandler(event) {
+        el.removeEventListener('click', clickHandler);
         event.preventDefault();
         el.classList.remove('error');
         el.classList.add('loading');
@@ -102,11 +110,13 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]')
             if (res.ok) {
                 window.location.reload();
             } else {
+                el.addEventListener('click', clickHandler);
                 el.classList.remove('loading');
                 el.classList.add('error');
             }
         });
-    });
+    }
+    el.addEventListener('click', clickHandler);
 });
 
 var magicLinkRegEx = /token=([a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+)/;
