@@ -13,16 +13,9 @@ var proxy = require('./proxy'),
     createFrame = proxy.hbs.handlebars.createFrame,
 
     api = proxy.api,
-    labs = proxy.labs,
     pathAliases,
     get;
 
-/**
- * v0.1: users, posts, tags
- * v2: authors, pagesPublic, posts, tagsPublic
- *
- * @NOTE: if you use "users" in v2, we should fallback to authors
- */
 const RESOURCES = {
     posts: {
         alias: 'postsPublic',
@@ -31,10 +24,6 @@ const RESOURCES = {
     tags: {
         alias: 'tagsPublic',
         resource: 'tags'
-    },
-    users: {
-        alias: 'authorsPublic',
-        resource: 'users'
     },
     pages: {
         alias: 'pagesPublic',
@@ -209,27 +198,4 @@ get = function get(resource, options) {
     });
 };
 
-module.exports = function getLabsWrapper() {
-    const self = this;
-    const args = arguments;
-    const apiVersion = _.get(args, '[1].data.root._locals.apiVersion');
-
-    // If the API version is v0.1 return the labs enabled version of the helper
-    if (apiVersion === 'v0.1') {
-        return labs.enabledHelper({
-            flagKey: 'publicAPI',
-            flagName: 'Public API',
-            helperName: 'get',
-            // Even though this is a labs enabled helper, really we want users to upgrade to v2 API.
-            errMessagePath: 'warnings.helpers.get.apiRequired.message',
-            errContextPath: 'warnings.helpers.get.apiRequired.context',
-            helpUrl: 'https://ghost.org/docs/api/handlebars-themes/packagejson/',
-            async: true
-        }, function executeHelper() {
-            return get.apply(self, args);
-        });
-    }
-
-    // Else, we just apply the helper normally
-    return get.apply(self, args);
-};
+module.exports = get;
