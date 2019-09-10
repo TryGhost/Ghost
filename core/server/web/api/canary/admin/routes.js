@@ -19,7 +19,7 @@ module.exports = function apiRoutes() {
     const http = apiCanary.http;
 
     // ## Public
-    router.get('/site', http(apiCanary.site.read));
+    router.get('/site', mw.publicAdminApi, http(apiCanary.site.read));
 
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(apiCanary.config.read));

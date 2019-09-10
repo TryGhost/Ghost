@@ -19,7 +19,7 @@ module.exports = function apiRoutes() {
     const http = apiv2.http;
 
     // ## Public
-    router.get('/site', http(apiv2.site.read));
+    router.get('/site', mw.publicAdminApi, http(apiv2.site.read));
 
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(apiv2.config.read));
