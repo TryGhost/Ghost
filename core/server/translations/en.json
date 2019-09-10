@@ -582,7 +582,7 @@
                 "iteratorNeeded": "Need to pass an iterator to #foreach"
             },
             "get": {
-                "invalidResource": "Invalid resource given to get helper",
+                "invalidResource": "Invalid resource given to get helper"
             },
             "has": {
                 "invalidAttribute": "Invalid or no attribute given to has helper"
