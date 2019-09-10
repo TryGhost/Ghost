@@ -4,26 +4,26 @@ var should = require('should'),
     helpers = require('../../../frontend/helpers');
 
 describe('{{facebook_url}} helper', function () {
-    var options = {data: {blog: {}}};
+    var options = {data: {site: {}}};
 
     beforeEach(function () {
-        options.data.blog = {facebook: ''};
+        options.data.site = {facebook: ''};
     });
 
-    it('should output the facebook url for @blog, if no other facebook username is provided', function () {
-        options.data.blog = {facebook: 'hey'};
+    it('should output the facebook url for @site, if no other facebook username is provided', function () {
+        options.data.site = {facebook: 'hey'};
 
         helpers.facebook_url.call({}, options).should.equal('https://www.facebook.com/hey');
     });
 
     it('should output the facebook url for the local object, if it has one', function () {
-        options.data.blog = {facebook: 'hey'};
+        options.data.site = {facebook: 'hey'};
 
         helpers.facebook_url.call({facebook: 'you/there'}, options).should.equal('https://www.facebook.com/you/there');
     });
 
     it('should output the facebook url for the provided username when it is explicitly passed in', function () {
-        options.data.blog = {facebook: 'hey'};
+        options.data.site = {facebook: 'hey'};
 
         helpers.facebook_url.call({facebook: 'you/there'}, 'i/see/you/over/there', options)
             .should.equal('https://www.facebook.com/i/see/you/over/there');

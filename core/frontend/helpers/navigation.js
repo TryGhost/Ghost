@@ -16,7 +16,7 @@ module.exports = function navigation(options) {
     options.hash = options.hash || {};
     options.data = options.data || {};
 
-    var navigationData = options.data.blog.navigation,
+    var navigationData = options.data.site.navigation,
         currentUrl = options.data.root.relativeUrl,
         self = this,
         output;

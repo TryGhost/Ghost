@@ -620,15 +620,15 @@ describe('{{#has}} helper', function () {
         it('matches on global properties (pass)', function () {
             thisCtx = {};
             handlebarsOptions.data = {
-                blog: {
+                site: {
                     twitter: 'foo',
                     facebook: '',
                     website: null
                 }
             };
 
-            // {{#has any="@blog.twitter, @blog.facebook,@blog.website"}}
-            callHasHelper(thisCtx, {any: '@blog.twitter, @blog.facebook,@blog.website'});
+            // {{#has any="@site.twitter, @site.facebook,@site.website"}}
+            callHasHelper(thisCtx, {any: '@site.twitter, @site.facebook,@site.website'});
 
             fn.called.should.be.true();
             inverse.called.should.be.false();
@@ -637,15 +637,15 @@ describe('{{#has}} helper', function () {
         it('matches on global properties (fail)', function () {
             thisCtx = {};
             handlebarsOptions.data = {
-                blog: {
+                site: {
                     twitter: 'foo',
                     facebook: '',
                     website: null
                 }
             };
 
-            // {{#has any="@blog.facebook,@blog.website, @blog.foo"}}
-            callHasHelper(thisCtx, {any: '@blog.facebook,@blog.website, @not.foo'});
+            // {{#has any="@site.facebook,@site.website, @site.foo"}}
+            callHasHelper(thisCtx, {any: '@site.facebook,@site.website, @not.foo'});
 
             fn.called.should.be.false();
             inverse.called.should.be.true();
@@ -744,15 +744,15 @@ describe('{{#has}} helper', function () {
         it('matches on global properties (pass)', function () {
             thisCtx = {};
             handlebarsOptions.data = {
-                blog: {
+                site: {
                     twitter: 'foo',
                     facebook: 'bar',
                     website: null
                 }
             };
 
-            // {{#has all="@blog.twitter, @blog.facebook"}}
-            callHasHelper(thisCtx, {all: '@blog.twitter, @blog.facebook'});
+            // {{#has all="@site.twitter, @site.facebook"}}
+            callHasHelper(thisCtx, {all: '@site.twitter, @site.facebook'});
 
             fn.called.should.be.true();
             inverse.called.should.be.false();
@@ -761,15 +761,15 @@ describe('{{#has}} helper', function () {
         it('matches on global properties (fail)', function () {
             thisCtx = {};
             handlebarsOptions.data = {
-                blog: {
+                site: {
                     twitter: 'foo',
                     facebook: 'bar',
                     website: null
                 }
             };
 
-            // {{#has all="@blog.facebook,@blog.website, @blog.foo"}}
-            callHasHelper(thisCtx, {all: '@blog.facebook,@blog.website, @not.foo'});
+            // {{#has all="@site.facebook,@site.website, @site.foo"}}
+            callHasHelper(thisCtx, {all: '@site.facebook,@site.website, @not.foo'});
 
             fn.called.should.be.false();
             inverse.called.should.be.true();

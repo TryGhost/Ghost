@@ -1162,7 +1162,7 @@ module.exports = {
             locals = options.locals || {},
             hbsStructure = {
                 data: {
-                    blog: {},
+                    site: {},
                     config: {},
                     labs: {},
                     root: {
