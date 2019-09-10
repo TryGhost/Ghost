@@ -219,20 +219,6 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('serve public asset', function () {
-                    const req = {
-                        secure: false,
-                        method: 'GET',
-                        url: '/public/ghost-sdk.js',
-                        host: 'example.com'
-                    };
-
-                    return testUtils.mocks.express.invoke(app, req)
-                        .then(function (response) {
-                            response.statusCode.should.eql(200);
-                        });
-                });
-
                 it('serve theme asset', function () {
                     //configUtils.set('url', 'https://example.com');
 
@@ -348,21 +334,6 @@ describe('Integration - Web - Site', function () {
             });
 
             describe('assets', function () {
-                it('blog is https, request is http', function () {
-                    const req = {
-                        secure: false,
-                        method: 'GET',
-                        url: '/public/ghost-sdk.js',
-                        host: 'example.com'
-                    };
-
-                    return testUtils.mocks.express.invoke(app, req)
-                        .then(function (response) {
-                            response.statusCode.should.eql(301);
-                            response.headers.location.should.eql('https://example.com/public/ghost-sdk.js');
-                        });
-                });
-
                 it('blog is https, request is http', function () {
                     const req = {
                         secure: false,
@@ -1946,20 +1917,6 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('serve public asset', function () {
-                    const req = {
-                        secure: false,
-                        method: 'GET',
-                        url: '/public/ghost-sdk.js',
-                        host: 'example.com'
-                    };
-
-                    return testUtils.mocks.express.invoke(app, req)
-                        .then(function (response) {
-                            response.statusCode.should.eql(200);
-                        });
-                });
-
                 it('serve theme asset', function () {
                     //configUtils.set('url', 'https://example.com');
 
@@ -2075,21 +2032,6 @@ describe('Integration - Web - Site', function () {
             });
 
             describe('assets', function () {
-                it('blog is https, request is http', function () {
-                    const req = {
-                        secure: false,
-                        method: 'GET',
-                        url: '/public/ghost-sdk.js',
-                        host: 'example.com'
-                    };
-
-                    return testUtils.mocks.express.invoke(app, req)
-                        .then(function (response) {
-                            response.statusCode.should.eql(301);
-                            response.headers.location.should.eql('https://example.com/public/ghost-sdk.js');
-                        });
-                });
-
                 it('blog is https, request is http', function () {
                     const req = {
                         secure: false,
@@ -3675,20 +3617,6 @@ describe('Integration - Web - Site', function () {
                         });
                 });
 
-                it('serve public asset', function () {
-                    const req = {
-                        secure: false,
-                        method: 'GET',
-                        url: '/public/ghost-sdk.js',
-                        host: 'example.com'
-                    };
-
-                    return testUtils.mocks.express.invoke(app, req)
-                        .then(function (response) {
-                            response.statusCode.should.eql(200);
-                        });
-                });
-
                 it('serve theme asset', function () {
                     //configUtils.set('url', 'https://example.com');
 
@@ -3804,21 +3732,6 @@ describe('Integration - Web - Site', function () {
             });
 
             describe('assets', function () {
-                it('blog is https, request is http', function () {
-                    const req = {
-                        secure: false,
-                        method: 'GET',
-                        url: '/public/ghost-sdk.js',
-                        host: 'example.com'
-                    };
-
-                    return testUtils.mocks.express.invoke(app, req)
-                        .then(function (response) {
-                            response.statusCode.should.eql(301);
-                            response.headers.location.should.eql('https://example.com/public/ghost-sdk.js');
-                        });
-                });
-
                 it('blog is https, request is http', function () {
                     const req = {
                         secure: false,
