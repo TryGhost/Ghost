@@ -14,15 +14,15 @@ const session = {
         return models.User.findOne({id: options.context.user});
     },
     add(object) {
-        if (!object || !object.username || !object.password) {
+        if (!object || !object.data || !object.data.username || !object.data.password) {
             return Promise.reject(new common.errors.UnauthorizedError({
                 message: common.i18n.t('errors.middleware.auth.accessDenied')
             }));
         }
 
         return models.User.check({
-            email: object.username,
-            password: object.password
+            email: object.data.username,
+            password: object.data.password
         }).then((user) => {
             return Promise.resolve((req, res, next) => {
                 req.brute.reset(function (err) {
