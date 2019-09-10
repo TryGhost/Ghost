@@ -83,9 +83,7 @@ function getMetaData(data, root) {
         // 1. CASE: custom_excerpt is populated via the UI
         // 2. CASE: no custom_excerpt, but meta_description is poplated via the UI
         // 3. CASE: fall back to automated excerpt of 50 words if neither custom_excerpt nor meta_description is provided
-        // @NOTE: v2 returns a calculated `post.excerpt`. v0.1 does not
-        // See https://github.com/TryGhost/Ghost/issues/10062.
-        // @TODO: simplify or remove if we drop v0.1 re
+        // @TODO: https://github.com/TryGhost/Ghost/issues/10062
         const prop = data.post ? 'post' : 'page';
         customExcerpt = data[prop].excerpt || data[prop].custom_excerpt;
         metaDescription = data[prop].meta_description;
