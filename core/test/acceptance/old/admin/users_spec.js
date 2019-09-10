@@ -1,9 +1,7 @@
 const should = require('should');
 const _ = require('lodash');
 const supertest = require('supertest');
-const moment = require('moment');
 const Promise = require('bluebird');
-const ObjectId = require('bson-objectid');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../server/config');
@@ -13,12 +11,11 @@ const ghost = testUtils.startGhost;
 let request;
 
 describe('User API', function () {
-    let ghostServer, inactiveUser, admin;
+    let inactiveUser, admin;
 
     before(function () {
         return ghost()
-            .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
+            .then(function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
@@ -82,10 +79,11 @@ describe('User API', function () {
                 testUtils.API.isISO8601(jsonResponse.users[3].created_at).should.be.true();
                 testUtils.API.isISO8601(jsonResponse.users[3].updated_at).should.be.true();
 
-                jsonResponse.users[0].url.should.eql(`${config.get('url')}/author/admin-user/`);
+                // only "ghost" author has a published post
+                jsonResponse.users[0].url.should.eql(`${config.get('url')}/404/`);
                 jsonResponse.users[1].url.should.eql(`${config.get('url')}/404/`);
                 jsonResponse.users[2].url.should.eql(`${config.get('url')}/author/ghost/`);
-                jsonResponse.users[3].url.should.eql(`${config.get('url')}/author/joe-bloggs/`);
+                jsonResponse.users[3].url.should.eql(`${config.get('url')}/404/`);
 
                 done();
             });

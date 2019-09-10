@@ -18,8 +18,7 @@ module.exports = function previewController(req, res, next) {
     const params = {
         uuid: req.params.uuid,
         status: 'all',
-        // @TODO: Remove "author" if we drop v0.1
-        include: 'author,authors,tags'
+        include: 'authors,tags'
     };
 
     return api[res.routerOptions.query.controller]
