@@ -78,9 +78,14 @@ function updateLocalTemplateOptions(req, res, next) {
         url: urlUtils.urlFor('home', {secure: req.secure, trailingSlash: false}, true)
     };
 
+    const member = req.member ? {
+        email: req.member.email,
+        subscribed: req.member.plans.length !== 0
+    } : null;
+
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
         data: {
-            member: req.member,
+            member: member,
             site: siteData,
             blog: siteData
         }
