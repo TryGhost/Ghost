@@ -359,10 +359,12 @@ describe('Frontend Routing', function () {
 
             describe('amp', function () {
                 it('should 404 for amp parameter', function (done) {
+                    // NOTE: only post pages are supported so the router doesn't have a way to distinguish if
+                    //       the request was done after AMP 'Page' or 'Post'
                     request.get('/static-page-test/amp/')
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
-                        .expect(/Page not found/)
+                        .expect(/Post not found/)
                         .end(doEnd(done));
                 });
             });
