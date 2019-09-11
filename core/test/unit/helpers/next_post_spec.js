@@ -9,17 +9,23 @@ var should = require('should'),
 
 describe('{{next_post}} helper', function () {
     let locals;
-    var browsePostStub;
+    var browsePostsStub;
 
     beforeEach(function () {
         locals = {
             root: {
                 _locals: {
-                    apiVersion: 'v0.1'
+                    apiVersion: 'v2'
                 },
                 context: ['post']
             }
         };
+
+        sinon.stub(api, 'postsPublic').get(() => {
+            return {
+                browse: browsePostsStub
+            };
+        });
     });
 
     afterEach(function () {
@@ -28,7 +34,7 @@ describe('{{next_post}} helper', function () {
 
     describe('with valid post data - ', function () {
         beforeEach(function () {
-            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostsStub = sinon.stub().callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({
                         posts: [{slug: '/next/', title: 'post 3'}]
@@ -59,8 +65,8 @@ describe('{{next_post}} helper', function () {
                     fn.firstCall.args.should.have.lengthOf(2);
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-                    browsePostStub.calledOnce.should.be.true();
-                    browsePostStub.firstCall.args[0].include.should.eql('author,authors,tags');
+                    browsePostsStub.calledOnce.should.be.true();
+                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags');
 
                     done();
                 })
@@ -70,9 +76,11 @@ describe('{{next_post}} helper', function () {
 
     describe('for valid post with no next post', function () {
         beforeEach(function () {
-            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostsStub = sinon.stub().callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
-                    return Promise.resolve({posts: []});
+                    return Promise.resolve({
+                        posts: []
+                    });
                 }
             });
         });
@@ -108,7 +116,7 @@ describe('{{next_post}} helper', function () {
 
     describe('for invalid post data', function () {
         beforeEach(function () {
-            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostsStub = sinon.stub().callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({});
                 }
@@ -125,7 +133,7 @@ describe('{{next_post}} helper', function () {
                 .then(function () {
                     fn.called.should.be.false();
                     inverse.called.should.be.true();
-                    browsePostStub.called.should.be.false();
+                    browsePostsStub.called.should.be.false();
 
                     done();
                 })
@@ -138,13 +146,13 @@ describe('{{next_post}} helper', function () {
             locals = {
                 root: {
                     _locals: {
-                        apiVersion: 'v0.1'
+                        apiVersion: 'v2'
                     },
                     context: ['page']
                 }
             };
 
-            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostsStub = sinon.stub().callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({posts: [{slug: '/previous/', title: 'post 1'}]});
                 }
@@ -182,13 +190,13 @@ describe('{{next_post}} helper', function () {
             locals = {
                 root: {
                     _locals: {
-                        apiVersion: 'v0.1'
+                        apiVersion: 'v2'
                     },
                     context: ['preview', 'post']
                 }
             };
 
-            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostsStub = sinon.stub().callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({posts: [{slug: '/next/', title: 'post 3'}]});
                 }
@@ -222,7 +230,7 @@ describe('{{next_post}} helper', function () {
 
     describe('with "in" option', function () {
         beforeEach(function () {
-            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function (options) {
+            browsePostsStub = sinon.stub().callsFake(function (options) {
                 if (options.filter.indexOf('published_at:>') > -1) {
                     return Promise.resolve({
                         posts: [{slug: '/next/', title: 'post 1'}]
@@ -254,9 +262,9 @@ describe('{{next_post}} helper', function () {
                     fn.firstCall.args.should.have.lengthOf(2);
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-                    browsePostStub.calledOnce.should.be.true();
-                    browsePostStub.firstCall.args[0].include.should.eql('author,authors,tags');
-                    browsePostStub.firstCall.args[0].filter.should.match(/\+primary_tag:test/);
+                    browsePostsStub.calledOnce.should.be.true();
+                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags');
+                    browsePostsStub.firstCall.args[0].filter.should.match(/\+primary_tag:test/);
 
                     done();
                 })
@@ -286,9 +294,9 @@ describe('{{next_post}} helper', function () {
                     fn.firstCall.args.should.have.lengthOf(2);
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-                    browsePostStub.calledOnce.should.be.true();
-                    browsePostStub.firstCall.args[0].include.should.eql('author,authors,tags');
-                    browsePostStub.firstCall.args[0].filter.should.match(/\+primary_author:hans/);
+                    browsePostsStub.calledOnce.should.be.true();
+                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags');
+                    browsePostsStub.firstCall.args[0].filter.should.match(/\+primary_author:hans/);
 
                     done();
                 })
@@ -318,9 +326,9 @@ describe('{{next_post}} helper', function () {
                     fn.firstCall.args.should.have.lengthOf(2);
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-                    browsePostStub.calledOnce.should.be.true();
-                    browsePostStub.firstCall.args[0].include.should.eql('author,authors,tags');
-                    browsePostStub.firstCall.args[0].filter.should.match(/\+author:author-name/);
+                    browsePostsStub.calledOnce.should.be.true();
+                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags');
+                    browsePostsStub.firstCall.args[0].filter.should.match(/\+author:author-name/);
 
                     done();
                 })
@@ -349,9 +357,9 @@ describe('{{next_post}} helper', function () {
                     fn.firstCall.args.should.have.lengthOf(2);
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-                    browsePostStub.calledOnce.should.be.true();
-                    browsePostStub.firstCall.args[0].include.should.eql('author,authors,tags');
-                    browsePostStub.firstCall.args[0].filter.should.not.match(/\+author:/);
+                    browsePostsStub.calledOnce.should.be.true();
+                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags');
+                    browsePostsStub.firstCall.args[0].filter.should.not.match(/\+author:/);
 
                     done();
                 })
@@ -381,9 +389,9 @@ describe('{{next_post}} helper', function () {
                     fn.firstCall.args.should.have.lengthOf(2);
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
-                    browsePostStub.calledOnce.should.be.true();
-                    browsePostStub.firstCall.args[0].include.should.eql('author,authors,tags');
-                    browsePostStub.firstCall.args[0].filter.should.not.match(/\+magic/);
+                    browsePostsStub.calledOnce.should.be.true();
+                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags');
+                    browsePostsStub.firstCall.args[0].filter.should.not.match(/\+magic/);
 
                     done();
                 })
@@ -393,7 +401,7 @@ describe('{{next_post}} helper', function () {
 
     describe('general error handling', function () {
         beforeEach(function () {
-            browsePostStub = sinon.stub(api['v0.1'].posts, 'browse').callsFake(function () {
+            browsePostsStub = sinon.stub().callsFake(function () {
                 return Promise.reject(new common.errors.NotFoundError({message: 'Something wasn\'t found'}));
             });
         });

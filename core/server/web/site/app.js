@@ -225,9 +225,6 @@ module.exports = function setupSiteApp(options = {}) {
         }
     });
 
-    // Fetch the frontend client into res.locals
-    siteApp.use(shared.middlewares.frontendClient);
-
     debug('General middleware done');
 
     router = siteRoutes(options);

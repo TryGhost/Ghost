@@ -11,7 +11,6 @@ var Promise = require('bluebird'),
     KnexMigrator = require('knex-migrator'),
     ghost = require('../../server'),
     GhostServer = require('../../server/ghost-server'),
-    api = require('../../server/api'),
     common = require('../../server/lib/common'),
     fixtureUtils = require('../../server/data/schema/fixtures/utils'),
     db = require('../../server/data/db'),
@@ -1064,7 +1063,6 @@ module.exports = {
             cacheStub.withArgs('active_theme').returns(options.theme || 'casper');
             cacheStub.withArgs('active_timezone').returns('Etc/UTC');
             cacheStub.withArgs('permalinks').returns('/:slug/');
-            cacheStub.withArgs('labs').returns({publicAPI: true});
 
             if (options.amp) {
                 cacheStub.withArgs('amp').returns(true);
@@ -1073,12 +1071,6 @@ module.exports = {
             if (options.apps) {
                 cacheStub.withArgs('active_apps').returns([]);
             }
-
-            sandbox.stub(api.clients, 'read').returns(Promise.resolve({
-                clients: [
-                    {slug: 'ghost-frontend', secret: 'a1bcde23cfe5', status: 'enabled'}
-                ]
-            }));
 
             sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
         },

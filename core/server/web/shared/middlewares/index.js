@@ -35,10 +35,6 @@ module.exports = {
         return require('./error-handler');
     },
 
-    get frontendClient() {
-        return require('./frontend-client');
-    },
-
     get ghostLocals() {
         return require('./ghost-locals');
     },
