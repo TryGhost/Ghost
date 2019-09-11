@@ -106,7 +106,7 @@ const login = (request, API_URL) => {
                     }));
                 }
 
-                resolve(res.headers['set-cookie'] || res.body.access_token);
+                resolve(res.headers['set-cookie']);
             }, reject);
     });
 };
