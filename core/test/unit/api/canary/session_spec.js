@@ -129,8 +129,10 @@ describe('Session controller', function () {
                 .returns(findOneReturnVal);
 
             const result = sessionController.read({
-                context: {
-                    user: 108
+                options: {
+                    context: {
+                        user: 108
+                    }
                 }
             });
             should.equal(result, findOneReturnVal);

@@ -4,25 +4,27 @@ const models = require('../../models');
 const auth = require('../../services/auth');
 
 const session = {
-    read(options) {
+    read(frame) {
         /*
          * TODO
          * Don't query db for user, when new api http wrapper is in we can
          * have direct access to req.user, we can also get access to some session
          * inofrmation too and send it back
          */
-        return models.User.findOne({id: options.context.user});
+        return models.User.findOne({id: frame.options.context.user});
     },
-    add(object) {
-        if (!object || !object.data || !object.data.username || !object.data.password) {
+    add(frame) {
+        const object = frame.data;
+
+        if (!object || !object.username || !object.password) {
             return Promise.reject(new common.errors.UnauthorizedError({
                 message: common.i18n.t('errors.middleware.auth.accessDenied')
             }));
         }
 
         return models.User.check({
-            email: object.data.username,
-            password: object.data.password
+            email: object.username,
+            password: object.password
         }).then((user) => {
             return Promise.resolve((req, res, next) => {
                 req.brute.reset(function (err) {
