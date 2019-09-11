@@ -646,9 +646,11 @@ describe('Dynamic Routing', function () {
         });
 
         it('simulate upload of routes.yaml', function () {
-            return api.settings.upload({
+            return api.settings.upload.query({
                 context: testUtils.context.internal.context,
-                path: path.join(config.get('paths:appRoot'), 'core', 'test', 'utils', 'fixtures', 'settings', 'newroutes.yaml')
+                file: {
+                    path: path.join(config.get('paths:appRoot'), 'core', 'test', 'utils', 'fixtures', 'settings', 'newroutes.yaml')
+                }
             }).then(() => {
                 return testUtils.integrationTesting.urlService.waitTillFinished({dbIsReady: true});
             });
