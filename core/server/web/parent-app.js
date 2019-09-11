@@ -44,19 +44,30 @@ module.exports = function setupParentApp(options = {}) {
     // This sets global res.locals which are needed everywhere
     parentApp.use(shared.middlewares.ghostLocals);
 
-    // Wrap the admin and API apps into a single express app for use with vhost
-    const adminApp = express();
-    adminApp.enable('trust proxy'); // required to respect x-forwarded-proto in admin requests
-    adminApp.use('/ghost/api', require('./api')());
-    adminApp.use('/ghost', require('./admin')());
-    // TODO: remove /content/* once we're sure the API is not returning relative asset URLs anywhere
-    adminApp.use(STATIC_IMAGE_URL_PREFIX, shared.middlewares.image.handleImageSizes, storage.getStorage().serve());
-
     // Mount the  apps on the parentApp
 
     const adminHost = config.get('admin:url') ? (new URL(config.get('admin:url')).hostname) : '';
     const frontendHost = new URL(config.get('url')).hostname;
     const hasSeparateAdmin = adminHost && adminHost !== frontendHost;
+
+    // Wrap the admin and API apps into a single express app for use with vhost
+    const adminApp = express();
+    adminApp.enable('trust proxy'); // required to respect x-forwarded-proto in admin requests
+    adminApp.use('/ghost/api', require('./api')());
+    adminApp.use('/ghost', require('./admin')());
+
+    // TODO: remove {admin url}/content/* once we're sure the API is not returning relative asset URLs anywhere
+    // only register this route if the admin is separate so we're not overriding the {site}/content/* route
+    if (hasSeparateAdmin) {
+        adminApp.use(
+            STATIC_IMAGE_URL_PREFIX,
+            [
+                shared.middlewares.image.handleImageSizes,
+                storage.getStorage().serve(),
+                shared.middlewares.errorHandler.handleThemeResponse
+            ]
+        );
+    }
 
     // ADMIN + API
     // with a separate admin url only serve on that host, otherwise serve on all hosts
