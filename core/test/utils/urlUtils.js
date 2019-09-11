@@ -11,6 +11,7 @@ const getInstance = (options) => {
         url: options.url,
         adminUrl: options.adminUrl,
         apiVersions: options.apiVersions,
+        defaultApiVersion: 'v2',
         slugs: options.slugs,
         redirectCacheMaxAge: options.redirectCacheMaxAge,
         baseApiPath: '/ghost/api'
@@ -43,6 +44,7 @@ const stubUrlUtilsFromConfig = () => {
         url: config.get('url'),
         adminUrl: config.get('admin:url'),
         apiVersions: config.get('api:versions'),
+        defaultApiVersion: 'v2',
         slugs: config.get('slugs').protected,
         redirectCacheMaxAge: config.get('caching:301:maxAge'),
         baseApiPath: '/ghost/api'

@@ -1,5 +1,4 @@
 const express = require('express');
-const api = require('../../../../api');
 const apiCanary = require('../../../../api/canary');
 const mw = require('./middleware');
 
@@ -108,9 +107,6 @@ module.exports = function apiRoutes() {
 
     // ## Roles
     router.get('/roles/', mw.authAdminApi, http(apiCanary.roles.browse));
-
-    // ## Clients
-    router.get('/clients/slug/:slug', api.http(api.clients.read));
 
     // ## Slugs
     router.get('/slugs/:type/:name', mw.authAdminApi, http(apiCanary.slugs.generate));

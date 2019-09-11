@@ -46,7 +46,7 @@ function initialiseServices() {
             active: config.get('scheduling').active,
             // NOTE: When changing API version need to consider how to migrate custom scheduling adapters
             //       that rely on URL to lookup persisted scheduled records (jobs, etc.). Ref: https://github.com/TryGhost/Ghost/pull/10726#issuecomment-489557162
-            apiUrl: urlUtils.urlFor('api', {version: 'v0.1', versionType: 'content'}, true),
+            apiUrl: urlUtils.urlFor('api', {version: 'v2', versionType: 'content'}, true),
             internalPath: config.get('paths').internalSchedulingPath,
             contentPath: config.getContentPath('scheduling')
         })
