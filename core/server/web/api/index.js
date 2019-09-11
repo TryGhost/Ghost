@@ -8,7 +8,6 @@ module.exports = function setupApiApp() {
     const apiApp = express();
 
     // Mount different API versions
-    apiApp.use(urlUtils.getVersionPath({version: 'v0.1'}), require('./v0.1/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'content'}), require('./v2/content/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'admin'}), require('./v2/admin/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'members'}), require('./v2/members/app')());
