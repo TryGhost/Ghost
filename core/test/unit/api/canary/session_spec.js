@@ -60,10 +60,10 @@ describe('Session controller', function () {
 
             const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
 
-            return sessionController.add({
+            return sessionController.add({data: {
                 username: 'freddy@vodafone.com',
                 password: 'qu33nRul35'
-            }, {}).then((fn) => {
+            }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
                 should.equal(fakeReq.brute.reset.callCount, 1);
@@ -91,10 +91,10 @@ describe('Session controller', function () {
 
             const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
 
-            return sessionController.add({
+            return sessionController.add({data: {
                 username: 'freddy@vodafone.com',
                 password: 'qu33nRul35'
-            }, {}).then((fn) => {
+            }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
                 should.equal(fakeReq.brute.reset.callCount, 1);

@@ -36,10 +36,10 @@ describe('Session controller', function () {
             const userCheckStub = sinon.stub(models.User, 'check')
                 .rejects(new Error());
 
-            return sessionController.add({
+            return sessionController.add({data: {
                 username: 'freddy@vodafone.com',
                 password: 'qu33nRul35'
-            }, {}).then(() => {
+            }}).then(() => {
                 should.fail('session.add did not throw');
             },(err) => {
                 should.equal(err instanceof UnauthorizedError, true);
@@ -60,10 +60,10 @@ describe('Session controller', function () {
 
             const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
 
-            return sessionController.add({
+            return sessionController.add({data: {
                 username: 'freddy@vodafone.com',
                 password: 'qu33nRul35'
-            }, {}).then((fn) => {
+            }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
                 should.equal(fakeReq.brute.reset.callCount, 1);
