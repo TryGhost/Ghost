@@ -58,7 +58,7 @@ _private.loadScheduledPosts = function () {
 exports.init = function init(options = {}) {
     return Promise.resolve();
     // TODO: fix once working on scheduler migration to v2
-    // eslint-disable
+    /*eslint-disable */
     const {apiUrl} = options;
     let adapter = null,
         client = null;
