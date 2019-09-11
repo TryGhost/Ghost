@@ -25,7 +25,6 @@ function initialiseServices() {
     routing.bootstrap.start();
 
     const permissions = require('./services/permissions'),
-        auth = require('./services/auth'),
         apps = require('./services/apps'),
         xmlrpc = require('./services/xmlrpc'),
         slack = require('./services/slack'),
@@ -58,9 +57,6 @@ function initialiseServices() {
             require('./analytics-events').init();
         }
     }).then(function () {
-        parentApp.use(auth.init());
-        debug('Auth done');
-
         debug('...`initialiseServices` End');
     });
 }
