@@ -64,6 +64,11 @@ module.exports = function setupSiteApp(options = {}) {
 
     const siteApp = express();
 
+    // Make sure 'req.secure' is valid for proxied requests
+    // (X-Forwarded-Proto header will be checked, if present)
+    // NB: required here because it's not passed down via vhost
+    siteApp.enable('trust proxy');
+
     // ## App - specific code
     // set the view engine
     siteApp.set('view engine', 'hbs');
