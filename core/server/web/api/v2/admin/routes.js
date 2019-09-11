@@ -1,5 +1,4 @@
 const express = require('express');
-const api = require('../../../../api');
 const apiv2 = require('../../../../api/v2');
 const mw = require('./middleware');
 
@@ -108,9 +107,6 @@ module.exports = function apiRoutes() {
 
     // ## Roles
     router.get('/roles/', mw.authAdminApi, http(apiv2.roles.browse));
-
-    // ## Clients
-    router.get('/clients/slug/:slug', api.http(api.clients.read));
 
     // ## Slugs
     router.get('/slugs/:type/:name', mw.authAdminApi, http(apiv2.slugs.generate));
