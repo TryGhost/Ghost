@@ -65,48 +65,7 @@ describe('Admin Routing', function () {
         });
     });
 
-    describe('Legacy Redirects', function () {
-        it('should redirect /logout/ to /ghost/#/signout/', function (done) {
-            request.get('/logout/')
-                .expect('Location', 'http://127.0.0.1:2369/ghost/#/signout/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(301)
-                .end(doEndNoAuth(done));
-        });
-
-        it('should redirect /signout/ to /ghost/#/signout/', function (done) {
-            request.get('/signout/')
-                .expect('Location', 'http://127.0.0.1:2369/ghost/#/signout/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(301)
-                .end(doEndNoAuth(done));
-        });
-
-        it('should redirect /signup/ to /ghost/#/signup/', function (done) {
-            request.get('/signup/')
-                .expect('Location', 'http://127.0.0.1:2369/ghost/#/signup/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(301)
-                .end(doEndNoAuth(done));
-        });
-
-        // Admin aliases
-        it('should redirect /signin/ to /ghost/', function (done) {
-            request.get('/signin/')
-                .expect('Location', 'http://127.0.0.1:2369/ghost/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(301)
-                .end(doEndNoAuth(done));
-        });
-
-        it('should redirect /admin/ to /ghost/', function (done) {
-            request.get('/admin/')
-                .expect('Location', 'http://127.0.0.1:2369/ghost/')
-                .expect('Cache-Control', testUtils.cacheRules.year)
-                .expect(301)
-                .end(doEndNoAuth(done));
-        });
-
+    describe('Admin Redirects', function () {
         it('should redirect /GHOST/ to /ghost/', function (done) {
             request.get('/GHOST/')
                 .expect('Location', '/ghost/')
