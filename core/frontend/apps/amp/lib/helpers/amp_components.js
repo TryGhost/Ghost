@@ -24,7 +24,7 @@ function ampComponents() {
     }
 
     let iframeCount = (html.match(/<iframe/g) || []).length,
-        youtubeCount = (html.match(/youtube.com\/embed/g) || []).length;
+        youtubeCount = (html.match(/(youtu.be\/|youtube(-nocookie)?.com\/(v\/|.*u\/\w\/|embed\/|.*v=))/g) || []).length;
 
     if (youtubeCount) {
         components.push('<script async custom-element="amp-youtube" src="https://cdn.ampproject.org/v0/amp-youtube-0.1.js"></script>');
