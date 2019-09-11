@@ -55,7 +55,7 @@ describe('parent app', function () {
 
             use.calledWith('/ghost/api').should.be.true();
             use.calledWith('/ghost').should.be.true();
-            use.calledWith('/content/images').should.be.true();
+            use.calledWith('/content/images').should.be.false();
 
             apiSpy.called.should.be.true();
             adminSpy.called.should.be.true();
@@ -76,6 +76,8 @@ describe('parent app', function () {
 
         it('should mount and assign correct routes', function () {
             parentApp();
+
+            use.calledWith('/content/images').should.be.true();
 
             vhostSpy.calledTwice.should.be.true();
             vhostSpy.firstCall.calledWith('admin.ghost.blog').should.be.true();
