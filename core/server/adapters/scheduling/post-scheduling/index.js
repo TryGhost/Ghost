@@ -42,11 +42,12 @@ _private.loadClient = function loadClient() {
  */
 _private.loadScheduledPosts = function () {
     // TODO: make this version aware?
-    const api = require('../../../api');
-    return api.schedules.getScheduledPosts()
-        .then((result) => {
-            return result.posts || [];
-        });
+    // const api = require('../../../api');
+    // return api.schedules.getScheduled()
+    //     .then((result) => {
+    //         return result.posts || [];
+    //     });
+    return Promise.resolve([]);
 };
 
 /**
@@ -55,6 +56,9 @@ _private.loadScheduledPosts = function () {
  * @return {*}
  */
 exports.init = function init(options = {}) {
+    return Promise.resolve();
+    // TODO: fix once working on scheduler migration to v2
+    // eslint-disable
     const {apiUrl} = options;
     let adapter = null,
         client = null;
