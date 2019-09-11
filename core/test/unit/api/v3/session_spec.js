@@ -91,7 +91,7 @@ describe('Session controller', function () {
 
             const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
 
-            return sessionController.add({data:{
+            return sessionController.add({data: {
                 username: 'freddy@vodafone.com',
                 password: 'qu33nRul35'
             }}).then((fn) => {
