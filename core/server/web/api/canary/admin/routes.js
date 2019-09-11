@@ -167,14 +167,14 @@ module.exports = function apiRoutes() {
     router.post('/slack/test', mw.authAdminApi, http(apiCanary.slack.sendTest));
 
     // ## Sessions
-    router.get('/session', mw.authAdminApi, api.http(apiCanary.session.read));
+    router.get('/session', mw.authAdminApi, http(apiCanary.session.read));
     // We don't need auth when creating a new session (logging in)
     router.post('/session',
         shared.middlewares.brute.globalBlock,
         shared.middlewares.brute.userLogin,
-        api.http(apiCanary.session.add)
+        http(apiCanary.session.add)
     );
-    router.del('/session', mw.authAdminApi, api.http(apiCanary.session.delete));
+    router.del('/session', mw.authAdminApi, http(apiCanary.session.delete));
 
     // ## Authentication
     router.post('/authentication/passwordreset',
