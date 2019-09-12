@@ -1,8 +1,9 @@
-const debug = require('ghost-ignition').debug('services:routing:controllers:entry'),
-    url = require('url'),
-    urlService = require('../../../services/url'),
-    urlUtils = require('../../../../server/lib/url-utils'),
-    helpers = require('../helpers');
+const debug = require('ghost-ignition').debug('services:routing:controllers:entry');
+const url = require('url');
+const config = require('../../../../server/config');
+const urlService = require('../../../services/url');
+const urlUtils = require('../../../../server/lib/url-utils');
+const helpers = require('../helpers');
 
 /**
  * @description Entry controller.
@@ -32,6 +33,11 @@ module.exports = function entryController(req, res, next) {
 
             // CASE: last param is of url is /edit, redirect to admin
             if (lookup.isEditURL) {
+                if (!config.get('admin:redirects')) {
+                    debug('is edit url but admin redirects are disabled');
+                    return next();
+                }
+
                 debug('redirect. is edit url');
                 const resourceType = entry.page ? 'page' : 'post';
 

@@ -4,6 +4,9 @@
         "host": "127.0.0.1",
         "port": 2368
     },
+    "admin": {
+        "redirects": true
+    },
     "updateCheck": {
         "url": "https://updates.ghost.org",
         "forceUpdate": false

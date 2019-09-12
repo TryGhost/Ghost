@@ -1,4 +1,5 @@
 const express = require('express');
+const config = require('../../../config');
 const urlUtils = require('../../../lib/url-utils');
 
 const adminRedirect = (path) => {
@@ -10,6 +11,10 @@ const adminRedirect = (path) => {
 // redirect to /ghost to the admin
 module.exports = function adminRedirects() {
     const router = express.Router();
-    router.get(/^\/ghost\/?$/, adminRedirect('/'));
+
+    if (config.get('admin:redirects')) {
+        router.get(/^\/ghost\/?$/, adminRedirect('/'));
+    }
+
     return router;
 };

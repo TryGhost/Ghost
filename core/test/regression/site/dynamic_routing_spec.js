@@ -2,17 +2,18 @@
 // As it stands, these tests depend on the database, and as such are integration tests.
 // These tests are here to cover the headers sent with requests and high-level redirects that can't be
 // tested with the unit tests
-const should = require('should'),
-    supertest = require('supertest'),
-    sinon = require('sinon'),
-    moment = require('moment'),
-    path = require('path'),
-    testUtils = require('../../utils'),
-    cheerio = require('cheerio'),
-    config = require('../../../server/config'),
-    api = require('../../../server/api'),
-    settingsCache = require('../../../server/services/settings/cache'),
-    ghost = testUtils.startGhost;
+const should = require('should');
+const supertest = require('supertest');
+const sinon = require('sinon');
+const moment = require('moment');
+const path = require('path');
+const testUtils = require('../../utils');
+const configUtils = require('../../utils/configUtils');
+const cheerio = require('cheerio');
+const config = require('../../../server/config');
+const api = require('../../../server/api');
+const settingsCache = require('../../../server/services/settings/cache');
+const ghost = testUtils.startGhost;
 
 let request;
 
@@ -284,6 +285,43 @@ describe('Dynamic Routing', function () {
             });
         });
 
+        describe('Edit with admin redirects disabled', function () {
+            before(function () {
+                configUtils.set('admin:redirects', false);
+
+                return ghost({forceStart: true})
+                    .then(function (_ghostServer) {
+                        ghostServer = _ghostServer;
+                        request = supertest.agent(config.get('url'));
+                    });
+            });
+
+            after(function () {
+                configUtils.restore();
+
+                return ghost({forceStart: true})
+                    .then(function (_ghostServer) {
+                        ghostServer = _ghostServer;
+                        request = supertest.agent(config.get('url'));
+                    });
+            });
+
+            it('should redirect without slash', function (done) {
+                request.get('/tag/getting-started/edit')
+                    .expect('Location', '/tag/getting-started/edit/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
+            it('should not redirect to admin', function (done) {
+                request.get('/tag/getting-started/edit/')
+                    .expect(404)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .end(doEnd(done));
+            });
+        });
+
         describe.skip('Paged', function () {
             // Inserting more posts takes a bit longer
             this.timeout(20000);
@@ -525,6 +563,43 @@ describe('Dynamic Routing', function () {
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+        });
+
+        describe('Edit with admin redirects disabled', function () {
+            before(function () {
+                configUtils.set('admin:redirects', false);
+
+                return ghost({forceStart: true})
+                    .then(function (_ghostServer) {
+                        ghostServer = _ghostServer;
+                        request = supertest.agent(config.get('url'));
+                    });
+            });
+
+            after(function () {
+                configUtils.restore();
+
+                return ghost({forceStart: true})
+                    .then(function (_ghostServer) {
+                        ghostServer = _ghostServer;
+                        request = supertest.agent(config.get('url'));
+                    });
+            });
+
+            it('should redirect without slash', function (done) {
+                request.get('/author/ghost-owner/edit')
+                    .expect('Location', '/author/ghost-owner/edit/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
+            it('should not redirect to admin', function (done) {
+                request.get('/author/ghost-owner/edit/')
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
                     .end(doEnd(done));
             });
         });
