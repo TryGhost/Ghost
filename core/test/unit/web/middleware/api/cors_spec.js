@@ -12,9 +12,7 @@ describe('cors', function () {
             headers: {
                 origin: null
             },
-            client: {
-                trustedDomains: []
-            }
+            client: {}
         };
 
         res = {
@@ -75,57 +73,8 @@ describe('cors', function () {
         done();
     });
 
-    it('should be enabled when origin is a client_trusted_domain', function (done) {
-        var origin = 'http://my-trusted-domain.com';
-
-        req.client.trustedDomains.push({trusted_domain: origin});
-        req.get = sinon.stub().withArgs('origin').returns(origin);
-        res.get = sinon.stub().withArgs('origin').returns(origin);
-        req.headers.origin = origin;
-
-        cors(req, res, next);
-
-        next.called.should.be.true();
-        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
-
-        done();
-    });
-
-    it('should be enabled when there are multiple trusted domains', function (done) {
-        var origin = 'http://my-other-trusted-domain.com';
-
-        req.client.trustedDomains.push({trusted_domain: origin});
-        req.client.trustedDomains.push({trusted_domain: 'http://my-trusted-domain.com'});
-        req.get = sinon.stub().withArgs('origin').returns(origin);
-        res.get = sinon.stub().withArgs('origin').returns(origin);
-        req.headers.origin = origin;
-
-        cors(req, res, next);
-
-        next.called.should.be.true();
-        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
-
-        done();
-    });
-
-    it('should not be enabled the origin is not trusted or whitelisted', function (done) {
+    it('should not be enabled the if origin is not whitelisted', function (done) {
         var origin = 'http://not-trusted.com';
-
-        req.client.trustedDomains.push({trusted_domain: 'http://example.com'});
-        req.get = sinon.stub().withArgs('origin').returns(origin);
-        res.get = sinon.stub().withArgs('origin').returns(origin);
-        req.headers.origin = origin;
-
-        cors(req, res, next);
-
-        next.called.should.be.true();
-        should.not.exist(res.headers['Access-Control-Allow-Origin']);
-
-        done();
-    });
-
-    it('should not be enabled the origin client_trusted_domains is empty', function (done) {
-        var origin = 'http://example.com';
 
         req.get = sinon.stub().withArgs('origin').returns(origin);
         res.get = sinon.stub().withArgs('origin').returns(origin);

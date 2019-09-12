@@ -14,33 +14,6 @@
             ]
         },
         {
-            "name": "Client",
-            "entries": [
-                {
-                    "name":             "Ghost Admin",
-                    "slug":             "ghost-admin",
-                    "status":           "enabled"
-                },
-                {
-                    "name":             "Ghost Frontend",
-                    "slug":             "ghost-frontend",
-                    "status":           "enabled"
-                },
-                {
-                    "name":             "Ghost Scheduler",
-                    "slug":             "ghost-scheduler",
-                    "status":           "enabled",
-                    "type":             "web"
-                },
-                {
-                    "name": "Ghost Backup",
-                    "slug": "ghost-backup",
-                    "status": "enabled",
-                    "type": "web"
-                }
-            ]
-        },
-        {
             "name": "Role",
             "entries": [
                 {
@@ -249,31 +222,6 @@
                     "name": "Browse roles",
                     "action_type": "browse",
                     "object_type": "role"
-                },
-                {
-                    "name": "Browse clients",
-                    "action_type": "browse",
-                    "object_type": "client"
-                },
-                {
-                    "name": "Read clients",
-                    "action_type": "read",
-                    "object_type": "client"
-                },
-                {
-                    "name": "Edit clients",
-                    "action_type": "edit",
-                    "object_type": "client"
-                },
-                {
-                    "name": "Add clients",
-                    "action_type": "add",
-                    "object_type": "client"
-                },
-                {
-                    "name": "Delete clients",
-                    "action_type": "destroy",
-                    "object_type": "client"
                 },
                 {
                     "name": "Browse subscribers",
@@ -627,7 +575,6 @@
                     "theme": "all",
                     "user": "all",
                     "role": "all",
-                    "client": "all",
                     "subscriber": "all",
                     "invite": "all",
                     "redirect": "all",
@@ -653,7 +600,6 @@
                     "theme": "all",
                     "user": "all",
                     "role": "all",
-                    "client": "all",
                     "subscriber": "all",
                     "invite": "all",
                     "redirect": "all",
@@ -669,7 +615,6 @@
                     "tag": "all",
                     "user": "all",
                     "role": "all",
-                    "client": "all",
                     "subscriber": ["add"],
                     "invite": "all",
                     "theme": ["browse"]
@@ -681,7 +626,6 @@
                     "tag": ["browse", "read", "add"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
-                    "client": "all",
                     "subscriber": ["add"],
                     "theme": ["browse"]
                 },
@@ -692,7 +636,6 @@
                     "tag": ["browse", "read"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
-                    "client": "all",
                     "subscriber": ["add"],
                     "theme": ["browse"]
                 }

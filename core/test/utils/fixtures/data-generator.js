@@ -636,7 +636,6 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             id: ObjectId.generate(),
             token: uuid.v4(),
-            client_id: clients[0].id,
             expires: Date.now() + constants.ONE_DAY_MS
         });
     }
@@ -653,16 +652,6 @@ DataGenerator.forKnex = (function () {
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             status: 'sent'
-        });
-    }
-
-    function createTrustedDomain(overrides) {
-        var newObj = _.cloneDeep(overrides);
-
-        return _.defaults(newObj, {
-            id: ObjectId.generate(),
-            client_id: clients[0].id,
-            trusted_domain: 'https://example.com'
         });
     }
 
@@ -728,13 +717,6 @@ DataGenerator.forKnex = (function () {
         createUser(DataGenerator.Content.users[2]),
         createUser(DataGenerator.Content.users[3]),
         createUser(DataGenerator.Content.users[7])
-    ];
-
-    const clients = [
-        createClient({name: 'Ghost Admin', slug: 'ghost-admin', type: 'ua'}),
-        createClient({name: 'Ghost Scheduler', slug: 'ghost-scheduler', type: 'web'}),
-        createClient({name: 'Ghost Auth', slug: 'ghost-auth', type: 'web'}),
-        createClient({name: 'Ghost Backup', slug: 'ghost-backup', type: 'web'})
     ];
 
     const roles_users = [
@@ -921,7 +903,6 @@ DataGenerator.forKnex = (function () {
         createToken: createToken,
         createSubscriber: createSubscriber,
         createInvite: createInvite,
-        createTrustedDomain: createTrustedDomain,
         createWebhook: createWebhook,
         createIntegration: createIntegration,
 
@@ -935,7 +916,6 @@ DataGenerator.forKnex = (function () {
         roles: roles,
         users: users,
         roles_users: roles_users,
-        clients: clients,
         webhooks: webhooks,
         integrations: integrations,
         api_keys: api_keys

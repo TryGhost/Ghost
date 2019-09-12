@@ -355,13 +355,9 @@ fixtures = {
 
     // Creates a client, and access and refresh tokens for user with index or 2 by default
     createTokensForUser: function createTokensForUser(index) {
-        return Promise.map(DataGenerator.forKnex.clients, function (client) {
-            return models.Client.add(client, module.exports.context.internal);
-        }).then(function () {
-            return models.Accesstoken.add(DataGenerator.forKnex.createToken({
-                user_id: DataGenerator.Content.users[index || 2].id
-            }), module.exports.context.internal);
-        }).then(function () {
+        return models.Accesstoken.add(DataGenerator.forKnex.createToken({
+            user_id: DataGenerator.Content.users[index || 2].id
+        }), module.exports.context.internal).then(function () {
             return models.Refreshtoken.add(DataGenerator.forKnex.createToken({
                 user_id: DataGenerator.Content.users[index || 2].id
             }), module.exports.context.internal);
@@ -454,23 +450,6 @@ fixtures = {
 
             return models.Permission.add(perm, module.exports.context.internal);
         });
-    },
-
-    insertClients: function insertClients() {
-        return Promise.map(DataGenerator.forKnex.clients, function (client) {
-            return models.Client.add(client, module.exports.context.internal);
-        });
-    },
-
-    insertClientWithTrustedDomain: function insertClientWithTrustedDomain() {
-        const client = DataGenerator.forKnex.createClient({slug: 'ghost-test'});
-
-        return models.Client.add(client, module.exports.context.internal)
-            .then(function () {
-                return models.ClientTrustedDomain.add(DataGenerator.forKnex.createTrustedDomain({
-                    client_id: client.id
-                }), module.exports.context.internal);
-            });
     },
 
     insertAccessToken: function insertAccessToken(override) {
@@ -630,12 +609,6 @@ toDoList = {
     },
     perms: function permissionsFor(obj) {
         return fixtures.permissionsFor(obj);
-    },
-    clients: function insertClients() {
-        return fixtures.insertClients();
-    },
-    'client:trusted-domain': function insertClients() {
-        return fixtures.insertClientWithTrustedDomain();
     },
     filter: function createFilterParamFixtures() {
         return filterData(DataGenerator);
@@ -934,10 +907,6 @@ startGhost = function startGhost(options) {
                     .then((roles) => {
                         module.exports.existingData.roles = roles.toJSON();
 
-                        return models.Client.findAll({columns: ['id', 'secret']});
-                    })
-                    .then((clients) => {
-                        module.exports.existingData.clients = clients.toJSON();
                         return models.User.findAll({columns: ['id', 'email']});
                     })
                     .then((users) => {
@@ -1010,11 +979,6 @@ startGhost = function startGhost(options) {
             return models.Role.findAll({columns: ['id']})
                 .then((roles) => {
                     module.exports.existingData.roles = roles.toJSON();
-
-                    return models.Client.findAll({columns: ['id', 'secret']});
-                })
-                .then((clients) => {
-                    module.exports.existingData.clients = clients.toJSON();
 
                     return models.User.findAll({columns: ['id', 'email']});
                 })

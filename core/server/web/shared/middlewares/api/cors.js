@@ -1,7 +1,6 @@
 const cors = require('cors');
 const url = require('url');
 const os = require('os');
-const some = require('lodash/some');
 const urlUtils = require('../../../../lib/url-utils');
 
 let whitelist = [];
@@ -66,16 +65,10 @@ function getWhitelist() {
  */
 function handleCORS(req, cb) {
     const origin = req.get('origin');
-    const trustedDomains = req.client && req.client.trustedDomains;
 
     // Request must have an Origin header
     if (!origin) {
         return cb(null, DISABLE_CORS);
-    }
-
-    // Origin matches a client_trusted_domain
-    if (some(trustedDomains, {trusted_domain: origin})) {
-        return cb(null, ENABLE_CORS);
     }
 
     // Origin matches whitelist

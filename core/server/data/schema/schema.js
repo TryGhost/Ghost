@@ -215,40 +215,10 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
-    clients: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        uuid: {type: 'string', maxlength: 36, nullable: false},
-        name: {type: 'string', maxlength: 50, nullable: false, unique: true},
-        slug: {type: 'string', maxlength: 50, nullable: false, unique: true},
-        secret: {type: 'string', maxlength: 191, nullable: false},
-        redirection_uri: {type: 'string', maxlength: 2000, nullable: true},
-        client_uri: {type: 'string', maxlength: 2000, nullable: true},
-        auth_uri: {type: 'string', maxlength: 2000, nullable: true},
-        logo: {type: 'string', maxlength: 2000, nullable: true},
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'development'},
-        type: {
-            type: 'string',
-            maxlength: 50,
-            nullable: false,
-            defaultTo: 'ua',
-            validations: {isIn: [['ua', 'web', 'native']]}
-        },
-        description: {type: 'string', maxlength: 2000, nullable: true},
-        created_at: {type: 'dateTime', nullable: false},
-        created_by: {type: 'string', maxlength: 24, nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
-        updated_by: {type: 'string', maxlength: 24, nullable: true}
-    },
-    client_trusted_domains: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        client_id: {type: 'string', maxlength: 24, nullable: false, references: 'clients.id'},
-        trusted_domain: {type: 'string', maxlength: 2000, nullable: true}
-    },
     accesstokens: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         token: {type: 'string', maxlength: 191, nullable: false, unique: true},
         user_id: {type: 'string', maxlength: 24, nullable: false, references: 'users.id'},
-        client_id: {type: 'string', maxlength: 24, nullable: false, references: 'clients.id'},
         issued_by: {type: 'string', maxlength: 24, nullable: true},
         expires: {type: 'bigInteger', nullable: false}
     },
@@ -256,7 +226,6 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         token: {type: 'string', maxlength: 191, nullable: false, unique: true},
         user_id: {type: 'string', maxlength: 24, nullable: false, references: 'users.id'},
-        client_id: {type: 'string', maxlength: 24, nullable: false, references: 'clients.id'},
         expires: {type: 'bigInteger', nullable: false}
     },
     subscribers: {
