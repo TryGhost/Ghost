@@ -30,6 +30,7 @@ const author = (attrs, frame) => {
         delete attrs.updated_at;
         delete attrs.last_seen;
         delete attrs.status;
+        delete attrs.email;
 
         // @NOTE: used for night shift
         delete attrs.accessibility;
