@@ -26,9 +26,6 @@
                     "invitedByName": "{invitedByName} has invited you to join {blogName}"
                 }
             },
-            "clients": {
-                "clientNotFound": "Client not found"
-            },
             "actions": {
                 "images": {
                     "upload": "upload image"
@@ -317,9 +314,6 @@
                 "invalidTokenTypeHint": "Invalid token_type_hint given.",
                 "invalidTokenProvided": "Invalid token provided",
                 "tokenRevocationFailed": "Token revocation failed"
-            },
-            "clients": {
-                "clientNotFound": "Client not found."
             },
             "configuration": {
                 "invalidKey": "Invalid key"
