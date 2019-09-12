@@ -30,8 +30,12 @@ export default Component.extend({
     }),
 
     initials: computed('member.name', function () {
-        let names = this.member.name.split(' ');
-        let intials = [names[0][0], names[names.length - 1][0]];
-        return intials.join('').toUpperCase();
+        let name = this.member.name;
+        if (name) {
+            let names = name.split(' ');
+            let intials = [names[0][0], names[names.length - 1][0]];
+            return intials.join('').toUpperCase();
+        }
+        return '';
     })
 });
