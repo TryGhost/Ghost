@@ -77,8 +77,6 @@ describe('Exporter', function () {
                 knexMock.getCall(13).args[0].should.eql('app_settings');
                 knexMock.getCall(14).args[0].should.eql('app_fields');
 
-                knexMock.calledWith('clients').should.be.false();
-                knexMock.calledWith('client_trusted_domains').should.be.false();
                 knexMock.calledWith('refreshtokens').should.be.false();
                 knexMock.calledWith('accesstokens').should.be.false();
 
@@ -86,7 +84,8 @@ describe('Exporter', function () {
             }).catch(done);
         });
 
-        it('should try to export all the correct tables with extra tables', function (done) {
+        // SKIPPED: the "extra" clients and client_trusted_domains tables no longer exist
+        it.skip('should try to export all the correct tables with extra tables', function (done) {
             // Setup for success
             queryMock.select.returns(new Promise.resolve({}));
 

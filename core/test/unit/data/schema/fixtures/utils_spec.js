@@ -101,7 +101,7 @@ describe('Migration Fixture Utils', function () {
             var postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve()),
                 postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
 
-            fixtureUtils.addFixturesForModel(fixtures.models[5]).then(function (result) {
+            fixtureUtils.addFixturesForModel(fixtures.models[4]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 7);
@@ -118,7 +118,7 @@ describe('Migration Fixture Utils', function () {
             var postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve({})),
                 postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
 
-            fixtureUtils.addFixturesForModel(fixtures.models[5]).then(function (result) {
+            fixtureUtils.addFixturesForModel(fixtures.models[4]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 7);
@@ -150,19 +150,19 @@ describe('Migration Fixture Utils', function () {
             fixtureUtils.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected', 66);
-                result.should.have.property('done', 66);
+                result.should.have.property('expected', 61);
+                result.should.have.property('done', 61);
 
                 // Permissions & Roles
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();
-                dataMethodStub.filter.callCount.should.eql(66);
+                dataMethodStub.filter.callCount.should.eql(61);
                 dataMethodStub.find.callCount.should.eql(7);
-                baseUtilAttachStub.callCount.should.eql(66);
+                baseUtilAttachStub.callCount.should.eql(61);
 
-                fromItem.related.callCount.should.eql(66);
-                fromItem.findWhere.callCount.should.eql(66);
-                toItem[0].get.callCount.should.eql(132);
+                fromItem.related.callCount.should.eql(61);
+                fromItem.findWhere.callCount.should.eql(61);
+                toItem[0].get.callCount.should.eql(122);
 
                 done();
             }).catch(done);
@@ -244,12 +244,14 @@ describe('Migration Fixture Utils', function () {
 
     describe('findModelFixtureEntry', function () {
         it('should fetch a single fixture entry', function () {
-            var foundFixture = fixtureUtils.findModelFixtureEntry('Client', {slug: 'ghost-admin'});
+            var foundFixture = fixtureUtils.findModelFixtureEntry('Integration', {slug: 'zapier'});
             foundFixture.should.be.an.Object();
             foundFixture.should.eql({
-                name: 'Ghost Admin',
-                slug: 'ghost-admin',
-                status: 'enabled'
+                slug: 'zapier',
+                name: 'Zapier',
+                description: 'Built-in Zapier integration',
+                type: 'builtin',
+                api_keys: [{type: 'admin'}]
             });
         });
     });

@@ -25,14 +25,6 @@ describe('DB API', function () {
             })
             .then(() => {
                 return localUtils.doAuth(request);
-            })
-            .then(() => {
-                return models.Client.findAll();
-            })
-            .then((result) => {
-                const clients = result.toJSON();
-                backupClient = _.find(clients, {slug: 'ghost-backup'});
-                schedulerClient = _.find(clients, {slug: 'ghost-scheduler'});
             });
     });
 
