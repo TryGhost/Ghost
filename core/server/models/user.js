@@ -13,7 +13,7 @@ const _ = require('lodash'),
     activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
     /**
      * inactive: owner user before blog setup, suspended users
-     * locked user: imported users, they get a random passport
+     * locked user: imported users, they get a random password
      */
     inactiveStates = ['inactive', 'locked'],
     allStates = activeStates.concat(inactiveStates);

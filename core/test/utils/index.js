@@ -353,17 +353,6 @@ fixtures = {
         }, module.exports.context.internal);
     },
 
-    // Creates a client, and access and refresh tokens for user with index or 2 by default
-    createTokensForUser: function createTokensForUser(index) {
-        return models.Accesstoken.add(DataGenerator.forKnex.createToken({
-            user_id: DataGenerator.Content.users[index || 2].id
-        }), module.exports.context.internal).then(function () {
-            return models.Refreshtoken.add(DataGenerator.forKnex.createToken({
-                user_id: DataGenerator.Content.users[index || 2].id
-            }), module.exports.context.internal);
-        });
-    },
-
     insertOne: function insertOne(modelName, tableName, fn, index) {
         const obj = DataGenerator.forKnex[fn](DataGenerator.Content[tableName][index || 0]);
         return models[modelName].add(obj, module.exports.context.internal);
@@ -450,10 +439,6 @@ fixtures = {
 
             return models.Permission.add(perm, module.exports.context.internal);
         });
-    },
-
-    insertAccessToken: function insertAccessToken(override) {
-        return models.Accesstoken.insert(DataGenerator.forKnex.createToken(override), module.exports.context.internal);
     },
 
     insertInvites: function insertInvites() {
@@ -592,9 +577,6 @@ toDoList = {
     'users:extra': function createExtraUsers() {
         return fixtures.createExtraUsers();
     },
-    'user-token': function createTokensForUser(index) {
-        return fixtures.createTokensForUser(index);
-    },
     owner: function insertOwnerUser() {
         return fixtures.insertOwnerUser();
     },
@@ -666,7 +648,7 @@ getFixtureOps = function getFixtureOps(toDos) {
     _.each(toDos, function (value, toDo) {
         var tmp;
 
-        if ((toDo !== 'perms:init' && toDo.indexOf('perms:') !== -1) || toDo.indexOf('user-token:') !== -1) {
+        if ((toDo !== 'perms:init' && toDo.indexOf('perms:') !== -1)) {
             tmp = toDo.split(':');
 
             fixtureOps.push(function addCustomFixture() {

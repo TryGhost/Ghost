@@ -77,9 +77,6 @@ describe('Exporter', function () {
                 knexMock.getCall(13).args[0].should.eql('app_settings');
                 knexMock.getCall(14).args[0].should.eql('app_fields');
 
-                knexMock.calledWith('refreshtokens').should.be.false();
-                knexMock.calledWith('accesstokens').should.be.false();
-
                 done();
             }).catch(done);
         });
@@ -122,9 +119,6 @@ describe('Exporter', function () {
                 knexMock.getCall(14).args[0].should.eql('app_fields');
                 knexMock.getCall(15).args[0].should.eql('clients');
                 knexMock.getCall(16).args[0].should.eql('client_trusted_domains');
-
-                knexMock.calledWith('refreshtokens').should.be.false();
-                knexMock.calledWith('accesstokens').should.be.false();
 
                 done();
             }).catch(done);

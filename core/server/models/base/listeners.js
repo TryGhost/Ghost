@@ -19,35 +19,6 @@ common.events.on('token.added', function (tokenModel) {
 });
 
 /**
- * WHEN user get's suspended (status=inactive), we delete his tokens to ensure
- * he can't login anymore
- *
- * NOTE:
- *   - this event get's triggered either on user update (suspended) or if an **active** user get's deleted.
- *   - if an active user get's deleted, we have to access the previous attributes, because this is how bookshelf works
- *     if you delete a user.
- */
-common.events.on('user.deactivated', function (userModel, options) {
-    options = options || {};
-    options = _.merge({}, options, {id: userModel.id || userModel.previousAttributes().id});
-
-    if (options.importing) {
-        return;
-    }
-
-    models.Accesstoken.destroyByUser(options)
-        .then(function () {
-            return models.Refreshtoken.destroyByUser(options);
-        })
-        .catch(function (err) {
-            common.logging.error(new common.errors.GhostError({
-                err: err,
-                level: 'critical'
-            }));
-        });
-});
-
-/**
  * WHEN timezone changes, we will:
  * - reschedule all scheduled posts
  * - draft scheduled posts, when the published_at would be in the past
