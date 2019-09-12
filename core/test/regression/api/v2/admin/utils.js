@@ -35,7 +35,6 @@ const expectedProperties = {
         .without('visibility')
         .without('password')
         .without('locale')
-        .without('ghost_auth_access_token')
         .without('ghost_auth_id')
         .concat('url')
     ,
@@ -48,9 +47,6 @@ const expectedProperties = {
         .keys()
     ,
     subscriber: _(schema.subscribers)
-        .keys()
-    ,
-    accesstoken: _(schema.accesstokens)
         .keys()
     ,
     role: _(schema.roles)

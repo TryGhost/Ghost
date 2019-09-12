@@ -72,9 +72,6 @@ const expectedProperties = {
     subscriber: _(schema.subscribers)
         .keys()
     ,
-    accesstoken: _(schema.accesstokens)
-        .keys()
-    ,
     role: _(schema.roles)
         .keys()
     ,

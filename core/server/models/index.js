@@ -15,13 +15,11 @@ require('./base/listeners');
 exports = module.exports;
 
 models = [
-    'accesstoken',
     'app-field',
     'app-setting',
     'app',
     'permission',
     'post',
-    'refreshtoken',
     'role',
     'settings',
     'session',
