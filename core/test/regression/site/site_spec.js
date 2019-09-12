@@ -5397,6 +5397,54 @@ describe('Integration - Web - Site', function () {
             });
         });
 
+        describe('separate admin host w/ admin redirects disabled', function () {
+            before(function () {
+                testUtils.integrationTesting.urlService.resetGenerators();
+                testUtils.integrationTesting.defaultMocks(sinon, {amp: true, apps: true});
+                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+
+                configUtils.set('url', 'http://example.com');
+                configUtils.set('admin:url', 'https://admin.example.com');
+                configUtils.set('admin:redirects', false);
+
+                return testUtils.integrationTesting.initGhost()
+                    .then(function () {
+                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+
+                        app = siteApp({start: true});
+                        return testUtils.integrationTesting.urlService.waitTillFinished();
+                    })
+                    .then(() => {
+                        return appsService.init();
+                    });
+            });
+
+            before(function () {
+                urlUtils.stubUrlUtilsFromConfig();
+            });
+
+            after(function () {
+                configUtils.restore();
+                urlUtils.restore();
+                sinon.restore();
+            });
+
+            it('does not redirect /ghost/ on configured url', function () {
+                const req = {
+                    secure: false,
+                    method: 'GET',
+                    url: '/ghost/',
+                    host: 'example.com'
+                };
+
+                return testUtils.mocks.express.invoke(app, req)
+                    .then(function (response) {
+                        response.statusCode.should.eql(404);
+                    });
+            });
+        });
+
         describe('same host separate protocol', function () {
             before(function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
