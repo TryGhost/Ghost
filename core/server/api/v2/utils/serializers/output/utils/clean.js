@@ -18,10 +18,7 @@ const tag = (attrs, frame) => {
         }
     }
 
-    // Already deleted in model.toJSON, but leaving here so that we can clean that up when we deprecate v0.1
     delete attrs.parent_id;
-
-    // @NOTE: unused fields
     delete attrs.parent;
 
     return attrs;
@@ -29,7 +26,6 @@ const tag = (attrs, frame) => {
 
 const author = (attrs, frame) => {
     if (localUtils.isContentAPI(frame)) {
-        // Already deleted in model.toJSON, but leaving here so that we can clean that up when we deprecate v0.1
         delete attrs.created_at;
         delete attrs.updated_at;
         delete attrs.last_seen;
