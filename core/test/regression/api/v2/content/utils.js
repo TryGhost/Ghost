@@ -33,7 +33,6 @@ const expectedProperties = {
         .without(
             'password',
             'email',
-            'ghost_auth_access_token',
             'ghost_auth_id',
             'created_at',
             'created_by',

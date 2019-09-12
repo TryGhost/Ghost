@@ -215,19 +215,6 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
-    accesstokens: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        token: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        user_id: {type: 'string', maxlength: 24, nullable: false, references: 'users.id'},
-        issued_by: {type: 'string', maxlength: 24, nullable: true},
-        expires: {type: 'bigInteger', nullable: false}
-    },
-    refreshtokens: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        token: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        user_id: {type: 'string', maxlength: 24, nullable: false, references: 'users.id'},
-        expires: {type: 'bigInteger', nullable: false}
-    },
     subscribers: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: true},
