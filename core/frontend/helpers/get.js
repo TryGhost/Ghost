@@ -18,16 +18,13 @@ var proxy = require('./proxy'),
 
 const RESOURCES = {
     posts: {
-        alias: 'postsPublic',
-        resource: 'posts'
+        alias: 'postsPublic'
     },
     tags: {
-        alias: 'tagsPublic',
-        resource: 'tags'
+        alias: 'tagsPublic'
     },
     pages: {
-        alias: 'pagesPublic',
-        resource: 'posts'
+        alias: 'pagesPublic'
     },
     authors: {
         alias: 'authorsPublic'
@@ -145,13 +142,6 @@ get = function get(resource, options) {
 
     const controller = api[apiVersion][RESOURCES[resource].alias] ? RESOURCES[resource].alias : RESOURCES[resource].resource;
     const action = isBrowse(apiOptions) ? 'browse' : 'read';
-
-    // CASE: no fallback defined e.g. v0.1 tries to fetch "authors"
-    if (!controller) {
-        data.error = i18n.t('warnings.helpers.get.invalidResource');
-        logging.warn(data.error);
-        return Promise.resolve(options.inverse(self, {data: data}));
-    }
 
     // Parse the options we're going to pass to the API
     apiOptions = parseOptions(ghostGlobals, this, apiOptions);
