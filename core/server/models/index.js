@@ -19,8 +19,6 @@ models = [
     'app-field',
     'app-setting',
     'app',
-    'client-trusted-domain',
-    'client',
     'permission',
     'post',
     'refreshtoken',

@@ -601,61 +601,6 @@
                         "updated_by": "1"
                     },
                     {
-                        "id": "5c2ca6dfe015a67616182320",
-                        "name": "Browse clients",
-                        "object_type": "client",
-                        "action_type": "browse",
-                        "object_id": null,
-                        "created_at": "2019-01-02T11:56:15.000Z",
-                        "created_by": "1",
-                        "updated_at": "2019-01-02T11:56:15.000Z",
-                        "updated_by": "1"
-                    },
-                    {
-                        "id": "5c2ca6dfe015a67616182321",
-                        "name": "Read clients",
-                        "object_type": "client",
-                        "action_type": "read",
-                        "object_id": null,
-                        "created_at": "2019-01-02T11:56:15.000Z",
-                        "created_by": "1",
-                        "updated_at": "2019-01-02T11:56:15.000Z",
-                        "updated_by": "1"
-                    },
-                    {
-                        "id": "5c2ca6dfe015a67616182322",
-                        "name": "Edit clients",
-                        "object_type": "client",
-                        "action_type": "edit",
-                        "object_id": null,
-                        "created_at": "2019-01-02T11:56:15.000Z",
-                        "created_by": "1",
-                        "updated_at": "2019-01-02T11:56:15.000Z",
-                        "updated_by": "1"
-                    },
-                    {
-                        "id": "5c2ca6dfe015a67616182323",
-                        "name": "Add clients",
-                        "object_type": "client",
-                        "action_type": "add",
-                        "object_id": null,
-                        "created_at": "2019-01-02T11:56:15.000Z",
-                        "created_by": "1",
-                        "updated_at": "2019-01-02T11:56:15.000Z",
-                        "updated_by": "1"
-                    },
-                    {
-                        "id": "5c2ca6dfe015a67616182324",
-                        "name": "Delete clients",
-                        "object_type": "client",
-                        "action_type": "destroy",
-                        "object_id": null,
-                        "created_at": "2019-01-02T11:56:15.000Z",
-                        "created_by": "1",
-                        "updated_at": "2019-01-02T11:56:15.000Z",
-                        "updated_by": "1"
-                    },
-                    {
                         "id": "5c2ca6dfe015a67616182325",
                         "name": "Browse subscribers",
                         "object_type": "subscriber",
