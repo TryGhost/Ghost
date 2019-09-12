@@ -140,14 +140,14 @@ get = function get(resource, options) {
         return Promise.resolve(options.inverse(self, {data: data}));
     }
 
-    const controller = api[apiVersion][RESOURCES[resource].alias] ? RESOURCES[resource].alias : RESOURCES[resource].resource;
+    const controller = api[apiVersion][RESOURCES[resource].alias];
     const action = isBrowse(apiOptions) ? 'browse' : 'read';
 
     // Parse the options we're going to pass to the API
     apiOptions = parseOptions(ghostGlobals, this, apiOptions);
 
     // @TODO: https://github.com/TryGhost/Ghost/issues/10548
-    return api[apiVersion][controller][action](apiOptions).then(function success(result) {
+    return controller[action](apiOptions).then(function success(result) {
         var blockParams;
 
         // used for logging details of slow requests
