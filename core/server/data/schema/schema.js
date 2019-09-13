@@ -19,7 +19,7 @@ module.exports = {
         plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         feature_image: {type: 'string', maxlength: 2000, nullable: true},
         featured: {type: 'bool', nullable: false, defaultTo: false},
-        page: {type: 'bool', nullable: false, defaultTo: false},
+        type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'post', validations: {isIn: [['post', 'page']]}},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'draft'},
         locale: {type: 'string', maxlength: 6, nullable: true},
         visibility: {

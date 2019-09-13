@@ -1,0 +1,14 @@
+{
+  "name": "nql-map-key-values",
+  "version": "0.0.0",
+  "description": "Map keys and values for nql query objects",
+  "main": "index.js",
+  "repository": "https://github.com/TryGhost/Ghost/tree/master/core/shared/nql-map-key-values",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@nexes/nql": "0.3.0",
+    "lodash": "4.17.15"
+  }
+}
