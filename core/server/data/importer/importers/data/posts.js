@@ -216,7 +216,7 @@ class PostsImporter extends BaseImporter {
                 model.mobiledoc = JSON.stringify(mobiledoc);
                 model.html = converters.mobiledocConverter.render(JSON.parse(model.mobiledoc));
             }
-            this.santizePostsMeta(model);
+            this.sanitizePostsMeta(model);
         });
 
         // NOTE: We only support removing duplicate posts within the file to import.
