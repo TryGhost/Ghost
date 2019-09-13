@@ -233,18 +233,6 @@ Post = ghostBookshelf.Model.extend({
                 authors.forEach(author => author.emitChange('attached', options));
             });
         });
-        
-        model.related('posts_meta').once('detaching', function onDetached(collection, postsMeta) {
-            model.related('posts_meta').once('detached', function onDetached(detachedCollection, response, options) {
-                postsMeta.emitChange('detached', options);
-            });
-        });
-
-        model.related('posts_meta').once('attaching', function onAttached(collection, postsMeta) {
-            model.related('posts_meta').once('attached', function onAttached(detachedCollection, response, options) {
-                postsMeta.emitChange('attached', options);
-            });
-        });
     },
 
     /**
