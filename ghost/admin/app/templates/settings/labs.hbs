@@ -98,17 +98,6 @@
                     <div class="for-switch">{{gh-feature-flag "nightShift"}}</div>
                 </div>
             </div>
-            {{#if (not-eq feature.labs.publicAPI undefined)}}
-                <div class="gh-setting">
-                    <div class="gh-setting-content">
-                    <div class="gh-setting-title">Public API (deprecated)</div>
-                    <div class="gh-setting-desc">⚠️ Please use the Content API instead, more info in <a href="https://ghost.org/docs/api/content/">the docs</a></div>
-                    </div>
-                    <div class="gh-setting-action">
-                        <div class="for-switch">{{gh-feature-flag "publicAPI"}}</div>
-                    </div>
-                </div>
-            {{/if}}
             <div class="gh-setting {{if feature.members "gh-labs-disabled"}}" data-tooltip="{{if feature.members "Disabled when members is turned on"}}">
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Subscribers</div>
