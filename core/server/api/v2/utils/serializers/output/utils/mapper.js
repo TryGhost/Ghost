@@ -59,14 +59,11 @@ const mapPost = (model, frame) => {
     }
 
     // Transforms post/page metadata to flat structure
-    let postsMeta = Object.assign({}, _.mapValues(postsMetaSchema, () => null), jsonModel.posts_meta);
-    delete postsMeta.id;
-    delete postsMeta.post_id;
-    _.each(postsMeta, (v, k) => {
-        if (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k))) {
-            jsonModel[k] = v;
-        }
-    });
+    _.keys(_.omit(postsMetaSchema, ['id', 'post_id'])).filter((k) => {
+        return (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k)));
+    }).each((attr) => {
+        jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || null;
+    })
     delete jsonModel.posts_meta;
 
     return jsonModel;
