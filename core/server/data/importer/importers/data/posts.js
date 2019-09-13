@@ -29,7 +29,7 @@ class PostsImporter extends BaseImporter {
     /**
      * Sanitizes post metadata, picking data from sepearate table(for >= v3) or post itself(for < v3)
      */
-    santizePostsMeta(model) {
+    sanitizePostsMeta(model) {
         let postsMetaFromFile = _.find(this.requiredFromFile.posts_meta, {post_id: model.id}) || _.pick(model, metaAttrs);
         let postsMetaData = Object.assign({}, _.mapValues(postsMetaSchema, () => null), postsMetaFromFile);
         model.posts_meta = postsMetaData;
