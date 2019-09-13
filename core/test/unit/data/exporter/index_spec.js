@@ -51,6 +51,7 @@ describe('Exporter', function () {
 
                 should.exist(exportData);
 
+                //TODO: Update when 3.0.0 is released
                 exportData.meta.version.should.eql('2.0.0');
 
                 tablesStub.calledOnce.should.be.true();
@@ -62,20 +63,21 @@ describe('Exporter', function () {
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
 
                 knexMock.getCall(0).args[0].should.eql('posts');
-                knexMock.getCall(1).args[0].should.eql('users');
-                knexMock.getCall(2).args[0].should.eql('posts_authors');
-                knexMock.getCall(3).args[0].should.eql('roles');
-                knexMock.getCall(4).args[0].should.eql('roles_users');
-                knexMock.getCall(5).args[0].should.eql('permissions');
-                knexMock.getCall(6).args[0].should.eql('permissions_users');
-                knexMock.getCall(7).args[0].should.eql('permissions_roles');
-                knexMock.getCall(8).args[0].should.eql('permissions_apps');
-                knexMock.getCall(9).args[0].should.eql('settings');
-                knexMock.getCall(10).args[0].should.eql('tags');
-                knexMock.getCall(11).args[0].should.eql('posts_tags');
-                knexMock.getCall(12).args[0].should.eql('apps');
-                knexMock.getCall(13).args[0].should.eql('app_settings');
-                knexMock.getCall(14).args[0].should.eql('app_fields');
+                knexMock.getCall(1).args[0].should.eql('posts_meta');
+                knexMock.getCall(2).args[0].should.eql('users');
+                knexMock.getCall(3).args[0].should.eql('posts_authors');
+                knexMock.getCall(4).args[0].should.eql('roles');
+                knexMock.getCall(5).args[0].should.eql('roles_users');
+                knexMock.getCall(6).args[0].should.eql('permissions');
+                knexMock.getCall(7).args[0].should.eql('permissions_users');
+                knexMock.getCall(8).args[0].should.eql('permissions_roles');
+                knexMock.getCall(9).args[0].should.eql('permissions_apps');
+                knexMock.getCall(10).args[0].should.eql('settings');
+                knexMock.getCall(11).args[0].should.eql('tags');
+                knexMock.getCall(12).args[0].should.eql('posts_tags');
+                knexMock.getCall(13).args[0].should.eql('apps');
+                knexMock.getCall(14).args[0].should.eql('app_settings');
+                knexMock.getCall(15).args[0].should.eql('app_fields');
 
                 done();
             }).catch(done);
@@ -103,22 +105,23 @@ describe('Exporter', function () {
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
 
                 knexMock.getCall(0).args[0].should.eql('posts');
-                knexMock.getCall(1).args[0].should.eql('users');
-                knexMock.getCall(2).args[0].should.eql('posts_authors');
-                knexMock.getCall(3).args[0].should.eql('roles');
-                knexMock.getCall(4).args[0].should.eql('roles_users');
-                knexMock.getCall(5).args[0].should.eql('permissions');
-                knexMock.getCall(6).args[0].should.eql('permissions_users');
-                knexMock.getCall(7).args[0].should.eql('permissions_roles');
-                knexMock.getCall(8).args[0].should.eql('permissions_apps');
-                knexMock.getCall(9).args[0].should.eql('settings');
-                knexMock.getCall(10).args[0].should.eql('tags');
-                knexMock.getCall(11).args[0].should.eql('posts_tags');
-                knexMock.getCall(12).args[0].should.eql('apps');
-                knexMock.getCall(13).args[0].should.eql('app_settings');
-                knexMock.getCall(14).args[0].should.eql('app_fields');
-                knexMock.getCall(15).args[0].should.eql('clients');
-                knexMock.getCall(16).args[0].should.eql('client_trusted_domains');
+                knexMock.getCall(1).args[0].should.eql('posts_meta');
+                knexMock.getCall(2).args[0].should.eql('users');
+                knexMock.getCall(3).args[0].should.eql('posts_authors');
+                knexMock.getCall(4).args[0].should.eql('roles');
+                knexMock.getCall(5).args[0].should.eql('roles_users');
+                knexMock.getCall(6).args[0].should.eql('permissions');
+                knexMock.getCall(7).args[0].should.eql('permissions_users');
+                knexMock.getCall(8).args[0].should.eql('permissions_roles');
+                knexMock.getCall(9).args[0].should.eql('permissions_apps');
+                knexMock.getCall(10).args[0].should.eql('settings');
+                knexMock.getCall(11).args[0].should.eql('tags');
+                knexMock.getCall(12).args[0].should.eql('posts_tags');
+                knexMock.getCall(13).args[0].should.eql('apps');
+                knexMock.getCall(14).args[0].should.eql('app_settings');
+                knexMock.getCall(15).args[0].should.eql('app_fields');
+                knexMock.getCall(16).args[0].should.eql('clients');
+                knexMock.getCall(17).args[0].should.eql('client_trusted_domains');
 
                 done();
             }).catch(done);

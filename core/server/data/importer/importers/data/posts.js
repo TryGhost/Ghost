@@ -4,13 +4,15 @@ const uuid = require('uuid');
 const BaseImporter = require('./base');
 const converters = require('../../../../lib/mobiledoc/converters');
 const validation = require('../../../validation');
+const postsMetaSchema = require('../../../schema').tables.posts_meta;
+const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id']));
 
 class PostsImporter extends BaseImporter {
     constructor(allDataFromFile) {
         super(allDataFromFile, {
             modelName: 'Post',
             dataKeyToImport: 'posts',
-            requiredFromFile: ['posts', 'tags', 'posts_tags', 'posts_authors'],
+            requiredFromFile: ['posts', 'tags', 'posts_tags', 'posts_authors', 'posts_meta'],
             requiredImportedData: ['tags'],
             requiredExistingData: ['tags']
         });
@@ -21,6 +23,18 @@ class PostsImporter extends BaseImporter {
             if (!validation.validator.isUUID(obj.uuid || '')) {
                 obj.uuid = uuid.v4();
             }
+        });
+    }
+
+    /**
+     * Sanitizes post metadata, picking data from sepearate table(for >= v3) or post itself(for < v3)
+     */
+    santizePostsMeta(model) {
+        let postsMetaFromFile = _.find(this.requiredFromFile.posts_meta, {post_id: model.id}) || _.pick(model, metaAttrs);
+        let postsMetaData = Object.assign({}, _.mapValues(postsMetaSchema, () => null), postsMetaFromFile);
+        model.posts_meta = postsMetaData;
+        _.each(metaAttrs, (attr) => {
+            delete model[attr];
         });
     }
 
@@ -202,6 +216,7 @@ class PostsImporter extends BaseImporter {
                 model.mobiledoc = JSON.stringify(mobiledoc);
                 model.html = converters.mobiledocConverter.render(JSON.parse(model.mobiledoc));
             }
+            this.santizePostsMeta(model);
         });
 
         // NOTE: We only support removing duplicate posts within the file to import.

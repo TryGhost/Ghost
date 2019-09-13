@@ -49,12 +49,13 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['tags', 'authors', 'mobiledoc_revisions'],
+    relationships: ['tags', 'authors', 'mobiledoc_revisions', 'posts_meta'],
 
     // NOTE: look up object, not super nice, but was easy to implement
     relationshipBelongsTo: {
         tags: 'tags',
-        authors: 'users'
+        authors: 'users',
+        posts_meta: 'posts_meta'
     },
 
     /**
@@ -232,6 +233,18 @@ Post = ghostBookshelf.Model.extend({
                 authors.forEach(author => author.emitChange('attached', options));
             });
         });
+        
+        model.related('posts_meta').once('detaching', function onDetached(collection, postsMeta) {
+            model.related('posts_meta').once('detached', function onDetached(detachedCollection, response, options) {
+                postsMeta.emitChange('detached', options);
+            });
+        });
+
+        model.related('posts_meta').once('attaching', function onAttached(collection, postsMeta) {
+            model.related('posts_meta').once('attached', function onAttached(detachedCollection, response, options) {
+                postsMeta.emitChange('attached', options);
+            });
+        });
     },
 
     /**
@@ -325,6 +338,22 @@ Post = ghostBookshelf.Model.extend({
             this.set('tags', tagsToSave);
         }
 
+        /**
+         * CASE: Attach id to update existing posts_meta entry for a post
+         * CASE: Don't create new posts_meta entry if post meta is empty
+         */
+        if (!_.isUndefined(this.get('posts_meta')) && !_.isNull(this.get('posts_meta'))) {
+            let postsMetaData = this.get('posts_meta');
+            let relatedModelId = model.related('posts_meta').get('id');
+            let hasNoData = !_.values(postsMetaData).some(x => !!x);
+            if (relatedModelId && !_.isEmpty(postsMetaData)) {
+                postsMetaData.id = relatedModelId;
+                this.set('posts_meta', postsMetaData);
+            } else if (_.isEmpty(postsMetaData) || hasNoData) {
+                this.set('posts_meta', null);
+            }
+        }
+        
         this.handleAttachedModels(model);
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
@@ -511,6 +540,10 @@ Post = ghostBookshelf.Model.extend({
 
     mobiledoc_revisions() {
         return this.hasMany('MobiledocRevision', 'post_id');
+    },
+
+    posts_meta: function postsMeta() {
+        return this.hasOne('PostsMeta', 'post_id');
     },
 
     /**
@@ -724,11 +757,14 @@ Post = ghostBookshelf.Model.extend({
      * receive all fields including relations. Otherwise you can't rely on a consistent flow. And we want to avoid
      * that event listeners have to re-fetch a resource. This function is used in the context of inserting
      * and updating resources. We won't return the relations by default for now.
+     * 
+     * We also always fetch posts metadata to keep current behavior consistent
      */
     defaultRelations: function defaultRelations(methodName, options) {
         if (['edit', 'add', 'destroy'].indexOf(methodName) !== -1) {
             options.withRelated = _.union(['authors', 'tags'], options.withRelated || []);
         }
+        options.withRelated = _.union(['posts_meta'], options.withRelated || []);
 
         return options;
     },

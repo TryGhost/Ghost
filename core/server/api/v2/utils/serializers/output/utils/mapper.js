@@ -5,6 +5,7 @@ const date = require('./date');
 const members = require('./members');
 const clean = require('./clean');
 const extraAttrs = require('./extra-attrs');
+const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
 
 const mapUser = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
@@ -56,6 +57,17 @@ const mapPost = (model, frame) => {
             }
         });
     }
+
+    // Transforms post/page metadata to flat structure
+    let postsMeta = Object.assign({}, _.mapValues(postsMetaSchema, () => null), jsonModel.posts_meta);
+    delete postsMeta.id;
+    delete postsMeta.post_id;
+    _.each(postsMeta, (v, k) => {
+        if (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k))) {
+            jsonModel[k] = v;
+        }
+    });
+    delete jsonModel.posts_meta;
 
     return jsonModel;
 };
