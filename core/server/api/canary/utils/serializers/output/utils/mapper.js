@@ -58,8 +58,10 @@ const mapPost = (model, frame) => {
         });
     }
 
+
     // Transforms post/page metadata to flat structure
-    _.keys(_.omit(postsMetaSchema, ['id', 'post_id'])).filter((k) => {
+    let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
+    _(metaAttrs).filter((k) => {
         return (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k)));
     }).each((attr) => {
         jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || null;
