@@ -58,7 +58,6 @@ const mapPost = (model, frame) => {
         });
     }
 
-
     // Transforms post/page metadata to flat structure
     let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
     _(metaAttrs).filter((k) => {
