@@ -63,7 +63,7 @@ const mapPost = (model, frame) => {
         return (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k)));
     }).each((attr) => {
         jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || null;
-    })
+    });
     delete jsonModel.posts_meta;
 
     return jsonModel;
