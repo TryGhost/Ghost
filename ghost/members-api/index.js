@@ -96,6 +96,7 @@ module.exports = function MembersApi({
             res.writeHead(201);
             return res.end('Created.');
         } catch (err) {
+            common.logging.error(err);
             res.writeHead(500);
             return res.end('Internal Server Error.');
         }
