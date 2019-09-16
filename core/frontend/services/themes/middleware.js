@@ -78,10 +78,15 @@ function updateLocalTemplateOptions(req, res, next) {
         url: urlUtils.urlFor('home', {secure: req.secure, trailingSlash: false}, true)
     };
 
+    const member = req.member ? {
+        email: req.member.email,
+        subscribed: req.member.plans.length !== 0
+    } : null;
+
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
         // @TODO: remove blog if we drop v2 (Ghost 4.0)
         data: {
-            member: req.member,
+            member: member,
             site: siteData,
             blog: siteData
         }

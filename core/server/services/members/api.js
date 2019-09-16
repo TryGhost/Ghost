@@ -102,6 +102,9 @@ function createApiInstance() {
         mail: {
             transporter: {
                 sendMail(message) {
+                    if (process.env.NODE_ENV !== 'production') {
+                        common.logging.warn(message.text);
+                    }
                     return ghostMailer.send(Object.assign({subject: 'Signin'}, message));
                 }
             }
