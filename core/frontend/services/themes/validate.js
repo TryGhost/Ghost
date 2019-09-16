@@ -17,16 +17,20 @@ const check = function check(theme, isZip) {
 
     if (isZip) {
         checkPromise = gscan.checkZip(theme, {
-            keepExtractedDir: true
+            keepExtractedDir: true,
+            checkVersion: 'canary'
         });
     } else {
-        checkPromise = gscan.check(theme.path);
+        checkPromise = gscan.check(theme.path, {
+            checkVersion: 'canary'
+        });
     }
 
     return checkPromise
         .then(function resultHandler(checkedTheme) {
             checkedTheme = gscan.format(checkedTheme, {
-                onlyFatalErrors: config.get('env') === 'production'
+                onlyFatalErrors: config.get('env') === 'production',
+                checkVersion: 'canary'
             });
 
             return checkedTheme;
