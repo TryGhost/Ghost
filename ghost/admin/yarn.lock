@@ -4884,10 +4884,10 @@ ember-cli-shims@1.2.0:
     ember-rfc176-data "^0.3.1"
     silent-error "^1.0.1"
 
-ember-cli-string-helpers@4.0.3:
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/ember-cli-string-helpers/-/ember-cli-string-helpers-4.0.3.tgz#c4f877cf9fd2ddf445cbde1fd786e92f6c758523"
-  integrity sha512-TH3yI0QhBlT0i5p/85oOApaZkL1+atFyhjsWVI7JL4d+TIcn41sS4Oe8X0YQQesUWpwRY6dLOxQPBKSdWEFwxg==
+ember-cli-string-helpers@4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/ember-cli-string-helpers/-/ember-cli-string-helpers-4.0.4.tgz#eeb58bd6b5ec479332a51934dfdec47ca6e3ab11"
+  integrity sha512-qTsGq3g6IvWYRqfUZPCaWS/QwPObsF9YsS7jpDGzg0ZY9V26ak2F1b6YVltIQ/VnhuyQaKVx9Vs9txzP+D32aQ==
   dependencies:
     broccoli-funnel "^2.0.2"
     ember-cli-babel "^7.7.3"
@@ -5153,7 +5153,25 @@ ember-factory-for-polyfill@^1.3.1:
   dependencies:
     ember-cli-version-checker "^2.1.0"
 
-ember-fetch@6.7.0, "ember-fetch@^2.1.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0":
+ember-fetch@6.7.1:
+  version "6.7.1"
+  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-6.7.1.tgz#778390bc9993d31cc32d429ae69a591e431e85ac"
+  integrity sha512-B/s0HZWcIrDDz3wOxvAsWM2SyT4nND274aH3Othzxzax/lOJnGHKbNa+IGLrXKSja+ANeD5P8sVwDaAUw8pzpQ==
+  dependencies:
+    abortcontroller-polyfill "^1.3.0"
+    broccoli-concat "^3.2.2"
+    broccoli-debug "^0.6.5"
+    broccoli-merge-trees "^3.0.0"
+    broccoli-rollup "^2.1.1"
+    broccoli-stew "^2.1.0"
+    broccoli-templater "^2.0.1"
+    calculate-cache-key-for-tree "^2.0.0"
+    caniuse-api "^3.0.0"
+    ember-cli-babel "^6.8.2"
+    node-fetch "^2.6.0"
+    whatwg-fetch "^3.0.0"
+
+"ember-fetch@^2.1.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0":
   version "6.7.0"
   resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-6.7.0.tgz#c219f820e40f7918147391617a5940c67d293319"
   integrity sha512-lB9G+XDKOc84Dr3THJs+l/KmtzUus7nv12Z0xOP54J917HmjnAsSZ9OHTp+X8ClxlAm35/v9l+sFd7IlB9Baqw==
@@ -5197,10 +5215,10 @@ ember-in-viewport@3.5.8, ember-in-viewport@~3.0.0, ember-in-viewport@~3.5.8:
     intersection-observer-admin "~0.2.5"
     raf-pool "0.1.0"
 
-ember-infinity@1.4.7:
-  version "1.4.7"
-  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-1.4.7.tgz#af6ac515be5da10826d8b2212c5f6d86cbaaac0b"
-  integrity sha512-8pBrS2BPUaYFeYmQi/peRYj9ijcSlSLGnLsknFPvb0pg7lvNKQWupxM8VhYoYKDO9OmN98SNHB7u/skOJwFAJQ==
+ember-infinity@1.4.8:
+  version "1.4.8"
+  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-1.4.8.tgz#9a891c79632a502e0ba05088e70ba4dd2ceb6efd"
+  integrity sha512-9ZfZk4m+XeH6MB0L0z32ozc+bqUfOMnXUUdlp3flIMyK9kVVqDxg22wlSR/WocHTPbUHiRsIXPuMX3wvy8j9uw==
   dependencies:
     ember-cli-babel "~7.1.2"
     ember-in-viewport "~3.5.8"
