@@ -11,6 +11,7 @@ const apps = require('../../services/apps');
 const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
 const urlService = require('../../../frontend/services/url');
+const labsService = require('../../services/labs');
 const urlUtils = require('../../lib/url-utils');
 const sitemapHandler = require('../../../frontend/services/sitemap/handler');
 const themeMiddleware = require('../../../frontend/services/themes').middleware;
@@ -162,6 +163,10 @@ module.exports = function setupSiteApp(options = {}) {
         });
     });
     siteApp.use(function (req, res, next) {
+        if (!labsService.isSet('members')) {
+            req.member = null;
+            return next();
+        }
         membersService.ssr.getMemberDataFromSession(req, res).then((member) => {
             req.member = member;
             next();
