@@ -216,13 +216,6 @@ User = ghostBookshelf.Model.extend({
         // remove password hash for security reasons
         delete attrs.password;
 
-        // NOTE: We don't expose the email address for for external, app and public context.
-        // @TODO: Why? External+Public is actually the same context? Was also mentioned here https://github.com/TryGhost/Ghost/issues/9043
-        // @TODO: move to api serialization when we drop v0.1
-        if (!options || !options.context || (!options.context.user && !options.context.internal && (!options.context.api_key || options.context.api_key.type === 'content'))) {
-            delete attrs.email;
-        }
-
         return attrs;
     },
 
