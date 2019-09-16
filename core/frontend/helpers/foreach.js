@@ -21,7 +21,7 @@ module.exports = function foreach(items, options) {
 
     // Initial values set based on parameters sent through. If nothing sent, set to defaults
     const {fn, inverse, hash, data, ids} = options;
-    let {columns, limit, from, to} = hash;
+    let {columns, limit, from, to, random} = hash;
     let length = _.size(items);
     let output = '';
     let frame;
@@ -70,6 +70,10 @@ module.exports = function foreach(items, options) {
     function iterateCollection(context) {
         // Context is all posts on the blog
         let current = 1;
+
+        if (random) {
+            context = context.sort(() => 0.5 - Math.random());
+        }
 
         // For each post, if it is a post number that fits within the from and to
         // send the key to execIteration to set to be added to the page
