@@ -21,8 +21,9 @@
     "build/members-theme-bindings.js"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "private"
   },
+  "private": true,
   "devDependencies": {
     "browserify": "16.5.0",
     "es6ify": "1.6.0",

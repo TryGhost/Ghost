@@ -16,8 +16,9 @@
     "lib"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "private"
   },
+  "private": true,
   "devDependencies": {
     "eslint": "6.4.0",
     "eslint-plugin-ghost": "0.5.0",

@@ -16,8 +16,9 @@
     "lib"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "private"
   },
+  "private": true,
   "devDependencies": {
     "mocha": "6.2.0",
     "should": "13.2.3",

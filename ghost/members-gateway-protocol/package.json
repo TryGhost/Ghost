@@ -27,6 +27,7 @@
     "lodash": "^4.17.11"
   },
   "publishConfig": {
-    "access": "public"
-  }
+    "access": "private"
+  },
+  "private": true
 }
