@@ -142,16 +142,7 @@ module.exports = function setupSiteApp(options = {}) {
             res.end(err.message);
         });
     });
-    siteApp.post('/members/ssr', shared.middlewares.labs.members, function (req, res) {
-        membersService.ssr.exchangeTokenForSession(req, res).then(() => {
-            res.writeHead(200);
-            res.end();
-        }).catch((err) => {
-            common.logging.warn(err.message);
-            res.writeHead(err.statusCode);
-            res.end(err.message);
-        });
-    });
+
     siteApp.delete('/members/ssr', shared.middlewares.labs.members, function (req, res) {
         membersService.ssr.deleteSession(req, res).then(() => {
             res.writeHead(204);

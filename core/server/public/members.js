@@ -118,19 +118,3 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]')
     }
     el.addEventListener('click', clickHandler);
 });
-
-var magicLinkRegEx = /token=([a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+)/;
-var match = location.search.match(magicLinkRegEx);
-var isMagicLink = !!match
-var token = match && match[1];
-
-if (isMagicLink) {
-    fetch('{{blog-url}}/members/ssr', {
-        method: 'POST',
-        body: token
-    }).then(function (res) {
-        if (res.ok) {
-            window.location.search = window.location.search.replace(magicLinkRegEx, '');
-        }
-    });
-}
