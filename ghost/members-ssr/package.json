@@ -16,6 +16,8 @@
     "lib"
   ],
   "devDependencies": {
+    "@types/cookies": "^0.7.2",
+    "@types/node": "^12.7.5",
     "keypair": "1.0.1",
     "mocha": "6.2.0",
     "should": "13.2.3",
