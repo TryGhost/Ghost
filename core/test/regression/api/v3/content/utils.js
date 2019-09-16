@@ -27,6 +27,10 @@ const expectedProperties = {
         // .without('page')
         // v3 returns a calculated excerpt field
         .concat('excerpt')
+        // returns meta fields from `posts_meta` schema
+        .concat(
+            ..._(schema.posts_meta).keys().without('post_id', 'id')
+        )
     ,
     author: _(schema.users)
         .keys()

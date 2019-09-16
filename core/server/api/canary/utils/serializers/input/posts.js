@@ -4,6 +4,7 @@ const url = require('./utils/url');
 const localUtils = require('../../index');
 const labs = require('../../../../../services/labs');
 const converters = require('../../../../../lib/mobiledoc/converters');
+const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 
 function removeMobiledocFormat(frame) {
     if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
@@ -52,6 +53,12 @@ function defaultFormat(frame) {
     }
 
     frame.options.formats = 'mobiledoc';
+}
+
+function handlePostsMeta(frame) {
+    let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
+    let meta = _.pick(frame.data.posts[0], metaAttrs);
+    frame.data.posts[0].posts_meta = meta;
 }
 
 /**
@@ -182,6 +189,7 @@ module.exports = {
             });
         }
 
+        handlePostsMeta(frame);
         defaultFormat(frame);
         defaultRelations(frame);
     },
@@ -189,6 +197,7 @@ module.exports = {
     edit(apiConfig, frame) {
         this.add(apiConfig, frame, {add: false});
 
+        handlePostsMeta(frame);
         forceStatusFilter(frame);
         forcePageFilter(frame);
     },
