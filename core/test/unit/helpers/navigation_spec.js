@@ -177,19 +177,18 @@ describe('{{navigation}} helper', function () {
         should.exist(rendered);
         rendered.string.should.not.containEql('foo=space%2520bar');
     });
-});
-
-describe('{{navigation}} helper with custom template', function () {
-    var optionsData;
-
-    before(function (done) {
-        hbs.express4({
-            partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/helpers/test_tpl')]
-        });
-
-        hbs.cachePartials(function () {
-            done();
-        });
+    describe('{{navigation}} helper with custom template', function () {
+        var optionsData;
+    
+        before(function (done) {
+            hbs.express4({
+                partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/helpers/test_tpl')]
+            });
+    
+            hbs.cachePartials(function () {
+                done();
+            });
+        });    
     });
 
     beforeEach(function () {

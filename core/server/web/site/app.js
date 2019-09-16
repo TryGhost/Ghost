@@ -132,40 +132,43 @@ module.exports = function setupSiteApp(options = {}) {
 
     // @TODO only loads this stuff if members is enabled
     // Set req.member & res.locals.member if a cookie is set
-    siteApp.get('/members/ssr', shared.middlewares.labs.members, function (req, res) {
-        membersService.ssr.getIdentityTokenForMemberFromSession(req, res).then((token) => {
+    siteApp.get('/members/ssr', shared.middlewares.labs.members, async function (req, res) {
+        try {
+            const token = await membersService.ssr.getIdentityTokenForMemberFromSession(req, res);
             res.writeHead(200);
             res.end(token);
-        }).catch((err) => {
+        } catch (err) {
             common.logging.warn(err.message);
             res.writeHead(err.statusCode);
             res.end(err.message);
-        });
+        }
     });
 
-    siteApp.delete('/members/ssr', shared.middlewares.labs.members, function (req, res) {
-        membersService.ssr.deleteSession(req, res).then(() => {
+    siteApp.delete('/members/ssr', shared.middlewares.labs.members, async function (req, res) {
+        try {
+            await membersService.ssr.deleteSession(req, res);
             res.writeHead(204);
             res.end();
-        }).catch((err) => {
+        } catch (err) {
             common.logging.warn(err.message);
             res.writeHead(err.statusCode);
             res.end(err.message);
-        });
+        }
     });
-    siteApp.use(function (req, res, next) {
+    siteApp.use(async function (req, res, next) {
         if (!labsService.isSet('members')) {
             req.member = null;
             return next();
         }
-        membersService.ssr.getMemberDataFromSession(req, res).then((member) => {
-            req.member = member;
+        try {
+            const member = await membersService.ssr.getMemberDataFromSession(req, res);
+            Object.assign(req, {member});
             next();
-        }).catch((err) => {
+        } catch (err) {
             common.logging.warn(err.message);
-            req.member = null;
+            Object.assign(req, {member: null});
             next();
-        });
+        }
     });
     siteApp.use(async function (req, res, next) {
         if (!labsService.isSet('members')) {
@@ -174,9 +177,12 @@ module.exports = function setupSiteApp(options = {}) {
         if (!req.url.includes('token=')) {
             return next();
         }
+        if (req.member) {
+            return next();
+        }
         try {
             const member = await membersService.ssr.exchangeTokenForSession(req, res);
-            req.member = member;
+            Object.assign(req, {member});
             next();
         } catch (err) {
             common.logging.warn(err.message);

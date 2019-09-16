@@ -118,14 +118,13 @@ describe('{{pagination}} helper', function () {
         runErrorTest({pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: null}})
             .should.throwError('Invalid value, check page, pages, limit and total are numbers');
     });
-});
-
-describe('{{pagination}} helper with custom template', function () {
-    before(function (done) {
-        hbs.express4({partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/helpers/test_tpl')]});
-
-        hbs.cachePartials(function () {
-            done();
+    describe('{{pagination}} helper with custom template', function () {
+        before(function (done) {
+            hbs.express4({partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/helpers/test_tpl')]});
+    
+            hbs.cachePartials(function () {
+                done();
+            });
         });
     });
 

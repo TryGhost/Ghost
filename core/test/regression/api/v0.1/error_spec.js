@@ -59,41 +59,40 @@ describe('Unauthorized', function () {
                 done();
             });
     });
-});
-
-describe('Authorized API', function () {
-    var accesstoken, ghostServer;
-
-    before(function () {
-        return ghost()
-            .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request);
-            })
-            .then(function (token) {
-                accesstoken = token;
-            });
-    });
-
-    it('serves a JSON 404 for an unknown endpoint', function (done) {
-        request.get(localUtils.API.getApiQuery('unknown/'))
-            .set('Authorization', 'Bearer ' + accesstoken)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(404)
-            .end(function firstRequest(err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                res.should.be.json();
-                should.exist(res.body);
-                res.body.should.be.a.JSONErrorResponse();
-
-                done();
-            });
+    describe('Authorized API', function () {
+        var accesstoken, ghostServer;
+    
+        before(function () {
+            return ghost()
+                .then(function (_ghostServer) {
+                    ghostServer = _ghostServer;
+                    request = supertest.agent(config.get('url'));
+                })
+                .then(function () {
+                    return localUtils.doAuth(request);
+                })
+                .then(function (token) {
+                    accesstoken = token;
+                });
+        });
+    
+        it('serves a JSON 404 for an unknown endpoint', function (done) {
+            request.get(localUtils.API.getApiQuery('unknown/'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .end(function firstRequest(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+    
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    res.should.be.json();
+                    should.exist(res.body);
+                    res.body.should.be.a.JSONErrorResponse();
+    
+                    done();
+                });
+        });
     });
 });
