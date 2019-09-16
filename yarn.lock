@@ -1448,6 +1448,11 @@ commander@^2.19.0, commander@^2.20.0, commander@^2.9.0, commander@~2.20.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.0.tgz#d58bb2b5c1ee8f87b0d340027e9e94e222c5a422"
   integrity sha512-7j2y+40w61zy6YC2iRNpUe/NwhNyoXrYpHMrSunaMG64nRnaf96zO/KMQR4OyN/UnE5KLyEBnKHd4aG3rskjpQ==
 
+commander@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-3.0.1.tgz#4595aec3530525e671fb6f85fb173df8ff8bf57a"
+  integrity sha512-UNgvDd+csKdc9GD4zjtkHKQbT8Aspt2jCBqNSPp53vAS0L1tS9sXB2TCEOPHJ7kt9bN/niWkYj8T3RQSoMXdSQ==
+
 common-tags@^1.8.0:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/common-tags/-/common-tags-1.8.0.tgz#8e3153e542d4a39e9b10554434afaaf98956a937"
@@ -4684,14 +4689,14 @@ knex-migrator@3.3.3:
     mysql "^2.16.0"
     sqlite3 "^4.0.6"
 
-knex@0.19.3:
-  version "0.19.3"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.19.3.tgz#b5d85b29a127f631a6924e8727c76e53e26cc713"
-  integrity sha512-HN32QB5PVkUYfvE4UoK/Tbf6UQ7CLEgS0PL8EP6xfonsP0IPZr2M84dy1dIy2KnB5dx+XO6NNEPgfzo8Y8BYzA==
+knex@0.19.4:
+  version "0.19.4"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-0.19.4.tgz#cf62f8824392387152a0a188a6585d5dea6832bb"
+  integrity sha512-FRnR2iWEAoKkrVo3KyiEYeGwUjZOZT2WDko/tn3nCKzQdn6m8+5qSUeYLGa9zM8SwFGJriYKQSSMiDJKLILcMQ==
   dependencies:
     bluebird "^3.5.5"
     colorette "1.1.0"
-    commander "^2.20.0"
+    commander "^3.0.1"
     debug "4.1.1"
     getopts "2.2.5"
     inherits "~2.0.4"
