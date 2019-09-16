@@ -750,8 +750,6 @@ describe('Post Model', function () {
 
                     // testing for nulls
                     (createdPost.get('feature_image') === null).should.equal(true);
-                    (createdPost.get('meta_title') === null).should.equal(true);
-                    (createdPost.get('meta_description') === null).should.equal(true);
 
                     createdPost.get('created_at').should.be.above(new Date(0).getTime());
                     createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);

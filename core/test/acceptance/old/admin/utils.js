@@ -37,6 +37,10 @@ const expectedProperties = {
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         // returned by default
         .concat('tags', 'authors')
+        // returns meta fields from `posts_meta` schema
+        .concat(
+            ..._(schema.posts_meta).keys().without('post_id', 'id')
+        )
     ,
 
     page: _(schema.posts)
@@ -52,6 +56,10 @@ const expectedProperties = {
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         // returned by default
         .concat('tags', 'authors')
+        // returns meta fields from `posts_meta` schema
+        .concat(
+            ..._(schema.posts_meta).keys().without('post_id', 'id')
+        )
     ,
 
     user: _(schema.users)

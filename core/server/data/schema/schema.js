@@ -29,8 +29,6 @@ module.exports = {
             defaultTo: 'public',
             validations: {isIn: [['public']]}
         },
-        meta_title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
-        meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},
         /**
          * @deprecated: `author_id`, might be removed in Ghost 3.0
          * If we keep it, then only, because you can easier query post.author_id than posts_authors[*].sort_order.
@@ -50,14 +48,20 @@ module.exports = {
         custom_excerpt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
         codeinjection_head: {type: 'text', maxlength: 65535, nullable: true},
         codeinjection_foot: {type: 'text', maxlength: 65535, nullable: true},
+        custom_template: {type: 'string', maxlength: 100, nullable: true},
+        canonical_url: {type: 'text', maxlength: 2000, nullable: true}
+    },
+    posts_meta: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', unique: true},
         og_image: {type: 'string', maxlength: 2000, nullable: true},
         og_title: {type: 'string', maxlength: 300, nullable: true},
         og_description: {type: 'string', maxlength: 500, nullable: true},
         twitter_image: {type: 'string', maxlength: 2000, nullable: true},
         twitter_title: {type: 'string', maxlength: 300, nullable: true},
         twitter_description: {type: 'string', maxlength: 500, nullable: true},
-        custom_template: {type: 'string', maxlength: 100, nullable: true},
-        canonical_url: {type: 'text', maxlength: 2000, nullable: true}
+        meta_title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
+        meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}}
     },
     users: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

@@ -34,7 +34,8 @@ models = [
     'api-key',
     'mobiledoc-revision',
     'member',
-    'action'
+    'action',
+    'posts-meta'
 ];
 
 function init() {
