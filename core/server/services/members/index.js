@@ -44,9 +44,7 @@ const membersService = {
         cookieKeys: [settingsCache.get('theme_session_secret')],
         cookieName: 'ghost-members-ssr',
         cookieCacheName: 'ghost-members-ssr-cache',
-        // This is passed as a function so that updates to the instance
-        // are picked up in the ssr module
-        membersApi: () => membersApi
+        getMembersApi: () => membersService.api
     })
 };
 
