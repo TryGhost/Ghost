@@ -24,7 +24,7 @@ const {
     cookieName: 'members-ssr', // Name of cookie (default)
     cookiePath: '/', // Path of cookie (default)
     cookieKeys: 'some-coole-secret', // Key to sign cookie with
-    membersApi: membersApiInstance // Used to fetch data and verify tokens
+    getMembersApi: () => membersApiInstance // Used to fetch data and verify tokens
 });
 
 const handleError = res => err => {
@@ -34,9 +34,9 @@ const handleError = res => err => {
 
 require('http').createServer((req, res) => {
     if (req.method.toLowerCase() === 'post') {
-        exchangeTokenForSession(req, res).then(() => {
+        exchangeTokenForSession(req, res).then((member) => {
             res.writeHead(200);
-            res.end();
+            res.end(JSON.stringify(member));
         }).catch(handleError(res));
     } else if (req.method.toLowerCase() === 'delete') {
         deleteSession(req, res).then(() => {
