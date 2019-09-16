@@ -25,6 +25,7 @@ const expectedProperties = {
         .without('status')
         // @TODO: https://github.com/TryGhost/Ghost/issues/10335
         // .without('page')
+        .without('type')
         // canary returns a calculated excerpt field
         .concat('excerpt')
         // returns meta fields from `posts_meta` schema

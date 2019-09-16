@@ -61,6 +61,7 @@ const filter = function filter(Bookshelf) {
             let extra = this.extraFilters(options);
             let overrides = this.enforcedFilters(options);
             let defaults = this.defaultFilters(options);
+            let transformer = options.mongoTransformer;
 
             debug('custom', custom);
             debug('extra', extra);
@@ -81,7 +82,8 @@ const filter = function filter(Bookshelf) {
                         relations: RELATIONS,
                         expansions: EXPANSIONS,
                         overrides: overrides,
-                        defaults: defaults
+                        defaults: defaults,
+                        transformer: transformer
                     }).querySQL(qb);
                 });
             } catch (err) {

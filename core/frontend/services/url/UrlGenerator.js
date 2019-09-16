@@ -23,6 +23,8 @@ const _ = require('lodash'),
         replacement: 'primary_author.slug'
     }];
 
+const mapNQLKeyValues = require('../../../shared/nql-map-key-values');
+
 /**
  * The UrlGenerator class is responsible to generate urls based on a router's conditions.
  * It is the component which sits between routers and resources and connects them together.
@@ -44,7 +46,22 @@ class UrlGenerator {
         // CASE: routers can define custom filters, but not required.
         if (this.router.getFilter()) {
             this.filter = this.router.getFilter();
-            this.nql = nql(this.filter, {expansions: EXPANSIONS});
+            this.nql = nql(this.filter, {
+                expansions: EXPANSIONS,
+                transformer: mapNQLKeyValues({
+                    key: {
+                        from: 'page',
+                        to: 'type'
+                    },
+                    values: [{
+                        from: false,
+                        to: 'post'
+                    }, {
+                        from: true,
+                        to: 'page'
+                    }]
+                })
+            });
             debug('filter', this.filter);
         }
 

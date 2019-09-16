@@ -108,6 +108,7 @@ const post = (attrs, frame) => {
     delete attrs.locale;
     delete attrs.visibility;
     delete attrs.author;
+    delete attrs.type;
 
     return attrs;
 };

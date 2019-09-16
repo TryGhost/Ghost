@@ -1,10 +1,25 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:input:posts');
+const mapNQLKeyValues = require('../../../../../../shared/nql-map-key-values');
 const url = require('./utils/url');
 const localUtils = require('../../index');
 const labs = require('../../../../../services/labs');
 const converters = require('../../../../../lib/mobiledoc/converters');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
+
+const replacePageWithType = mapNQLKeyValues({
+    key: {
+        from: 'page',
+        to: 'type'
+    },
+    values: [{
+        from: false,
+        to: 'post'
+    }, {
+        from: true,
+        to: 'page'
+    }]
+});
 
 function removeMobiledocFormat(frame) {
     if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
@@ -71,9 +86,9 @@ function handlePostsMeta(frame) {
  */
 const forcePageFilter = (frame) => {
     if (frame.options.filter) {
-        frame.options.filter = `(${frame.options.filter})+page:false`;
+        frame.options.filter = `(${frame.options.filter})+type:post`;
     } else {
-        frame.options.filter = 'page:false';
+        frame.options.filter = 'type:post';
     }
 };
 
@@ -114,6 +129,8 @@ module.exports = {
             defaultFormat(frame);
             defaultRelations(frame);
         }
+
+        frame.options.mongoTransformer = replacePageWithType;
 
         debug(frame.options);
     },
@@ -165,7 +182,7 @@ module.exports = {
 
         // @NOTE: force adding post
         if (options.add) {
-            frame.data.posts[0].page = false;
+            frame.data.posts[0].type = 'post';
         }
 
         // CASE: Transform short to long format
@@ -205,7 +222,7 @@ module.exports = {
     destroy(apiConfig, frame) {
         frame.options.destroyBy = {
             id: frame.options.id,
-            page: false
+            type: 'post'
         };
 
         defaultFormat(frame);

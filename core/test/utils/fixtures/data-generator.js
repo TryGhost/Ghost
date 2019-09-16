@@ -74,14 +74,14 @@ DataGenerator.Content = {
             title: 'This is a static page',
             slug: 'static-page-test',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Static page test is what this is for.</h1><p>Hopefully you don\'t find it a bore.</p>'),
-            page: true
+            type: 'page'
         },
         {
             id: ObjectId.generate(),
             title: 'This is a draft static page',
             slug: 'static-page-draft',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Static page test is what this is for.</h1><p>Hopefully you don\'t find it a bore.</p>'),
-            page: true,
+            type: 'page',
             status: 'draft'
         },
         {
@@ -468,7 +468,7 @@ DataGenerator.forKnex = (function () {
             status: 'published',
             feature_image: null,
             featured: false,
-            page: false,
+            type: 'post',
             slug: 'slug',
             author_id: DataGenerator.Content.users[0].id,
             updated_at: new Date(),
