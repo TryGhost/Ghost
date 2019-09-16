@@ -1,15 +1,22 @@
 Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form){
-    form.addEventListener('submit', function (event) {
+    var errorEl = form.querySelector('[data-members-error]');
+    function submitHandler(event) {
+        form.removeEventListener('submit', submitHandler);
         event.preventDefault();
+        if (errorEl) {
+            errorEl.innerText = '';
+        }
         form.classList.remove('success', 'invalid', 'error');
         var input = event.target.querySelector('input[data-members-email]');
         var email = input.value;
 
         if (!email.includes('@')) {
             form.classList.add('invalid')
+            form.addEventListener('submit', submitHandler);
             return;
         }
 
+        form.classList.add('loading');
         fetch('{{admin-url}}/api/canary/members/send-magic-link/', {
             method: 'POST',
             headers: {
@@ -19,21 +26,33 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
                 email: email
             })
         }).then(function (res) {
+            form.addEventListener('submit', submitHandler);
+            form.classList.remove('loading');
             if (res.ok) {
                 form.classList.add('success')
             } else {
+                if (errorEl) {
+                    errorEl.innerText = 'There was an error sending the email, please try again';
+                }
                 form.classList.add('error')
             }
         });
-    });
+    }
+    form.addEventListener('submit', submitHandler);
 });
 
-Array.prototype.forEach.call(document.querySelectorAll('[data-members-subscription]'), function (button) {
-    button.addEventListener('click', function (event) {
+Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), function (el) {
+    var errorEl = el.querySelector('[data-members-error]');
+    function clickHandler(event) {
+        el.removeEventListener('click', clickHandler);
         event.preventDefault();
 
-        var plan = event.target.dataset.membersSubscriptionPlan;
+        var plan = el.dataset.membersPlan;
 
+        if (errorEl) {
+            errorEl.innerText = '';
+        }
+        el.classList.add('loading');
         fetch('{{blog-url}}/members/ssr', {
             credentials: 'same-origin'
         }).then(function (res) {
@@ -62,8 +81,42 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-subscripti
             return stripe.redirectToCheckout({
                 sessionId: result.sessionId
             });
+        }).then(function (result) {
+            if (result.error) {
+                throw new Error(result.error.message);
+            }
+        }).catch(function (err) {
+            console.error(err);
+            el.addEventListener('click', clickHandler);
+            el.classList.remove('loading');
+            if (errorEl) {
+                errorEl.innerText = err.message;
+            }
+            el.classList.add('error');
         });
-    });
+    }
+    el.addEventListener('click', clickHandler);
+});
+
+Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]'), function (el) {
+    function clickHandler(event) {
+        el.removeEventListener('click', clickHandler);
+        event.preventDefault();
+        el.classList.remove('error');
+        el.classList.add('loading');
+        fetch('{{blog-url}}/members/ssr', {
+            method: 'DELETE'
+        }).then(function (res) {
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                el.addEventListener('click', clickHandler);
+                el.classList.remove('loading');
+                el.classList.add('error');
+            }
+        });
+    }
+    el.addEventListener('click', clickHandler);
 });
 
 var magicLinkRegEx = /token=([a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+)/;
