@@ -176,6 +176,22 @@ module.exports = function setupSiteApp(options = {}) {
             next();
         });
     });
+    siteApp.use(async function (req, res, next) {
+        if (!labsService.isSet('members')) {
+            return next();
+        }
+        if (!req.url.includes('token=')) {
+            return next();
+        }
+        try {
+            const member = await membersService.ssr.exchangeTokenForSession(req, res);
+            req.member = member;
+            next();
+        } catch (err) {
+            common.logging.warn(err.message);
+            return next();
+        }
+    });
     siteApp.use(function (req, res, next) {
         res.locals.member = req.member;
         next();
