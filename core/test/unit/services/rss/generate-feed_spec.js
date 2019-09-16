@@ -16,7 +16,7 @@ describe('RSS: Generate Feed', function () {
         posts = _.cloneDeep(testUtils.DataGenerator.forKnex.posts);
 
         posts = _.filter(posts, function filter(post) {
-            return post.status === 'published' && post.page === false;
+            return post.status === 'published' && post.type === 'post';
         });
 
         _.each(posts, function (post) {

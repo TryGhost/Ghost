@@ -12,7 +12,7 @@ const localUtils = require('./utils');
 
 const ghost = testUtils.startGhost;
 
-describe('Schedules API', function () {
+describe('v3 Schedules API', function () {
     const resources = [];
     let request;
 
@@ -80,7 +80,7 @@ describe('Schedules API', function () {
                     published_at: moment().add(30, 'seconds').toDate(),
                     status: 'scheduled',
                     slug: 'fifth',
-                    page: true
+                    type: 'page'
                 }));
 
                 return Promise.mapSeries(resources, function (post) {
