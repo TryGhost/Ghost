@@ -341,7 +341,7 @@ Post = ghostBookshelf.Model.extend({
                 this.set('posts_meta', null);
             }
         }
-        
+
         this.handleAttachedModels(model);
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
@@ -617,27 +617,15 @@ Post = ghostBookshelf.Model.extend({
     },
 
     /**
-     * You can pass an extra `status=VALUES` or "staticPages" field.
+     * You can pass an extra `status=VALUES` field.
      * Long-Term: We should deprecate these short cuts and force users to use the filter param.
      */
     extraFilters: function extraFilters(options) {
-        if (!options.staticPages && !options.status) {
+        if (!options.status) {
             return null;
         }
 
         let filter = null;
-
-        // CASE: "staticPages" is passed
-        if (options.staticPages && options.staticPages !== 'all') {
-            // CASE: convert string true/false to boolean
-            if (!_.isBoolean(options.staticPages)) {
-                options.staticPages = _.includes(['true', '1'], options.staticPages);
-            }
-
-            filter = `page:${options.staticPages ? 'true' : 'false'}`;
-        } else if (options.staticPages === 'all') {
-            filter = 'page:[true, false]';
-        }
 
         // CASE: "status" is passed, combine filters
         if (options.status && options.status !== 'all') {
@@ -657,7 +645,6 @@ Post = ghostBookshelf.Model.extend({
         }
 
         delete options.status;
-        delete options.staticPages;
         return filter;
     },
 
@@ -724,7 +711,7 @@ Post = ghostBookshelf.Model.extend({
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
                 findOne: ['columns', 'importing', 'withRelated', 'require', 'filter'],
-                findPage: ['status', 'staticPages'],
+                findPage: ['status'],
                 findAll: ['columns', 'filter'],
                 destroy: ['destroyAll', 'destroyBy'],
                 edit: ['filter']
@@ -745,7 +732,7 @@ Post = ghostBookshelf.Model.extend({
      * receive all fields including relations. Otherwise you can't rely on a consistent flow. And we want to avoid
      * that event listeners have to re-fetch a resource. This function is used in the context of inserting
      * and updating resources. We won't return the relations by default for now.
-     * 
+     *
      * We also always fetch posts metadata to keep current behavior consistent
      */
     defaultRelations: function defaultRelations(methodName, options) {
