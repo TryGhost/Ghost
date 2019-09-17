@@ -55,7 +55,7 @@ const getApiUrl = ({version, type}) => {
 };
 
 const siteUrl = urlUtils.getSiteUrl();
-const membersApiUrl = getApiUrl({version: 'v2', type: 'members'});
+const membersApiUrl = getApiUrl({version: 'v3', type: 'members'});
 
 const ghostMailer = new mail.GhostMailer();
 
