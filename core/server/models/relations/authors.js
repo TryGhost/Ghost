@@ -107,7 +107,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             const ops = [];
 
             /**
-             * @deprecated: `author`, will be removed in Ghost 3.0, drop v0.1
+             * @deprecated: `author`, is unused in Ghost 3.0, should be removed before Ghost 4.0
              */
             model.unset('author');
 
