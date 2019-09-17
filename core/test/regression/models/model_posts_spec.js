@@ -100,22 +100,6 @@ describe('Post Model', function () {
                                 paginationResult.meta.pagination.pages.should.equal(2);
                                 paginationResult.data.length.should.equal(30);
 
-                                // Test both boolean formats
-                                return models.Post.findPage({limit: 10, staticPages: true});
-                            }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(1);
-                                paginationResult.meta.pagination.limit.should.equal(10);
-                                paginationResult.meta.pagination.pages.should.equal(1);
-                                paginationResult.data.length.should.equal(1);
-
-                                // Test both boolean formats
-                                return models.Post.findPage({limit: 10, staticPages: '1'});
-                            }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(1);
-                                paginationResult.meta.pagination.limit.should.equal(10);
-                                paginationResult.meta.pagination.pages.should.equal(1);
-                                paginationResult.data.length.should.equal(1);
-
                                 // Test featured pages
                                 return models.Post.findPage({limit: 10, filter: 'featured:true'});
                             }).then(function (paginationResult) {

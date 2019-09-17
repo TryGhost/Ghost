@@ -199,29 +199,6 @@ describe('api/canary/content/posts', function () {
             });
     });
 
-    it('browse posts, ignores staticPages', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&staticPages=true`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse.posts);
-                localUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(11);
-                localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-                done();
-            });
-    });
-
     it('can\'t read page', function () {
         return request
             .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[5].id}/?key=${validKey}`))
