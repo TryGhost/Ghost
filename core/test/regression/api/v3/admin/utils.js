@@ -25,7 +25,7 @@ const expectedProperties = {
         .without('visibility')
         .without('locale')
         .without('page')
-        .without('author_id')
+        .without('author_id', 'author')
         // always returns computed properties
         // primary_tag and primary_author properties are included
         // only because authors and tags are always included

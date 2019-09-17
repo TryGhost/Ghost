@@ -34,7 +34,7 @@ const expectedProperties = {
         // v2 API doesn't return new type field
         .without('type')
         // deprecated
-        .without('author_id')
+        .without('author_id', 'author')
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         // returned by default
@@ -55,7 +55,7 @@ const expectedProperties = {
         // v2 API doesn't return new type field
         .without('type')
         // deprecated
-        .without('author_id')
+        .without('author_id', 'author')
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         // returned by default

@@ -25,7 +25,7 @@ const expectedProperties = {
         .without('visibility')
         .without('locale')
         .without('page')
-        .without('author_id')
+        .without('author_id', 'author')
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         .concat('authors', 'tags')
