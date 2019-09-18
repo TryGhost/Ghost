@@ -43,21 +43,5 @@ describe('Markdown card', function () {
 
             serializer.serialize(card.render(opts)).should.eql('');
         });
-
-        it('[deprecated] version 1', function () {
-            let opts = {
-                env: {
-                    dom: new SimpleDom.Document()
-                },
-                payload: {
-                    markdown: '#HEADING\r\n- list\r\n- items'
-                },
-                options: {
-                    version: 1
-                }
-            };
-
-            serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: markdown--><div class="kg-card-markdown"><h1 id="heading">HEADING</h1>\n<ul>\n<li>list</li>\n<li>items</li>\n</ul>\n</div><!--kg-card-end: markdown-->');
-        });
     });
 });
