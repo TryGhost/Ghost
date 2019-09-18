@@ -344,24 +344,23 @@ describe('Unit: models/post', function () {
             filter.should.equal('page:false+status:published');
         });
     });
-});
-
-describe('Unit: models/post: uses database (@TODO: fix me)', function () {
-    before(function () {
-        models.init();
-    });
-
-    beforeEach(function () {
-        sinon.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
-        sinon.stub(urlService, 'getUrlByResourceId');
-    });
-
-    afterEach(function () {
-        sinon.restore();
-    });
-
-    after(function () {
-        sinon.restore();
+    describe('Unit: models/post: uses database (@TODO: fix me)', function () {
+        before(function () {
+            models.init();
+        });
+    
+        beforeEach(function () {
+            sinon.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
+            sinon.stub(urlService, 'getUrlByResourceId');
+        });
+    
+        afterEach(function () {
+            sinon.restore();
+        });
+    
+        after(function () {
+            sinon.restore();
+        });
     });
 
     describe('Permissible', function () {

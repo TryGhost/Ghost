@@ -177,63 +177,60 @@ describe('{{navigation}} helper', function () {
         should.exist(rendered);
         rendered.string.should.not.containEql('foo=space%2520bar');
     });
-});
-
-describe('{{navigation}} helper with custom template', function () {
-    var optionsData;
-
-    before(function (done) {
-        hbs.express4({
-            partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/helpers/test_tpl')]
+    describe('{{navigation}} helper with custom template', function () {
+        var optionsData;
+    
+        before(function (done) {
+            hbs.express4({
+                partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/helpers/test_tpl')]
+            });
+    
+            hbs.cachePartials(function () {
+                done();
+            });        
         });
-
-        hbs.cachePartials(function () {
-            done();
-        });
-    });
-
-    beforeEach(function () {
-        optionsData = {
-            data: {
-                blog: {
-                    navigation: [{label: 'Foo', url: '/foo'}]
-                },
-                root: {
-                    relativeUrl: ''
+        beforeEach(function () {
+            optionsData = {
+                data: {
+                    blog: {
+                        navigation: [{label: 'Foo', url: '/foo'}]
+                    },
+                    root: {
+                        relativeUrl: ''
+                    }
                 }
-            }
-        };
-    });
-
-    it('can render one item and @blog title', function () {
-        var testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
-            rendered;
-
-        // Set @blog.title
-        optionsData.data.blog.title = 'Chaos is a ladder.';
-
-        rendered = runHelper(optionsData);
-
-        should.exist(rendered);
-        rendered.string.should.containEql('Chaos is a ladder');
-        rendered.string.should.not.containEql('isHeader is set');
-        rendered.string.should.containEql(testUrl);
-        rendered.string.should.containEql('Foo');
-    });
-
-    it('can pass attributes through', function () {
-        var testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
-            rendered;
-
-        // Simulate {{navigation isHeader=true}}
-        optionsData.hash = {isHeader: true};
-
-        rendered = runHelper(optionsData);
-
-        should.exist(rendered);
-        rendered.string.should.not.containEql('Chaos is a ladder');
-        rendered.string.should.containEql('isHeader is set');
-        rendered.string.should.containEql(testUrl);
-        rendered.string.should.containEql('Foo');
+            };
+        });
+        it('can render one item and @blog title', function () {
+            var testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
+                rendered;
+    
+            // Set @blog.title
+            optionsData.data.blog.title = 'Chaos is a ladder.';
+    
+            rendered = runHelper(optionsData);
+    
+            should.exist(rendered);
+            rendered.string.should.containEql('Chaos is a ladder');
+            rendered.string.should.not.containEql('isHeader is set');
+            rendered.string.should.containEql(testUrl);
+            rendered.string.should.containEql('Foo');
+        });
+    
+        it('can pass attributes through', function () {
+            var testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
+                rendered;
+    
+            // Simulate {{navigation isHeader=true}}
+            optionsData.hash = {isHeader: true};
+    
+            rendered = runHelper(optionsData);
+    
+            should.exist(rendered);
+            rendered.string.should.not.containEql('Chaos is a ladder');
+            rendered.string.should.containEql('isHeader is set');
+            rendered.string.should.containEql(testUrl);
+            rendered.string.should.containEql('Foo');
+        });
     });
 });

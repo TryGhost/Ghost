@@ -118,49 +118,47 @@ describe('{{pagination}} helper', function () {
         runErrorTest({pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: null}})
             .should.throwError('Invalid value, check page, pages, limit and total are numbers');
     });
-});
-
-describe('{{pagination}} helper with custom template', function () {
-    before(function (done) {
-        hbs.express4({partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/helpers/test_tpl')]});
-
-        hbs.cachePartials(function () {
-            done();
+    describe('{{pagination}} helper with custom template', function () {
+        before(function (done) {
+            hbs.express4({partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/helpers/test_tpl')]});
+    
+            hbs.cachePartials(function () {
+                done();
+            });
         });
-    });
-
-    it('can render single page with @blog.title', function () {
-        var rendered = helpers.pagination.call({
-            pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
-            tag: {slug: 'slug'}
-        }, {
-            data: {
-                blog: {
-                    title: 'Chaos is a ladder.'
+        it('can render single page with @blog.title', function () {
+            var rendered = helpers.pagination.call({
+                pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
+                tag: {slug: 'slug'}
+            }, {
+                data: {
+                    blog: {
+                        title: 'Chaos is a ladder.'
+                    }
                 }
-            }
+            });
+            should.exist(rendered);
+            // strip out carriage returns and compare.
+            rendered.string.should.match(/Page 1 of 1/);
+            rendered.string.should.containEql('Chaos is a ladder');
+            rendered.string.should.not.containEql('isHeader is set');
         });
-        should.exist(rendered);
-        // strip out carriage returns and compare.
-        rendered.string.should.match(/Page 1 of 1/);
-        rendered.string.should.containEql('Chaos is a ladder');
-        rendered.string.should.not.containEql('isHeader is set');
-    });
-
-    it('can pass attributes through', function () {
-        var rendered = helpers.pagination.call({
-            pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
-            tag: {slug: 'slug'}
-        }, {
-            hash: {isHeader: true},
-            data: {
-                blog: {}
-            }
+    
+        it('can pass attributes through', function () {
+            var rendered = helpers.pagination.call({
+                pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
+                tag: {slug: 'slug'}
+            }, {
+                hash: {isHeader: true},
+                data: {
+                    blog: {}
+                }
+            });
+            should.exist(rendered);
+            // strip out carriage returns and compare.
+            rendered.string.should.match(/Page 1 of 1/);
+            rendered.string.should.not.containEql('Chaos is a ladder');
+            rendered.string.should.containEql('isHeader is set');
         });
-        should.exist(rendered);
-        // strip out carriage returns and compare.
-        rendered.string.should.match(/Page 1 of 1/);
-        rendered.string.should.not.containEql('Chaos is a ladder');
-        rendered.string.should.containEql('isHeader is set');
-    });
+    });       
 });

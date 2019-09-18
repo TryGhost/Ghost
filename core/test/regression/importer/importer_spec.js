@@ -1374,37 +1374,36 @@ describe('Integration: Importer', function () {
                 });
         });
     });
-});
-
-describe('1.0', function () {
-    beforeEach(testUtils.teardown);
-    beforeEach(testUtils.setup('roles', 'owner', 'settings'));
-
-    it('ensure amp field get\'s respected', function () {
-        const exportData = exportedPreviousBody().db[0];
-
-        exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
-            slug: 'post1',
-            amp: 2
-        });
-
-        exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({
-            slug: 'post2',
-            amp: null
-        });
-
-        return dataImporter.doImport(exportData, importOptions)
-            .then(function () {
-                return Promise.all([
-                    models.Post.findPage(testUtils.context.internal)
-                ]);
-            }).then(function (result) {
-                const posts = result[0].data.map(model => model.toJSON());
-
-                posts.length.should.eql(2);
-                posts[0].comment_id.should.eql(exportData.data.posts[1].id);
-                posts[1].comment_id.should.eql('2');
+    describe('1.0', function () {
+        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.setup('roles', 'owner', 'settings'));
+    
+        it('ensure amp field get\'s respected', function () {
+            const exportData = exportedPreviousBody().db[0];
+    
+            exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'post1',
+                amp: 2
             });
+    
+            exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'post2',
+                amp: null
+            });
+    
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function () {
+                    return Promise.all([
+                        models.Post.findPage(testUtils.context.internal)
+                    ]);
+                }).then(function (result) {
+                    const posts = result[0].data.map(model => model.toJSON());
+    
+                    posts.length.should.eql(2);
+                    posts[0].comment_id.should.eql(exportData.data.posts[1].id);
+                    posts[1].comment_id.should.eql('2');
+                });
+        });
     });
 
     describe('migrate mobiledoc/html', function () {
@@ -1609,21 +1608,20 @@ describe('1.0', function () {
                 });
         });
     });
-});
-
-describe('LTS', function () {
-    beforeEach(testUtils.teardown);
-    beforeEach(testUtils.setup('roles', 'owner', 'settings'));
-
-    it('disallows importing LTS imports', function () {
-        const exportData = exportedLegacyBody().db[0];
-
-        return dataImporter.doImport(exportData, importOptions)
-            .then(function () {
-                '0'.should.eql(1, 'LTS import should fail');
-            })
-            .catch(function (err) {
-                err.message.should.eql('Detected unsupported file structure.');
-            });
-    });
+    describe('LTS', function () {
+        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.setup('roles', 'owner', 'settings'));
+    
+        it('disallows importing LTS imports', function () {
+            const exportData = exportedLegacyBody().db[0];
+    
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function () {
+                    '0'.should.eql(1, 'LTS import should fail');
+                })
+                .catch(function (err) {
+                    err.message.should.eql('Detected unsupported file structure.');
+                });
+        });
+    });    
 });
