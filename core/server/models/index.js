@@ -38,6 +38,7 @@ models = [
     'api-key',
     'mobiledoc-revision',
     'member',
+    'member-stripe-info',
     'action'
 ];
 
