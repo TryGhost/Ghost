@@ -390,6 +390,15 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
+    members_stripe_info: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, unique: false},
+        customer_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
+        created_at: {type: 'dateTime', nullable: false},
+        created_by: {type: 'string', maxlength: 24, nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
     actions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         resource_id: {type: 'string', maxlength: 24, nullable: true},
