@@ -78,8 +78,18 @@ const mapSettings = (attrs, frame) => {
     url.forSettings(attrs);
     extraAttrs.forSettings(attrs, frame);
 
-    delete attrs.ghost_head;
-    delete attrs.ghost_foot;
+    // NOTE: The cleanup of deprecated ghost_head/ghost_foot has to happen here
+    //       because codeinjection_head/codeinjection_foot are assigned on a previous
+    //      `forSettings` step. This logic can be rewritten once we get rid of deprecated
+    //      fields completely.
+    if (_.isArray(attrs)) {
+        attrs = _.filter(attrs, (o) => {
+            return o.key !== 'ghost_head' && o.key !== 'ghost_foot';
+        });
+    } else {
+        delete attrs.ghost_head;
+        delete attrs.ghost_foot;
+    }
 
     return attrs;
 };
