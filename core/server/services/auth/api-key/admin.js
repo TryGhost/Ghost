@@ -78,7 +78,6 @@ const authenticateWithUrl = (req, res, next) => {
  *   https://tools.ietf.org/html/rfc7519#section-4.1.3
  */
 const authenticateWithToken = (req, res, next, token) => {
-
     const decoded = jwt.decode(token, {complete: true});
 
     if (!decoded || !decoded.header) {
