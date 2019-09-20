@@ -57,10 +57,11 @@ module.exports.authAdminApi = [
 ];
 
 /**
- * Authentication for internal endpoints
+ * Authentication for private endpoints with token in URL
+ * Ex.: For scheduler publish endpoint
  */
-module.exports.authInternalAdminApi = [
-    auth.authenticate.authenticateAdminApiInternal,
+module.exports.authAdminApiWithUrl = [
+    auth.authenticate.authenticateAdminApiWithUrl,
     auth.authorize.authorizeAdminApi,
     shared.middlewares.updateUserLastSeen,
     shared.middlewares.api.cors,

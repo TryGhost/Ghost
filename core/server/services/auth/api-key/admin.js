@@ -21,9 +21,9 @@ const _extractTokenFromHeader = function extractTokenFromHeader(header) {
 };
 
 /**
- * Remove 'Ghost' from raw authorization header and extract the JWT token.
- * Eg. Authorization: Ghost ${JWT}
- * @param {string} header
+ * Extract JWT token from admin API URL query
+ * Eg. ${ADMIN_API_URL}/?token=${JWT}
+ * @param {string} reqUrl
  */
 const _extractTokenFromUrl = function extractTokenFromUrl(reqUrl) {
     const {query} = url.parse(reqUrl, true);
@@ -38,12 +38,27 @@ const authenticate = (req, res, next) => {
         return next();
     }
     const token = _extractTokenFromHeader(req.headers.authorization);
+
+    if (!token) {
+        return next(new common.errors.UnauthorizedError({
+            message: common.i18n.t('errors.middleware.auth.incorrectAuthHeaderFormat'),
+            code: 'INVALID_AUTH_HEADER'
+        }));
+    }
+
     JWT_OPTIONS.maxAge = '5m';
     return authenticateWithToken(req, res, next, token);
 };
 
-const authenticateInternal = (req, res, next) => {
+const authenticateWithUrl = (req, res, next) => {
     const token = _extractTokenFromUrl(req.originalUrl);
+    if (!token) {
+        return next(new common.errors.UnauthorizedError({
+            message: common.i18n.t('errors.middleware.auth.invalidTokenWithMessage', {message: 'No token found in URL'}),
+            code: 'INVALID_JWT'
+        }));
+    }
+    // CASE: Scheduler publish URLs can have long maxAge but controllerd by expiry and neverBefore
     delete JWT_OPTIONS.maxAge;
     return authenticateWithToken(req, res, next, token);
 };
@@ -63,12 +78,6 @@ const authenticateInternal = (req, res, next) => {
  *   https://tools.ietf.org/html/rfc7519#section-4.1.3
  */
 const authenticateWithToken = (req, res, next, token) => {
-    if (!token) {
-        return next(new common.errors.UnauthorizedError({
-            message: common.i18n.t('errors.middleware.auth.incorrectAuthHeaderFormat'),
-            code: 'INVALID_AUTH_HEADER'
-        }));
-    }
 
     const decoded = jwt.decode(token, {complete: true});
 
@@ -142,5 +151,5 @@ const authenticateWithToken = (req, res, next, token) => {
 
 module.exports = {
     authenticate,
-    authenticateInternal
+    authenticateWithUrl: authenticateWithUrl
 };
