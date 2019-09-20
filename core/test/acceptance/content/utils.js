@@ -1,8 +1,8 @@
 const url = require('url');
 const _ = require('lodash');
-const testUtils = require('../../../utils');
-const schema = require('../../../../server/data/schema').tables;
-const API_URL = '/ghost/api/v2/content/';
+const testUtils = require('../../utils');
+const schema = require('../../../server/data/schema').tables;
+const API_URL = '/ghost/api/canary/content/';
 
 const expectedProperties = {
     // API top level
@@ -17,8 +17,8 @@ const expectedProperties = {
         .without('mobiledoc', 'plaintext')
         // v2 doesn't return author_id OR author
         .without('author_id', 'author')
-        // and always returns computed properties: url, primary_tag, primary_author
-        .concat('url', 'primary_tag', 'primary_author')
+        // and always returns computed properties: url
+        .concat('url')
         // v2 API doesn't return unused fields
         .without('locale', 'visibility')
         // These fields aren't useful as they always have known values
