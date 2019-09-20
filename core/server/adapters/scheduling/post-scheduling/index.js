@@ -1,19 +1,18 @@
-const Promise = require('bluebird'),
-    moment = require('moment'),
-    jwt = require('jsonwebtoken'),
-    localUtils = require('../utils'),
-    common = require('../../../lib/common'),
-    models = require('../../../models'),
-    urlUtils = require('../../../lib/url-utils'),
-    _private = {};
-
+const Promise = require('bluebird');
+const moment = require('moment');
+const jwt = require('jsonwebtoken');
+const localUtils = require('../utils');
+const common = require('../../../lib/common');
+const models = require('../../../models');
+const urlUtils = require('../../../lib/url-utils');
+const _private = {};
  
 /**
  * @description Load the internal scheduler integration
  *
  * @return {Promise}
  */
-_private.getSchedulerIntegration = function() {
+_private.getSchedulerIntegration = function () {
     return models.Integration.findOne({slug: 'ghost-scheduler'}, {withRelated: 'api_keys'})
         .then((integration) => {
             if (!integration) {
@@ -23,11 +22,9 @@ _private.getSchedulerIntegration = function() {
                     })
                 });
             }
-            let apiKeys = integration.toJSON().api_keys;
             return integration.toJSON();
         });
 };
-
 
 /**
  * @description Get signed admin token for making authenticated requests
@@ -59,7 +56,7 @@ _private.getSignedAdminToken = function (options) {
         Buffer.from(key.secret, 'hex'),
         JWT_OPTIONS
     );
-}
+};
 
 /**
  * @description Normalize model data into scheduler notation.
@@ -68,7 +65,7 @@ _private.getSignedAdminToken = function (options) {
  */
 _private.normalize = function normalize(options) {
     const {model, apiUrl, resourceType} = options;
-    const resource = `${resourceType}s`
+    const resource = `${resourceType}s`;
     const signedAdminToken = _private.getSignedAdminToken(options);
     let url = `${urlUtils.urlJoin(apiUrl, 'schedules', resource, model.get('id'))}/?token=${signedAdminToken}`;
     return {

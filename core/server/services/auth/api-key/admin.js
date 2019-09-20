@@ -38,15 +38,15 @@ const authenticate = (req, res, next) => {
         return next();
     }
     const token = _extractTokenFromHeader(req.headers.authorization);
-    JWT_OPTIONS['maxAge'] = '5m';
+    JWT_OPTIONS.maxAge = '5m';
     return authenticateWithToken(req, res, next, token);
-}
+};
 
 const authenticateInternal = (req, res, next) => {
     const token = _extractTokenFromUrl(req.originalUrl);
-    delete JWT_OPTIONS['maxAge'];
+    delete JWT_OPTIONS.maxAge;
     return authenticateWithToken(req, res, next, token);
-}
+};
 
 /**
  * Admin API key authentication flow:
@@ -63,7 +63,6 @@ const authenticateInternal = (req, res, next) => {
  *   https://tools.ietf.org/html/rfc7519#section-4.1.3
  */
 const authenticateWithToken = (req, res, next, token) => {
-
     if (!token) {
         return next(new common.errors.UnauthorizedError({
             message: common.i18n.t('errors.middleware.auth.incorrectAuthHeaderFormat'),
