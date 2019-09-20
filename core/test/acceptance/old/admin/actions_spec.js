@@ -38,9 +38,8 @@ describe('Actions API', function () {
             .then((res) => {
                 postId = res.body.posts[0].id;
                 postUpdatedAt = res.body.posts[0].updated_at;
-
                 return request
-                    .get(localUtils.API.getApiQuery(`actions/resource/${postId}/`))
+                    .get(localUtils.API.getApiQuery(`actions/?filter=resource_id:${postId}&include=actor`))
                     .set('Origin', config.get('url'))
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -81,7 +80,7 @@ describe('Actions API', function () {
                 postUpdatedAt = res.body.posts[0].updated_at;
 
                 return request
-                    .get(localUtils.API.getApiQuery(`actions/resource/${postId}/`))
+                    .get(localUtils.API.getApiQuery(`actions/?filter=resource_id:${postId}&include=actor`))
                     .set('Origin', config.get('url'))
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
@@ -110,7 +109,7 @@ describe('Actions API', function () {
                 return integrationRequest
                     .put(localUtils.API.getApiQuery(`posts/${postId}/`))
                     .set('Origin', config.get('url'))
-                    .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v2/admin/')}`)
+                    .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/')}`)
                     .send({
                         posts: [{
                             featured: true,
@@ -123,7 +122,7 @@ describe('Actions API', function () {
             })
             .then(() => {
                 return request
-                    .get(localUtils.API.getApiQuery(`actions/resource/${postId}/`))
+                    .get(localUtils.API.getApiQuery(`actions/?filter=resource_id:${postId}&include=actor`))
                     .set('Origin', config.get('url'))
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
