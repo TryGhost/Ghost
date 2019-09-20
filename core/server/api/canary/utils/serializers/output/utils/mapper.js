@@ -77,6 +77,10 @@ const mapPost = (model, frame) => {
 const mapSettings = (attrs, frame) => {
     url.forSettings(attrs);
     extraAttrs.forSettings(attrs, frame);
+
+    delete attrs.ghost_head;
+    delete attrs.ghost_foot;
+
     return attrs;
 };
 
