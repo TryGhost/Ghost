@@ -1,9 +1,9 @@
 const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
-const testUtils = require('../../../utils');
+const testUtils = require('../../utils');
+const config = require('../../../server/config');
 const localUtils = require('./utils');
-const config = require('../../../../server/config');
 
 const ghost = testUtils.startGhost;
 
@@ -38,7 +38,7 @@ describe('Admin API key authentication', function () {
 
     it('Can access browse endpoint with correct token', function () {
         return request.get(localUtils.API.getApiQuery('posts/'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v2/admin/')}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/')}`)
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
@@ -52,7 +52,7 @@ describe('Admin API key authentication', function () {
         return request
             .post(localUtils.API.getApiQuery('posts/?include=authors'))
             .set('Origin', config.get('url'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v2/admin/')}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/')}`)
             .send({
                 posts: [post]
             })
@@ -69,7 +69,7 @@ describe('Admin API key authentication', function () {
         return request
             .get(localUtils.API.getApiQuery('users/'))
             .set('Origin', config.get('url'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/v2/admin/')}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/')}`)
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)

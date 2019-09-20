@@ -1,13 +1,10 @@
 const path = require('path');
-const _ = require('lodash');
-const fs = require('fs-extra');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
-const config = require('../../../../server/config');
-const models = require('../../../../server/models');
-const common = require('../../../../server/lib/common');
-const testUtils = require('../../../utils');
+const config = require('../../../server/config');
+const common = require('../../../server/lib/common');
+const testUtils = require('../../utils');
 const localUtils = require('./utils');
 
 let ghost = testUtils.startGhost;
@@ -75,7 +72,7 @@ describe('DB API', function () {
                     .set('Origin', config.get('url'))
                     .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
-                    .attach('importfile', path.join(__dirname, '/../../../utils/fixtures/export/default_export.json'))
+                    .attach('importfile', path.join(__dirname, '/../../utils/fixtures/export/default_export.json'))
                     .expect(200)
                     .then((res) => {
                         const jsonResponse = res.body;

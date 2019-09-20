@@ -1,8 +1,8 @@
 const url = require('url');
 const _ = require('lodash');
-const testUtils = require('../../../utils');
-const schema = require('../../../../server/data/schema').tables;
-const API_URL = '/ghost/api/v2/admin/';
+const testUtils = require('../../utils');
+const schema = require('../../../server/data/schema').tables;
+const API_URL = '/ghost/api/canary/admin/';
 
 const expectedProperties = {
     // API top level
