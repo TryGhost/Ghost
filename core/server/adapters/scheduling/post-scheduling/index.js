@@ -6,7 +6,8 @@ const common = require('../../../lib/common');
 const models = require('../../../models');
 const urlUtils = require('../../../lib/url-utils');
 const _private = {};
- 
+const SCHEDULED_RESOURCES = ['post', 'page'];
+
 /**
  * @description Load the internal scheduler integration
  *
@@ -27,7 +28,7 @@ _private.getSchedulerIntegration = function () {
 };
 
 /**
- * @description Get signed admin token for making authenticated requests
+ * @description Get signed admin token for making authenticated scheduling requests
  *
  * @return {Promise}
  */
@@ -43,6 +44,7 @@ _private.getSignedAdminToken = function (options) {
 
     // Default token expiry is till 10 minutes after scheduled time
     // or if published_at is in past then till 10 minutes after blog start
+    // and never before 10 mins to publish time
     let tokenExpiry = moment(model.get('published_at')).add(10, 'm');
     if (tokenExpiry.isBefore(moment())) {
         tokenExpiry = moment().add(10, 'm');
@@ -84,19 +86,19 @@ _private.normalize = function normalize(options) {
  * @return {Promise}
  */
 _private.loadScheduledResources = function () {
-    const apiv2 = require('../../../api').v2;
-    const resources = ['post', 'page'];
-    return Promise.mapSeries(resources, (resourceType) => {
-        return apiv2.schedules.getScheduled.query({
+    const api = require('../../../api');
+    // Fetches all scheduled resources(posts/pages) with default API
+    return Promise.mapSeries(SCHEDULED_RESOURCES, (resourceType) => {
+        return api.schedules.getScheduled.query({
             options: {
                 context: {internal: true},
                 resource: resourceType
             }
         }).then((result) => {
-            return result[resourceType];
+            return result[resourceType] || [];
         });
     }).then((results) => {
-        return resources.reduce(function (obj, entry, index) {
+        return SCHEDULED_RESOURCES.reduce(function (obj, entry, index) {
             return Object.assign(obj, {
                 [entry]: results[index]
             });
@@ -140,10 +142,12 @@ exports.init = function init(options = {}) {
             if (!Object.keys(scheduledResources).length) {
                 return;
             }
+
+            // Reschedules all scheduled resources on boot
+            // NOTE: We are using reschedule, because custom scheduling adapter could use a database, which needs to be updated
+            // and not an in-process implementation!
             Object.keys(scheduledResources).forEach((resourceType) => {
                 scheduledResources[resourceType].forEach((model) => {
-                    // NOTE: We are using reschedule, because custom scheduling adapter could use a database, which needs to be updated
-                    //       and not an in-process implementation!
                     adapter.reschedule(_private.normalize({model, apiUrl, integration, resourceType}), {bootstrap: true});
                 });
             });
@@ -152,28 +156,18 @@ exports.init = function init(options = {}) {
             adapter.run();
         })
         .then(() => {
-            common.events.on('post.scheduled', (model) => {
-                adapter.schedule(_private.normalize({model, apiUrl, integration, resourceType: 'post'}));
-            });
+            SCHEDULED_RESOURCES.forEach((resource) => {
+                common.events.on(`${resource}.scheduled`, (model) => {
+                    adapter.schedule(_private.normalize({model, apiUrl, integration, resourceType: resource}));
+                });
 
-            common.events.on('page.scheduled', (model) => {
-                adapter.schedule(_private.normalize({model, apiUrl, integration, resourceType: 'page'}));
-            });
+                common.events.on(`${resource}.rescheduled`, (model) => {
+                    adapter.reschedule(_private.normalize({model, apiUrl, integration, resourceType: resource}));
+                });
 
-            common.events.on('post.rescheduled', (model) => {
-                adapter.reschedule(_private.normalize({model, apiUrl, integration, resourceType: 'post'}));
-            });
-
-            common.events.on('page.rescheduled', (model) => {
-                adapter.reschedule(_private.normalize({model, apiUrl, integration, resourceType: 'page'}));
-            });
-
-            common.events.on('post.unscheduled', (model) => {
-                adapter.unschedule(_private.normalize({model, apiUrl, integration, resourceType: 'post'}));
-            });
-
-            common.events.on('page.unscheduled', (model) => {
-                adapter.unschedule(_private.normalize({model, apiUrl, integration, resourceType: 'page'}));
+                common.events.on(`${resource}.unscheduled`, (model) => {
+                    adapter.unschedule(_private.normalize({model, apiUrl, integration, resourceType: resource}));
+                });
             });
         });
 };

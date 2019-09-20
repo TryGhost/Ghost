@@ -50,7 +50,7 @@ const authenticateInternal = (req, res, next) => {
 
 /**
  * Admin API key authentication flow:
- * 1. extract the JWT token from the `Authorization: Ghost xxxx` header
+ * 1. extract the JWT token from the `Authorization: Ghost xxxx` header or from URL(for schedules)
  * 2. decode the JWT to extract the api_key id from the "key id" header claim
  * 3. find a matching api_key record
  * 4. verify the JWT (matching secret, matching URL path, not expired)
