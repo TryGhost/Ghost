@@ -14,7 +14,7 @@ describe('Code card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<!--kg-card-begin: code--><pre><code>&lt;p&gt;Test&lt;/p&gt;</code></pre><!--kg-card-end: code-->');
+        serializer.serialize(card.render(opts)).should.match('<pre><code>&lt;p&gt;Test&lt;/p&gt;</code></pre>');
     });
 
     it('Renders language class if provided', function () {
@@ -28,7 +28,7 @@ describe('Code card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<!--kg-card-begin: code--><pre><code class="language-html">&lt;p&gt;Test&lt;/p&gt;</code></pre><!--kg-card-end: code-->');
+        serializer.serialize(card.render(opts)).should.match('<pre><code class="language-html">&lt;p&gt;Test&lt;/p&gt;</code></pre>');
     });
 
     it('Renders nothing when payload is undefined', function () {
@@ -56,6 +56,6 @@ describe('Code card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<!--kg-card-begin: code--><figure class="kg-card kg-code-card"><pre><code class="language-html">&lt;p&gt;Test&lt;/p&gt;</code></pre><figcaption>Some <strong>HTML</strong></figcaption></figure><!--kg-card-end: code-->');
+        serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-code-card"><pre><code class="language-html">&lt;p&gt;Test&lt;/p&gt;</code></pre><figcaption>Some <strong>HTML</strong></figcaption></figure>');
     });
 });
