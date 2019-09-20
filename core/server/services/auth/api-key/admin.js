@@ -150,5 +150,5 @@ const authenticateWithToken = (req, res, next, token) => {
 
 module.exports = {
     authenticate,
-    authenticateWithUrl: authenticateWithUrl
+    authenticateWithUrl
 };
