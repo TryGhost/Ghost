@@ -1,10 +1,10 @@
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
-const testUtils = require('../../../utils');
+const testUtils = require('../../utils');
+const config = require('../../../server/config');
+const mailService = require('../../../server/services/mail');
 const localUtils = require('./utils');
-const config = require('../../../../server/config');
-const mailService = require('../../../../server/services/mail');
 const ghost = testUtils.startGhost;
 
 let request;

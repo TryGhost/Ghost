@@ -2,11 +2,12 @@ const should = require('should');
 const _ = require('lodash');
 const supertest = require('supertest');
 const Promise = require('bluebird');
-const testUtils = require('../../../utils');
+const testUtils = require('../../utils');
+const config = require('../../../server/config');
+const db = require('../../../server/data/db');
+const models = require('../../../server/models');
 const localUtils = require('./utils');
-const config = require('../../../../server/config');
-const db = require('../../../../server/data/db');
-const models = require('../../../../server/models');
+
 const ghost = testUtils.startGhost;
 let request;
 

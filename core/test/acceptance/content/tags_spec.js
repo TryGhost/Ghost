@@ -2,9 +2,9 @@ const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
 const url = require('url');
-const configUtils = require('../../../utils/configUtils');
-const config = require('../../../../server/config');
-const testUtils = require('../../../utils');
+const configUtils = require('../../utils/configUtils');
+const config = require('../../../server/config');
+const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
 

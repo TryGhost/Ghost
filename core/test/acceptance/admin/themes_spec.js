@@ -3,9 +3,10 @@ const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
 const supertest = require('supertest');
-const testUtils = require('../../../utils');
+const testUtils = require('../../utils');
+const config = require('../../../server/config');
 const localUtils = require('./utils');
-const config = require('../../../../server/config');
+
 const ghost = testUtils.startGhost;
 
 describe('Themes API', function () {
@@ -83,7 +84,7 @@ describe('Themes API', function () {
     });
 
     it('Can upload a valid theme', function () {
-        return uploadTheme({themePath: path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')})
+        return uploadTheme({themePath: path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')})
             .then((res) => {
                 const jsonResponse = res.body;
 
@@ -97,7 +98,7 @@ describe('Themes API', function () {
                 jsonResponse.themes[0].active.should.be.false();
 
                 // upload same theme again to force override
-                return uploadTheme({themePath: path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')});
+                return uploadTheme({themePath: path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', 'valid.zip')});
             })
             .then((res) => {
                 const jsonResponse = res.body;
@@ -216,7 +217,7 @@ describe('Themes API', function () {
     });
 
     it('Can upload a theme, which has warnings', function () {
-        return uploadTheme({themePath: path.join(__dirname, '/../../../utils/fixtures/themes/warnings.zip')})
+        return uploadTheme({themePath: path.join(__dirname, '/../../utils/fixtures/themes/warnings.zip')})
             .then((res) => {
                 const jsonResponse = res.body;
 

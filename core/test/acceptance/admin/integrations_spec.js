@@ -1,8 +1,8 @@
 const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
-const config = require('../../../../server/config');
-const testUtils = require('../../../utils');
+const config = require('../../../server/config');
+const testUtils = require('../../utils');
 const localUtils = require('./utils');
 
 const ghost = testUtils.startGhost;

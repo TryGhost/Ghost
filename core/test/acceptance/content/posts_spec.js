@@ -4,10 +4,10 @@ const _ = require('lodash');
 const url = require('url');
 const cheerio = require('cheerio');
 const moment = require('moment');
-const testUtils = require('../../../utils');
+const testUtils = require('../../utils');
+const configUtils = require('../../utils/configUtils');
+const config = require('../../../server/config');
 const localUtils = require('./utils');
-const configUtils = require('../../../utils/configUtils');
-const config = require('../../../../server/config');
 
 const ghost = testUtils.startGhost;
 let request;

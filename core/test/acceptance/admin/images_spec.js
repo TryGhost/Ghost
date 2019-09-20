@@ -3,8 +3,8 @@ const fs = require('fs-extra');
 const should = require('should');
 const supertest = require('supertest');
 const localUtils = require('./utils');
-const testUtils = require('../../../utils');
-const config = require('../../../../server/config');
+const testUtils = require('../../utils');
+const config = require('../../../server/config');
 
 const ghost = testUtils.startGhost;
 
@@ -34,7 +34,7 @@ describe('Images API', function () {
             .expect('Content-Type', /json/)
             .field('purpose', 'image')
             .field('ref', 'https://ghost.org/ghost-logo.png')
-            .attach('file', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.png'))
+            .attach('file', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
             .expect(201)
             .end(function (err, res) {
                 if (err) {
@@ -52,7 +52,7 @@ describe('Images API', function () {
         request.post(localUtils.API.getApiQuery('images/upload'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .attach('file', path.join(__dirname, '/../../../utils/fixtures/images/ghosticon.jpg'))
+            .attach('file', path.join(__dirname, '/../../utils/fixtures/images/ghosticon.jpg'))
             .expect(201)
             .end(function (err, res) {
                 if (err) {
@@ -71,7 +71,7 @@ describe('Images API', function () {
         request.post(localUtils.API.getApiQuery('images/upload'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .attach('file', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat.gif'))
+            .attach('file', path.join(__dirname, '/../../utils/fixtures/images/loadingcat.gif'))
             .expect(201)
             .end(function (err, res) {
                 if (err) {
@@ -89,7 +89,7 @@ describe('Images API', function () {
         request.post(localUtils.API.getApiQuery('images/upload'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .attach('file', path.join(__dirname, '/../../../utils/fixtures/images/loadingcat_square.gif'))
+            .attach('file', path.join(__dirname, '/../../utils/fixtures/images/loadingcat_square.gif'))
             .expect(201)
             .end(function (err, res) {
                 if (err) {

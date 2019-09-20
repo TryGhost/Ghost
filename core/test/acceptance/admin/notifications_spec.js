@@ -1,8 +1,9 @@
 const should = require('should');
 const supertest = require('supertest');
-const testUtils = require('../../../utils');
+const testUtils = require('../../utils');
+const config = require('../../../server/config');
 const localUtils = require('./utils');
-const config = require('../../../../server/config');
+
 const ghost = testUtils.startGhost;
 let request;
 
