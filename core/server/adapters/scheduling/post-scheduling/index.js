@@ -91,7 +91,6 @@ _private.loadScheduledResources = function () {
     return Promise.mapSeries(SCHEDULED_RESOURCES, (resourceType) => {
         return api.schedules.getScheduled.query({
             options: {
-                context: {internal: true},
                 resource: resourceType
             }
         }).then((result) => {
