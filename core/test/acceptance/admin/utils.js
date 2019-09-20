@@ -1,7 +1,7 @@
 const url = require('url');
 const _ = require('lodash');
-const testUtils = require('../../../utils');
-const schema = require('../../../../server/data/schema').tables;
+const testUtils = require('../../utils');
+const schema = require('../../../server/data/schema').tables;
 const API_URL = '/ghost/api/canary/admin/';
 
 const expectedProperties = {
