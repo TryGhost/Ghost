@@ -1,5 +1,5 @@
 module.exports = function createCard(card) {
-    const {name, type} = card;
+    const {name, type, config = {}} = card;
 
     return {
         name,
@@ -14,15 +14,19 @@ module.exports = function createCard(card) {
                 return cardOutput;
             }
 
-            const beginComment = dom.createComment(`kg-card-begin: ${cleanName}`);
-            const endComment = dom.createComment(`kg-card-end: ${cleanName}`);
-            const fragment = dom.createDocumentFragment();
+            if (config.commentWrapper) {
+                const beginComment = dom.createComment(`kg-card-begin: ${cleanName}`);
+                const endComment = dom.createComment(`kg-card-end: ${cleanName}`);
+                const fragment = dom.createDocumentFragment();
 
-            fragment.appendChild(beginComment);
-            fragment.appendChild(cardOutput);
-            fragment.appendChild(endComment);
+                fragment.appendChild(beginComment);
+                fragment.appendChild(cardOutput);
+                fragment.appendChild(endComment);
 
-            return fragment;
+                return fragment;
+            }
+
+            return cardOutput;
         }
     };
 };
