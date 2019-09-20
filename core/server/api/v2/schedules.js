@@ -102,24 +102,25 @@ module.exports = {
         // NOTE: this method is for internal use only by DefaultScheduler
         //       it is not exposed anywhere!
         permissions: false,
+        validation: {
+            options: {
+                resource: {
+                    required: true,
+                    values: ['posts', 'pages']
+                }
+            }
+        },
         query(frame) {
             const resourceModel = 'Post';
+            const resourceType = (frame.options.resource === 'post') ? 'post' : 'page';
             const cleanOptions = {};
-            cleanOptions.filter = 'status:scheduled';
+            cleanOptions.filter = `status:scheduled+type:${resourceType}`;
             cleanOptions.columns = ['id', 'published_at', 'created_at', 'type'];
 
             return models[resourceModel].findAll(cleanOptions)
-                .then((result = []) => {
+                .then((result) => {
                     let response = {};
-                    result.forEach((model) => {
-                        let type = model.get('type') || 'post';
-                        if (response[type]) {
-                            response[type].push(model);
-                        } else {
-                            response[type] = [model];
-                        }
-                    })
-
+                    response[resourceType] = result;
                     return response;
                 });
         }

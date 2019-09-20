@@ -88,12 +88,22 @@ _private.normalize = function normalize(options) {
  */
 _private.loadScheduledResources = function () {
     const apiv2 = require('../../../api').v2;
-    return apiv2.schedules.getScheduled.query({
-        options: {
-            context: {internal: true}
-        }
-    }).then((result) => {
-        return result || {};
+    const resources = ['post', 'page'];
+    return Promise.mapSeries(resources, (resourceType) => {
+        return apiv2.schedules.getScheduled.query({
+            options: {
+                context: {internal: true},
+                resource: resourceType
+            }
+        }).then((result) => {
+            return result[resourceType];
+        });
+    }).then((results) => {
+        return resources.reduce(function (obj, entry, index) {
+            return Object.assign(obj, {
+                [entry]: results[index]
+            });
+        }, {});
     });
 };
 
