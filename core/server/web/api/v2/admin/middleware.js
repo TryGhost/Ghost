@@ -57,6 +57,19 @@ module.exports.authAdminApi = [
 ];
 
 /**
+ * Authentication for internal endpoints
+ */
+module.exports.authInternalAdminApi = [
+    auth.authenticate.authenticateAdminApiInternal,
+    auth.authorize.authorizeAdminApi,
+    shared.middlewares.updateUserLastSeen,
+    shared.middlewares.api.cors,
+    shared.middlewares.urlRedirects.adminRedirect,
+    shared.middlewares.prettyUrls,
+    notImplemented
+];
+
+/**
  * Middleware for public admin endpoints
  */
 module.exports.publicAdminApi = [

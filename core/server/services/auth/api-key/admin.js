@@ -22,6 +22,32 @@ const _extractTokenFromHeader = function extractTokenFromHeader(header) {
 };
 
 /**
+ * Remove 'Ghost' from raw authorization header and extract the JWT token.
+ * Eg. Authorization: Ghost ${JWT}
+ * @param {string} header
+ */
+const _extractTokenFromUrl = function extractTokenFromUrl(reqUrl) {
+    const {query} = url.parse(reqUrl, true);
+    return query.token;
+};
+
+const authenticate = (req, res, next) => {
+    // CASE: we don't have an Authorization header so allow fallthrough to other
+    // auth middleware or final "ensure authenticated" check
+    if (!req.headers || !req.headers.authorization) {
+        req.api_key = null;
+        return next();
+    }
+    const token = _extractTokenFromHeader(req.headers.authorization);
+    return authenticateWithToken(req, res, next, token);
+}
+
+const authenticateInternal = (req, res, next) => {
+    const token = _extractTokenFromUrl(req.originalUrl);
+    return authenticateWithToken(req, res, next, token);
+}
+
+/**
  * Admin API key authentication flow:
  * 1. extract the JWT token from the `Authorization: Ghost xxxx` header
  * 2. decode the JWT to extract the api_key id from the "key id" header claim
@@ -35,15 +61,7 @@ const _extractTokenFromHeader = function extractTokenFromHeader(header) {
  * - the "Audience" claim should match the requested API path
  *   https://tools.ietf.org/html/rfc7519#section-4.1.3
  */
-const authenticate = (req, res, next) => {
-    // CASE: we don't have an Authorization header so allow fallthrough to other
-    // auth middleware or final "ensure authenticated" check
-    if (!req.headers || !req.headers.authorization) {
-        req.api_key = null;
-        return next();
-    }
-
-    const token = _extractTokenFromHeader(req.headers.authorization);
+const authenticateWithToken = (req, res, next, token) => {
 
     if (!token) {
         return next(new common.errors.UnauthorizedError({
@@ -123,5 +141,6 @@ const authenticate = (req, res, next) => {
 };
 
 module.exports = {
-    authenticate
+    authenticate,
+    authenticateInternal
 };

@@ -4,6 +4,7 @@ const members = require('./members');
 
 const authenticate = {
     authenticateAdminApi: [apiKeyAuth.admin.authenticate, session.authenticate],
+    authenticateAdminApiInternal: [apiKeyAuth.admin.authenticateInternal, session.authenticate],
 
     authenticateContentApi: [apiKeyAuth.content.authenticateContentApiKey, members.authenticateMembersToken]
 };
