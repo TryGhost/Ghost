@@ -3,8 +3,7 @@ const url = require('url');
 const models = require('../../../models');
 const common = require('../../../lib/common');
 
-const JWT_OPTIONS = {
-    maxAge: '5m',
+let JWT_OPTIONS = {
     algorithms: ['HS256']
 };
 
@@ -39,11 +38,13 @@ const authenticate = (req, res, next) => {
         return next();
     }
     const token = _extractTokenFromHeader(req.headers.authorization);
+    JWT_OPTIONS['maxAge'] = '5m';
     return authenticateWithToken(req, res, next, token);
 }
 
 const authenticateInternal = (req, res, next) => {
     const token = _extractTokenFromUrl(req.originalUrl);
+    delete JWT_OPTIONS['maxAge'];
     return authenticateWithToken(req, res, next, token);
 }
 

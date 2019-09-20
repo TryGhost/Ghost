@@ -54,7 +54,7 @@ _private.getSignedAdminToken = function (options) {
     return jwt.sign(
         {
             exp: tokenExpiry.unix(),
-            nbf: moment(model.get('published_at')).subtract(5, 'm').unix()
+            nbf: moment(model.get('published_at')).subtract(10, 'm').unix()
         },
         Buffer.from(key.secret, 'hex'),
         JWT_OPTIONS
