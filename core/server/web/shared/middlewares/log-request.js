@@ -1,17 +1,13 @@
-const uuid = require('uuid');
 const common = require('../../../lib/common');
 
 /**
- * @TODO:
- * - move middleware to ignition?
+ * @TODO: move this middleware to ignition?
  */
 module.exports = function logRequest(req, res, next) {
-    const startTime = Date.now(),
-        requestId = req.get('X-Request-ID') || uuid.v4();
+    const startTime = Date.now();
 
     function logResponse() {
         res.responseTime = (Date.now() - startTime) + 'ms';
-        req.requestId = requestId;
         req.userId = req.user ? (req.user.id ? req.user.id : req.user) : null;
 
         if (req.err && req.err.statusCode !== 404) {
