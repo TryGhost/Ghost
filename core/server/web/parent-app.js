@@ -10,6 +10,7 @@ var debug = require('ghost-ignition').debug('app'),
 
     // local middleware
     ghostLocals = require('./middleware/ghost-locals'),
+    requestId = require('./middleware/request-id'),
     logRequest = require('./middleware/log-request');
 
 module.exports = function setupParentApp() {
@@ -22,6 +23,7 @@ module.exports = function setupParentApp() {
     // (X-Forwarded-Proto header will be checked, if present)
     parentApp.enable('trust proxy');
 
+    parentApp.use(requestId);
     parentApp.use(logRequest);
 
     // enabled gzip compression by default
