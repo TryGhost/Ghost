@@ -23,8 +23,8 @@ function ampComponents() {
         components.push('<script async custom-element="amp-anim" src="https://cdn.ampproject.org/v0/amp-anim-0.1.js"></script>');
     }
 
-    let iframeCount = (html.match(/<iframe/g) || []).length,
-        youtubeCount = (html.match(/(youtu.be\/|youtube(-nocookie)?.com\/(v\/|.*u\/\w\/|embed\/|.*v=))/g) || []).length;
+    let iframeCount = (html.match(/(<iframe)(.*?)(<\/iframe>)/gi) || []).length,
+        youtubeCount = (html.match(/(<iframe)(.*?)(youtu.be\/|youtube(-nocookie)?.com\/(v\/|.*u\/\w\/|embed\/|.*v=))(.*?)(<\/iframe>)/gi) || []).length;
 
     if (youtubeCount) {
         components.push('<script async custom-element="amp-youtube" src="https://cdn.ampproject.org/v0/amp-youtube-0.1.js"></script>');
