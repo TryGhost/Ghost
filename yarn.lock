@@ -161,10 +161,10 @@
     mkdirp "0.5.0"
     yauzl "2.4.1"
 
-"@tryghost/helpers@1.1.9":
-  version "1.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.9.tgz#cff8557986d36211506a9dc30f8f3773f33fea21"
-  integrity sha512-pqUHoKwr9H6QxT945fso1Ill/F5vxojw7PLqBHPJ3wAkFgriWVu5kxhnUpAoLzTCLQD7qBPGd/D0fQWcJnBQew==
+"@tryghost/helpers@1.1.10":
+  version "1.1.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.10.tgz#192133fe6a10065f0c7d117af0f8d7d21faae594"
+  integrity sha512-eES1dOw8+6xWAz8TjD544TyvKU3ESrijTAf6O21Fhl7tilMd9t+GbkT5+KR7vCteXtA6dfGtU/DJ7IEQV6+xcQ==
   dependencies:
     lodash-es "^4.17.11"
 
