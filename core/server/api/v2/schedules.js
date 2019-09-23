@@ -111,18 +111,16 @@ module.exports = {
             }
         },
         query(frame) {
-            const resourceType = frame.options.resource;
-            const resourceModel = (resourceType === 'posts') ? 'Post' : 'Page';
-
+            const resourceModel = 'Post';
+            const resourceType = (frame.options.resource === 'post') ? 'post' : 'page';
             const cleanOptions = {};
-            cleanOptions.filter = 'status:scheduled';
-            cleanOptions.columns = ['id', 'published_at', 'created_at'];
+            cleanOptions.filter = `status:scheduled+type:${resourceType}`;
+            cleanOptions.columns = ['id', 'published_at', 'created_at', 'type'];
 
             return models[resourceModel].findAll(cleanOptions)
                 .then((result) => {
                     let response = {};
                     response[resourceType] = result;
-
                     return response;
                 });
         }

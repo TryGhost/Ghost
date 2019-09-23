@@ -48,7 +48,7 @@ module.exports = function apiRoutes() {
     router.del('/integrations/:id', mw.authAdminApi, http(apiCanary.integrations.destroy));
 
     // ## Schedules
-    router.put('/schedules/:resource/:id', mw.authAdminApi, http(apiCanary.schedules.publish));
+    router.put('/schedules/:resource/:id', mw.authAdminApiWithUrl, http(apiCanary.schedules.publish));
 
     // ## Settings
     router.get('/settings/routes/yaml', mw.authAdminApi, http(apiCanary.settings.download));
