@@ -57,6 +57,20 @@ module.exports.authAdminApi = [
 ];
 
 /**
+ * Authentication for private endpoints with token in URL
+ * Ex.: For scheduler publish endpoint
+ */
+module.exports.authAdminApiWithUrl = [
+    auth.authenticate.authenticateAdminApiWithUrl,
+    auth.authorize.authorizeAdminApi,
+    shared.middlewares.updateUserLastSeen,
+    shared.middlewares.api.cors,
+    shared.middlewares.urlRedirects.adminRedirect,
+    shared.middlewares.prettyUrls,
+    notImplemented
+];
+
+/**
  * Middleware for public admin endpoints
  */
 module.exports.publicAdminApi = [
