@@ -2,9 +2,11 @@ const jwt = require('jsonwebtoken');
 const url = require('url');
 const models = require('../../../models');
 const common = require('../../../lib/common');
+const _ = require('lodash');
 
 let JWT_OPTIONS = {
-    algorithms: ['HS256']
+    algorithms: ['HS256'],
+    maxAge: '5m'
 };
 
 /**
@@ -46,8 +48,7 @@ const authenticate = (req, res, next) => {
         }));
     }
 
-    JWT_OPTIONS.maxAge = '5m';
-    return authenticateWithToken(req, res, next, token);
+    return authenticateWithToken(req, res, next, {token, JWT_OPTIONS});
 };
 
 const authenticateWithUrl = (req, res, next) => {
@@ -59,8 +60,7 @@ const authenticateWithUrl = (req, res, next) => {
         }));
     }
     // CASE: Scheduler publish URLs can have long maxAge but controllerd by expiry and neverBefore
-    delete JWT_OPTIONS.maxAge;
-    return authenticateWithToken(req, res, next, token);
+    return authenticateWithToken(req, res, next, {token, JWT_OPTIONS: _.omit(JWT_OPTIONS, 'maxAge')});
 };
 
 /**
@@ -77,7 +77,7 @@ const authenticateWithUrl = (req, res, next) => {
  * - the "Audience" claim should match the requested API path
  *   https://tools.ietf.org/html/rfc7519#section-4.1.3
  */
-const authenticateWithToken = (req, res, next, token) => {
+const authenticateWithToken = (req, res, next, {token, JWT_OPTIONS}) => {
     const decoded = jwt.decode(token, {complete: true});
 
     if (!decoded || !decoded.header) {
