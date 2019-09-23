@@ -5123,10 +5123,10 @@ ember-drag-drop@0.4.8:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-exam@4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-4.0.1.tgz#1a5f46ff9f1d084d13ec7c0f5872426cb356b979"
-  integrity sha512-geMVRuzAGTWSTQ2aZCajYFirsrR8L+VHgE8AFtLIIlMhq8t4KdnLlJ3ijuM02nYiC4NWqVCQOJVIsSSxRrFyWA==
+ember-exam@4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-4.0.2.tgz#6a00f7a0b636015afd484168db3963f0ee14f6e2"
+  integrity sha512-DS7adv24jTC4SDDQk1RUTQnrdALmnv9DCZm55kTsI7bFOhPFVnzje+NUECIBLc8X2S85LCbDMHYEqg3/V/BWQQ==
   dependencies:
     chalk "^2.1.0"
     cli-table3 "^0.5.1"
