@@ -42,12 +42,13 @@ _private.getSignedAdminToken = function (options) {
         audience: apiUrl
     };
 
-    // Default token expiry is till 10 minutes after scheduled time
-    // or if published_at is in past then till 10 minutes after blog start
+    // Default token expiry is till 6 hours after scheduled time
+    // or if published_at is in past then till 6 hours after blog start
+    // to allow for retries in case of network issues
     // and never before 10 mins to publish time
-    let tokenExpiry = moment(model.get('published_at')).add(10, 'm');
+    let tokenExpiry = moment(model.get('published_at')).add(6, 'h');
     if (tokenExpiry.isBefore(moment())) {
-        tokenExpiry = moment().add(10, 'm');
+        tokenExpiry = moment().add(6, 'h');
     }
 
     return jwt.sign(
