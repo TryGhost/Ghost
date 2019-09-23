@@ -17,7 +17,6 @@ module.exports.forPost = (frame, model, attrs) => {
     }
 };
 
-// @NOTE: ghost_head & ghost_foot are deprecated, remove in Ghost 3.0
 module.exports.forSettings = (attrs, frame) => {
     const _ = require('lodash');
 
@@ -26,14 +25,6 @@ module.exports.forSettings = (attrs, frame) => {
     if (_.isArray(attrs)) {
         // CASE: read single setting
         if (frame.original.params && frame.original.params.key) {
-            if (frame.original.params.key === 'ghost_head') {
-                return;
-            }
-
-            if (frame.original.params.key === 'ghost_foot') {
-                return;
-            }
-
             if (frame.original.params.key === 'codeinjection_head') {
                 attrs[0].key = 'codeinjection_head';
                 return;

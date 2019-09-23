@@ -47,6 +47,8 @@ describe('Settings API', function () {
                 JSON.parse(_.find(jsonResponse.settings, {key: 'unsplash'}).value).isActive.should.eql(true);
                 JSON.parse(_.find(jsonResponse.settings, {key: 'amp'}).value).should.eql(true);
                 should.not.exist(_.find(jsonResponse.settings, {key: 'permalinks'}));
+                should.not.exist(_.find(jsonResponse.settings, {key: 'ghost_head'}));
+                should.not.exist(_.find(jsonResponse.settings, {key: 'ghost_foot'}));
 
                 testUtils.API.isISO8601(jsonResponse.settings[0].created_at).should.be.true();
                 jsonResponse.settings[0].created_at.should.be.an.instanceof(String);
@@ -60,7 +62,7 @@ describe('Settings API', function () {
     });
 
     it('Can read a setting', function (done) {
-        request.get(localUtils.API.getApiQuery('settings/ghost_head/'))
+        request.get(localUtils.API.getApiQuery('settings/codeinjection_head/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -79,7 +81,7 @@ describe('Settings API', function () {
                 jsonResponse.settings.length.should.eql(1);
 
                 testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'key', 'value', 'type', 'created_at', 'updated_at']);
-                jsonResponse.settings[0].key.should.eql('ghost_head');
+                jsonResponse.settings[0].key.should.eql('codeinjection_head');
                 testUtils.API.isISO8601(jsonResponse.settings[0].created_at).should.be.true();
                 done();
             });

@@ -42,8 +42,12 @@ describe('Settings Content API', function () {
                 const settings = jsonResponse.settings;
 
                 // Verify we have the right keys for settings
-                settings.should.have.properties(_.values(publicSettings));
-                Object.keys(settings).length.should.equal(23);
+                const publicProperties = _.filter(_.values(publicSettings), (o) => {
+                    return (o !== 'ghost_head' && o !== 'ghost_foot');
+                });
+                publicProperties.push('codeinjection_head', 'codeinjection_foot');
+                settings.should.have.properties(publicProperties);
+                Object.keys(settings).length.should.equal(21);
 
                 // Verify that we are returning the defaults for each value
                 _.forEach(settings, (value, key) => {
