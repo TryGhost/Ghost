@@ -6,6 +6,10 @@ const tables = [
     'clients'
 ];
 
+module.exports.config = {
+    irreversible: true
+};
+
 module.exports.up = (options) => {
     const connection = options.connection;
 
@@ -26,5 +30,5 @@ module.exports.up = (options) => {
 // the schemas for the deleted tables no longer exist so there's nothing for
 // `commands.createTable` to draw from for the table structure
 module.exports.down = () => {
-    return Promise.resolve();
+    return Promise.reject();
 };
