@@ -89,6 +89,9 @@ export default Controller.extend({
         // Generate slug based on name for new tag when empty
         if (propKey === 'name' && !tag.get('slug') && isNewTag) {
             let slugValue = slugify(newValue);
+            if (/^#/.test(newValue)) {
+                slugValue = 'hash-' + slugValue;
+            }
             tag.set('slug', slugValue);
         }
         // TODO: This is required until .validate/.save mark fields as validated
