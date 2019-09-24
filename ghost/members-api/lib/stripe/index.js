@@ -19,21 +19,30 @@ module.exports = class StripePaymentProcessor {
         this._public_token = config.publicKey;
         this._checkoutSuccessUrl = config.checkoutSuccessUrl;
         this._checkoutCancelUrl = config.checkoutCancelUrl;
+        this._webhookHandlerUrl = config.webhookHandlerUrl;
 
         try {
             this._product = await api.products.ensure(this._stripe, config.product);
-        } catch (err) {
-            return this._rejectReady(err);
-        }
 
-        this._plans = [];
-        for (const planSpec of config.plans) {
-            try {
+            this._plans = [];
+            for (const planSpec of config.plans) {
                 const plan = await api.plans.ensure(this._stripe, planSpec, this._product);
                 this._plans.push(plan);
-            } catch (err) {
-                return this._rejectReady(err);
             }
+
+            try {
+                // @TODO Need to somehow not duplicate this every time we boot
+                const webhook = await create(this._stripe, 'webhookEndpoints', {
+                    url: this._webhookHandlerUrl,
+                    enabled_events: ['checkout.session.completed']
+                });
+                this._webhookSecret = webhook.secret;
+            } catch (err) {
+                console.log(err);
+                this._webhookSecret = process.env.WEBHOOK_SECRET;
+            }
+        } catch (err) {
+            return this._rejectReady(err);
         }
 
         return this._resolveReady({
