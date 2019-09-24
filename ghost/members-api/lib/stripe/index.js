@@ -1,3 +1,4 @@
+const {retrieve, create} = require('./api/stripeRequests');
 const api = require('./api');
 
 module.exports = class StripePaymentProcessor {
@@ -81,5 +82,9 @@ module.exports = class StripePaymentProcessor {
         });
 
         return session;
+    }
+
+    async getCustomer(id) {
+        return retrieve(this._stripe, 'customers', id);
     }
 };
