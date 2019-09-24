@@ -9,13 +9,7 @@ module.exports = {
             return hasColumn === true;
         },
         operation: commands.addColumn,
-        operationVerb: 'Adding',
-        columnDefinition: {
-            type: 'string',
-            maxlength: 191,
-            nullable: false,
-            defaultTo: ''
-        }
+        operationVerb: 'Adding'
     }),
 
     down: commands.createColumnMigration({
