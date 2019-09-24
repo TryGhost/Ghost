@@ -2,6 +2,7 @@ module.exports = function ({
     stripe,
     createMember,
     getMember,
+    updateMember,
     listMembers,
     deleteMember
 }) {
@@ -42,9 +43,22 @@ module.exports = function ({
         return deleteMember(data, options);
     }
 
+    async function update(data, options) {
+        return updateMember(data, options);
+    }
+
+    async function list(data, options) {
+        return listMembers(data, options);
+    }
+
+    async function create(data, options) {
+        return createMember(data, options);
+    }
+
     return {
-        create: createMember,
-        list: listMembers,
+        create,
+        update,
+        list,
         get,
         destroy
     };

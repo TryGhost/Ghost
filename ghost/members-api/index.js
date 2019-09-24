@@ -22,6 +22,7 @@ module.exports = function MembersApi({
     },
     createMember,
     getMember,
+    updateMember,
     deleteMember,
     listMembers
 }) {
@@ -47,6 +48,7 @@ module.exports = function MembersApi({
         stripe,
         createMember,
         getMember,
+        updateMember,
         deleteMember,
         listMembers
     });
