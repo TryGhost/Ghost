@@ -162,7 +162,7 @@ describe('Migration Fixture Utils', function () {
 
                 fromItem.related.callCount.should.eql(56);
                 fromItem.findWhere.callCount.should.eql(56);
-                toItem[0].get.callCount.should.eql(122);
+                toItem[0].get.callCount.should.eql(112);
 
                 done();
             }).catch(done);
