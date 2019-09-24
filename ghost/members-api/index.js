@@ -83,9 +83,8 @@ module.exports = function MembersApi({
     }
 
     const apiInstance = new Router();
-    apiInstance.use(body.json());
 
-    apiInstance.post('/send-magic-link', async function (req, res) {
+    apiInstance.post('/send-magic-link', body.json(), async function (req, res) {
         const email = req.body.email;
         if (!email) {
             res.writeHead(400);
@@ -102,7 +101,7 @@ module.exports = function MembersApi({
         }
     });
 
-    apiInstance.post('/create-stripe-checkout-session', ensureStripe, async function (req, res) {
+    apiInstance.post('/create-stripe-checkout-session', ensureStripe, body.json(), async function (req, res) {
         const plan = req.body.plan;
         const identity = req.body.identity;
 
