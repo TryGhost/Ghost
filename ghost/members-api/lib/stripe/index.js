@@ -61,6 +61,10 @@ module.exports = class StripePaymentProcessor {
         };
     }
 
+    async parseWebhook(body, signature) {
+        return this._stripe.webhooks.constructEvent(body, signature, this._webhookSecret);
+    }
+
     async createCheckoutSession(member, planName) {
         const customer = await api.customers.ensure(this._stripe, member, member.email);
         const plan = this._plans.find(plan => plan.nickname === planName);
