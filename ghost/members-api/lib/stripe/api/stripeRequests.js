@@ -1,11 +1,5 @@
 const createStripeRequest = require('./createStripeRequest');
 
-const createSource = createStripeRequest(function (stripe, customerId, stripeToken) {
-    return stripe.customers.createSource(customerId, {
-        source: stripeToken
-    });
-});
-
 const retrieve = createStripeRequest(function (stripe, resource, id) {
     return stripe[resource].retrieve(id);
 });
@@ -19,7 +13,6 @@ const del = createStripeRequest(function (stripe, resource, id) {
 });
 
 module.exports = {
-    createSource,
     retrieve,
     create,
     del

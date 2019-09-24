@@ -69,16 +69,4 @@ module.exports = class StripePaymentProcessor {
 
         return session;
     }
-
-    async getSubscription(member) {
-        return api.subscriptions.get(this._stripe, member);
-    }
-
-    async removeSubscription(member) {
-        return api.subscriptions.remove(this._stripe, member);
-    }
-
-    async removeCustomer(member) {
-        return api.customers.remove(this._stripe, member);
-    }
 };
