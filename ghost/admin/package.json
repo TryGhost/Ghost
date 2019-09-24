@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@ember/jquery": "0.6.1",
-    "@ember/optional-features": "0.7.0",
+    "@ember/optional-features": "1.0.0",
     "@ember/render-modifiers": "1.0.1",
     "@html-next/vertical-collection": "1.0.0",
     "@tryghost/helpers": "1.1.10",
@@ -57,7 +57,7 @@
     "ember-cli-dependency-checker": "3.2.0",
     "ember-cli-deprecation-workflow": "1.0.1",
     "ember-cli-eslint": "5.1.0",
-    "ember-cli-htmlbars": "3.1.0",
+    "ember-cli-htmlbars": "4.0.0",
     "ember-cli-htmlbars-inline-precompile": "3.0.0",
     "ember-cli-inject-live-reload": "2.0.1",
     "ember-cli-mirage": "1.1.1",
