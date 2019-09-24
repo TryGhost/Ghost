@@ -244,18 +244,6 @@ describe('Contexts', function () {
     });
 
     describe('Subscribe', function () {
-        it('should identify /subscribe/ as the subscribe route if labs flag set', function () {
-            res.locals.relativeUrl = '/subscribe/';
-            sinon.stub(labs, 'isSet').withArgs('subscribers').returns(true);
-
-            delete res.routerOptions;
-            helpers.context(req, res, data);
-
-            should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array().with.lengthOf(1);
-            res.locals.context[0].should.eql('subscribe');
-        });
-
         it('should not identify /subscribe/ as subscribe route if labs flag NOT set', function () {
             res.locals.relativeUrl = '/subscribe/';
             sinon.stub(labs, 'isSet').withArgs('subscribers').returns(false);
