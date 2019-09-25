@@ -27,6 +27,25 @@ function getMember(data, options = {}) {
     });
 }
 
+async function setMemberMetadata(member, module, metadata) {
+    if (module !== 'stripe') {
+        return;
+    }
+    await models.Member.edit({
+        stripe_info: metadata
+    }, {id: member.id, withRelated: ['stripe_info']});
+    return;
+}
+
+async function getMemberMetadata(member, module) {
+    if (module !== 'stripe') {
+        return;
+    }
+    const model = await models.Member.where({id: member.id}).fetch({withRelated: ['stripe_info']});
+    const metadata = await model.related('stripe_info');
+    return metadata.toJSON();
+}
+
 function deleteMember(options) {
     options = options || {};
     return models.Member.destroy(options).catch(models.Member.NotFoundError, () => {
@@ -121,6 +140,8 @@ function createApiInstance() {
         paymentConfig: {
             stripe: getStripePaymentConfig()
         },
+        setMemberMetadata,
+        getMemberMetadata,
         createMember,
         getMember,
         deleteMember,
