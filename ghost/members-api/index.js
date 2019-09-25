@@ -20,6 +20,8 @@ module.exports = function MembersApi({
     mail: {
         transporter
     },
+    setMemberMetadata,
+    getMemberMetadata,
     createMember,
     getMember,
     updateMember,
@@ -28,7 +30,15 @@ module.exports = function MembersApi({
 }) {
     const {encodeIdentityToken, decodeToken} = Tokens({privateKey, publicKey, issuer});
 
-    const stripe = paymentConfig.stripe ? new StripePaymentProcessor(paymentConfig.stripe) : null;
+    const stripeStorage = {
+        async get(member) {
+            return getMemberMetadata(member, 'stripe');
+        },
+        async set(member, metadata) {
+            return setMemberMetadata(member, 'stripe', metadata);
+        }
+    };
+    const stripe = paymentConfig.stripe ? new StripePaymentProcessor(paymentConfig.stripe, stripeStorage) : null;
 
     async function ensureStripe(_req, res, next) {
         if (!stripe) {

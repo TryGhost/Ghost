@@ -2,7 +2,8 @@ const {retrieve, create} = require('./api/stripeRequests');
 const api = require('./api');
 
 module.exports = class StripePaymentProcessor {
-    constructor(config) {
+    constructor(config, storage) {
+        this.storage = storage;
         this._ready = new Promise((resolve, reject) => {
             this._resolveReady = resolve;
             this._rejectReady = reject;
