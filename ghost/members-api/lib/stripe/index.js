@@ -52,16 +52,6 @@ module.exports = class StripePaymentProcessor {
         });
     }
 
-    getPublicConfig() {
-        return {
-            publicKey: this._public_token,
-            plans: this._plans.map(({id, currency, amount, interval, nickname}) => ({
-                id, currency, amount, interval,
-                name: nickname
-            }))
-        };
-    }
-
     async parseWebhook(body, signature) {
         return this._stripe.webhooks.constructEvent(body, signature, this._webhookSecret);
     }
