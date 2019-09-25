@@ -59,6 +59,10 @@ module.exports = {
         return require('./pretty-urls');
     },
 
+    get requestId() {
+        return require('./request-id');
+    },
+
     get serveFavicon() {
         return require('./serve-favicon');
     },
