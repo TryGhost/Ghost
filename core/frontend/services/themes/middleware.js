@@ -80,7 +80,7 @@ function updateLocalTemplateOptions(req, res, next) {
 
     const member = req.member ? {
         email: req.member.email,
-        subscribed: req.member.plans.length !== 0
+        subscribed: req.member.stripe.subscriptions.length !== 0
     } : null;
 
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {

@@ -22,7 +22,7 @@ function hideMembersOnlyContent(attrs, frame) {
         return BLOCK_CONTENT;
     }
 
-    const memberHasPlan = !!(frame.original.context.member.plans || []).length;
+    const memberHasPlan = !!(frame.original.context.member.stripe.subscriptions || []).length;
     if (!membersService.isPaymentConfigured()) {
         return PERMIT_CONTENT;
     }
