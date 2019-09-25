@@ -35,14 +35,12 @@ describe('Unit: canary/utils/serializers/output/utils/url', function () {
 
             post.hasOwnProperty('url').should.be.true();
 
-            urlUtils.urlFor.callCount.should.eql(2);
+            urlUtils.urlFor.callCount.should.eql(1);
             urlUtils.urlFor.getCall(0).args.should.eql(['image', {image: 'value'}, true]);
-            urlUtils.urlFor.getCall(1).args.should.eql(['home', true]);
 
             urlUtils.htmlRelativeToAbsolute.callCount.should.eql(1);
             urlUtils.htmlRelativeToAbsolute.getCall(0).args.should.eql([
                 '## markdown',
-                'urlFor',
                 'getUrlByResourceId',
                 {assetsOnly: true}
             ]);
