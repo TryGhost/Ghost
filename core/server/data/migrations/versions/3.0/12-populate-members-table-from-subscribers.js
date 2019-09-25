@@ -1,6 +1,5 @@
 const ObjectId = require('bson-objectid');
 const _ = require('lodash');
-const membersSchema = require('../../../schema').tables.members;
 const models = require('../../../../models');
 const common = require('../../../../lib/common');
 
@@ -15,7 +14,14 @@ module.exports.up = (options) => {
         migrating: true
     }, options);
 
-    const memberAttrs = _.keys(membersSchema);
+    const memberAttrs = [
+        'name',
+        'email',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by'
+    ];
 
     return models.Subscribers
         .forge()
@@ -25,9 +31,9 @@ module.exports.up = (options) => {
                 common.logging.info(`Adding ${subscribers.length} entries to subscribers`);
 
                 let members = _.map(subscribers, (subscriber) => {
-                    let member = memberAttrs.reduce(function (obj, entry) {
+                    let member = memberAttrs.reduce(function (obj, prop) {
                         return Object.assign(obj, {
-                            [entry]: subscriber.get(entry)
+                            [prop]: subscriber.get(prop)
                         });
                     }, {});
                     member.id = ObjectId.generate();
