@@ -178,9 +178,6 @@ module.exports = function setupSiteApp(options = {}) {
         if (!req.url.includes('token=')) {
             return next();
         }
-        if (req.member) {
-            return next();
-        }
         try {
             const member = await membersService.ssr.exchangeTokenForSession(req, res);
             Object.assign(req, {member});
