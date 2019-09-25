@@ -74,11 +74,14 @@ function getStripePaymentConfig() {
         return null;
     }
 
+    const webhookHandlerUrl = new URL('/members/webhooks/stripe', siteUrl);
+
     return {
         publicKey: stripePaymentProcessor.config.public_token,
         secretKey: stripePaymentProcessor.config.secret_token,
         checkoutSuccessUrl: siteUrl,
         checkoutCancelUrl: siteUrl,
+        webhookHandlerUrl: webhookHandlerUrl.href,
         product: stripePaymentProcessor.config.product,
         plans: stripePaymentProcessor.config.plans,
         appInfo: {
