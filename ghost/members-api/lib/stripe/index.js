@@ -75,6 +75,44 @@ module.exports = class StripePaymentProcessor {
         return session;
     }
 
+    async getActiveSubscriptions(member) {
+        const metadata = await this.storage.get(member);
+
+        const customers = await Promise.all(metadata.map((data) => {
+            return this.getCustomer(data.customer_id);
+        }));
+
+        return customers.reduce(function (subscriptions, customer) {
+            if (customer.deleted) {
+                return subscriptions;
+            }
+            return subscriptions.concat(customer.subscriptions.data.reduce(function (subscriptions, subscription) {
+                // Subscription has more than one plan
+                // was not created by us - ignore it.
+                if (!subscription.plan) {
+                    return subscriptions;
+                }
+                // Ignore cancelled subscriptions
+                if (subscription.status === 'cancelled') {
+                    return subscriptions;
+                }
+                // Ignore unpaid subscriptions
+                if (subscription.status === 'unpaid') {
+                    return subscriptions;
+                }
+
+                return subscriptions.concat([{
+                    customer: customer.id,
+                    subscription: subscription.id,
+                    plan: subscription.plan.id,
+                    name: subscription.plan.nickname,
+                    amount: subscription.plan.amount,
+                    validUntil: subscription.current_period_end
+                }]);
+            }, []));
+        }, []);
+    }
+
     async addCustomerToMember(member, customer) {
         const metadata = await this.storage.get(member);
         return this.storage.set(member, metadata.concat({
