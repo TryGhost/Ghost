@@ -57,7 +57,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
             credentials: 'same-origin'
         }).then(function (res) {
             if (!res.ok) {
-                throw new Error('Could not get identity token');
+                return null;
             }
             return res.text();
         }).then(function (identity) {
