@@ -57,7 +57,6 @@ const forPost = (id, attrs, frame) => {
 
         attrs.html = urlUtils.htmlRelativeToAbsolute(
             attrs.html,
-            urlUtils.urlFor('home', true),
             attrs.url,
             urlOptions
         );
