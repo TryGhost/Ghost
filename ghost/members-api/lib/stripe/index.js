@@ -63,13 +63,18 @@ module.exports = class StripePaymentProcessor {
     }
 
     async createCheckoutSession(member, planName) {
-        const customer = await api.customers.ensure(this._stripe, member, member.email);
+        let customer;
+        if (member) {
+            customer = await this._customerForMember(member);
+        } else {
+            customer = null;
+        }
         const plan = this._plans.find(plan => plan.nickname === planName);
         const session = await this._stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             success_url: this._checkoutSuccessUrl,
             cancel_url: this._checkoutCancelUrl,
-            customer: customer.id,
+            customer: customer ? customer.id : undefined,
             subscription_data: {
                 items: [{
                     plan: plan.id
@@ -77,7 +82,10 @@ module.exports = class StripePaymentProcessor {
             }
         });
 
-        return session;
+        return {
+            sessionId: session.id,
+            publicKey: this._public_token
+        };
     }
 
     async getActiveSubscriptions(member) {
