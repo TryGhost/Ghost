@@ -115,6 +115,10 @@ module.exports = class StripePaymentProcessor {
 
     async addCustomerToMember(member, customer) {
         const metadata = await this.storage.get(member);
+        // Do not add the customer if they are already linked
+        if (metadata.some(data => data.customer_id === customer.id)) {
+            return;
+        }
         return this.storage.set(member, metadata.concat({
             customer_id: customer.id
         }));
