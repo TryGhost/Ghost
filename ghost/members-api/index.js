@@ -151,6 +151,28 @@ module.exports = function MembersApi({
         }));
     });
 
+    apiInstance.post('/handle-stripe-webhook', ensureStripe, body.raw({type: 'application/json'}), async function (req, res) {
+        try {
+            const event = await stripe.parseWebhook(req.body, req.headers['stripe-signature']);
+            if (event.type !== 'checkout.session.completed') {
+                res.writeHead(200);
+                return res.end();
+            }
+
+            const customer = await stripe.getCustomer(event.data.object.customer);
+            const member = await users.get({email: customer.email}) || await users.create({email: customer.email});
+
+            await stripe.addCustomerToMember(member, customer);
+
+            await sendEmailWithMagicLink(customer.email);
+            res.writeHead(200);
+            res.end();
+        } catch (err) {
+            res.writeHead(400);
+            res.end();
+        }
+    });
+
     apiInstance.getMemberDataFromMagicLinkToken = getMemberDataFromMagicLinkToken;
     apiInstance.getMemberIdentityData = getMemberIdentityData;
     apiInstance.getMemberIdentityToken = getMemberIdentityToken;
