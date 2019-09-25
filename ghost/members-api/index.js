@@ -117,38 +117,39 @@ module.exports = function MembersApi({
         const plan = req.body.plan;
         const identity = req.body.identity;
 
-        if (!plan || !identity) {
+        if (!plan) {
             res.writeHead(400);
             return res.end('Bad Request.');
         }
 
         let email;
         try {
-            const claims = await decodeToken(identity);
-            email = claims.sub;
+            if (!identity) {
+                email = null;
+            } else {
+                const claims = await decodeToken(identity);
+                email = claims.sub;
+            }
         } catch (err) {
             res.writeHead(401);
             return res.end('Unauthorized');
         }
 
-        const member = await users.get({email});
+        const member = email ? await users.get({email}) : null;
 
-        // Do not allow members already with a plan to initiate a new checkout session
-        if (member.plans.length > 0) {
+        // Do not allow members already with a subscription to initiate a new checkout session
+        if (member && member.stripe.subscriptions.length > 0) {
             res.writeHead(403);
             return res.end('No permission');
         }
 
-        const session = await stripe.createCheckoutSession(member, plan);
+        const sessionInfo = await stripe.createCheckoutSession(member, plan);
 
         res.writeHead(200, {
             'Content-Type': 'application/json'
         });
 
-        res.end(JSON.stringify({
-            sessionId: session.id,
-            publicKey: stripe.getPublicConfig().publicKey
-        }));
+        res.end(JSON.stringify(sessionInfo));
     });
 
     apiInstance.post('/handle-stripe-webhook', ensureStripe, body.raw({type: 'application/json'}), async function (req, res) {
