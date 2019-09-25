@@ -82,6 +82,25 @@ module.exports = class StripePaymentProcessor {
         }));
     }
 
+    async _customerForMember(member) {
+        const metadata = await this.storage.get(member);
+
+        for (const data in metadata) {
+            const customer = await this.getCustomer(data.customer_id);
+            if (!customer.deleted) {
+                return customer;
+            }
+        }
+
+        const customer = await create(this._stripe, 'customers', {
+            email: member.email
+        });
+
+        await this.addCustomerToMember(member, customer);
+
+        return customer;
+    }
+
     async getCustomer(id) {
         return retrieve(this._stripe, 'customers', id);
     }
