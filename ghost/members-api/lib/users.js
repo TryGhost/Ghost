@@ -11,23 +11,24 @@ module.exports = function ({
         if (!member) {
             return member;
         }
+
         if (!stripe) {
             return Object.assign(member, {
-                plans: []
+                stripe: {
+                    subscriptions: []
+                }
             });
         }
         try {
-            const subscription = await stripe.getSubscription(member);
-            if (subscription.status !== 'active') {
-                return Object.assign(member, {
-                    plans: []
-                });
-            }
+            const subscriptions = await stripe.getActiveSubscriptions(member);
 
             return Object.assign(member, {
-                plans: [subscription.plan]
+                stripe: {
+                    subscriptions
+                }
             });
         } catch (err) {
+            console.log(err);
             return null;
         }
     }
