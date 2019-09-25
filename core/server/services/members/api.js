@@ -3,6 +3,7 @@ const settingsCache = require('../settings/cache');
 const urlUtils = require('../../lib/url-utils');
 const MembersApi = require('@tryghost/members-api');
 const common = require('../../lib/common');
+const ghostVersion = require('../../lib/ghost-version');
 const mail = require('../mail');
 const models = require('../../models');
 
@@ -79,7 +80,12 @@ function getStripePaymentConfig() {
         checkoutSuccessUrl: siteUrl,
         checkoutCancelUrl: siteUrl,
         product: stripePaymentProcessor.config.product,
-        plans: stripePaymentProcessor.config.plans
+        plans: stripePaymentProcessor.config.plans,
+        appInfo: {
+            name: 'Ghost',
+            version: ghostVersion.original,
+            url: 'https://ghost.org/'
+        }
     };
 }
 
