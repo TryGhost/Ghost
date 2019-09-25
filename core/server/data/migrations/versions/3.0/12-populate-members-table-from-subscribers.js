@@ -28,7 +28,7 @@ module.exports.up = (options) => {
         .fetch(localOptions)
         .then(({models: subscribers}) => {
             if (subscribers.length > 0) {
-                common.logging.info(`Adding ${subscribers.length} entries to subscribers`);
+                common.logging.info(`Adding ${subscribers.length} entries to members`);
 
                 let members = _.map(subscribers, (subscriber) => {
                     let member = memberAttrs.reduce(function (obj, prop) {
