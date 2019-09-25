@@ -75,6 +75,13 @@ module.exports = class StripePaymentProcessor {
         return session;
     }
 
+    async addCustomerToMember(member, customer) {
+        const metadata = await this.storage.get(member);
+        return this.storage.set(member, metadata.concat({
+            customer_id: customer.id
+        }));
+    }
+
     async getCustomer(id) {
         return retrieve(this._stripe, 'customers', id);
     }
