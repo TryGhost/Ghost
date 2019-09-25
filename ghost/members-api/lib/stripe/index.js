@@ -1,6 +1,8 @@
 const {retrieve, create} = require('./api/stripeRequests');
 const api = require('./api');
 
+const STRIPE_API_VERSION = '2019-09-09';
+
 module.exports = class StripePaymentProcessor {
     constructor(config, storage) {
         this.storage = storage;
@@ -17,6 +19,8 @@ module.exports = class StripePaymentProcessor {
 
     async _configure(config) {
         this._stripe = require('stripe')(config.secretKey);
+        this._stripe.setAppInfo(config.appInfo);
+        this._stripe.setApiVersion(STRIPE_API_VERSION);
         this._stripe.__TEST_MODE__ = config.secretKey.startsWith('sk_test_');
         this._public_token = config.publicKey;
         this._checkoutSuccessUrl = config.checkoutSuccessUrl;
@@ -36,6 +40,7 @@ module.exports = class StripePaymentProcessor {
                 // @TODO Need to somehow not duplicate this every time we boot
                 const webhook = await create(this._stripe, 'webhookEndpoints', {
                     url: this._webhookHandlerUrl,
+                    api_version: STRIPE_API_VERSION,
                     enabled_events: ['checkout.session.completed']
                 });
                 this._webhookSecret = webhook.secret;
