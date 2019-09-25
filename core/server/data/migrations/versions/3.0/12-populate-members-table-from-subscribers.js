@@ -5,7 +5,8 @@ const models = require('../../../../models');
 const common = require('../../../../lib/common');
 
 module.exports.config = {
-    transaction: true
+    transaction: true,
+    irreversible: true
 };
 
 module.exports.up = (options) => {
