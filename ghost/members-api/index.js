@@ -94,9 +94,13 @@ module.exports = function MembersApi({
         return encodeIdentityToken({sub: member.email});
     }
 
-    const apiInstance = new Router();
+    const middleware = {
+        sendMagicLink: Router(),
+        createCheckoutSession: Router(),
+        handleStripeWebhook: Router()
+    };
 
-    apiInstance.post('/send-magic-link', body.json(), async function (req, res) {
+    middleware.sendMagicLink.use(body.json(), async function (req, res) {
         const email = req.body.email;
         if (!email) {
             res.writeHead(400);
@@ -113,7 +117,7 @@ module.exports = function MembersApi({
         }
     });
 
-    apiInstance.post('/create-stripe-checkout-session', ensureStripe, body.json(), async function (req, res) {
+    middleware.createCheckoutSession.use(ensureStripe, body.json(), async function (req, res) {
         const plan = req.body.plan;
         const identity = req.body.identity;
 
@@ -152,7 +156,7 @@ module.exports = function MembersApi({
         res.end(JSON.stringify(sessionInfo));
     });
 
-    apiInstance.post('/handle-stripe-webhook', ensureStripe, body.raw({type: 'application/json'}), async function (req, res) {
+    middleware.handleStripeWebhook.use(ensureStripe, body.raw({type: 'application/json'}), async function (req, res) {
         try {
             const event = await stripe.parseWebhook(req.body, req.headers['stripe-signature']);
             if (event.type !== 'checkout.session.completed') {
@@ -169,36 +173,41 @@ module.exports = function MembersApi({
             res.writeHead(200);
             res.end();
         } catch (err) {
+            common.logging.error(err);
             res.writeHead(400);
             res.end();
         }
     });
 
-    apiInstance.getMemberDataFromMagicLinkToken = getMemberDataFromMagicLinkToken;
-    apiInstance.getMemberIdentityData = getMemberIdentityData;
-    apiInstance.getMemberIdentityToken = getMemberIdentityToken;
+    const setLogger = common.logging.setLogger;
 
-    apiInstance.setLogger = common.logging.setLogger;
-
-    apiInstance.getPublicConfig = function () {
+    const getPublicConfig = function () {
         return Promise.resolve({
             publicKey,
             issuer
         });
     };
 
-    apiInstance.members = users;
-    apiInstance.bus = new (require('events').EventEmitter)();
+    const bus = new (require('events').EventEmitter)();
 
     if (stripe) {
         stripe.ready().then(() => {
-            apiInstance.bus.emit('ready');
+            bus.emit('ready');
         }).catch((err) => {
-            apiInstance.bus.emit('error', err);
+            bus.emit('error', err);
         });
     } else {
-        process.nextTick(() => apiInstance.bus.emit('ready'));
+        process.nextTick(() => bus.emit('ready'));
     }
 
-    return apiInstance;
+    return {
+        middleware,
+        getMemberDataFromMagicLinkToken,
+        getMemberIdentityToken,
+        getMemberIdentityData,
+        setLogger,
+        getPublicConfig,
+        bus,
+        members: users
+    };
 };
