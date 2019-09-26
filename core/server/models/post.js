@@ -8,6 +8,7 @@ const common = require('../lib/common');
 const htmlToText = require('html-to-text');
 const ghostBookshelf = require('./base');
 const config = require('../config');
+const settingsCache = require('../services/settings/cache');
 const converters = require('../lib/mobiledoc/converters');
 const relations = require('./relations');
 const MOBILEDOC_REVISIONS_COUNT = 10;
@@ -40,12 +41,18 @@ Post = ghostBookshelf.Model.extend({
      *      2. model events e.g. "post.published" are using the inserted resource, not the fetched resource
      */
     defaults: function defaults() {
+        let visibility = 'public';
+
+        if (settingsCache.get('labs') && (settingsCache.get('labs').members === true) && settingsCache.get('labs').default_content_visibility) {
+            visibility = settingsCache.get('labs').default_content_visibility;
+        }
+
         return {
             uuid: uuid.v4(),
             status: 'draft',
             featured: false,
             page: false,
-            visibility: 'public'
+            visibility: visibility
         };
     },
 
