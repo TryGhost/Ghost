@@ -56,7 +56,6 @@
 @import "layouts/error.css";
 @import "layouts/apps.css";
 @import "layouts/packages.css";
-@import "layouts/subscribers.css";
 @import "layouts/labs.css";
 @import "layouts/whats-new.css";
 
@@ -395,10 +394,6 @@ input:focus,
 
 .CodeMirror .CodeMirror-code .cm-string {
     color: color-mod(#183691 l(+25%));
-}
-
-.subscribers-table table .gh-btn svg {
-    fill: var(--darkgrey);
 }
 
 .id-mailchimp img,
