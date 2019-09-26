@@ -8,6 +8,7 @@ var should = require('should'),
     urlService = require('../../../frontend/services/url'),
     ghostBookshelf = require('../../../server/models/base'),
     models = require('../../../server/models'),
+    settingsCache = require('../../../server/services/settings/cache'),
     common = require('../../../server/lib/common'),
     configUtils = require('../../utils/configUtils'),
     DataGenerator = testUtils.DataGenerator,
@@ -747,6 +748,81 @@ describe('Post Model', function () {
                     (!!createdPost.get('page')).should.equal(false);
 
                     should.equal(createdPost.get('locale'), null);
+                    should.equal(createdPost.get('visibility'), 'public');
+
+                    // testing for nulls
+                    (createdPost.get('feature_image') === null).should.equal(true);
+                    (createdPost.get('meta_title') === null).should.equal(true);
+                    (createdPost.get('meta_description') === null).should.equal(true);
+
+                    createdPost.get('created_at').should.be.above(new Date(0).getTime());
+                    createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
+                    createdPost.get('author_id').should.equal(testUtils.DataGenerator.Content.users[0].id);
+                    createdPost.has('author').should.equal(false);
+                    createdPost.get('created_by').should.equal(createdPost.get('author_id'));
+                    createdPost.get('updated_at').should.be.above(new Date(0).getTime());
+                    createdPost.get('updated_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
+                    should.equal(createdPost.get('published_at'), null);
+                    should.equal(createdPost.get('published_by'), null);
+
+                    createdPostUpdatedDate = createdPost.get('updated_at');
+
+                    Object.keys(eventsTriggered).length.should.eql(2);
+                    should.exist(eventsTriggered['post.added']);
+                    should.exist(eventsTriggered['user.attached']);
+
+                    // Set the status to published to check that `published_at` is set.
+                    return createdPost.save({status: 'published'}, context);
+                }).then(function (publishedPost) {
+                    publishedPost.get('published_at').should.be.instanceOf(Date);
+                    publishedPost.get('published_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
+                    publishedPost.get('updated_at').should.be.instanceOf(Date);
+                    publishedPost.get('updated_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
+                    publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
+
+                    Object.keys(eventsTriggered).length.should.eql(4);
+                    should.exist(eventsTriggered['post.published']);
+                    should.exist(eventsTriggered['post.edited']);
+
+                    done();
+                }).catch(done);
+            });
+
+            it('can add, default visibility is taken from settings cache', function (done) {
+                var originalSettingsCacheGetFn = settingsCache.get;
+                sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+                    if (key === 'labs') {
+                        return {
+                            members: true,
+                            default_content_visibility: 'paid'
+                        };
+                    }
+
+                    return originalSettingsCacheGetFn(key, options);
+                });
+
+                var createdPostUpdatedDate,
+                    newPost = testUtils.DataGenerator.forModel.posts[2],
+                    newPostDB = testUtils.DataGenerator.Content.posts[2];
+
+                models.Post.add(newPost, _.merge({withRelated: ['author']}, context)).then(function (createdPost) {
+                    return models.Post.findOne({id: createdPost.id, status: 'all'});
+                }).then(function (createdPost) {
+                    should.exist(createdPost);
+                    createdPost.has('uuid').should.equal(true);
+                    createdPost.get('status').should.equal('draft');
+                    createdPost.get('title').should.equal(newPost.title, 'title is correct');
+                    createdPost.get('mobiledoc').should.equal(newPost.mobiledoc, 'mobiledoc is correct');
+                    createdPost.has('html').should.equal(true);
+                    createdPost.get('html').should.equal(newPostDB.html);
+                    createdPost.has('plaintext').should.equal(true);
+                    createdPost.get('plaintext').should.match(/^testing/);
+                    createdPost.get('slug').should.equal(newPostDB.slug + '-2');
+                    (!!createdPost.get('featured')).should.equal(false);
+                    (!!createdPost.get('page')).should.equal(false);
+
+                    should.equal(createdPost.get('locale'), null);
+                    should.equal(createdPost.get('visibility'), 'paid');
 
                     // testing for nulls
                     (createdPost.get('feature_image') === null).should.equal(true);
