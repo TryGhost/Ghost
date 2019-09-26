@@ -98,20 +98,6 @@
                     <div class="for-switch">{{gh-feature-flag "nightShift"}}</div>
                 </div>
             </div>
-            <div class="gh-setting {{if feature.members "gh-labs-disabled"}}" data-tooltip="{{if feature.members "Disabled when members is turned on"}}">
-                <div class="gh-setting-content">
-                    <div class="gh-setting-title">Subscribers</div>
-                    <div class="gh-setting-desc">Collect email addresses from your readers, more info in <a
-                            href="https://ghost.org/faq/enable-subscribers-feature/">the docs</a></div>
-                </div>
-                <div class="gh-setting-action">
-                    {{#if feature.members}}
-                        <div class="for-switch">{{gh-feature-flag "subscribers" "disabled"}}</div>
-                    {{else}}
-                        <div class="for-switch">{{gh-feature-flag "subscribers" }}</div>
-                    {{/if}}
-                </div>
-            </div>
             {{#if config.enableDeveloperExperiments}}
                 <div class="gh-setting">
                     <div class="gh-setting-content">

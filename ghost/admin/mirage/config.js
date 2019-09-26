@@ -10,7 +10,6 @@ import mockRoles from './config/roles';
 import mockSettings from './config/settings';
 import mockSite from './config/site';
 import mockSlugs from './config/slugs';
-import mockSubscribers from './config/subscribers';
 import mockTags from './config/tags';
 import mockThemes from './config/themes';
 import mockUploads from './config/uploads';
@@ -65,7 +64,6 @@ export function testConfig() {
     mockSettings(this);
     mockSite(this);
     mockSlugs(this);
-    mockSubscribers(this);
     mockTags(this);
     mockThemes(this);
     mockUploads(this);

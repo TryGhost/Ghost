@@ -73,7 +73,7 @@ export default [
     {
         id: 12,
         key: 'labs',
-        value: '{"subscribers":true}',
+        value: '{}',
         type: 'blog',
         created_at: '2015-01-12T18:29:01.000Z',
         created_by: 1,
