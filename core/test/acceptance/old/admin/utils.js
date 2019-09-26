@@ -28,7 +28,6 @@ const expectedProperties = {
         .keys()
         // by default we only return mobildoc
         .without('html', 'plaintext')
-        .without('visibility')
         .without('locale')
         .without('page')
         // deprecated
@@ -43,7 +42,6 @@ const expectedProperties = {
         .keys()
         // by default we only return mobildoc
         .without('html', 'plaintext')
-        .without('visibility')
         .without('locale')
         .without('page')
         // deprecated
