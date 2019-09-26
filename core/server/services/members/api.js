@@ -32,8 +32,8 @@ async function setMemberMetadata(member, module, metadata) {
         return;
     }
     await models.Member.edit({
-        stripe_info: metadata
-    }, {id: member.id, withRelated: ['stripe_info']});
+        stripe_customers: metadata
+    }, {id: member.id, withRelated: ['stripe_customers']});
     return;
 }
 
@@ -41,8 +41,8 @@ async function getMemberMetadata(member, module) {
     if (module !== 'stripe') {
         return;
     }
-    const model = await models.Member.where({id: member.id}).fetch({withRelated: ['stripe_info']});
-    const metadata = await model.related('stripe_info');
+    const model = await models.Member.where({id: member.id}).fetch({withRelated: ['stripe_customers']});
+    const metadata = await model.related('stripe_customers');
     return metadata.toJSON();
 }
 
