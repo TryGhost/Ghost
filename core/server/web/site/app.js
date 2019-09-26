@@ -155,7 +155,7 @@ module.exports = function setupSiteApp(options = {}) {
             res.end(err.message);
         }
     });
-    siteApp.post('/members/webhooks/stripe', membersService.api.middleware.handleStripeWebhook);
+    siteApp.post('/members/webhooks/stripe', (req, res, next) => membersService.api.middleware.handleStripeWebhook(req, res, next));
     siteApp.use(async function (req, res, next) {
         if (!labsService.isSet('members')) {
             req.member = null;
