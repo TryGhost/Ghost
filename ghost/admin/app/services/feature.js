@@ -50,7 +50,6 @@ export default Service.extend({
     notifications: service(),
     lazyLoader: service(),
 
-    subscribers: feature('subscribers'),
     members: feature('members'),
     nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
 
