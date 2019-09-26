@@ -8,7 +8,7 @@ module.exports = [
         type: 'posts',
         modelOptions: {
             modelName: 'Post',
-            filter: 'visibility:public+status:published+page:false',
+            filter: 'status:published+page:false',
             exclude: [
                 'title',
                 'mobiledoc',
@@ -79,7 +79,7 @@ module.exports = [
                 'primary_tag',
                 'primary_author'
             ],
-            filter: 'visibility:public+status:published+page:true'
+            filter: 'status:published+page:true'
         },
         events: {
             add: 'page.published',
