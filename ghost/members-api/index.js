@@ -54,15 +54,6 @@ module.exports = function MembersApi({
         }
     }
 
-    let users = Users({
-        stripe,
-        createMember,
-        getMember,
-        updateMember,
-        deleteMember,
-        listMembers
-    });
-
     const magicLinkService = new MagicLink({
         transporter,
         publicKey,
@@ -73,6 +64,17 @@ module.exports = function MembersApi({
     async function sendEmailWithMagicLink(email){
         return magicLinkService.sendMagicLink({email, user: {email}});
     }
+
+    const users = Users({
+        sendEmailWithMagicLink,
+        stripe,
+        createMember,
+        getMember,
+        updateMember,
+        deleteMember,
+        listMembers
+    });
+
     async function getMemberDataFromMagicLinkToken(token){
         const user = await magicLinkService.getUserFromToken(token);
         const email = user && user.email;
