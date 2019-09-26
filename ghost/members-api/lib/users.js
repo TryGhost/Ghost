@@ -1,4 +1,5 @@
 module.exports = function ({
+    sendEmailWithMagicLink,
     stripe,
     createMember,
     getMember,
@@ -53,7 +54,11 @@ module.exports = function ({
     }
 
     async function create(data, options) {
-        return createMember(data, options);
+        const member = await createMember(data);
+        if (options.sendEmail) {
+            await sendEmailWithMagicLink(member.email, options.emailType);
+        }
+        return member;
     }
 
     return {
