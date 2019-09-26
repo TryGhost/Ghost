@@ -7,9 +7,10 @@ const ghostVersion = require('../../lib/ghost-version');
 const mail = require('../mail');
 const models = require('../../models');
 
-function createMember({email}) {
+function createMember({email, name}) {
     return models.Member.add({
-        email
+        email,
+        name
     }).then((member) => {
         return member.toJSON();
     });
