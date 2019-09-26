@@ -3,17 +3,17 @@ const ghostBookshelf = require('./base');
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
 
-    relationships: ['stripe_info'],
+    relationships: ['stripe_customers'],
     relationshipBelongsTo: {
-        stripe_info: 'members_stripe_info'
+        stripe_customers: 'members_stripe_customers'
     },
 
     permittedAttributes(...args) {
         return ghostBookshelf.Model.prototype.permittedAttributes.apply(this, args).concat(this.relationships);
     },
 
-    stripe_info() {
-        return this.hasMany('MemberStripeInfo', 'member_id');
+    stripe_customers() {
+        return this.hasMany('MemberStripeCustomer', 'member_id');
     }
 }, {
     permittedOptions(...args) {
