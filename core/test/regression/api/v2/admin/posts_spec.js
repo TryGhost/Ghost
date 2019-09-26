@@ -354,7 +354,7 @@ describe('Posts API', function () {
                         .set('Origin', config.get('url'))
                         .send({
                             posts: [{
-                                visibility: 'member',
+                                visibility: 'members',
                                 updated_at: res.body.posts[0].updated_at
                             }]
                         })
@@ -365,7 +365,7 @@ describe('Posts API', function () {
                 .then((res) => {
                     should.exist(res.body.posts);
                     should.exist(res.body.posts[0].visibility);
-                    res.body.posts[0].visibility.should.equal('member');
+                    res.body.posts[0].visibility.should.equal('members');
                 });
         });
     });
