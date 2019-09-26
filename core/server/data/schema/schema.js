@@ -27,7 +27,7 @@ module.exports = {
             maxlength: 50,
             nullable: false,
             defaultTo: 'public',
-            validations: {isIn: [['public']]}
+            validations: {isIn: [['public', 'members', 'paid']]}
         },
         meta_title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
         meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},

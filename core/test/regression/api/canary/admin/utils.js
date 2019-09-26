@@ -22,7 +22,6 @@ const expectedProperties = {
         .keys()
         // by default we only return mobiledoc
         .without('html', 'plaintext')
-        .without('visibility')
         .without('locale')
         .without('page')
         .without('author_id')
