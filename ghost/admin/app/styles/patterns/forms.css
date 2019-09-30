@@ -133,7 +133,7 @@ select {
     background: var(--input-bg-color);
     color: var(--darkgrey);
     font-size: 1.5rem;
-    line-height: 1em;
+    /* line-height: 1em; */
     font-weight: 400;
     user-select: text;
     border-radius: var(--border-radius);
@@ -174,13 +174,9 @@ textarea {
     min-width: 250px;
     min-height: 10rem;
     max-width: 500px;
-    line-height: 1.5;
+    line-height: 1.5em;
     user-select: text;
     resize: vertical;
-}
-
-textarea.gh-input {
-    line-height: 1.5em;
 }
 
 
