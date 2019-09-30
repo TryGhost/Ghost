@@ -18,17 +18,18 @@ describe('Unit: models/settings', function () {
             mockDb.mock(knex);
             tracker = mockDb.getTracker();
             tracker.install();
-        });
-
-        afterEach(function () {
-            mockDb.unmock(knex);
-        });
-
-        beforeEach(function () {
+            eventSpy = sinon.spy(common.events, 'emit');
+            mockDb.mock(knex);
+            tracker = mockDb.getTracker();
+            tracker.install();
             eventSpy = sinon.spy(common.events, 'emit');
         });
 
         afterEach(function () {
+            mockDb.unmock(knex);
+            sinon.restore();
+            mockDb.unmock(knex);
+            tracker.uninstall();
             sinon.restore();
         });
 
@@ -86,25 +87,6 @@ describe('Unit: models/settings', function () {
     describe('defaults', function () {
         let tracker;
         let eventSpy;
-
-        beforeEach(function () {
-            mockDb.mock(knex);
-            tracker = mockDb.getTracker();
-            tracker.install();
-        });
-
-        afterEach(function () {
-            mockDb.unmock(knex);
-            tracker.uninstall();
-        });
-
-        beforeEach(function () {
-            eventSpy = sinon.spy(common.events, 'emit');
-        });
-
-        afterEach(function () {
-            sinon.restore();
-        });
 
         it('populates unset defaults', function () {
             tracker.on('query', (query) => {

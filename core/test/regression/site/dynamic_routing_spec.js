@@ -94,9 +94,8 @@ describe('Dynamic Routing', function () {
         });
 
         describe('RSS', function () {
-            before(testUtils.teardown);
-
             before(function (done) {
+                testUtils.teardown();
                 testUtils.initData().then(function () {
                     return testUtils.fixtures.overrideOwnerUser();
                 }).then(function () {
@@ -388,11 +387,9 @@ describe('Dynamic Routing', function () {
         describe.skip('Paged', function () {
             // Inserting more posts takes a bit longer
             this.timeout(20000);
-
-            before(testUtils.teardown);
-
             // Add enough posts to trigger pages
             before(function (done) {
+                testUtils.teardown();
                 testUtils.initData().then(function () {
                     return testUtils.fixtures.insertPostsAndTags();
                 }).then(function () {
@@ -711,8 +708,8 @@ describe('Dynamic Routing', function () {
             }).catch(done);
         });
 
-        after(testUtils.teardown);
         after(function () {
+            testUtils.teardown();
             return ghostServer.stop();
         });
 

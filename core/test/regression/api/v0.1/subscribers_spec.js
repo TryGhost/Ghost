@@ -13,17 +13,13 @@ let request;
 
 describe('Subscribers API', function () {
     let accesstoken = '', ghostServer;
-
-    before(function () {
-        sinon.stub(labs, 'isSet').withArgs('subscribers').returns(true);
-    });
-
     after(function () {
         sinon.restore();
     });
 
     before(function () {
-        return ghost()
+        sinon.stub(labs, 'isSet').withArgs('subscribers').returns(true);
+        ghost()
             .then(function (_ghostServer) {
                 ghostServer = _ghostServer;
                 request = supertest.agent(config.get('url'));

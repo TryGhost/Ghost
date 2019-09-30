@@ -7,8 +7,8 @@ var should = require('should'),
 
 describe('Database Migration (special functions)', function () {
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
     afterEach(function () {
+        testUtils.teardown();
         sinon.restore();
     });
 

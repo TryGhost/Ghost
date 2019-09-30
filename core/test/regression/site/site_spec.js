@@ -12,32 +12,29 @@ const should = require('should'),
 
 describe('Integration - Web - Site', function () {
     let app;
+    const api = require('../../../server/api')['v0.1'];
+    before(function () {
+        testUtils.integrationTesting.urlService.resetGenerators();
+        testUtils.teardown();
+        testUtils.setup('users:roles', 'posts');
+        testUtils.integrationTesting.defaultMocks(sinon, {amp: true, apps: true});
+        testUtils.integrationTesting.overrideGhostConfig(configUtils);
 
-    before(testUtils.integrationTesting.urlService.resetGenerators);
-    before(testUtils.teardown);
-    before(testUtils.setup('users:roles', 'posts'));
+        return testUtils.integrationTesting.initGhost()
+            .then(function () {
+                sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
+                sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
+
+                app = siteApp({start: true});
+                return testUtils.integrationTesting.urlService.waitTillFinished();
+            })
+            .then(() => {
+                return appsService.init();
+            });
+    });
 
     describe('v0.1', function () {
-        const api = require('../../../server/api')['v0.1'];
-
         describe('default routes.yaml', function () {
-            before(function () {
-                testUtils.integrationTesting.defaultMocks(sinon, {amp: true, apps: true});
-                testUtils.integrationTesting.overrideGhostConfig(configUtils);
-
-                return testUtils.integrationTesting.initGhost()
-                    .then(function () {
-                        sinon.stub(themeService.getActive(), 'engine').withArgs('ghost-api').returns('v0.1');
-                        sinon.stub(themeService.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
-                        app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlService.waitTillFinished();
-                    })
-                    .then(() => {
-                        return appsService.init();
-                    });
-            });
-
             before(function () {
                 configUtils.set('url', 'http://example.com');
                 urlUtils.stubUrlUtilsFromConfig();
@@ -1231,11 +1228,10 @@ describe('Integration - Web - Site', function () {
 
         describe('extended routes.yaml: routes', function () {
             describe('channels', function () {
-                before(testUtils.integrationTesting.urlService.resetGenerators);
-                before(testUtils.teardown);
-                before(testUtils.setup('users:roles', 'posts'));
-
                 before(function () {
+                    testUtils.integrationTesting.urlService.resetGenerators();
+                    testUtils.teardown();
+                    testUtils.setup('users:roles', 'posts');
                     testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
                     sinon.stub(frontendSettingsService, 'get').returns({
@@ -1799,11 +1795,6 @@ describe('Integration - Web - Site', function () {
                     .then(() => {
                         return appsService.init();
                     });
-            });
-
-            before(function () {
-                configUtils.set('url', 'http://example.com');
-                urlUtils.stubUrlUtilsFromConfig();
             });
 
             beforeEach(function () {
@@ -3029,11 +3020,10 @@ describe('Integration - Web - Site', function () {
 
         describe('extended routes.yaml: routes', function () {
             describe('channels', function () {
-                before(testUtils.integrationTesting.urlService.resetGenerators);
-                before(testUtils.teardown);
-                before(testUtils.setup('users:roles', 'posts'));
-
                 before(function () {
+                    testUtils.integrationTesting.urlService.resetGenerators();
+                    testUtils.teardown();
+                    testUtils.setup('users:roles', 'posts');
                     testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
                     sinon.stub(frontendSettingsService, 'get').returns({
@@ -3544,12 +3534,6 @@ describe('Integration - Web - Site', function () {
                         return appsService.init();
                     });
             });
-
-            before(function () {
-                configUtils.set('url', 'http://example.com');
-                urlUtils.stubUrlUtilsFromConfig();
-            });
-
             beforeEach(function () {
                 const postsAPI = require('../../../server/api/canary/posts-public');
                 postSpy = sinon.spy(postsAPI.browse, 'query');
@@ -4773,11 +4757,10 @@ describe('Integration - Web - Site', function () {
 
         describe('extended routes.yaml: routes', function () {
             describe('channels', function () {
-                before(testUtils.integrationTesting.urlService.resetGenerators);
-                before(testUtils.teardown);
-                before(testUtils.setup('users:roles', 'posts'));
-
                 before(function () {
+                    testUtils.integrationTesting.urlService.resetGenerators();
+                    testUtils.teardown();
+                    testUtils.setup('users:roles', 'posts');
                     testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
                     sinon.stub(frontendSettingsService, 'get').returns({

@@ -12,16 +12,13 @@ const ghost = testUtils.startGhost;
 let request;
 
 describe('Subscribers API', function () {
-    before(function () {
-        sinon.stub(labs, 'isSet').withArgs('subscribers').returns(true);
-    });
-
     after(function () {
         sinon.restore();
     });
 
     before(function () {
-        return ghost()
+        sinon.stub(labs, 'isSet').withArgs('subscribers').returns(true);
+        ghost()
             .then(function () {
                 request = supertest.agent(config.get('url'));
             })

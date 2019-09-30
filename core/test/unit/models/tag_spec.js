@@ -25,9 +25,6 @@ describe('Unit: models/tag', function () {
 
         after(function () {
             sinon.restore();
-        });
-
-        after(function () {
             mockDb.unmock(knex);
         });
 

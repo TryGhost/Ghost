@@ -22,9 +22,8 @@ describe('Models: listeners', function () {
 
     before(testUtils.teardown);
 
-    beforeEach(testUtils.setup('owner', 'user-token:0', 'settings'));
-
     beforeEach(function () {
+        testUtils.setup('owner', 'user-token:0', 'settings');
         sinon.stub(common.events, 'on').callsFake(function (eventName, callback) {
             eventsToRemember[eventName] = callback;
         });

@@ -24,14 +24,6 @@ describe('Local File System Storage', function () {
     beforeEach(function () {
         // Fake a date, do this once for all tests in this file
         momentStub = sinon.stub(moment.fn, 'format');
-    });
-
-    afterEach(function () {
-        sinon.restore();
-        configUtils.restore();
-    });
-
-    beforeEach(function () {
         sinon.stub(fs, 'mkdirs').resolves();
         sinon.stub(fs, 'copy').resolves();
         sinon.stub(fs, 'stat').rejects();
@@ -46,6 +38,11 @@ describe('Local File System Storage', function () {
         localFileStore = new LocalFileStore();
 
         fakeDate(9, 2013);
+    });
+
+    afterEach(function () {
+        sinon.restore();
+        configUtils.restore();
     });
 
     it('should send correct path to image when date is in Sep 2013', function (done) {

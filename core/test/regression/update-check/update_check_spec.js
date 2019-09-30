@@ -14,9 +14,33 @@ let updateCheck = rewire('../../../server/update-check');
 let NotificationsAPI = rewire('../../../server/api/v2/notifications');
 
 describe('Update Check', function () {
+    var updateCheckRequestSpy,
+        updateCheckResponseSpy,
+        updateCheckErrorSpy,
+        currentVersionOrig;
     beforeEach(function () {
         updateCheck = rewire('../../../server/update-check');
         NotificationsAPI = rewire('../../../server/api/v2/notifications');
+        testUtils.teardown();
+        testUtils.setup('roles', 'owner');
+        updateCheckRequestSpy = sinon.stub().returns(Promise.resolve());
+        updateCheckResponseSpy = sinon.stub().returns(Promise.resolve());
+        updateCheckErrorSpy = sinon.stub();
+
+        updateCheck.__set__('updateCheckRequest', updateCheckRequestSpy);
+        updateCheck.__set__('updateCheckResponse', updateCheckResponseSpy);
+        updateCheck.__set__('updateCheckError', updateCheckErrorSpy);
+        updateCheck.__set__('allowedCheckEnvironments', ['development', 'production', 'testing', 'testing-mysql']);
+        testUtils.teardown();
+        testUtils.setup('roles', 'owner', 'settings', 'posts', 'perms:setting', 'perms:user', 'perms:init');
+        testUtils.teardown();
+        currentVersionOrig = updateCheck.__get__('ghostVersion.original');
+        updateCheck.__set__('ghostVersion.original', '0.9.0');
+        api.notifications.destroyAll(testUtils.context.internal);
+        testUtils.setup('settings', 'roles', 'owner', 'perms:setting', 'perms:notification', 'perms:user', 'perms:init');
+        configUtils.set('privacy:useUpdateCheck', true);
+        testUtils.setup('roles', 'settings', 'perms:setting', 'perms:init');
+        testUtils.teardown();
     });
 
     afterEach(function () {
@@ -25,26 +49,7 @@ describe('Update Check', function () {
     });
 
     after(testUtils.teardown);
-
     describe('fn: updateCheck', function () {
-        var updateCheckRequestSpy,
-            updateCheckResponseSpy,
-            updateCheckErrorSpy;
-
-        beforeEach(testUtils.teardown);
-        beforeEach(testUtils.setup('roles', 'owner'));
-
-        beforeEach(function () {
-            updateCheckRequestSpy = sinon.stub().returns(Promise.resolve());
-            updateCheckResponseSpy = sinon.stub().returns(Promise.resolve());
-            updateCheckErrorSpy = sinon.stub();
-
-            updateCheck.__set__('updateCheckRequest', updateCheckRequestSpy);
-            updateCheck.__set__('updateCheckResponse', updateCheckResponseSpy);
-            updateCheck.__set__('updateCheckError', updateCheckErrorSpy);
-            updateCheck.__set__('allowedCheckEnvironments', ['development', 'production', 'testing', 'testing-mysql']);
-        });
-
         it('update check was never executed', function (done) {
             const readStub = sinon.stub().resolves({
                 settings: [{
@@ -117,9 +122,6 @@ describe('Update Check', function () {
             configUtils.restore();
         });
 
-        beforeEach(testUtils.teardown);
-        beforeEach(testUtils.setup('roles', 'owner', 'settings', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
-
         it('should report the correct data', function (done) {
             var updateCheckData = updateCheck.__get__('updateCheckData');
 
@@ -144,22 +146,8 @@ describe('Update Check', function () {
     });
 
     describe('fn: createCustomNotification', function () {
-        var currentVersionOrig;
-
-        before(function () {
-            currentVersionOrig = updateCheck.__get__('ghostVersion.original');
-            updateCheck.__set__('ghostVersion.original', '0.9.0');
-        });
-
         after(function () {
             updateCheck.__set__('ghostVersion.original', currentVersionOrig);
-        });
-
-        beforeEach(testUtils.teardown);
-        beforeEach(testUtils.setup('settings', 'roles', 'owner', 'perms:setting', 'perms:notification', 'perms:user', 'perms:init'));
-
-        beforeEach(function () {
-            return api.notifications.destroyAll(testUtils.context.internal);
         });
 
         it('should create a release notification for target version', function (done) {
@@ -321,9 +309,6 @@ describe('Update Check', function () {
     });
 
     describe('fn: updateCheckResponse', function () {
-        beforeEach(testUtils.teardown);
-        beforeEach(testUtils.setup('roles', 'settings', 'perms:setting', 'perms:init'));
-
         it('receives a notifications with messages', function (done) {
             var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
                 createNotificationSpy = sinon.spy(),
@@ -513,10 +498,6 @@ describe('Update Check', function () {
     });
 
     describe('fn: updateCheckRequest', function () {
-        beforeEach(function () {
-            configUtils.set('privacy:useUpdateCheck', true);
-        });
-
         afterEach(function () {
             configUtils.restore();
         });

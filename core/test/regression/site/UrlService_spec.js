@@ -18,13 +18,13 @@ describe('Integration: services/url/UrlService', function () {
         sinon.stub(themes, 'getActive').returns({
             engine: () => 'v0.1'
         });
+        testUtils.teardown();
+        testUtils.setup('users:roles', 'posts');
+        testUtils.teardown();
     });
 
-    before(testUtils.teardown);
-    before(testUtils.setup('users:roles', 'posts'));
-    after(testUtils.teardown);
-
     after(function () {
+        testUtils.teardown();
         sinon.restore();
     });
 
@@ -207,17 +207,11 @@ describe('Integration: services/url/UrlService', function () {
 
     describe('functional: extended/modified routing set', function () {
         let router1, router2, router3, router4, router5;
-
-        before(testUtils.teardown);
-        before(testUtils.setup('users:roles', 'posts'));
-
-        before(function () {
-            urlService.resetGenerators();
-        });
-
         before(function (done) {
+            testUtils.teardown();
+            testUtils.setup('users:roles', 'posts');
+            urlService.resetGenerators();
             urlService = new UrlService();
-
             router1 = {
                 getFilter: sinon.stub(),
                 addListener: sinon.stub(),

@@ -16,18 +16,15 @@ describe('Schedules API', function () {
     let accesstoken;
     let ghostServer;
 
-    before(function () {
-        models.init();
-
-        // @NOTE: mock the post scheduler, otherwise it will auto publish the post
-        sinon.stub(SchedulingDefault.prototype, '_pingUrl').resolves();
-    });
-
     after(function () {
         sinon.restore();
     });
 
     before(function () {
+        models.init();
+
+        // @NOTE: mock the post scheduler, otherwise it will auto publish the post
+        sinon.stub(SchedulingDefault.prototype, '_pingUrl').resolves();
         return ghost()
             .then(function (_ghostServer) {
                 ghostServer = _ghostServer;

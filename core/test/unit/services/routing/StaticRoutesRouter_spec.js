@@ -10,6 +10,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
     afterEach(function () {
         configUtils.restore();
+        sinon.restore();
     });
 
     beforeEach(function () {
@@ -24,10 +25,6 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
         next = sinon.stub();
 
         res.locals = {};
-    });
-
-    afterEach(function () {
-        sinon.restore();
     });
 
     describe('static routes', function () {

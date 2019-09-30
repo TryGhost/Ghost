@@ -9,8 +9,8 @@ var should = require('should'),
 
 describe('Exporter', function () {
     before(testUtils.teardown);
-    afterEach(testUtils.teardown);
     afterEach(function () {
+        testUtils.teardown();
         sinon.restore();
     });
     beforeEach(testUtils.setup('default', 'settings'));

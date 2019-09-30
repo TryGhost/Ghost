@@ -16,26 +16,20 @@ describe('Schedules API', function () {
     const resources = [];
     let request;
 
-    before(function () {
-        models.init();
-
-        // @NOTE: mock the post scheduler, otherwise it will auto publish the post
-        sinon.stub(SchedulingDefault.prototype, '_pingUrl').resolves();
-    });
-
     after(function () {
         sinon.restore();
     });
 
     before(function () {
-        return ghost()
+        models.init();
+
+        // @NOTE: mock the post scheduler, otherwise it will auto publish the post
+        sinon.stub(SchedulingDefault.prototype, '_pingUrl').resolves();
+        ghost()
             .then(() => {
                 request = supertest.agent(config.get('url'));
             });
-    });
-
-    before(function () {
-        return ghost()
+        ghost()
             .then(function () {
                 resources.push(testUtils.DataGenerator.forKnex.createPost({
                     created_by: testUtils.existingData.users[0].id,

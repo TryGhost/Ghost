@@ -8,15 +8,11 @@ var supertest = require('supertest'),
 
 describe('Subscriber: Routing', function () {
     var request;
-
     before(function () {
-        return ghost()
+        ghost()
             .then(function () {
                 request = supertest.agent(config.get('url'));
             });
-    });
-
-    before(function () {
         sinon.stub(labs, 'isSet').callsFake(function (key) {
             if (key === 'subscribers') {
                 return true;

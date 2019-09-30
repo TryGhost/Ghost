@@ -118,8 +118,8 @@ describe('Integration: Importer', function () {
         sinon.stub(importer, 'cleanUp');
     });
 
-    afterEach(testUtils.teardown);
     afterEach(function () {
+        testUtils.teardown();
         sinon.restore();
     });
 
@@ -1205,9 +1205,10 @@ describe('Integration: Importer', function () {
     });
 
     describe('Existing database', function () {
-        beforeEach(testUtils.teardown);
-        beforeEach(testUtils.setup('users:roles', 'posts', 'settings', 'clients', 'client:trusted-domain'));
-
+        beforeEach(function () {
+            testUtils.teardown();
+            testUtils.setup('users:roles', 'posts', 'settings', 'clients', 'client:trusted-domain');
+        });
         it('import multiple users, tags, posts, clients', function () {
             const exportData = exportedLatestBody().db[0];
 
@@ -1377,9 +1378,10 @@ describe('Integration: Importer', function () {
 });
 
 describe('1.0', function () {
-    beforeEach(testUtils.teardown);
-    beforeEach(testUtils.setup('roles', 'owner', 'settings'));
-
+    beforeEach(function () {
+        testUtils.teardown();
+        testUtils.setup('roles', 'owner', 'settings');
+    });
     it('ensure amp field get\'s respected', function () {
         const exportData = exportedPreviousBody().db[0];
 
@@ -1612,9 +1614,10 @@ describe('1.0', function () {
 });
 
 describe('LTS', function () {
-    beforeEach(testUtils.teardown);
-    beforeEach(testUtils.setup('roles', 'owner', 'settings'));
-
+    beforeEach(function () {
+        testUtils.teardown();
+        testUtils.setup('roles', 'owner', 'settings');
+    });
     it('disallows importing LTS imports', function () {
         const exportData = exportedLegacyBody().db[0];
 

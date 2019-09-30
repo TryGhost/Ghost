@@ -22,17 +22,13 @@ describe('Themes API', function () {
             .set('Origin', config.get('url'))
             .attach(fieldName, themePath);
     };
-
     before(function () {
-        return ghost()
+        ghost()
             .then((_ghostServer) => {
                 ghostServer = _ghostServer;
             });
-    });
-
-    before(function () {
         ownerRequest = supertest.agent(config.get('url'));
-        return localUtils.doAuth(ownerRequest);
+        localUtils.doAuth(ownerRequest);
     });
 
     it('Can request all available themes', function () {

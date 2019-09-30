@@ -24,13 +24,12 @@ var should = require('should'),
  */
 describe('Post Model', function () {
     var eventsTriggered = {};
-
-    before(testUtils.teardown);
-    before(testUtils.stopGhost);
-    after(testUtils.teardown);
-
-    before(testUtils.setup('users:roles'));
-
+    before(function () {
+        testUtils.setup('users:roles');
+        testUtils.teardown();
+        testUtils.stopGhost();
+        testUtils.teardown();
+    });
     afterEach(function () {
         sinon.restore();
     });
@@ -60,17 +59,14 @@ describe('Post Model', function () {
                 // @TODO: this test case fails for mysql currently if you run all regression tests, the test does not fail if you run this as a single test
                 describe.skip('with more posts/tags', function () {
                     beforeEach(function () {
-                        return testUtils.truncate('posts_tags')
+                        testUtils.truncate('posts_tags')
                             .then(function () {
                                 return testUtils.truncate('tags');
                             })
                             .then(function () {
                                 return testUtils.truncate('posts');
                             });
-                    });
-
-                    beforeEach(function () {
-                        return testUtils.fixtures.insertPostsAndTags()
+                        testUtils.fixtures.insertPostsAndTags()
                             .then(function () {
                                 return testUtils.fixtures.insertExtraPosts();
                             })
@@ -186,8 +182,6 @@ describe('Post Model', function () {
         });
 
         describe('edit', function () {
-            beforeEach(testUtils.fixtures.insertPostsAndTags);
-
             afterEach(function () {
                 return testUtils.truncate('posts_tags')
                     .then(function () {
@@ -199,6 +193,7 @@ describe('Post Model', function () {
             });
 
             beforeEach(function () {
+                testUtils.fixtures.insertPostsAndTags();
                 eventsTriggered = {};
 
                 sinon.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
@@ -1135,8 +1130,6 @@ describe('Post Model', function () {
         });
 
         describe('destroy', function () {
-            beforeEach(testUtils.fixtures.insertPostsAndTags);
-
             afterEach(function () {
                 return testUtils.truncate('posts_tags')
                     .then(function () {
@@ -1148,6 +1141,7 @@ describe('Post Model', function () {
             });
 
             beforeEach(function () {
+                testUtils.fixtures.insertPostsAndTags();
                 eventsTriggered = {};
                 sinon.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
                     if (!eventsTriggered[eventName]) {
@@ -1518,8 +1512,6 @@ describe('Post Model', function () {
     });
 
     describe('Multiauthor Posts', function () {
-        before(testUtils.teardown);
-
         after(function () {
             return testUtils.teardown()
                 .then(function () {
@@ -1527,7 +1519,10 @@ describe('Post Model', function () {
                 });
         });
 
-        before(testUtils.setup('posts:mu'));
+        before(function () {
+            testUtils.teardown();
+            testUtils.setup('posts:mu');
+        });
 
         it('can destroy multiple posts by author', function (done) {
             // We're going to delete all posts by user 1
@@ -1556,18 +1551,14 @@ describe('Post Model', function () {
             tagJSON,
             editOptions,
             createTag = testUtils.DataGenerator.forKnex.createTag;
-
         beforeEach(function () {
-            return testUtils.truncate('posts_tags')
+            testUtils.truncate('posts_tags')
                 .then(function () {
                     return testUtils.truncate('tags');
                 })
                 .then(function () {
                     return testUtils.truncate('posts');
                 });
-        });
-
-        beforeEach(function () {
             tagJSON = [];
 
             var post = _.cloneDeep(testUtils.DataGenerator.forModel.posts[0]),

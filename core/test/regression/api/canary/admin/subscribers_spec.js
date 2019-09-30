@@ -12,10 +12,6 @@ const ghost = testUtils.startGhost;
 let request;
 
 describe('Subscribers API', function () {
-    before(function () {
-        sinon.stub(labs, 'isSet').withArgs('subscribers').returns(true);
-    });
-
     after(function () {
         sinon.restore();
     });

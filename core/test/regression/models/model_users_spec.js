@@ -14,13 +14,13 @@ var should = require('should'),
 describe('User Model', function run() {
     var eventsTriggered = {};
 
-    before(testUtils.teardown);
-    afterEach(testUtils.teardown);
     afterEach(function () {
+        testUtils.teardown();
         sinon.restore();
     });
 
     before(function () {
+        testUtils.teardown();
         should.exist(UserModel);
     });
 
@@ -151,9 +151,8 @@ describe('User Model', function run() {
     });
 
     describe('Basic Operations', function () {
-        beforeEach(testUtils.setup('users:roles'));
-
         beforeEach(function () {
+            testUtils.setup('users:roles');
             eventsTriggered = {};
             sinon.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
                 if (!eventsTriggered[eventName]) {
