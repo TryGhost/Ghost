@@ -348,6 +348,18 @@
     fill: var(--active-menu-color);
 }
 
+.gh-nav-list a svg g {
+    stroke: var(--midgrey);
+}
+
+.gh-nav-list a:not(.active):hover svg g {
+    stroke: var(--darkgrey);
+}
+
+.gh-nav-list .active svg g {
+    stroke: var(--active-menu-color);
+}
+
 .gh-nav-list .gh-secondary-action {
     position: absolute;
     z-index: 999;
