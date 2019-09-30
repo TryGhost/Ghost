@@ -235,6 +235,16 @@
     max-width: 400px;
 }
 
+.gh-flow-content .login span {
+    height: 37px !important;
+    line-height: 37px !important;
+}
+
+.gh-flow-content .gh-input:focus {
+    box-shadow: none;
+    border-color: color-mod(var(--midlightgrey) l(+10%));
+}
+
 .gh-flow-content .gh-flow-skip {
     display: inline-block;
     margin-top: 5px;
@@ -343,7 +353,7 @@
 }
 
 .gh-flow-content .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 20px !important;
 }
 
 .gh-flow-content .form-group label {
@@ -358,7 +368,7 @@
 
 .gh-flow-content input {
     padding: 10px 10px 10px 30px;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     line-height: 1.4em;
     font-weight: 400;
 }
