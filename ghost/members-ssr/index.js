@@ -128,6 +128,9 @@ class MembersSSR {
      * @param {string} value
      */
     _setSessionCookie(req, res, value) {
+        if (!value) {
+            return this._removeSessionCookie(req, res);
+        }
         const cookies = this._getCookies(req, res);
         cookies.set(this.sessionCookieName, value, this.sessionCookieOptions);
     }
@@ -170,6 +173,9 @@ class MembersSSR {
      * @param {object} value
      */
     _setCacheCookie(req, res, value) {
+        if (!value) {
+            return this._removeCacheCookie(req, res);
+        }
         const cookies = this._getCookies(req, res);
         cookies.set(this.cacheCookieName, JSON.stringify(value), this.cacheCookieOptions);
     }
