@@ -4601,10 +4601,10 @@ ember-cli-babel-plugin-helpers@^1.0.0, ember-cli-babel-plugin-helpers@^1.1.0:
   resolved "https://registry.yarnpkg.com/ember-cli-babel-plugin-helpers/-/ember-cli-babel-plugin-helpers-1.1.0.tgz#de3baedd093163b6c2461f95964888c1676325ac"
   integrity sha512-Zr4my8Xn+CzO0gIuFNXji0eTRml5AxZUTDQz/wsNJ5AJAtyFWCY4QtKdoELNNbiCVGt1lq5yLiwTm4scGKu6xA==
 
-ember-cli-babel@7.11.1:
-  version "7.11.1"
-  resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-7.11.1.tgz#77bc8f4001d47b91d80e3d36a4754412616fc0d8"
-  integrity sha512-Qgd7y9NVbRLEtwjBW/vPHXdTQrIgfgoCSFHfvBpEmLuWSWNpE/J6qwXrSbB9nEIlfzyjH0Almv4m0jwuJsB3ow==
+ember-cli-babel@7.12.0:
+  version "7.12.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-7.12.0.tgz#064997d199384be8c88d251f30ef67953d3bddc5"
+  integrity sha512-+EGQsbPvh19nNXHCm6rVBx2CdlxQlzxMyhey5hsGViDPriDI4PFYXYaFWdGizDrmZoDcG/Ywpeph3hl0NxGQTg==
   dependencies:
     "@babel/core" "^7.0.0"
     "@babel/plugin-proposal-class-properties" "^7.3.4"
@@ -5124,7 +5124,16 @@ ember-composable-helpers@2.3.1:
     ember-cli-babel "^7.1.0"
     resolve "^1.10.0"
 
-ember-concurrency@1.0.0, "ember-concurrency@^0.8.27 || ^0.9.0 || ^0.10.0 || ^1.0.0":
+ember-concurrency@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-1.1.0.tgz#955f6961937c655ecc6ee4c3213e1191dc227ba3"
+  integrity sha512-izwePurc0CMGSvyuZeEyjFrTVBTBQV2k7eYP/b+jYCdh5+J+ajSnx8UYIJ38E7lCukDzeTjDBrQjJxLCNzvDFg==
+  dependencies:
+    ember-cli-babel "^7.7.3"
+    ember-compatibility-helpers "^1.2.0"
+    ember-maybe-import-regenerator "^0.1.6"
+
+"ember-concurrency@^0.8.27 || ^0.9.0 || ^0.10.0 || ^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-1.0.0.tgz#3b650672fdd5dc1d45007626119135829076c2b6"
   integrity sha512-76aKC0lo2LAPoQYz7vMRlpolWTIQerszr8PPf3JMM5cTOzPwXUtzDcjfso3JAEDdhyUF9fkv2V1DmHagFbC2YQ==
@@ -5318,7 +5327,7 @@ ember-macro-helpers@^4.2.2:
     ember-cli-string-utils "^1.1.0"
     ember-cli-test-info "^1.0.0"
 
-ember-maybe-import-regenerator@^0.1.5:
+ember-maybe-import-regenerator@^0.1.5, ember-maybe-import-regenerator@^0.1.6:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/ember-maybe-import-regenerator/-/ember-maybe-import-regenerator-0.1.6.tgz#35d41828afa6d6a59bc0da3ce47f34c573d776ca"
   integrity sha1-NdQYKK+m1qWbwNo85H80xXPXdso=
@@ -5424,10 +5433,10 @@ ember-raf-scheduler@0.1.0:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-resolver@5.2.1:
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/ember-resolver/-/ember-resolver-5.2.1.tgz#538d7a29351316d9550864ff06fcbe55bdd92774"
-  integrity sha512-Ciz5qsrtILr7AGXO9mTSFs3/XKXpMYJqISNCfvIY0C8PlMgq+9RYbmUoBpAlvBUc/mUi3ORZKJ4csd9qchvxZw==
+ember-resolver@5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/ember-resolver/-/ember-resolver-5.3.0.tgz#9fbeedfa63c094b588ac7647ba62f1305374f1d8"
+  integrity sha512-NWin+WzmsRnZxFvDlx9B3rb3kxwK0MNblJemoRvNbbxLK6z5lGxVoBfpU4/nqItWfwmpVb9ZK8bqXYs5q8HT4A==
   dependencies:
     "@glimmer/resolver" "^0.4.1"
     babel-plugin-debug-macros "^0.1.10"
