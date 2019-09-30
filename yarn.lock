@@ -5362,12 +5362,12 @@ metascraper-url@5.7.6:
   dependencies:
     "@metascraper/helpers" "^5.7.6"
 
-metascraper@5.6.6:
-  version "5.6.6"
-  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.6.6.tgz#81988384d50fc6c01d19b668beb1cdbcc94ace1f"
-  integrity sha512-+UyLs7WcSXlQA41W0CWC3sFr0uMmutDwFznJjuEJx4tI2q23bvNeSPE2E01vQw7LeHYvidvdKkTVqhLXqbB8yg==
+metascraper@5.7.6:
+  version "5.7.6"
+  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.7.6.tgz#ba9451e229d21f5584ec5a1139b2e4a48b82ccd5"
+  integrity sha512-UCzSyJr0Qj7UtYrJ8I7ofT6DOUgwi+dWBLzVAlZQd2XIQ7V4awVLD6RbCMZv/ae+A9/y6o5wgAYDWN/8JgxfBA==
   dependencies:
-    "@metascraper/helpers" "^5.6.6"
+    "@metascraper/helpers" "^5.7.6"
     cheerio "~1.0.0-rc.2"
     cheerio-advanced-selectors "~2.0.1"
     lodash "~4.17.15"
