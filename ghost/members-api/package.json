@@ -18,9 +18,9 @@
   ],
   "devDependencies": {
     "jsdom": "15.1.1",
-    "mocha": "6.2.0",
+    "mocha": "6.2.1",
     "should": "13.2.3",
-    "sinon": "7.4.2"
+    "sinon": "7.5.0"
   },
   "dependencies": {
     "@tryghost/magic-link": "^0.1.3",

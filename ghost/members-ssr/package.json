@@ -19,9 +19,9 @@
     "@types/cookies": "0.7.2",
     "@types/node": "12.7.5",
     "keypair": "1.0.1",
-    "mocha": "6.2.0",
+    "mocha": "6.2.1",
     "should": "13.2.3",
-    "sinon": "7.4.2"
+    "sinon": "7.5.0"
   },
   "dependencies": {
     "bluebird": "^3.5.3",
