@@ -4691,10 +4691,10 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.2.tgz#01146b36a6218e64e58f3a8d66de5d7fc6f6d051"
   integrity sha512-s5kLOcnH0XqDO+FvuaLX8DDjZ18CGFk7VygH40QoKPUQhW4e2rvM0rwUq0t8IQDOwYSeLK01U90OjzBTme2QqA==
 
-knex-migrator@3.3.3:
-  version "3.3.3"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.3.3.tgz#a080f98ff3b6947d9a6ea7af427f744971f388d3"
-  integrity sha512-GPKxmI9jeQlFLMHGZktM7fjckm0W+RUHN4SIq4lms40jNw9XiPK9LH0biUczIeM0hevqEFWEdfbbKU5zLVgaBw==
+knex-migrator@3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.4.0.tgz#c110236fb1efe1c3b46d4bd7521abeae80df7497"
+  integrity sha512-Ay9Fpo/lxRQlibCT5dNaiyG49Jw4oSMdbm6fqf7BwriRkBwuQKyteSNVqAIhGMg0WdRjCeeBLoGlnwVXU/5QsA==
   dependencies:
     bluebird "^3.5.3"
     commander "^2.19.0"
