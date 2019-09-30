@@ -5340,12 +5340,12 @@ metascraper-logo@5.6.6:
   dependencies:
     "@metascraper/helpers" "^5.6.6"
 
-metascraper-publisher@5.6.6:
-  version "5.6.6"
-  resolved "https://registry.yarnpkg.com/metascraper-publisher/-/metascraper-publisher-5.6.6.tgz#855515689e7d16870333e44af49ccb954bec45b3"
-  integrity sha512-micUEltrytzwKb1iJjnclJ/l5970xs0PWwoY/RFcIDviBVQ/EQNCW+DieK9P6gFJq3dSLPTJ9cv2QPHkDj+ORw==
+metascraper-publisher@5.7.6:
+  version "5.7.6"
+  resolved "https://registry.yarnpkg.com/metascraper-publisher/-/metascraper-publisher-5.7.6.tgz#d0b04ae2f260a5bf0536fad29b3617fb9b6df296"
+  integrity sha512-RVvyNbzJnWutA2rSbK0CytokBXu1SVfsnME+IeKOGmtiSnKtGx5Q0lALHNVHt+bIShEYgba0UlVO/mPE37dU8g==
   dependencies:
-    "@metascraper/helpers" "^5.6.6"
+    "@metascraper/helpers" "^5.7.6"
 
 metascraper-title@5.6.6:
   version "5.6.6"
