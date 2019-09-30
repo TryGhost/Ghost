@@ -817,7 +817,7 @@ describe('Post Model', function () {
                     createdPost.get('html').should.equal(newPostDB.html);
                     createdPost.has('plaintext').should.equal(true);
                     createdPost.get('plaintext').should.match(/^testing/);
-                    createdPost.get('slug').should.equal(newPostDB.slug + '-2');
+                    createdPost.get('slug').should.equal(newPostDB.slug + '-3');
                     (!!createdPost.get('featured')).should.equal(false);
                     (!!createdPost.get('page')).should.equal(false);
 
