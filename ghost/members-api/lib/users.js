@@ -49,8 +49,8 @@ module.exports = function ({
         return updateMember(data, options);
     }
 
-    async function list(data, options) {
-        return listMembers(data, options);
+    async function list(options) {
+        return listMembers(options);
     }
 
     async function create(data, options) {
