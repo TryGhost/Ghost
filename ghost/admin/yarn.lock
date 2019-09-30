@@ -5127,10 +5127,10 @@ ember-drag-drop@0.4.8:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-exam@4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-4.0.2.tgz#6a00f7a0b636015afd484168db3963f0ee14f6e2"
-  integrity sha512-DS7adv24jTC4SDDQk1RUTQnrdALmnv9DCZm55kTsI7bFOhPFVnzje+NUECIBLc8X2S85LCbDMHYEqg3/V/BWQQ==
+ember-exam@4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-4.0.3.tgz#13b142b161563739eb3908b07551b04ead84a688"
+  integrity sha512-SLgxeE9mo6j681kL+3FA0SUHduJJ60BfjnD+bsvpSN4ZAni6jopd34kRqIdTnJlnOFt50e9hNT/0AWbzUbbejw==
   dependencies:
     chalk "^2.1.0"
     cli-table3 "^0.5.1"
@@ -5139,6 +5139,7 @@ ember-exam@4.0.2:
     execa "^1.0.0"
     fs-extra "^8.0.1"
     js-yaml "^3.13.1"
+    npmlog "^4.1.2"
     rimraf "^2.6.2"
     semver "^6.3.0"
     silent-error "^1.1.1"
@@ -9176,7 +9177,7 @@ npm-run-path@^2.0.0:
   dependencies:
     path-key "^2.0.0"
 
-npmlog@^4.0.0, npmlog@^4.0.2:
+npmlog@^4.0.0, npmlog@^4.0.2, npmlog@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/npmlog/-/npmlog-4.1.2.tgz#08a7f2a8bf734604779a9efa4ad5cc717abb954b"
   integrity sha512-2uUqazuKlTaSI/dC8AzicUck7+IrEaOnN/e0jd3Xtt1KcGpwx30v50mL7oPyr/h9bL3E4aZccVwpwP+5W9Vjkg==
