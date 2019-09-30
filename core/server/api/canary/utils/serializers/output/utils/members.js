@@ -36,15 +36,6 @@ const forPost = (attrs, frame) => {
                 attrs[field] = '';
             });
         }
-
-        // CASE: Members always adds tags, remove if the user didn't originally ask for them
-        const origQueryOrOptions = frame.original.query || frame.original.options || {};
-        const origInclude = origQueryOrOptions.include;
-
-        if (!origInclude || !origInclude.includes('tags')) {
-            delete attrs.tags;
-            attrs.primary_tag = null;
-        }
     }
 
     return attrs;
