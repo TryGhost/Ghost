@@ -195,7 +195,11 @@ class MembersSSR {
             return null;
         }
         try {
-            return JSON.parse(value);
+            const parsed = JSON.parse(value);
+            if (!parsed) {
+                throw new Error('Parsed value was falsy');
+            }
+            return parsed;
         } catch (err) {
             this._removeCacheCookie(req, res);
             throw new BadRequestError({
