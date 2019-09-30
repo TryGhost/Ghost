@@ -5310,12 +5310,12 @@ metascraper-author@5.7.6:
     "@metascraper/helpers" "^5.7.6"
     lodash "~4.17.15"
 
-metascraper-description@5.6.6:
-  version "5.6.6"
-  resolved "https://registry.yarnpkg.com/metascraper-description/-/metascraper-description-5.6.6.tgz#fac2061cebf00029dd6d3b54e965948ba211e02f"
-  integrity sha512-+nlVHjM1VOTRLW76ekYO2xkWsUsjABiOjWgPvREIig/FViFsFZUDcIbvsDFFAhbBRPcK1Y+vJxOfmzFvbCDukA==
+metascraper-description@5.7.6:
+  version "5.7.6"
+  resolved "https://registry.yarnpkg.com/metascraper-description/-/metascraper-description-5.7.6.tgz#3a26b8bb8f325b1e959864f2c983ad4ef6050c24"
+  integrity sha512-DtcIRTwI2RFdy2NBSYCUpekNSqMH4BVNjAJNpWWYsDJZbk5rw6w2gOgzJH4HUM4eYKDkd0/tVd+HZYz57xxYBQ==
   dependencies:
-    "@metascraper/helpers" "^5.6.6"
+    "@metascraper/helpers" "^5.7.6"
 
 metascraper-image@5.6.6:
   version "5.6.6"
