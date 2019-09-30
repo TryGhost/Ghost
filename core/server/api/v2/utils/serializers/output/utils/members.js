@@ -14,13 +14,13 @@ function hideMembersOnlyContent({visibility}, frame) {
 
     if (!requestFromMember) {
         return BLOCK_CONTENT;
+    } else if (visibility === 'members') {
+        return PERMIT_CONTENT;
     }
 
     const memberHasPlan = !!(_.get(frame, 'original.context.member.stripe.subscriptions', [])).length;
 
-    if (visibility === 'members' && requestFromMember) {
-        return PERMIT_CONTENT;
-    } else if (visibility === 'paid' && memberHasPlan) {
+    if (visibility === 'paid' && memberHasPlan) {
         return PERMIT_CONTENT;
     }
 
