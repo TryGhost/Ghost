@@ -22,9 +22,9 @@
     "@types/jsonwebtoken": "8.3.4",
     "@types/node": "12.7.5",
     "@types/nodemailer": "6.2.1",
-    "mocha": "6.2.0",
+    "mocha": "6.2.1",
     "should": "13.2.3",
-    "sinon": "7.4.2"
+    "sinon": "7.5.0"
   },
   "dependencies": {
     "bluebird": "^3.5.5",
