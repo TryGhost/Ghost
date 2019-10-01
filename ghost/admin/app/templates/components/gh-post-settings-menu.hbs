@@ -75,6 +75,17 @@
                 </div>
                 {{/unless}}
 
+
+                {{#if feature.members}}
+                    {{#unless session.user.isContributor}}
+                        <div class="form-group">
+                            <label for="visibility-input">Who can see this post</label>
+                            {{gh-psm-visibility-input post=post triggerId="visibility-input"}}
+                        </div>
+                    {{/unless}}
+                {{/if}}
+
+
                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="customExcerpt"}}
                     <label for="custom-excerpt">Excerpt</label>
                     {{gh-textarea
