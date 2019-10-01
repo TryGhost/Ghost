@@ -435,6 +435,11 @@
     border-radius: 5px;
 }
 
+.gh-nav-pro .gh-btn-green {
+    margin: 7px 10px 7px 20px !important;
+    width: calc(100% - 40px) !important;
+}
+
 /* Mobile Nav Menu (Slides out)
 /* ---------------------------------------------------------- */
 
