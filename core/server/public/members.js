@@ -9,6 +9,11 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
         form.classList.remove('success', 'invalid', 'error');
         var input = event.target.querySelector('input[data-members-email]');
         var email = input.value;
+        var emailType = undefined;
+
+        if (form.dataset.membersForm) {
+            emailType = form.dataset.membersForm;
+        }
 
         if (!email.includes('@')) {
             form.classList.add('invalid')
@@ -23,7 +28,8 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                email: email
+                email: email,
+                emailType: emailType
             })
         }).then(function (res) {
             form.addEventListener('submit', submitHandler);
