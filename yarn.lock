@@ -227,22 +227,22 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^0.1.3"
 
-"@tryghost/magic-link@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.1.3.tgz#4e7202bb6de762e75ff3de8e9ee872beb66fa0bb"
-  integrity sha512-pLm8AZHabV8dy/867hCwTTwqVtvDGtrK5ciG6V7ngSesKxnTqWtI0sLkGVvZ62HdOOWFbhXpdnPKWNefOon6Mw==
+"@tryghost/magic-link@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.1.4.tgz#9e8812ba918726370b6ce881f53bf2435c993948"
+  integrity sha512-FROmFRgzYKAOTA3QkeS3G4qNrdgBFt9+gUGwVn0sR/JKnHPaELtlDlRHeUJsQeytJdnuU3FEkKpKYlqd2Ecb+w==
   dependencies:
     bluebird "^3.5.5"
     ghost-ignition "^3.1.0"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@0.6.1":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.6.1.tgz#ab8130f547ed60a35c83a10b9d1c2bcca27a8d6a"
-  integrity sha512-aZSDE5MW0kbHZWgKSK3LkQRZKQG4LmBeHeifMwW51LJypHirFoWAqCjDSD8ssjxULO11XuMqUwzpgH9YwhkzNA==
+"@tryghost/members-api@0.6.2":
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.6.2.tgz#265d6d196157892d0774db9e1126f61003a845ef"
+  integrity sha512-m6Zjyp8wUfTyTGi9ECXzvB4lhF5gALLE14c4N10SXshL15jzXGhPat7WBrpylguaCNkfuPIJiUOX8Q2B1z57zg==
   dependencies:
-    "@tryghost/magic-link" "^0.1.3"
+    "@tryghost/magic-link" "^0.1.4"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
     cookies "^0.7.3"
@@ -253,10 +253,10 @@
     node-jose "^1.1.3"
     stripe "^7.4.0"
 
-"@tryghost/members-ssr@0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.5.1.tgz#e892e11a1012771727c1f069a7b05e0c4a3582e1"
-  integrity sha512-yfXtrX0QEKi3aQXYP3o6Wq/o/I8jjHRNdARb1V82VshJPMZWuhPGZcQJYX4g6L8RDCBhjDJYAFHtLHTqETgMEw==
+"@tryghost/members-ssr@0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.5.2.tgz#19a0386323e289b6cb1626e22b07f1c02cd52006"
+  integrity sha512-poSDZ93axR/tZ6BjLtHp5kw6yWcThyKEVpRgsYgfQSW5SJAWA/wpApw0SP2Pt5+fnn7gFTkCnABw1zwF47sUSg==
   dependencies:
     bluebird "^3.5.3"
     concat-stream "^2.0.0"
