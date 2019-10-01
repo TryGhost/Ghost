@@ -18,7 +18,9 @@ module.exports = function MembersApi({
     },
     paymentConfig,
     mail: {
-        transporter
+        transporter,
+        getText,
+        getHTML
     },
     setMemberMetadata,
     getMemberMetadata,
@@ -58,7 +60,9 @@ module.exports = function MembersApi({
         transporter,
         publicKey,
         privateKey,
-        getSigninURL
+        getSigninURL,
+        getText,
+        getHTML
     });
 
     async function sendEmailWithMagicLink(email, type){
