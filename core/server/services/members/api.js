@@ -106,6 +106,7 @@ function getStripePaymentConfig() {
         plans: stripePaymentProcessor.config.plans,
         appInfo: {
             name: 'Ghost',
+            partner_id: 'pp_partner_DKmRVtTs4j9pwZ',
             version: ghostVersion.original,
             url: 'https://ghost.org/'
         }
