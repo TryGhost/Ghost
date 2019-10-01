@@ -80,6 +80,8 @@ function updateLocalTemplateOptions(req, res, next) {
 
     const member = req.member ? {
         email: req.member.email,
+        name: req.member.name,
+        subscriptions: req.member.stripe.subscriptions,
         subscribed: req.member.stripe.subscriptions.length !== 0
     } : null;
 
