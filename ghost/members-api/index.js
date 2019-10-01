@@ -61,8 +61,8 @@ module.exports = function MembersApi({
         getSigninURL
     });
 
-    async function sendEmailWithMagicLink(email){
-        return magicLinkService.sendMagicLink({email, user: {email}});
+    async function sendEmailWithMagicLink(email, type){
+        return magicLinkService.sendMagicLink({email, user: {email}, type});
     }
 
     const users = Users({
@@ -108,8 +108,9 @@ module.exports = function MembersApi({
             res.writeHead(400);
             return res.end('Bad Request.');
         }
+        const emailType = req.body.emailType;
         try {
-            await sendEmailWithMagicLink(email);
+            await sendEmailWithMagicLink(email, emailType);
             res.writeHead(201);
             return res.end('Created.');
         } catch (err) {
@@ -171,7 +172,8 @@ module.exports = function MembersApi({
 
             await stripe.addCustomerToMember(member, customer);
 
-            await sendEmailWithMagicLink(customer.email);
+            const emailType = 'signup';
+            await sendEmailWithMagicLink(customer.email, emailType);
             res.writeHead(200);
             res.end();
         } catch (err) {
