@@ -122,9 +122,10 @@ function createApiInstance() {
             privateKey: settingsCache.get('members_private_key')
         },
         auth: {
-            getSigninURL(token) {
+            getSigninURL(token, type) {
                 const signinURL = new URL(siteUrl);
                 signinURL.searchParams.set('token', token);
+                signinURL.searchParams.set('action', type);
                 return signinURL.href;
             }
         },
@@ -135,6 +136,28 @@ function createApiInstance() {
                         common.logging.warn(message.text);
                     }
                     return ghostMailer.send(Object.assign({subject: 'Signin'}, message));
+                }
+            },
+            getText(url, type) {
+                switch (type) {
+                case 'subscribe':
+                    return `Click here to confirm your subscription ${url}`;
+                case 'signup':
+                    return `Click here to confirm your email address and sign up ${url}`;
+                case 'signin':
+                default:
+                    return `Click here to sign in ${url}`;
+                }
+            },
+            getHTML(url, type) {
+                switch (type) {
+                case 'subscribe':
+                    return `<a href="${url}">Click here to confirm your subscription</a>`;
+                case 'signup':
+                    return `<a href="${url}">Click here to confirm your email address and sign up</a>`;
+                case 'signin':
+                default:
+                    return `<a href="${url}">Click here to sign in</a>`;
                 }
             }
         },
