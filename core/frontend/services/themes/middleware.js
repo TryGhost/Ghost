@@ -82,7 +82,7 @@ function updateLocalTemplateOptions(req, res, next) {
         email: req.member.email,
         name: req.member.name,
         subscriptions: req.member.stripe.subscriptions,
-        subscribed: req.member.stripe.subscriptions.length !== 0
+        paid: req.member.stripe.subscriptions.length !== 0
     } : null;
 
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
