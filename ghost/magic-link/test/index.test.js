@@ -22,7 +22,7 @@ describe('MagicLink', function () {
     });
 
     describe('#sendMagicLink', function () {
-        it('Sends an email to the user with a link generated from getSigninURL(token)', async function () {
+        it('Sends an email to the user with a link generated from getSigninURL(token, type)', async function () {
             const options = {
                 publicKey,
                 privateKey,
@@ -39,12 +39,13 @@ describe('MagicLink', function () {
                 email: 'test@example.com',
                 user: {
                     id: 420
-                }
+                },
+                type: 'blazeit'
             };
             const {token} = await service.sendMagicLink(args);
 
             should.ok(options.getSigninURL.calledOnce);
-            should.ok(options.getSigninURL.firstCall.calledWithExactly(token));
+            should.ok(options.getSigninURL.firstCall.calledWithExactly(token, 'blazeit'));
 
             should.ok(options.transporter.sendMail.calledOnce);
             should.equal(options.transporter.sendMail.firstCall.args[0].to, args.email);
