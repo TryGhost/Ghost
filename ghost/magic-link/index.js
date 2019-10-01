@@ -14,20 +14,30 @@ module.exports = MagicLink;
  * defaultGetText
  *
  * @param {URL} url - The url which will trigger sign in flow
+ * @param {string} type - The type of email to send e.g. signin, signup
  * @returns {string} text - The text content of an email to send
  */
-function defaultGetText(url) {
-    return `Click here to sign in ${url}`;
+function defaultGetText(url, type) {
+    let msg = 'sign in';
+    if (type === 'signup') {
+        msg = 'confirm your email address';
+    }
+    return `Click here to ${msg} ${url}`;
 }
 
 /**
  * defaultGetHTML
  *
  * @param {URL} url - The url which will trigger sign in flow
+ * @param {string} type - The type of email to send e.g. signin, signup
  * @returns {string} HTML - The HTML content of an email to send
  */
-function defaultGetHTML(url) {
-    return `<a href="${url}">Click here to sign in</a>`;
+function defaultGetHTML(url, type) {
+    let msg = 'sign in';
+    if (type === 'signup') {
+        msg = 'confirm your email address';
+    }
+    return `<a href="${url}">Click here to ${msg}</a>`;
 }
 
 /**
@@ -38,7 +48,7 @@ function defaultGetHTML(url) {
  * @param {MailTransporter} options.transporter
  * @param {RsaPublicKey} options.publicKey
  * @param {RsaPrivateKey} options.privateKey
- * @param {(token: JSONWebToken) => URL} options.getSigninURL
+ * @param {(token: JSONWebToken, type: string) => URL} options.getSigninURL
  * @param {typeof defaultGetText} [options.getText]
  * @param {typeof defaultGetHTML} [options.getHTML]
  */
@@ -60,6 +70,7 @@ function MagicLink(options) {
  * @param {object} options
  * @param {string} options.email - The email to send magic link to
  * @param {object} options.user - The user object to associate with the magic link
+ * @param {string=} [options.type='signin'] - The type to be passed to the url and content generator functions
  * @returns {Promise<{token: JSONWebToken, info: SentMessageInfo}>}
  */
 MagicLink.prototype.sendMagicLink = async function sendMagicLink(options) {
@@ -73,12 +84,14 @@ MagicLink.prototype.sendMagicLink = async function sendMagicLink(options) {
         expiresIn: '10m'
     });
 
-    const url = this.getSigninURL(token);
+    const type = options.type || 'signin';
+
+    const url = this.getSigninURL(token, type);
 
     const info = await this.transporter.sendMail({
         to: options.email,
-        text: this.getText(url),
-        html: this.getHTML(url)
+        text: this.getText(url, type),
+        html: this.getHTML(url, type)
     });
 
     return {token, info};
