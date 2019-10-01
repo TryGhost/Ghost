@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-api",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-api",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -23,7 +23,7 @@
     "sinon": "7.5.0"
   },
   "dependencies": {
-    "@tryghost/magic-link": "^0.1.3",
+    "@tryghost/magic-link": "^0.1.4",
     "bluebird": "^3.5.4",
     "body-parser": "^1.19.0",
     "cookies": "^0.7.3",
