@@ -53,7 +53,7 @@ module.exports = function ({
         return listMembers(options);
     }
 
-    async function create(data, options) {
+    async function create(data, options = {}) {
         const member = await createMember(data);
         if (options.sendEmail) {
             await sendEmailWithMagicLink(member.email, options.emailType);
