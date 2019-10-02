@@ -1,12 +1,9 @@
 <span class="gh-select">
-    {{one-way-select
+    {{one-way-select selectedVisibility
         options=availableVisibilities
-        id="visibility-input"
-        name="visibility"
         optionValuePath="name"
         optionLabelPath="label"
         optionTargetPath="name"
-        value=post.visibility
         update=(action "updateVisibility")
     }}
     {{svg-jar "arrow-down-small"}}

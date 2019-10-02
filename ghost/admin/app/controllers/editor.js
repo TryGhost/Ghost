@@ -335,11 +335,6 @@ export default Controller.extend({
         this.set('post.twitterTitle', this.get('post.twitterTitleScratch'));
         this.set('post.twitterDescription', this.get('post.twitterDescriptionScratch'));
 
-        if (!this.get('post.visibility')) {
-            // TODO: make this dependent on value selected in feature.default_content_visibility
-            this.set('post.visibility', 'public');
-        }
-
         if (!this.get('post.slug')) {
             this.saveTitle.cancelAll();
 
