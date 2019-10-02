@@ -46,7 +46,6 @@ export default Controller.extend({
     importErrors: null,
     importSuccessful: false,
     showDeleteAllModal: false,
-    showMemberConfig: false,
     submitting: false,
     uploadButtonText: 'Import',
 
@@ -71,8 +70,8 @@ export default Controller.extend({
         });
         let monthlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'month');
         let yearlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'year');
-        monthlyPlan.dollarAmount = (monthlyPlan.amount / 100);
-        yearlyPlan.dollarAmount = (yearlyPlan.amount / 100);
+        monthlyPlan.dollarAmount = monthlyPlan.amount ? (monthlyPlan.amount / 100) : '';
+        yearlyPlan.dollarAmount = yearlyPlan.amount ? (yearlyPlan.amount / 100) : '';
         stripeProcessor.config.plans = {
             monthly: monthlyPlan,
             yearly: yearlyPlan
@@ -159,10 +158,6 @@ export default Controller.extend({
 
         toggleDeleteAllModal() {
             this.toggleProperty('showDeleteAllModal');
-        },
-
-        toggleMemberConfig() {
-            this.toggleProperty('showMemberConfig');
         },
 
         /**
