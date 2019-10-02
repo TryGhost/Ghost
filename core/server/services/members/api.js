@@ -170,10 +170,9 @@ function createApiInstance() {
         createMember,
         getMember,
         deleteMember,
-        listMembers
+        listMembers,
+        logger: common.logging
     });
-
-    membersApiInstance.setLogger(common.logging);
 
     return membersApiInstance;
 }
