@@ -180,6 +180,10 @@ export default Controller.extend({
                 .click();
         },
 
+        setDefaultContentVisibility(value) {
+            this.set('settings.defaultContentVisibility', value);
+        },
+
         setSubscriptionSettings(key, event) {
             let subscriptionSettings = this.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
             let stripeProcessor = subscriptionSettings.paymentProcessors.find((proc) => {
@@ -189,6 +193,7 @@ export default Controller.extend({
             stripeConfig.product = {
                 name: this.settings.get('title')
             };
+            // TODO: this flag has to be removed as it doesn't serve any purpose
             if (key === 'isPaid') {
                 subscriptionSettings.isPaid = event;
             }

@@ -127,7 +127,7 @@
                 <div class="gh-setting">
                     <div class="gh-setting-content">
                         <div class="gh-setting-title">Members</div>
-                        <div class="gh-setting-desc">Enable free or paid member registration. Restrict content by using <span class="dib blue ba br2 b--blue pa1 pt0 pb0 tag-token--internal">#members</span> hashtag on posts</div>
+                        <div class="gh-setting-desc">Enable free or paid member registration.</div>
 
                         {{#liquid-if feature.labs.members class="nr20"}}
 
@@ -141,29 +141,33 @@
                             </button>
 
                             {{#liquid-if showMemberConfig}}
-                                <div class="flex nl2 nr2 mt5">
-                                    <div class="gh-publishmenu-radio {{if (eq subscriptionSettings.isPaid false) "active"}} flex-auto w-50 ba br4 b--whitegrey pa5 gh-labs-members-radio"
-                                        {{action "setSubscriptionSettings" "isPaid" false on="click"}}>
-                                        <div class="gh-publishmenu-radio-button"></div>
+                                <div>Default post access</div>
+                                <section class="gh-visibility-menu-content">
+                                    <div class="gh-publishmenu-radio {{if (eq settings.defaultContentVisibility "public") "active"}}" {{action "setDefaultContentVisibility" "public" on="click"}}>
+                                        <div class="gh-publishmenu-radio-button" data-test-publishmenu-unpublished-option></div>
                                         <div class="gh-publishmenu-radio-content">
-                                            <div class="gh-publishmenu-radio-label f3"><span class="fw6 f7 darkgrey">Free</span></div>
-                                            <div class="gh-publishmenu-radio-desc">Access to members-only posts require free user registration</div>
+                                            <div class="gh-publishmenu-radio-label">Public</div>
                                         </div>
                                     </div>
-                                    <div class="gh-publishmenu-radio {{if (eq subscriptionSettings.isPaid true) "active"}} flex-auto w-50 ba br4 b--whitegrey pa5 ml2 gh-labs-members-radio">
-                                        <div class="gh-publishmenu-radio-button" {{action "setSubscriptionSettings" "isPaid" true on="click"}}></div>
-                                        <div class="gh-publishmenu-radio-content">
-                                            <div {{action "setSubscriptionSettings" "isPaid" true on="click"}}>
-                                                <div class="gh-publishmenu-radio-label"><span class="fw6 f7 darkgrey">Paid</span></div>
-                                                <div class="gh-publishmenu-radio-desc">Set up paid subscriptions using Stripe</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                {{#liquid-if (eq subscriptionSettings.isPaid true)}}
+                                    <div class="gh-publishmenu-radio {{if (eq settings.defaultContentVisibility "members") "active"}}" {{action "setDefaultContentVisibility" "members" on="click"}}>
+                                        <div class="gh-publishmenu-radio-button" data-test-publishmenu-published-option></div>
+                                        <div class="gh-publishmenu-radio-content">
+                                            <div class="gh-publishmenu-radio-label">Free and paying members</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="gh-publishmenu-radio {{if (eq settings.defaultContentVisibility "paid") "active"}}"
+                                        {{action "setDefaultContentVisibility" "paid" on="click"}}>
+                                        <div class="gh-publishmenu-radio-button" data-test-publishmenu-published-option></div>
+                                        <div class="gh-publishmenu-radio-content">
+                                            <div class="gh-publishmenu-radio-label">Only paying members</div>
+                                        </div>
+                                    </div>
+                                </section>
 
                                 <div class="ba br4 b--whitegrey pa5 mt5">
+                                    <div>Stripe setup</div>
                                     <div class="flex flex-column">
                                         <div class="flex">
                                             <div class="w-50 mr2">
@@ -215,7 +219,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                {{/liquid-if}}
 
                                 <div class="mb5 mt5">
                                     {{gh-task-button "Save"
