@@ -102,6 +102,9 @@ module.exports = function MembersApi({
     }
     async function getMemberIdentityToken(email){
         const member = await getMemberIdentityData(email);
+        if (!member) {
+            return null;
+        }
         return encodeIdentityToken({sub: member.email});
     }
 
