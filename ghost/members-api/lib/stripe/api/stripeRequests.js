@@ -1,9 +1,9 @@
 const debug = require('ghost-ignition').debug('stripe-request');
 const createStripeRequest = require('./createStripeRequest');
 
-const retrieve = createStripeRequest(function (stripe, resource, id) {
+const retrieve = createStripeRequest(function (stripe, resource, id, options = {}) {
     debug(`retrieve ${resource} ${id}`);
-    return stripe[resource].retrieve(id);
+    return stripe[resource].retrieve(id, options);
 });
 
 const list = createStripeRequest(function (stripe, resource, options) {
