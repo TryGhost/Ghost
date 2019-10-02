@@ -1,12 +1,16 @@
+const debug = require('ghost-ignition').debug('stripe-request');
+
 module.exports = function createStripeRequest(makeRequest) {
     return function stripeRequest(...args) {
         const errorHandler = (err) => {
             switch (err.type) {
             case 'StripeCardError':
                 // Card declined
+                debug('StripeCardError');
                 throw err;
             case 'RateLimitError':
                 // Ronseal
+                debug('RateLimitError');
                 return exponentiallyBackoff(makeRequest, ...args).catch((err) => {
                     // We do not want to recurse further if we get RateLimitError
                     // after running the exponential backoff
@@ -16,15 +20,19 @@ module.exports = function createStripeRequest(makeRequest) {
                     return errorHandler(err);
                 });
             case 'StripeInvalidRequestError':
+                debug('StripeInvalidRequestError');
                 // Invalid params to the request
                 throw err;
             case 'StripeAPIError':
+                debug('StripeAPIError');
                 // Rare internal server error from stripe
                 throw err;
             case 'StripeConnectionError':
+                debug('StripeConnectionError');
                 // Weird network/https issue
                 throw err;
             case 'StripeAuthenticationError':
+                debug('StripeAuthenticationError');
                 // Invalid API Key (probably)
                 throw err;
             default:
