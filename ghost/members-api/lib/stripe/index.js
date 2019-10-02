@@ -5,7 +5,8 @@ const api = require('./api');
 const STRIPE_API_VERSION = '2019-09-09';
 
 module.exports = class StripePaymentProcessor {
-    constructor(config, storage) {
+    constructor(config, storage, logging) {
+        this.logging = logging;
         this.storage = storage;
         this._ready = new Promise((resolve, reject) => {
             this._resolveReady = resolve;
@@ -57,9 +58,10 @@ module.exports = class StripePaymentProcessor {
                 });
                 this._webhookSecret = webhook.secret;
             } catch (err) {
-                console.log(err);
+                this.logging.warn(err);
                 this._webhookSecret = process.env.WEBHOOK_SECRET;
             }
+            this.logging.info(this._webhookSecret);
         } catch (err) {
             return this._rejectReady(err);
         }
