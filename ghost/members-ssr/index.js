@@ -318,7 +318,14 @@ class MembersSSR {
      */
     async getIdentityTokenForMemberFromSession(req, res) {
         const email = this._getSessionCookies(req, res);
-        return this._getMemberIdentityToken(email);
+        const token = await this._getMemberIdentityToken(email);
+        if (!token) {
+            this.deleteSession(req, res);
+            throw new BadRequestError({
+                message: 'Invalid session, could not get identity token'
+            });
+        }
+        return token;
     }
 }
 
