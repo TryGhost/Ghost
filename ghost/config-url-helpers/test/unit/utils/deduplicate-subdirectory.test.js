@@ -127,5 +127,13 @@ describe('utils: deduplicateSubdirectory()', function () {
             deduplicateSubdirectory(path, 'http://example.blog/blog/subdir/')
                 .should.eql('/blog/blog/file.png?test=true#testing', 'with root trailing-slash');
         });
+
+        it('deduplicates path with no trailing slash that matches subdir', function () {
+            deduplicateSubdirectory('/blog/blog', 'http://example.com/blog')
+                .should.equal('/blog/', 'without root trailing-slash');
+
+            deduplicateSubdirectory('/blog/blog', 'http://example.com/blog/')
+                .should.equal('/blog/', 'with root trailing-slash');
+        });
     });
 });
