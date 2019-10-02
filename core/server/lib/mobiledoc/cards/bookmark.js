@@ -37,11 +37,12 @@ module.exports = createCard({
     name: 'bookmark',
     type: 'dom',
     render(opts) {
-        if (!opts.payload.metadata) {
+        let {payload, env: {dom}} = opts;
+
+        if (!payload.metadata || !payload.metadata.url || !payload.metadata.title || !payload.metadata.description) {
             return '';
         }
 
-        let {payload, env: {dom}} = opts;
         let figure = createElement(dom, 'figure', 'kg-card kg-bookmark-card');
         let linkTag = createElement(dom, 'a', 'kg-bookmark-container', [{
             key: 'href',
