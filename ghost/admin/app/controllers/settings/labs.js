@@ -14,6 +14,7 @@ import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
+import isNumber from 'ghost-admin/utils/isNumber';
 
 const {Promise} = RSVP;
 
@@ -70,8 +71,8 @@ export default Controller.extend({
         });
         let monthlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'month');
         let yearlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'year');
-        monthlyPlan.dollarAmount = monthlyPlan.amount ? (monthlyPlan.amount / 100) : '';
-        yearlyPlan.dollarAmount = yearlyPlan.amount ? (yearlyPlan.amount / 100) : '';
+        monthlyPlan.dollarAmount = isNumber(monthlyPlan.amount) ? (monthlyPlan.amount / 100) : '';
+        yearlyPlan.dollarAmount = isNumber(yearlyPlan.amount) ? (yearlyPlan.amount / 100) : '';
         stripeProcessor.config.plans = {
             monthly: monthlyPlan,
             yearly: yearlyPlan
