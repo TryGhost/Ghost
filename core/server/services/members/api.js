@@ -86,9 +86,6 @@ const ghostMailer = new mail.GhostMailer();
 
 function getStripePaymentConfig() {
     const subscriptionSettings = settingsCache.get('members_subscription_settings');
-    if (!subscriptionSettings || subscriptionSettings.isPaid === false) {
-        return null;
-    }
 
     const stripePaymentProcessor = subscriptionSettings.paymentProcessors.find(
         paymentProcessor => paymentProcessor.adapter === 'stripe'
