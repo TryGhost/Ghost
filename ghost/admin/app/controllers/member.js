@@ -31,6 +31,12 @@ export default Controller.extend({
     }),
 
     actions: {
+        setProperty(propKey, value) {
+            // this._saveTagProperty(propKey, value);
+        },
+        toggleDeleteTagModal() {
+            this.toggleProperty('showDeleteMemberModal');
+        },
         finaliseDeletion() {
             // decrememnt the total member count manually so there's no flash
             // when transitioning back to the members list
@@ -38,8 +44,16 @@ export default Controller.extend({
                 this.members.decrementProperty('meta.pagination.total');
             }
             this.router.transitionTo('members');
+        },
+        save() {
+            return this.save.perform();
         }
     },
+
+    save: task(function* () {
+        // DO NOTHING ATM
+        return;
+    }),
 
     fetchMember: task(function* (memberId) {
         yield this.store.findRecord('member', memberId, {
