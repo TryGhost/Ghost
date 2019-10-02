@@ -6,9 +6,6 @@
                 @input={{action (mut this.searchText) value="target.value"}} />
         </div>
     </GhCanvasHeader>
-    <div style="width:100%">
-        {{ember-chart type='line' options=chartOptions.options data=chartData.data height=70}}
-    </div>
     <section class="view-container h-100">
 
         <div class="flex justify-between items-center">
@@ -27,14 +24,8 @@
         </div>
 
             <section class="content-list">
-                <ol class="tags-list gh-list">
+                <ol class="members-list gh-list">
                     {{#if filteredMembers}}
-                        <li class="gh-list-row header">
-                            <div class="gh-list-header gh-list-cellwidth-1-2">Member Email</div>
-                            <div class="gh-list-header">Member Name</div>
-                            <div class="gh-list-header">Subscribed on</div>
-                            <div class="gh-list-header"></div>
-                        </li>
                         {{#vertical-collection
                                     items=filteredMembers
                                     key="id"
