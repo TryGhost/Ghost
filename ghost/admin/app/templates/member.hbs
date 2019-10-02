@@ -1,42 +1,19 @@
 <section class="gh-canvas">
-    <GhCanvasHeader class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>
-            {{link-to "Members" "members" data-test-link="members"}}
-            <span>{{svg-jar "arrow-right"}}</span>
-            {{member.name}}
-        </h2>
-    </GhCanvasHeader>
-
-    <section class="view-container">
-        <div class="br3 bg-white mt2 shadow-1">
-            <div class="flex flex-row pa5 bb b--whitegrey">
-                <GhMemberAvatar class="w20 h20 mr4" @initialsClass="f-subheadline" @member={{member}} />
-                <div class="flex flex-column justify-center">
-                    <h3 class="ma0 pa0 fw5">{{member.name}}</h3>
-                    <span class="db">
-                        <a class="midlightgrey" href="mailto:{{member.email}}">
-                            {{member.email}}
-                        </a>
-                    </span>
-                </div>
-            </div>
-            <div class="flex flex-row">
-                <div class="flex flex-column flex-grow-1 pa5 br b--whitegrey w-50">
-                    <span class="db ttu f8 midlightgrey">Member since</span>
-                    <span class="db f5">{{moment-format member.createdAt "MMMM Do"}}</span>
-                    <span class="db f8 midlightgrey">({{moment-to-now member.createdAt hideAffix=true}})</span>
-                </div>
-                <div class="flex flex-column flex-grow-1 pa5 w-50">
-                    <span class="db ttu f8 midlightgrey">Current plan</span>
-                    <span class="db f5 {{if (eq subscription.plan '...') "midlightgrey"}}">{{subscription.plan}}</span>
-                    {{#unless (eq subscription.amount '...')}}
-                        <span class="db f8 midlightgrey">{{subscription.amount}} USD/month</span>
-                    {{/unless}}
-                </div>
-            </div>
-        </div>
-
-        <h2 class="pb1 bb b--whitegrey-d1 f-small fw5 midlightgrey ttu mt10 pb2">Danger zone</h2>
+    <form class="mb15" {{action (perform "save") on="submit"}}>
+        <GhCanvasHeader class="gh-canvas-header">
+            <h2 class="gh-canvas-title" data-test-screen-title>
+                {{#link-to "members" data-test-link="members-back"}}Members{{/link-to}}
+                <span>{{svg-jar "arrow-right"}}</span>
+                {{member.email}}
+            </h2>
+            <section class="view-actions">
+                {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-button="save"}}
+            </section>
+        </GhCanvasHeader>
+        {{gh-member-settings-form member=member
+            setProperty=(action "setProperty")
+            showDeleteTagModal=(action "toggleDeleteTagModal")}}
+    </form>
         <button
             type="button"
             class="gh-btn gh-btn-red gh-btn-icon mt3"
@@ -45,7 +22,6 @@
         >
             <span>Delete member</span>
         </button>
-    </section>
 </section>
 
 {{#if showDeleteMemberModal}}

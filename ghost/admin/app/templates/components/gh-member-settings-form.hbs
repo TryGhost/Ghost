@@ -1,0 +1,42 @@
+<h4 class="midlightgrey f-small fw5 ttu">Basic settings</h4>
+<div class="pa5 pt4 br4 shadow-1 bg-grouped-table mt2 flex flex-column flex-row-ns items-start justify-between gh-tag-basic-settings-form">
+    <div class="order-1 flex flex-column items-start mr5 w-100 w-50-m w-two-thirds-l">
+        {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="name"}}
+        <label for="member-name">Name</label>
+        {{gh-text-input
+                    id="member-name"
+                    name="name"
+                    value=(readonly scratchName)
+                    tabindex="1"
+                    input=(action (mut scratchName) value="target.value")
+                    focus-out=(action 'setProperty' 'name' scratchName)}}
+        {{gh-error-message errors=tag.errors property="name"}}
+        {{/gh-form-group}}
+
+        {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="email"}}
+        <label for="member-email">Email</label>
+        {{gh-text-input
+                    value=(readonly scratchSlug)
+                    id="member-email"
+                    name="email"
+                    tabindex="2"
+                    focus-out=(action 'setProperty' 'email' scratchEmail)
+                    input=(action (mut scratchSlug) value="target.value")}}
+        {{/gh-form-group}}
+
+        {{#gh-form-group errors=member.errors hasValidated=tag.hasValidated property="note"}}
+        <label for="member-description">Note</label>
+        {{gh-textarea
+                    id="member-description"
+                    name="description"
+                    class="gh-tag-details-textarea"
+                    tabindex="3"
+                    value=(readonly scratchDescription)
+                    input=(action (mut scratchDescription) value="target.value")
+                    focus-out=(action 'setProperty' 'description' scratchDescription)
+                }}
+        {{gh-error-message errors=tag.errors property="description"}}
+        <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchDescription 500}}</p>
+        {{/gh-form-group}}
+    </div>
+</div>
