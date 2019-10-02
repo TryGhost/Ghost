@@ -108,7 +108,7 @@ module.exports = class StripePaymentProcessor {
         };
     }
 
-    async getActiveSubscriptions(member) {
+    async getSubscriptions(member) {
         const metadata = await this.storage.get(member);
 
         const customers = await Promise.all(metadata.map(async (data) => {
@@ -134,17 +134,10 @@ module.exports = class StripePaymentProcessor {
                 if (!subscription.plan) {
                     return subscriptions;
                 }
-                // Ignore cancelled subscriptions
-                if (subscription.status === 'cancelled') {
-                    return subscriptions;
-                }
-                // Ignore unpaid subscriptions
-                if (subscription.status === 'unpaid') {
-                    return subscriptions;
-                }
 
                 return subscriptions.concat([{
                     customer: customer.id,
+                    status: subscription.status,
                     subscription: subscription.id,
                     plan: subscription.plan.id,
                     name: subscription.plan.nickname,
@@ -153,6 +146,14 @@ module.exports = class StripePaymentProcessor {
                 }]);
             }, []));
         }, []);
+    }
+
+    async getActiveSubscriptions(member) {
+        const subscriptions = await this.getSubscriptions(member);
+
+        return subscriptions.filter((subscription) => {
+            return subscription.status !== 'cancelled' && subscription.status !== 'unpaid';
+        });
     }
 
     async addCustomerToMember(member, customer) {
