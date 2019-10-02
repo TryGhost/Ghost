@@ -1,15 +1,19 @@
 <section class="gh-canvas">
-    <form class="mb15" {{action (perform "save") on="submit"}}>
+    <form class="mb15 member-basic-info-form" {{action (perform "save") on="submit"}}>
         <GhCanvasHeader class="gh-canvas-header">
             <h2 class="gh-canvas-title" data-test-screen-title>
                 {{#link-to "members" data-test-link="members-back"}}Members{{/link-to}}
                 <span>{{svg-jar "arrow-right"}}</span>
                 {{member.email}}
             </h2>
-            <section class="view-actions">
-                {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-button="save"}}
-            </section>
         </GhCanvasHeader>
+        <div class="member-detail-main-info">
+            <GhMemberAvatar @member={{member}} @sizeClass={{'f-headline fw6'}} class="w16 h16 mr4" />
+            <div class="apps-card-meta">
+                <h3 class="apps-card-app-title">{{member.email}}</h3>
+                <p class="apps-card-app-desc">{{this.subscribedAt}}</p>
+            </div>
+        </div>
         {{gh-member-settings-form member=member
             setProperty=(action "setProperty")
             showDeleteTagModal=(action "toggleDeleteTagModal")}}

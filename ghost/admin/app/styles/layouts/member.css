@@ -1,0 +1,13 @@
+.member-detail-main-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.member-basic-info-form input:disabled {
+    background: var(--lightgrey);
+}
+
+.member-basic-info-form textarea:disabled {
+    background: var(--lightgrey);
+}

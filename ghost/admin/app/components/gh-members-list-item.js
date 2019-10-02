@@ -20,6 +20,8 @@ export default Component.extend({
         return this.member.name || '-';
     }),
     subscribedAt: computed('member.createdAt', function () {
-        return moment(this.member.createdAt).format('YYYY-MM-DD HH:mm');
+        let memberSince = moment(this.member.createdAt).from(moment());
+        let createdDate = moment(this.member.createdAt).format('MMM DD, YYYY');
+        return `Created on ${createdDate} (${memberSince})`;
     })
 });
