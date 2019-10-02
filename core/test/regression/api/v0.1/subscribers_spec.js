@@ -19,7 +19,7 @@ describe('Subscribers API', function () {
 
     before(function () {
         sinon.stub(labs, 'isSet').withArgs('subscribers').returns(true);
-        ghost()
+        return ghost()
             .then(function (_ghostServer) {
                 ghostServer = _ghostServer;
                 request = supertest.agent(config.get('url'));

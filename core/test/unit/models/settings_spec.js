@@ -15,22 +15,17 @@ describe('Unit: models/settings', function () {
         let eventSpy;
 
         beforeEach(function () {
+            sinon.restore();
+
             mockDb.mock(knex);
             tracker = mockDb.getTracker();
             tracker.install();
             eventSpy = sinon.spy(common.events, 'emit');
-            mockDb.mock(knex);
-            tracker = mockDb.getTracker();
-            tracker.install();
-            eventSpy = sinon.spy(common.events, 'emit');
+
         });
 
         afterEach(function () {
             mockDb.unmock(knex);
-            sinon.restore();
-            mockDb.unmock(knex);
-            tracker.uninstall();
-            sinon.restore();
         });
 
         it('emits add events', function () {
@@ -87,6 +82,22 @@ describe('Unit: models/settings', function () {
     describe('defaults', function () {
         let tracker;
         let eventSpy;
+
+        beforeEach(function () {
+            sinon.restore();
+
+            mockDb.mock(knex);
+            tracker = mockDb.getTracker();
+            tracker.install();
+            eventSpy = sinon.spy(common.events, 'emit');
+
+        });
+
+        afterEach(function () {
+            mockDb.unmock(knex);
+            tracker.uninstall();
+        });
+        
 
         it('populates unset defaults', function () {
             tracker.on('query', (query) => {
