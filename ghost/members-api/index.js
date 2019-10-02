@@ -28,8 +28,13 @@ module.exports = function MembersApi({
     getMember,
     updateMember,
     deleteMember,
-    listMembers
+    listMembers,
+    logger
 }) {
+    if (logger) {
+        common.logging.setLogger(logger);
+    }
+
     const {encodeIdentityToken, decodeToken} = Tokens({privateKey, publicKey, issuer});
 
     const stripeStorage = {
@@ -40,7 +45,7 @@ module.exports = function MembersApi({
             return setMemberMetadata(member, 'stripe', metadata);
         }
     };
-    const stripe = paymentConfig.stripe ? new StripePaymentProcessor(paymentConfig.stripe, stripeStorage) : null;
+    const stripe = paymentConfig.stripe ? new StripePaymentProcessor(paymentConfig.stripe, stripeStorage, common.logging) : null;
 
     async function ensureStripe(_req, res, next) {
         if (!stripe) {
@@ -187,8 +192,6 @@ module.exports = function MembersApi({
         }
     });
 
-    const setLogger = common.logging.setLogger;
-
     const getPublicConfig = function () {
         return Promise.resolve({
             publicKey,
@@ -213,7 +216,6 @@ module.exports = function MembersApi({
         getMemberDataFromMagicLinkToken,
         getMemberIdentityToken,
         getMemberIdentityData,
-        setLogger,
         getPublicConfig,
         bus,
         members: users
