@@ -23,7 +23,7 @@ const deduplicateSubdirectory = function deduplicateSubdirectory(url, rootUrl) {
     const subdir = parsedRoot.pathname.replace(/(^\/|\/$)+/g, '');
     // we can have subdirs that match TLDs so we need to restrict matches to
     // duplicates that start with a / or the beginning of the url
-    const subdirRegex = new RegExp(`(^|/)${subdir}/${subdir}/`);
+    const subdirRegex = new RegExp(`(^|/)${subdir}/${subdir}(/|$)`);
 
     return url.replace(subdirRegex, `$1${subdir}/`);
 };
