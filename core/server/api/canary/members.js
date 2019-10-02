@@ -40,6 +40,21 @@ const members = {
         }
     },
 
+    add: {
+        statusCode: 201,
+        headers: {},
+        validation: {
+            data: {
+                email: {required: true}
+            }
+        },
+        permissions: true,
+        async query(frame) {
+            const member = await membersService.api.members.create(frame.data.members[0]);
+            return member;
+        }
+    },
+
     destroy: {
         statusCode: 204,
         headers: {},
