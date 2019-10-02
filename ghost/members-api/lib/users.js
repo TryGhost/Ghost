@@ -1,3 +1,4 @@
+const debug = require('ghost-ignition').debug('users');
 module.exports = function ({
     sendEmailWithMagicLink,
     stripe,
@@ -8,6 +9,7 @@ module.exports = function ({
     deleteMember
 }) {
     async function get(data, options) {
+        debug(`get id:${data.id} email:${data.email}`);
         const member = await getMember(data, options);
         if (!member) {
             return member;
@@ -35,6 +37,7 @@ module.exports = function ({
     }
 
     async function destroy(data, options) {
+        debug(`destroy id:${data.id} email:${data.email}`);
         const member = await getMember(data, options);
         if (!member) {
             return;
@@ -46,6 +49,8 @@ module.exports = function ({
     }
 
     async function update(data, options) {
+        debug(`update id:${data.id} email:${data.email}`);
+        await getMember(data, options);
         return updateMember(data, options);
     }
 
@@ -54,8 +59,10 @@ module.exports = function ({
     }
 
     async function create(data, options = {}) {
+        debug(`create email:${data.email}`);
         const member = await createMember(data);
         if (options.sendEmail) {
+            debug(`create sending email to ${member.email}`);
             await sendEmailWithMagicLink(member.email, options.emailType);
         }
         return member;

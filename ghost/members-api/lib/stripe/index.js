@@ -61,8 +61,9 @@ module.exports = class StripePaymentProcessor {
                 this.logging.warn(err);
                 this._webhookSecret = process.env.WEBHOOK_SECRET;
             }
-            this.logging.info(this._webhookSecret);
+            debug(`Webhook secret set to ${this._webhookSecret}`);
         } catch (err) {
+            debug(`Error configuring ${err.message}`);
             return this._rejectReady(err);
         }
 
@@ -79,7 +80,12 @@ module.exports = class StripePaymentProcessor {
     async createCheckoutSession(member, planName) {
         let customer;
         if (member) {
-            customer = await this._customerForMember(member);
+            try {
+                customer = await this._customerForMember(member);
+            } catch (err) {
+                debug(`Ignoring Error getting customer for checkout ${err.message}`);
+                customer = null;
+            }
         } else {
             customer = null;
         }
@@ -105,11 +111,20 @@ module.exports = class StripePaymentProcessor {
     async getActiveSubscriptions(member) {
         const metadata = await this.storage.get(member);
 
-        const customers = await Promise.all(metadata.map((data) => {
-            return this.getCustomer(data.customer_id);
+        const customers = await Promise.all(metadata.map(async (data) => {
+            try {
+                const customer = await this.getCustomer(data.customer_id);
+                return customer;
+            } catch (err) {
+                debug(`Ignoring Error getting customer for active subscriptions ${err.message}`);
+                return null;
+            }
         }));
 
         return customers.reduce(function (subscriptions, customer) {
+            if (!customer) {
+                return subscriptions;
+            }
             if (customer.deleted) {
                 return subscriptions;
             }
@@ -146,6 +161,7 @@ module.exports = class StripePaymentProcessor {
         if (metadata.some(data => data.customer_id === customer.id)) {
             return;
         }
+        debug(`Attaching customer to member ${member.email} ${customer.id}`);
         return this.storage.set(member, metadata.concat({
             customer_id: customer.id
         }));
@@ -160,11 +176,12 @@ module.exports = class StripePaymentProcessor {
                 if (!customer.deleted) {
                     return customer;
                 }
-            } catch (e) {
-                console.log(e);
+            } catch (err) {
+                debug(`Ignoring Error getting customer for member ${err.message}`);
             }
         }
 
+        debug(`Creating customer for member ${member.email}`);
         const customer = await create(this._stripe, 'customers', {
             email: member.email
         });
