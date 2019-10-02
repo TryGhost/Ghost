@@ -1,4 +1,5 @@
-const {retrieve, create} = require('./api/stripeRequests');
+const debug = require('ghost-ignition').debug('stripe');
+const {retrieve, list, create, del} = require('./api/stripeRequests');
 const api = require('./api');
 
 const STRIPE_API_VERSION = '2019-09-09';
@@ -36,8 +37,19 @@ module.exports = class StripePaymentProcessor {
                 this._plans.push(plan);
             }
 
+            const webhooks = await list(this._stripe, 'webhookEndpoints', {
+                limit: 100
+            });
+
+            const webhookToDelete = webhooks.data.find((webhook) => {
+                return webhook.url === this._webhookHandlerUrl;
+            });
+
+            if (webhookToDelete) {
+                await del(this._stripe, 'webhookEndpoints', webhookToDelete.id);
+            }
+
             try {
-                // @TODO Need to somehow not duplicate this every time we boot
                 const webhook = await create(this._stripe, 'webhookEndpoints', {
                     url: this._webhookHandlerUrl,
                     api_version: STRIPE_API_VERSION,
