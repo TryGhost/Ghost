@@ -54,9 +54,10 @@ const members = {
             }
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
             frame.options.require = true;
-            return membersService.api.members.destroy(frame.options).return(null);
+            await membersService.api.members.destroy(frame.options);
+            return null;
         }
     }
 };
