@@ -6,8 +6,11 @@
                 @input={{action (mut this.searchText) value="target.value"}} />
         </div>
     </GhCanvasHeader>
-
+    <div style="width:100%">
+        {{ember-chart type='line' options=chartOptions.options data=chartData.data height=70}}
+    </div>
     <section class="view-container h-100">
+
         <div class="flex justify-between items-center">
             <h2 class="f-small fw5 midlightgrey ttu">
                 {{#if this.searchText}}
@@ -23,40 +26,43 @@
             </h2>
         </div>
 
-        {{#if this.filteredMembers}}
-            {{!-- members list, styles taken from .apps-grid --}}
-            <div class="flex flex-row flex-wrap items-start br3 mt2 mb10 bg-grouped-table shadow-1">
-                <VerticalCollection
-                    @items={{this.filteredMembers}}
-                    @key="id"
-                    @containerSelector=".gh-main"
-                    @estimateHeight=76
-                    as |member index|
-                >
-                    <div class="flex-grow-1 flex-shrink-1" style="flex-basis: 100%">
-                        {{#link-to "member" member classNames="link whitegrey"}}
-                            <article class="flex items-center justify-between pa4 pt3 pb3 {{if index "bt"}} highlight-whitegrey">
-                                <div class="flex items-center">
-                                    <GhMemberAvatar @member={{member}} class="w9 h9 mr4" />
-                                    <div class="flex flex-column">
-                                        <h3 class="darkgrey ma0 f6 fw6">{{member.name}}</h3>
-                                        <p class="midgrey ma0 pa0 f7">{{member.email}}</p>
-                                    </div>
+            <section class="content-list">
+                <ol class="tags-list gh-list">
+                    {{#if filteredMembers}}
+                        <li class="gh-list-row header">
+                            <div class="gh-list-header gh-list-cellwidth-1-2">Member Email</div>
+                            <div class="gh-list-header">Member Name</div>
+                            <div class="gh-list-header">Subscribed on</div>
+                            <div class="gh-list-header"></div>
+                        </li>
+                        {{#vertical-collection
+                                    items=filteredMembers
+                                    key="id"
+                                    containerSelector=".gh-main"
+                                    estimateHeight=60
+                                    bufferSize=20
+                                    as |member|
+                                }}
+                        {{gh-members-list-item
+                                        member=member
+                                        data-test-member-id=member.id
+                                    }}
+                        {{/vertical-collection}}
+                    {{else}}
+                        {{#if this.fetchMembers.isRunning}}
+                            <div class="gh-content">
+                                <GhLoadingSpinner />
+                            </div>
+                        {{else}}
+                            <li class="no-posts-box">
+                                <div class="no-posts">
+                                    {{svg-jar "tags-placeholder" class="gh-tags-placeholder"}}
+                                    <h3>No members found!</h3>
                                 </div>
-                                <div class="flex items-center">{{svg-jar "arrow-right" class="w4 h4 fill-midlightgrey"}}</div>
-                            </article>
-                        {{/link-to}}
-                    </div>
-                </VerticalCollection>
-            </div>
-        {{else}}
-            {{#if this.fetchMembers.isRunning}}
-                <div class="gh-content">
-                    <GhLoadingSpinner />
-                </div>
-            {{else}}
-                <p class="mt2 pt10 bt b--whitegrey tc midlightgrey">No members found.</p>
-            {{/if}}
-        {{/if}}
+                            </li>
+                        {{/if}}
+                    {{/if}}
+                </ol>
+            </section>
     </section>
 </section>
