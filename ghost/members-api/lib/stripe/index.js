@@ -141,9 +141,13 @@ module.exports = class StripePaymentProcessor {
         const metadata = await this.storage.get(member);
 
         for (const data in metadata) {
-            const customer = await this.getCustomer(data.customer_id);
-            if (!customer.deleted) {
-                return customer;
+            try {
+                const customer = await this.getCustomer(data.customer_id);
+                if (!customer.deleted) {
+                    return customer;
+                }
+            } catch (e) {
+                console.log(e);
             }
         }
 
