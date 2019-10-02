@@ -47,6 +47,10 @@ async function getMemberMetadata(member, module) {
     return metadata.toJSON();
 }
 
+function updateMember({name}, options) {
+    return models.Member.edit({name}, options);
+}
+
 function deleteMember(options) {
     options = options || {};
     return models.Member.destroy(options).catch(models.Member.NotFoundError, () => {
@@ -168,6 +172,7 @@ function createApiInstance() {
         setMemberMetadata,
         getMemberMetadata,
         createMember,
+        updateMember,
         getMember,
         deleteMember,
         listMembers,
