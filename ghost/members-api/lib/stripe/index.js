@@ -127,7 +127,9 @@ module.exports = class StripePaymentProcessor {
 
         const customers = await Promise.all(metadata.map(async (data) => {
             try {
-                const customer = await this.getCustomer(data.customer_id);
+                const customer = await this.getCustomer(data.customer_id, {
+                    expand: ['subscriptions.data.default_payment_method']
+                });
                 return customer;
             } catch (err) {
                 debug(`Ignoring Error getting customer for active subscriptions ${err.message}`);
@@ -149,13 +151,17 @@ module.exports = class StripePaymentProcessor {
                     return subscriptions;
                 }
 
+                const payment = subscription.default_payment_method;
                 return subscriptions.concat([{
                     customer: customer.id,
                     status: subscription.status,
                     subscription: subscription.id,
                     plan: subscription.plan.id,
                     name: subscription.plan.nickname,
+                    interval: subscription.plan.interval,
                     amount: subscription.plan.amount,
+                    currency: subscription.plan.currency,
+                    last4: payment && payment.card && payment.card.last4 || null,
                     validUntil: subscription.current_period_end
                 }]);
             }, []));
@@ -206,7 +212,7 @@ module.exports = class StripePaymentProcessor {
         return customer;
     }
 
-    async getCustomer(id) {
-        return retrieve(this._stripe, 'customers', id);
+    async getCustomer(id, options) {
+        return retrieve(this._stripe, 'customers', id, options);
     }
 };
