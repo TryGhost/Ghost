@@ -49,8 +49,8 @@ module.exports = function ({
     }
 
     async function update(data, options) {
-        debug(`update id:${data.id} email:${data.email}`);
-        await getMember(data, options);
+        debug(`update id:${options.id}`);
+        await getMember({id: options.id});
         return updateMember(data, options);
     }
 
