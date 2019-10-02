@@ -237,10 +237,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@0.7.4":
-  version "0.7.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.7.4.tgz#f635fccba5e0026c714a19a2ab03b367930440c5"
-  integrity sha512-jixKn+WKefLKsiyEj4DD9FKqxZ7ejGoVVCG/KO6l3JxzvUG7s36hLX3AYq1OngdmwxtdMUBP/QuYcHAvU2d1mw==
+"@tryghost/members-api@0.7.5":
+  version "0.7.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.7.5.tgz#1b9e833b8098ea925b3f0ce3d2716934f0053290"
+  integrity sha512-84DEv/xTf5MrMdVpIq8jVXAT2e8PEFQiCqZWd4mTjYd+fNZlkd+WBg9DGM2qc1M21tYIXdMdwOmXQo9rzqhgdQ==
   dependencies:
     "@tryghost/magic-link" "^0.2.0"
     bluebird "^3.5.4"
