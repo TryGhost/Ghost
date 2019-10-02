@@ -108,6 +108,20 @@ module.exports = class StripePaymentProcessor {
         };
     }
 
+    async cancelAllSubscriptions(member) {
+        const subscriptions = await this.getSubscriptions(member);
+
+        const activeSubscriptions = subscriptions.filter((subscription) => {
+            return subscription.status !== 'cancelled';
+        });
+
+        await Promise.all(activeSubscriptions.map((subscription) => {
+            return del(this._stripe, 'subscriptions', subscription.subscription);
+        }));
+
+        return true;
+    }
+
     async getSubscriptions(member) {
         const metadata = await this.storage.get(member);
 
