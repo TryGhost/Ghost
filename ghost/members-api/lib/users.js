@@ -43,7 +43,7 @@ module.exports = function ({
             return;
         }
         if (stripe) {
-            await stripe.removeCustomer(member);
+            await stripe.cancelAllSubscriptions(member);
         }
         return deleteMember(data, options);
     }
