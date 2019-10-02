@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import moment from 'moment';
 import {alias} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as controller} from '@ember/controller';
@@ -30,9 +31,14 @@ export default Controller.extend({
         };
     }),
 
+    subscribedAt: computed('member.createdAt', function () {
+        let createdDate = moment(this.member.createdAt).format('MMM DD, YYYY');
+        return `Subscribed ${createdDate}`;
+    }),
+
     actions: {
-        setProperty(propKey, value) {
-            // this._saveTagProperty(propKey, value);
+        setProperty() {
+            return;
         },
         toggleDeleteTagModal() {
             this.toggleProperty('showDeleteMemberModal');
@@ -44,16 +50,8 @@ export default Controller.extend({
                 this.members.decrementProperty('meta.pagination.total');
             }
             this.router.transitionTo('members');
-        },
-        save() {
-            return this.save.perform();
         }
     },
-
-    save: task(function* () {
-        // DO NOTHING ATM
-        return;
-    }),
 
     fetchMember: task(function* (memberId) {
         yield this.store.findRecord('member', memberId, {

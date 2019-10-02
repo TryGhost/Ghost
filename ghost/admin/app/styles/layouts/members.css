@@ -1,0 +1,3 @@
+.members-list .gh-list-row:nth-of-type(2) .gh-list-data {
+    border-top: var(--whitegrey) 1px solid;
+}

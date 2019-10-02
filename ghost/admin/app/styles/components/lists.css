@@ -79,7 +79,7 @@
 }
 
 .gh-list-row:nth-of-type(2) .gh-list-data {
-    border: none;
+    border-top: none;
 }
 
 .gh-list-data.show-on-hover > *,
