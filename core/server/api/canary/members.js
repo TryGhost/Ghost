@@ -58,13 +58,23 @@ const members = {
             }
         },
         permissions: true,
-        async query(frame) {
-            const member = await membersService.api.members.create(frame.data.members[0], {
+        query(frame) {
+            return membersService.api.members.create(frame.data.members[0], {
                 sendEmail: frame.options.send_email,
                 emailType: frame.options.email_type
-            });
+            })
+                .then((member) => {
+                    if (member) {
+                        return Promise.resolve(member);
+                    }
+                })
+                .catch((error) => {
+                    if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
+                        return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.subscribers.memberAlreadyExists')}));
+                    }
 
-            return member;
+                    return Promise.reject(error);
+                });
         }
     },
 
