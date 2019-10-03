@@ -55,4 +55,26 @@ describe('HTML card', function () {
 
         serializer.serialize(card.render(opts)).should.eql('');
     });
+
+    it('transforms urls absolute to relative', function () {
+        let payload = {
+            html: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
+        };
+
+        const transformed = card.absoluteToRelative(payload, {});
+
+        transformed.html
+            .should.equal('A link to <a href="/post">an internal post</a>');
+    });
+
+    it('transforms urls relative to absolute', function () {
+        let payload = {
+            html: 'A link to <a href="/post">an internal post</a>'
+        };
+
+        const transformed = card.relativeToAbsolute(payload, {});
+
+        transformed.html
+            .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
+    });
 });

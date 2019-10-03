@@ -58,4 +58,26 @@ describe('Markdown card', function () {
 
         serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: markdown--><div class="kg-card-markdown"><h1 id="heading">HEADING</h1>\n<ul>\n<li>list</li>\n<li>items</li>\n</ul>\n</div><!--kg-card-end: markdown-->');
     });
+
+    it('transforms urls absolute to relative', function () {
+        let payload = {
+            markdown: 'A link to [an internal post](http://127.0.0.1:2369/post)'
+        };
+
+        const transformed = card.absoluteToRelative(payload, {});
+
+        transformed.markdown
+            .should.equal('A link to [an internal post](/post)');
+    });
+
+    it('transforms urls relative to absolute', function () {
+        let payload = {
+            markdown: 'A link to [an internal post](/post)'
+        };
+
+        const transformed = card.relativeToAbsolute(payload, {});
+
+        transformed.markdown
+            .should.equal('A link to [an internal post](http://127.0.0.1:2369/post)');
+    });
 });

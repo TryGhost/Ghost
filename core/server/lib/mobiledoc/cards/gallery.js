@@ -108,5 +108,31 @@ module.exports = createCard({
         }
 
         return figure;
+    },
+
+    absoluteToRelative(urlUtils, payload, options) {
+        if (payload.images) {
+            payload.images.forEach((image) => {
+                image.src = image.src && urlUtils.absoluteToRelative(image.src, options);
+                image.caption = image.caption && urlUtils.htmlAbsoluteToRelative(image.caption, options);
+            });
+        }
+
+        payload.caption = payload.caption && urlUtils.htmlAbsoluteToRelative(payload.caption, options);
+
+        return payload;
+    },
+
+    relativeToAbsolute(urlUtils, payload, options) {
+        if (payload.images) {
+            payload.images.forEach((image) => {
+                image.src = image.src && urlUtils.relativeToAbsolute(image.src, options);
+                image.caption = image.caption && urlUtils.htmlRelativeToAbsolute(image.caption, options);
+            });
+        }
+
+        payload.caption = payload.caption && urlUtils.htmlRelativeToAbsolute(payload.caption, options);
+
+        return payload;
     }
 });
