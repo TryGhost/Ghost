@@ -11,7 +11,7 @@
                     tabindex="1"
                     input=(action (mut scratchName) value="target.value")
                     focus-out=(action 'setProperty' 'name' scratchName)}}
-        {{gh-error-message errors=tag.errors property="name"}}
+        {{gh-error-message errors=member.errors property="name"}}
         {{/gh-form-group}}
 
         {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="email"}}
@@ -28,7 +28,7 @@
 
     </div>
     <div class="mb6 mb0-ns w-100 w-50-ns">
-        {{#gh-form-group errors=member.errors hasValidated=tag.hasValidated property="note"}}
+        {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="note"}}
             <label for="member-description">Note</label>
             {{gh-textarea
                         disabled=true
@@ -40,8 +40,62 @@
                         input=(action (mut scratchDescription) value="target.value")
                         focus-out=(action 'setProperty' 'description' scratchDescription)
                     }}
-            {{gh-error-message errors=tag.errors property="description"}}
+            {{gh-error-message errors=member.errors property="description"}}
             <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchDescription 500}}</p>
         {{/gh-form-group}}
     </div>
+</div>
+
+<h4 class="midlightgrey f-small fw5 ttu mt15">Stripe info</h4>
+<div class="pa5 pb0 pt4 br4 shadow-1 bg-grouped-table mt2 flex flex-column flex-row-ns items-start justify-between gh-tag-basic-settings-form">
+    {{#if subscription}}
+        <div class="flex flex-column items-start mr8 w-100 w-50-ns">
+            {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
+                <label for="member-customer-id">Stripe Customer Id</label>
+                {{gh-text-input
+                    disabled=true
+                    id="member-customer-id"
+                    name="member-customer-id"
+                    value=(readonly subscription.customer)
+                    tabindex="1"}}
+            {{/gh-form-group}}
+
+            {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
+                <label for="member-customer-status">Subscription Status</label>
+                {{gh-text-input
+                    disabled=true
+                    value=(readonly subscription.status)
+                    id="member-customer-status"
+                    name="member-customer-status"
+                    tabindex="2"}}
+            {{/gh-form-group}}
+
+        </div>
+        <div class="mb6 mb0-ns w-100 w-50-ns">
+            {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
+                <label for="member-plan-name">Subscription plan</label>
+                {{gh-text-input
+                    disabled=true
+                    value=(readonly subscription.name)
+                    id="member-plan-name"
+                    name="member-plan-name"
+                    tabindex="1"}}
+            {{/gh-form-group}}
+
+            {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
+                <label for="member-plan-renewal">Renewal date</label>
+                {{gh-text-input
+                    disabled=true
+                    value=(readonly subscription.validUntil)
+                    id="member-plan-renewal"
+                    name="member-plan-renewal"
+                    tabindex="1"}}
+            {{/gh-form-group}}
+        </div>
+    {{else}}
+        <div class="flex flex-column items-start mr8 w-100 w-50-ns">
+            Non Paid member
+        </div>
+    {{/if}}
+
 </div>

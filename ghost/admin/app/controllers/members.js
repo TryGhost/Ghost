@@ -41,17 +41,19 @@ export default Controller.extend({
             // fetch any records modified since last fetch
             results = yield this.store.query('member', {
                 limit: 'all',
-                filter: `updated_at:>='${moment.utc(this._lastFetchDate).format('YYYY-MM-DD HH:mm:ss')}'`
+                filter: `updated_at:>='${moment.utc(this._lastFetchDate).format('YYYY-MM-DD HH:mm:ss')}'`,
+                order: 'created_at desc'
             });
         } else {
             // fetch all records
             results = yield this.store.query('member', {
-                limit: 'all'
+                limit: 'all',
+                order: 'created_at desc'
             });
             this._hasFetchedAll = true;
+            this.set('meta', results.meta);
         }
 
-        this.set('meta', results.meta);
         this._lastFetchDate = newFetchDate;
     })
 });
