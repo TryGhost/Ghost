@@ -162,7 +162,10 @@ module.exports = function MembersApi({
             return res.end('No permission');
         }
 
-        const sessionInfo = await stripe.createCheckoutSession(member, plan);
+        const sessionInfo = await stripe.createCheckoutSession(member, plan, {
+            successUrl: req.body.successUrl,
+            cancelUrl: req.body.cancelUrl
+        });
 
         res.writeHead(200, {
             'Content-Type': 'application/json'
