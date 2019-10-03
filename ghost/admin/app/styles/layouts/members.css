@@ -1,3 +1,18 @@
-.members-list .gh-list-row:nth-of-type(2) .gh-list-data {
-    border-top: var(--whitegrey) 1px solid;
+.view-actions input.gh-members-list-searchfield {
+    min-width: 220px;
+    padding-left: 30px;
+}
+
+p.gh-members-list-email {
+    margin: -2px 0 -1px;
+}
+
+.gh-members-list-subscribed-at {
+    margin-right: -8px;
+    padding-right: 0;
+}
+
+.gh-members-placeholder {
+    width: 118px;
+    margin: -30px 0 15px;
 }

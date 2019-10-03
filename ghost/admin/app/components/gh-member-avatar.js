@@ -17,7 +17,7 @@ export default Component.extend({
 
     member: null,
     initialsClass: computed('sizeClass', function () {
-        return this.sizeClass || 'f6 fw4';
+        return this.sizeClass || 'f5 fw4 lh-zero';
     }),
 
     backgroundStyle: computed('member.{name,email}', function () {

@@ -10,18 +10,16 @@ export default Component.extend({
     router: service(),
 
     tagName: 'li',
-    classNames: ['gh-list-row', 'gh-tags-list-item'],
+    classNames: ['gh-flex-list-row'],
 
     active: false,
 
     id: alias('member.id'),
     email: alias('member.email'),
-    name: computed('member.name', function () {
-        return this.member.name || '-';
-    }),
+    name: alias('member.name'),
     subscribedAt: computed('member.createdAt', function () {
         let memberSince = moment(this.member.createdAt).from(moment());
         let createdDate = moment(this.member.createdAt).format('MMM DD, YYYY');
-        return `Created on ${createdDate} (${memberSince})`;
+        return `${createdDate} (${memberSince})`;
     })
 });
