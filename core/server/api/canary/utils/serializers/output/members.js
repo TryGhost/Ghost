@@ -36,5 +36,11 @@ module.exports = {
         frame.response = {
             members: [data]
         };
+    },
+
+    importCSV(data, apiConfig, frame) {
+        debug('importCSV');
+
+        frame.response = data;
     }
 };

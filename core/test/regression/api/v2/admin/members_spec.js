@@ -96,6 +96,15 @@ describe('Members API', function () {
 
                 jsonResponse.members[0].name.should.equal(member.name);
                 jsonResponse.members[0].email.should.equal(member.email);
+            })
+            .then(() => {
+                return request
+                    .post(localUtils.API.getApiQuery(`members/`))
+                    .send({members: [member]})
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(422);
             });
     });
 
@@ -221,10 +230,10 @@ describe('Members API', function () {
             });
     });
 
-    it.skip('Can import CSV', function () {
+    it('Can import CSV', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/csv/`))
-            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/single-column-with-header.csv'))
+            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-import.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
