@@ -40,6 +40,34 @@ const members = {
         }
     },
 
+    add: {
+        statusCode: 201,
+        headers: {},
+        options: [
+            'send_email',
+            'email_type'
+        ],
+        validation: {
+            data: {
+                email: {required: true}
+            },
+            options: {
+                email_type: {
+                    values: ['signin', 'signup', 'subscribe']
+                }
+            }
+        },
+        permissions: true,
+        async query(frame) {
+            const member = await membersService.api.members.create(frame.data.members[0], {
+                sendEmail: frame.options.send_email,
+                emailType: frame.options.email_type
+            });
+
+            return member;
+        }
+    },
+
     destroy: {
         statusCode: 204,
         headers: {},
