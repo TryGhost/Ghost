@@ -128,6 +128,28 @@ const members = {
         }
     },
 
+    exportCSV: {
+        headers: {
+            disposition: {
+                type: 'csv',
+                value() {
+                    const datetime = (new Date()).toJSON().substring(0, 10);
+                    return `members.${datetime}.csv`;
+                }
+            }
+        },
+        response: {
+            format: 'plain'
+        },
+        permissions: {
+            method: 'browse'
+        },
+        validation: {},
+        query(frame) {
+            return membersService.api.members.list(frame.options);
+        }
+    },
+
     importCSV: {
         statusCode: 201,
         permissions: {

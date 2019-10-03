@@ -105,6 +105,7 @@ module.exports = function apiRoutes() {
     router.get('/members', shared.middlewares.labs.members, mw.authAdminApi, http(apiv2.members.browse));
     router.post('/members', shared.middlewares.labs.members, mw.authAdminApi, http(apiv2.members.add));
 
+    router.get('/members/csv', shared.middlewares.labs.members, mw.authAdminApi, http(apiv2.members.exportCSV));
     router.post('/members/csv',
         shared.middlewares.labs.members,
         mw.authAdminApi,
