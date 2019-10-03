@@ -3,6 +3,7 @@ import $ from 'jquery';
 import Controller from '@ember/controller';
 import RSVP from 'rsvp';
 import config from 'ghost-admin/config/environment';
+import isNumber from 'ghost-admin/utils/isNumber';
 import {
     UnsupportedMediaTypeError,
     isRequestEntityTooLargeError,
@@ -14,7 +15,6 @@ import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
-import isNumber from 'ghost-admin/utils/isNumber';
 
 const {Promise} = RSVP;
 
