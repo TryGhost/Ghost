@@ -4,7 +4,6 @@
  */
 const _ = require('lodash');
 const Promise = require('bluebird');
-const config = require('../../../../server/config');
 
 // The default settings for a default post query
 // @TODO: get rid of this config and use v0.1 or v2 config
@@ -61,9 +60,7 @@ function processQuery(query, slugParam, locals) {
         query.options[name] = _.isString(option) ? option.replace(/%s/g, slugParam) : option;
     });
 
-    if (config.get('enableDeveloperExperiments')) {
-        query.options.context = {member: locals.member};
-    }
+    query.options.context = {member: locals.member};
 
     return (api[query.controller] || api[query.resource])[query.type](query.options);
 }
