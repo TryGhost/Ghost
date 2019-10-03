@@ -24,5 +24,15 @@ module.exports = createCard({
         // use the SimpleDOM document to create a raw HTML section.
         // avoids parsing/rendering of potentially broken or unsupported HTML
         return opts.env.dom.createRawHTMLSection(html);
+    },
+
+    absoluteToRelative(urlUtils, payload, options) {
+        payload.markdown = payload.markdown && urlUtils.markdownAbsoluteToRelative(payload.markdown, options);
+        return payload;
+    },
+
+    relativeToAbsolute(urlUtils, payload, options) {
+        payload.markdown = payload.markdown && urlUtils.markdownRelativeToAbsolute(payload.markdown, options);
+        return payload;
     }
 });
