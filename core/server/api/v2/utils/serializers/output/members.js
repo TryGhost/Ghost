@@ -38,6 +38,37 @@ module.exports = {
         };
     },
 
+    exportCSV(models, apiConfig, frame) {
+        debug('exportCSV');
+
+        const fields = ['id', 'email', 'name', 'created_at', 'deleted_at'];
+
+        function formatCSV(data) {
+            let csv = `${fields.join(',')}\r\n`,
+                entry,
+                field,
+                j,
+                i;
+
+            for (j = 0; j < data.length; j = j + 1) {
+                entry = data[j];
+
+                for (i = 0; i < fields.length; i = i + 1) {
+                    field = fields[i];
+                    csv += entry[field] !== null ? entry[field] : '';
+                    if (i !== fields.length - 1) {
+                        csv += ',';
+                    }
+                }
+                csv += '\r\n';
+            }
+
+            return csv;
+        }
+
+        frame.response = formatCSV(models.members);
+    },
+
     importCSV(data, apiConfig, frame) {
         debug('importCSV');
 
