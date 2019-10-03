@@ -201,4 +201,38 @@ describe('Bookmark card', function () {
         serializer.serialize(card.render(opts))
             .should.equal('');
     });
+
+    it('transforms urls absolute to relative', function () {
+        let payload = {
+            metadata: {
+                url: 'http://127.0.0.1:2369/post'
+            },
+            caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
+        };
+
+        const transformed = card.absoluteToRelative(payload, {});
+
+        transformed.metadata.url
+            .should.equal('/post');
+
+        transformed.caption
+            .should.equal('A link to <a href="/post">an internal post</a>');
+    });
+
+    it('transforms urls relative to absolute', function () {
+        let payload = {
+            metadata: {
+                url: '/post'
+            },
+            caption: 'A link to <a href="/post">an internal post</a>'
+        };
+
+        const transformed = card.relativeToAbsolute(payload, {});
+
+        transformed.metadata.url
+            .should.equal('http://127.0.0.1:2369/post');
+
+        transformed.caption
+            .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
+    });
 });
