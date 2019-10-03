@@ -14,23 +14,6 @@ export default Controller.extend({
 
     member: alias('model'),
 
-    subscription: computed('member.subscriptions', function () {
-        let subscriptions = this.member.get('subscriptions');
-        if (!subscriptions) {
-            return {
-                amount: '...',
-                status: '...',
-                plan: '...'
-            };
-        }
-        let subscription = subscriptions[0] || {};
-        return {
-            amount: subscription.amount ? (subscription.amount / 100) : 0,
-            status: subscription.status || '-',
-            plan: subscription.plan || 'Free'
-        };
-    }),
-
     subscribedAt: computed('member.createdAt', function () {
         let memberSince = moment(this.member.createdAt).from(moment());
         let createdDate = moment(this.member.createdAt).format('MMM DD, YYYY');
