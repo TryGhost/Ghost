@@ -54,6 +54,18 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
         event.preventDefault();
 
         var plan = el.dataset.membersPlan;
+        var successUrl = el.dataset.membersSuccess;
+        var cancelUrl = el.dataset.membersCancel;
+        var checkoutSuccessUrl;
+        var checkoutCancelUrl;
+
+        if (successUrl) {
+            checkoutSuccessUrl = (new URL(successUrl, window.location.href)).href;
+        }
+
+        if (cancelUrl) {
+            checkoutCancelUrl = (new URL(cancelUrl, window.location.href)).href;
+        }
 
         if (errorEl) {
             errorEl.innerText = '';
@@ -74,7 +86,9 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
                 },
                 body: JSON.stringify({
                     plan: plan,
-                    identity: identity
+                    identity: identity,
+                    successUrl: checkoutSuccessUrl,
+                    cancelUrl: checkoutCancelUrl
                 })
             }).then(function (res) {
                 if (!res.ok) {
