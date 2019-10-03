@@ -77,7 +77,7 @@ module.exports = class StripePaymentProcessor {
         return this._stripe.webhooks.constructEvent(body, signature, this._webhookSecret);
     }
 
-    async createCheckoutSession(member, planName) {
+    async createCheckoutSession(member, planName, options) {
         let customer;
         if (member) {
             try {
@@ -92,8 +92,8 @@ module.exports = class StripePaymentProcessor {
         const plan = this._plans.find(plan => plan.nickname === planName);
         const session = await this._stripe.checkout.sessions.create({
             payment_method_types: ['card'],
-            success_url: this._checkoutSuccessUrl,
-            cancel_url: this._checkoutCancelUrl,
+            success_url: options.successUrl || this._checkoutSuccessUrl,
+            cancel_url: options.cancelUrl || this._checkoutCancelUrl,
             customer: customer ? customer.id : undefined,
             subscription_data: {
                 items: [{
