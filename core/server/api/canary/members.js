@@ -62,7 +62,7 @@ const members = {
         permissions: true,
         query(frame) {
             // NOTE: Promise.resolve() is here for a reason! Method has to return an instance
-            //      on a Bluebird promise to allow reflection. If decided to be replaced
+            //      of a Bluebird promise to allow reflection. If decided to be replaced
             //      with something else, e.g: async/await, CSV export function
             //      would need a deep rewrite (see failing tests if this line is removed)
             return Promise.resolve()
