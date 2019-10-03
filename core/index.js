@@ -14,13 +14,13 @@ function makeGhost(options) {
         .catch((err) => {
             if (!common.errors.utils.isIgnitionError(err)) {
                 err = new common.errors.GhostError({message: err.message, err: err});
-            }
+            };
 
             return GhostServer.announceServerStopped(err)
                 .finally(() => {
                     throw err;
                 });
         });
-}
+};
 
 module.exports = makeGhost;
