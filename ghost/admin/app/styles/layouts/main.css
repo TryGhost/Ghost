@@ -769,6 +769,12 @@
     user-select: text;
 }
 
+.view-actions input[type="text"] {
+    padding: 7px 8px 8px;
+    height: 33px;
+    font-size: 1.3rem;
+}
+
 @media (max-width: 400px) {
     .view-header {
         padding: 0 7px;

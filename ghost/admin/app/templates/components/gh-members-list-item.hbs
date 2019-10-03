@@ -1,19 +1,25 @@
-{{#link-to "member" member class="gh-list-data" title="Edit Member"}}
-    <div class="apps-card-left">
-        <GhMemberAvatar @member={{member}} class="w9 h9 mr4" />
-        <div class="apps-card-meta">
-            <h3 class="apps-card-app-title">{{this.name}}</h3>
-            <p class="apps-card-app-desc">{{this.email}}</p>
+{{#link-to "member" member class="gh-flex-list-data gh-flex-list-auto" title="Member details"}}
+    <div class="flex items-center">
+        <GhMemberAvatar @member={{member}} class="w9 h9 mr3" />
+        <div>
+            <h3 class="ma0 pa0 gh-members-list-name">
+                {{#if this.name}}
+                    {{this.name}}
+                {{else}}
+                    {{this.email}}
+                {{/if}}
+            </h3>
+            {{#if this.name}}
+                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{this.email}}</p>
+            {{/if}}
         </div>
     </div>
 {{/link-to}}
 
-{{#link-to "member" member class="gh-list-data middarkgrey f8 gh-tag-list-slug" title="Subscribed At" }}
-    <span class="nowrap">{{this.subscribedAt}}</span>
+{{#link-to "member" member class="gh-flex-list-data gh-members-list-subscribed-at middarkgrey f8 nowrap" title="Subscribed at" }}
+    Subscribed at {{this.subscribedAt}}
 {{/link-to}}
 
-{{#link-to "member" member class="gh-list-data" title="Edit Member"}}
-    <div class="flex items-center justify-end w-100">
-        <span class="nr2">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
-    </div>
+{{#link-to "member" member class="gh-flex-list-data" title="Member details"}}
+    {{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1 nr2"}}
 {{/link-to}}
