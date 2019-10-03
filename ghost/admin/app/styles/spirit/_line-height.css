@@ -21,6 +21,7 @@
 .lh-copy        { line-height: var(--lh-1-6); }
 .lh-list        { line-height: 3.2rem; }
 .lh-code        { line-height: var(--lh-1-3); }
+.lh-zero        { line-height: 0; }
 
 @media (--breakpoint-not-small) {
     .lh-solid-ns       { line-height: var(--lh-1-1); }
@@ -29,6 +30,7 @@
     .lh-copy-ns        { line-height: var(--lh-1-6); }
     .lh-list-ns        { line-height: var(--lh-2-0); }
     .lh-code-ns        { line-height: var(--lh-1-3); }
+    .lh-zero-ns        { line-height: 0; }
 }
 
 @media (--breakpoint-medium) {
@@ -38,6 +40,7 @@
     .lh-copy-m        { line-height: var(--lh-1-6); }
     .lh-list-m        { line-height: var(--lh-2-0); }
     .lh-code-m        { line-height: var(--lh-1-3); }
+    .lh-zero-m        { line-height: 0; }
 }
 
 @media (--breakpoint-large) {
@@ -47,4 +50,5 @@
     .lh-copy-l        { line-height: var(--lh-1-6); }
     .lh-list-l        { line-height: var(--lh-2-0); }
     .lh-code-l        { line-height: var(--lh-1-3); }
+    .lh-zero-l        { line-height: 0; }
 }

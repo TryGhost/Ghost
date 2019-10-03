@@ -1,15 +1,18 @@
 <section class="gh-canvas">
     <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
-        <div>
-            <GhTextInput placeholder="Search members..." @value={{this.searchText}}
-                @input={{action (mut this.searchText) value="target.value"}} />
-        </div>
+        <section class="view-actions">
+            <div class="relative">
+                {{svg-jar "search" class="absolute top-2 left-2 w4 h4 fill-midlightgrey-l2"}}
+                <GhTextInput placeholder="Search members..." @value={{this.searchText}} @input={{action (mut this.searchText) value="target.value"}} class="gh-members-list-searchfield" />
+            </div>
+        </section>
     </GhCanvasHeader>
-    <section class="view-container h-100">
+    <section class="view-container">
 
+        {{#if (or filteredMembers this.fetchMembers.isRunning this.searchText)}}
         <div class="flex justify-between items-center">
-            <h2 class="f-small fw5 midlightgrey ttu">
+            <h2 class="f-small fw5 midlightgrey ttu mb2">
                 {{#if this.searchText}}
                     Search result
                 {{else}}
@@ -22,38 +25,43 @@
                 {{/if}}
             </h2>
         </div>
+        {{/if}}
 
-            <section class="content-list">
-                <ol class="members-list gh-list">
-                    {{#if filteredMembers}}
-                        {{#vertical-collection
-                                    items=filteredMembers
-                                    key="id"
-                                    containerSelector=".gh-main"
-                                    estimateHeight=60
-                                    bufferSize=20
-                                    as |member|
+        <section class="content-list">
+            <ol class="members-list gh-list {{unless filteredMembers "no-posts"}}">
+                {{#if filteredMembers}}
+                    {{#vertical-collection
+                                items=filteredMembers
+                                key="id"
+                                containerSelector=".gh-main"
+                                estimateHeight=60
+                                bufferSize=20
+                                as |member|
+                            }}
+                    {{gh-members-list-item
+                                    member=member
+                                    data-test-member-id=member.id
                                 }}
-                        {{gh-members-list-item
-                                        member=member
-                                        data-test-member-id=member.id
-                                    }}
-                        {{/vertical-collection}}
+                    {{/vertical-collection}}
+                {{else}}
+                    {{#if this.fetchMembers.isRunning}}
+                        <div class="gh-content">
+                            <GhLoadingSpinner />
+                        </div>
                     {{else}}
-                        {{#if this.fetchMembers.isRunning}}
-                            <div class="gh-content">
-                                <GhLoadingSpinner />
-                            </div>
-                        {{else}}
-                            <li class="no-posts-box">
-                                <div class="no-posts">
-                                    {{svg-jar "tags-placeholder" class="gh-tags-placeholder"}}
+                        <li class="no-posts-box">
+                            <div class="no-posts">
+                                {{svg-jar "members-placeholder" class="gh-members-placeholder"}}
+                                {{#if this.searchText}}
                                     <h3>No members found!</h3>
-                                </div>
-                            </li>
-                        {{/if}}
+                                {{else}}
+                                    <h3>You don't have any members</h3>
+                                {{/if}}
+                            </div>
+                        </li>
                     {{/if}}
-                </ol>
-            </section>
+                {{/if}}
+            </ol>
+        </section>
     </section>
 </section>
