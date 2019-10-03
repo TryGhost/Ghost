@@ -1,7 +1,9 @@
 // NOTE: We must not cache references to membersService.api
 // as it is a getter and may change during runtime.
+const Promise = require('bluebird');
 const membersService = require('../../services/members');
 const common = require('../../lib/common');
+const fsLib = require('../../lib/fs');
 
 const members = {
     docName: 'members',
@@ -123,6 +125,61 @@ const members = {
             frame.options.require = true;
             await membersService.api.members.destroy(frame.options);
             return null;
+        }
+    },
+
+    importCSV: {
+        statusCode: 201,
+        permissions: {
+            method: 'add'
+        },
+        async query(frame) {
+            let filePath = frame.file.path,
+                fulfilled = 0,
+                invalid = 0,
+                duplicates = 0;
+
+            return fsLib.readCSV({
+                path: filePath,
+                columnsToExtract: [{name: 'email', lookup: /email/i}, {name: 'name', lookup: /name/i}]
+            }).then((result) => {
+                return Promise.all(result.map((entry) => {
+                    const api = require('./index');
+
+                    return api.members.add.query({
+                        data: {
+                            members: [{
+                                email: entry.email,
+                                name: entry.name
+                            }]
+                        },
+                        options: {
+                            context: frame.options.context,
+                            options: {send_email: false}
+                        }
+                    }).reflect();
+                })).each((inspection) => {
+                    if (inspection.isFulfilled()) {
+                        fulfilled = fulfilled + 1;
+                    } else {
+                        if (inspection.reason() instanceof common.errors.ValidationError) {
+                            duplicates = duplicates + 1;
+                        } else {
+                            invalid = invalid + 1;
+                        }
+                    }
+                });
+            }).then(() => {
+                return {
+                    meta: {
+                        stats: {
+                            imported: fulfilled,
+                            duplicates: duplicates,
+                            invalid: invalid
+                        }
+                    }
+                };
+            });
         }
     }
 };
