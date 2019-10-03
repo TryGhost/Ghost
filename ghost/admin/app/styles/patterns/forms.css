@@ -178,6 +178,12 @@ textarea {
     resize: vertical;
 }
 
+.gh-input[disabled] {
+    background: var(--whitegrey-l2);
+    color: var(--midlightgrey);
+    border-color: var(--whitegrey);
+}
+
 
 /* Radio / Checkboxes
 /* ---------------------------------------------------------- */

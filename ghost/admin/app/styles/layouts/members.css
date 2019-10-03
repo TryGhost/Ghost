@@ -1,3 +1,6 @@
+/* Members list
+/* ----------------------------------------- */
+
 .view-actions input.gh-members-list-searchfield {
     min-width: 220px;
     padding-left: 30px;
@@ -15,4 +18,13 @@ p.gh-members-list-email {
 .gh-members-placeholder {
     width: 118px;
     margin: -30px 0 15px;
+}
+
+
+/* Member details
+/* ----------------------------------------- */
+
+textarea.gh-member-details-textarea {
+    max-width: 100%;
+    height: 123px;
 }

@@ -4,14 +4,25 @@
             <h2 class="gh-canvas-title" data-test-screen-title>
                 {{#link-to "members" data-test-link="members-back"}}Members{{/link-to}}
                 <span>{{svg-jar "arrow-right"}}</span>
-                {{member.email}}
+                {{#if member.name}}
+                    {{member.name}}
+                {{else}}
+                    {{member.email}}
+                {{/if}}
             </h2>
         </GhCanvasHeader>
-        <div class="member-detail-main-info">
-            <GhMemberAvatar @member={{member}} @sizeClass={{'f-headline fw6'}} class="w16 h16 mr4" />
-            <div class="apps-card-meta">
-                <h3 class="apps-card-app-title">{{member.email}}</h3>
-                <p class="apps-card-app-desc">{{this.subscribedAt}}</p>
+        <div class="flex items-center mb10 bt b--lightgrey-d1 pt8">
+            <GhMemberAvatar @member={{member}} @sizeClass={{'f-headline fw4 lh-zero'}} class="w18 h18 mr4" />
+            <div>
+                <h3 class="f2 fw5 ma0 pa0">
+                    {{if member.name member.name member.email}}
+                </h3>
+                <p class="f6 pa0 ma0 midgrey">
+                    {{#if member.name}}
+                        <span class="darkgrey">{{member.email}}</span> – 
+                    {{/if}}
+                    Subscribed on {{this.subscribedAt}}
+                </p>
             </div>
         </div>
         {{gh-member-settings-form member=member
