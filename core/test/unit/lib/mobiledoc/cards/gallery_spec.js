@@ -138,4 +138,74 @@ describe('Gallery card', function () {
 
         serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: gallery--><figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-9.jpg" width="3200" height="1600"></div><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo03-6.jpg" width="3200" height="1600"></div></div></div><figcaption>Test caption</figcaption></figure><!--kg-card-end: gallery-->');
     });
+
+    it('transforms urls absolute to relative', function () {
+        let payload = {
+            images: [
+                {
+                    row: 0,
+                    fileName: 'NatGeo01.jpg',
+                    src: 'http://127.0.0.1:2369/content/images/2018/08/NatGeo01-9.jpg',
+                    width: 3200,
+                    height: 1600,
+                    caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
+                },
+                {
+                    row: 0,
+                    fileName: 'NatGeo02.jpg',
+                    src: 'http://127.0.0.1:2369/content/images/2018/08/NatGeo02-10.jpg',
+                    caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
+                }
+            ],
+            caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
+        };
+
+        const transformed = card.absoluteToRelative(payload, {});
+
+        transformed.images[0].src
+            .should.equal('/content/images/2018/08/NatGeo01-9.jpg');
+
+        transformed.images[0].caption
+            .should.equal('A link to <a href="/post">an internal post</a>');
+
+        transformed.images[1].src
+            .should.equal('/content/images/2018/08/NatGeo02-10.jpg');
+
+        transformed.images[1].caption
+            .should.equal('A link to <a href="/post">an internal post</a>');
+
+        transformed.caption
+            .should.equal('A link to <a href="/post">an internal post</a>');
+    });
+
+    it('transforms urls relative to absolute', function () {
+        let payload = {
+            images: [
+                {
+                    row: 0,
+                    fileName: 'NatGeo01.jpg',
+                    src: '/content/images/2018/08/NatGeo01-9.jpg',
+                    width: 3200,
+                    height: 1600
+                },
+                {
+                    row: 0,
+                    fileName: 'NatGeo02.jpg',
+                    src: '/content/images/2018/08/NatGeo02-10.jpg'
+                }
+            ],
+            caption: 'A link to <a href="/post">an internal post</a>'
+        };
+
+        const transformed = card.relativeToAbsolute(payload, {});
+
+        transformed.images[0].src
+            .should.equal('http://127.0.0.1:2369/content/images/2018/08/NatGeo01-9.jpg');
+
+        transformed.images[1].src
+            .should.equal('http://127.0.0.1:2369/content/images/2018/08/NatGeo02-10.jpg');
+
+        transformed.caption
+            .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
+    });
 });
