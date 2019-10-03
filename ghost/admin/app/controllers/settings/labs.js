@@ -199,7 +199,7 @@ export default Controller.extend({
             if (key === 'month' || key === 'year') {
                 stripeConfig.plans = stripeConfig.plans.map((plan) => {
                     if (key === plan.interval) {
-                        plan.amount = event.target.value * 100;
+                        plan.amount = isNumber(event.target.value) ? event.target.value * 100 : '';
                     }
                     return plan;
                 });
