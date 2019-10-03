@@ -8,6 +8,14 @@ module.exports = {
         frame.response = data;
     },
 
+    add(data, apiConfig, frame) {
+        debug('add');
+
+        frame.response = {
+            members: [data]
+        };
+    },
+
     read(data, apiConfig, frame) {
         debug('read');
 

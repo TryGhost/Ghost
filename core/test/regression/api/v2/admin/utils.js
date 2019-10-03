@@ -50,6 +50,9 @@ const expectedProperties = {
     subscriber: _(schema.subscribers)
         .keys()
     ,
+    member: _(schema.members)
+        .keys()
+    ,
     accesstoken: _(schema.accesstokens)
         .keys()
     ,
