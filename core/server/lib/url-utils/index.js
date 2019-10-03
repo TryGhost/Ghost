@@ -1,5 +1,6 @@
 const UrlUtils = require('@tryghost/url-utils');
 const config = require('../../config');
+const cards = require('../mobiledoc/cards');
 
 const urlUtils = new UrlUtils({
     url: config.get('url'),
@@ -7,7 +8,8 @@ const urlUtils = new UrlUtils({
     apiVersions: config.get('api:versions'),
     slugs: config.get('slugs').protected,
     redirectCacheMaxAge: config.get('caching:301:maxAge'),
-    baseApiPath: '/ghost/api'
+    baseApiPath: '/ghost/api',
+    cardTransformers: cards
 });
 
 module.exports = urlUtils;
