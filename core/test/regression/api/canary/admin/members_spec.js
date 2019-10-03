@@ -99,6 +99,21 @@ describe('Members API', function () {
             });
     });
 
+    it('Should fail when passing incorrect email_type query parameter', function () {
+        const member = {
+            name: 'test',
+            email: 'memberTestAdd@test.com'
+        };
+
+        return request
+            .post(localUtils.API.getApiQuery(`members/?send_email=true&email_type=lel`))
+            .send({members: [member]})
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422);
+    });
+
     it.skip('Can edit by id', function () {
         const memberToChange = {
             name: 'changed',
