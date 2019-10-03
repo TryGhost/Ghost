@@ -59,10 +59,17 @@ const members = {
         },
         permissions: true,
         query(frame) {
-            return membersService.api.members.create(frame.data.members[0], {
-                sendEmail: frame.options.send_email,
-                emailType: frame.options.email_type
-            })
+            // NOTE: Promise.resolve() is here for a reason! Method has to return an instance
+            //      on a Bluebird promise to allow reflection. If decided to be replaced
+            //      with something else, e.g: async/await, CSV export function
+            //      would need a deep rewrite (see failing tests if this line is removed)
+            return Promise.resolve()
+                .then(() => {
+                    return membersService.api.members.create(frame.data.members[0], {
+                        sendEmail: frame.options.send_email,
+                        emailType: frame.options.email_type
+                    });
+                })
                 .then((member) => {
                     if (member) {
                         return Promise.resolve(member);
@@ -70,7 +77,7 @@ const members = {
                 })
                 .catch((error) => {
                     if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                        return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.subscribers.memberAlreadyExists')}));
+                        return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.members.memberAlreadyExists')}));
                     }
 
                     return Promise.reject(error);
