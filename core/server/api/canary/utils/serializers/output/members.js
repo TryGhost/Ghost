@@ -16,6 +16,14 @@ module.exports = {
         };
     },
 
+    edit(data, apiConfig, frame) {
+        debug('edit');
+
+        frame.response = {
+            members: [data]
+        };
+    },
+
     read(data, apiConfig, frame) {
         debug('read');
 

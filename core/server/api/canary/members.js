@@ -68,6 +68,26 @@ const members = {
         }
     },
 
+    edit: {
+        statusCode: 200,
+        headers: {},
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: true,
+        async query(frame) {
+            const member = await membersService.api.members.update(frame.data.members[0], frame.options);
+            return member;
+        }
+    },
+
     destroy: {
         statusCode: 204,
         headers: {},

@@ -114,15 +114,15 @@ describe('Members API', function () {
             .expect(422);
     });
 
-    it.skip('Can edit by id', function () {
+    it('Can edit by id', function () {
         const memberToChange = {
-            name: 'changed',
-            email: 'member1Changed@test.com'
+            name: 'change me',
+            email: 'member2Change@test.com'
         };
 
         const memberChanged = {
             name: 'changed',
-            email: 'member1Changed@test.com'
+            email: 'cantChangeMe@test.com'
         };
 
         return request
@@ -159,7 +159,8 @@ describe('Members API', function () {
                         jsonResponse.members.should.have.length(1);
                         localUtils.API.checkResponse(jsonResponse.members[0], 'member');
                         jsonResponse.members[0].name.should.equal(memberChanged.name);
-                        jsonResponse.members[0].email.should.equal(memberChanged.email);
+                        jsonResponse.members[0].email.should.not.equal(memberChanged.email);
+                        jsonResponse.members[0].email.should.equal(memberToChange.email);
                     });
             });
     });
