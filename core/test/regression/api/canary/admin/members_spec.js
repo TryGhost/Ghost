@@ -215,7 +215,7 @@ describe('Members API', function () {
             });
     });
 
-    it.skip('Can export CSV', function () {
+    it('Can export CSV', function () {
         return request
             .get(localUtils.API.getApiQuery(`members/csv/`))
             .set('Origin', config.get('url'))
@@ -225,8 +225,9 @@ describe('Members API', function () {
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 res.headers['content-disposition'].should.match(/Attachment;\sfilename="members/);
-                res.text.should.match(/id,email,created_at,deleted_at/);
+                res.text.should.match(/id,email,name,created_at,deleted_at/);
                 res.text.should.match(/member1@test.com/);
+                res.text.should.match(/Mr Egg/);
             });
     });
 
