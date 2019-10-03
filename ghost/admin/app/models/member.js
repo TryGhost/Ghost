@@ -5,5 +5,5 @@ export default DS.Model.extend({
     name: attr('string'),
     email: attr('string'),
     createdAt: attr('moment-utc'),
-    subscriptions: attr('member-subscription')
+    stripe: attr('member-subscription')
 });
