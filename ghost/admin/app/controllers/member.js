@@ -32,8 +32,9 @@ export default Controller.extend({
     }),
 
     subscribedAt: computed('member.createdAt', function () {
+        let memberSince = moment(this.member.createdAt).from(moment());
         let createdDate = moment(this.member.createdAt).format('MMM DD, YYYY');
-        return `Subscribed ${createdDate}`;
+        return `${createdDate} (${memberSince})`;
     }),
 
     actions: {
