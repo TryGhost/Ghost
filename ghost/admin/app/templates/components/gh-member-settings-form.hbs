@@ -1,6 +1,6 @@
 <h4 class="midlightgrey f-small fw5 ttu">Basic info</h4>
-<div class="pa5 pt4 br4 shadow-1 bg-grouped-table mt2 flex flex-column flex-row-ns items-start justify-between gh-tag-basic-settings-form">
-    <div class="order-1 flex flex-column items-start mr5 w-100 w-50-m w-two-thirds-l">
+<div class="pa5 pb0 pt4 br4 shadow-1 bg-grouped-table mt2 flex flex-column flex-row-ns items-start justify-between gh-tag-basic-settings-form">
+    <div class="flex flex-column items-start mr8 w-100 w-50-ns">
         {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="name"}}
         <label for="member-name">Name</label>
         {{gh-text-input
@@ -27,14 +27,14 @@
         {{/gh-form-group}}
 
     </div>
-    <div class="order-0 mb6 mb0-ns order-2-ns w-100 w-50-m w-third-l">
+    <div class="mb6 mb0-ns w-100 w-50-ns">
         {{#gh-form-group errors=member.errors hasValidated=tag.hasValidated property="note"}}
             <label for="member-description">Note</label>
             {{gh-textarea
                         disabled=true
                         id="member-description"
                         name="description"
-                        class="gh-tag-details-textarea"
+                        class="gh-member-details-textarea"
                         tabindex="3"
                         value=(readonly scratchDescription)
                         input=(action (mut scratchDescription) value="target.value")
