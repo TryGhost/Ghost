@@ -4,27 +4,27 @@ const config = require('../../../../../server/config');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
-let request;
 
 describe('Settings API', function () {
     let ghostServer;
-
-    before(function () {
-        return ghost()
-            .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request);
-            });
-    });
-
-    after(function () {
-        return ghostServer.stop();
-    });
+    let request;
 
     describe('As Owner', function () {
+        before(function () {
+            return ghost()
+                .then(function (_ghostServer) {
+                    ghostServer = _ghostServer;
+                    request = supertest.agent(config.get('url'));
+                })
+                .then(function () {
+                    return localUtils.doAuth(request);
+                });
+        });
+
+        after(function () {
+            return ghostServer.stop();
+        });
+
         it('Can\'t read core setting', function () {
             return request
                 .get(localUtils.API.getApiQuery('settings/db_hash/'))
@@ -187,6 +187,149 @@ describe('Settings API', function () {
                             putBody.settings[0].value.should.eql(true);
 
                             localUtils.API.checkResponse(putBody, 'settings');
+                            done();
+                        });
+                });
+        });
+    });
+
+    describe('As Editor', function () {
+        let editor;
+
+        before(function () {
+            return ghost()
+                .then(function (_ghostServer) {
+                    ghostServer = _ghostServer;
+                    request = supertest.agent(config.get('url'));
+                })
+                .then(function () {
+                    // create editor
+                    return testUtils.createUser({
+                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
+                        role: testUtils.DataGenerator.Content.roles[1].name
+                    });
+                })
+                .then(function (_user1) {
+                    editor = _user1;
+                    request.user = editor;
+
+                    // by default we login with the owner
+                    return localUtils.doAuth(request);
+                });
+        });
+
+        it('should not be able to edit settings', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    var jsonResponse = res.body,
+                        newValue = 'new value';
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+                    jsonResponse.settings = [{key: 'visibility', value: 'public'}];
+
+                    request.put(localUtils.API.getApiQuery('settings/'))
+                        .set('Origin', config.get('url'))
+                        .send(jsonResponse)
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(403)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            jsonResponse = res.body;
+                            should.not.exist(res.headers['x-cache-invalidate']);
+                            should.exist(jsonResponse.errors);
+                            testUtils.API.checkResponseValue(jsonResponse.errors[0], [
+                                'message',
+                                'context',
+                                'type',
+                                'details',
+                                'property',
+                                'help',
+                                'code',
+                                'id'
+                            ]);
+
+                            done();
+                        });
+                });
+        });
+    });
+
+    describe('As Author', function () {
+        before(function () {
+            return ghost()
+                .then(function (_ghostServer) {
+                    ghostServer = _ghostServer;
+                    request = supertest.agent(config.get('url'));
+                })
+                .then(function () {
+                    // create author
+                    return testUtils.createUser({
+                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
+                        role: testUtils.DataGenerator.Content.roles[2].name
+                    });
+                })
+                .then(function (author) {
+                    request.user = author;
+
+                    // by default we login with the owner
+                    return localUtils.doAuth(request);
+                });
+        });
+
+        it('should not be able to edit settings', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    var jsonResponse = res.body,
+                        newValue = 'new value';
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+                    jsonResponse.settings = [{key: 'visibility', value: 'public'}];
+
+                    request.put(localUtils.API.getApiQuery('settings/'))
+                        .set('Origin', config.get('url'))
+                        .send(jsonResponse)
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(403)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            jsonResponse = res.body;
+                            should.not.exist(res.headers['x-cache-invalidate']);
+                            should.exist(jsonResponse.errors);
+                            testUtils.API.checkResponseValue(jsonResponse.errors[0], [
+                                'message',
+                                'context',
+                                'type',
+                                'details',
+                                'property',
+                                'help',
+                                'code',
+                                'id'
+                            ]);
+
                             done();
                         });
                 });
