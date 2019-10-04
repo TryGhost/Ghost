@@ -36,3 +36,11 @@ textarea.gh-member-details-textarea {
     margin: 0;
     width: auto;
 }
+
+.gh-member-stripe-info {
+    border-bottom: 1px solid black;
+}
+
+.gh-member-stripe-info:last-of-type {
+    border-bottom: none;
+}

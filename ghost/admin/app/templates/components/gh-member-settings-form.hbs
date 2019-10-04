@@ -47,55 +47,91 @@
 </div>
 
 <h4 class="midlightgrey f-small fw5 ttu mt15">Stripe info</h4>
-<div class="pa5 pb0 pt4 br4 shadow-1 bg-grouped-table mt2 flex flex-column flex-row-ns items-start justify-between gh-tag-basic-settings-form">
-    {{#if subscription}}
+{{#if subscriptions}}
+    <div class="br4 shadow-1 bg-grouped-table mt2">
+        {{#if hasMultipleSubscriptions}}
+            <div class="pa1 flex flex-column flex-row-ns items-center justify-center f5 fw5" style="background:#262b2e26">
+                Member has multiple subscriptions 
+            </div>
+        {{/if}}
+        {{#each subscriptions as |subscription|}}
+            <div class="gh-member-stripe-info pa5 pb0 pt4 flex flex-column flex-row-ns items-start justify-between">
+                <div class="flex flex-column items-start w-100 w-50-ns mr8">
+                    <div class="f5 fw5 mb2"> Stripe Customer </div>
+                    {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
+                        <label for="member-customer-id">Stripe Customer Id</label>
+                        {{gh-text-input
+                            disabled=true
+                            name="member-customer-id"
+                            value=(readonly subscription.customer)
+                            tabindex="1"}}
+                    {{/gh-form-group}}
+
+                    {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
+                        <label for="member-customer-id">Name</label>
+                        {{gh-text-input
+                            disabled=true
+                            name="member-customer-name"
+                            value=(readonly subscription.name)
+                            tabindex="1"}}
+                    {{/gh-form-group}}
+
+                    {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
+                        <label for="member-customer-id">Email</label>
+                        {{gh-text-input
+                            disabled=true
+                            name="member-customer-email"
+                            value=(readonly subscription.email)
+                            tabindex="1"}}
+                    {{/gh-form-group}}
+
+                </div>
+                <div class="mb6 mb0-ns w-100 w-50-ns">
+                    <div class="f5 fw5 mb2"> Subscription </div>
+                    {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
+                        <label for="member-plan-name">Subscription plan</label>
+                        {{gh-text-input
+                            disabled=true
+                            value=(readonly subscription.planName)
+                            name="member-plan-name"
+                            tabindex="1"}}
+                    {{/gh-form-group}}
+
+                    {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
+                        <label for="member-customer-status">Subscription Status</label>
+                        {{gh-text-input
+                            disabled=true
+                            value=(readonly subscription.status)
+                            name="member-customer-status"
+                            tabindex="2"}}
+                    {{/gh-form-group}}
+
+                    {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
+                        <label for="member-customer-status">Subscriber since</label>
+                        {{gh-text-input
+                            disabled=true
+                            value=(readonly subscription.startDate)
+                            name="member-customer-status"
+                            tabindex="2"}}
+                    {{/gh-form-group}}
+
+                    {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
+                        <label for="member-plan-renewal">Renewal date</label>
+                        {{gh-text-input
+                            disabled=true
+                            value=(readonly subscription.validUntil)
+                            name="member-plan-renewal"
+                            tabindex="1"}}
+                    {{/gh-form-group}}
+
+                </div>
+            </div>
+        {{/each}}
+    </div>
+{{else}}
+    <div class="pa5 pb0 pt4 br4 shadow-1 bg-grouped-table mt2 flex flex-column flex-row-ns items-start justify-between gh-tag-basic-settings-form">
         <div class="flex flex-column items-start mr8 w-100 w-50-ns">
-            {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
-                <label for="member-customer-id">Stripe Customer Id</label>
-                {{gh-text-input
-                    disabled=true
-                    id="member-customer-id"
-                    name="member-customer-id"
-                    value=(readonly subscription.customer)
-                    tabindex="1"}}
-            {{/gh-form-group}}
-
-            {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
-                <label for="member-customer-status">Subscription Status</label>
-                {{gh-text-input
-                    disabled=true
-                    value=(readonly subscription.status)
-                    id="member-customer-status"
-                    name="member-customer-status"
-                    tabindex="2"}}
-            {{/gh-form-group}}
-
+            -
         </div>
-        <div class="mb6 mb0-ns w-100 w-50-ns">
-            {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
-                <label for="member-plan-name">Subscription plan</label>
-                {{gh-text-input
-                    disabled=true
-                    value=(readonly subscription.name)
-                    id="member-plan-name"
-                    name="member-plan-name"
-                    tabindex="1"}}
-            {{/gh-form-group}}
-
-            {{#gh-form-group errors=member.errors hasValidated=member.hasValidated}}
-                <label for="member-plan-renewal">Renewal date</label>
-                {{gh-text-input
-                    disabled=true
-                    value=(readonly subscription.validUntil)
-                    id="member-plan-renewal"
-                    name="member-plan-renewal"
-                    tabindex="1"}}
-            {{/gh-form-group}}
-        </div>
-    {{else}}
-        <div class="flex flex-column items-start mr8 w-100 w-50-ns">
-            Non Paid member
-        </div>
-    {{/if}}
-
-</div>
+    </div>
+{{/if}}
