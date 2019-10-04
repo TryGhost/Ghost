@@ -2,32 +2,30 @@
     <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
         <section class="view-actions">
+            <span class="dropdown">
+                {{#gh-dropdown-button dropdownName="members-actions-menu" classNames="gh-btn gh-btn-white gh-btn-icon only-has-icon gh-actions-cog" title="Members Actions" data-test-user-actions=true}}
+                <span>
+                    {{svg-jar "settings"}}
+                    <span class="hidden">Members Actions</span>
+                </span>
+                {{/gh-dropdown-button}}
+                {{#gh-dropdown name="members-actions-menu" tagName="ul" classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right"}}
+                <li>
+                    {{#link-to "members.import" class="mr2" data-test-link="import-csv"}}
+                    <span>Import CSV </span>
+                    {{/link-to}}
+                </li>
+                <li>
+                    <a href="#" {{action 'exportData'}} class="mr2">
+                        <span>Export CSV </span>
+                    </a>
+                </li>
+                {{/gh-dropdown}}
+            </span>
             <div class="relative">
-                {{svg-jar "search" class="absolute top-2 left-2 w4 h4 fill-midlightgrey-l2"}}
+                {{svg-jar "search" class="gh-input-search-icon"}}
                 <GhTextInput placeholder="Search members..." @value={{this.searchText}} @input={{action (mut this.searchText) value="target.value"}} class="gh-members-list-searchfield" />
             </div>
-            <section class="view-actions">
-                <span class="dropdown">
-                    {{#gh-dropdown-button dropdownName="members-actions-menu" classNames="gh-btn gh-btn-white gh-btn-icon only-has-icon user-actions-cog" title="Members Actions" data-test-user-actions=true}}
-                    <span>
-                        {{svg-jar "settings"}}
-                        <span class="hidden">Members Actions</span>
-                    </span>
-                    {{/gh-dropdown-button}}
-                    {{#gh-dropdown name="members-actions-menu" tagName="ul" classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right"}}
-                            <li>
-                                {{#link-to "members.import" class="mr2" data-test-link="import-csv"}}
-                                    <span>Import CSV </span>
-                                {{/link-to}}
-                            </li>
-                        <li>
-                            <a href="#" {{action 'exportData'}} class="mr2">
-                                <span>Export CSV </span>
-                            </a>
-                        </li>
-                    {{/gh-dropdown}}
-                </span>
-            </section>
         </section>
     </GhCanvasHeader>
     <section class="view-container">

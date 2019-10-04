@@ -770,9 +770,43 @@
 }
 
 .view-actions input[type="text"] {
-    padding: 7px 8px 8px;
-    height: 33px;
+    padding: 8px 8px 9px;
+    height: 35px;
     font-size: 1.3rem;
+}
+
+.view-actions .gh-input-search-icon {
+    position: absolute;
+    top: 9px;
+    left: 9px;
+    width: 16px;
+    height: 16px;
+    fill: color-mod(var(--midlightgrey) l(+5%));
+}
+
+.gh-actions-cog {
+    margin-right: 10px
+}
+
+.gh-actions-cog svg {
+    height: 13px;
+    width: 13px;
+    fill: var(--midgrey);
+    margin-right: 0;
+}
+
+.gh-actions-cog svg path {
+    stroke: initial;
+}
+
+.gh-actions-menu {
+    top: calc(100% + 6px);
+    right: 10px;
+    left: auto;
+}
+
+.gh-actions-menu.fade-out {
+    animation-duration: 0.01s;
 }
 
 @media (max-width: 400px) {
