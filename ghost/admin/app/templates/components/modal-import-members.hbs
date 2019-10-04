@@ -1,17 +1,17 @@
 <header class="modal-header" data-test-modal="import-members">
     <h1>
         {{#if response}}
-            Import Successful
+            Import result
         {{else}}
-            Import Members
+            Import members
         {{/if}}
     </h1>
 </header>
 <a class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
-<div class="modal-body">
+<div class="modal-body bg-whitegrey-l2 ba b--whitegrey br3">
     {{#if response}}
-        <table class="members-import-results">
+        <table class="gh-members-import-results">
             <tr>
                 <td>Imported:</td>
                 <td align="left" data-test-text="import-members-imported">{{response.imported}}</td>
@@ -24,8 +24,8 @@
             {{/if}}
             {{#if response.invalid}}
                 <tr>
-                    <td>Invalid:</td>
-                    <td align="left" data-test-text="import-members-invalid">{{response.invalid}}</td>
+                    <td class="red">Invalid:</td>
+                    <td align="left" data-test-text="import-members-invalid" class="red">{{response.invalid}}</td>
                 </tr>
             {{/if}}
         </table>
