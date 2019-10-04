@@ -58,7 +58,9 @@ Router.map(function () {
     this.route('settings.integrations.unsplash', {path: '/settings/integrations/unsplash'});
     this.route('settings.integrations.zapier', {path: '/settings/integrations/zapier'});
 
-    this.route('members');
+    this.route('members', function () {
+        this.route('import');
+    });
     this.route('member', {path: '/members/:member_id'});
 
     this.route('subscribers', function () {

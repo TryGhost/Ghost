@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -32,6 +33,22 @@ export default Controller.extend({
 
         return filtered;
     }),
+
+    actions: {
+        exportData() {
+            let exportUrl = ghostPaths().url.api('members/csv');
+            let downloadURL = `${exportUrl}`;
+            let iframe = document.getElementById('iframeDownload');
+
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'iframeDownload';
+                iframe.style.display = 'none';
+                document.body.append(iframe);
+            }
+            iframe.setAttribute('src', downloadURL);
+        }
+    },
     
     fetchMembers: task(function* () {
         let newFetchDate = new Date();
