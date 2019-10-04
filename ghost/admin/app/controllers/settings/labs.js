@@ -71,8 +71,8 @@ export default Controller.extend({
         });
         let monthlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'month');
         let yearlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'year');
-        monthlyPlan.dollarAmount = isNumber(monthlyPlan.amount) ? (monthlyPlan.amount / 100) : '';
-        yearlyPlan.dollarAmount = isNumber(yearlyPlan.amount) ? (yearlyPlan.amount / 100) : '';
+        monthlyPlan.dollarAmount = parseInt(monthlyPlan.amount) ? (monthlyPlan.amount / 100) : 0;
+        yearlyPlan.dollarAmount = parseInt(yearlyPlan.amount) ? (yearlyPlan.amount / 100) : 0;
         stripeProcessor.config.plans = {
             monthly: monthlyPlan,
             yearly: yearlyPlan
@@ -199,7 +199,7 @@ export default Controller.extend({
             if (key === 'month' || key === 'year') {
                 stripeConfig.plans = stripeConfig.plans.map((plan) => {
                     if (key === plan.interval) {
-                        plan.amount = isNumber(event.target.value) ? event.target.value * 100 : '';
+                        plan.amount = parseInt(event.target.value) ? (event.target.value * 100) : 0;
                     }
                     return plan;
                 });
