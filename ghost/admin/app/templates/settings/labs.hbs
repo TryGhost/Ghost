@@ -132,7 +132,53 @@
                         {{#liquid-if feature.labs.members class="nr25"}}
 
                             <div class="flex ba br4 b--whitegrey pa5 pt4 mt5">
-                                <section class="gh-visibility-menu-content w-50">
+                                <section class="flex flex-column">
+                                    <label class="fw6 f8">Stripe publishable API key</label>
+                                    {{gh-text-input
+                                                                            value=(readonly subscriptionSettings.stripeConfig.public_token)
+                                                                            input=(action "setSubscriptionSettings" "public_token")
+                                                                            class="mt1"
+                                                                        }}
+                                
+                                    <label class="fw6 f8 mt4">Stripe secret API key</label>
+                                    {{gh-text-input
+                                                                            value=(readonly subscriptionSettings.stripeConfig.secret_token)
+                                                                            input=(action "setSubscriptionSettings" "secret_token")
+                                                                            class="mt1"
+                                                                        }}
+                                    <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 fw4 f8">Where to find Stripe
+                                        API keys</a>
+                                
+                                    <div class="mt5 flex nb5">
+                                        <div class="w-50 mr3">
+                                            {{#gh-form-group}}
+                                            <label class="fw6 f8">Monthly price</label>
+                                            <div class="mt1 relative gh-labs-price-label gh-labs-monthly-price">
+                                                {{gh-text-input
+                                                                                        value=(readonly subscriptionSettings.stripeConfig.plans.monthly.dollarAmount)
+                                                                                        type="number"
+                                                                                        input=(action "setSubscriptionSettings" "month")
+                                                                                    }}
+                                            </div>
+                                            {{/gh-form-group}}
+                                        </div>
+                                        <div class="w-50 ml2">
+                                            {{#gh-form-group class="description-container"}}
+                                            <label class="fw6 f8">Yearly price</label>
+                                            <div class="mt1 relative gh-labs-price-label gh-labs-yearly-price">
+                                                {{gh-text-input
+                                                                                        value=(readonly subscriptionSettings.stripeConfig.plans.yearly.dollarAmount)
+                                                                                        type="number"
+                                                                                        input=(action "setSubscriptionSettings" "year")
+                                                                                    }}
+                                            </div>
+                                            {{/gh-form-group}}
+                                        </div>
+                                    </div>
+                                
+                                </section>
+
+                                <section class="gh-visibility-menu-content w-50 ml10">
                                     <label class="dib f8 fw6 mb4">Default post access</label>
 
                                     <div class="gh-radio {{if (eq settings.defaultContentVisibility "public") "active"}}"
@@ -147,7 +193,7 @@
                                         {{action "setDefaultContentVisibility" "members" on="click"}}>
                                         <div class="gh-radio-button" data-test-publishmenu-published-option></div>
                                         <div class="gh-radio-content">
-                                            <div class="gh-radio-label">Free and paying members</div>
+                                            <div class="gh-radio-label">Members only</div>
                                         </div>
                                     </div>
                                 
@@ -155,59 +201,13 @@
                                         {{action "setDefaultContentVisibility" "paid" on="click"}}>
                                         <div class="gh-radio-button" data-test-publishmenu-published-option></div>
                                         <div class="gh-radio-content">
-                                            <div class="gh-radio-label">Only paying members</div>
+                                            <div class="gh-radio-label">Paid-members only</div>
                                         </div>
                                     </div>
                                 </section>
-
-                                <section class="flex flex-column ml5">
-                                        <label class="fw6 f8">Stripe publishable API key</label>
-                                        {{gh-text-input
-                                            value=(readonly subscriptionSettings.stripeConfig.public_token)
-                                            input=(action "setSubscriptionSettings" "public_token")
-                                            class="mt1"
-                                        }}
-
-                                        <label class="fw6 f8 mt4">Stripe secret API key</label>
-                                        {{gh-text-input
-                                            value=(readonly subscriptionSettings.stripeConfig.secret_token)
-                                            input=(action "setSubscriptionSettings" "secret_token")
-                                            class="mt1"
-                                        }}
-                                        <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 fw4 f8">Where to find Stripe
-                                            API keys</a>
-
-                                        <div class="mt5 flex nb5">
-                                            <div class="w-50 mr3">
-                                                {{#gh-form-group}}
-                                                <label class="fw6 f8">Monthly price</label>
-                                                <div class="mt1 relative gh-labs-price-label gh-labs-monthly-price">
-                                                    {{gh-text-input
-                                                        value=(readonly subscriptionSettings.stripeConfig.plans.monthly.dollarAmount)
-                                                        type="number"
-                                                        input=(action "setSubscriptionSettings" "month")
-                                                    }}
-                                                </div>
-                                                {{/gh-form-group}}
-                                            </div>
-                                            <div class="w-50 ml2">
-                                                {{#gh-form-group class="description-container"}}
-                                                <label class="fw6 f8">Yearly price</label>
-                                                <div class="mt1 relative gh-labs-price-label gh-labs-yearly-price">
-                                                    {{gh-text-input
-                                                        value=(readonly subscriptionSettings.stripeConfig.plans.yearly.dollarAmount)
-                                                        type="number"
-                                                        input=(action "setSubscriptionSettings" "year")
-                                                    }}
-                                                </div>
-                                                {{/gh-form-group}}
-                                            </div>
-                                        </div>
-                                    
-                                </section>
                             </div>
 
-                            <div class="mb5 mt5">
+                            <div class="mb2 mt5">
                                 {{gh-task-button "Save members settings"
                                     task=saveSettings
                                     successText="Saved"
