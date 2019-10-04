@@ -3,9 +3,9 @@ import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 const VISIBILITIES = [
-    {label: 'Everyone', name: 'public'},
-    {label: 'Free and paying members', name: 'members'},
-    {label: 'Only paying members', name: 'paid'}
+    {label: 'Public', name: 'public'},
+    {label: 'Members only', name: 'members'},
+    {label: 'Paid-members only', name: 'paid'}
 ];
 
 export default Component.extend({
