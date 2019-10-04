@@ -28,3 +28,11 @@ textarea.gh-member-details-textarea {
     max-width: 100%;
     height: 123px;
 }
+
+/* Import modal
+/* ---------------------------------------------------------- */
+
+.members-import-results {
+    margin: 0;
+    width: auto;
+}
