@@ -38,6 +38,14 @@ textarea.gh-member-details-textarea {
     height: 18px;
 }
 
+.gh-member-stripe-info {
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-member-stripe-info:last-of-type {
+    border-bottom: none;
+}
+
 .gh-member-stripe-table {
     width: 100%;
     margin: 10px 0 12px;
@@ -61,12 +69,4 @@ textarea.gh-member-details-textarea {
 .gh-members-import-results {
     margin: 0;
     width: auto;
-}
-
-.gh-member-stripe-info {
-    border-bottom: 1px solid black;
-}
-
-.gh-member-stripe-info:last-of-type {
-    border-bottom: none;
 }
