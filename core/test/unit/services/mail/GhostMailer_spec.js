@@ -167,7 +167,7 @@ describe('Mail: Ghostmailer', function () {
     });
 
     describe('From address', function () {
-        it('should use the config', function () {
+        it('should use the config', async function () {
             configUtils.set({
                 mail: {
                     from: '"Blog Title" <static@example.com>'
@@ -176,89 +176,175 @@ describe('Mail: Ghostmailer', function () {
 
             mailer = new mail.GhostMailer();
 
-            mailer.from().should.equal('"Blog Title" <static@example.com>');
+            sandbox.stub(mailer, 'sendMail').resolves();
+            mailer.transport.transportType = 'NOT DIRECT';
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'subject',
+                html: 'content'
+            });
+
+            mailer.sendMail.firstCall.args[0].from.should.equal('"Blog Title" <static@example.com>');
         });
 
         describe('should fall back to [blog.title] <noreply@[blog.url]>', function () {
             let mailer;
 
-            beforeEach(function () {
+            beforeEach(async function () {
                 mailer = new mail.GhostMailer();
+                sandbox.stub(mailer, 'sendMail').resolves();
+                mailer.transport.transportType = 'NOT DIRECT';
                 sandbox.stub(settingsCache, 'get').returns('Test');
             });
 
-            it('standard domain', function () {
+            it('standard domain', async function () {
                 sandbox.stub(urlUtils, 'urlFor').returns('http://default.com');
                 configUtils.set({mail: {from: null}});
 
-                mailer.from().should.equal('"Test" <noreply@default.com>');
+                await mailer.send({
+                    to: 'user@example.com',
+                    subject: 'subject',
+                    html: 'content'
+                });
+
+                mailer.sendMail.firstCall.args[0].from.should.equal('"Test" <noreply@default.com>');
             });
 
-            it('trailing slash', function () {
+            it('trailing slash', async function () {
                 sandbox.stub(urlUtils, 'urlFor').returns('http://default.com/');
                 configUtils.set({mail: {from: null}});
 
-                mailer.from().should.equal('"Test" <noreply@default.com>');
+                await mailer.send({
+                    to: 'user@example.com',
+                    subject: 'subject',
+                    html: 'content'
+                });
+
+                mailer.sendMail.firstCall.args[0].from.should.equal('"Test" <noreply@default.com>');
             });
 
-            it('strip port', function () {
+            it('strip port', async function () {
                 sandbox.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
                 configUtils.set({mail: {from: null}});
-                mailer.from().should.equal('"Test" <noreply@default.com>');
+
+                await mailer.send({
+                    to: 'user@example.com',
+                    subject: 'subject',
+                    html: 'content'
+                });
+
+                mailer.sendMail.firstCall.args[0].from.should.equal('"Test" <noreply@default.com>');
             });
 
-            it('Escape title', function () {
+            it('Escape title', async function () {
                 settingsCache.get.restore();
                 sandbox.stub(settingsCache, 'get').returns('Test"');
 
                 sandbox.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
                 configUtils.set({mail: {from: null}});
-                mailer.from().should.equal('"Test\\"" <noreply@default.com>');
+
+                await mailer.send({
+                    to: 'user@example.com',
+                    subject: 'subject',
+                    html: 'content'
+                });
+
+                mailer.sendMail.firstCall.args[0].from.should.equal('"Test\\"" <noreply@default.com>');
             });
         });
 
-        it('should use mail.from', function () {
+        it('should use mail.from', async function () {
             // Standard domain
             configUtils.set({mail: {from: '"bar" <from@default.com>'}});
 
             mailer = new mail.GhostMailer();
 
-            mailer.from().should.equal('"bar" <from@default.com>');
+            sandbox.stub(mailer, 'sendMail').resolves();
+            mailer.transport.transportType = 'NOT DIRECT';
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'subject',
+                html: 'content'
+            });
+
+            mailer.sendMail.firstCall.args[0].from.should.equal('"bar" <from@default.com>');
         });
 
-        it('should attach blog title', function () {
+        it('should attach blog title', async function () {
             sandbox.stub(settingsCache, 'get').returns('Test');
 
             configUtils.set({mail: {from: 'from@default.com'}});
 
             mailer = new mail.GhostMailer();
 
-            mailer.from().should.equal('"Test" <from@default.com>');
+            sandbox.stub(mailer, 'sendMail').resolves();
+            mailer.transport.transportType = 'NOT DIRECT';
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'subject',
+                html: 'content'
+            });
+
+            mailer.sendMail.firstCall.args[0].from.should.equal('"Test" <from@default.com>');
 
             // only from set
             configUtils.set({mail: {from: 'from@default.com'}});
-            mailer.from().should.equal('"Test" <from@default.com>');
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'subject',
+                html: 'content'
+            });
+
+            mailer.sendMail.firstCall.args[0].from.should.equal('"Test" <from@default.com>');
         });
 
-        it('should ignore theme title if from address is Title <email@address.com> format', function () {
+        it('should ignore theme title if from address is Title <email@address.com> format', async function () {
             configUtils.set({mail: {from: '"R2D2" <from@default.com>'}});
 
             mailer = new mail.GhostMailer();
 
-            mailer.from().should.equal('"R2D2" <from@default.com>');
+            sandbox.stub(mailer, 'sendMail').resolves();
+            mailer.transport.transportType = 'NOT DIRECT';
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'subject',
+                html: 'content'
+            });
+
+            mailer.sendMail.firstCall.args[0].from.should.equal('"R2D2" <from@default.com>');
 
             // only from set
             configUtils.set({mail: {from: '"R2D2" <from@default.com>'}});
-            mailer.from().should.equal('"R2D2" <from@default.com>');
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'subject',
+                html: 'content'
+            });
+
+            mailer.sendMail.firstCall.args[0].from.should.equal('"R2D2" <from@default.com>');
         });
 
-        it('should use default title if not theme title is provided', function () {
+        it('should use default title if not theme title is provided', async function () {
             configUtils.set({mail: {from: null}});
             sandbox.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
 
             mailer = new mail.GhostMailer();
 
-            mailer.from().should.equal('"Ghost at default.com" <noreply@default.com>');
+            sandbox.stub(mailer, 'sendMail').resolves();
+            mailer.transport.transportType = 'NOT DIRECT';
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'subject',
+                html: 'content'
+            });
+
+            mailer.sendMail.firstCall.args[0].from.should.equal('"Ghost at default.com" <noreply@default.com>');
         });
     });
 });
