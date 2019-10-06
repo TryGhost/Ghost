@@ -70,7 +70,10 @@ module.exports = function MembersApi({
         getHTML
     });
 
-    async function sendEmailWithMagicLink(email, requestedType){
+    async function sendEmailWithMagicLink(email, requestedType, options = {forceEmailType: false}){
+        if (options.forceEmailType) {
+            return magicLinkService.sendMagicLink({email, user: {email}, type: requestedType});
+        }
         const member = await users.get({email});
         if (member) {
             return magicLinkService.sendMagicLink({email, user: {email}, type: 'signin'});
@@ -194,7 +197,7 @@ module.exports = function MembersApi({
             await stripe.addCustomerToMember(member, customer);
 
             const emailType = 'signup';
-            await sendEmailWithMagicLink(customer.email, emailType);
+            await sendEmailWithMagicLink(customer.email, emailType, {forceEmailType: true});
             res.writeHead(200);
             res.end();
         } catch (err) {
