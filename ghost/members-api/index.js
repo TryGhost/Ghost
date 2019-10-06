@@ -70,8 +70,14 @@ module.exports = function MembersApi({
         getHTML
     });
 
-    async function sendEmailWithMagicLink(email, type){
-        return magicLinkService.sendMagicLink({email, user: {email}, type});
+    async function sendEmailWithMagicLink(email, requestedType){
+        const member = await users.get({email});
+        if (member) {
+            return magicLinkService.sendMagicLink({email, user: {email}, type: 'signin'});
+        } else {
+            const type = requestedType === 'subscribe' ? 'subscribe' : 'signup';
+            return magicLinkService.sendMagicLink({email, user: {email}, type});
+        }
     }
 
     const users = Users({
