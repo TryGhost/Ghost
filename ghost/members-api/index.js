@@ -14,7 +14,7 @@ module.exports = function MembersApi({
         publicKey
     },
     auth: {
-        allowSelfSignup,
+        allowSelfSignup = true,
         getSigninURL
     },
     paymentConfig,
