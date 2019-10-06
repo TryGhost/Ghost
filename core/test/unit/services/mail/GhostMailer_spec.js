@@ -177,7 +177,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.from().should.equal('"Blog Title" <static@example.com>');
         });
 
-        describe('should fall back to [blog.title] <ghost@[blog.url]>', function () {
+        describe('should fall back to [blog.title] <noreply@[blog.url]>', function () {
             let mailer;
 
             beforeEach(function () {
@@ -189,20 +189,20 @@ describe('Mail: Ghostmailer', function () {
                 sinon.stub(urlUtils, 'urlFor').returns('http://default.com');
                 configUtils.set({mail: {from: null}});
 
-                mailer.from().should.equal('"Test" <ghost@default.com>');
+                mailer.from().should.equal('"Test" <noreply@default.com>');
             });
 
             it('trailing slash', function () {
                 sinon.stub(urlUtils, 'urlFor').returns('http://default.com/');
                 configUtils.set({mail: {from: null}});
 
-                mailer.from().should.equal('"Test" <ghost@default.com>');
+                mailer.from().should.equal('"Test" <noreply@default.com>');
             });
 
             it('strip port', function () {
                 sinon.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
                 configUtils.set({mail: {from: null}});
-                mailer.from().should.equal('"Test" <ghost@default.com>');
+                mailer.from().should.equal('"Test" <noreply@default.com>');
             });
 
             it('Escape title', function () {
@@ -211,7 +211,7 @@ describe('Mail: Ghostmailer', function () {
 
                 sinon.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
                 configUtils.set({mail: {from: null}});
-                mailer.from().should.equal('"Test\\"" <ghost@default.com>');
+                mailer.from().should.equal('"Test\\"" <noreply@default.com>');
             });
         });
 
@@ -256,7 +256,7 @@ describe('Mail: Ghostmailer', function () {
 
             mailer = new mail.GhostMailer();
 
-            mailer.from().should.equal('"Ghost at default.com" <ghost@default.com>');
+            mailer.from().should.equal('"Ghost at default.com" <noreply@default.com>');
         });
     });
 });
