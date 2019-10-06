@@ -8,15 +8,9 @@ const common = require('../../lib/common');
 const settingsCache = require('../settings/cache');
 const urlUtils = require('../../lib/url-utils');
 
-function GhostMailer() {
-    var nodemailer = require('nodemailer'),
-        transport = config.get('mail') && config.get('mail').transport || 'direct',
-        options = config.get('mail') && _.clone(config.get('mail').options) || {};
+const helpMessage = common.i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://ghost.org/docs/concepts/config/#mail'});
+const defaultErrorMessage = common.i18n.t('errors.mail.failedSendingEmail.error');
 
-    this.state = {};
-    this.transport = nodemailer.createTransport(transport, options);
-    this.state.usingDirect = transport === 'direct';
-}
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
     return domain && domain[1];
@@ -41,75 +35,93 @@ function getFromAddress() {
     return address;
 }
 
-// Sends an email message enforcing `to` (blog owner) and `from` fields
-// This assumes that api.settings.read('email') was already done on the API level
-GhostMailer.prototype.send = function (message) {
-    var self = this,
-        to,
-        help = common.i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://ghost.org/docs/concepts/config/#mail'}),
-        errorMessage = common.i18n.t('errors.mail.failedSendingEmail.error');
-
-    // important to clone message as we modify it
-    message = _.clone(message) || {};
-    to = message.to || false;
-
-    if (!(message && message.subject && message.html && message.to)) {
-        return Promise.reject(new common.errors.EmailError({
-            message: common.i18n.t('errors.mail.incompleteMessageData.error'),
-            help: help
-        }));
-    }
-
-    message = _.extend(message, {
-        from: self.from(),
-        to: to,
+function createMessage(message) {
+    return Object.assign({}, message, {
+        from: getFromAddress(),
         generateTextFromHTML: true,
         encoding: 'base64'
     });
+}
 
-    return new Promise(function (resolve, reject) {
-        self.transport.sendMail(message, function (err, response) {
-            if (err) {
-                errorMessage += common.i18n.t('errors.mail.reason', {reason: err.message || err});
+function createMailError({message, err, ignoreDefaultMessage} = {message: ''}) {
+    const fullErrorMessage = defaultErrorMessage + message;
+    return new common.errors.EmailError({
+        message: ignoreDefaultMessage ? message : fullErrorMessage,
+        err: err,
+        help: helpMessage
+    });
+}
 
-                return reject(new common.errors.EmailError({
-                    message: errorMessage,
-                    err: err,
-                    help: help
-                }));
+module.exports = class GhostMailer {
+    constructor() {
+        const nodemailer = require('nodemailer');
+        const transport = config.get('mail') && config.get('mail').transport || 'direct';
+        // nodemailer mutates the options passed to createTransport
+        const options = config.get('mail') && _.clone(config.get('mail').options) || {};
+
+        this.state = {
+            usingDirect: transport === 'direct'
+        };
+        this.transport = nodemailer.createTransport(transport, options);
+    }
+
+    send(message) {
+        if (!(message && message.subject && message.html && message.to)) {
+            return Promise.reject(createMailError({
+                message: common.i18n.t('errors.mail.incompleteMessageData.error'),
+                ignoreDefaultMessage: true
+            }));
+        }
+
+        const messageToSend = createMessage(message);
+
+        return this.sendMail(messageToSend).then((response) => {
+            if (this.transport.transportType === 'DIRECT') {
+                return this.handleDirectTransportResponse(response);
             }
+            return response;
+        });
+    }
 
-            if (self.transport.transportType !== 'DIRECT') {
-                return resolve(response);
-            }
+    sendMail(message) {
+        return new Promise((resolve, reject) => {
+            this.transport.sendMail(message, (err, response) => {
+                if (err) {
+                    reject(createMailError({
+                        message: common.i18n.t('errors.mail.reason', {reason: err.message || err}),
+                        err
+                    }));
+                }
+                resolve(response);
+            });
+        });
+    }
 
+    handleDirectTransportResponse(response) {
+        return new Promise((resolve, reject) => {
             response.statusHandler.once('failed', function (data) {
                 if (data.error && data.error.errno === 'ENOTFOUND') {
-                    errorMessage += common.i18n.t('errors.mail.noMailServerAtAddress.error', {domain: data.domain});
+                    reject(createMailError({
+                        message: common.i18n.t('errors.mail.noMailServerAtAddress.error', {domain: data.domain})
+                    }));
                 }
 
-                return reject(new common.errors.EmailError({
-                    message: errorMessage,
-                    help: help
-                }));
+                reject(createMailError());
             });
 
             response.statusHandler.once('requeue', function (data) {
                 if (data.error && data.error.message) {
-                    errorMessage += common.i18n.t('errors.mail.reason', {reason: data.error.message});
+                    reject(createMailError({
+                        message: common.i18n.t('errors.mail.reason', {reason: data.error.message})
+                    }));
                 }
 
-                return reject(new common.errors.EmailError({
-                    message: errorMessage,
-                    help: help
-                }));
+                reject(createMailError());
             });
 
             response.statusHandler.once('sent', function () {
-                return resolve(common.i18n.t('notices.mail.messageSent'));
+                resolve(common.i18n.t('notices.mail.messageSent'));
             });
         });
-    });
+    }
 };
-
-module.exports = GhostMailer;
