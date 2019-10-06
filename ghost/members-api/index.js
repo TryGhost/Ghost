@@ -14,6 +14,7 @@ module.exports = function MembersApi({
         publicKey
     },
     auth: {
+        allowSelfSignup,
         getSigninURL
     },
     paymentConfig,
@@ -131,7 +132,14 @@ module.exports = function MembersApi({
         }
         const emailType = req.body.emailType;
         try {
-            await sendEmailWithMagicLink(email, emailType);
+            if (!allowSelfSignup) {
+                const member = await users.get({email});
+                if (member) {
+                    await sendEmailWithMagicLink(email, emailType);
+                }
+            } else {
+                await sendEmailWithMagicLink(email, emailType);
+            }
             res.writeHead(201);
             return res.end('Created.');
         } catch (err) {
