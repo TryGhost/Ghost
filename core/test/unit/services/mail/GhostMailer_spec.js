@@ -36,13 +36,15 @@ var should = require('should'),
         html: '<p>This</p>'
     };
 
+const sandbox = sinon.createSandbox();
+
 common.i18n.init();
 
 describe('Mail: Ghostmailer', function () {
     afterEach(function () {
         mailer = null;
         configUtils.restore();
-        sinon.restore();
+        sandbox.restore();
     });
 
     it('should attach mail provider to ghost instance', function () {
@@ -182,34 +184,34 @@ describe('Mail: Ghostmailer', function () {
 
             beforeEach(function () {
                 mailer = new mail.GhostMailer();
-                sinon.stub(settingsCache, 'get').returns('Test');
+                sandbox.stub(settingsCache, 'get').returns('Test');
             });
 
             it('standard domain', function () {
-                sinon.stub(urlUtils, 'urlFor').returns('http://default.com');
+                sandbox.stub(urlUtils, 'urlFor').returns('http://default.com');
                 configUtils.set({mail: {from: null}});
 
                 mailer.from().should.equal('"Test" <noreply@default.com>');
             });
 
             it('trailing slash', function () {
-                sinon.stub(urlUtils, 'urlFor').returns('http://default.com/');
+                sandbox.stub(urlUtils, 'urlFor').returns('http://default.com/');
                 configUtils.set({mail: {from: null}});
 
                 mailer.from().should.equal('"Test" <noreply@default.com>');
             });
 
             it('strip port', function () {
-                sinon.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
+                sandbox.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
                 configUtils.set({mail: {from: null}});
                 mailer.from().should.equal('"Test" <noreply@default.com>');
             });
 
             it('Escape title', function () {
                 settingsCache.get.restore();
-                sinon.stub(settingsCache, 'get').returns('Test"');
+                sandbox.stub(settingsCache, 'get').returns('Test"');
 
-                sinon.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
+                sandbox.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
                 configUtils.set({mail: {from: null}});
                 mailer.from().should.equal('"Test\\"" <noreply@default.com>');
             });
@@ -225,7 +227,7 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('should attach blog title', function () {
-            sinon.stub(settingsCache, 'get').returns('Test');
+            sandbox.stub(settingsCache, 'get').returns('Test');
 
             configUtils.set({mail: {from: 'from@default.com'}});
 
@@ -252,7 +254,7 @@ describe('Mail: Ghostmailer', function () {
 
         it('should use default title if not theme title is provided', function () {
             configUtils.set({mail: {from: null}});
-            sinon.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
+            sandbox.stub(urlUtils, 'urlFor').returns('http://default.com:2368/');
 
             mailer = new mail.GhostMailer();
 
