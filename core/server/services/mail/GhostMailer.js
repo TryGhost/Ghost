@@ -16,10 +16,10 @@ function getDomain() {
     return domain && domain[1];
 }
 
-function getFromAddress() {
+function getFromAddress(requestedFromAddress) {
     const configAddress = config.get('mail') && config.get('mail').from;
 
-    const address = configAddress;
+    const address = requestedFromAddress || configAddress;
     // If we don't have a from address at all
     if (!address) {
         // Default to noreply@[blog.url]
