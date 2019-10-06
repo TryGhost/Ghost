@@ -17,31 +17,29 @@ function GhostMailer() {
     this.transport = nodemailer.createTransport(transport, options);
     this.state.usingDirect = transport === 'direct';
 }
+function getDomain() {
+    const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+    return domain && domain[1];
+}
 
-GhostMailer.prototype.from = function () {
-    var from = config.get('mail') && config.get('mail').from,
-        defaultBlogTitle;
+function getFromAddress() {
+    const configAddress = config.get('mail') && config.get('mail').from;
 
+    const address = configAddress;
     // If we don't have a from address at all
-    if (!from) {
+    if (!address) {
         // Default to noreply@[blog.url]
-        from = 'noreply@' + this.getDomain();
+        return getFromAddress(`noreply@${getDomain()}`);
     }
 
     // If we do have a from address, and it's just an email
-    if (validator.isEmail(from)) {
-        defaultBlogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : common.i18n.t('common.mail.title', {domain: this.getDomain()});
-        from = '"' + defaultBlogTitle + '" <' + from + '>';
+    if (validator.isEmail(address)) {
+        const defaultBlogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : common.i18n.t('common.mail.title', {domain: getDomain()});
+        return `"${defaultBlogTitle}" <${address}>`;
     }
 
-    return from;
-};
-
-// Moved it to its own module
-GhostMailer.prototype.getDomain = function () {
-    var domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
-    return domain && domain[1];
-};
+    return address;
+}
 
 // Sends an email message enforcing `to` (blog owner) and `from` fields
 // This assumes that api.settings.read('email') was already done on the API level
