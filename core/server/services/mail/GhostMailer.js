@@ -1,12 +1,12 @@
 // # Mail
 // Handles sending email for Ghost
-var _ = require('lodash'),
-    Promise = require('bluebird'),
-    validator = require('validator'),
-    config = require('../../config'),
-    common = require('../../lib/common'),
-    settingsCache = require('../settings/cache'),
-    urlUtils = require('../../lib/url-utils');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const validator = require('validator');
+const config = require('../../config');
+const common = require('../../lib/common');
+const settingsCache = require('../settings/cache');
+const urlUtils = require('../../lib/url-utils');
 
 function GhostMailer() {
     var nodemailer = require('nodemailer'),
