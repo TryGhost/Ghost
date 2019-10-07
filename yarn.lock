@@ -297,17 +297,15 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.0.tgz#12ad31781c03cfb6cd7eedbc8b4c690d4ef3e4d1"
-  integrity sha512-BN9l448lW2ykE0/QIeCijs1eVFGPtta1JCol6X4jzoqzy/hjL/YyGKj5ugLVOX+Fjl9Y/sblF6Yac+UzoaHkiA==
+"@tryghost/url-utils@0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.1.tgz#cb3a1c199ff855a131588258e43bbcb1599b856c"
+  integrity sha512-FfHc/OoMqKvKbQ8Rir09wkeFZPV7FZMfmnKaVFOUoJPuULetFmfS8yP0WNBHNfGj197aT+JyyJH2QpFokvPprQ==
   dependencies:
     cheerio "0.22.0"
     moment "2.24.0"
     moment-timezone "0.5.23"
-    remark-parse "^7.0.1"
-    remark-stringify "^7.0.3"
-    unified "^8.4.0"
+    remark "^11.0.1"
     unist-util-visit "^2.0.0"
 
 "@types/bluebird@^3.5.26", "@types/bluebird@^3.5.27":
@@ -7310,7 +7308,7 @@ regexpp@^2.0.1:
   resolved "https://registry.yarnpkg.com/regexpp/-/regexpp-2.0.1.tgz#8d19d31cf632482b589049f8281f93dbcba4d07f"
   integrity sha512-lv0M6+TkDVniA3aD1Eg0DVpfU/booSu7Eev3TDO/mZKHBfVjgCGTV4t4buppESEYDtkArYFOxTJWv6S5C+iaNw==
 
-remark-parse@^7.0.1:
+remark-parse@^7.0.0:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/remark-parse/-/remark-parse-7.0.1.tgz#0c13d67e0d7b82c2ad2d8b6604ec5fae6c333c2b"
   integrity sha512-WOZLa545jYXtSy+txza6ACudKWByQac4S2DmGk+tAGO/3XnVTOxwyCIxB7nTcLlk8Aayhcuf3cV1WV6U6L7/DQ==
@@ -7331,7 +7329,7 @@ remark-parse@^7.0.1:
     vfile-location "^2.0.0"
     xtend "^4.0.1"
 
-remark-stringify@^7.0.3:
+remark-stringify@^7.0.0:
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/remark-stringify/-/remark-stringify-7.0.3.tgz#9221e9770b0b395af83a0d5881a44b6fcb9d0a2a"
   integrity sha512-+jgmjNjm2kR7y2Ns1BATXRlFr+iQ7sDcpSgytfU77nkw7UCd5yJNArSxB3MU3Uul7HuyYNTCjetoGfy8xLia1A==
@@ -7350,6 +7348,15 @@ remark-stringify@^7.0.3:
     stringify-entities "^2.0.0"
     unherit "^1.0.4"
     xtend "^4.0.1"
+
+remark@^11.0.1:
+  version "11.0.1"
+  resolved "https://registry.yarnpkg.com/remark/-/remark-11.0.1.tgz#3c16e1ed84c78a661299991bb8d5fa7ee5d18e3c"
+  integrity sha512-Fl2AvN+yU6sOBAjUz3xNC5iEvLkXV8PZicLOOLifjU8uKGusNvhHfGRCfETsqyvRHZ24JXqEyDY4hRLhoUd30A==
+  dependencies:
+    remark-parse "^7.0.0"
+    remark-stringify "^7.0.0"
+    unified "^8.2.0"
 
 remove-trailing-separator@^1.0.1:
   version "1.1.0"
@@ -8709,7 +8716,7 @@ unidecode@^0.1.8:
   resolved "https://registry.yarnpkg.com/unidecode/-/unidecode-0.1.8.tgz#efbb301538bc45246a9ac8c559d72f015305053e"
   integrity sha1-77swFTi8RSRqmsjFWdcvAVMFBT4=
 
-unified@^8.4.0:
+unified@^8.2.0:
   version "8.4.1"
   resolved "https://registry.yarnpkg.com/unified/-/unified-8.4.1.tgz#99bd0393f58a139eaa51832cfbcc0e7f6573a1e1"
   integrity sha512-YPj/uIIZSO7mMIZQj/5Z3hDl4lshWYRQGs5TgUCjHTVdklUWH+O94mK5Cy77SEcmEUwGhnUcudMuH/zIwporqw==

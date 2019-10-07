@@ -9,7 +9,9 @@ describe('Unit: v2/utils/serializers/output/utils/url', function () {
     beforeEach(function () {
         sinon.stub(urlService, 'getUrlByResourceId').returns('getUrlByResourceId');
         sinon.stub(urlUtils, 'urlFor').returns('urlFor');
+        sinon.stub(urlUtils, 'relativeToAbsolute').returns('relativeToAbsolute');
         sinon.stub(urlUtils, 'htmlRelativeToAbsolute').returns({html: sinon.stub()});
+        sinon.stub(urlUtils, 'mobiledocRelativeToAbsolute').returns({});
     });
 
     afterEach(function () {
@@ -28,19 +30,31 @@ describe('Unit: v2/utils/serializers/output/utils/url', function () {
         it('meta & models & relations', function () {
             const post = pageModel(testUtils.DataGenerator.forKnex.createPost({
                 id: 'id1',
-                feature_image: 'value'
+                mobiledoc: '{}',
+                html: 'html',
+                custom_excerpt: 'customExcerpt',
+                codeinjection_head: 'codeinjectionHead',
+                codeinjection_foot: 'codeinjectionFoot',
+                feature_image: 'featureImage',
+                og_image: 'ogImage',
+                twitter_image: 'twitterImage',
+                canonical_url: 'canonicalUrl'
             }));
 
             urlUtil.forPost(post.id, post, {options: {}});
 
             post.hasOwnProperty('url').should.be.true();
 
-            urlUtils.urlFor.callCount.should.eql(1);
-            urlUtils.urlFor.getCall(0).args.should.eql(['image', {image: 'value'}, true]);
+            // feature_image, og_image, twitter_image, canonical_url
+            urlUtils.relativeToAbsolute.callCount.should.eql(4);
 
-            urlUtils.htmlRelativeToAbsolute.callCount.should.eql(1);
+            // mobiledoc
+            urlUtils.mobiledocRelativeToAbsolute.callCount.should.eql(1);
+
+            // html, codeinjection_head, codeinjection_foot
+            urlUtils.htmlRelativeToAbsolute.callCount.should.eql(3);
             urlUtils.htmlRelativeToAbsolute.getCall(0).args.should.eql([
-                '## markdown',
+                'html',
                 'getUrlByResourceId',
                 {assetsOnly: true}
             ]);
