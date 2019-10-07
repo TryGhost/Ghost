@@ -47,79 +47,88 @@
 </div>
 
 <h4 class="midlightgrey f-small fw5 ttu mt12">Stripe info</h4>
-{{#if subscriptions}}
-    <div class="br4 shadow-1 bg-grouped-table mt2">
-        {{#if hasMultipleSubscriptions}}
-            <div class="pa2 flex flex-column flex-row-ns items-center justify-center f7 fw5 bg-whitegrey-l2 bb b--whitegrey br4 br--top">
-                {{svg-jar "info" class="gh-member-info-icon mr2 fill-darkgrey"}} Member has multiple Stripe subscriptions
-            </div>
-        {{/if}}
-        {{#each subscriptions as |subscription|}}
-            <section class="gh-member-stripe-info pa5 pb0 pt4 flex flex-column flex-row-ns items-start justify-between">
-                <div class="flex items-start w-100">
-                    <div class="w-50 flex-auto mr8">
-                        <h4 class="f8 fw6">Customer data</h4>
-                        <table class="gh-member-stripe-table">
-                            <tr>
-                                <td class="gh-member-stripe-label">Stripe customer ID</td>
-                                <td class="gh-member-stripe-data"><a href="https://dashboard.stripe.com/test/customers/{{subscription.customer}}" target="_blank" rel="noopener" data-tooltip="View on Stripe">{{subscription.customer}}</a></td>
-                            </tr>
-                            <tr>
-                                <td class="gh-member-stripe-label">Name</td>
-                                <td class="gh-member-stripe-data">
-                                    {{#if subscription.name}} 
-                                        {{subscription.name}} 
-                                    {{else}}
-                                        <span class="midlightgrey-l2">No name</span>
-                                    {{/if}}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="gh-member-stripe-label">Email</td>
-                                <td class="gh-member-stripe-data">
-                                    {{#if subscription.email}}
-                                        {{subscription.email}}
-                                    {{else}}
-                                        <span class="midlightgrey-l2">No email</span>
-                                    {{/if}}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="gh-member-stripe-label">Customer since</td>
-                                <td class="gh-member-stripe-data">
-                                    {{#if subscription.startDate}}
-                                        {{subscription.startDate}}
-                                    {{else}}
-                                        <span class="midlightgrey-l2">No data</span>
-                                    {{/if}}
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
 
-                    <div class="w-50 flex-auto">
-                        <h4 class="f8 fw6">Subscription data</h4>
-                        <table class="gh-member-stripe-table">
-                            <tr>
-                                <td class="gh-member-stripe-label">Plan</td>
-                                <td class="gh-member-stripe-data">{{subscription.planName}}</td>
-                            </tr>
-                            <tr>
-                                <td class="gh-member-stripe-label">Current status</td>
-                                <td class="gh-member-stripe-data">{{subscription.status}}</td>
-                            </tr>
-                            <tr>
-                                <td class="gh-member-stripe-label">Next renewal date</td>
-                                <td class="gh-member-stripe-data">{{subscription.validUntil}}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-            </section>
-        {{/each}}
+{{#if isLoading}}
+    <div class="pa20 br4 shadow-1 bg-grouped-table mt2">
+        <div class="flex justify-center flex-auto">
+            <div class="gh-loading-spinner"> </div>
+        </div>
     </div>
 {{else}}
-    <div class="pa20 br4 shadow-1 bg-grouped-table mt2">
-        <p class="ma0 pa0 tc midgrey">Member doesn't have Stripe subscription</p>
-    </div>
+    {{#if subscriptions}}
+        <div class="br4 shadow-1 bg-grouped-table mt2">
+            {{#if hasMultipleSubscriptions}}
+                <div class="pa2 flex flex-column flex-row-ns items-center justify-center f7 fw5 bg-whitegrey-l2 bb b--whitegrey br4 br--top">
+                    {{svg-jar "info" class="gh-member-info-icon mr2 fill-darkgrey"}} Member has multiple Stripe subscriptions
+                </div>
+            {{/if}}
+            {{#each subscriptions as |subscription|}}
+                <section class="gh-member-stripe-info pa5 pb0 pt4 flex flex-column flex-row-ns items-start justify-between">
+                    <div class="flex items-start w-100">
+                        <div class="w-50 flex-auto mr8">
+                            <h4 class="f8 fw6">Customer data</h4>
+                            <table class="gh-member-stripe-table">
+                                <tr>
+                                    <td class="gh-member-stripe-label">Stripe customer ID</td>
+                                    <td class="gh-member-stripe-data"><a href="https://dashboard.stripe.com/test/customers/{{subscription.customer}}" target="_blank" rel="noopener" data-tooltip="View on Stripe">{{subscription.customer}}</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="gh-member-stripe-label">Name</td>
+                                    <td class="gh-member-stripe-data">
+                                        {{#if subscription.name}} 
+                                            {{subscription.name}} 
+                                        {{else}}
+                                            <span class="midlightgrey-l2">No name</span>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="gh-member-stripe-label">Email</td>
+                                    <td class="gh-member-stripe-data">
+                                        {{#if subscription.email}}
+                                            {{subscription.email}}
+                                        {{else}}
+                                            <span class="midlightgrey-l2">No email</span>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="gh-member-stripe-label">Customer since</td>
+                                    <td class="gh-member-stripe-data">
+                                        {{#if subscription.startDate}}
+                                            {{subscription.startDate}}
+                                        {{else}}
+                                            <span class="midlightgrey-l2">No data</span>
+                                        {{/if}}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="w-50 flex-auto">
+                            <h4 class="f8 fw6">Subscription data</h4>
+                            <table class="gh-member-stripe-table">
+                                <tr>
+                                    <td class="gh-member-stripe-label">Plan</td>
+                                    <td class="gh-member-stripe-data">{{subscription.planName}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="gh-member-stripe-label">Current status</td>
+                                    <td class="gh-member-stripe-data">{{subscription.status}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="gh-member-stripe-label">Next renewal date</td>
+                                    <td class="gh-member-stripe-data">{{subscription.validUntil}}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            {{/each}}
+        </div>
+    {{else}}
+        <div class="pa20 br4 shadow-1 bg-grouped-table mt2">
+            <p class="ma0 pa0 tc midgrey">Member doesn't have Stripe subscription</p>
+        </div>
+    {{/if}}
 {{/if}}

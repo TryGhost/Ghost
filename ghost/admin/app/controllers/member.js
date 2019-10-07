@@ -38,10 +38,12 @@ export default Controller.extend({
     },
 
     fetchMember: task(function* (memberId) {
+        this.set('isLoading', true);
         yield this.store.findRecord('member', memberId, {
             reload: true
         }).then((data) => {
             this.set('member', data);
+            this.set('isLoading', false);
         });
     })
 

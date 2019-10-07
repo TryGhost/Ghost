@@ -27,6 +27,7 @@
         </div>
         {{gh-member-settings-form member=member
             setProperty=(action "setProperty")
+            isLoading=this.isLoading
             showDeleteTagModal=(action "toggleDeleteTagModal")}}
     </form>
         <button
