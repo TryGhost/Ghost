@@ -39,6 +39,7 @@ models = [
     'mobiledoc-revision',
     'member',
     'member-stripe-customer',
+    'stripe-customer-subscription',
     'action'
 ];
 
