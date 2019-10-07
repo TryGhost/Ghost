@@ -29,6 +29,8 @@ export default Controller.extend({
             let {name, email} = member;
             return (name && name.toLowerCase().indexOf(searchText) >= 0)
                 || (email && email.toLowerCase().indexOf(searchText) >= 0);
+        }).sort((a, b) => {
+            return b.get('createdAt').valueOf() - a.get('createdAt').valueOf();
         });
 
         return filtered;
