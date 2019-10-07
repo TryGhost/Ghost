@@ -30,12 +30,12 @@ export default Component.extend({
                     startDate: '',
                     planName: subscription.name,
                     validUntil: moment(subscription.validUntil * 1000).format('MMM DD YYYY')
-                }
+                };
             }).reverse();
         }
         return null;
     }),
-    hasMultipleSubscriptions: computed('member.stripe', function() {
+    hasMultipleSubscriptions: computed('member.stripe', function () {
         let subscriptions = this.member.get('stripe');
         if (subscriptions && subscriptions.length > 1) {
             return true;
