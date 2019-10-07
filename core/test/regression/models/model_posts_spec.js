@@ -1134,6 +1134,44 @@ describe('Post Model', function () {
                         done();
                     }).catch(done);
             });
+
+            it('transforms absolute urls to relative', function (done) {
+                const post = {
+                    title: 'Absolute->Relative URL Transform Test',
+                    mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"http://127.0.0.1:2369/content/images/card.jpg"}]],"markups":[["a",["href","http://127.0.0.1:2369/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}',
+                    custom_excerpt: 'Testing <a href="http://127.0.0.1:2369/internal">links</a> in custom excerpts',
+                    codeinjection_head: '<script src="http://127.0.0.1:2369/assets/head.js"></script>',
+                    codeinjection_foot: '<script src="http://127.0.0.1:2369/assets/foot.js"></script>',
+                    feature_image: 'http://127.0.0.1:2369/content/images/feature.png',
+                    og_image: 'http://127.0.0.1:2369/content/images/og.png',
+                    twitter_image: 'http://127.0.0.1:2369/content/images/twitter.png',
+                    canonical_url: 'http://127.0.0.1:2369/canonical'
+                };
+
+                models.Post.add(post, context).then((createdPost) => {
+                    createdPost.get('mobiledoc').should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"/content/images/card.jpg"}]],"markups":[["a",["href","/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
+                    createdPost.get('html').should.equal('<p><a href="/test">Testing</a></p><!--kg-card-begin: image--><figure class="kg-card kg-image-card"><img src="/content/images/card.jpg" class="kg-image"></figure><!--kg-card-end: image-->');
+                    createdPost.get('custom_excerpt').should.equal('Testing <a href="/internal">links</a> in custom excerpts');
+                    createdPost.get('codeinjection_head').should.equal('<script src="/assets/head.js"></script>');
+                    createdPost.get('codeinjection_foot').should.equal('<script src="/assets/foot.js"></script>');
+                    createdPost.get('feature_image').should.equal('/content/images/feature.png');
+                    createdPost.get('og_image').should.equal('/content/images/og.png');
+                    createdPost.get('twitter_image').should.equal('/content/images/twitter.png');
+                    createdPost.get('canonical_url').should.equal('/canonical');
+
+                    // ensure canonical_url is not transformed when protocol does not match
+                    return createdPost.save({
+                        canonical_url: 'https://127.0.0.1:2369/https-internal',
+                        // sanity check for general absolute->relative transform during edits
+                        feature_image: 'http://127.0.0.1:2369/content/images/updated_feature.png'
+                    });
+                }).then((updatedPost) => {
+                    updatedPost.get('canonical_url').should.equal('https://127.0.0.1:2369/https-internal');
+                    updatedPost.get('feature_image').should.equal('/content/images/updated_feature.png');
+
+                    done();
+                }).catch(done);
+            });
         });
 
         describe('destroy', function () {
