@@ -98,7 +98,7 @@ export default [
         created_at: '2015-09-11T09:44:30.810Z',
         created_by: 1,
         key: 'is_private',
-        type: 'blog',
+        type: 'private',
         updated_at: '2015-09-23T13:32:49.868Z',
         updated_by: 1,
         value: false
@@ -108,7 +108,7 @@ export default [
         created_at: '2015-09-11T09:44:30.810Z',
         created_by: 1,
         key: 'password',
-        type: 'blog',
+        type: 'private',
         updated_at: '2015-09-23T13:32:49.868Z',
         updated_by: 1,
         value: ''
@@ -121,7 +121,7 @@ export default [
         type: 'blog',
         updated_at: '2016-05-05T18:33:09.168Z',
         updated_by: 1,
-        value: '[{"url":""}]'
+        value: '[{"url":"", "username":"Ghost"}]'
     },
     {
         id: 17,
@@ -171,6 +171,16 @@ export default [
         created_at: '2013-11-25T14:48:11.000Z',
         created_by: 1,
         updated_at: '2015-10-27T17:39:58.276Z',
+        updated_by: 1
+    },
+    {
+        id: 23,
+        type: 'members',
+        key: 'members_subscription_settings',
+        value: '{"isPaid":false,"paymentProcessors":[{"adapter":"stripe","config":{"secret_token":"","public_token":"","product":{"name":"Ghost Subscription"},"plans":[{"name":"Monthly","currency":"usd","interval":"month","amount":""},{"name":"Yearly","currency":"usd","interval":"year","amount":""}]}}]}',
+        created_at: '2019-10-09T09:49:00.000Z',
+        created_by: 1,
+        updated_at: '2019-10-09T09:49:00.000Z',
         updated_by: 1
     }
 ];
