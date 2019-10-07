@@ -30,37 +30,37 @@ const forPost = (id, attrs, frame) => {
         }
     }
 
-    if (attrs.feature_image) {
-        attrs.feature_image = urlUtils.urlFor('image', {image: attrs.feature_image}, true);
+    const urlOptions = {};
+
+    // v2 only transforms asset URLS, v3 will transform all urls so that
+    // input/output transformations are balanced and all URLs are absolute
+    if (!frame.options.absolute_urls) {
+        urlOptions.assetsOnly = true;
     }
 
-    if (attrs.og_image) {
-        attrs.og_image = urlUtils.urlFor('image', {image: attrs.og_image}, true);
-    }
-
-    if (attrs.twitter_image) {
-        attrs.twitter_image = urlUtils.urlFor('image', {image: attrs.twitter_image}, true);
-    }
-
-    if (attrs.canonical_url) {
-        attrs.canonical_url = urlUtils.relativeToAbsolute(attrs.canonical_url);
-    }
-
-    if (attrs.html) {
-        const urlOptions = {
-            assetsOnly: true
-        };
-
-        if (frame.options.absolute_urls) {
-            urlOptions.assetsOnly = false;
-        }
-
-        attrs.html = urlUtils.htmlRelativeToAbsolute(
-            attrs.html,
+    if (attrs.mobiledoc) {
+        attrs.mobiledoc = urlUtils.mobiledocRelativeToAbsolute(
+            attrs.mobiledoc,
             attrs.url,
             urlOptions
         );
     }
+
+    ['html', 'codeinjection_head', 'codeinjection_foot'].forEach((attr) => {
+        if (attrs[attr]) {
+            attrs[attr] = urlUtils.htmlRelativeToAbsolute(
+                attrs[attr],
+                attrs.url,
+                urlOptions
+            );
+        }
+    });
+
+    ['feature_image', 'og_image', 'twitter_image', 'canonical_url'].forEach((attr) => {
+        if (attrs[attr]) {
+            attrs[attr] = urlUtils.relativeToAbsolute(attrs[attr], attrs.url, urlOptions);
+        }
+    });
 
     if (frame.options.columns && !frame.options.columns.includes('url')) {
         delete attrs.url;

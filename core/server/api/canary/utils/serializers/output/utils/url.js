@@ -30,37 +30,27 @@ const forPost = (id, attrs, frame) => {
         }
     }
 
-    if (attrs.feature_image) {
-        attrs.feature_image = urlUtils.urlFor('image', {image: attrs.feature_image}, true);
-    }
-
-    if (attrs.og_image) {
-        attrs.og_image = urlUtils.urlFor('image', {image: attrs.og_image}, true);
-    }
-
-    if (attrs.twitter_image) {
-        attrs.twitter_image = urlUtils.urlFor('image', {image: attrs.twitter_image}, true);
-    }
-
-    if (attrs.canonical_url) {
-        attrs.canonical_url = urlUtils.relativeToAbsolute(attrs.canonical_url);
-    }
-
-    if (attrs.html) {
-        const urlOptions = {
-            assetsOnly: true
-        };
-
-        if (frame.options.absolute_urls) {
-            urlOptions.assetsOnly = false;
-        }
-
-        attrs.html = urlUtils.htmlRelativeToAbsolute(
-            attrs.html,
-            attrs.url,
-            urlOptions
+    if (attrs.mobiledoc) {
+        attrs.mobiledoc = urlUtils.mobiledocRelativeToAbsolute(
+            attrs.mobiledoc,
+            attrs.url
         );
     }
+
+    ['html', 'codeinjection_head', 'codeinjection_foot'].forEach((attr) => {
+        if (attrs[attr]) {
+            attrs[attr] = urlUtils.htmlRelativeToAbsolute(
+                attrs[attr],
+                attrs.url
+            );
+        }
+    });
+
+    ['feature_image', 'og_image', 'twitter_image', 'canonical_url'].forEach((attr) => {
+        if (attrs[attr]) {
+            attrs[attr] = urlUtils.relativeToAbsolute(attrs[attr]);
+        }
+    });
 
     if (frame.options.columns && !frame.options.columns.includes('url')) {
         delete attrs.url;

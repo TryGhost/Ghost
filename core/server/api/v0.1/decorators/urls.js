@@ -9,25 +9,27 @@ const urlsForPost = (id, attrs, options) => {
     }
 
     if (options && options.context && options.context.public && options.absolute_urls) {
-        if (attrs.feature_image) {
-            attrs.feature_image = urlUtils.urlFor('image', {image: attrs.feature_image}, true);
+        if (attrs.mobiledoc) {
+            attrs.mobiledoc = urlUtils.mobiledocRelativeToAbsolute(
+                attrs.mobiledoc,
+                attrs.url
+            );
         }
 
-        if (attrs.og_image) {
-            attrs.og_image = urlUtils.urlFor('image', {image: attrs.og_image}, true);
-        }
+        ['html', 'codeinjection_head', 'codeinjection_foot'].forEach((attr) => {
+            if (attrs[attr]) {
+                attrs[attr] = urlUtils.htmlRelativeToAbsolute(
+                    attrs[attr],
+                    attrs.url
+                );
+            }
+        });
 
-        if (attrs.twitter_image) {
-            attrs.twitter_image = urlUtils.urlFor('image', {image: attrs.twitter_image}, true);
-        }
-
-        if (attrs.html) {
-            attrs.html = urlUtils.htmlRelativeToAbsolute(attrs.html, attrs.url);
-        }
-
-        if (attrs.url) {
-            attrs.url = urlUtils.urlFor({relativeUrl: attrs.url}, true);
-        }
+        ['feature_image', 'og_image', 'twitter_image', 'canonical_url', 'url'].forEach((attr) => {
+            if (attrs[attr]) {
+                attrs[attr] = urlUtils.relativeToAbsolute(attrs[attr]);
+            }
+        });
     }
 
     if (options && options.withRelated) {
