@@ -4706,7 +4706,7 @@ ember-cli-chai@0.5.0:
     rollup-plugin-commonjs "^8.0.2"
     rollup-plugin-node-resolve "^3.0.0"
 
-ember-cli-chart@^3.5.0:
+ember-cli-chart@3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/ember-cli-chart/-/ember-cli-chart-3.5.0.tgz#c20df59413cd3473d17a39b40db810ebb2b45544"
   integrity sha512-L7HWIOGXKEV/UKR9cioKQXlsDmx2DPAScirx6tQXB5aBx5hOYGSx6QHG2dSzMimI86hD5JstbuqeTyTfmRv+RA==
