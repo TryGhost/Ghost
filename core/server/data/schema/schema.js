@@ -396,10 +396,31 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false},
         // customer_id is unique: false because mysql with innodb utf8mb4 cannot have unqiue columns larger than 191 chars
         customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
+        name: {type: 'string', maxlength: 191, nullable: true},
+        email: {type: 'string', maxlength: 191, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    stripe_customers_subscriptions: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
+        subscription_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
+        plan_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
+        status: {type: 'string', maxlength: 50, nullable: false},
+        current_period_end: {type: 'dateTime', nullable: false},
+        start_date: {type: 'dateTime', nullable: false},
+        default_payment_card_last4: {type: 'string', maxlength: 4, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        created_by: {type: 'string', maxlength: 24, nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        updated_by: {type: 'string', maxlength: 24, nullable: true},
+        /* Below fields eventually should be normalised e.g. stripe_plans table, link to here on plan_id */
+        plan_nickname: {type: 'string', maxlength: 50, nullable: false},
+        plan_interval: {type: 'string', maxlength: 50, nullable: false},
+        plan_amount: {type: 'integer', nullable: false},
+        plan_currency: {type: 'string', maxLength: 3, nullable: false}
     },
     actions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
