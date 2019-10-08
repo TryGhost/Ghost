@@ -172,6 +172,28 @@ module.exports = class StripePaymentProcessor {
         }
     }
 
+    async handleCustomerSubscriptionDeletedWebhook(subscription) {
+        await this._updateSubscription(subscription);
+    }
+
+    async handleCustomerSubscriptionUpdatedWebhook(subscription) {
+        await this._updateSubscription(subscription);
+    }
+
+    async handleInvoicePaymentSucceededWebhook(invoice) {
+        const subscription = await retrieve(this._stripe, 'subscriptions', invoice.subscription, {
+            expand: ['default_payment_method']
+        });
+        await this._updateSubscription(subscription);
+    }
+
+    async handleInvoicePaymentFailedWebhook(invoice) {
+        const subscription = await retrieve(this._stripe, 'subscriptions', invoice.subscription, {
+            expand: ['default_payment_method']
+        });
+        await this._updateSubscription(subscription);
+    }
+
     async _addCustomerToMember(member, customer) {
         debug(`Attaching customer to member ${member.email} ${customer.id}`);
         await this.storage.set({
