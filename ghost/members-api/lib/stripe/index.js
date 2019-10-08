@@ -116,7 +116,7 @@ module.exports = class StripePaymentProcessor {
         });
 
         await Promise.all(activeSubscriptions.map((subscription) => {
-            return del(this._stripe, 'subscriptions', subscription.subscription);
+            return del(this._stripe, 'subscriptions', subscription.id);
         }));
 
         return true;
@@ -125,47 +125,33 @@ module.exports = class StripePaymentProcessor {
     async getSubscriptions(member) {
         const metadata = await this.storage.get(member);
 
-        const customers = await Promise.all(metadata.map(async (data) => {
-            try {
-                const customer = await this.getCustomer(data.customer_id, {
-                    expand: ['subscriptions.data.default_payment_method']
-                });
-                return customer;
-            } catch (err) {
-                debug(`Ignoring Error getting customer for active subscriptions ${err.message}`);
-                return null;
-            }
-        }));
-
-        return customers.reduce(function (subscriptions, customer) {
-            if (!customer) {
-                return subscriptions;
-            }
-            if (customer.deleted) {
-                return subscriptions;
-            }
-            return subscriptions.concat(customer.subscriptions.data.reduce(function (subscriptions, subscription) {
-                // Subscription has more than one plan
-                // was not created by us - ignore it.
-                if (!subscription.plan) {
-                    return subscriptions;
+        const customers = metadata.customers.reduce((customers, customer) => {
+            return Object.assign(customers, {
+                [customer.customer_id]: {
+                    id: customer.customer_id,
+                    name: customer.name,
+                    email: customer.email
                 }
+            });
+        }, {});
 
-                const payment = subscription.default_payment_method;
-                return subscriptions.concat([{
-                    customer: customer.id,
-                    status: subscription.status,
-                    subscription: subscription.id,
-                    plan: subscription.plan.id,
-                    name: subscription.plan.nickname,
-                    interval: subscription.plan.interval,
-                    amount: subscription.plan.amount,
-                    currency: subscription.plan.currency,
-                    last4: payment && payment.card && payment.card.last4 || null,
-                    validUntil: subscription.current_period_end
-                }]);
-            }, []));
-        }, []);
+        return metadata.subscriptions.map((subscription) => {
+            return {
+                id: subscription.subscription_id,
+                customer: customers[subscription.customer_id],
+                plan: {
+                    id: subscription.plan_id,
+                    nickname: subscription.plan_nickname,
+                    interval: subscription.plan_interval,
+                    amount: subscription.plan_amount,
+                    currency: subscription.plan_currency
+                },
+                status: subscription.status,
+                start_date: subscription.start_date,
+                default_payment_card_last4: subscription.default_payment_card_last4,
+                current_period_end: subscription.current_period_end
+            };
+        });
     }
 
     async getActiveSubscriptions(member) {
@@ -178,24 +164,52 @@ module.exports = class StripePaymentProcessor {
 
     async handleCheckoutSessionCompletedWebhook(member, customer) {
         await this._addCustomerToMember(member, customer);
+        if (!customer.subscriptions || !customer.subscriptions.data) {
+            return;
+        }
+        for (const subscription of customer.subscriptions.data) {
+            await this._updateSubscription(subscription);
+        }
     }
 
     async _addCustomerToMember(member, customer) {
-        const metadata = await this.storage.get(member);
-        // Do not add the customer if they are already linked
-        if (metadata.some(data => data.customer_id === customer.id)) {
-            return;
-        }
         debug(`Attaching customer to member ${member.email} ${customer.id}`);
-        return this.storage.set(member, metadata.concat({
-            customer_id: customer.id
-        }));
+        await this.storage.set({
+            customer: {
+                customer_id: customer.id,
+                member_id: member.id,
+                name: customer.name,
+                email: customer.email
+            }
+        });
+    }
+
+    async _updateSubscription(subscription) {
+        debug(`Attaching subscription to customer ${subscription.customer} ${subscription.id}`);
+        const payment = subscription.default_payment_method;
+        await this.storage.set({
+            subscription: {
+                customer_id: subscription.customer,
+
+                subscription_id: subscription.id,
+                status: subscription.status,
+                current_period_end: new Date(subscription.current_period_end * 1000),
+                start_date: new Date(subscription.start_date * 1000),
+                default_payment_card_last4: payment && payment.card && payment.card.last4 || null,
+
+                plan_id: subscription.plan.id,
+                plan_nickname: subscription.plan.nickname,
+                plan_interval: subscription.plan.interval,
+                plan_amount: subscription.plan.amount,
+                plan_currency: subscription.plan.currency
+            }
+        });
     }
 
     async _customerForMemberCheckoutSession(member) {
         const metadata = await this.storage.get(member);
 
-        for (const data in metadata) {
+        for (const data in metadata.customers) {
             try {
                 const customer = await this.getCustomer(data.customer_id);
                 if (!customer.deleted) {
