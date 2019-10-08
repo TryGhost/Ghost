@@ -21,8 +21,8 @@
 }
 
 .user-actions-menu {
-    top: calc(100% + 17px);
-    right: 0;
+    top: calc(100% + 6px);
+    right: 10px;
     left: auto;
 }
 

@@ -23,23 +23,23 @@
     background: var(--whitegrey-l2);
 }
 
-.gh-list-row:first-child .gh-list-cell:first-child,
-.gh-list-row:first-child .gh-list-data:first-child {
+.gh-list-row:first-of-type .gh-list-cell:first-child,
+.gh-list-row:first-of-type .gh-list-data:first-child {
     border-top-left-radius: 5px;
 }
 
-.gh-list-row:first-child .gh-list-cell:last-child,
-.gh-list-row:first-child .gh-list-data:last-child {
+.gh-list-row:first-of-type .gh-list-cell:last-child,
+.gh-list-row:first-of-type .gh-list-data:last-child {
     border-top-right-radius: 5px;
 }
 
-.gh-list-row:last-child .gh-list-cell:first-child,
-.gh-list-row:last-child .gh-list-data:first-child {
+.gh-list-row:last-of-type .gh-list-cell:first-child,
+.gh-list-row:last-of-type .gh-list-data:first-child {
     border-bottom-left-radius: 5px;
 }
 
-.gh-list-row:last-child .gh-list-cell:last-child,
-.gh-list-row:last-child .gh-list-data:last-child {
+.gh-list-row:last-of-type .gh-list-cell:last-child,
+.gh-list-row:last-of-type .gh-list-data:last-child {
     border-bottom-right-radius: 5px;
 }
 
@@ -79,7 +79,7 @@
 }
 
 .gh-list-row:nth-of-type(2) .gh-list-data {
-    border: none;
+    border-top: none;
 }
 
 .gh-list-data.show-on-hover > *,
@@ -96,6 +96,10 @@
 .gh-list-data.align-right,
 .gh-list-cell.align-right {
     text-align: right;
+}
+
+.gh-list-cellwidth-max {
+    width: 100%;
 }
 
 .gh-list-cellwidth-2-3 {
@@ -149,6 +153,55 @@
     .gh-list-data.force-hide-s > * {
         opacity: 0;
     }
+}
+
+
+/* Flex lists - header and responsive sizes must be custom
+/* -------------------------------------------------- */
+.gh-flex-list-row {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    margin: 0;
+    padding: 0;
+    border-top: var(--whitegrey) 1px solid;
+}
+
+.gh-flex-list-row:first-of-type {
+    border-top: none;
+}
+
+.gh-flex-list-row:not(.header):not(.loading):hover {
+    background: var(--whitegrey-l2);
+}
+
+.gh-flex-list-row:first-of-type {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.gh-flex-list-row:last-of-type {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.gh-flex-list-data {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    transition: none !important;
+}
+
+.gh-flex-list-auto {
+    flex: 1 1 auto;
+}
+
+.gh-flex-list-grow {
+    flex-grow: 1;
+}
+
+.gh-flex-list-shrink {
+    flex-grow: 1;
 }
 
 

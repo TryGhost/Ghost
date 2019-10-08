@@ -1,0 +1,10 @@
+<span class="gh-select">
+    {{one-way-select selectedVisibility
+        options=availableVisibilities
+        optionValuePath="name"
+        optionLabelPath="label"
+        optionTargetPath="name"
+        update=(action "updateVisibility")
+    }}
+    {{svg-jar "arrow-down-small"}}
+</span>

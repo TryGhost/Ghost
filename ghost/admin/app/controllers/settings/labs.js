@@ -46,7 +46,6 @@ export default Controller.extend({
     importErrors: null,
     importSuccessful: false,
     showDeleteAllModal: false,
-    showMemberConfig: false,
     submitting: false,
     uploadButtonText: 'Import',
 
@@ -71,13 +70,14 @@ export default Controller.extend({
         });
         let monthlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'month');
         let yearlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'year');
-        monthlyPlan.dollarAmount = (monthlyPlan.amount / 100);
-        yearlyPlan.dollarAmount = (yearlyPlan.amount / 100);
+        monthlyPlan.dollarAmount = parseInt(monthlyPlan.amount) ? (monthlyPlan.amount / 100) : 0;
+        yearlyPlan.dollarAmount = parseInt(yearlyPlan.amount) ? (yearlyPlan.amount / 100) : 0;
         stripeProcessor.config.plans = {
             monthly: monthlyPlan,
             yearly: yearlyPlan
         };
         subscriptionSettings.stripeConfig = stripeProcessor.config;
+        subscriptionSettings.requirePaymentForSetup = !!subscriptionSettings.requirePaymentForSetup;
         return subscriptionSettings;
     }),
 
@@ -161,10 +161,6 @@ export default Controller.extend({
             this.toggleProperty('showDeleteAllModal');
         },
 
-        toggleMemberConfig() {
-            this.toggleProperty('showMemberConfig');
-        },
-
         /**
          * Opens a file selection dialog - Triggered by "Upload x" buttons,
          * searches for the hidden file input within the .gh-setting element
@@ -180,6 +176,10 @@ export default Controller.extend({
                 .click();
         },
 
+        setDefaultContentVisibility(value) {
+            this.set('settings.defaultContentVisibility', value);
+        },
+
         setSubscriptionSettings(key, event) {
             let subscriptionSettings = this.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
             let stripeProcessor = subscriptionSettings.paymentProcessors.find((proc) => {
@@ -189,6 +189,7 @@ export default Controller.extend({
             stripeConfig.product = {
                 name: this.settings.get('title')
             };
+            // TODO: this flag has to be removed as it doesn't serve any purpose
             if (key === 'isPaid') {
                 subscriptionSettings.isPaid = event;
             }
@@ -198,10 +199,13 @@ export default Controller.extend({
             if (key === 'month' || key === 'year') {
                 stripeConfig.plans = stripeConfig.plans.map((plan) => {
                     if (key === plan.interval) {
-                        plan.amount = event.target.value * 100;
+                        plan.amount = parseInt(event.target.value) ? (event.target.value * 100) : 0;
                     }
                     return plan;
                 });
+            }
+            if (key === 'requirePaymentForSignup') {
+                subscriptionSettings.requirePaymentForSignup = !subscriptionSettings.requirePaymentForSignup;
             }
             this.set('settings.membersSubscriptionSettings', JSON.stringify(subscriptionSettings));
         }

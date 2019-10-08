@@ -147,7 +147,7 @@
 
 .modal-body .gh-image-uploader {
     margin: 0;
-    background: color-mod(var(--lightgrey) l(+4%));
+    background: color-mod(var(--whitegrey) h(+7) s(-4%) l(+5%));
 }
 
 

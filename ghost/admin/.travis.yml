@@ -16,10 +16,7 @@ install:
 - yarn
 script:
 - yarn run lint:js && yarn run test
-notifications:
-  slack:
-    rooms:
-      - secure: qEi0rR3dNcOthdz5VItSrYv73hUFE19cRqNl6qkaoN5uyOxrV75W2HeR7zQ7qbIi6MhHvV+Y9kT96RKPXtBilTm5/+pZ2bogglnrR8kGy8YkWdDgEqCUPqTLX1zgm92tjFsNia5CYFwxnasUhogZ0G3uSYVjJjoNzQ8HZdk/DTfl52jmJhJ4cXT2Hd2lvREm+iNwgwy2ena5trJOYqWS/5aov3ls1vK4H2qQOOVdeQ0Jc/hpipSm/WIR0wQal58tnQUbnQ2LhyCP6EhtrlINhQBboRcD8J7fTXlfAZdy4HrEnbEhnrYQefBsqYnQL1s+q8kvjsMi7hujo/O0kywaE1tLDLJL98I+JLA3k1JZeFfXxU9rwXsTDF8McQbaeqYZb/4NtU6aO3By45S8mz2Y9L6nLREmmeVsiFkelkiKHaWkeOMmgji0lHZ/56NyN5jidbRKW+PevGFQacsNhs3pBglvqLwZUVCcXfSGAUVM88HHbVqZOq/nktatqC41qhv+V5eLksJ1bHAz2iO3/6QPVfCkw4iqJd+iWkMIZY9Pmvh8JwxajflNvemiGUOO+2vz9gt4ua7IKbM+bX1UH19nPmeADnv+0r65YcnHSntSD3rYFQuHQInthnadyUeTKx/mWTOTIC1+bmnI3Ltkd2qxG1ui4riHDBXbEXDFFjBfRhI=
-    on_success: change
-    on_failure: always
-    on_pull_requests: false
+after_failure: |
+  if [ "${TRAVIS_EVENT_TYPE}" == "cron" ]; then
+    curl -X POST --data-urlencode "payload={\"attachments\": [{\"color\": \"danger\", \"fallback\": \"Build Failure: $TRAVIS_JOB_WEB_URL\", \"title\": \"Build Failure\", \"text\": \"$TRAVIS_JOB_WEB_URL\"}]}" $SLACK_URL
+  fi

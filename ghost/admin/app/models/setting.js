@@ -29,6 +29,7 @@ export default Model.extend(ValidationEngine, {
             return {isActive: true};
         }
     }),
+    defaultContentVisibility: attr('string'),
     membersSubscriptionSettings: attr('string'),
     metaTitle: attr('string'),
     metaDescription: attr('string'),

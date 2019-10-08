@@ -12,6 +12,7 @@ import {task, timeout} from 'ember-concurrency';
 const PSM_ANIMATION_LENGTH = 400;
 
 export default Component.extend(SettingsMenuMixin, {
+    feature: service(),
     store: service(),
     config: service(),
     ghostPaths: service(),
