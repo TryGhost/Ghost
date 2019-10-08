@@ -204,8 +204,8 @@ export default Controller.extend({
                     return plan;
                 });
             }
-            if (key === 'requirePaymentBeforeSignup') {
-                subscriptionSettings.requirePaymentBeforeSignup = !subscriptionSettings.requirePaymentBeforeSignup;
+            if (key === 'requirePaymentForSignup') {
+                subscriptionSettings.requirePaymentForSignup = !subscriptionSettings.requirePaymentForSignup;
             }
             this.set('settings.membersSubscriptionSettings', JSON.stringify(subscriptionSettings));
         }
