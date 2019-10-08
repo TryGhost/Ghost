@@ -83,7 +83,7 @@ describe('Posts Content API', function () {
                 should.exist(urlParts.host);
 
                 res.body.posts[7].slug.should.eql('not-so-short-bit-complex');
-                res.body.posts[7].html.should.match(/<a href="\/about#nowhere" title="Relative URL/);
+                res.body.posts[7].html.should.match(/<a href="http:\/\/127.0.0.1:2369\/about#nowhere" title="Relative URL/);
                 res.body.posts[9].slug.should.eql('ghostly-kitchen-sink');
                 res.body.posts[9].html.should.match(/<img src="http:\/\/127.0.0.1:2369\/content\/images\/lol.jpg"/);
 

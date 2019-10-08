@@ -9,6 +9,11 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
         form.classList.remove('success', 'invalid', 'error');
         var input = event.target.querySelector('input[data-members-email]');
         var email = input.value;
+        var emailType = undefined;
+
+        if (form.dataset.membersForm) {
+            emailType = form.dataset.membersForm;
+        }
 
         if (!email.includes('@')) {
             form.classList.add('invalid')
@@ -23,7 +28,8 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                email: email
+                email: email,
+                emailType: emailType
             })
         }).then(function (res) {
             form.addEventListener('submit', submitHandler);
@@ -48,6 +54,18 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
         event.preventDefault();
 
         var plan = el.dataset.membersPlan;
+        var successUrl = el.dataset.membersSuccess;
+        var cancelUrl = el.dataset.membersCancel;
+        var checkoutSuccessUrl;
+        var checkoutCancelUrl;
+
+        if (successUrl) {
+            checkoutSuccessUrl = (new URL(successUrl, window.location.href)).href;
+        }
+
+        if (cancelUrl) {
+            checkoutCancelUrl = (new URL(cancelUrl, window.location.href)).href;
+        }
 
         if (errorEl) {
             errorEl.innerText = '';
@@ -57,7 +75,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
             credentials: 'same-origin'
         }).then(function (res) {
             if (!res.ok) {
-                throw new Error('Could not get identity token');
+                return null;
             }
             return res.text();
         }).then(function (identity) {
@@ -68,7 +86,9 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
                 },
                 body: JSON.stringify({
                     plan: plan,
-                    identity: identity
+                    identity: identity,
+                    successUrl: checkoutSuccessUrl,
+                    cancelUrl: checkoutCancelUrl
                 })
             }).then(function (res) {
                 if (!res.ok) {
@@ -118,19 +138,3 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]')
     }
     el.addEventListener('click', clickHandler);
 });
-
-var magicLinkRegEx = /token=([a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+)/;
-var match = location.search.match(magicLinkRegEx);
-var isMagicLink = !!match
-var token = match && match[1];
-
-if (isMagicLink) {
-    fetch('{{blog-url}}/members/ssr', {
-        method: 'POST',
-        body: token
-    }).then(function (res) {
-        if (res.ok) {
-            window.location.search = window.location.search.replace(magicLinkRegEx, '');
-        }
-    });
-}

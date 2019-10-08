@@ -35,7 +35,8 @@ models = [
     'mobiledoc-revision',
     'member',
     'action',
-    'posts-meta'
+    'posts-meta',
+    'member-stripe-customer'
 ];
 
 function init() {
