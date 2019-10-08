@@ -119,6 +119,11 @@ function getStripePaymentConfig() {
     };
 }
 
+function getRequirePaymentSetting() {
+    const subscriptionSettings = settingsCache.get('members_subscription_settings');
+    return !!subscriptionSettings.requirePaymentForSignup;
+}
+
 module.exports = createApiInstance;
 
 function createApiInstance() {
@@ -134,7 +139,8 @@ function createApiInstance() {
                 signinURL.searchParams.set('token', token);
                 signinURL.searchParams.set('action', type);
                 return signinURL.href;
-            }
+            },
+            allowSelfSignup: !getRequirePaymentSetting()
         },
         mail: {
             transporter: {
