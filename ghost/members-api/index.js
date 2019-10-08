@@ -23,8 +23,8 @@ module.exports = function MembersApi({
         getText,
         getHTML
     },
-    setMemberMetadata,
-    getMemberMetadata,
+    setMetadata,
+    getMetadata,
     createMember,
     getMember,
     updateMember,
@@ -40,10 +40,10 @@ module.exports = function MembersApi({
 
     const stripeStorage = {
         async get(member) {
-            return getMemberMetadata(member, 'stripe');
+            return getMetadata('stripe', member);
         },
-        async set(member, metadata) {
-            return setMemberMetadata(member, 'stripe', metadata);
+        async set(metadata) {
+            return setMetadata('stripe', metadata);
         }
     };
     const stripe = paymentConfig.stripe ? new StripePaymentProcessor(paymentConfig.stripe, stripeStorage, common.logging) : null;
