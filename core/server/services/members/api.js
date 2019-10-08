@@ -28,7 +28,7 @@ function getMember(data, options = {}) {
     });
 }
 
-async function setMemberMetadata(member, module, metadata) {
+async function setMetadata(module, metadata) {
     if (module !== 'stripe') {
         return;
     }
@@ -48,7 +48,7 @@ async function setMemberMetadata(member, module, metadata) {
     return;
 }
 
-async function getMemberMetadata(member, module) {
+async function getMetadata(module, member) {
     if (module !== 'stripe') {
         return;
     }
@@ -204,8 +204,8 @@ function createApiInstance() {
         paymentConfig: {
             stripe: getStripePaymentConfig()
         },
-        setMemberMetadata,
-        getMemberMetadata,
+        setMetadata,
+        getMetadata,
         createMember,
         updateMember,
         getMember,
