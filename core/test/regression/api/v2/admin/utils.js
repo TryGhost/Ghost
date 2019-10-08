@@ -53,6 +53,9 @@ const expectedProperties = {
     subscriber: _(schema.subscribers)
         .keys()
     ,
+    member: _(schema.members)
+        .keys()
+    ,
     role: _(schema.roles)
         .keys()
     ,

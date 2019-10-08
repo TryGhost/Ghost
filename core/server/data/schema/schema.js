@@ -27,7 +27,7 @@ module.exports = {
             maxlength: 50,
             nullable: false,
             defaultTo: 'public',
-            validations: {isIn: [['public']]}
+            validations: {isIn: [['public', 'members', 'paid']]}
         },
         /**
          * @deprecated: `author_id`, might be removed in Ghost 3.0
@@ -343,6 +343,17 @@ module.exports = {
     members: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
+        name: {type: 'string', maxlength: 191, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        created_by: {type: 'string', maxlength: 24, nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    members_stripe_customers: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, unique: false},
+        // customer_id is unique: false because mysql with innodb utf8mb4 cannot have unqiue columns larger than 191 chars
+        customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},

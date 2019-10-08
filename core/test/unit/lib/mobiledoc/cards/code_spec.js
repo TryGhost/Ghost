@@ -58,4 +58,26 @@ describe('Code card', function () {
 
         serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-code-card"><pre><code class="language-html">&lt;p&gt;Test&lt;/p&gt;</code></pre><figcaption>Some <strong>HTML</strong></figcaption></figure>');
     });
+
+    it('transforms urls absolute to relative', function () {
+        let payload = {
+            caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
+        };
+
+        const transformed = card.absoluteToRelative(payload, {});
+
+        transformed.caption
+            .should.equal('A link to <a href="/post">an internal post</a>');
+    });
+
+    it('transforms urls relative to absolute', function () {
+        let payload = {
+            caption: 'A link to <a href="/post">an internal post</a>'
+        };
+
+        const transformed = card.relativeToAbsolute(payload, {});
+
+        transformed.caption
+            .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
+    });
 });

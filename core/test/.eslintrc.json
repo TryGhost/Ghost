@@ -11,6 +11,9 @@
         "eslint:recommended",
         "plugin:ghost/test"
     ],
+    "parserOptions": {
+        "ecmaVersion": 2017
+    },
     "rules": {
         // these rules were were not previously enforced in our custom rules,
         // they're turned off here because they _are_ enforced in our plugin.

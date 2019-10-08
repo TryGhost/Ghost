@@ -546,6 +546,9 @@ toDoList = {
     subscriber: function insertSubscriber() {
         return fixtures.insertOne('Subscriber', 'subscribers', 'createSubscriber');
     },
+    member: function insertMember() {
+        return fixtures.insertOne('Member', 'members', 'createMember');
+    },
     posts: function insertPostsAndTags() {
         return fixtures.insertPostsAndTags();
     },

@@ -8,8 +8,10 @@ const common = require('../lib/common');
 const htmlToText = require('html-to-text');
 const ghostBookshelf = require('./base');
 const config = require('../config');
+const settingsCache = require('../services/settings/cache');
 const converters = require('../lib/mobiledoc/converters');
 const relations = require('./relations');
+const urlUtils = require('../lib/url-utils');
 const MOBILEDOC_REVISIONS_COUNT = 10;
 const ALL_STATUSES = ['published', 'draft', 'scheduled'];
 
@@ -40,12 +42,18 @@ Post = ghostBookshelf.Model.extend({
      *      2. model events e.g. "post.published" are using the inserted resource, not the fetched resource
      */
     defaults: function defaults() {
+        let visibility = 'public';
+
+        if (settingsCache.get('labs') && (settingsCache.get('labs').members === true) && settingsCache.get('default_content_visibility')) {
+            visibility = settingsCache.get('default_content_visibility');
+        }
+
         return {
             uuid: uuid.v4(),
             status: 'draft',
             featured: false,
             type: 'post',
-            visibility: 'public'
+            visibility: visibility
         };
     },
 
@@ -358,6 +366,39 @@ Post = ghostBookshelf.Model.extend({
         if (!this.get('mobiledoc')) {
             this.set('mobiledoc', JSON.stringify(converters.mobiledocConverter.blankStructure()));
         }
+
+        // ensure all URLs are stored as relative
+        // note: html is not necessary to change because it's a generated later from mobiledoc
+        const urlTransformMap = {
+            mobiledoc: 'mobiledocAbsoluteToRelative',
+            custom_excerpt: 'htmlAbsoluteToRelative',
+            codeinjection_head: 'htmlAbsoluteToRelative',
+            codeinjection_foot: 'htmlAbsoluteToRelative',
+            feature_image: 'absoluteToRelative',
+            og_image: 'absoluteToRelative',
+            twitter_image: 'absoluteToRelative',
+            canonical_url: {
+                method: 'absoluteToRelative',
+                options: {
+                    ignoreProtocol: false
+                }
+            }
+        };
+
+        Object.entries(urlTransformMap).forEach(([attr, transform]) => {
+            let method = transform;
+            let options = {};
+
+            if (typeof transform === 'object') {
+                method = transform.method;
+                options = transform.options || {};
+            }
+
+            if (this.hasChanged(attr) && this.get(attr)) {
+                const transformedValue = urlUtils[method](this.get(attr), options);
+                this.set(attr, transformedValue);
+            }
+        });
 
         // CASE: mobiledoc has changed, generate html
         // CASE: html is null, but mobiledoc exists (only important for migrations & importing)

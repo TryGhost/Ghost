@@ -39,5 +39,17 @@ module.exports = createCard({
         }
 
         return figure;
+    },
+
+    absoluteToRelative(urlUtils, payload, options) {
+        payload.src = payload.src && urlUtils.absoluteToRelative(payload.src, options);
+        payload.caption = payload.caption && urlUtils.htmlAbsoluteToRelative(payload.caption, options);
+        return payload;
+    },
+
+    relativeToAbsolute(urlUtils, payload, options) {
+        payload.src = payload.src && urlUtils.relativeToAbsolute(payload.src, options);
+        payload.caption = payload.caption && urlUtils.htmlRelativeToAbsolute(payload.caption, options);
+        return payload;
     }
 });

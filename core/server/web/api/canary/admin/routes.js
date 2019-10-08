@@ -102,7 +102,19 @@ module.exports = function apiRoutes() {
 
     // ## Members
     router.get('/members', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.browse));
+    router.post('/members', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.add));
+
+    router.get('/members/csv', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.exportCSV));
+    router.post('/members/csv',
+        shared.middlewares.labs.members,
+        mw.authAdminApi,
+        upload.single('membersfile'),
+        shared.middlewares.validation.upload({type: 'members'}),
+        http(apiCanary.members.importCSV)
+    );
+
     router.get('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.read));
+    router.put('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.edit));
     router.del('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.destroy));
 
     // ## Roles

@@ -1,32 +1,23 @@
 const ghostBookshelf = require('./base');
-const security = require('../lib/security');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
 
-    onSaving() {
-        ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
-
-        if (this.hasChanged('password')) {
-            return security.password.hash(String(this.get('password')))
-                .then((hash) => {
-                    this.set('password', hash);
-                });
-        }
+    relationships: ['stripe_customers'],
+    relationshipBelongsTo: {
+        stripe_customers: 'members_stripe_customers'
     },
 
-    comparePassword(rawPassword) {
-        return security.password.compare(rawPassword, this.get('password'));
+    permittedAttributes(...args) {
+        return ghostBookshelf.Model.prototype.permittedAttributes.apply(this, args).concat(this.relationships);
     },
 
-    toJSON(unfilteredOptions) {
-        var options = Member.filterOptions(unfilteredOptions, 'toJSON'),
-            attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
-
-        // remove password hash and tokens for security reasons
-        delete attrs.password;
-
-        return attrs;
+    stripe_customers() {
+        return this.hasMany('MemberStripeCustomer', 'member_id');
+    }
+}, {
+    permittedOptions(...args) {
+        return ghostBookshelf.Model.permittedOptions.apply(this, args).concat(['withRelated']);
     }
 });
 

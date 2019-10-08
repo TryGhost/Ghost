@@ -18,9 +18,9 @@ module.exports = function setupMembersApiApp() {
     const siteUrl = new URL(urlUtils.getSiteUrl());
     apiApp.use(cors(siteUrl.origin));
 
-    // Set up the api endpoints and the gateway
     // NOTE: this is wrapped in a function to ensure we always go via the getter
-    apiApp.use((req, res, next) => membersService.api(req, res, next));
+    apiApp.post('/send-magic-link', (req, res, next) => membersService.api.middleware.sendMagicLink(req, res, next));
+    apiApp.post('/create-stripe-checkout-session', (req, res, next) => membersService.api.middleware.createCheckoutSession(req, res, next));
 
     // API error handling
     apiApp.use(shared.middlewares.errorHandler.resourceNotFound);
