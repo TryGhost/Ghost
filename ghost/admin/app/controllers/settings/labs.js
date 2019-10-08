@@ -77,6 +77,7 @@ export default Controller.extend({
             yearly: yearlyPlan
         };
         subscriptionSettings.stripeConfig = stripeProcessor.config;
+        subscriptionSettings.requirePaymentForSetup = !!subscriptionSettings.requirePaymentForSetup;
         return subscriptionSettings;
     }),
 
@@ -202,6 +203,9 @@ export default Controller.extend({
                     }
                     return plan;
                 });
+            }
+            if (key === 'requirePaymentBeforeSignup') {
+                subscriptionSettings.requirePaymentBeforeSignup = !subscriptionSettings.requirePaymentBeforeSignup;
             }
             this.set('settings.membersSubscriptionSettings', JSON.stringify(subscriptionSettings));
         }
