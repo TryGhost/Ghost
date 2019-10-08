@@ -194,20 +194,35 @@ module.exports = function MembersApi({
     middleware.handleStripeWebhook.use(ensureStripe, body.raw({type: 'application/json'}), async function (req, res) {
         try {
             const event = await stripe.parseWebhook(req.body, req.headers['stripe-signature']);
-            if (event.type !== 'checkout.session.completed') {
-                res.writeHead(200);
-                return res.end();
+
+            if (event.type === 'customer.subscription.deleted') {
+                await stripe.handleCustomerSubscriptionDeletedWebhook(event.data.object);
             }
 
-            const customer = await stripe.getCustomer(event.data.object.customer, {
-                expand: ['subscriptions.data.default_payment_method']
-            });
-            const member = await users.get({email: customer.email}) || await users.create({email: customer.email});
+            if (event.type === 'customer.subscription.updated') {
+                await stripe.handleCustomerSubscriptionUpdatedWebhook(event.data.object);
+            }
 
-            await stripe.handleCheckoutSessionCompletedWebhook(member, customer);
+            if (event.type === 'invoice.payment_succeeded') {
+                await stripe.handleInvoicePaymentSucceededWebhook(event.data.object);
+            }
 
-            const emailType = 'signup';
-            await sendEmailWithMagicLink(customer.email, emailType, {forceEmailType: true});
+            if (event.type === 'invoice.payment_failed') {
+                await stripe.handleInvoicePaymentFailedWebhook(event.data.object);
+            }
+
+            if (event.type === 'checkout.session.completed') {
+                const customer = await stripe.getCustomer(event.data.object.customer, {
+                    expand: ['subscriptions.data.default_payment_method']
+                });
+
+                const member = await users.get({email: customer.email}) || await users.create({email: customer.email});
+                await stripe.handleCheckoutSessionCompletedWebhook(member, customer);
+
+                const emailType = 'signup';
+                await sendEmailWithMagicLink(customer.email, emailType, {forceEmailType: true});
+            }
+
             res.writeHead(200);
             res.end();
         } catch (err) {
