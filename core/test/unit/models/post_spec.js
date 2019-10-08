@@ -397,6 +397,36 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     });
                 });
 
+                it('rejects if changing visibility', function (done) {
+                    var mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {visibility: 'public'};
+
+                    mockPostObj.get.withArgs('visibility').returns('paid');
+                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+
+                    models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        testUtils.permissions.contributor,
+                        false,
+                        false,
+                        true
+                    ).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.called).be.false();
+                        should(mockPostObj.related.calledOnce).be.true();
+                        done();
+                    });
+                });
+
                 it('rejects if changing author id', function (done) {
                     var mockPostObj = {
                             get: sinon.stub(),
@@ -869,6 +899,36 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     });
                 });
 
+                it('rejects if changing visibility', function (done) {
+                    var mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        },
+                        context = {user: 1},
+                        unsafeAttrs = {visibility: 'public'};
+
+                    mockPostObj.get.withArgs('visibility').returns('paid');
+                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+
+                    models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        testUtils.permissions.author,
+                        false,
+                        false,
+                        true
+                    ).then(() => {
+                        done(new Error('Permissible function should have rejected.'));
+                    }).catch((error) => {
+                        error.should.be.an.instanceof(common.errors.NoPermissionError);
+                        should(mockPostObj.get.called).be.false();
+                        should(mockPostObj.related.calledOnce).be.true();
+                        done();
+                    });
+                });
+
                 it('rejects if editing another\'s post (using `authors`)', function (done) {
                     var mockPostObj = {
                             get: sinon.stub(),
@@ -1172,6 +1232,32 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     true
                 ).then(() => {
                     should(mockPostObj.get.called).be.false();
+                });
+            });
+
+            it('resolves if changing visibility', function () {
+                var mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    },
+                    context = {user: 1},
+                    unsafeAttrs = {visibility: 'public'};
+
+                mockPostObj.get.withArgs('visibility').returns('paid');
+                mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+
+                models.Post.permissible(
+                    mockPostObj,
+                    'edit',
+                    context,
+                    unsafeAttrs,
+                    testUtils.permissions.editor,
+                    false,
+                    true,
+                    true
+                ).then(() => {
+                    should(mockPostObj.get.called).be.false();
+                    should(mockPostObj.related.calledOnce).be.true();
                 });
             });
         });
