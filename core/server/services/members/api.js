@@ -53,14 +53,14 @@ async function getMemberMetadata(member, module) {
         return;
     }
 
-    const customers = (await models.MemberStripeCustomer.where({
-        member_id: member.id
-    }).fetchAll()).toJSON();
+    const customers = (await models.MemberStripeCustomer.findAll({
+        filter: `member_id:${member.id}`
+    })).toJSON();
 
     const subscriptions = await customers.reduce(async (subscriptionsPromise, customer) => {
-        const customerSubscriptions = await models.StripeCustomerSubscription.where({
-            customer_id: customer.customer_id
-        }).fetchAll();
+        const customerSubscriptions = await models.StripeCustomerSubscription.findAll({
+            filter: `customer_id:${customer.customer_id}`
+        });
         return (await subscriptionsPromise).concat(customerSubscriptions.toJSON());
     }, []);
 
