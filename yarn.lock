@@ -3740,10 +3740,10 @@ grunt@1.0.4:
     path-is-absolute "~1.0.0"
     rimraf "~2.6.2"
 
-gscan@2.9.0:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.9.0.tgz#de169bd971043872ac830a65cd632149ecddbb8c"
-  integrity sha512-igE0rPtbc0u3IQ3pruFXTSarc+JIHEXbRv/iyqeFlujgR0iKJ0tKPKRQGceYqzy5x+sT7MTwtxpa+LLOhN2SNw==
+gscan@2.10.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.10.0.tgz#62c5a4e685304335e716baf9ec26a3974a158e07"
+  integrity sha512-Z0R0hEk00L/dfN0FvdGVA1XnE32/kYMFL9fkkpvlRYw9Rwwftp5sEtUAOrxuUA1ysersb9wLlWgunaf4BIzcwA==
   dependencies:
     "@tryghost/extract-zip" "1.6.6"
     "@tryghost/pretty-cli" "1.2.1"
