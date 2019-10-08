@@ -192,9 +192,15 @@ module.exports = function MembersApi({
     });
 
     middleware.handleStripeWebhook.use(ensureStripe, body.raw({type: 'application/json'}), async function (req, res) {
+        let event;
         try {
-            const event = await stripe.parseWebhook(req.body, req.headers['stripe-signature']);
-
+            event = await stripe.parseWebhook(req.body, req.headers['stripe-signature']);
+        } catch (err) {
+            common.logging.error(err);
+            res.writeHead(401);
+            return res.end();
+        }
+        try {
             if (event.type === 'customer.subscription.deleted') {
                 await stripe.handleCustomerSubscriptionDeletedWebhook(event.data.object);
             }
@@ -226,7 +232,7 @@ module.exports = function MembersApi({
             res.writeHead(200);
             res.end();
         } catch (err) {
-            common.logging.error(err);
+            common.logging.error(`Error handling webhook ${event.type}`, err);
             res.writeHead(400);
             res.end();
         }

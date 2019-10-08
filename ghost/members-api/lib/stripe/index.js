@@ -80,7 +80,9 @@ module.exports = class StripePaymentProcessor {
     }
 
     async parseWebhook(body, signature) {
-        return this._stripe.webhooks.constructEvent(body, signature, this._webhookSecret);
+        const event = await this._stripe.webhooks.constructEvent(body, signature, this._webhookSecret);
+        debug(`Parsed webhook event: ${event.type}`);
+        return event;
     }
 
     async createCheckoutSession(member, planName, options) {
