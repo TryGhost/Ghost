@@ -202,7 +202,7 @@ module.exports = function MembersApi({
             const customer = await stripe.getCustomer(event.data.object.customer);
             const member = await users.get({email: customer.email}) || await users.create({email: customer.email});
 
-            await stripe.addCustomerToMember(member, customer);
+            await stripe.handleCheckoutSessionCompletedWebhook(member, customer);
 
             const emailType = 'signup';
             await sendEmailWithMagicLink(customer.email, emailType, {forceEmailType: true});

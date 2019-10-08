@@ -81,7 +81,7 @@ module.exports = class StripePaymentProcessor {
         let customer;
         if (member) {
             try {
-                customer = await this._customerForMember(member);
+                customer = await this._customerForMemberCheckoutSession(member);
             } catch (err) {
                 debug(`Ignoring Error getting customer for checkout ${err.message}`);
                 customer = null;
@@ -176,7 +176,11 @@ module.exports = class StripePaymentProcessor {
         });
     }
 
-    async addCustomerToMember(member, customer) {
+    async handleCheckoutSessionCompletedWebhook(member, customer) {
+        await this._addCustomerToMember(member, customer);
+    }
+
+    async _addCustomerToMember(member, customer) {
         const metadata = await this.storage.get(member);
         // Do not add the customer if they are already linked
         if (metadata.some(data => data.customer_id === customer.id)) {
@@ -188,7 +192,7 @@ module.exports = class StripePaymentProcessor {
         }));
     }
 
-    async _customerForMember(member) {
+    async _customerForMemberCheckoutSession(member) {
         const metadata = await this.storage.get(member);
 
         for (const data in metadata) {
@@ -207,7 +211,7 @@ module.exports = class StripePaymentProcessor {
             email: member.email
         });
 
-        await this.addCustomerToMember(member, customer);
+        await this._addCustomerToMember(member, customer);
 
         return customer;
     }
