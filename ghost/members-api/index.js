@@ -199,7 +199,9 @@ module.exports = function MembersApi({
                 return res.end();
             }
 
-            const customer = await stripe.getCustomer(event.data.object.customer);
+            const customer = await stripe.getCustomer(event.data.object.customer, {
+                expand: ['subscriptions.data.default_payment_method']
+            });
             const member = await users.get({email: customer.email}) || await users.create({email: customer.email});
 
             await stripe.handleCheckoutSessionCompletedWebhook(member, customer);
