@@ -54,7 +54,13 @@ module.exports = class StripePaymentProcessor {
                 const webhook = await create(this._stripe, 'webhookEndpoints', {
                     url: this._webhookHandlerUrl,
                     api_version: STRIPE_API_VERSION,
-                    enabled_events: ['checkout.session.completed']
+                    enabled_events: [
+                        'checkout.session.completed',
+                        'customer.subscription.deleted',
+                        'customer.subscription.updated',
+                        'invoice.payment_succeeded',
+                        'invoice.payment_failed'
+                    ]
                 });
                 this._webhookSecret = webhook.secret;
             } catch (err) {
