@@ -79,6 +79,53 @@ describe('Settings API', function () {
                 });
         });
 
+        it('can toggle member setting', function (done) {
+            request.get(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    var jsonResponse = res.body,
+                        changedValue = [],
+                        settingToChange = {
+                            settings: [
+                                {
+                                    key: 'labs',
+                                    value: '{"subscribers":false,"members":false}'
+                                }
+                            ]
+                        };
+
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.settings);
+
+                    request.put(localUtils.API.getApiQuery('settings/'))
+                        .set('Origin', config.get('url'))
+                        .send(settingToChange)
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .expect(200)
+                        .end(function (err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            const putBody = res.body;
+                            res.headers['x-cache-invalidate'].should.eql('/*');
+                            should.exist(putBody);
+
+                            putBody.settings[0].key.should.eql('labs');
+                            putBody.settings[0].value.should.eql(JSON.stringify({subscribers: false, members: false}));
+
+                            done();
+                        });
+                });
+        });
+
         it('can\'t edit permalinks', function (done) {
             const settingToChange = {
                 settings: [{key: 'permalinks', value: '/:primary_author/:slug/'}]
@@ -189,6 +236,54 @@ describe('Settings API', function () {
                             localUtils.API.checkResponse(putBody, 'settings');
                             done();
                         });
+                });
+        });
+    });
+
+    describe('As Admin', function () {
+        before(function () {
+            return ghost()
+                .then(function (_ghostServer) {
+                    ghostServer = _ghostServer;
+                    request = supertest.agent(config.get('url'));
+                })
+                .then(function () {
+                    // create admin
+                    return testUtils.createUser({
+                        user: testUtils.DataGenerator.forKnex.createUser({email: 'admin+1@ghost.org'}),
+                        role: testUtils.DataGenerator.Content.roles[0].name
+                    });
+                })
+                .then(function (admin) {
+                    request.user = admin;
+
+                    // by default we login with the owner
+                    return localUtils.doAuth(request);
+                });
+        });
+
+        it('cannot toggle member setting', function (done) {
+            const settingToChange = {
+                settings: [
+                    {
+                        key: 'labs',
+                        value: '{"subscribers":false,"members":true}'
+                    }
+                ]
+            };
+
+            request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(403)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    done();
                 });
         });
     });
