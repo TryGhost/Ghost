@@ -394,7 +394,8 @@ module.exports = {
     members_stripe_customers: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false},
-        customer_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
+        // customer_id is unique: false because mysql with innodb utf8mb4 cannot have unqiue columns larger than 191 chars
+        customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
