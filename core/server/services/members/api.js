@@ -32,9 +32,55 @@ async function setMemberMetadata(member, module, metadata) {
     if (module !== 'stripe') {
         return;
     }
-    await models.Member.edit({
-        stripe_customers: metadata
-    }, {id: member.id, withRelated: ['stripe_customers']});
+
+    if (metadata.customer) {
+        const model = models.MemberStripeCustomer.forge({
+            member_id: member.id,
+            customer_id: metadata.customer.customer_id
+        }).where({
+            member_id: member.id,
+            customer_id: metadata.customer.customer_id
+        });
+
+        try {
+            await model.save(metadata.customer, {
+                method: 'update'
+            });
+        } catch (err) {
+            if (!(err instanceof models.MemberStripeCustomer.NoRowsUpdatedError)) {
+                throw err;
+            }
+            console.log(err);
+            await model.save(metadata.customer, {
+                method: 'insert'
+            });
+        }
+    }
+
+    if (metadata.subscription) {
+        const model = await models.StripeCustomerSubscription.forge({
+            customer_id: metadata.subscription.customer_id,
+            subscription_id: metadata.subscription.subscription_id
+        }).where({
+            customer_id: metadata.subscription.customer_id,
+            subscription_id: metadata.subscription.subscription_id
+        });
+
+        try {
+            await model.save(metadata.subscription, {
+                method: 'update'
+            });
+        } catch (err) {
+            if (!(err instanceof models.StripeCustomerSubscription.NoRowsUpdatedError)) {
+                throw err;
+            }
+            console.log(err);
+            await model.save(metadata.subscription, {
+                method: 'insert'
+            });
+        }
+    }
+
     return;
 }
 
@@ -42,9 +88,22 @@ async function getMemberMetadata(member, module) {
     if (module !== 'stripe') {
         return;
     }
-    const model = await models.Member.where({id: member.id}).fetch({withRelated: ['stripe_customers']});
-    const metadata = await model.related('stripe_customers');
-    return metadata.toJSON();
+
+    const customers = (await models.MemberStripeCustomer.where({
+        member_id: member.id
+    }).fetchAll()).toJSON();
+
+    const subscriptions = await customers.reduce(async (subscriptionsPromise, customer) => {
+        const customerSubscriptions = await models.StripeCustomerSubscription.where({
+            customer_id: customer.customer_id
+        }).fetchAll();
+        return (await subscriptionsPromise).concat(customerSubscriptions.toJSON());
+    }, []);
+
+    return {
+        customers: customers,
+        subscriptions: subscriptions
+    };
 }
 
 function updateMember({name}, options) {
