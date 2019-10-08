@@ -69,4 +69,26 @@ describe('Embed card', function () {
 
         serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-embed-card kg-card-hascaption">Testing<figcaption><strong>Caption</strong></figcaption></figure>');
     });
+
+    it('transforms urls absolute to relative', function () {
+        let payload = {
+            caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
+        };
+
+        const transformed = card.absoluteToRelative(payload, {});
+
+        transformed.caption
+            .should.equal('A link to <a href="/post">an internal post</a>');
+    });
+
+    it('transforms urls relative to absolute', function () {
+        let payload = {
+            caption: 'A link to <a href="/post">an internal post</a>'
+        };
+
+        const transformed = card.relativeToAbsolute(payload, {});
+
+        transformed.caption
+            .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
+    });
 });

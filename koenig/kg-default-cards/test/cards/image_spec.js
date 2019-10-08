@@ -116,4 +116,34 @@ describe('Image card', function () {
             serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card kg-width-full"><img src="https://www.ghost.org/image.png" class="kg-image"></figure>');
         });
     });
+
+    it('transforms urls absolute to relative', function () {
+        let payload = {
+            src: 'http://127.0.0.1:2369/content/images/2018/08/NatGeo01-9.jpg',
+            caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
+        };
+
+        const transformed = card.absoluteToRelative(payload, {});
+
+        transformed.src
+            .should.equal('/content/images/2018/08/NatGeo01-9.jpg');
+
+        transformed.caption
+            .should.equal('A link to <a href="/post">an internal post</a>');
+    });
+
+    it('transforms urls relative to absolute', function () {
+        let payload = {
+            src: '/content/images/2018/08/NatGeo01-9.jpg',
+            caption: 'A link to <a href="/post">an internal post</a>'
+        };
+
+        const transformed = card.relativeToAbsolute(payload, {});
+
+        transformed.src
+            .should.equal('http://127.0.0.1:2369/content/images/2018/08/NatGeo01-9.jpg');
+
+        transformed.caption
+            .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
+    });
 });
