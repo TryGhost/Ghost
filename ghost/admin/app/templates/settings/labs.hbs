@@ -144,12 +144,12 @@
                                     <div class="mt5 flex nb5">
                                         {{#gh-form-group class="require-payment-container"}}
                                             <div class="form-group for-checkbox">
-                                                <label class="checkbox" for="members-require-payment" {{action "setSubscriptionSettings" "requirePaymentBeforeSignup" bubbles="false"}}>
+                                                <label class="checkbox" for="members-require-payment" {{action "setSubscriptionSettings" "requirePaymentForSignup" bubbles="false"}}>
                                                     <input 
                                                         type="checkbox"
-                                                        checked={{subscriptionSettings.requirePaymentBeforeSignup}}
+                                                        checked={{subscriptionSettings.requirePaymentForSignup}}
                                                         class="gh-input"
-                                                        onclick={{action "setSubscriptionSettings" "requirePaymentBeforeSignup"}}
+                                                        onclick={{action "setSubscriptionSettings" "requirePaymentForSignup"}}
                                                         data-test-checkbox="members-require-payment"
                                                     >
                                                     <span class="input-toggle-component"></span>
