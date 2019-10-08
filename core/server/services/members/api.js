@@ -3,12 +3,14 @@ const settingsCache = require('../settings/cache');
 const urlUtils = require('../../lib/url-utils');
 const MembersApi = require('@tryghost/members-api');
 const common = require('../../lib/common');
+const ghostVersion = require('../../lib/ghost-version');
 const mail = require('../mail');
 const models = require('../../models');
 
-function createMember({email}) {
+function createMember({email, name}) {
     return models.Member.add({
-        email
+        email,
+        name
     }).then((member) => {
         return member.toJSON();
     });
@@ -24,6 +26,29 @@ function getMember(data, options = {}) {
         }
         return model.toJSON(options);
     });
+}
+
+async function setMemberMetadata(member, module, metadata) {
+    if (module !== 'stripe') {
+        return;
+    }
+    await models.Member.edit({
+        stripe_customers: metadata
+    }, {id: member.id, withRelated: ['stripe_customers']});
+    return;
+}
+
+async function getMemberMetadata(member, module) {
+    if (module !== 'stripe') {
+        return;
+    }
+    const model = await models.Member.where({id: member.id}).fetch({withRelated: ['stripe_customers']});
+    const metadata = await model.related('stripe_customers');
+    return metadata.toJSON();
+}
+
+function updateMember({name}, options) {
+    return models.Member.edit({name}, options);
 }
 
 function deleteMember(options) {
@@ -61,9 +86,6 @@ const ghostMailer = new mail.GhostMailer();
 
 function getStripePaymentConfig() {
     const subscriptionSettings = settingsCache.get('members_subscription_settings');
-    if (!subscriptionSettings || subscriptionSettings.isPaid === false) {
-        return null;
-    }
 
     const stripePaymentProcessor = subscriptionSettings.paymentProcessors.find(
         paymentProcessor => paymentProcessor.adapter === 'stripe'
@@ -73,13 +95,27 @@ function getStripePaymentConfig() {
         return null;
     }
 
+    const webhookHandlerUrl = new URL('/members/webhooks/stripe', siteUrl);
+
+    const checkoutSuccessUrl = new URL(siteUrl);
+    checkoutSuccessUrl.searchParams.set('stripe', 'success');
+    const checkoutCancelUrl = new URL(siteUrl);
+    checkoutCancelUrl.searchParams.set('stripe', 'cancel');
+
     return {
         publicKey: stripePaymentProcessor.config.public_token,
         secretKey: stripePaymentProcessor.config.secret_token,
-        checkoutSuccessUrl: siteUrl,
-        checkoutCancelUrl: siteUrl,
+        checkoutSuccessUrl: checkoutSuccessUrl.href,
+        checkoutCancelUrl: checkoutCancelUrl.href,
+        webhookHandlerUrl: webhookHandlerUrl.href,
         product: stripePaymentProcessor.config.product,
-        plans: stripePaymentProcessor.config.plans
+        plans: stripePaymentProcessor.config.plans,
+        appInfo: {
+            name: 'Ghost',
+            partner_id: 'pp_partner_DKmRVtTs4j9pwZ',
+            version: ghostVersion.original,
+            url: 'https://ghost.org/'
+        }
     };
 }
 
@@ -93,9 +129,10 @@ function createApiInstance() {
             privateKey: settingsCache.get('members_private_key')
         },
         auth: {
-            getSigninURL(token) {
+            getSigninURL(token, type) {
                 const signinURL = new URL(siteUrl);
                 signinURL.searchParams.set('token', token);
+                signinURL.searchParams.set('action', type);
                 return signinURL.href;
             }
         },
@@ -107,18 +144,42 @@ function createApiInstance() {
                     }
                     return ghostMailer.send(Object.assign({subject: 'Signin'}, message));
                 }
+            },
+            getText(url, type) {
+                switch (type) {
+                case 'subscribe':
+                    return `Click here to confirm your subscription ${url}`;
+                case 'signup':
+                    return `Click here to confirm your email address and sign up ${url}`;
+                case 'signin':
+                default:
+                    return `Click here to sign in ${url}`;
+                }
+            },
+            getHTML(url, type) {
+                switch (type) {
+                case 'subscribe':
+                    return `<a href="${url}">Click here to confirm your subscription</a>`;
+                case 'signup':
+                    return `<a href="${url}">Click here to confirm your email address and sign up</a>`;
+                case 'signin':
+                default:
+                    return `<a href="${url}">Click here to sign in</a>`;
+                }
             }
         },
         paymentConfig: {
             stripe: getStripePaymentConfig()
         },
+        setMemberMetadata,
+        getMemberMetadata,
         createMember,
+        updateMember,
         getMember,
         deleteMember,
-        listMembers
+        listMembers,
+        logger: common.logging
     });
-
-    membersApiInstance.setLogger(common.logging);
 
     return membersApiInstance;
 }

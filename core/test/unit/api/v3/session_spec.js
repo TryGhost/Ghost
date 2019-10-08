@@ -7,7 +7,7 @@ const {UnauthorizedError} = require('../../../../server/lib/common/errors');
 const sessionController = require('../../../../server/api/canary/session');
 const sessionServiceMiddleware = require('../../../../server/services/auth/session/middleware');
 
-describe('Session controller', function () {
+describe('v3 Session controller', function () {
     before(function () {
         models.init();
     });

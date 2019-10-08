@@ -94,6 +94,8 @@ const post = (attrs, frame) => {
         if (attrs.og_description === '') {
             attrs.og_description = null;
         }
+
+        delete attrs.visibility;
     } else {
         delete attrs.page;
 
@@ -107,7 +109,6 @@ const post = (attrs, frame) => {
     }
 
     delete attrs.locale;
-    delete attrs.visibility;
     delete attrs.author;
     delete attrs.type;
 

@@ -28,7 +28,6 @@ const expectedProperties = {
         .keys()
         // by default we only return mobildoc
         .without('html', 'plaintext')
-        .without('visibility')
         .without('locale')
         .without('page')
         // v2 API doesn't return new type field
@@ -49,7 +48,6 @@ const expectedProperties = {
         .keys()
         // by default we only return mobildoc
         .without('html', 'plaintext')
-        .without('visibility')
         .without('locale')
         .without('page')
         // v2 API doesn't return new type field

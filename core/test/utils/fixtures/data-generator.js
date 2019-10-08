@@ -361,6 +361,18 @@ DataGenerator.Content = {
         }
     ],
 
+    members: [
+        {
+            id: ObjectId.generate(),
+            email: 'member1@test.com',
+            name: 'Mr Egg'
+        },
+        {
+            id: ObjectId.generate(),
+            email: 'member2@test.com'
+        }
+    ],
+
     webhooks: [
         {
             id: ObjectId.generate(),
@@ -611,6 +623,15 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             id: ObjectId.generate(),
             email: 'subscriber@ghost.org'
+        });
+    }
+
+    function createMember(overrides) {
+        const newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            id: ObjectId.generate(),
+            email: 'member@ghost.org'
         });
     }
 
@@ -902,6 +923,7 @@ DataGenerator.forKnex = (function () {
         createAppSetting: createAppSetting,
         createToken: createToken,
         createSubscriber: createSubscriber,
+        createMember: createMember,
         createInvite: createInvite,
         createWebhook: createWebhook,
         createIntegration: createIntegration,

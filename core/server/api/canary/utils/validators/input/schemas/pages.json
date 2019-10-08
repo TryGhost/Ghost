@@ -43,7 +43,7 @@
                 },
                 "visibility": {
                     "type": ["string", "null"],
-                    "enum": ["public"]
+                    "enum": ["public", "members", "paid"]
                 },
                 "meta_title": {
                     "type": ["string", "null"],

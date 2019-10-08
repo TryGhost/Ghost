@@ -152,6 +152,10 @@ describe('Settings API', function () {
                             {
                                 key: 'twitter_description',
                                 value: 'twitter description'
+                            },
+                            {
+                                key: 'labs',
+                                value: '{"subscribers":false,"members":true,"default_content_visibility":"paid"}'
                             }
                         ]
                     };
@@ -215,6 +219,9 @@ describe('Settings API', function () {
 
                         putBody.settings[12].key.should.eql('twitter_description');
                         should.equal(putBody.settings[12].value, 'twitter description');
+
+                        putBody.settings[13].key.should.eql('labs');
+                        should.equal(putBody.settings[13].value, '{"subscribers":false,"members":true,"default_content_visibility":"paid"}');
 
                         localUtils.API.checkResponse(putBody, 'settings');
                         done();
