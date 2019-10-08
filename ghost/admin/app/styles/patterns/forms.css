@@ -103,12 +103,12 @@ input {
     z-index: 2;
     width: 14px;
     height: 14px;
-    fill: color-mod(var(--midgrey) l(+15%));
+    fill: color-mod(var(--lightgrey) l(-15%) s(-10%));
     transform: translateY(-7px);
 }
 
 .gh-input-icon.gh-icon-link svg path {
-    stroke: color-mod(var(--midgrey) l(+15%));
+    stroke: color-mod(var(--lightgrey) l(-15%) s(-10%));
 }
 
 .gh-input-icon input {
@@ -133,7 +133,6 @@ select {
     background: var(--input-bg-color);
     color: var(--darkgrey);
     font-size: 1.5rem;
-    line-height: 1em;
     font-weight: 400;
     user-select: text;
     border-radius: var(--border-radius);
@@ -174,13 +173,15 @@ textarea {
     min-width: 250px;
     min-height: 10rem;
     max-width: 500px;
-    line-height: 1.5;
+    line-height: 1.5em;
     user-select: text;
     resize: vertical;
 }
 
-textarea.gh-input {
-    line-height: 1.5em;
+.gh-input[disabled] {
+    background: var(--whitegrey-l2);
+    color: var(--midlightgrey);
+    border-color: var(--whitegrey);
 }
 
 
@@ -288,6 +289,64 @@ textarea.gh-input {
 
 .for-radio input:checked + .input-toggle-component:before {
     opacity: 1;
+}
+
+.gh-radio {
+    display: flex;
+    margin: 0 0 20px;
+}
+
+.gh-radio-button {
+    flex-shrink: 0;
+    position: relative;
+    width: 15px;
+    height: 15px;
+    border: color-mod(var(--lightgrey) l(-10%)) 1px solid;
+    border-radius: 100%;
+    background: #fff;
+}
+
+.gh-radio-content {
+    display: flex;
+    flex-direction: column;
+    margin: 0 0 0 15px;
+    width: 100%;
+}
+
+.gh-radio-label {
+    font-size: 1.4rem;
+    line-height: 1.2em;
+    font-weight: 400;
+}
+
+.gh-radio-desc {
+    font-size: 1.3rem;
+    line-height: 1.4em;
+    font-weight: 200;
+    color: color-mod(var(--midgrey) l(+10%));
+}
+
+.gh-radio-label:hover,
+.gh-radio-button:hover {
+    cursor: pointer;
+}
+
+.gh-radio.active .gh-radio-button {
+    border-color: color-mod(var(--blue) l(-12%));
+    background: var(--blue);
+}
+
+.gh-radio.active .gh-radio-button:before {
+    display: block;
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 7px;
+    height: 7px;
+    background: #fff;
+    border-radius: 100%;
+    box-shadow: rgba(0,0,0,0.25) 0 1px 3px;
 }
 
 
