@@ -93,13 +93,17 @@ module.exports = createCard({
     },
 
     absoluteToRelative(urlUtils, payload, options) {
-        payload.metadata.url = payload.metadata.url && urlUtils.absoluteToRelative(payload.metadata.url, options);
+        if (payload.metadata) {
+            payload.metadata.url = payload.metadata.url && urlUtils.absoluteToRelative(payload.metadata.url, options);
+        }
         payload.caption = payload.caption && urlUtils.htmlAbsoluteToRelative(payload.caption, options);
         return payload;
     },
 
     relativeToAbsolute(urlUtils, payload, options) {
-        payload.metadata.url = payload.metadata.url && urlUtils.relativeToAbsolute(payload.metadata.url, options);
+        if (payload.metadata) {
+            payload.metadata.url = payload.metadata.url && urlUtils.relativeToAbsolute(payload.metadata.url, options);
+        }
         payload.caption = payload.caption && urlUtils.htmlRelativeToAbsolute(payload.caption, options);
         return payload;
     }
