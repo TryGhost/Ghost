@@ -20,7 +20,6 @@ const {
  */
 
 const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 184;
-const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 
 class MembersSSR {
     /**
@@ -31,8 +30,6 @@ class MembersSSR {
      * @prop {boolean} [cookieSecure = true] - Whether the cookie should have Secure flag
      * @prop {string} [cookieName] - The name of the members-ssr cookie
      * @prop {number} [cookieMaxAge] - The max age in ms of the members-ssr cookie
-     * @prop {string} [cookieCacheName] - The name of the members-ssr-cache cookie
-     * @prop {number} [cookieCacheMaxAge] - The max age in ms of the members-ssr-cache cookie
      * @prop {string} [cookiePath] - The Path flag for the cookie
      */
 
@@ -46,8 +43,6 @@ class MembersSSR {
             cookieSecure = true,
             cookieName = 'members-ssr',
             cookieMaxAge = SIX_MONTHS_MS,
-            cookieCacheName = 'members-ssr-cache',
-            cookieCacheMaxAge = ONE_DAY_MS,
             cookiePath = '/',
             cookieKeys,
             getMembersApi
@@ -64,7 +59,6 @@ class MembersSSR {
         }
 
         this.sessionCookieName = cookieName;
-        this.cacheCookieName = cookieCacheName;
 
         /**
          * @type SetCookieOptions
@@ -74,17 +68,6 @@ class MembersSSR {
             httpOnly: true,
             sameSite: 'lax',
             maxAge: cookieMaxAge,
-            path: cookiePath
-        };
-
-        /**
-         * @type SetCookieOptions
-         */
-        this.cacheCookieOptions = {
-            signed: true,
-            httpOnly: true,
-            sameSite: 'lax',
-            maxAge: cookieCacheMaxAge,
             path: cookiePath
         };
 
@@ -155,60 +138,6 @@ class MembersSSR {
     }
 
     /**
-     * @method _removeCacheCookie
-     *
-     * @param {Request} req
-     * @param {Response} res
-     */
-    _removeCacheCookie(req, res) {
-        const cookies = this._getCookies(req, res);
-        cookies.set(this.cacheCookieName, this.cacheCookieOptions);
-    }
-
-    /**
-     * @method _setCacheCookie
-     *
-     * @param {Request} req
-     * @param {Response} res
-     * @param {object} value
-     */
-    _setCacheCookie(req, res, value) {
-        if (!value) {
-            return this._removeCacheCookie(req, res);
-        }
-        const cookies = this._getCookies(req, res);
-        cookies.set(this.cacheCookieName, JSON.stringify(value), this.cacheCookieOptions);
-    }
-
-    /**
-     * @method _getCacheCookie
-     *
-     * @param {Request} req
-     * @param {Response} res
-     *
-     * @returns {object|null} The cookie value
-     */
-    _getCacheCookie(req, res) {
-        const cookies = this._getCookies(req, res);
-        const value = cookies.get(this.cacheCookieName, {signed: true});
-        if (!value) {
-            return null;
-        }
-        try {
-            const parsed = JSON.parse(value);
-            if (!parsed) {
-                throw new Error('Parsed value was falsy');
-            }
-            return parsed;
-        } catch (err) {
-            this._removeCacheCookie(req, res);
-            throw new BadRequestError({
-                message: `Invalid JSON found in cookie ${this.cacheCookieName}`
-            });
-        }
-    }
-
-    /**
      * @method _getMemberDataFromToken
      *
      * @param {JWT} token
@@ -269,7 +198,6 @@ class MembersSSR {
         const member = await this._getMemberDataFromToken(token);
 
         this._setSessionCookie(req, res, member.email);
-        this._setCacheCookie(req, res, member);
 
         return member;
     }
@@ -283,7 +211,6 @@ class MembersSSR {
      */
     async deleteSession(req, res) {
         this._removeSessionCookie(req, res);
-        this._removeCacheCookie(req, res);
     }
 
     /**
@@ -297,14 +224,7 @@ class MembersSSR {
     async getMemberDataFromSession(req, res) {
         const email = this._getSessionCookies(req, res);
 
-        const cachedMember = this._getCacheCookie(req, res);
-
-        if (cachedMember) {
-            return cachedMember;
-        }
-
         const member = await this._getMemberIdentityData(email);
-        this._setCacheCookie(req, res, member);
         return member;
     }
 
