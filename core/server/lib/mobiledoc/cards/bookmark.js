@@ -102,7 +102,7 @@ module.exports = createCard({
 
     relativeToAbsolute(urlUtils, payload, options) {
         if (payload.metadata) {
-            payload.metadata.url = payload.metadata && payload.metadata.url && urlUtils.relativeToAbsolute(payload.metadata.url, options);
+            payload.metadata.url = payload.metadata.url && urlUtils.relativeToAbsolute(payload.metadata.url, options);
         }
         payload.caption = payload.caption && urlUtils.htmlRelativeToAbsolute(payload.caption, options);
         return payload;
