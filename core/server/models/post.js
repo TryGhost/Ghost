@@ -901,7 +901,14 @@ Post = ghostBookshelf.Model.extend({
 
     // NOTE: the `authors` extension is the parent of the post model. It also has a permissible function.
     permissible: function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, hasApiKeyPermission) {
-        let isContributor, isEdit, isAdd, isDestroy;
+        let isContributor;
+        let isOwner;
+        let isAdmin;
+        let isEditor;
+        let isIntegration;
+        let isEdit;
+        let isAdd;
+        let isDestroy;
 
         function isChanging(attr) {
             return unsafeAttrs[attr] && unsafeAttrs[attr] !== postModel.get(attr);
@@ -916,6 +923,11 @@ Post = ghostBookshelf.Model.extend({
         }
 
         isContributor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Contributor'});
+        isOwner = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
+        isAdmin = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Admin'});
+        isEditor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'});
+        isIntegration = loadedPermissions.apiKey && _.some(loadedPermissions.apiKey.roles, {name: 'Admin Integration'});
+
         isEdit = (action === 'edit');
         isAdd = (action === 'add');
         isDestroy = (action === 'destroy');
@@ -929,6 +941,8 @@ Post = ghostBookshelf.Model.extend({
         } else if (isContributor && isDestroy) {
             // If destroying, only allow contributor to destroy their own draft posts
             hasUserPermission = isDraft();
+        } else if (!(isOwner || isAdmin || isEditor || isIntegration)) {
+            hasUserPermission = !isChanging('visibility');
         }
 
         const excludedAttrs = [];
