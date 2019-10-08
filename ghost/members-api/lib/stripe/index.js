@@ -163,7 +163,7 @@ module.exports = class StripePaymentProcessor {
     }
 
     async handleCheckoutSessionCompletedWebhook(member, customer) {
-        await this._addCustomerToMember(member, customer);
+        await this._updateCustomer(member, customer);
         if (!customer.subscriptions || !customer.subscriptions.data) {
             return;
         }
@@ -194,7 +194,7 @@ module.exports = class StripePaymentProcessor {
         await this._updateSubscription(subscription);
     }
 
-    async _addCustomerToMember(member, customer) {
+    async _updateCustomer(member, customer) {
         debug(`Attaching customer to member ${member.email} ${customer.id}`);
         await this.storage.set({
             customer: {
@@ -247,7 +247,7 @@ module.exports = class StripePaymentProcessor {
             email: member.email
         });
 
-        await this._addCustomerToMember(member, customer);
+        await this._updateCustomer(member, customer);
 
         return customer;
     }
