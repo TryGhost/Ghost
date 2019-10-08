@@ -34,51 +34,15 @@ async function setMemberMetadata(member, module, metadata) {
     }
 
     if (metadata.customer) {
-        const model = models.MemberStripeCustomer.forge({
-            member_id: member.id,
-            customer_id: metadata.customer.customer_id
-        }).where({
-            member_id: member.id,
+        await models.MemberStripeCustomer.upsert(metadata.customer, {
             customer_id: metadata.customer.customer_id
         });
-
-        try {
-            await model.save(metadata.customer, {
-                method: 'update'
-            });
-        } catch (err) {
-            if (!(err instanceof models.MemberStripeCustomer.NoRowsUpdatedError)) {
-                throw err;
-            }
-            console.log(err);
-            await model.save(metadata.customer, {
-                method: 'insert'
-            });
-        }
     }
 
     if (metadata.subscription) {
-        const model = await models.StripeCustomerSubscription.forge({
-            customer_id: metadata.subscription.customer_id,
-            subscription_id: metadata.subscription.subscription_id
-        }).where({
-            customer_id: metadata.subscription.customer_id,
+        await models.StripeCustomerSubscription.upsert(metadata.subscription, {
             subscription_id: metadata.subscription.subscription_id
         });
-
-        try {
-            await model.save(metadata.subscription, {
-                method: 'update'
-            });
-        } catch (err) {
-            if (!(err instanceof models.StripeCustomerSubscription.NoRowsUpdatedError)) {
-                throw err;
-            }
-            console.log(err);
-            await model.save(metadata.subscription, {
-                method: 'insert'
-            });
-        }
     }
 
     return;
