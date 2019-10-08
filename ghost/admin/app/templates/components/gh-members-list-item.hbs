@@ -1,0 +1,25 @@
+{{#link-to "member" member class="gh-flex-list-data gh-flex-list-auto" title="Member details"}}
+    <div class="flex items-center">
+        <GhMemberAvatar @member={{member}} class="w9 h9 mr3" />
+        <div>
+            <h3 class="ma0 pa0 gh-members-list-name">
+                {{#if this.name}}
+                    {{this.name}}
+                {{else}}
+                    {{this.email}}
+                {{/if}}
+            </h3>
+            {{#if this.name}}
+                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{this.email}}</p>
+            {{/if}}
+        </div>
+    </div>
+{{/link-to}}
+
+{{#link-to "member" member class="gh-flex-list-data gh-members-list-subscribed-at middarkgrey f8 nowrap" title="Member details" }}
+    Member since {{this.subscribedAt}}
+{{/link-to}}
+
+{{#link-to "member" member class="gh-flex-list-data" title="Member details"}}
+    {{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1 nr2"}}
+{{/link-to}}
