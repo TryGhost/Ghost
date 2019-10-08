@@ -1235,7 +1235,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
             });
 
-            it('resolves if changing visibility', function (done) {
+            it('resolves if changing visibility', function () {
                 var mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -1257,7 +1257,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     true
                 ).then(() => {
                     should(mockPostObj.get.called).be.false();
-                    should(mockPostObj.related.calledOnce).be.true()
+                    should(mockPostObj.related.calledOnce).be.true();
                 });
             });
         });
