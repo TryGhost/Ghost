@@ -37,7 +37,7 @@ function getFromAddress(requestedFromAddress) {
 
 function createMessage(message) {
     return Object.assign({}, message, {
-        from: getFromAddress(),
+        from: getFromAddress(message.from),
         generateTextFromHTML: true,
         encoding: 'base64'
     });

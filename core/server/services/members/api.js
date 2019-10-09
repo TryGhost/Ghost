@@ -152,7 +152,15 @@ function createApiInstance() {
                     if (process.env.NODE_ENV !== 'production') {
                         common.logging.warn(message.text);
                     }
-                    return ghostMailer.send(Object.assign({subject: 'Signin'}, message));
+
+                    let msg = Object.assign({subject: 'Signin'}, message);
+                    const subscriptionSettings = settingsCache.get('members_subscription_settings');
+
+                    if (subscriptionSettings && subscriptionSettings.fromAddress) {
+                        msg = Object.assign({from: subscriptionSettings.fromAddress}, msg);
+                    }
+
+                    return ghostMailer.send(msg);
                 }
             },
             getText(url, type) {
