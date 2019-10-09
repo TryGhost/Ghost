@@ -6,6 +6,7 @@ const debug = require('ghost-ignition').debug('web:shared:mw:custom-redirects');
 const config = require('../../../config');
 const common = require('../../../lib/common');
 const redirectsService = require('../../../../frontend/services/redirects');
+const yaml = require('js-yaml');
 
 const _private = {};
 
@@ -16,9 +17,38 @@ _private.registerRoutes = () => {
 
     customRedirectsRouter = express.Router();
 
+    let redirects = [];
+
     try {
-        let redirects = fs.readFileSync(path.join(config.getContentPath('data'), 'redirects.json'), 'utf-8');
-        redirects = JSON.parse(redirects);
+        if (fs.existsSync(path.join(config.getContentPath('data'), 'redirects.yaml'))) {
+            let configYaml = yaml.safeLoad(fs.readFileSync(path.join(config.getContentPath('data'), 'redirects.yaml'), 'utf-8'));
+            console.log(configYaml);
+            /**
+             * 302: Temporary redirects
+             */
+            for (const redirect in configYaml['302']) {
+                redirects.push({
+                    "from": redirect,
+                    "to": configYaml['302'][redirect],
+                    "permanent": false
+                });
+            }
+
+            /**
+             * 301: Permanent redirects
+             */
+            for (const redirect in configYaml['301']) {
+                redirects.push({
+                    "from": redirect,
+                    "to": configYaml['301'][redirect],
+                    "permanent": true
+                });
+            }
+        } else {
+            redirects = fs.readFileSync(path.join(config.getContentPath('data'), 'redirects.json'), 'utf-8');
+            redirects = JSON.parse(redirects);
+        }
+
         redirectsService.validation.validate(redirects);
 
         redirects.forEach((redirect) => {
