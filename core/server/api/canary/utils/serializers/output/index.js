@@ -59,10 +59,6 @@ module.exports = {
         return require('./mail');
     },
 
-    get subscribers() {
-        return require('./subscribers');
-    },
-
     get members() {
         return require('./members');
     },

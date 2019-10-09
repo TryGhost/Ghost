@@ -10,12 +10,9 @@
  * 2. req.params.page - always has the page parameter, regardless of if the URL contains a keyword
  * 3. data - used for telling the difference between posts and pages
  */
-const labs = require('../../../../server/services/labs'),
-    // @TODO: fix this!! These regexes are app specific and should be dynamic. They should not belong here....
+const // @TODO: fix this!! These regexes are app specific and should be dynamic. They should not belong here....
     // routeKeywords.private: 'private'
     privatePattern = new RegExp('^\\/private\\/'),
-    // routeKeywords.subscribe: 'subscribe'
-    subscribePattern = new RegExp('^\\/subscribe\\/'),
     // routeKeywords.amp: 'amp'
     ampPattern = new RegExp('\\/amp\\/$'),
     homePattern = new RegExp('^\\/$');
@@ -55,12 +52,6 @@ function setResponseContext(req, res, data) {
     if (privatePattern.test(res.locals.relativeUrl)) {
         if (!res.locals.context.includes('private')) {
             res.locals.context.push('private');
-        }
-    }
-
-    if (subscribePattern.test(res.locals.relativeUrl) && labs.isSet('subscribers') === true) {
-        if (!res.locals.context.includes('subscribe')) {
-            res.locals.context.push('subscribe');
         }
     }
 

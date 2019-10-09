@@ -224,31 +224,6 @@
                     "object_type": "role"
                 },
                 {
-                    "name": "Browse subscribers",
-                    "action_type": "browse",
-                    "object_type": "subscriber"
-                },
-                {
-                    "name": "Read subscribers",
-                    "action_type": "read",
-                    "object_type": "subscriber"
-                },
-                {
-                    "name": "Edit subscribers",
-                    "action_type": "edit",
-                    "object_type": "subscriber"
-                },
-                {
-                    "name": "Add subscribers",
-                    "action_type": "add",
-                    "object_type": "subscriber"
-                },
-                {
-                    "name": "Delete subscribers",
-                    "action_type": "destroy",
-                    "object_type": "subscriber"
-                },
-                {
                     "name": "Browse invites",
                     "action_type": "browse",
                     "object_type": "invite"
@@ -575,7 +550,6 @@
                     "theme": "all",
                     "user": "all",
                     "role": "all",
-                    "subscriber": "all",
                     "invite": "all",
                     "redirect": "all",
                     "webhook": "all",
@@ -600,7 +574,6 @@
                     "theme": "all",
                     "user": "all",
                     "role": "all",
-                    "subscriber": "all",
                     "invite": "all",
                     "redirect": "all",
                     "webhook": "all",
@@ -615,7 +588,6 @@
                     "tag": "all",
                     "user": "all",
                     "role": "all",
-                    "subscriber": ["add"],
                     "invite": "all",
                     "theme": ["browse"]
                 },
@@ -626,7 +598,6 @@
                     "tag": ["browse", "read", "add"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
-                    "subscriber": ["add"],
                     "theme": ["browse"]
                 },
                 "Contributor": {
@@ -636,7 +607,6 @@
                     "tag": ["browse", "read"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
-                    "subscriber": ["add"],
                     "theme": ["browse"]
                 }
             }
