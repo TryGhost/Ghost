@@ -215,8 +215,15 @@ module.exports = class StripePaymentProcessor {
     }
 
     async _updateSubscription(subscription) {
-        debug(`Attaching subscription to customer ${subscription.customer} ${subscription.id}`);
         const payment = subscription.default_payment_method;
+        if (typeof payment === 'string') {
+            debug(`Fetching default_payment_method for subscription ${subscription.id}`);
+            const subscriptionWithPayment = await retrieve(this._stripe, 'subscriptions', subscription.id, {
+                expand: ['default_payment_method']
+            });
+            return this._updateSubscription(subscriptionWithPayment);
+        }
+        debug(`Attaching subscription to customer ${subscription.customer} ${subscription.id}`);
         await this.storage.set({
             subscription: {
                 customer_id: subscription.customer,
