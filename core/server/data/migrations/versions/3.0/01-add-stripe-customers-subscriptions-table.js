@@ -8,27 +8,27 @@ module.exports = {
 
     async up(options){
         const conn = options.transacting || options.connection;
-        const hasTable = await conn.schema.hasTable('stripe_customers_subscriptions');
+        const hasTable = await conn.schema.hasTable('members_stripe_customers_subscriptions');
 
         if (hasTable) {
-            common.logging.warn('Adding table: stripe_customers_subscriptions');
+            common.logging.warn('Adding table: members_stripe_customers_subscriptions');
             return;
         }
 
-        common.logging.info('Adding table: stripe_customers_subscriptions');
-        return commands.createTable('stripe_customers_subscriptions', conn);
+        common.logging.info('Adding table: members_stripe_customers_subscriptions');
+        return commands.createTable('members_stripe_customers_subscriptions', conn);
     },
 
     async down(options){
         const conn = options.transacting || options.connection;
-        const hasTable = await conn.schema.hasTable('stripe_customers_subscriptions');
+        const hasTable = await conn.schema.hasTable('members_stripe_customers_subscriptions');
 
         if (!hasTable) {
-            common.logging.warn('Dropping table: stripe_customers_subscriptions');
+            common.logging.warn('Dropping table: members_stripe_customers_subscriptions');
             return;
         }
 
-        common.logging.info('Dropping table: stripe_customers_subscriptions');
-        return commands.deleteTable('stripe_customers_subscriptions', conn);
+        common.logging.info('Dropping table: members_stripe_customers_subscriptions');
+        return commands.deleteTable('members_stripe_customers_subscriptions', conn);
     }
 };
