@@ -6,6 +6,7 @@ const Promise = require('bluebird'),
     ghostBookshelf = require('./base'),
     common = require('../lib/common'),
     validation = require('../data/validation'),
+    settingsCache = require('../services/settings/cache'),
     internalContext = {context: {internal: true}};
 
 let Settings, defaultSettings;
@@ -235,6 +236,35 @@ Settings = ghostBookshelf.Model.extend({
 
                 return allSettings;
             });
+    },
+
+    permissible: function permissible(modelId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, hasApiKeyPermission) {
+        let isEdit = (action === 'edit');
+        let isOwner;
+
+        function isChangingMembers() {
+            if (unsafeAttrs && unsafeAttrs.key === 'labs') {
+                let editedValue = JSON.parse(unsafeAttrs.value);
+                if (editedValue.members !== undefined) {
+                    return editedValue.members !== settingsCache.get('labs').members;
+                }
+            }
+        }
+
+        isOwner = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
+
+        if (isEdit && isChangingMembers()) {
+            // Only allow owner to toggle members flag
+            hasUserPermission = isOwner;
+        }
+
+        if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
+            return Promise.resolve();
+        }
+
+        return Promise.reject(new common.errors.NoPermissionError({
+            message: common.i18n.t('errors.models.post.notEnoughPermission')
+        }));
     }
 });
 
