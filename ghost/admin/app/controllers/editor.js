@@ -460,8 +460,13 @@ export default Controller.extend({
         // NOTE: `updateTags` changes `hasDirtyAttributes => true`.
         // For a saved post it would otherwise be false.
         post.updateTags();
-
         this._previousTagNames = this._tagNames;
+
+        // update the scratch property if it's `null` and we get a blank mobiledoc
+        // back from the API - prevents "unsaved changes" modal on new+blank posts
+        if (!post.scratch) {
+            post.set('scratch', JSON.parse(JSON.stringify(post.get('mobiledoc'))));
+        }
 
         // if the two "scratch" properties (title and content) match the post,
         // then it's ok to set hasDirtyAttributes to false

@@ -77,12 +77,12 @@
 
 
                 {{#if feature.members}}
-                    {{#unless session.user.isContributor}}
+                    {{#if showVisibilityInput}}
                         <div class="form-group">
                             <label for="visibility-input">Post access</label>
                             {{gh-psm-visibility-input post=post triggerId="visibility-input"}}
                         </div>
-                    {{/unless}}
+                    {{/if}}
                 {{/if}}
 
 
