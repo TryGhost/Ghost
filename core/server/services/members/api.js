@@ -95,6 +95,10 @@ function getStripePaymentConfig() {
         return null;
     }
 
+    if (!stripePaymentProcessor.config.public_token || !stripePaymentProcessor.config.secret_token) {
+        return null;
+    }
+
     const webhookHandlerUrl = new URL('/members/webhooks/stripe', siteUrl);
 
     const checkoutSuccessUrl = new URL(siteUrl);
