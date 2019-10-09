@@ -27,6 +27,7 @@ const expectedProperties = {
         // .without('page')
         // canary returns a calculated excerpt field
         .concat('excerpt')
+        .concat('reading_time')
     ,
     author: _(schema.users)
         .keys()
