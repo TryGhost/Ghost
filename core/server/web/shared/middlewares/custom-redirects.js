@@ -22,15 +22,15 @@ _private.registerRoutes = () => {
     try {
         if (fs.existsSync(path.join(config.getContentPath('data'), 'redirects.yaml'))) {
             let configYaml = yaml.safeLoad(fs.readFileSync(path.join(config.getContentPath('data'), 'redirects.yaml'), 'utf-8'));
-            console.log(configYaml);
+            
             /**
              * 302: Temporary redirects
              */
             for (const redirect in configYaml['302']) {
                 redirects.push({
-                    "from": redirect,
-                    "to": configYaml['302'][redirect],
-                    "permanent": false
+                    from: redirect,
+                    to: configYaml['302'][redirect],
+                    permanent: false
                 });
             }
 
@@ -39,9 +39,9 @@ _private.registerRoutes = () => {
              */
             for (const redirect in configYaml['301']) {
                 redirects.push({
-                    "from": redirect,
-                    "to": configYaml['301'][redirect],
-                    "permanent": true
+                    from: redirect,
+                    to: configYaml['301'][redirect],
+                    permanent: true
                 });
             }
         } else {
