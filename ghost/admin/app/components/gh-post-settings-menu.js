@@ -46,6 +46,8 @@ export default Component.extend(SettingsMenuMixin, {
     twitterImage: or('post.twitterImage', 'post.featureImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
 
+    showVisibilityInput: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
+
     seoTitle: computed('metaTitleScratch', 'post.titleScratch', function () {
         return this.metaTitleScratch || this.post.titleScratch || '(Untitled)';
     }),
