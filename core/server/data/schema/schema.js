@@ -403,7 +403,7 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
-    stripe_customers_subscriptions: {
+    members_stripe_customers_subscriptions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
         subscription_id: {type: 'string', maxlength: 255, nullable: false, unique: false},

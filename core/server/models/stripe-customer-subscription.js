@@ -1,7 +1,7 @@
 const ghostBookshelf = require('./base');
 
 const StripeCustomerSubscription = ghostBookshelf.Model.extend({
-    tableName: 'stripe_customers_subscriptions'
+    tableName: 'members_stripe_customers_subscriptions'
 }, {
     async upsert(data, unfilteredOptions) {
         const subscriptionId = unfilteredOptions.subscription_id;
