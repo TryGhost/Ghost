@@ -138,3 +138,9 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]')
     }
     el.addEventListener('click', clickHandler);
 });
+
+var url = new URL(window.location);
+if (url.searchParams.get('token')) {
+    url.searchParams.delete('token');
+    window.history.replaceState({}, document.title, url.href);
+}
