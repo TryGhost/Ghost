@@ -83,23 +83,6 @@ module.exports = function apiRoutes() {
     router.put('/tags/:id', mw.authAdminApi, http(apiCanary.tags.edit));
     router.del('/tags/:id', mw.authAdminApi, http(apiCanary.tags.destroy));
 
-    // ## Subscribers
-    router.get('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.browse));
-    router.get('/subscribers/csv', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.exportCSV));
-    router.post('/subscribers/csv',
-        shared.middlewares.labs.subscribers,
-        mw.authAdminApi,
-        upload.single('subscribersfile'),
-        shared.middlewares.validation.upload({type: 'subscribers'}),
-        http(apiCanary.subscribers.importCSV)
-    );
-    router.get('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.read));
-    router.get('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.read));
-    router.post('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.add));
-    router.put('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.edit));
-    router.del('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.destroy));
-    router.del('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.destroy));
-
     // ## Members
     router.get('/members', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.browse));
     router.post('/members', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.add));
