@@ -2,7 +2,7 @@ const models = require('../../models');
 const common = require('../../lib/common');
 const urlUtils = require('../../lib/url-utils');
 const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles'];
-const UNSAFE_ATTRS = ['status', 'authors'];
+const UNSAFE_ATTRS = ['status', 'authors', 'visibility'];
 
 module.exports = {
     docName: 'pages',

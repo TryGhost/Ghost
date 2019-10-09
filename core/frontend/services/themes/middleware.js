@@ -81,6 +81,7 @@ function updateLocalTemplateOptions(req, res, next) {
     const member = req.member ? {
         email: req.member.email,
         name: req.member.name,
+        firstname: req.member.name && req.member.name.split(' ')[0],
         subscriptions: req.member.stripe.subscriptions,
         paid: req.member.stripe.subscriptions.length !== 0
     } : null;
