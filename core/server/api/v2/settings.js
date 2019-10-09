@@ -83,6 +83,9 @@ module.exports = {
             cacheInvalidate: true
         },
         permissions: {
+            unsafeAttrsObject(frame) {
+                return _.find(frame.data.settings, {key: 'labs'});
+            },
             before(frame) {
                 const errors = [];
 
