@@ -26,7 +26,12 @@ const nonePublicAuth = (apiConfig, frame) => {
         permissionIdentifier = apiConfig.identifier(frame);
     }
 
-    const unsafeAttrObject = apiConfig.unsafeAttrs && _.has(frame, `data.[${apiConfig.docName}][0]`) ? _.pick(frame.data[apiConfig.docName][0], apiConfig.unsafeAttrs) : {};
+    let unsafeAttrObject = apiConfig.unsafeAttrs && _.has(frame, `data.[${apiConfig.docName}][0]`) ? _.pick(frame.data[apiConfig.docName][0], apiConfig.unsafeAttrs) : {};
+
+    if (apiConfig.unsafeAttrsObject) {
+        unsafeAttrObject = apiConfig.unsafeAttrsObject(frame);
+    }
+
     const permsPromise = permissions.canThis(frame.options.context)[apiConfig.method][singular](permissionIdentifier, unsafeAttrObject);
 
     return permsPromise.then((result) => {

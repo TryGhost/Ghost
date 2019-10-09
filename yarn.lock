@@ -227,22 +227,22 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^0.1.3"
 
-"@tryghost/magic-link@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.2.0.tgz#77b6fac7d83fdff0543a1506be63601f1ec9f742"
-  integrity sha512-vYj48P7RKLMfdkRCdYQ6bGv5J168ce621ZuBhEbGKf6kIiiRfNQDno+FOjiOBBKn3AS+FkIulc3z48qz/0U+Jg==
+"@tryghost/magic-link@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.2.1.tgz#c729bf5d2fe7fa1330eccbba51ba3579834784fc"
+  integrity sha512-bqlZndOXwU3b9FXvMtHIep1EradDnsfQ+4vvINQ+QsCOWKH1EDbPhjYS9f2G0xNx8BVyG4e1eMxZ5lBhJ6lBCA==
   dependencies:
     bluebird "^3.5.5"
     ghost-ignition "^3.1.0"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@0.7.7":
-  version "0.7.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.7.7.tgz#fbb08241a231dc2d651b6dacf3c4cd06e4d3799d"
-  integrity sha512-a3V61Ti//PCWN3+PmfmL4MUi7ZHuWhROrr2vLfzitw3E/3CRYKXXLgk4qfe9wAVIbzdmNS8caXWXAoeVg+Vzgw==
+"@tryghost/members-api@0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.8.0.tgz#e1f0b67371b6b61f6cf4f64e5b62c92ba3777c2a"
+  integrity sha512-THPd9HUyqo1WdroWFH8X+KcNfyy586dVSOYRQWIjF+URoYHmlrf2AlxBrdHMq5R8mQVCKIO0t3pmZwRnafucVA==
   dependencies:
-    "@tryghost/magic-link" "^0.2.0"
+    "@tryghost/magic-link" "^0.2.1"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
     cookies "^0.7.3"
@@ -253,10 +253,10 @@
     node-jose "^1.1.3"
     stripe "^7.4.0"
 
-"@tryghost/members-ssr@0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.6.0.tgz#15a1475407a0c66b479710dffb84624038c2ad8c"
-  integrity sha512-ZvZ3FuUI6F/Z3MuRMf1nNiixaSNJuYF1h5sXqUd0dIlQbCX/fOaw+57M+ApWcGGJieRvq4qnort6cZxgjQqQ6A==
+"@tryghost/members-ssr@0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.7.0.tgz#d4e7a6554375b65efc13651361311f0c960f9cd9"
+  integrity sha512-DE4xXjIvJBL/JG9wj/6tVajDgbGJ0Qvq4LjNW9gjO2EmeG6W7F9RKPyy4H4hDnSv+g5LG1oz6c/aIkivaQjNOw==
   dependencies:
     bluebird "^3.5.3"
     concat-stream "^2.0.0"
@@ -3745,10 +3745,10 @@ grunt@1.0.4:
     path-is-absolute "~1.0.0"
     rimraf "~2.6.2"
 
-gscan@2.9.0:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.9.0.tgz#de169bd971043872ac830a65cd632149ecddbb8c"
-  integrity sha512-igE0rPtbc0u3IQ3pruFXTSarc+JIHEXbRv/iyqeFlujgR0iKJ0tKPKRQGceYqzy5x+sT7MTwtxpa+LLOhN2SNw==
+gscan@2.10.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-2.10.0.tgz#62c5a4e685304335e716baf9ec26a3974a158e07"
+  integrity sha512-Z0R0hEk00L/dfN0FvdGVA1XnE32/kYMFL9fkkpvlRYw9Rwwftp5sEtUAOrxuUA1ysersb9wLlWgunaf4BIzcwA==
   dependencies:
     "@tryghost/extract-zip" "1.6.6"
     "@tryghost/pretty-cli" "1.2.1"
