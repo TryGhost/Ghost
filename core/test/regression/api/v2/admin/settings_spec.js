@@ -262,7 +262,7 @@ describe('Settings API (v2)', function () {
                 });
         });
 
-        it.skip('cannot toggle member setting', function (done) {
+        it('cannot toggle member setting', function (done) {
             const settingToChange = {
                 settings: [
                     {
