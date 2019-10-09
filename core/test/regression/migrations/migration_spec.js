@@ -121,86 +121,74 @@ describe('Database Migration (special functions)', function () {
             permissions[33].name.should.eql('Browse roles');
             permissions[33].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
 
-            // Subscribers
-            permissions[34].name.should.eql('Browse subscribers');
-            permissions[34].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
-            permissions[35].name.should.eql('Read subscribers');
-            permissions[35].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
-            permissions[36].name.should.eql('Edit subscribers');
-            permissions[36].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
-            permissions[37].name.should.eql('Add subscribers');
-            permissions[37].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions[38].name.should.eql('Delete subscribers');
-            permissions[38].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
-
             // Invites
-            permissions[39].name.should.eql('Browse invites');
-            permissions[39].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
-            permissions[40].name.should.eql('Read invites');
-            permissions[40].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
-            permissions[41].name.should.eql('Edit invites');
-            permissions[41].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
-            permissions[42].name.should.eql('Add invites');
-            permissions[42].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
-            permissions[43].name.should.eql('Delete invites');
-            permissions[43].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
+            permissions[34].name.should.eql('Browse invites');
+            permissions[34].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
+            permissions[35].name.should.eql('Read invites');
+            permissions[35].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
+            permissions[36].name.should.eql('Edit invites');
+            permissions[36].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
+            permissions[37].name.should.eql('Add invites');
+            permissions[37].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
+            permissions[38].name.should.eql('Delete invites');
+            permissions[38].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
 
             // Redirects
-            permissions[44].name.should.eql('Download redirects');
-            permissions[44].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
-            permissions[45].name.should.eql('Upload redirects');
-            permissions[45].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
+            permissions[39].name.should.eql('Download redirects');
+            permissions[39].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
+            permissions[40].name.should.eql('Upload redirects');
+            permissions[40].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
 
             // Webhooks
-            permissions[46].name.should.eql('Add webhooks');
-            permissions[46].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
-            permissions[47].name.should.eql('Edit webhooks');
-            permissions[47].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
-            permissions[48].name.should.eql('Delete webhooks');
-            permissions[48].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
+            permissions[41].name.should.eql('Add webhooks');
+            permissions[41].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
+            permissions[42].name.should.eql('Edit webhooks');
+            permissions[42].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
+            permissions[43].name.should.eql('Delete webhooks');
+            permissions[43].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
 
             // Integrations
-            permissions[49].name.should.eql('Browse integrations');
-            permissions[49].should.be.AssignedToRoles(['Administrator']);
-            permissions[50].name.should.eql('Read integrations');
-            permissions[50].should.be.AssignedToRoles(['Administrator']);
-            permissions[51].name.should.eql('Edit integrations');
-            permissions[51].should.be.AssignedToRoles(['Administrator']);
-            permissions[52].name.should.eql('Add integrations');
-            permissions[52].should.be.AssignedToRoles(['Administrator']);
-            permissions[53].name.should.eql('Delete integrations');
-            permissions[53].should.be.AssignedToRoles(['Administrator']);
+            permissions[44].name.should.eql('Browse integrations');
+            permissions[44].should.be.AssignedToRoles(['Administrator']);
+            permissions[45].name.should.eql('Read integrations');
+            permissions[45].should.be.AssignedToRoles(['Administrator']);
+            permissions[46].name.should.eql('Edit integrations');
+            permissions[46].should.be.AssignedToRoles(['Administrator']);
+            permissions[47].name.should.eql('Add integrations');
+            permissions[47].should.be.AssignedToRoles(['Administrator']);
+            permissions[48].name.should.eql('Delete integrations');
+            permissions[48].should.be.AssignedToRoles(['Administrator']);
 
             // API Keys
-            permissions[54].name.should.eql('Browse API keys');
-            permissions[54].should.be.AssignedToRoles(['Administrator']);
-            permissions[55].name.should.eql('Read API keys');
-            permissions[55].should.be.AssignedToRoles(['Administrator']);
-            permissions[56].name.should.eql('Edit API keys');
-            permissions[56].should.be.AssignedToRoles(['Administrator']);
-            permissions[57].name.should.eql('Add API keys');
-            permissions[57].should.be.AssignedToRoles(['Administrator']);
-            permissions[58].name.should.eql('Delete API keys');
-            permissions[58].should.be.AssignedToRoles(['Administrator']);
+            permissions[49].name.should.eql('Browse API keys');
+            permissions[49].should.be.AssignedToRoles(['Administrator']);
+            permissions[50].name.should.eql('Read API keys');
+            permissions[50].should.be.AssignedToRoles(['Administrator']);
+            permissions[51].name.should.eql('Edit API keys');
+            permissions[51].should.be.AssignedToRoles(['Administrator']);
+            permissions[52].name.should.eql('Add API keys');
+            permissions[52].should.be.AssignedToRoles(['Administrator']);
+            permissions[53].name.should.eql('Delete API keys');
+            permissions[53].should.be.AssignedToRoles(['Administrator']);
 
             // Actions
-            permissions[59].name.should.eql('Browse Actions');
-            permissions[59].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
+            permissions[54].name.should.eql('Browse Actions');
+            permissions[54].should.be.AssignedToRoles(['Administrator', 'Admin Integration']);
 
             // Members
-            permissions[60].name.should.eql('Browse Members');
-            permissions[61].name.should.eql('Read Members');
-            permissions[62].name.should.eql('Edit Members');
-            permissions[63].name.should.eql('Add Members');
-            permissions[64].name.should.eql('Delete Members');
+            permissions[55].name.should.eql('Browse Members');
+            permissions[56].name.should.eql('Read Members');
+            permissions[57].name.should.eql('Edit Members');
+            permissions[58].name.should.eql('Add Members');
+            permissions[59].name.should.eql('Delete Members');
 
             // Posts
-            permissions[65].name.should.eql('Publish posts');
-            permissions[65].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration', 'Scheduler Integration']);
+            permissions[60].name.should.eql('Publish posts');
+            permissions[60].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration', 'Scheduler Integration']);
 
             // DB
-            permissions[66].name.should.eql('Backup database');
-            permissions[66].should.be.AssignedToRoles(['Administrator', 'DB Backup Integration']);
+            permissions[61].name.should.eql('Backup database');
+            permissions[61].should.be.AssignedToRoles(['Administrator', 'DB Backup Integration']);
         });
 
         describe('Populate', function () {
@@ -258,7 +246,7 @@ describe('Database Migration (special functions)', function () {
                     result.roles.at(7).get('name').should.eql('Scheduler Integration');
 
                     // Permissions
-                    result.permissions.length.should.eql(67);
+                    result.permissions.length.should.eql(62);
                     result.permissions.toJSON().should.be.CompletePermissions();
                 });
             });

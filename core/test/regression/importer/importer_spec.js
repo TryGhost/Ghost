@@ -381,9 +381,6 @@ describe('Integration: Importer', function () {
         it('ensure complex JSON get\'s fully imported', function () {
             const exportData = exportedLatestBody().db[0];
 
-            exportData.data.subscribers[0] = testUtils.DataGenerator.forKnex.createSubscriber({email: 'subscriber1@ghost.org'});
-            exportData.data.subscribers[1] = testUtils.DataGenerator.forKnex.createSubscriber({email: 'subscriber2@ghost.org'});
-
             return dataImporter.doImport(exportData, importOptions)
                 .then(function () {
                     // Grab the data from tables
@@ -391,25 +388,22 @@ describe('Integration: Importer', function () {
                         knex('users').select(),
                         models.Post.findPage(testUtils.context.internal),
                         knex('settings').select(),
-                        knex('tags').select(),
-                        knex('subscribers').select()
+                        knex('tags').select()
                     ]);
                 })
                 .then(function (importedData) {
                     should.exist(importedData);
 
-                    importedData.length.should.equal(5, 'Did not get data successfully');
+                    importedData.length.should.equal(4, 'Did not get data successfully');
 
                     const users = importedData[0],
                         posts = importedData[1].data,
                         settings = importedData[2],
-                        tags = importedData[3],
-                        subscribers = importedData[4];
+                        tags = importedData[3];
 
                     // we always have 1 user, the owner user we added
                     users.length.should.equal(1, 'There should only be one user');
 
-                    subscribers.length.should.equal(2, 'There should be two subscribers');
                     settings.length.should.be.above(0, 'Wrong number of settings');
                     posts.length.should.equal(exportData.data.posts.length, 'no new posts');
                     tags.length.should.equal(exportData.data.tags.length, 'no new tags');
