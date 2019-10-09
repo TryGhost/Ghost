@@ -23,7 +23,6 @@ models = [
     'role',
     'settings',
     'session',
-    'subscriber',
     'tag',
     'tag-public',
     'user',

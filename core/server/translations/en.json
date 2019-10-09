@@ -199,9 +199,6 @@
             "general": {
                 "sql": "Could not understand request."
             },
-            "subscriber": {
-                "notEnoughPermission": "You do not have permission to perform this action"
-            },
             "invite": {
                 "notEnoughPermission": "You do not have permission to perform this action"
             },
@@ -375,12 +372,6 @@
             "slugs": {
                 "couldNotGenerateSlug": "Could not generate slug.",
                 "unknownSlugType": "Unknown slug type '{type}'."
-            },
-            "subscribers": {
-                "missingFile": "Please select a csv.",
-                "invalidFile": "Please select a valid CSV file to import.",
-                "subscriberNotFound": "Subscriber not found.",
-                "subscriberAlreadyExists": "Email address is already subscribed."
             },
             "members": {
                 "memberNotFound": "Member not found.",

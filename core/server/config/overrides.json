@@ -16,7 +16,6 @@
     "apps": {
         "internal": [
             "private-blogging",
-            "subscribers",
             "amp"
         ]
     },
@@ -28,7 +27,7 @@
         "protected": ["ghost", "rss", "amp"]
     },
     "uploads": {
-        "subscribers": {
+        "members": {
             "extensions": [".csv"],
             "contentTypes": ["text/csv", "application/csv", "application/octet-stream"]
         },

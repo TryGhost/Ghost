@@ -219,27 +219,6 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
-    subscribers: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        name: {type: 'string', maxlength: 191, nullable: true},
-        email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
-        status: {
-            type: 'string',
-            maxlength: 50,
-            nullable: false,
-            defaultTo: 'pending',
-            validations: {isIn: [['subscribed', 'pending', 'unsubscribed']]}
-        },
-        post_id: {type: 'string', maxlength: 24, nullable: true},
-        subscribed_url: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
-        subscribed_referrer: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
-        unsubscribed_url: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
-        unsubscribed_at: {type: 'dateTime', nullable: true},
-        created_at: {type: 'dateTime', nullable: false},
-        created_by: {type: 'string', maxlength: 24, nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
-        updated_by: {type: 'string', maxlength: 24, nullable: true}
-    },
     invites: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         role_id: {type: 'string', maxlength: 24, nullable: false},

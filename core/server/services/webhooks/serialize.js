@@ -70,19 +70,6 @@ module.exports = (event, model) => {
                 }
             };
 
-            // @NOTE: Our webhook format has changed, we still have to support the old format
-            //        for subscribers events. No need to support it passed v2 version
-            // @TODO: Remove whole if block when dropping Ghost v2
-            if (apiVersion === 'v2') {
-                if ('subscriber.added' === event) {
-                    payload[docName] = [current];
-                }
-
-                if ('subscriber.deleted' === event) {
-                    payload[docName] = [previous];
-                }
-            }
-
             return payload;
         });
 };
