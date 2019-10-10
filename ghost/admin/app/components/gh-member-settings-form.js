@@ -24,12 +24,12 @@ export default Component.extend({
             return subscriptions.map((subscription) => {
                 return {
                     customer: subscription.customer,
-                    name: '',
+                    name: subscription.name || '',
                     email: subscription.email || '',
                     status: subscription.status,
-                    startDate: '',
-                    planName: subscription.name,
-                    validUntil: moment(subscription.validUntil * 1000).format('MMM DD YYYY')
+                    startDate: subscription.start_date ? moment(subscription.start_date).format('MMM DD YYYY') : '-',
+                    plan: subscription.plan,
+                    validUntil: subscription.current_period_end ? moment(subscription.current_period_end).format('MMM DD YYYY') : '-'
                 };
             }).reverse();
         }
