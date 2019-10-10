@@ -43,6 +43,19 @@ function defaultGetHTML(url, type, email) {
 }
 
 /**
+ * defaultGetSubject
+ *
+ * @param {string} type - The type of email to send e.g. signin, signup
+ * @returns {string} subject - The subject of an email to send
+ */
+function defaultGetSubject(type) {
+    if (type === 'signup') {
+        return `Signup!`;
+    }
+    return `Signin!`;
+}
+
+/**
  * MagicLink
  * @constructor
  *
@@ -53,6 +66,7 @@ function defaultGetHTML(url, type, email) {
  * @param {(token: JSONWebToken, type: string) => URL} options.getSigninURL
  * @param {typeof defaultGetText} [options.getText]
  * @param {typeof defaultGetHTML} [options.getHTML]
+ * @param {typeof defaultGetSubject} [options.getSubject]
  */
 function MagicLink(options) {
     if (!options || !options.transporter || !options.publicKey || !options.privateKey || !options.getSigninURL) {
@@ -64,6 +78,7 @@ function MagicLink(options) {
     this.getSigninURL = options.getSigninURL;
     this.getText = options.getText || defaultGetText;
     this.getHTML = options.getHTML || defaultGetHTML;
+    this.getSubject = options.getSubject || defaultGetSubject;
 }
 
 /**
@@ -92,6 +107,7 @@ MagicLink.prototype.sendMagicLink = async function sendMagicLink(options) {
 
     const info = await this.transporter.sendMail({
         to: options.email,
+        subject: this.getSubject(type),
         text: this.getText(url, type, options.email),
         html: this.getHTML(url, type, options.email)
     });
