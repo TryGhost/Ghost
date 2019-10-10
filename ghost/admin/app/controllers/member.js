@@ -12,8 +12,9 @@ export default Controller.extend({
 
     router: service(),
 
-    member: alias('model'),
+    notifications: service(),
 
+    member: alias('model'),
     subscribedAt: computed('member.createdAt', function () {
         let memberSince = moment(this.member.createdAt).from(moment());
         let createdDate = moment(this.member.createdAt).format('MMM DD, YYYY');
@@ -21,8 +22,8 @@ export default Controller.extend({
     }),
 
     actions: {
-        setProperty() {
-            return;
+        setProperty(propKey, value) {
+            this._saveMemberProperty(propKey, value);
         },
         toggleDeleteTagModal() {
             this.toggleProperty('showDeleteMemberModal');
@@ -35,6 +36,22 @@ export default Controller.extend({
             }
             this.router.transitionTo('members');
         }
+    },
+
+    save: task(function* () {
+        let member = this.member;
+        try {
+            return yield member.save();
+        } catch (error) {
+            if (error) {
+                this.notifications.showAPIError(error, {key: 'member.save'});
+            }
+        }
+    }).drop(),
+
+    _saveMemberProperty(propKey, newValue) {
+        let member = this.member;
+        member.set(propKey, newValue);
     },
 
     fetchMember: task(function* (memberId) {

@@ -18,13 +18,7 @@ export default Transform.extend({
 
         if (isEmberArray(deserialized)) {
             subscriptionArray = deserialized.map((item) => {
-                let adapter = item.get('adapter').trim();
-                let amount = item.get('amount');
-                let plan = item.get('plan').trim();
-                let status = item.get('status').trim();
-                let validUntil = item.get('validUntil');
-
-                return {adapter, amount, plan, status, validUntil};
+                return item;
             }).compact();
         } else {
             subscriptionArray = [];

@@ -10,7 +10,6 @@ export default Component.extend({
     mediaQueries: service(),
 
     isViewingSubview: false,
-    scratchDescription: '',
 
     // Allowed actions
     setProperty: () => {},
@@ -18,6 +17,7 @@ export default Component.extend({
 
     scratchName: boundOneWay('member.name'),
     scratchEmail: boundOneWay('member.email'),
+    scratchNote: boundOneWay('member.note'),
     subscriptions: computed('member.stripe', function () {
         let subscriptions = this.member.get('stripe');
         if (subscriptions && subscriptions.length > 0) {
