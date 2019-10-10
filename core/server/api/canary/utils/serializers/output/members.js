@@ -41,7 +41,7 @@ module.exports = {
     exportCSV(models, apiConfig, frame) {
         debug('exportCSV');
 
-        const fields = ['id', 'email', 'name', 'created_at', 'deleted_at'];
+        const fields = ['id', 'email', 'name', 'note', 'created_at', 'deleted_at'];
 
         function formatCSV(data) {
             let csv = `${fields.join(',')}\r\n`,

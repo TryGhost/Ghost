@@ -153,7 +153,7 @@ const members = {
 
             return fsLib.readCSV({
                 path: filePath,
-                columnsToExtract: [{name: 'email', lookup: /email/i}, {name: 'name', lookup: /name/i}]
+                columnsToExtract: [{name: 'email', lookup: /email/i}, {name: 'name', lookup: /name/i}, {name: 'note', lookup: /note/i}]
             }).then((result) => {
                 return Promise.all(result.map((entry) => {
                     const api = require('./index');
@@ -162,7 +162,8 @@ const members = {
                         data: {
                             members: [{
                                 email: entry.email,
-                                name: entry.name
+                                name: entry.name,
+                                note: entry.note
                             }]
                         },
                         options: {
