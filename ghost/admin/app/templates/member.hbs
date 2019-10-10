@@ -31,7 +31,7 @@
         {{gh-member-settings-form member=member
             setProperty=(action "setProperty")
             isLoading=this.isLoading
-            showDeleteTagModal=(action "toggleDeleteTagModal")}}
+            showDeleteTagModal=(action "toggleDeleteMemberModal")}}
     </form>
         <button
             type="button"
@@ -42,6 +42,13 @@
             <span>Delete member</span>
         </button>
 </section>
+
+{{#if showUnsavedChangesModal}}
+    {{gh-fullscreen-modal "leave-settings"
+        confirm=(action "leaveScreen")
+        close=(action "toggleUnsavedChangesModal")
+        modifier="action wide"}}
+{{/if}}
 
 {{#if showDeleteMemberModal}}
     {{gh-fullscreen-modal "delete-member"
