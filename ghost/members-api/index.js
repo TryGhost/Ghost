@@ -15,7 +15,8 @@ module.exports = function MembersApi({
     },
     auth: {
         allowSelfSignup = true,
-        getSigninURL
+        getSigninURL,
+        secret
     },
     paymentConfig,
     mail: {
@@ -65,8 +66,7 @@ module.exports = function MembersApi({
 
     const magicLinkService = new MagicLink({
         transporter,
-        publicKey,
-        privateKey,
+        secret,
         getSigninURL,
         getText,
         getHTML,
