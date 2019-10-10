@@ -70,13 +70,17 @@
                             <table class="gh-member-stripe-table">
                                 <tr>
                                     <td class="gh-member-stripe-label">Stripe customer ID</td>
-                                    <td class="gh-member-stripe-data"><a href="https://dashboard.stripe.com/test/customers/{{subscription.customer}}" target="_blank" rel="noopener" data-tooltip="View on Stripe">{{subscription.customer}}</a></td>
+                                    <td class="gh-member-stripe-data">
+                                        <a href="https://dashboard.stripe.com/test/customers/{{subscription.customer.id}}" target="_blank" rel="noopener" data-tooltip="View on Stripe">
+                                            {{subscription.customer.id}}
+                                        </a>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td class="gh-member-stripe-label">Name</td>
                                     <td class="gh-member-stripe-data">
-                                        {{#if subscription.name}} 
-                                            {{subscription.name}} 
+                                        {{#if subscription.customer.name}} 
+                                            {{subscription.customer.name}} 
                                         {{else}}
                                             <span class="midlightgrey-l2">No name</span>
                                         {{/if}}
@@ -85,8 +89,8 @@
                                 <tr>
                                     <td class="gh-member-stripe-label">Email</td>
                                     <td class="gh-member-stripe-data">
-                                        {{#if subscription.email}}
-                                            {{subscription.email}}
+                                        {{#if subscription.customer.email}}
+                                            {{subscription.customer.email}}
                                         {{else}}
                                             <span class="midlightgrey-l2">No email</span>
                                         {{/if}}
@@ -110,7 +114,7 @@
                             <table class="gh-member-stripe-table">
                                 <tr>
                                     <td class="gh-member-stripe-label">Plan</td>
-                                    <td class="gh-member-stripe-data">{{subscription.planName}}</td>
+                                    <td class="gh-member-stripe-data">{{subscription.plan.nickname}}</td>
                                 </tr>
                                 <tr>
                                     <td class="gh-member-stripe-label">Current status</td>
