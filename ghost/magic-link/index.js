@@ -15,14 +15,15 @@ module.exports = MagicLink;
  *
  * @param {URL} url - The url which will trigger sign in flow
  * @param {string} type - The type of email to send e.g. signin, signup
+ * @param {string} email - The recipient of the email to send
  * @returns {string} text - The text content of an email to send
  */
-function defaultGetText(url, type) {
+function defaultGetText(url, type, email) {
     let msg = 'sign in';
     if (type === 'signup') {
         msg = 'confirm your email address';
     }
-    return `Click here to ${msg} ${url}`;
+    return `Click here to ${msg} ${url}. This msg was sent to ${email}`;
 }
 
 /**
@@ -30,14 +31,15 @@ function defaultGetText(url, type) {
  *
  * @param {URL} url - The url which will trigger sign in flow
  * @param {string} type - The type of email to send e.g. signin, signup
+ * @param {string} email - The recipient of the email to send
  * @returns {string} HTML - The HTML content of an email to send
  */
-function defaultGetHTML(url, type) {
+function defaultGetHTML(url, type, email) {
     let msg = 'sign in';
     if (type === 'signup') {
         msg = 'confirm your email address';
     }
-    return `<a href="${url}">Click here to ${msg}</a>`;
+    return `<a href="${url}">Click here to ${msg}</a> This msg was sent to ${email}`;
 }
 
 /**
@@ -90,8 +92,8 @@ MagicLink.prototype.sendMagicLink = async function sendMagicLink(options) {
 
     const info = await this.transporter.sendMail({
         to: options.email,
-        text: this.getText(url, type),
-        html: this.getHTML(url, type)
+        text: this.getText(url, type, options.email),
+        html: this.getHTML(url, type, options.email)
     });
 
     return {token, info};
