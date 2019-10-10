@@ -189,8 +189,10 @@ function createApiInstance() {
                     if (process.env.NODE_ENV !== 'production') {
                         common.logging.warn(message.text);
                     }
-
-                    let msg = Object.assign({subject: 'Signin'}, message);
+                    let msg = Object.assign({
+                        subject: 'Signin',
+                        forceTextContent: true
+                    }, message);
                     const subscriptionSettings = settingsCache.get('members_subscription_settings');
 
                     if (subscriptionSettings && subscriptionSettings.fromAddress) {
