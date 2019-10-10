@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const {URL} = require('url');
 const settingsCache = require('../settings/cache');
 const urlUtils = require('../../lib/url-utils');
@@ -156,6 +157,20 @@ function getStripePaymentConfig() {
     };
 }
 
+function getAuthSecret() {
+    const hexSecret = settingsCache.get('members_email_auth_secret');
+    if (!hexSecret) {
+        common.logging.warn('Could not find members_email_auth_secret, using dynamically generated secret');
+        return crypto.randomBytes(64);
+    }
+    const secret = Buffer.from(hexSecret, 'hex');
+    if (secret.length < 64) {
+        common.logging.warn('members_email_auth_secret not large enough (64 bytes), using dynamically generated secret');
+        return crypto.randomBytes(64);
+    }
+    return secret;
+}
+
 function getRequirePaymentSetting() {
     const subscriptionSettings = settingsCache.get('members_subscription_settings');
     return !!subscriptionSettings.requirePaymentForSignup;
@@ -184,7 +199,8 @@ function createApiInstance() {
                 signinURL.searchParams.set('action', type);
                 return signinURL.href;
             },
-            allowSelfSignup: !getRequirePaymentSetting()
+            allowSelfSignup: !getRequirePaymentSetting(),
+            secret: getAuthSecret()
         },
         mail: {
             transporter: {
