@@ -4,17 +4,7 @@ const MagicLink = require('../');
 const crypto = require('crypto');
 
 const sandbox = sinon.createSandbox();
-const {publicKey, privateKey} = crypto.generateKeyPairSync('rsa', {
-    modulusLength: 4096,
-    publicKeyEncoding: {
-        type: 'pkcs1',
-        format: 'pem'
-    },
-    privateKeyEncoding: {
-        type: 'pkcs1',
-        format: 'pem'
-    }
-});
+const secret = crypto.randomBytes(64);
 
 describe('MagicLink', function () {
     it('Exports a function', function () {
@@ -24,8 +14,7 @@ describe('MagicLink', function () {
     describe('#sendMagicLink', function () {
         it('Sends an email to the user with a link generated from getSigninURL(token, type)', async function () {
             const options = {
-                publicKey,
-                privateKey,
+                secret,
                 getSigninURL: sandbox.stub().returns('FAKEURL'),
                 getText: sandbox.stub().returns('SOMETEXT'),
                 getHTML: sandbox.stub().returns('SOMEHTML'),
@@ -59,8 +48,7 @@ describe('MagicLink', function () {
     describe('#getUserFromToken', function () {
         it('Returns the user data which from the token that was encoded by #sendMagicLink', async function () {
             const options = {
-                publicKey,
-                privateKey,
+                secret,
                 getSigninURL: sandbox.stub().returns('FAKEURL'),
                 getText: sandbox.stub().returns('SOMETEXT'),
                 getHTML: sandbox.stub().returns('SOMEHTML'),
