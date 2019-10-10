@@ -5,7 +5,7 @@ const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
 
-describe('Settings API', function () {
+describe('Settings API (canary)', function () {
     let ghostServer;
     let request;
 
