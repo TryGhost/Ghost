@@ -199,10 +199,10 @@
     mkdirp "0.5.0"
     yauzl "2.4.1"
 
-"@tryghost/helpers@1.1.12":
-  version "1.1.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.12.tgz#ca77aa2649abd2d12760b36af2d6779619202971"
-  integrity sha512-9ns/YTXfUb+UOmILQq071qZ8Y6eIEvNQFLZtFiguhOzXqSHC+rKg45aNCcoP8G9opG7vmm7bkxeE/hiQ205qpw==
+"@tryghost/helpers@1.1.15":
+  version "1.1.15"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.15.tgz#8a8e53af47630707aeb328fc949ce37464f7d447"
+  integrity sha512-llve/Ha+uUnqrqP4TlGIXf+W5nDRv6XsiqLWoUFARtciP42kMQLQY+ABC4Fmc0N1daD1P020jTjd7eX+9fdVFw==
   dependencies:
     lodash-es "^4.17.11"
 
@@ -297,10 +297,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@0.6.1":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.1.tgz#cb3a1c199ff855a131588258e43bbcb1599b856c"
-  integrity sha512-FfHc/OoMqKvKbQ8Rir09wkeFZPV7FZMfmnKaVFOUoJPuULetFmfS8yP0WNBHNfGj197aT+JyyJH2QpFokvPprQ==
+"@tryghost/url-utils@0.6.5":
+  version "0.6.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.5.tgz#a393e67e60daf265fd5d3e4ff6423bd0573bcd10"
+  integrity sha512-Ah6gmFo79a4p/lpzGC/EMwKgw5jEiURJAtaj3RSAiOaDF8VIAdjg7G4zO6CY8ShnMCCo7xizIGUMETHePRBgVA==
   dependencies:
     cheerio "0.22.0"
     moment "2.24.0"
