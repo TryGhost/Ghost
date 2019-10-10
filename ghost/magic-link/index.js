@@ -2,8 +2,7 @@ const jwt = require('jsonwebtoken');
 module.exports = MagicLink;
 
 /**
- * @typedef { Buffer | string } RsaPublicKey
- * @typedef { Buffer | string } RsaPrivateKey
+ * @typedef { import('jsonwebtoken').Secret } Secret
  * @typedef { import('nodemailer').Transporter } MailTransporter
  * @typedef { import('nodemailer').SentMessageInfo } SentMessageInfo
  * @typedef { string } JSONWebToken
@@ -61,20 +60,18 @@ function defaultGetSubject(type) {
  *
  * @param {object} options
  * @param {MailTransporter} options.transporter
- * @param {RsaPublicKey} options.publicKey
- * @param {RsaPrivateKey} options.privateKey
+ * @param {Secret} options.secret
  * @param {(token: JSONWebToken, type: string) => URL} options.getSigninURL
  * @param {typeof defaultGetText} [options.getText]
  * @param {typeof defaultGetHTML} [options.getHTML]
  * @param {typeof defaultGetSubject} [options.getSubject]
  */
 function MagicLink(options) {
-    if (!options || !options.transporter || !options.publicKey || !options.privateKey || !options.getSigninURL) {
-        throw new Error('Missing options. Expects {transporter, publicKey, privateKey, getSigninURL}');
+    if (!options || !options.transporter || !options.secret || !options.getSigninURL) {
+        throw new Error('Missing options. Expects {transporter, secret, getSigninURL}');
     }
     this.transporter = options.transporter;
-    this.publicKey = options.publicKey;
-    this.privateKey = options.privateKey;
+    this.secret = options.secret;
     this.getSigninURL = options.getSigninURL;
     this.getText = options.getText || defaultGetText;
     this.getHTML = options.getHTML || defaultGetHTML;
@@ -93,10 +90,10 @@ function MagicLink(options) {
 MagicLink.prototype.sendMagicLink = async function sendMagicLink(options) {
     const token = jwt.sign({
         user: options.user
-    }, this.privateKey, {
+    }, this.secret, {
         audience: '@tryghost/magic-link',
         issuer: '@tryghost/magic-link',
-        algorithm: 'RS512',
+        algorithm: 'HS256',
         subject: options.email,
         expiresIn: '10m'
     });
@@ -123,10 +120,10 @@ MagicLink.prototype.sendMagicLink = async function sendMagicLink(options) {
  */
 MagicLink.prototype.getUserFromToken = function getUserFromToken(token) {
     /** @type {object} */
-    const claims = jwt.verify(token, this.publicKey, {
+    const claims = jwt.verify(token, this.secret, {
         audience: '@tryghost/magic-link',
         issuer: '@tryghost/magic-link',
-        algorithms: ['RS512'],
+        algorithms: ['HS256'],
         maxAge: '10m'
     });
     return claims.user;
