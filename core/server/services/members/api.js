@@ -7,10 +7,11 @@ const ghostVersion = require('../../lib/ghost-version');
 const mail = require('../mail');
 const models = require('../../models');
 
-function createMember({email, name}) {
+function createMember({email, name, note}) {
     return models.Member.add({
         email,
-        name
+        name,
+        note
     }).then((member) => {
         return member.toJSON();
     });
@@ -70,8 +71,8 @@ async function getMetadata(module, member) {
     };
 }
 
-function updateMember({name}, options) {
-    return models.Member.edit({name}, options);
+function updateMember({name, note}, options) {
+    return models.Member.edit({name, note}, options);
 }
 
 function deleteMember(options) {
