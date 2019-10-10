@@ -113,7 +113,7 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
-                    eventSpy.callCount.should.equal(80);
+                    eventSpy.callCount.should.equal(82);
 
                     eventSpy.args[1][0].should.equal('settings.db_hash.added');
                     eventSpy.args[1][1].attributes.type.should.equal('core');
@@ -137,7 +137,7 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
-                    eventSpy.callCount.should.equal(78);
+                    eventSpy.callCount.should.equal(80);
 
                     eventSpy.args[13][0].should.equal('settings.logo.added');
                 });
