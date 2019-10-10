@@ -21,7 +21,8 @@ module.exports = function MembersApi({
     mail: {
         transporter,
         getText,
-        getHTML
+        getHTML,
+        getSubject
     },
     setMetadata,
     getMetadata,
@@ -68,7 +69,8 @@ module.exports = function MembersApi({
         privateKey,
         getSigninURL,
         getText,
-        getHTML
+        getHTML,
+        getSubject
     });
 
     async function sendEmailWithMagicLink(email, requestedType, options = {forceEmailType: false}){
