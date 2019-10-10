@@ -203,6 +203,18 @@ function createApiInstance() {
                     return ghostMailer.send(msg);
                 }
             },
+            getSubject(type) {
+                const siteTitle = settingsCache.get('title');
+                switch (type) {
+                case 'subscribe':
+                    return `📫 Confirm your subscription to ${siteTitle}`;
+                case 'signup':
+                    return `🙌 Complete your sign up to ${siteTitle}!`;
+                case 'signin':
+                default:
+                    return `🔑 Secure sign in link for ${siteTitle}`;
+                }
+            },
             getText(url, type) {
                 switch (type) {
                 case 'subscribe':
