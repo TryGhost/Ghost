@@ -29,6 +29,7 @@ describe('MagicLink', function () {
                 getSigninURL: sandbox.stub().returns('FAKEURL'),
                 getText: sandbox.stub().returns('SOMETEXT'),
                 getHTML: sandbox.stub().returns('SOMEHTML'),
+                getSubject: sandbox.stub().returns('SOMESUBJECT'),
                 transporter: {
                     sendMail: sandbox.stub().resolves()
                 }
@@ -49,6 +50,7 @@ describe('MagicLink', function () {
 
             should.ok(options.transporter.sendMail.calledOnce);
             should.equal(options.transporter.sendMail.firstCall.args[0].to, args.email);
+            should.equal(options.transporter.sendMail.firstCall.args[0].subject, options.getSubject.firstCall.returnValue);
             should.equal(options.transporter.sendMail.firstCall.args[0].text, options.getText.firstCall.returnValue);
             should.equal(options.transporter.sendMail.firstCall.args[0].html, options.getHTML.firstCall.returnValue);
         });
