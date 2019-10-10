@@ -218,15 +218,64 @@ function createApiInstance() {
                     return `🔑 Secure sign in link for ${siteTitle}`;
                 }
             },
-            getText(url, type) {
+            getText(url, type, email) {
+                const siteTitle = settingsCache.get('title');
                 switch (type) {
                 case 'subscribe':
-                    return `Click here to confirm your subscription ${url}`;
+                    return `
+                        Hey there,
+
+                        You're one tap away from subscribing to ${siteTitle} — please confirm your email address with this link:
+
+                        ${url}
+
+                        For your security, the link will expire in 10 minutes time.
+
+                        All the best!
+                        The team at ${siteTitle}
+
+                        ---
+
+                        Sent to ${email}
+                        If you did not make this request, you can simply delete this message. You will not be subscribed.
+                        `;
                 case 'signup':
-                    return `Click here to confirm your email address and sign up ${url}`;
+                    return `
+                        Hey there!
+
+                        Thanks for signing up for ${siteTitle} — use this link to complete the sign up process and be automatically signed in:
+
+                        ${url}
+
+                        For your security, the link will expire in 10 minutes time.
+
+                        See you soon!
+                        The team at ${siteTitle}
+
+                        ---
+
+                        Sent to ${email}
+                        If you did not make this request, you can simply delete this message. You will not be signed up, and no account will be created for you.
+                        `;
                 case 'signin':
                 default:
-                    return `Click here to sign in ${url}`;
+                    return `
+                        Hey there,
+
+                        Welcome back! Use this link to securely sign in to your ${siteTitle} account:
+
+                        ${url}
+
+                        For your security, the link will expire in 10 minutes time.
+
+                        See you soon!
+                        The team at ${siteTitle}
+
+                        ---
+
+                        Sent to ${email}
+                        If you did not make this request, you can safely ignore this email.
+                        `;
                 }
             },
             getHTML(url, type, email) {
