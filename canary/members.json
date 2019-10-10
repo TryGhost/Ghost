@@ -21,6 +21,11 @@
                     "maxLength": 191,
                     "pattern": "^([^,]|$)"
                 },
+                "note": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 2000
+                },
                 "id": {
                     "strip": true
                 },
