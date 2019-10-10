@@ -6,6 +6,9 @@ const common = require('../../lib/common');
 const ghostVersion = require('../../lib/ghost-version');
 const mail = require('../mail');
 const models = require('../../models');
+const signinEmail = require('./emails/signin');
+const signupEmail = require('./emails/signup');
+const subscribeEmail = require('./emails/subscribe');
 
 async function createMember({email, name, note}, options = {}) {
     const model = await models.Member.add({
@@ -226,15 +229,16 @@ function createApiInstance() {
                     return `Click here to sign in ${url}`;
                 }
             },
-            getHTML(url, type) {
+            getHTML(url, type, email) {
+                const siteTitle = settingsCache.get('title');
                 switch (type) {
                 case 'subscribe':
-                    return `<a href="${url}">Click here to confirm your subscription</a>`;
+                    return subscribeEmail({url, email, siteTitle});
                 case 'signup':
-                    return `<a href="${url}">Click here to confirm your email address and sign up</a>`;
+                    return signupEmail({url, email, siteTitle});
                 case 'signin':
                 default:
-                    return `<a href="${url}">Click here to sign in</a>`;
+                    return signinEmail({url, email, siteTitle});
                 }
             }
         },
