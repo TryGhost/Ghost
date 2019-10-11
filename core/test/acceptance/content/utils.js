@@ -20,7 +20,7 @@ const expectedProperties = {
         // and always returns computed properties: url
         .concat('url')
         // v2 API doesn't return unused fields
-        .without('locale', 'visibility')
+        .without('locale')
         // These fields aren't useful as they always have known values
         .without('status')
         // v2 API doesn't return new type field
