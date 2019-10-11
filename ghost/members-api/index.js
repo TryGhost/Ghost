@@ -75,14 +75,14 @@ module.exports = function MembersApi({
 
     async function sendEmailWithMagicLink(email, requestedType, options = {forceEmailType: false}){
         if (options.forceEmailType) {
-            return magicLinkService.sendMagicLink({email, user: {email}, type: requestedType});
+            return magicLinkService.sendMagicLink({email, subject: email, type: requestedType});
         }
         const member = await users.get({email});
         if (member) {
-            return magicLinkService.sendMagicLink({email, user: {email}, type: 'signin'});
+            return magicLinkService.sendMagicLink({email, subject: email, type: 'signin'});
         } else {
             const type = requestedType === 'subscribe' ? 'subscribe' : 'signup';
-            return magicLinkService.sendMagicLink({email, user: {email}, type});
+            return magicLinkService.sendMagicLink({email, subject: email, type});
         }
     }
 
@@ -97,8 +97,7 @@ module.exports = function MembersApi({
     });
 
     async function getMemberDataFromMagicLinkToken(token){
-        const user = await magicLinkService.getUserFromToken(token);
-        const email = user && user.email;
+        const email = await magicLinkService.getUserFromToken(token);
         if (!email) {
             return null;
         }
