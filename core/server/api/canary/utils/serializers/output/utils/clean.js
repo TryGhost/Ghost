@@ -98,8 +98,6 @@ const post = (attrs, frame) => {
         if (attrs.og_description === '') {
             attrs.og_description = null;
         }
-
-        delete attrs.visibility;
     } else {
         delete attrs.page;
 
