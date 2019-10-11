@@ -83,11 +83,11 @@
             </div>
             <div>
                 <div class="for-switch">
-                    <label class="switch" for="members-require-payment"
-                        {{action "setSubscriptionSettings" "requirePaymentForSignup" bubbles="false"}}>
-                        <input type="checkbox" checked={{subscriptionSettings.requirePaymentForSignup}} class="gh-input"
-                            onclick={{action "setSubscriptionSettings" "requirePaymentForSignup"}}
-                            data-test-checkbox="members-require-payment">
+                    <label class="switch" for="members-allow-self-signup"
+                        {{action "setSubscriptionSettings" "allowSelfSignup" bubbles="false"}}>
+                        <input type="checkbox" checked={{subscriptionSettings.allowSelfSignup}} class="gh-input"
+                            onclick={{action "setSubscriptionSettings" "allowSelfSignup"}}
+                            data-test-checkbox="members-allow-self-signup">
                         <span class="input-toggle-component mt1"></span>
                     </label>
                 </div>

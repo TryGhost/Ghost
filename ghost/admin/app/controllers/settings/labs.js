@@ -8,7 +8,6 @@ import {
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
-import {computed} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
@@ -62,25 +61,6 @@ export default Controller.extend({
         this.yamlExtension = YAML_EXTENSION;
         this.yamlMimeType = YAML_MIME_TYPE;
     },
-
-    subscriptionSettings: computed('settings.membersSubscriptionSettings', function () {
-        let subscriptionSettings = this.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
-        let stripeProcessor = subscriptionSettings.paymentProcessors.find((proc) => {
-            return (proc.adapter === 'stripe');
-        });
-        let monthlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'month');
-        let yearlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'year');
-        monthlyPlan.dollarAmount = parseInt(monthlyPlan.amount) ? (monthlyPlan.amount / 100) : 0;
-        yearlyPlan.dollarAmount = parseInt(yearlyPlan.amount) ? (yearlyPlan.amount / 100) : 0;
-        stripeProcessor.config.plans = {
-            monthly: monthlyPlan,
-            yearly: yearlyPlan
-        };
-        subscriptionSettings.stripeConfig = stripeProcessor.config;
-        subscriptionSettings.requirePaymentForSetup = !!subscriptionSettings.requirePaymentForSetup;
-        subscriptionSettings.fromAddress = subscriptionSettings.fromAddress || 'noreply';
-        return subscriptionSettings;
-    }),
 
     actions: {
         onUpload(file) {
