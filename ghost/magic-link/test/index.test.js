@@ -27,15 +27,22 @@ describe('MagicLink', function () {
 
             const args = {
                 email: 'test@example.com',
-                user: {
-                    id: 420
-                },
+                subject: '420',
                 type: 'blazeit'
             };
             const {token} = await service.sendMagicLink(args);
 
             should.ok(options.getSigninURL.calledOnce);
             should.ok(options.getSigninURL.firstCall.calledWithExactly(token, 'blazeit'));
+
+            should.ok(options.getText.calledOnce);
+            should.ok(options.getText.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com'));
+
+            should.ok(options.getHTML.calledOnce);
+            should.ok(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com'));
+
+            should.ok(options.getSubject.calledOnce);
+            should.ok(options.getSubject.firstCall.calledWithExactly('blazeit'));
 
             should.ok(options.transporter.sendMail.calledOnce);
             should.equal(options.transporter.sendMail.firstCall.args[0].to, args.email);
@@ -60,15 +67,13 @@ describe('MagicLink', function () {
 
             const args = {
                 email: 'test@example.com',
-                user: {
-                    id: 420
-                }
+                subject: '420'
             };
 
             const {token} = await service.sendMagicLink(args);
-            const user = service.getUserFromToken(token);
+            const subject = service.getUserFromToken(token);
 
-            should.deepEqual(user, args.user);
+            should.deepEqual(subject, args.subject);
         });
     });
 });
