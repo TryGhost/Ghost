@@ -113,17 +113,15 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
-                    eventSpy.callCount.should.equal(80);
+                    eventSpy.callCount.should.equal(82);
+                    const eventsEmitted = eventSpy.args.map(args => args[0]);
+                    const checkEventEmitted = event => should.ok(eventsEmitted.includes(event), `${event} event should be emitted`);
 
-                    eventSpy.args[1][0].should.equal('settings.db_hash.added');
-                    eventSpy.args[1][1].attributes.type.should.equal('core');
+                    checkEventEmitted('settings.db_hash.added');
+                    checkEventEmitted('settings.description.added');
 
-                    eventSpy.args[13][0].should.equal('settings.description.added');
-                    eventSpy.args[13][1].attributes.type.should.equal('blog');
-                    eventSpy.args[13][1].attributes.value.should.equal('The professional publishing platform');
-
-                    eventSpy.args[77][0].should.equal('settings.default_content_visibility.added');
-                    eventSpy.args[79][0].should.equal('settings.members_subscription_settings.added');
+                    checkEventEmitted('settings.default_content_visibility.added');
+                    checkEventEmitted('settings.members_subscription_settings.added');
                 });
         });
 
@@ -137,7 +135,7 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
-                    eventSpy.callCount.should.equal(78);
+                    eventSpy.callCount.should.equal(80);
 
                     eventSpy.args[13][0].should.equal('settings.logo.added');
                 });

@@ -36,10 +36,12 @@ function getFromAddress(requestedFromAddress) {
 }
 
 function createMessage(message) {
+    const encoding = 'base64';
+    const generateTextFromHTML = !message.forceTextContent;
     return Object.assign({}, message, {
-        from: getFromAddress(),
-        generateTextFromHTML: true,
-        encoding: 'base64'
+        from: getFromAddress(message.from),
+        generateTextFromHTML,
+        encoding
     });
 }
 
