@@ -4,7 +4,6 @@
         {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="name"}}
         <label for="member-name">Name</label>
         {{gh-text-input
-                    disabled=true
                     id="member-name"
                     name="name"
                     value=(readonly scratchName)
@@ -29,19 +28,18 @@
     </div>
     <div class="mb6 mb0-ns w-100 w-50-ns">
         {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="note"}}
-            <label for="member-description">Note</label>
+            <label for="member-note">Note</label>
             {{gh-textarea
-                        disabled=true
-                        id="member-description"
-                        name="description"
+                        id="member-note"
+                        name="note"
                         class="gh-member-details-textarea"
                         tabindex="3"
-                        value=(readonly scratchDescription)
-                        input=(action (mut scratchDescription) value="target.value")
-                        focus-out=(action 'setProperty' 'description' scratchDescription)
+                        value=(readonly scratchNote)
+                        input=(action (mut scratchNote) value="target.value")
+                        focus-out=(action 'setProperty' 'note' scratchNote)
                     }}
-            {{gh-error-message errors=member.errors property="description"}}
-            <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchDescription 500}}</p>
+            {{gh-error-message errors=member.errors property="note"}}
+            <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchNote 500}}</p>
         {{/gh-form-group}}
     </div>
 </div>
