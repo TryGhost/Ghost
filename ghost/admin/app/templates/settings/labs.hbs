@@ -96,9 +96,11 @@
                                     <div class="gh-setting-title pl5 pt5">Members</div>
                                     <div class="gh-setting-desc pl5 pb5">Enable free or paid member registration.</div>
                                 </div>
-                                <div class="gh-setting-action">
-                                    <div class="for-switch pa5">{{gh-feature-flag "members"}}</div>
-                                </div>
+                                {{#if session.user.isOwner}}
+                                    <div class="gh-setting-action">
+                                        <div class="for-switch pa5">{{gh-feature-flag "members"}}</div>
+                                    </div>
+                                {{/if}}
                             </div>
 
                             {{#liquid-if feature.labs.members}}
