@@ -173,7 +173,7 @@ function getAuthSecret() {
 
 function getAllowSelfSignup() {
     const subscriptionSettings = settingsCache.get('members_subscription_settings');
-    return !subscriptionSettings.requirePaymentForSignup;
+    return subscriptionSettings.allowSelfSignup;
 }
 
 // NOTE: the function is an exact duplicate of one in GhostMailer should be extracted
