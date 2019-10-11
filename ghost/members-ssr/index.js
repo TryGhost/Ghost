@@ -31,6 +31,7 @@ class MembersSSR {
      * @prop {string} [cookieName] - The name of the members-ssr cookie
      * @prop {number} [cookieMaxAge] - The max age in ms of the members-ssr cookie
      * @prop {string} [cookiePath] - The Path flag for the cookie
+     * @prop {boolean} [dangerousRemovalOfSignedCookie] - Flag for removing signed cookie
      */
 
     /**
@@ -45,7 +46,8 @@ class MembersSSR {
             cookieMaxAge = SIX_MONTHS_MS,
             cookiePath = '/',
             cookieKeys,
-            getMembersApi
+            getMembersApi,
+            dangerousRemovalOfSignedCookie
         } = options;
 
         if (!getMembersApi) {
@@ -70,6 +72,10 @@ class MembersSSR {
             maxAge: cookieMaxAge,
             path: cookiePath
         };
+
+        if (dangerousRemovalOfSignedCookie === true) {
+            this.sessionCookieOptions.signed = false;
+        }
 
         /**
          * @type CookiesOptions
