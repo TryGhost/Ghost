@@ -171,9 +171,9 @@ function getAuthSecret() {
     return secret;
 }
 
-function getRequirePaymentSetting() {
+function getAllowSelfSignup() {
     const subscriptionSettings = settingsCache.get('members_subscription_settings');
-    return !!subscriptionSettings.requirePaymentForSignup;
+    return !subscriptionSettings.requirePaymentForSignup;
 }
 
 // NOTE: the function is an exact duplicate of one in GhostMailer should be extracted
@@ -199,7 +199,7 @@ function createApiInstance() {
                 signinURL.searchParams.set('action', type);
                 return signinURL.href;
             },
-            allowSelfSignup: !getRequirePaymentSetting(),
+            allowSelfSignup: getAllowSelfSignup(),
             secret: getAuthSecret()
         },
         mail: {
