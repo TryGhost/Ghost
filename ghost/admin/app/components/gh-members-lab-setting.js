@@ -23,6 +23,7 @@ export default Component.extend({
         subscriptionSettings.stripeConfig = stripeProcessor.config;
         subscriptionSettings.requirePaymentForSetup = !!subscriptionSettings.requirePaymentForSetup;
         subscriptionSettings.fromAddress = subscriptionSettings.fromAddress || 'noreply';
+
         return subscriptionSettings;
     }),
 
