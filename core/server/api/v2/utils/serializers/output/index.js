@@ -59,10 +59,6 @@ module.exports = {
         return require('./mail');
     },
 
-    get members() {
-        return require('./members');
-    },
-
     get images() {
         return require('./images');
     },
