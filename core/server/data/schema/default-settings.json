@@ -194,11 +194,14 @@
         "members_session_secret": {
             "defaultValue": null
         },
+        "members_email_auth_secret": {
+            "defaultValue": null
+        },
         "default_content_visibility": {
             "defaultValue": "public"
         },
         "members_subscription_settings": {
-            "defaultValue": "{\"isPaid\":false,\"fromAddress\":\"noreply\",\"requirePaymentForSignup\":false,\"paymentProcessors\":[{\"adapter\":\"stripe\",\"config\":{\"secret_token\":\"\",\"public_token\":\"\",\"product\":{\"name\":\"Ghost Subscription\"},\"plans\":[{\"name\":\"Monthly\",\"currency\":\"usd\",\"interval\":\"month\",\"amount\":\"\"},{\"name\":\"Yearly\",\"currency\":\"usd\",\"interval\":\"year\",\"amount\":\"\"}]}}]}"
+            "defaultValue": "{\"isPaid\":false,\"fromAddress\":\"noreply\",\"allowSelfSignup\":true,\"paymentProcessors\":[{\"adapter\":\"stripe\",\"config\":{\"secret_token\":\"\",\"public_token\":\"\",\"product\":{\"name\":\"Ghost Subscription\"},\"plans\":[{\"name\":\"Monthly\",\"currency\":\"usd\",\"interval\":\"month\",\"amount\":\"\"},{\"name\":\"Yearly\",\"currency\":\"usd\",\"interval\":\"year\",\"amount\":\"\"}]}}]}"
         }
     }
 }

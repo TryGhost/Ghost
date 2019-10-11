@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "2.34.0",
+  "version": "2.35.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -41,11 +41,11 @@
   "dependencies": {
     "@nexes/nql": "0.3.0",
     "@tryghost/helpers": "1.1.15",
-    "@tryghost/members-api": "0.8.0",
+    "@tryghost/members-api": "0.8.2",
     "@tryghost/members-ssr": "0.7.0",
     "@tryghost/social-urls": "0.1.2",
     "@tryghost/string": "^0.1.3",
-    "@tryghost/url-utils": "0.6.5",
+    "@tryghost/url-utils": "0.6.6",
     "ajv": "6.10.2",
     "amperize": "0.6.0",
     "analytics-node": "3.3.0",

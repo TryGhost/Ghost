@@ -227,22 +227,22 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^0.1.3"
 
-"@tryghost/magic-link@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.2.1.tgz#c729bf5d2fe7fa1330eccbba51ba3579834784fc"
-  integrity sha512-bqlZndOXwU3b9FXvMtHIep1EradDnsfQ+4vvINQ+QsCOWKH1EDbPhjYS9f2G0xNx8BVyG4e1eMxZ5lBhJ6lBCA==
+"@tryghost/magic-link@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.3.0.tgz#52e4326efba5756a39d219990d8fcbcbd3ba813a"
+  integrity sha512-Ahd4KG8Hz/zndRjx0MQt6cY8Lq8TL3UQEXbNIhEO1zOzgyq7FKGpBoSfaVzYb6aSx1pAG/EP60VuBKetHBmUSw==
   dependencies:
     bluebird "^3.5.5"
     ghost-ignition "^3.1.0"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.8.0.tgz#e1f0b67371b6b61f6cf4f64e5b62c92ba3777c2a"
-  integrity sha512-THPd9HUyqo1WdroWFH8X+KcNfyy586dVSOYRQWIjF+URoYHmlrf2AlxBrdHMq5R8mQVCKIO0t3pmZwRnafucVA==
+"@tryghost/members-api@0.8.2":
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.8.2.tgz#2d72cb80909c571fb2e6c9de868d438b5319e54d"
+  integrity sha512-maqhvyNpvw0kWG20UpSG0637YXteO5cc/ts+KWiSk4oIDuaH1sycgNXQ98q4Z+MAKzMye0iGoom7NcXQOFh8/Q==
   dependencies:
-    "@tryghost/magic-link" "^0.2.1"
+    "@tryghost/magic-link" "^0.3.0"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
     cookies "^0.7.3"
@@ -297,10 +297,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@0.6.5":
-  version "0.6.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.5.tgz#a393e67e60daf265fd5d3e4ff6423bd0573bcd10"
-  integrity sha512-Ah6gmFo79a4p/lpzGC/EMwKgw5jEiURJAtaj3RSAiOaDF8VIAdjg7G4zO6CY8ShnMCCo7xizIGUMETHePRBgVA==
+"@tryghost/url-utils@0.6.6":
+  version "0.6.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.6.tgz#45fe815419df325cc07571c39739b04296a1cc09"
+  integrity sha512-U3JHMK5c2OVpuXHoJAOMjomYOVoyCY3ZGMYJ8yyby7eq2mMAHIBbwWsg4IkKuYKQ+/hGxK7DLGS7A3xb/Rxxbg==
   dependencies:
     cheerio "0.22.0"
     moment "2.24.0"

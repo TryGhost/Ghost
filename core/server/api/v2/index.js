@@ -67,10 +67,6 @@ module.exports = {
         return shared.pipeline(require('./settings'), localUtils);
     },
 
-    get members() {
-        return shared.pipeline(require('./members'), localUtils);
-    },
-
     get images() {
         return shared.pipeline(require('./images'), localUtils);
     },

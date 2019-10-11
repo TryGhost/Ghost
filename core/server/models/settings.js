@@ -37,7 +37,8 @@ function parseDefaultSettings() {
             members_session_secret: () => crypto.randomBytes(32).toString('hex'),
             theme_session_secret: () => crypto.randomBytes(32).toString('hex'),
             members_public_key: () => getMembersKey('public'),
-            members_private_key: () => getMembersKey('private')
+            members_private_key: () => getMembersKey('private'),
+            members_email_auth_secret: () => crypto.randomBytes(64).toString('hex')
         };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {

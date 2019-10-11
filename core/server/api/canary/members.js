@@ -60,30 +60,20 @@ const members = {
             }
         },
         permissions: true,
-        query(frame) {
-            // NOTE: Promise.resolve() is here for a reason! Method has to return an instance
-            //      of a Bluebird promise to allow reflection. If decided to be replaced
-            //      with something else, e.g: async/await, CSV export function
-            //      would need a deep rewrite (see failing tests if this line is removed)
-            return Promise.resolve()
-                .then(() => {
-                    return membersService.api.members.create(frame.data.members[0], {
-                        sendEmail: frame.options.send_email,
-                        emailType: frame.options.email_type
-                    });
-                })
-                .then((member) => {
-                    if (member) {
-                        return Promise.resolve(member);
-                    }
-                })
-                .catch((error) => {
-                    if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                        return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.members.memberAlreadyExists')}));
-                    }
-
-                    return Promise.reject(error);
+        async query(frame) {
+            try {
+                const member = await membersService.api.members.create(frame.data.members[0], {
+                    sendEmail: frame.options.send_email,
+                    emailType: frame.options.email_type
                 });
+                return member;
+            } catch (error) {
+                if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
+                    throw new common.errors.ValidationError({message: common.i18n.t('errors.api.members.memberAlreadyExists')});
+                }
+
+                throw error;
+            }
         }
     },
 
@@ -163,23 +153,24 @@ const members = {
 
             return fsLib.readCSV({
                 path: filePath,
-                columnsToExtract: [{name: 'email', lookup: /email/i}, {name: 'name', lookup: /name/i}]
+                columnsToExtract: [{name: 'email', lookup: /email/i}, {name: 'name', lookup: /name/i}, {name: 'note', lookup: /note/i}]
             }).then((result) => {
                 return Promise.all(result.map((entry) => {
                     const api = require('./index');
 
-                    return api.members.add.query({
+                    return Promise.resolve(api.members.add.query({
                         data: {
                             members: [{
                                 email: entry.email,
-                                name: entry.name
+                                name: entry.name,
+                                note: entry.note
                             }]
                         },
                         options: {
                             context: frame.options.context,
                             options: {send_email: false}
                         }
-                    }).reflect();
+                    })).reflect();
                 })).each((inspection) => {
                     if (inspection.isFulfilled()) {
                         fulfilled = fulfilled + 1;
