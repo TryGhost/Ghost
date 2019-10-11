@@ -89,8 +89,6 @@ function MagicLink(options) {
  */
 MagicLink.prototype.sendMagicLink = async function sendMagicLink(options) {
     const token = jwt.sign({}, this.secret, {
-        audience: '@tryghost/magic-link',
-        issuer: '@tryghost/magic-link',
         algorithm: 'HS256',
         subject: options.subject,
         expiresIn: '10m'
@@ -119,8 +117,6 @@ MagicLink.prototype.sendMagicLink = async function sendMagicLink(options) {
 MagicLink.prototype.getUserFromToken = function getUserFromToken(token) {
     /** @type {object} */
     const claims = jwt.verify(token, this.secret, {
-        audience: '@tryghost/magic-link',
-        issuer: '@tryghost/magic-link',
         algorithms: ['HS256'],
         maxAge: '10m'
     });
