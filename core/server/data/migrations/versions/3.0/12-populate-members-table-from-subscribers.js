@@ -1,6 +1,5 @@
 const ObjectId = require('bson-objectid');
 const _ = require('lodash');
-const models = require('../../../../models');
 const common = require('../../../../lib/common');
 
 module.exports.config = {
@@ -23,17 +22,15 @@ module.exports.up = (options) => {
         'updated_by'
     ];
 
-    return models.Subscribers
-        .forge()
-        .fetch(localOptions)
-        .then(({models: subscribers}) => {
-            if (subscribers.length > 0) {
+    return localOptions.transacting('subscribers').select()
+        .then((subscribers) => {
+            if (subscribers && subscribers.length > 0) {
                 common.logging.info(`Adding ${subscribers.length} entries to members`);
 
                 let members = _.map(subscribers, (subscriber) => {
                     let member = memberAttrs.reduce(function (obj, prop) {
                         return Object.assign(obj, {
-                            [prop]: subscriber.get(prop)
+                            [prop]: subscriber[prop]
                         });
                     }, {});
                     member.id = ObjectId.generate();
