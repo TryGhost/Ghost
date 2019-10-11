@@ -158,6 +158,13 @@ function getRequirePaymentSetting() {
     return !!subscriptionSettings.requirePaymentForSignup;
 }
 
+// NOTE: the function is an exact duplicate of one in GhostMailer should be extracted
+//       into a common lib once it needs to be reused anywhere else again
+function getDomain() {
+    const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+    return domain && domain[1];
+}
+
 module.exports = createApiInstance;
 
 function createApiInstance() {
@@ -182,7 +189,16 @@ function createApiInstance() {
                     if (process.env.NODE_ENV !== 'production') {
                         common.logging.warn(message.text);
                     }
-                    return ghostMailer.send(Object.assign({subject: 'Signin'}, message));
+
+                    let msg = Object.assign({subject: 'Signin'}, message);
+                    const subscriptionSettings = settingsCache.get('members_subscription_settings');
+
+                    if (subscriptionSettings && subscriptionSettings.fromAddress) {
+                        let from = `${subscriptionSettings.fromAddress}@${getDomain()}`;
+                        msg = Object.assign({from: from}, msg);
+                    }
+
+                    return ghostMailer.send(msg);
                 }
             },
             getText(url, type) {
