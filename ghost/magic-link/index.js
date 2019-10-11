@@ -83,18 +83,16 @@ function MagicLink(options) {
  *
  * @param {object} options
  * @param {string} options.email - The email to send magic link to
- * @param {object} options.user - The user object to associate with the magic link
+ * @param {object} options.subject - The subject to associate with the magic link (user id, or email)
  * @param {string=} [options.type='signin'] - The type to be passed to the url and content generator functions
  * @returns {Promise<{token: JSONWebToken, info: SentMessageInfo}>}
  */
 MagicLink.prototype.sendMagicLink = async function sendMagicLink(options) {
-    const token = jwt.sign({
-        user: options.user
-    }, this.secret, {
+    const token = jwt.sign({}, this.secret, {
         audience: '@tryghost/magic-link',
         issuer: '@tryghost/magic-link',
         algorithm: 'HS256',
-        subject: options.email,
+        subject: options.subject,
         expiresIn: '10m'
     });
 
@@ -126,5 +124,5 @@ MagicLink.prototype.getUserFromToken = function getUserFromToken(token) {
         algorithms: ['HS256'],
         maxAge: '10m'
     });
-    return claims.user;
+    return claims.sub;
 };
