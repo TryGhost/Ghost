@@ -93,7 +93,8 @@ fixtures = {
         let i, j, k = 0,
             posts = [];
 
-        const count = 25;
+        // NOTE: this variable should become a parameter as test logic depends on it
+        const count = 10;
 
         // insert users of different roles
         return Promise.resolve(fixtures.createUsersWithRoles()).then(function () {
