@@ -26,7 +26,7 @@
   "dependencies": {
     "bluebird": "^3.5.3",
     "concat-stream": "^2.0.0",
-    "cookies": "^0.7.3",
+    "cookies": "^0.8.0",
     "ghost-ignition": "^3.0.4",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.11"

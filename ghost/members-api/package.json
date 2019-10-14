@@ -26,7 +26,7 @@
     "@tryghost/magic-link": "^0.3.0",
     "bluebird": "^3.5.4",
     "body-parser": "^1.19.0",
-    "cookies": "^0.7.3",
+    "cookies": "^0.8.0",
     "express": "^4.16.4",
     "ghost-ignition": "^3.1.0",
     "jsonwebtoken": "^8.5.1",
