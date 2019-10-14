@@ -29,11 +29,11 @@ describe('Acceptance: Members', function () {
             .to.not.exist;
     });
 
-    describe('as admin', function () {
+    describe('as owner', function () {
         beforeEach(async function () {
             this.server.loadFixtures('configs');
 
-            let role = this.server.create('role', {name: 'Administrator'});
+            let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
 
             return await authenticateSession();
