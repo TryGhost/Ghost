@@ -860,7 +860,7 @@
     ember-cli-babel "^7.10.0"
     ember-modifier-manager-polyfill "^1.1.0"
 
-"@ember/test-helpers@^1.5.0":
+"@ember/test-helpers@^1.6.1":
   version "1.6.1"
   resolved "https://registry.yarnpkg.com/@ember/test-helpers/-/test-helpers-1.6.1.tgz#5eb0b58486524c54f1b617a83e4ab327b7c62f07"
   integrity sha512-gXLXR0XdZKfyXHFP+QLpG55TlrDtvrZI6TMQVQxdZwsz589kN8idmc01rDjyy53jx430tZTEsdhJvC2LrHXPwg==
@@ -5353,16 +5353,16 @@ ember-maybe-in-element@^0.2.0:
   dependencies:
     ember-cli-babel "^7.1.0"
 
-ember-mocha@0.16.0:
-  version "0.16.0"
-  resolved "https://registry.yarnpkg.com/ember-mocha/-/ember-mocha-0.16.0.tgz#0a8499f59e626a5af5ca47e3f1d19c2bd5cc7393"
-  integrity sha512-iYWrCOHdPQNwFsD1UNKa6RnA629wgN4zql9730hfiV0Ib4I4VwDueldGwWjXEF+3jGM/R993z6DPvYQKbNfTdg==
+ember-mocha@0.16.1:
+  version "0.16.1"
+  resolved "https://registry.yarnpkg.com/ember-mocha/-/ember-mocha-0.16.1.tgz#76fc8968e4c71d1992908047bad08b873fbbd578"
+  integrity sha512-TFxgn85ZjG5Oeez+4Muv853mFIDXCRZ0MHrVWvM9JwrnMPrQ+VbuvYdqu3AJx9TxyqDtq4Hn61g3E2q9oOH2cA==
   dependencies:
-    "@ember/test-helpers" "^1.5.0"
+    "@ember/test-helpers" "^1.6.1"
     broccoli-funnel "^2.0.2"
     broccoli-merge-trees "^3.0.2"
     common-tags "^1.8.0"
-    ember-cli-babel "^7.7.3"
+    ember-cli-babel "^7.11.1"
     ember-cli-test-loader "^2.2.0"
     mocha "^2.5.3"
 
