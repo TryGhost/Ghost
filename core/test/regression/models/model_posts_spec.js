@@ -1559,18 +1559,18 @@ describe('Post Model', function () {
             var authorData = {id: testUtils.DataGenerator.Content.users[0].id};
 
             models.Post.findAll({context: {internal: true}}).then(function (found) {
-                // There are 25 posts created by posts:mu fixture
-                found.length.should.equal(25);
+                // There are 10 posts created by posts:mu fixture
+                found.length.should.equal(10);
                 return models.Post.destroyByAuthor(authorData);
             }).then(function (results) {
-                // User 1 has 5 posts in the database (each user has proportionate amount)
-                // 5 = 25 / 5 (posts / users)
-                results.length.should.equal(5);
+                // User 1 has 2 posts in the database (each user has proportionate amount)
+                // 2 = 10 / 5 (posts / users)
+                results.length.should.equal(2);
                 return models.Post.findAll({context: {internal: true}});
             }).then(function (found) {
-                // Only 20 should remain
-                // 20 = 25 - 5
-                found.length.should.equal(20);
+                // Only 8 should remain
+                // 8 = 10 - 2
+                found.length.should.equal(8);
                 done();
             }).catch(done);
         });
