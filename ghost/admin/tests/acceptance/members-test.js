@@ -29,13 +29,13 @@ describe('Acceptance: Members', function () {
             .to.not.exist;
     });
 
-    describe('as admin', function () {
+    describe('as owner', function () {
         beforeEach(async function () {
             this.server.loadFixtures('configs');
             let config = this.server.schema.configs.first();
             config.update({enableDeveloperExperiments: true});
 
-            let role = this.server.create('role', {name: 'Administrator'});
+            let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
 
             return await authenticateSession();
