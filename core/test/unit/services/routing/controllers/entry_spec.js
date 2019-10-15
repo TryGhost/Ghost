@@ -48,7 +48,8 @@ describe('Unit - services/routing/controllers/entry', function () {
                 resourceType: 'posts'
             },
             render: sinon.spy(),
-            redirect: sinon.spy()
+            redirect: sinon.spy(),
+            locals: {}
         };
     });
 
