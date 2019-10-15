@@ -37,7 +37,5 @@ module.exports = {
             debug('omit internal options');
             frame.options = _.omit(frame.options, INTERNAL_OPTIONS);
         }
-
-        debug(frame.options);
     }
 };

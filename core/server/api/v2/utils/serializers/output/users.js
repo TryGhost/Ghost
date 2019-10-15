@@ -10,8 +10,6 @@ module.exports = {
             users: models.data.map(model => mapper.mapUser(model, frame)),
             meta: models.meta
         };
-
-        debug(frame.response);
     },
 
     read(model, apiConfig, frame) {
@@ -20,8 +18,6 @@ module.exports = {
         frame.response = {
             users: [mapper.mapUser(model, frame)]
         };
-
-        debug(frame.response);
     },
 
     edit() {
@@ -43,7 +39,5 @@ module.exports = {
         frame.response = {
             users: models.map(model => model.toJSON(frame.options))
         };
-
-        debug(frame.response);
     }
 };

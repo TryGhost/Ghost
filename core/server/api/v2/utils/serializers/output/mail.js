@@ -3,6 +3,7 @@ const debug = require('ghost-ignition').debug('api:v2:utils:serializers:output:m
 
 module.exports = {
     all(response, apiConfig, frame) {
+        debug('all');
         const toReturn = _.cloneDeep(frame.data);
 
         delete toReturn.mail[0].options;
@@ -14,7 +15,5 @@ module.exports = {
         };
 
         frame.response = toReturn;
-
-        debug(frame.response);
     }
 };
