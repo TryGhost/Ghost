@@ -8,6 +8,43 @@
     <section class="view-container settings-debug">
         <p class="gh-box gh-box-info">{{svg-jar "idea"}}This is a testing ground for experimental features which aren't quite ready for primetime. They may change, break or inexplicably disappear at any time.</p>
 
+        {{#if session.user.isOwner}}
+        <div class="gh-setting-header">Members (BETA) </div>
+        <div class="flex flex-column br3 shadow-1 bg-grouped-table mt2">
+            <div class="gh-setting-first gh-setting-last">
+                <div class="gh-members-setting-content">
+                    <div class="flex">
+                        <div class="flex flex-column flex-grow-1">
+                            <div class="gh-setting-title pl5 pt5">Members</div>
+                            <div class="gh-setting-desc pl5 pb5">Enable membership for your site</div>
+                        </div>
+                        <div class="gh-setting-action">
+                            <div class="for-switch pa5">{{gh-feature-flag "members"}}</div>
+                        </div>
+                    </div>
+        
+                    {{#liquid-if feature.labs.members}}
+                    {{gh-members-lab-setting
+                                                        settings=settings
+                                                        setDefaultContentVisibility=(action "setDefaultContentVisibility")
+                                                        setMembersSubscriptionSettings=(action "setMembersSubscriptionSettings")
+                                                    }}
+        
+                    <div class="mt5 pl5 pr5 pb5">
+                        {{gh-task-button "Save members settings"
+                                                            task=saveSettings
+                                                            successText="Saved"
+                                                            runningText="Saving"
+                                                            class="gh-btn gh-btn-blue gh-btn-icon"
+                                                        }}
+                    </div>
+                    {{/liquid-if}}
+                </div>
+        
+            </div>
+        </div>
+        {{/if}}
+
         <div class="gh-setting-header">Migration options</div>
         <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">
             <div class="gh-setting-first">
@@ -200,42 +237,6 @@
                 {{/gh-uploader}}
             </div>
         </div>
-        {{#if session.user.isOwner}}
-            <div class="gh-setting-header">Members (BETA) </div>
-            <div class="flex flex-column br3 shadow-1 bg-grouped-table mt2">
-                <div class="gh-setting-first gh-setting-last">
-                    <div class="gh-members-setting-content">
-                        <div class="flex">
-                            <div class="flex flex-column flex-grow-1">
-                                <div class="gh-setting-title pl5 pt5">Members</div>
-                                <div class="gh-setting-desc pl5 pb5">Enable membership for your site</div>
-                            </div>
-                            <div class="gh-setting-action">
-                                <div class="for-switch pa5">{{gh-feature-flag "members"}}</div>
-                            </div>
-                        </div>
-            
-                        {{#liquid-if feature.labs.members}}
-                        {{gh-members-lab-setting
-                                                settings=settings
-                                                setDefaultContentVisibility=(action "setDefaultContentVisibility")
-                                                setMembersSubscriptionSettings=(action "setMembersSubscriptionSettings")
-                                            }}
-            
-                        <div class="mt5 pl5 pr5 pb5">
-                            {{gh-task-button "Save members settings"
-                                                    task=saveSettings
-                                                    successText="Saved"
-                                                    runningText="Saving"
-                                                    class="gh-btn gh-btn-blue gh-btn-icon"
-                                                }}
-                        </div>
-                        {{/liquid-if}}
-                    </div>
-            
-                </div>
-            </div>
-        {{/if}}
     </section>
 </section>
 
