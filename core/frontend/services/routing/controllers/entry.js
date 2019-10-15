@@ -83,6 +83,11 @@ module.exports = function entryController(req, res, next) {
                 }));
             }
 
+            // CASE: Add access property to entry for v3+ api
+            if (res.locals.apiVersion !== 'v0.1' && res.locals.apiVersion !== 'v2') {
+                entry.access = !!entry.html;
+            }
+
             helpers.secure(req, entry);
 
             const renderer = helpers.renderEntry(req, res);
