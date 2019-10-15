@@ -117,8 +117,6 @@ module.exports = {
         }
 
         frame.options.mongoTransformer = replacePageWithType;
-
-        debug(frame.options);
     },
 
     read(apiConfig, frame) {
@@ -144,8 +142,6 @@ module.exports = {
             defaultFormat(frame);
             defaultRelations(frame);
         }
-
-        debug(frame.options);
     },
 
     add(apiConfig, frame, options = {add: true}) {
@@ -193,6 +189,7 @@ module.exports = {
     },
 
     edit(apiConfig, frame) {
+        debug('edit');
         this.add(apiConfig, frame, {add: false});
 
         handlePostsMeta(frame);
@@ -201,6 +198,7 @@ module.exports = {
     },
 
     destroy(apiConfig, frame) {
+        debug('destroy');
         frame.options.destroyBy = {
             id: frame.options.id,
             type: 'post'

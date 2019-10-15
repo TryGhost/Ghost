@@ -13,8 +13,7 @@ const models = require('../../models');
  */
 const http = (apiImpl) => {
     return (req, res, next) => {
-        debug('request');
-
+        debug(`External API request to ${req.url}`);
         let apiKey = null;
         let integration = null;
         let user = null;
@@ -56,12 +55,11 @@ const http = (apiImpl) => {
 
         apiImpl(frame)
             .then((result) => {
+                debug(`External API request to ${frame.docName}.${frame.method}`);
                 return shared.headers.get(result, apiImpl.headers, frame)
                     .then(headers => ({result, headers}));
             })
             .then(({result, headers}) => {
-                debug(result);
-
                 // CASE: api ctrl wants to handle the express response (e.g. streams)
                 if (typeof result === 'function') {
                     debug('ctrl function call');
