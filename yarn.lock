@@ -253,10 +253,10 @@
     node-jose "^1.1.3"
     stripe "^7.4.0"
 
-"@tryghost/members-ssr@0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.7.0.tgz#d4e7a6554375b65efc13651361311f0c960f9cd9"
-  integrity sha512-DE4xXjIvJBL/JG9wj/6tVajDgbGJ0Qvq4LjNW9gjO2EmeG6W7F9RKPyy4H4hDnSv+g5LG1oz6c/aIkivaQjNOw==
+"@tryghost/members-ssr@0.7.1":
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.7.1.tgz#e4d5e17478af44b5e3de6bf05e4a282fade0db8a"
+  integrity sha512-akwMXRF9yj+QMxpRkbDfN0w5/+lBm02TU1Qme4eAdtcdu4WHOJEao/w4cRTaqaVivmZBWowbvBCaSEGjv96dQg==
   dependencies:
     bluebird "^3.5.3"
     concat-stream "^2.0.0"
@@ -281,12 +281,12 @@
     chalk "^2.4.1"
     sywac "^1.2.1"
 
-"@tryghost/social-urls@0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.2.tgz#3ebccae37230cbc2fcec98b57b790d416474a7b7"
-  integrity sha512-4BHdVkRHhhvici6xanXETJQKyR7R1ONtK681RhMm09+xDgG0WJ2igqUsI8xjlTYnNudOX28UYfN1S6zRmcmzGA==
+"@tryghost/social-urls@0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.3.tgz#3de95811b5d9de3dfb28bf9241a36d5cb9f33a52"
+  integrity sha512-/sO7MXtcb/qhYkul4CRx9iP1dEVQpCEf4F/mjPzPEEs8DVabPoOke3dlwYuJI9XJcuLab9E/j/tVE1C4R8VodQ==
   dependencies:
-    bluebird "3.5.5"
+    bluebird "3.7.0"
     ghost-ignition "3.1.0"
     lodash "4.17.11"
 
@@ -297,10 +297,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@0.6.9":
-  version "0.6.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.9.tgz#4281988f5f53eab9446b553eac914d7777aa0d64"
-  integrity sha512-47nmkJ2NHOpCDdjmgSwBwiaZuSQvfcOQCf1lcbkNf38VEbaNW9cEWFAcjOOVkrDpaz38vYgfdv5lihNwhwO4Dw==
+"@tryghost/url-utils@0.6.10":
+  version "0.6.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.10.tgz#8ab8cf4e4717b24835c5c9ea58a515cdb3b742e5"
+  integrity sha512-VHQh3QluR/46CNhIvF6E7GQvfh8UoOQZa4NeNlfrJILadrZQ1Cst8mnSyXIcNq/KBC8ULGDVlbYjfQVgrLeRPg==
   dependencies:
     cheerio "0.22.0"
     moment "2.24.0"
