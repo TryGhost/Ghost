@@ -9,7 +9,7 @@
                     <span class="hidden">Members Actions</span>
                 </span>
                 {{/gh-dropdown-button}}
-                {{#gh-dropdown name="members-actions-menu" tagName="ul" classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right"}}
+                {{#gh-dropdown name="members-actions-menu" tagName="ul" classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"}}
                 <li>
                     {{#link-to "members.import" class="mr2" data-test-link="import-csv"}}
                     <span>Import CSV </span>
@@ -24,32 +24,29 @@
             </span>
             <div class="relative">
                 {{svg-jar "search" class="gh-input-search-icon"}}
-                <GhTextInput placeholder="Search members..." @value={{this.searchText}} @input={{action (mut this.searchText) value="target.value"}} class="gh-members-list-searchfield" />
+                <GhTextInput placeholder="Search members..." @value={{this.searchText}} @input={{action (mut this.searchText) value="target.value"}} class="gh-members-list-searchfield {{if this.searchText "active"}}" />
             </div>
         </section>
     </GhCanvasHeader>
     <section class="view-container">
-
-        {{#if (or filteredMembers this.fetchMembers.isRunning this.searchText)}}
-        <div class="flex justify-between items-center">
-            <h2 class="f-small fw5 midlightgrey ttu mb2">
-                {{#if this.searchText}}
-                    Search result
-                {{else}}
-                    All members
-                    {{#if this.fetchMembers.lastSuccessful}}
-                        ({{this.meta.pagination.total}})
-                    {{else}}
-                        (Loading...)
-                    {{/if}}
-                {{/if}}
-            </h2>
-        </div>
-        {{/if}}
-
         <section class="content-list">
             <ol class="members-list gh-list {{unless filteredMembers "no-posts"}}">
                 {{#if filteredMembers}}
+                    <li class="gh-list-row header">
+                        <div class="gh-list-header">
+                            {{#if this.searchText}}
+                                Search result
+                            {{else}}
+                                {{#if this.fetchMembers.lastSuccessful}}
+                                    {{pluralize this.meta.pagination.total "member"}}
+                                {{else}}
+                                    Loading...
+                                {{/if}}
+                            {{/if}}
+                        </div>
+                        <div class="gh-list-header gh-list-cellwidth-20 nowrap">Created</div>
+                        <div class="gh-list-header gh-list-cellwidth-chevron"></div>
+                    </li>
                     {{#vertical-collection
                                 items=filteredMembers
                                 key="id"
