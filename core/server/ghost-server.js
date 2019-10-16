@@ -10,6 +10,9 @@ var debug = require('ghost-ignition').debug('server'),
     common = require('./lib/common'),
     moment = require('moment');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 /**
  * ## GhostServer
  * @constructor

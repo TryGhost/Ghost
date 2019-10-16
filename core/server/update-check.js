@@ -23,6 +23,9 @@ const crypto = require('crypto'),
     internal = {context: {internal: true}},
     allowedCheckEnvironments = ['development', 'production'];
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 function nextCheckTimestamp() {
     var now = Math.round(new Date().getTime() / 1000);
     return now + (24 * 3600);

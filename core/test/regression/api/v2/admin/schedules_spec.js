@@ -12,6 +12,9 @@ const localUtils = require('./utils');
 
 const ghost = testUtils.startGhost;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('Schedules API', function () {
     const resources = [];
     let request;

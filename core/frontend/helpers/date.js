@@ -6,6 +6,9 @@
 const {SafeString, i18n} = require('./proxy');
 const moment = require('moment-timezone');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 module.exports = function (date, options) {
     let timezone;
 

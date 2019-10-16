@@ -4,6 +4,9 @@ var should = require('should'),
     helpers = require('../../../frontend/helpers'),
     moment = require('moment-timezone');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('{{date}} helper', function () {
     it('creates properly formatted date strings', function () {
         var testDates = [

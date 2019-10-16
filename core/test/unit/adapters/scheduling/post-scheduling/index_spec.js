@@ -11,6 +11,9 @@ var should = require('should'),
     postScheduling = require('../../../../../server/adapters/scheduling/post-scheduling'),
     urlUtils = require('../../../../../server/lib/url-utils');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('Scheduling: Post Scheduling', function () {
     var scope = {
         events: {},

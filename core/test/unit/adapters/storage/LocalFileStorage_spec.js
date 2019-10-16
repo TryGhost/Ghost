@@ -9,6 +9,9 @@ var should = require('should'),
     localFileStore,
     configUtils = require('../../../utils/configUtils');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('Local File System Storage', function () {
     var image,
         momentStub;

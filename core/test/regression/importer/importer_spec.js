@@ -19,6 +19,9 @@ var should = require('should'),
 
     knex = db.knex;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 const exportedLatestBody = () => {
     return _.clone({
         db: [{

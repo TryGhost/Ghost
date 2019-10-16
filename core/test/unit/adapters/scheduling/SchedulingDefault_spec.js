@@ -8,6 +8,9 @@ var should = require('should'),
     http = require('http'),
     SchedulingDefault = require(config.get('paths').corePath + '/server/adapters/scheduling/SchedulingDefault');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('Scheduling Default Adapter', function () {
     var scope = {};
 

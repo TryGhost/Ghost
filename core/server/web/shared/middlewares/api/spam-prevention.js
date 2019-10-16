@@ -21,6 +21,9 @@ let userLoginInstance;
 let userResetInstance;
 let contentApiKeyInstance;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 const spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
 
 const handleStoreError = (err) => {

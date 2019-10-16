@@ -8,6 +8,9 @@ const Promise = require('bluebird'),
     common = require('../../lib/common'),
     postsAPI = require('./posts');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 /**
  * Publish a scheduled post
  *

@@ -13,6 +13,9 @@ var should = require('should'),
     ghost = testUtils.startGhost,
     request;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('Public API', function () {
     var ghostServer;
 

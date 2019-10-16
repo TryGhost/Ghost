@@ -3,6 +3,9 @@ const path = require('path');
 const Promise = require('bluebird');
 const moment = require('moment-timezone');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 const validation = require('./validation');
 
 const config = require('../../../server/config');

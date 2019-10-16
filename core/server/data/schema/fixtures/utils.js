@@ -26,6 +26,9 @@ var _ = require('lodash'),
     findModelFixtures,
     findPermissionRelationsForObject;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 /**
  * ### Match Func
  * Figures out how to match across various combinations of keys and values.

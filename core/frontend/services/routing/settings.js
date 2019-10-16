@@ -3,6 +3,9 @@ const fs = require('fs-extra');
 const path = require('path');
 const urlService = require('../url');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 const common = require('../../../server/lib/common');
 const config = require('../../../server/config');
 

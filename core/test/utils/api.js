@@ -9,6 +9,9 @@ const host = config.get('server').host;
 const port = config.get('server').port;
 const protocol = 'http://';
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 function getURL() {
     return protocol + host;
 }

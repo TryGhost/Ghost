@@ -5,6 +5,9 @@ const _ = require('lodash'),
     urlUtils = require('../../../server/lib/url-utils'),
     localUtils = require('./utils');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 // Sitemap specific xml namespace declarations that should not change
 const XMLNS_DECLS = {
     _attr: {

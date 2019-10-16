@@ -12,6 +12,9 @@ const serveStatic = require('express').static,
     urlUtils = require('../../lib/url-utils'),
     StorageBase = require('ghost-storage-base');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 class LocalFileStore extends StorageBase {
     constructor() {
         super();

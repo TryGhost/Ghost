@@ -4,6 +4,9 @@ const _ = require('lodash'),
     urlUtils = require('../../../server/lib/url-utils'),
     localUtils = require('./utils');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 const XMLNS_DECLS = {
     _attr: {
         xmlns: 'http://www.sitemaps.org/schemas/sitemap/0.9'

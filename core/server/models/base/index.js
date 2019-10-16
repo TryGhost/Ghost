@@ -20,6 +20,9 @@ const _ = require('lodash'),
     validation = require('../../data/validation'),
     plugins = require('../plugins');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 let ghostBookshelf,
     proto;
 

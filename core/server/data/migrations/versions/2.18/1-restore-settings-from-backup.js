@@ -7,6 +7,9 @@ const moment = require('moment');
 const fs = require('fs-extra');
 const path = require('path');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 module.exports.config = {
     transaction: true
 };

@@ -13,6 +13,9 @@ const api = require('../../../server/api').v2;
 let updateCheck = rewire('../../../server/update-check');
 let NotificationsAPI = rewire('../../../server/api/v2/notifications');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('Update Check', function () {
     beforeEach(function () {
         updateCheck = rewire('../../../server/update-check');

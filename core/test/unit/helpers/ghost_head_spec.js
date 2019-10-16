@@ -15,6 +15,9 @@ const should = require('should'),
     proxy = require('../../../frontend/helpers/proxy'),
     settingsCache = proxy.settingsCache;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('{{ghost_head}} helper', function () {
     let posts = [], tags = [], authors = [], users = [];
 

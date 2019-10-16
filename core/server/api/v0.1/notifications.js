@@ -15,6 +15,9 @@ const Promise = require('bluebird'),
     internalContext = {context: {internal: true}},
     canThis = permissions.canThis;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 let notifications,
     _private = {};
 

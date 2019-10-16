@@ -5,6 +5,9 @@ const SchedulingBase = require('./SchedulingBase');
 const common = require('../../lib/common');
 const request = require('../../lib/request');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 /**
  * @description Default post scheduling implementation.
  *

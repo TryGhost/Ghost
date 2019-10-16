@@ -18,6 +18,9 @@ const ALL_STATUSES = ['published', 'draft', 'scheduled'];
 let Post;
 let Posts;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 Post = ghostBookshelf.Model.extend({
 
     tableName: 'posts',

@@ -10,6 +10,9 @@ var should = require('should'),
     markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc,
     request;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('Post API', function () {
     let authorAccessToken, contributorAccessToken, author, contributor;
     var ghostServer;

@@ -20,6 +20,9 @@ var should = require('should'),
 
     urlUtils = require('../../../utils/urlUtils');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('Importer', function () {
     afterEach(function () {
         sinon.restore();

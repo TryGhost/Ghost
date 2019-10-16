@@ -10,6 +10,9 @@ const models = require('../../../../server/models/index');
 const config = require('../../../../server/config/index');
 const ghost = testUtils.startGhost;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('Schedules API', function () {
     const posts = [];
     let request;

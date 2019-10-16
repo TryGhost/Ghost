@@ -4,6 +4,9 @@ var moment = require('moment-timezone'),
     common = require('../../lib/common'),
     sequence = require('../../lib/promise/sequence');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 /**
  * @TODO REMOVE WHEN v0.1 IS DROPPED
  * WHEN access token is created we will update last_seen for user.

@@ -1,6 +1,9 @@
 const moment = require('moment-timezone');
 const settingsCache = require('../../../../../../services/settings/cache');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 const format = (date) => {
     return moment(date)
         .tz(settingsCache.get('active_timezone'))

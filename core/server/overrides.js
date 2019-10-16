@@ -7,6 +7,9 @@ process.env.BLUEBIRD_DEBUG = 0;
 
 const moment = require('moment-timezone');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 /**
  * oembed-parser uses promise-wtf to extend the global Promise with .finally
  *   - require it before global Bluebird Promise override so that promise-wtf

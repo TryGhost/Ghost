@@ -17,6 +17,9 @@ var common = require('../lib/common'),
         'themes'
     ];
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 function getSlackSettings() {
     var setting = settingsCache.get('slack');
     // This might one day have multiple entries, for now its always a array

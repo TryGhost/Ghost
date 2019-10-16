@@ -16,6 +16,9 @@ const Promise = require('bluebird'),
     urlUtils = require('../../../../../server/lib/url-utils'),
     amperizeCache = {};
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 let allowedAMPTags = [],
     allowedAMPAttributes = {},
     amperize = null,

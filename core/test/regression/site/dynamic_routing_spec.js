@@ -16,6 +16,9 @@ const should = require('should'),
 
 let request;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('Dynamic Routing', function () {
     let ghostServer;
 

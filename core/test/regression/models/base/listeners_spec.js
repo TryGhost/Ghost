@@ -9,6 +9,9 @@ var should = require('should'),
     testUtils = require('../../../../test/utils'),
     sequence = require('../../../../server/lib/promise/sequence');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('Models: listeners', function () {
     var eventsToRemember = {},
         now = moment(),

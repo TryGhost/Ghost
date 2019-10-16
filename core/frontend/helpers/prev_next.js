@@ -18,6 +18,9 @@ var proxy = require('./proxy'),
     fetch,
     buildApiOptions;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 buildApiOptions = function buildApiOptions(options, post) {
     var publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss'),
         slug = post.slug,

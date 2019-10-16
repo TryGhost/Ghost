@@ -13,6 +13,9 @@ var schema = require('../schema').tables,
     validateSettings,
     validate;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 function assertString(input) {
     assert(typeof input === 'string', 'Validator js validates strings only');
 }

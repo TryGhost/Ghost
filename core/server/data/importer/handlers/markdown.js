@@ -13,6 +13,9 @@ var _ = require('lodash'),
     processMarkdownFile,
     MarkdownHandler;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 // Takes a date from the filename in y-m-d-h-m form, and converts it into a Date ready to import
 processDateTime = function (post, datetime) {
     var format = 'YYYY-MM-DD-HH-mm';

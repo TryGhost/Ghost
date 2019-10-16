@@ -6,6 +6,9 @@ const Promise = require('bluebird'),
     urlUtils = require('../../../lib/url-utils'),
     _private = {};
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 /**
  * @description Normalize model data into scheduler notation.
  * @param {Object} options

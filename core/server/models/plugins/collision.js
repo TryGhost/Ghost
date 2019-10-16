@@ -3,6 +3,9 @@ var moment = require('moment-timezone'),
     _ = require('lodash'),
     common = require('../../lib/common');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 module.exports = function (Bookshelf) {
     var ParentModel = Bookshelf.Model,
         Model;

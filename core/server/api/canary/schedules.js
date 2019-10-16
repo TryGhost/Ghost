@@ -6,6 +6,9 @@ const urlUtils = require('../../lib/url-utils');
 const common = require('../../lib/common');
 const api = require('./index');
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 module.exports = {
     docName: 'schedules',
     publish: {

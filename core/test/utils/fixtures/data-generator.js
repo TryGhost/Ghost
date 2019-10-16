@@ -5,6 +5,9 @@ var _ = require('lodash'),
     constants = require('../../../server/lib/constants'),
     DataGenerator = {};
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
     var mobiledoc = {
         version: '0.3.1',

@@ -12,6 +12,9 @@ const models = require('../../../../server/models');
 const ghost = testUtils.startGhost;
 let request;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 describe('User API', function () {
     let ghostServer, inactiveUser, admin;
 

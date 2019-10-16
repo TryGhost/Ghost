@@ -10,6 +10,9 @@ const api = require('./index');
 const internalContext = {context: {internal: true}};
 const _private = {};
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 _private.fetchAllNotifications = () => {
     let allNotifications = settingsCache.get('notifications');
 

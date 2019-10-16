@@ -15,6 +15,9 @@ var should = require('should'),
     context = testUtils.context.owner,
     markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc;
 
+// fix issue https://github.com/TryGhost/Ghost/issues/10870
+moment.tz.setDefault('UTC');
+
 /**
  * IMPORTANT:
  * - do not spy the events unit, because when we only spy, all listeners get the event
