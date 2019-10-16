@@ -12,27 +12,43 @@
         </div>
 
         {{#liquid-if membersStripeOpen}}
-                <div class="w-50 mb4 mt8">
-                    <label class="fw6 f8">Stripe Publishable key</label>
-                    {{gh-text-input
+            <div class="flex flex-column flex-row-ns items-start justify-between mb4 mt6">
+                <div class="w-100 w-50-ns">
+                    <div class="mb4">
+                        <label class="fw6 f8">Stripe Publishable key</label>
+                        {{gh-text-input
                             type="password"
                             value=(readonly subscriptionSettings.stripeConfig.public_token)
                             input=(action "setSubscriptionSettings" "public_token")
                             class="mt1 password"
                         }}
-                </div>
-                <div class="w-50 mb4">
-                    <label class="fw6 f8 mt4">Stripe Secret key</label>
-                    {{gh-text-input
+                    </div>
+                    <div>
+                        <label class="fw6 f8 mt4">Stripe Secret key</label>
+                        {{gh-text-input
                             type="password"
                             value=(readonly subscriptionSettings.stripeConfig.secret_token)
                             input=(action "setSubscriptionSettings" "secret_token")
                             class="mt1 password"
                         }}
-                    <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 fw4 f8">
-                        Find your Stripe API keys here &raquo;
-                    </a>
+                        <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 fw4 f8">
+                            Find your Stripe API keys here &raquo;
+                        </a>
+                    </div>
                 </div>
+                <div class="w-100 w-50-m w-third-l ml5 mt6">
+                    <div class="br4 ba b--whitegrey bg-whitegrey-l2 pa4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="f6 ma0 pa0">How you get paid</h4>
+                            {{svg-jar "stripe-verified-partner-badge" class="gh-members-stripe-badge"}}
+                        </div>
+                        <p class="f8 mt2 mb0">
+                            Stripe is our exclusive direct payments partner.<br />
+                            Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://dashboard.stripe.com/register" target="_blank"  rel="noopener" class="gh-members-stripe-link">sign up here</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
         {{/liquid-if}}
     </section>
 
