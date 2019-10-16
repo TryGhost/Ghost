@@ -23,8 +23,7 @@ const expectedProperties = {
         .without('locale', 'visibility')
         // These fields aren't useful as they always have known values
         .without('status')
-        // @TODO: https://github.com/TryGhost/Ghost/issues/10335
-        // .without('page')
+        .concat('page')
         .without('type')
         // v2 returns a calculated excerpt field
         .concat('excerpt')
