@@ -381,7 +381,7 @@
                     "email": "ghost-author@example.com",
                     "status": "active",
                     "roles": ["Author"],
-                    "twitter": "tryghost",
+                    "twitter": "ghost",
                     "facebook": "ghost",
                     "location": "The Internet",
                     "website": "https://ghost.org",
