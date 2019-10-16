@@ -71,6 +71,14 @@
     opacity: 0.25;
 }
 
+.gh-members-stripe-badge {
+    width: 180px;
+}
+
+.gh-members-stripe-link {
+    color: #555ABF;
+}
+
 .gh-labs-disabled .for-checkbox label,
 .gh-labs-disabled .for-checkbox .input-toggle-component,
 .gh-labs-disabled .for-switch label,
