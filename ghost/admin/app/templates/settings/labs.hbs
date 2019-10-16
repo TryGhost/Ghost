@@ -6,7 +6,7 @@
     </GhCanvasHeader>
 
     <section class="view-container settings-debug">
-        <p class="gh-box gh-box-info">{{svg-jar "idea"}}This is a testing ground for experimental features which aren't quite ready for primetime. They may change, break or inexplicably disappear at any time.</p>
+        <p class="gh-box gh-box-info">{{svg-jar "idea"}}This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.</p>
 
         {{#if session.user.isOwner}}
         <div class="gh-setting-header">Members (BETA) </div>
@@ -25,18 +25,18 @@
         
                     {{#liquid-if feature.labs.members}}
                     {{gh-members-lab-setting
-                                                        settings=settings
-                                                        setDefaultContentVisibility=(action "setDefaultContentVisibility")
-                                                        setMembersSubscriptionSettings=(action "setMembersSubscriptionSettings")
-                                                    }}
+                        settings=settings
+                        setDefaultContentVisibility=(action "setDefaultContentVisibility")
+                        setMembersSubscriptionSettings=(action "setMembersSubscriptionSettings")
+                    }}
         
                     <div class="mt5 pl5 pr5 pb5">
                         {{gh-task-button "Save members settings"
-                                                            task=saveSettings
-                                                            successText="Saved"
-                                                            runningText="Saving"
-                                                            class="gh-btn gh-btn-blue gh-btn-icon"
-                                                        }}
+                            task=saveSettings
+                            successText="Saved"
+                            runningText="Saving"
+                            class="gh-btn gh-btn-blue gh-btn-icon"
+                        }}
                     </div>
                     {{/liquid-if}}
                 </div>
@@ -111,19 +111,6 @@
             </div>
         </div>
 
-        <div class="gh-setting-header">Testing tools</div>
-        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">
-            <div class="gh-setting-first gh-setting-last">
-                <div class="gh-setting-content">
-                    <div class="gh-setting-title">Test email configuration</div>
-                    <div class="gh-setting-desc">Send yourself a test email to make sure everything is working</div>
-                </div>
-                <div class="gh-setting-action">
-                    {{gh-task-button "Send" successText="Sent" task=sendTestEmail class="gh-btn gh-btn-hover-blue gh-btn-icon"}}
-                </div>
-            </div>
-        </div>
-        
         <div class="gh-setting-header">Beta features</div>
         <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">
             <div class="gh-setting-first">
@@ -237,6 +224,20 @@
                 {{/gh-uploader}}
             </div>
         </div>
+
+        <div class="gh-setting-header">Testing tools</div>
+        <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">
+            <div class="gh-setting-first gh-setting-last">
+                <div class="gh-setting-content">
+                    <div class="gh-setting-title">Test email configuration</div>
+                    <div class="gh-setting-desc">Send yourself a test email to make sure everything is working</div>
+                </div>
+                <div class="gh-setting-action">
+                    {{gh-task-button "Send" successText="Sent" task=sendTestEmail class="gh-btn gh-btn-hover-blue gh-btn-icon"}}
+                </div>
+            </div>
+        </div>
+
     </section>
 </section>
 
