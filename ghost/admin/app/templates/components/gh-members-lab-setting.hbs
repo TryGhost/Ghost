@@ -68,24 +68,27 @@
                 <div class="w-50 mr3">
                     {{#gh-form-group}}
                     <label class="fw6 f8">Monthly price</label>
-                    <div class="mt1 relative gh-labs-price-label gh-labs-monthly-price">
+
+                    <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
                         {{gh-text-input
-                                value=(readonly subscriptionSettings.stripeConfig.plans.monthly.dollarAmount)
-                                type="number"
-                                input=(action "setSubscriptionSettings" "month")
-                            }}
+                            value=(readonly subscriptionSettings.stripeConfig.plans.monthly.dollarAmount)
+                            type="number"
+                            input=(action "setSubscriptionSettings" "month")
+                        }}
+                        <span class="gh-input-append">USD/month</span>
                     </div>
                     {{/gh-form-group}}
                 </div>
                 <div class="w-50 ml2">
                     {{#gh-form-group class="description-container"}}
                     <label class="fw6 f8">Yearly price</label>
-                    <div class="mt1 relative gh-labs-price-label gh-labs-yearly-price">
+                    <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
                         {{gh-text-input
                                 value=(readonly subscriptionSettings.stripeConfig.plans.yearly.dollarAmount)
                                 type="number"
                                 input=(action "setSubscriptionSettings" "year")
                             }}
+                        <span class="gh-input-append">USD/month</span>
                     </div>
                     {{/gh-form-group}}
                 </div>
@@ -172,13 +175,13 @@
         <div class="flex flex-column w-40 flex mt8">
             {{#gh-form-group}}
             <label class="fw6 f8">From Address</label>
-            <div class="flex items-center justify-center mt1">
+            <div class="flex items-center justify-center mt1 gh-input-group">
                 {{gh-text-input
                     value=(readonly subscriptionSettings.fromAddress)
                     input=(action "setSubscriptionSettings" "fromAddress")
                     class="w20"
                 }}
-                <span class="ml3"> @{{config.blogDomain}}</span>
+                <span class="gh-input-append"> @{{config.blogDomain}}</span>
             </div>
             <div class="f8 fw4 midgrey mt1">Your members will receive system emails from this address</div>
             {{/gh-form-group}}
