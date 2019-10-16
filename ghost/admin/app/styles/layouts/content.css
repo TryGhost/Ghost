@@ -146,8 +146,9 @@
 }
 
 .gh-post-list-featured {
-    padding: 20px 0px 20px 10px;
+    padding: 15px 0px 20px 10px;
     width: 1px;
+    vertical-align: top;
 }
 
 .gh-post-list-updated,
@@ -251,8 +252,8 @@
         order: 1;
         border-bottom: none;
         position: absolute;
-        left: 0;
-        top: -1px;
+        left: -6px;
+        top: 4px;
     }
 
     .gh-post-list-title {
