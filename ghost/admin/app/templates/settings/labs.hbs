@@ -15,21 +15,19 @@
                 <div class="gh-members-setting-content">
                     <div class="flex">
                         <div class="flex flex-column flex-grow-1">
-                            <div class="gh-setting-title pl5 pt5">Members</div>
-                            <div class="gh-setting-desc pl5 pb5">Enable membership for your site</div>
+                            <div class="gh-setting-title pl5 pt5">Enable members</div>
+                            <div class="gh-setting-desc pl5 pb5">Create registered members and take subscription payments — <a href="https://ghost.org/docs/members/" target="_blank" rel="noopener">Find out more</a></div>
                         </div>
                         <div class="gh-setting-action">
                             <div class="for-switch pa5">{{gh-feature-flag "members"}}</div>
                         </div>
                     </div>
-        
                     {{#liquid-if feature.labs.members}}
                     {{gh-members-lab-setting
                         settings=settings
                         setDefaultContentVisibility=(action "setDefaultContentVisibility")
                         setMembersSubscriptionSettings=(action "setMembersSubscriptionSettings")
                     }}
-        
                     <div class="mt5 pl5 pr5 pb5">
                         {{gh-task-button "Save members settings"
                             task=saveSettings
@@ -40,11 +38,9 @@
                     </div>
                     {{/liquid-if}}
                 </div>
-        
             </div>
         </div>
         {{/if}}
-
         <div class="gh-setting-header">Migration options</div>
         <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5 mt2">
             <div class="gh-setting-first">
