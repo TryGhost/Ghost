@@ -386,7 +386,7 @@
                     "location": "The Internet",
                     "website": "https://ghost.org",
                     "bio": "You can delete this user to remove all the welcome posts",
-                    "profile_image": "https://static.ghost.org/v2.0.0/images/ghost.png"
+                    "profile_image": "https://static.ghost.org/v3.0.0/images/ghost.png"
                 }
             ]
         },
