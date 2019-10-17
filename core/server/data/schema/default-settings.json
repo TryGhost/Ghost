@@ -34,7 +34,7 @@
             }
         },
         "logo": {
-            "defaultValue": "https://static.ghost.org/v3.0.0/images/ghost.png"
+            "defaultValue": "https://static.ghost.org/v1.0.0/images/ghost-logo.svg"
         },
         "cover_image": {
             "defaultValue": "https://static.ghost.org/v3.0.0/images/publication-cover.png"
