@@ -121,6 +121,12 @@
                 "id": {
                     "strip": true
                 },
+                "uuid": {
+                    "strip": true
+                },
+                "comment_id": {
+                    "strip": true
+                },
                 "author": {
                     "strip": true
                 },
