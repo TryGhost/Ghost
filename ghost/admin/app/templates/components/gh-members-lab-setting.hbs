@@ -12,8 +12,8 @@
         </div>
 
         {{#liquid-if membersStripeOpen}}
-            <div class="flex flex-column flex-row-ns items-start justify-between mb4 mt6">
-                <div class="w-100 w-50-ns">
+            <div class="flex flex-column flex-row-l items-start justify-between mb4 mt6">
+                <div class="w-100 w-50-l">
                     <div class="mb4">
                         <label class="fw6 f8">Stripe Publishable key</label>
                         {{gh-text-input
@@ -23,7 +23,7 @@
                             class="mt1 password"
                         }}
                     </div>
-                    <div>
+                    <div class="nudge-top--3">
                         <label class="fw6 f8 mt4">Stripe Secret key</label>
                         {{gh-text-input
                             type="password"
@@ -36,10 +36,10 @@
                         </a>
                     </div>
                 </div>
-                <div class="w-100 w-50-m w-third-l ml5 mt6">
-                    <div class="br4 ba b--whitegrey bg-whitegrey-l2 pa4">
-                        <div class="flex items-center justify-between">
-                            <h4 class="f6 ma0 pa0">How you get paid</h4>
+                <div class="ml0 ml5-l mt6">
+                    <div class="gh-members-stripe-info">
+                        <div class="gh-members-stripe-info-header">
+                            <h4>How you get paid</h4>
                             {{svg-jar "stripe-verified-partner-badge" class="gh-members-stripe-badge"}}
                         </div>
                         <p class="f8 mt2 mb0">
