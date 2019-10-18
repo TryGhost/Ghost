@@ -118,6 +118,10 @@
     width: 100%;
 }
 
+.gh-list-cellwidth-min {
+    max-width: 0;
+}
+
 .gh-list-cellwidth-2-3 {
     width: 67%;
 }

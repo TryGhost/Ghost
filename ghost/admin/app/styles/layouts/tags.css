@@ -1,19 +1,11 @@
 /* Tag list
 /* ---------------------------------------------------------- */
-
-.gh-tags-count:hover {
+a.gh-tag-list-posts-count:hover {
     color: color-mod(var(--blue) l(-25%) s(+15%));
-    font-weight: 500;
 }
 
 textarea.gh-tag-details-textarea {
     max-width: 100%;
-}
-
-.gh-tag-image-uploader .gh-image-uploader {
-    margin: 4px 0 0;
-    border: 1px solid var(--lightgrey);
-    min-height: 147px;
 }
 
 .gh-tags-placeholder {
@@ -23,12 +15,127 @@ textarea.gh-tag-details-textarea {
 
 .gh-tag-list-slug {
     white-space: nowrap;
-    max-width: 300px;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.gh-tag-list-description {
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .tags-view {
     max-width: 1220px;
     margin: 0 auto;
+}
+
+/* Mobile style of tag list */
+@media (max-width: 1000px) {
+    .gh-tags-list-item {
+        display: flex;
+        position: relative;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--lightgrey);
+        margin: 0;
+    }
+
+    .gh-tags-list-item:nth-of-type(2) {
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+
+    .gh-tags-list-item .gh-list-data {
+        border-top: none !important;
+    }
+
+    .gh-tags-list-item:hover {
+        background: var(--whitegrey-l2);
+    }
+
+    .gh-tags-list-item:hover .gh-list-data {
+        background: none !important;
+    }
+
+    .gh-tag-list-title {
+        display: block;
+        flex: 1 1 100%;
+        padding-bottom: 0;
+    }
+
+    .gh-tag-list-slug {
+        display: inline-block;
+        width: unset;
+        padding: 2px 0 20px 16px;
+    }
+
+    .gh-tag-list-posts-count {
+        display: inline-block;
+        flex: 1 1 auto;
+        width: unset;
+        padding: 2px 0 20px 0;
+    }
+
+    .gh-tag-list-slug:after {
+        content: "\2022";
+        display: inline-block;
+        margin-right: 4px;
+        color: var(--midgrey-l2);
+    }
+
+    .gh-tag-list-chevron {
+        display: block;
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
+}
+
+@media (max-width: 450px) {
+    .tags-header {
+        justify-content: flex-end;
+        min-height: 120px;
+    }
+
+    .tags-header .gh-canvas-title {
+        position: absolute;
+        top: 29px;
+        left: 21px;
+    }
+
+    .tags-header .view-actions {
+        flex-direction: column;
+        align-items: flex-end;
+        margin-top: 18px;
+        overflow-y: hidden;
+        width: 100%;
+    }
+
+    .tags-header .view-actions .gh-contentfilter {
+        order: 2;
+        margin: 10px 0 -20px;
+        padding: 6px 0 26px;
+        max-width: calc(100vw - 10px);
+        overflow-x: auto;
+        align-self: stretch;
+    }
+
+    .tags-header .view-actions .gh-contentfilter button {
+        flex: 1 1 50%;
+    }
+
+    .gh-tag-list-description {
+        max-width: 200px;
+    }
+}
+
+/* Tag details
+/* ---------------------------------------------------------- */
+
+.gh-tag-image-uploader .gh-image-uploader {
+    margin: 4px 0 0;
+    border: 1px solid var(--lightgrey);
+    min-height: 147px;
 }
