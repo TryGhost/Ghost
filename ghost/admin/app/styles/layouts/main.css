@@ -669,9 +669,6 @@
 }
 
 @media (max-width: 500px) {
-    .gh-canvas-title {
-        display: block;
-    }
     .gh-canvas-title svg {
         margin: 0 5px;
     }
