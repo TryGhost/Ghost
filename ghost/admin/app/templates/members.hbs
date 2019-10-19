@@ -38,7 +38,7 @@
                                 Search result
                             {{else}}
                                 {{#if this.fetchMembers.lastSuccessful}}
-                                    {{pluralize this.meta.pagination.total "member"}}
+                                    {{pluralize memberCount "member"}}
                                 {{else}}
                                     Loading...
                                 {{/if}}
