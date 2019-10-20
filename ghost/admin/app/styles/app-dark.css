@@ -109,6 +109,19 @@ input:focus,
     border-color: color-mod(var(--lightgrey) l(+10%));
 }
 
+.gh-input-append {
+    border-color: color-mod(var(--lightgrey));
+}
+
+.gh-input-group .gh-input:focus + .gh-input-append {
+    border-color: color-mod(var(--lightgrey) l(+10%));
+}
+
+.gh-input-append,
+.gh-input-append:before {
+    background: color-mod(var(--lightgrey));
+}
+
 .settings-menu-container,
 .gh-main-white {
     background: #212A2E;
