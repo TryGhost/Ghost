@@ -185,6 +185,14 @@ input:focus,
     border: color-mod(var(--darkgrey) l(-27%) blackness(+15%)) 1px solid;
 }
 
+.view-actions .gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red) {
+    border-color: color-mod(var(--darkgrey) l(-27%) blackness(+15%) alpha(50%));
+}
+
+.gh-btn-group .gh-btn:first-of-type {
+    border-right: none !important;
+}
+
 .gh-btn-blue,
 .gh-btn-green,
 .gh-btn-red {
@@ -200,6 +208,7 @@ input:focus,
 .gh-btn-link {
     border: none !important;
 }
+
 
 .settings-menu-delete-button {
     color: var(--red);

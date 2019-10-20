@@ -1,3 +1,10 @@
+/* Global
+/* ----------------------------------------- */
+.gh-member-avatar-label {
+    display: block;
+    color: #fff;
+}
+
 /* Members list
 /* ----------------------------------------- */
 
