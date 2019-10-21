@@ -19,7 +19,6 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
         user: models.User,
         permission: models.Permission,
         setting: models.Settings,
-        subscriber: models.Subscriber,
         invite: models.Invite
     };
 

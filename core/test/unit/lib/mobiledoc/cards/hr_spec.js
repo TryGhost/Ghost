@@ -11,6 +11,6 @@ describe('HR card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('<!--kg-card-begin: hr--><hr><!--kg-card-end: hr-->');
+        serializer.serialize(card.render(opts)).should.match('<hr>');
     });
 });

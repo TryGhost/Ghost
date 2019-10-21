@@ -101,22 +101,6 @@ describe('Post Model', function () {
                                 paginationResult.meta.pagination.pages.should.equal(2);
                                 paginationResult.data.length.should.equal(30);
 
-                                // Test both boolean formats
-                                return models.Post.findPage({limit: 10, staticPages: true});
-                            }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(1);
-                                paginationResult.meta.pagination.limit.should.equal(10);
-                                paginationResult.meta.pagination.pages.should.equal(1);
-                                paginationResult.data.length.should.equal(1);
-
-                                // Test both boolean formats
-                                return models.Post.findPage({limit: 10, staticPages: '1'});
-                            }).then(function (paginationResult) {
-                                paginationResult.meta.pagination.page.should.equal(1);
-                                paginationResult.meta.pagination.limit.should.equal(10);
-                                paginationResult.meta.pagination.pages.should.equal(1);
-                                paginationResult.data.length.should.equal(1);
-
                                 // Test featured pages
                                 return models.Post.findPage({limit: 10, filter: 'featured:true'});
                             }).then(function (paginationResult) {
@@ -529,21 +513,21 @@ describe('Post Model', function () {
                     post.id.should.equal(postId);
                     post.status.should.equal('draft');
 
-                    return models.Post.edit({page: 1}, _.extend({}, context, {id: postId}));
+                    return models.Post.edit({type: 'page'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('draft');
-                    edited.attributes.page.should.equal(true);
+                    edited.attributes.type.should.equal('page');
 
                     Object.keys(eventsTriggered).length.should.eql(2);
                     should.exist(eventsTriggered['post.deleted']);
                     should.exist(eventsTriggered['page.added']);
 
-                    return models.Post.edit({page: 0}, _.extend({}, context, {id: postId}));
+                    return models.Post.edit({type: 'post'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('draft');
-                    edited.attributes.page.should.equal(false);
+                    edited.attributes.type.should.equal('post');
 
                     Object.keys(eventsTriggered).length.should.eql(4);
                     should.exist(eventsTriggered['post.deleted']);
@@ -563,25 +547,25 @@ describe('Post Model', function () {
                     post.status.should.equal('draft');
 
                     return models.Post.edit({
-                        page: 1,
+                        type: 'page',
                         status: 'scheduled',
                         published_at: moment().add(10, 'days')
                     }, _.extend({}, context, {id: post.id}));
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('scheduled');
-                    edited.attributes.page.should.equal(true);
+                    edited.attributes.type.should.equal('page');
 
                     Object.keys(eventsTriggered).length.should.eql(3);
                     should.exist(eventsTriggered['post.deleted']);
                     should.exist(eventsTriggered['page.added']);
                     should.exist(eventsTriggered['page.scheduled']);
 
-                    return models.Post.edit({page: 0}, _.extend({}, context, {id: edited.id}));
+                    return models.Post.edit({type: 'post'}, _.extend({}, context, {id: edited.id}));
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('scheduled');
-                    edited.attributes.page.should.equal(false);
+                    edited.attributes.type.should.equal('post');
 
                     Object.keys(eventsTriggered).length.should.eql(7);
                     should.exist(eventsTriggered['page.unscheduled']);
@@ -603,11 +587,11 @@ describe('Post Model', function () {
                     post.id.should.equal(postId);
                     post.status.should.equal('published');
 
-                    return models.Post.edit({page: 1}, _.extend({}, context, {id: postId}));
+                    return models.Post.edit({type: 'page'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('published');
-                    edited.attributes.page.should.equal(true);
+                    edited.attributes.type.should.equal('page');
 
                     Object.keys(eventsTriggered).length.should.eql(4);
                     should.exist(eventsTriggered['post.unpublished']);
@@ -615,11 +599,11 @@ describe('Post Model', function () {
                     should.exist(eventsTriggered['page.added']);
                     should.exist(eventsTriggered['page.published']);
 
-                    return models.Post.edit({page: 0}, _.extend({}, context, {id: postId}));
+                    return models.Post.edit({type: 'post'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('published');
-                    edited.attributes.page.should.equal(false);
+                    edited.attributes.type.should.equal('post');
 
                     Object.keys(eventsTriggered).length.should.eql(8);
                     should.exist(eventsTriggered['page.unpublished']);
@@ -641,11 +625,11 @@ describe('Post Model', function () {
                     post.id.should.equal(postId);
                     post.status.should.equal('draft');
 
-                    return models.Post.edit({page: 1, status: 'published'}, _.extend({}, context, {id: postId}));
+                    return models.Post.edit({type: 'page', status: 'published'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('published');
-                    edited.attributes.page.should.equal(true);
+                    edited.attributes.type.should.equal('page');
 
                     Object.keys(eventsTriggered).length.should.eql(5);
                     should.exist(eventsTriggered['post.deleted']);
@@ -654,11 +638,11 @@ describe('Post Model', function () {
                     should.exist(eventsTriggered['tag.attached']);
                     should.exist(eventsTriggered['user.attached']);
 
-                    return models.Post.edit({page: 0, status: 'draft'}, _.extend({}, context, {id: postId}));
+                    return models.Post.edit({type: 'post', status: 'draft'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('draft');
-                    edited.attributes.page.should.equal(false);
+                    edited.attributes.type.should.equal('post');
 
                     Object.keys(eventsTriggered).length.should.eql(8);
                     should.exist(eventsTriggered['page.unpublished']);
@@ -752,8 +736,6 @@ describe('Post Model', function () {
 
                     // testing for nulls
                     (createdPost.get('feature_image') === null).should.equal(true);
-                    (createdPost.get('meta_title') === null).should.equal(true);
-                    (createdPost.get('meta_description') === null).should.equal(true);
 
                     createdPost.get('created_at').should.be.above(new Date(0).getTime());
                     createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
@@ -828,8 +810,6 @@ describe('Post Model', function () {
 
                     // testing for nulls
                     (createdPost.get('feature_image') === null).should.equal(true);
-                    (createdPost.get('meta_title') === null).should.equal(true);
-                    (createdPost.get('meta_description') === null).should.equal(true);
 
                     createdPost.get('created_at').should.be.above(new Date(0).getTime());
                     createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
@@ -1143,21 +1123,26 @@ describe('Post Model', function () {
                     codeinjection_head: '<script src="http://127.0.0.1:2369/assets/head.js"></script>',
                     codeinjection_foot: '<script src="http://127.0.0.1:2369/assets/foot.js"></script>',
                     feature_image: 'http://127.0.0.1:2369/content/images/feature.png',
-                    og_image: 'http://127.0.0.1:2369/content/images/og.png',
-                    twitter_image: 'http://127.0.0.1:2369/content/images/twitter.png',
-                    canonical_url: 'http://127.0.0.1:2369/canonical'
+                    canonical_url: 'http://127.0.0.1:2369/canonical',
+                    posts_meta: {
+                        og_image: 'http://127.0.0.1:2369/content/images/og.png',
+                        twitter_image: 'http://127.0.0.1:2369/content/images/twitter.png'
+                    }
                 };
 
                 models.Post.add(post, context).then((createdPost) => {
                     createdPost.get('mobiledoc').should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"/content/images/card.jpg"}]],"markups":[["a",["href","/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
-                    createdPost.get('html').should.equal('<p><a href="/test">Testing</a></p><!--kg-card-begin: image--><figure class="kg-card kg-image-card"><img src="/content/images/card.jpg" class="kg-image"></figure><!--kg-card-end: image-->');
+                    createdPost.get('html').should.equal('<p><a href="/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="/content/images/card.jpg" class="kg-image"></figure>');
                     createdPost.get('custom_excerpt').should.equal('Testing <a href="/internal">links</a> in custom excerpts');
                     createdPost.get('codeinjection_head').should.equal('<script src="/assets/head.js"></script>');
                     createdPost.get('codeinjection_foot').should.equal('<script src="/assets/foot.js"></script>');
                     createdPost.get('feature_image').should.equal('/content/images/feature.png');
-                    createdPost.get('og_image').should.equal('/content/images/og.png');
-                    createdPost.get('twitter_image').should.equal('/content/images/twitter.png');
                     createdPost.get('canonical_url').should.equal('/canonical');
+
+                    const postMeta = createdPost.relations.posts_meta;
+
+                    postMeta.get('og_image').should.equal('/content/images/og.png');
+                    postMeta.get('twitter_image').should.equal('/content/images/twitter.png');
 
                     // ensure canonical_url is not transformed when protocol does not match
                     return createdPost.save({
@@ -1291,7 +1276,7 @@ describe('Post Model', function () {
                     page = results.toJSON();
                     page.id.should.equal(firstItemData.id);
                     page.status.should.equal('published');
-                    page.page.should.be.true();
+                    page.type.should.equal('page');
 
                     // Destroy the page
                     return results.destroy(firstItemData);
@@ -1574,18 +1559,18 @@ describe('Post Model', function () {
             var authorData = {id: testUtils.DataGenerator.Content.users[0].id};
 
             models.Post.findAll({context: {internal: true}}).then(function (found) {
-                // There are 25 posts created by posts:mu fixture
-                found.length.should.equal(25);
+                // There are 10 posts created by posts:mu fixture
+                found.length.should.equal(10);
                 return models.Post.destroyByAuthor(authorData);
             }).then(function (results) {
-                // User 1 has 5 posts in the database (each user has proportionate amount)
-                // 5 = 25 / 5 (posts / users)
-                results.length.should.equal(5);
+                // User 1 has 2 posts in the database (each user has proportionate amount)
+                // 2 = 10 / 5 (posts / users)
+                results.length.should.equal(2);
                 return models.Post.findAll({context: {internal: true}});
             }).then(function (found) {
-                // Only 20 should remain
-                // 20 = 25 - 5
-                found.length.should.equal(20);
+                // Only 8 should remain
+                // 8 = 10 - 2
+                found.length.should.equal(8);
                 done();
             }).catch(done);
         });

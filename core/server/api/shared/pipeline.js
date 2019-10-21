@@ -202,6 +202,7 @@ const pipeline = (apiController, apiUtils, apiType) => {
 
             // CASE: http helper already creates it's own frame.
             if (!(options instanceof shared.Frame)) {
+                debug(`Internal API request for ${docName}.${method}`);
                 frame = new shared.Frame({
                     body: data,
                     options: _.omit(options, 'context'),

@@ -426,61 +426,6 @@
                         "updated_by": "1"
                     },
                     {
-                        "id": "59a952bf7d79ed06b0d21159",
-                        "name": "Browse clients",
-                        "object_type": "client",
-                        "action_type": "browse",
-                        "object_id": null,
-                        "created_at": "2017-09-01T12:29:51.000Z",
-                        "created_by": "1",
-                        "updated_at": "2017-09-01T12:29:51.000Z",
-                        "updated_by": "1"
-                    },
-                    {
-                        "id": "59a952bf7d79ed06b0d2115a",
-                        "name": "Read clients",
-                        "object_type": "client",
-                        "action_type": "read",
-                        "object_id": null,
-                        "created_at": "2017-09-01T12:29:51.000Z",
-                        "created_by": "1",
-                        "updated_at": "2017-09-01T12:29:51.000Z",
-                        "updated_by": "1"
-                    },
-                    {
-                        "id": "59a952bf7d79ed06b0d2115b",
-                        "name": "Edit clients",
-                        "object_type": "client",
-                        "action_type": "edit",
-                        "object_id": null,
-                        "created_at": "2017-09-01T12:29:51.000Z",
-                        "created_by": "1",
-                        "updated_at": "2017-09-01T12:29:51.000Z",
-                        "updated_by": "1"
-                    },
-                    {
-                        "id": "59a952bf7d79ed06b0d2115c",
-                        "name": "Add clients",
-                        "object_type": "client",
-                        "action_type": "add",
-                        "object_id": null,
-                        "created_at": "2017-09-01T12:29:51.000Z",
-                        "created_by": "1",
-                        "updated_at": "2017-09-01T12:29:51.000Z",
-                        "updated_by": "1"
-                    },
-                    {
-                        "id": "59a952bf7d79ed06b0d2115d",
-                        "name": "Delete clients",
-                        "object_type": "client",
-                        "action_type": "destroy",
-                        "object_id": null,
-                        "created_at": "2017-09-01T12:29:51.000Z",
-                        "created_by": "1",
-                        "updated_at": "2017-09-01T12:29:51.000Z",
-                        "updated_by": "1"
-                    },
-                    {
                         "id": "59a952bf7d79ed06b0d2115e",
                         "name": "Browse subscribers",
                         "object_type": "subscriber",
@@ -1511,8 +1456,6 @@
                         "id": "5951f5fca366002ebd5dbef7",
                         "name": "Joe Blogg's Brother",
                         "slug": "joe-bloggs-brother",
-                        "ghost_auth_access_token": null,
-                        "ghost_auth_id": null,
                         "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKABC",
                         "email": "jbloggsbrother@example.com",
                         "profile_image": "/content/images/2017/05/authorlogo.jpeg",

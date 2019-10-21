@@ -20,7 +20,6 @@ const notImplemented = function (req, res, next) {
         users: ['GET'],
         themes: ['POST', 'PUT'],
         members: ['GET', 'PUT', 'DELETE', 'POST'],
-        subscribers: ['GET', 'PUT', 'DELETE', 'POST'],
         config: ['GET'],
         webhooks: ['POST', 'DELETE'],
         schedules: ['PUT'],
@@ -56,3 +55,28 @@ module.exports.authAdminApi = [
     shared.middlewares.prettyUrls,
     notImplemented
 ];
+
+/**
+ * Authentication for private endpoints with token in URL
+ * Ex.: For scheduler publish endpoint
+ */
+module.exports.authAdminApiWithUrl = [
+    auth.authenticate.authenticateAdminApiWithUrl,
+    auth.authorize.authorizeAdminApi,
+    shared.middlewares.updateUserLastSeen,
+    shared.middlewares.api.cors,
+    shared.middlewares.urlRedirects.adminRedirect,
+    shared.middlewares.prettyUrls,
+    notImplemented
+];
+
+/**
+ * Middleware for public admin endpoints
+ */
+module.exports.publicAdminApi = [
+    shared.middlewares.api.cors,
+    shared.middlewares.urlRedirects.adminRedirect,
+    shared.middlewares.prettyUrls,
+    notImplemented
+];
+

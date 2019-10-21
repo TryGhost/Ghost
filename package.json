@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "2.37.0",
+  "version": "3.0.0-beta.6",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -35,7 +35,7 @@
     "fixmodulenotdefined": "yarn cache clean && cd core/client && rm -rf node_modules tmp dist && yarn && cd ../../"
   },
   "engines": {
-    "node": "^8.10.0 || ^10.13.0",
+    "node": "^8.16.0 || ^10.13.0 || ^12.10.0",
     "cli": "^1.9.0"
   },
   "dependencies": {
@@ -79,7 +79,7 @@
     "ghost-storage-base": "0.0.3",
     "glob": "7.1.4",
     "got": "9.6.0",
-    "gscan": "2.10.0",
+    "gscan": "3.0.0",
     "html-to-text": "5.1.1",
     "image-size": "0.8.3",
     "intl": "1.2.5",
@@ -115,9 +115,6 @@
     "nodemailer": "0.7.1",
     "oauth2orize": "1.11.0",
     "oembed-parser": "1.2.2",
-    "passport": "0.4.0",
-    "passport-http-bearer": "1.0.1",
-    "passport-oauth2-client-password": "0.1.2",
     "path-match": "1.2.4",
     "probe-image-size": "5.0.0",
     "rss": "1.2.2",
@@ -127,6 +124,7 @@
     "simple-html-tokenizer": "0.5.8",
     "uuid": "3.3.3",
     "validator": "6.3.0",
+    "vhost": "3.0.2",
     "xml": "1.0.1"
   },
   "optionalDependencies": {

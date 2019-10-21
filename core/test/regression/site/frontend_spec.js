@@ -193,6 +193,41 @@ describe('Frontend Routing', function () {
             });
         });
 
+        describe('Post edit with admin redirects disabled', function () {
+            before(function () {
+                configUtils.set('admin:redirects', false);
+
+                return ghost({forceStart: true})
+                    .then(function () {
+                        request = supertest.agent(config.get('url'));
+                    });
+            });
+
+            after(function () {
+                configUtils.restore();
+
+                return ghost({forceStart: true})
+                    .then(function () {
+                        request = supertest.agent(config.get('url'));
+                    });
+            });
+
+            it('should redirect without slash', function (done) {
+                request.get('/welcome/edit')
+                    .expect('Location', '/welcome/edit/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
+            it('should not redirect to editor', function (done) {
+                request.get('/welcome/edit/')
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .end(doEnd(done));
+            });
+        });
+
         describe('AMP post', function () {
             it('should redirect without slash', function (done) {
                 request.get('/welcome/amp')
@@ -357,12 +392,51 @@ describe('Frontend Routing', function () {
                 });
             });
 
+            describe('edit with admin redirects disabled', function () {
+                before(function (done) {
+                    configUtils.set('admin:redirects', false);
+
+                    ghost({forceStart: true})
+                        .then(function () {
+                            request = supertest.agent(config.get('url'));
+                            addPosts(done);
+                        });
+                });
+
+                after(function (done) {
+                    configUtils.restore();
+
+                    ghost({forceStart: true})
+                        .then(function () {
+                            request = supertest.agent(config.get('url'));
+                            addPosts(done);
+                        });
+                });
+
+                it('should redirect without slash', function (done) {
+                    request.get('/static-page-test/edit')
+                        .expect('Location', '/static-page-test/edit/')
+                        .expect('Cache-Control', testUtils.cacheRules.year)
+                        .expect(301)
+                        .end(doEnd(done));
+                });
+
+                it('should not redirect to editor', function (done) {
+                    request.get('/static-page-test/edit/')
+                        .expect(404)
+                        .expect('Cache-Control', testUtils.cacheRules.private)
+                        .end(doEnd(done));
+                });
+            });
+
             describe('amp', function () {
                 it('should 404 for amp parameter', function (done) {
+                    // NOTE: only post pages are supported so the router doesn't have a way to distinguish if
+                    //       the request was done after AMP 'Page' or 'Post'
                     request.get('/static-page-test/amp/')
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
-                        .expect(/Page not found/)
+                        .expect(/Post not found/)
                         .end(doEnd(done));
                 });
             });
