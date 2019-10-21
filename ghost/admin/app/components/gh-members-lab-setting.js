@@ -22,7 +22,7 @@ export default Component.extend({
         };
         subscriptionSettings.stripeConfig = stripeProcessor.config;
         subscriptionSettings.allowSelfSignup = !!subscriptionSettings.allowSelfSignup;
-        subscriptionSettings.fromAddress = subscriptionSettings.fromAddress || 'noreply';
+        subscriptionSettings.fromAddress = subscriptionSettings.fromAddress || '';
 
         return subscriptionSettings;
     }),
