@@ -199,10 +199,10 @@
     mkdirp "0.5.0"
     yauzl "2.4.1"
 
-"@tryghost/helpers@1.1.15":
-  version "1.1.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.15.tgz#8a8e53af47630707aeb328fc949ce37464f7d447"
-  integrity sha512-llve/Ha+uUnqrqP4TlGIXf+W5nDRv6XsiqLWoUFARtciP42kMQLQY+ABC4Fmc0N1daD1P020jTjd7eX+9fdVFw==
+"@tryghost/helpers@1.1.17":
+  version "1.1.17"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.17.tgz#73582c3f18606c3038385e3c29185c86765ad4e4"
+  integrity sha512-0c+VB6LgTvLd7NPtSoyEIF5fwG9EbU95/km1TKMjKP3wOJSeRF908sF638psrvVCQfalS5oR3Q3VhVbwOQ0PZg==
   dependencies:
     lodash-es "^4.17.11"
 
@@ -2344,9 +2344,9 @@ error@^7.0.0:
     string-template "~0.2.1"
 
 es-abstract@^1.5.1:
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/es-abstract/-/es-abstract-1.15.0.tgz#8884928ec7e40a79e3c9bc812d37d10c8b24cc57"
-  integrity sha512-bhkEqWJ2t2lMeaJDuk7okMkJWI/yqgH/EoGwpcvv0XW9RWQsRspI4wt6xuyuvMvvQE3gg/D9HXppgk21w78GyQ==
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/es-abstract/-/es-abstract-1.16.0.tgz#d3a26dc9c3283ac9750dca569586e976d9dcc06d"
+  integrity sha512-xdQnfykZ9JMEiasTAJZJdMWCQ1Vm00NBw79/AWi7ELfZuuPCSOMDZbT9mkOfSctVtfhb+sAAzrm+j//GjjLHLg==
   dependencies:
     es-to-primitive "^1.2.0"
     function-bind "^1.1.1"
