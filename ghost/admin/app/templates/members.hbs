@@ -1,5 +1,5 @@
 <section class="gh-canvas">
-    <GhCanvasHeader class="gh-canvas-header">
+    <GhCanvasHeader class="gh-canvas-header members-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
         <section class="view-actions">
             <span class="dropdown">
@@ -22,7 +22,7 @@
                 </li>
                 {{/gh-dropdown}}
             </span>
-            <div class="relative">
+            <div class="relative gh-members-header-search">
                 {{svg-jar "search" class="gh-input-search-icon"}}
                 <GhTextInput placeholder="Search members..." @value={{this.searchText}} @input={{action (mut this.searchText) value="target.value"}} class="gh-members-list-searchfield {{if this.searchText "active"}}" />
             </div>

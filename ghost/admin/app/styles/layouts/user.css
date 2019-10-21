@@ -28,6 +28,7 @@
 
 .user-actions-menu.fade-out {
     animation-duration: 0.01s;
+    pointer-events: none;
 }
 
 
