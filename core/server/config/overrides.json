@@ -16,7 +16,6 @@
     "apps": {
         "internal": [
             "private-blogging",
-            "subscribers",
             "amp"
         ]
     },
@@ -28,7 +27,7 @@
         "protected": ["ghost", "rss", "amp"]
     },
     "uploads": {
-        "subscribers": {
+        "members": {
             "extensions": [".csv"],
             "contentTypes": ["text/csv", "application/csv", "application/octet-stream"]
         },
@@ -71,20 +70,21 @@
     },
     "api": {
         "versions": {
-            "all": ["v0.1", "v2", "canary"],
+            "all": ["v2", "v3", "canary"],
             "canary": {
                 "admin": "canary/admin",
                 "content": "canary/content",
                 "members": "canary/members"
             },
+            "v3": {
+                "admin": "v3/admin",
+                "content": "v3/content",
+                "members": "v3/members"
+            },
             "v2": {
                 "admin": "v2/admin",
                 "content": "v2/content",
                 "members": "v2/members"
-            },
-            "v0.1": {
-                "admin": "v0.1",
-                "content": "v0.1"
             }
         }
     }

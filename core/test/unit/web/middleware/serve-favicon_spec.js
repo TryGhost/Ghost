@@ -116,7 +116,7 @@ describe('Serve Favicon', function () {
                         statusCode.should.eql(200);
                     },
                     end: function (body) {
-                        body.length.should.eql(34494);
+                        body.length.should.eql(1108);
                         done();
                     }
                 };

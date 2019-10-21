@@ -7,15 +7,12 @@
  *
  * Contexts are determined based on 3 pieces of information
  * 1. res.locals.relativeUrl - which never includes the subdirectory
- * 2. req.params.page - always has the page parameter, regardless of if the URL contains a keyword (RSS pages don't)
+ * 2. req.params.page - always has the page parameter, regardless of if the URL contains a keyword
  * 3. data - used for telling the difference between posts and pages
  */
-const labs = require('../../../../server/services/labs'),
-    // @TODO: fix this!! These regexes are app specific and should be dynamic. They should not belong here....
+const // @TODO: fix this!! These regexes are app specific and should be dynamic. They should not belong here....
     // routeKeywords.private: 'private'
     privatePattern = new RegExp('^\\/private\\/'),
-    // routeKeywords.subscribe: 'subscribe'
-    subscribePattern = new RegExp('^\\/subscribe\\/'),
     // routeKeywords.amp: 'amp'
     ampPattern = new RegExp('\\/amp\\/$'),
     homePattern = new RegExp('^\\/$');
@@ -43,7 +40,7 @@ function setResponseContext(req, res, data) {
     }
 
     // Add context 'amp' to either post or page, if we have an `*/amp` route
-    if (ampPattern.test(res.locals.relativeUrl) && data.post) {
+    if (ampPattern.test(res.locals.relativeUrl) && (data.post || data.page)) {
         res.locals.context.push('amp');
     }
 
@@ -58,18 +55,7 @@ function setResponseContext(req, res, data) {
         }
     }
 
-    if (subscribePattern.test(res.locals.relativeUrl) && labs.isSet('subscribers') === true) {
-        if (!res.locals.context.includes('subscribe')) {
-            res.locals.context.push('subscribe');
-        }
-    }
-
-    // @TODO: remove first if condition when we drop v0.1
-    if (data && data.post && data.post.page) {
-        if (!res.locals.context.includes('page')) {
-            res.locals.context.push('page');
-        }
-    } else if (data && data.post) {
+    if (data && data.post) {
         if (!res.locals.context.includes('post')) {
             res.locals.context.push('post');
         }

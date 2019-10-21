@@ -1,5 +1,4 @@
 const express = require('express');
-const api = require('../../../../api');
 const apiCanary = require('../../../../api/canary');
 const mw = require('./middleware');
 
@@ -19,7 +18,7 @@ module.exports = function apiRoutes() {
     const http = apiCanary.http;
 
     // ## Public
-    router.get('/site', http(apiCanary.site.read));
+    router.get('/site', mw.publicAdminApi, http(apiCanary.site.read));
 
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(apiCanary.config.read));
@@ -49,7 +48,7 @@ module.exports = function apiRoutes() {
     router.del('/integrations/:id', mw.authAdminApi, http(apiCanary.integrations.destroy));
 
     // ## Schedules
-    router.put('/schedules/:resource/:id', mw.authAdminApi, http(apiCanary.schedules.publish));
+    router.put('/schedules/:resource/:id', mw.authAdminApiWithUrl, http(apiCanary.schedules.publish));
 
     // ## Settings
     router.get('/settings/routes/yaml', mw.authAdminApi, http(apiCanary.settings.download));
@@ -84,23 +83,6 @@ module.exports = function apiRoutes() {
     router.put('/tags/:id', mw.authAdminApi, http(apiCanary.tags.edit));
     router.del('/tags/:id', mw.authAdminApi, http(apiCanary.tags.destroy));
 
-    // ## Subscribers
-    router.get('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.browse));
-    router.get('/subscribers/csv', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.exportCSV));
-    router.post('/subscribers/csv',
-        shared.middlewares.labs.subscribers,
-        mw.authAdminApi,
-        upload.single('subscribersfile'),
-        shared.middlewares.validation.upload({type: 'subscribers'}),
-        http(apiCanary.subscribers.importCSV)
-    );
-    router.get('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.read));
-    router.get('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.read));
-    router.post('/subscribers', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.add));
-    router.put('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.edit));
-    router.del('/subscribers/:id', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.destroy));
-    router.del('/subscribers/email/:email', shared.middlewares.labs.subscribers, mw.authAdminApi, http(apiCanary.subscribers.destroy));
-
     // ## Members
     router.get('/members', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.browse));
     router.post('/members', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.add));
@@ -120,9 +102,6 @@ module.exports = function apiRoutes() {
 
     // ## Roles
     router.get('/roles/', mw.authAdminApi, http(apiCanary.roles.browse));
-
-    // ## Clients
-    router.get('/clients/slug/:slug', api.http(api.clients.read));
 
     // ## Slugs
     router.get('/slugs/:type/:name', mw.authAdminApi, http(apiCanary.slugs.generate));
@@ -179,14 +158,14 @@ module.exports = function apiRoutes() {
     router.post('/slack/test', mw.authAdminApi, http(apiCanary.slack.sendTest));
 
     // ## Sessions
-    router.get('/session', mw.authAdminApi, api.http(apiCanary.session.read));
+    router.get('/session', mw.authAdminApi, http(apiCanary.session.read));
     // We don't need auth when creating a new session (logging in)
     router.post('/session',
         shared.middlewares.brute.globalBlock,
         shared.middlewares.brute.userLogin,
-        api.http(apiCanary.session.add)
+        http(apiCanary.session.add)
     );
-    router.del('/session', mw.authAdminApi, api.http(apiCanary.session.delete));
+    router.del('/session', mw.authAdminApi, http(apiCanary.session.delete));
 
     // ## Authentication
     router.post('/authentication/passwordreset',

@@ -7,7 +7,7 @@ const {UnauthorizedError} = require('../../../../server/lib/common/errors');
 const sessionController = require('../../../../server/api/v2/session');
 const sessionServiceMiddleware = require('../../../../server/services/auth/session/middleware');
 
-describe('Session controller', function () {
+describe('v2 Session controller', function () {
     before(function () {
         models.init();
     });
@@ -60,10 +60,10 @@ describe('Session controller', function () {
 
             const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
 
-            return sessionController.add({
+            return sessionController.add({data: {
                 username: 'freddy@vodafone.com',
                 password: 'qu33nRul35'
-            }, {}).then((fn) => {
+            }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
                 should.equal(fakeReq.brute.reset.callCount, 1);
@@ -91,10 +91,10 @@ describe('Session controller', function () {
 
             const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
 
-            return sessionController.add({
+            return sessionController.add({data: {
                 username: 'freddy@vodafone.com',
                 password: 'qu33nRul35'
-            }, {}).then((fn) => {
+            }}).then((fn) => {
                 fn(fakeReq, fakeRes, fakeNext);
             }).then(function () {
                 should.equal(fakeReq.brute.reset.callCount, 1);
@@ -129,8 +129,10 @@ describe('Session controller', function () {
                 .returns(findOneReturnVal);
 
             const result = sessionController.read({
-                context: {
-                    user: 108
+                options: {
+                    context: {
+                        user: 108
+                    }
                 }
             });
             should.equal(result, findOneReturnVal);

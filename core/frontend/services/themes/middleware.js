@@ -7,7 +7,7 @@ const settingsCache = require('../../../server/services/settings/cache');
 const activeTheme = require('./active');
 
 // ### Ensure Active Theme
-// Ensure there's a properly set & mounted active theme before attempting to serve a blog request
+// Ensure there's a properly set & mounted active theme before attempting to serve a site request
 // If there is no active theme, throw an error
 // Else, ensure the active theme is mounted
 function ensureActiveTheme(req, res, next) {
@@ -21,7 +21,7 @@ function ensureActiveTheme(req, res, next) {
         }));
     }
 
-    // CASE: bootstrap theme validation failed, we would like to show the errors on the blog [only production]
+    // CASE: bootstrap theme validation failed, we would like to show the errors on the site [only production]
     if (activeTheme.get().error && config.get('env') === 'production') {
         return next(new common.errors.InternalServerError({
             // We use the settingsCache here, because the setting will be set,
@@ -51,7 +51,7 @@ function updateGlobalTemplateOptions(req, res, next) {
     };
 
     // @TODO: only do this if something changed?
-    // @TODO: remove blog if we drop v0.1 (Ghost 3.0)
+    // @TODO: remove blog if we drop v2 (Ghost 4.0)
     hbs.updateTemplateOptions({
         data: {
             blog: siteData,
@@ -87,6 +87,7 @@ function updateLocalTemplateOptions(req, res, next) {
     } : null;
 
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
+        // @TODO: remove blog if we drop v2 (Ghost 4.0)
         data: {
             member: member,
             site: siteData,

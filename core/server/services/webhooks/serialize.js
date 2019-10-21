@@ -3,7 +3,7 @@ module.exports = (event, model) => {
     const sequence = require('../../lib/promise/sequence');
     const api = require('../../api');
 
-    const apiVersion = model.get('api_version') || 'v2';
+    const apiVersion = model.get('api_version') || 'v3';
 
     const resourceName = event.match(/(\w+)\./)[1];
     const docName = `${resourceName}s`;
@@ -69,16 +69,6 @@ module.exports = (event, model) => {
                     previous: _.pick(previous, changed)
                 }
             };
-
-            // @TODO: remove in v3
-            // @NOTE: Our webhook format has changed, we still have to support the old format for subscribers events
-            if ('subscriber.added' === event) {
-                payload[docName] = [current];
-            }
-
-            if ('subscriber.deleted' === event) {
-                payload[docName] = [previous];
-            }
 
             return payload;
         });

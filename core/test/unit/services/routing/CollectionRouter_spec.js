@@ -47,7 +47,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             common.events.on.calledTwice.should.be.false();
 
             collectionRouter.mountRoute.callCount.should.eql(3);
-            express.Router.param.callCount.should.eql(3);
+            express.Router.param.callCount.should.eql(2);
 
             // parent route
             collectionRouter.mountRoute.args[0][0].should.eql('/');

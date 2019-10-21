@@ -95,9 +95,7 @@ const login = (request, API_URL) => {
             .send({
                 grant_type: 'password',
                 username: request.user.email,
-                password: 'Sl1m3rson99',
-                client_id: 'ghost-admin',
-                client_secret: 'not_available'
+                password: 'Sl1m3rson99'
             })
             .then(function then(res) {
                 if (res.statusCode !== 200 && res.statusCode !== 201) {
@@ -106,7 +104,7 @@ const login = (request, API_URL) => {
                     }));
                 }
 
-                resolve(res.headers['set-cookie'] || res.body.access_token);
+                resolve(res.headers['set-cookie']);
             }, reject);
     });
 };

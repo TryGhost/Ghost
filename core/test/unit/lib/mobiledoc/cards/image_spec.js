@@ -14,7 +14,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: image--><figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image"></figure><!--kg-card-end: image-->');
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image"></figure>');
     });
 
     it('renders an image with caption', function () {
@@ -28,7 +28,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: image--><figure class="kg-card kg-image-card kg-card-hascaption"><img src="https://www.ghost.org/image.png" class="kg-image"><figcaption><b>Test caption</b></figcaption></figure><!--kg-card-end: image-->');
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card kg-card-hascaption"><img src="https://www.ghost.org/image.png" class="kg-image"><figcaption><b>Test caption</b></figcaption></figure>');
     });
 
     it('renders an image with alt text', function () {
@@ -42,7 +42,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: image--><figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt="example image"></figure><!--kg-card-end: image-->');
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt="example image"></figure>');
     });
 
     it('renders an image with title attribute', function () {
@@ -56,7 +56,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: image--><figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" title="example image"></figure><!--kg-card-end: image-->');
+        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" title="example image"></figure>');
     });
 
     it('renders nothing with no src', function () {
@@ -85,7 +85,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: image--><figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image"></figure><!--kg-card-end: image-->');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image"></figure>');
         });
 
         it('wide', function () {
@@ -99,7 +99,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: image--><figure class="kg-card kg-image-card kg-width-wide"><img src="https://www.ghost.org/image.png" class="kg-image"></figure><!--kg-card-end: image-->');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="https://www.ghost.org/image.png" class="kg-image"></figure>');
         });
 
         it('full', function () {
@@ -113,7 +113,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: image--><figure class="kg-card kg-image-card kg-width-full"><img src="https://www.ghost.org/image.png" class="kg-image"></figure><!--kg-card-end: image-->');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card kg-width-full"><img src="https://www.ghost.org/image.png" class="kg-image"></figure>');
         });
     });
 

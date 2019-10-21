@@ -1,11 +1,8 @@
 # API Versioning
 
 Ghost supports multiple API versions.
-Each version lives in a separate folder e.g. api/v0.1, api/v2.
+Each version lives in a separate folder e.g. api/v2, api/v3, api/canary etc.
 Next to the API folders there is a shared folder, which contains shared code, which all API versions use.
-
-**NOTE: v0.1 is deprecated and we won't touch the shared folder at all. The v0.1 folder 
-contains the API layer which we have used since Ghost was born.**
 
 ## Stages
 
