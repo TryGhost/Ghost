@@ -39,23 +39,23 @@ export default Controller.extend({
 
         toggleUnsavedChangesModal(transition) {
             let leaveTransition = this.leaveScreenTransition;
-    
+
             if (!transition && this.showUnsavedChangesModal) {
                 this.set('leaveScreenTransition', null);
                 this.set('showUnsavedChangesModal', false);
                 return;
             }
-    
+
             if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
                 this.set('leaveScreenTransition', transition);
-    
+
                 // if a save is running, wait for it to finish then transition
                 if (this.save.isRunning) {
                     return this.save.last.then(() => {
                         transition.retry();
                     });
                 }
-    
+
                 // we genuinely have unsaved data, show the modal
                 this.set('showUnsavedChangesModal', true);
             }
@@ -73,6 +73,10 @@ export default Controller.extend({
             this.member.rollbackAttributes();
 
             return transition.retry();
+        },
+
+        save() {
+            return this.save.perform();
         }
     },
 
