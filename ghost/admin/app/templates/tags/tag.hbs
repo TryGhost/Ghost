@@ -1,5 +1,5 @@
 <section class="gh-canvas">
-    <form class="mb15" {{action (perform "save") on="submit"}}>
+    <form class="mb15">
         <GhCanvasHeader class="gh-canvas-header">
             <h2 class="gh-canvas-title" data-test-screen-title>
                 {{#link-to "tags.index" data-test-link="tags-back"}}Tags{{/link-to}}
@@ -7,7 +7,7 @@
                 {{if tag.name tag.name "New tag"}}
             </h2>
             <section class="view-actions">
-                {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-button="save"}}
+                {{gh-task-button task=save type="button" class="gh-btn gh-btn-blue gh-btn-icon" data-test-button="save"}}
             </section>
         </GhCanvasHeader>
         {{gh-tag-settings-form tag=tag
