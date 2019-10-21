@@ -3,6 +3,9 @@ const createCard = require('../create-card');
 module.exports = createCard({
     name: 'html',
     type: 'dom',
+    config: {
+        commentWrapper: true
+    },
     render(opts) {
         if (!opts.payload.html) {
             return '';
