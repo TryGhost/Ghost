@@ -31,8 +31,8 @@ export default Controller.extend({
         finaliseDeletion() {
             // decrememnt the total member count manually so there's no flash
             // when transitioning back to the members list
-            if (this.members.meta) {
-                this.members.decrementProperty('meta.pagination.total');
+            if (this.members.memberCount) {
+                this.members.decrementProperty('memberCount');
             }
             this.router.transitionTo('members');
         },

@@ -39,7 +39,7 @@
                         focus-out=(action 'setProperty' 'note' scratchNote)
                     }}
             {{gh-error-message errors=member.errors property="note"}}
-            <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchNote 500}}</p>
+            <p>Not visible to member. Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchNote 500}}</p>
         {{/gh-form-group}}
     </div>
 </div>
@@ -112,7 +112,7 @@
                             <table class="gh-member-stripe-table">
                                 <tr>
                                     <td class="gh-member-stripe-label">Plan</td>
-                                    <td class="gh-member-stripe-data">{{subscription.plan.nickname}}</td>
+                                    <td class="gh-member-stripe-data">{{subscription.plan.nickname}} <span class="midgrey">({{subscription.dollarAmount}} <span class="ttu">{{subscription.plan.currency}}</span>/{{subscription.plan.interval}})</span></td>
                                 </tr>
                                 <tr>
                                     <td class="gh-member-stripe-label">Current status</td>

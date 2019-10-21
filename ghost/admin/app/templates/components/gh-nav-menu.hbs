@@ -56,9 +56,6 @@
                 </li>
             {{/if}}
             <li>{{#link-to "staff" data-test-nav="staff"}}{{svg-jar "staff"}}Staff{{/link-to}}</li>
-            {{#if (and feature.subscribers (gh-user-can-admin session.user))}}
-                <li>{{#link-to "subscribers" data-test-nav="subscribers"}}{{svg-jar "email"}}Subscribers{{/link-to}}</li>
-            {{/if}}
         </ul>
         {{#if (gh-user-can-admin session.user)}}
             <ul class="gh-nav-list gh-nav-settings">

@@ -32,24 +32,11 @@ describe('Acceptance: Members', function () {
     describe('as owner', function () {
         beforeEach(async function () {
             this.server.loadFixtures('configs');
-            let config = this.server.schema.configs.first();
-            config.update({enableDeveloperExperiments: true});
 
             let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
 
             return await authenticateSession();
-        });
-
-        it('redirects to home if developer experiments is disabled', async function () {
-            let config = this.server.schema.configs.first();
-            config.update({enableDeveloperExperiments: false});
-
-            await visit('/members');
-
-            expect(currentURL()).to.equal('/site');
-            expect(find('[data-test-nav="members"]'), 'sidebar link')
-                .to.not.exist;
         });
 
         it('shows sidebar link which navigates to members list', async function () {

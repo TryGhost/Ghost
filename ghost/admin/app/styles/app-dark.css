@@ -57,7 +57,6 @@
 @import "layouts/error.css";
 @import "layouts/apps.css";
 @import "layouts/packages.css";
-@import "layouts/subscribers.css";
 @import "layouts/labs.css";
 @import "layouts/whats-new.css";
 
@@ -108,6 +107,19 @@ input:focus,
 .for-radio label:hover input:not(:checked) + .input-toggle-component {
     /* light=>dark theme => lightgrey=>middarkgrey */
     border-color: color-mod(var(--lightgrey) l(+10%));
+}
+
+.gh-input-append {
+    border-color: color-mod(var(--lightgrey));
+}
+
+.gh-input-group .gh-input:focus + .gh-input-append {
+    border-color: color-mod(var(--lightgrey) l(+10%));
+}
+
+.gh-input-append,
+.gh-input-append:before {
+    background: color-mod(var(--lightgrey));
 }
 
 .settings-menu-container,
@@ -173,6 +185,14 @@ input:focus,
     border: color-mod(var(--darkgrey) l(-27%) blackness(+15%)) 1px solid;
 }
 
+.view-actions .gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red) {
+    border-color: color-mod(var(--darkgrey) l(-27%) blackness(+15%) alpha(50%));
+}
+
+.gh-btn-group .gh-btn:first-of-type {
+    border-right: none !important;
+}
+
 .gh-btn-blue,
 .gh-btn-green,
 .gh-btn-red {
@@ -188,6 +208,7 @@ input:focus,
 .gh-btn-link {
     border: none !important;
 }
+
 
 .settings-menu-delete-button {
     color: var(--red);
@@ -396,10 +417,6 @@ input:focus,
 
 .CodeMirror .CodeMirror-code .cm-string {
     color: color-mod(#183691 l(+25%));
-}
-
-.subscribers-table table .gh-btn svg {
-    fill: var(--darkgrey);
 }
 
 .id-mailchimp img,

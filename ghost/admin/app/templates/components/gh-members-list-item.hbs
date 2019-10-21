@@ -1,4 +1,4 @@
-{{#link-to "member" member class="gh-flex-list-data gh-flex-list-auto" title="Member details"}}
+{{#link-to "member" member class="gh-list-data" title="Member details"}}
     <div class="flex items-center">
         <GhMemberAvatar @member={{member}} class="w9 h9 mr3" />
         <div>
@@ -16,10 +16,10 @@
     </div>
 {{/link-to}}
 
-{{#link-to "member" member class="gh-flex-list-data gh-members-list-subscribed-at middarkgrey f8 nowrap" title="Member details" }}
-    Member since {{this.subscribedAt}}
+{{#link-to "member" member class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap middarkgrey f8 nowrap" title="Member details" }}
+    {{this.createdDate}} <span class="midgrey-l2">({{this.memberSince}})</span>
 {{/link-to}}
 
-{{#link-to "member" member class="gh-flex-list-data" title="Member details"}}
+{{#link-to "member" member class="gh-list-data gh-list-cellwidth-chevron align-right" title="Member details"}}
     {{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1 nr2"}}
 {{/link-to}}

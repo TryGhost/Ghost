@@ -189,7 +189,6 @@ h1 {
 }
 
 h2 {
-    text-indent: -1px;
     font-size: 2.2rem;
 }
 @media (max-width: 500px) {

@@ -32,7 +32,7 @@ describe('Integration: Service: config', function () {
 
     it('normalizes blogUrl to non-trailing-slash', function (done) {
         let stubBlogUrl = function stubBlogUrl(url) {
-            server.get('/ghost/api/canary/admin/config/', function () {
+            server.get('/ghost/api/v3/admin/config/', function () {
                 return [
                     200,
                     {'Content-Type': 'application/json'},
@@ -40,7 +40,7 @@ describe('Integration: Service: config', function () {
                 ];
             });
 
-            server.get('/ghost/api/canary/admin/site/', function () {
+            server.get('/ghost/api/v3/admin/site/', function () {
                 return [
                     200,
                     {'Content-Type': 'application/json'},

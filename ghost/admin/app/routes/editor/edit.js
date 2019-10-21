@@ -24,8 +24,7 @@ export default AuthenticatedRoute.extend({
         }
 
         let query = {
-            id: post_id,
-            status: 'all'
+            id: post_id
         };
 
         return this.store.query(modelName, query)

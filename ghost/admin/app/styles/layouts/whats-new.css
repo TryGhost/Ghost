@@ -92,7 +92,7 @@
     flex-direction: column;
     flex-grow: 1;
     align-items: flex-start;
-    justify-content: start;
+    justify-content: flex-start;
     padding: 16px;
 }
 
@@ -114,7 +114,7 @@
     color: color(var(--midgrey) l(-10%));
     font-weight: 400;
     margin-top: 12px;
-    max-height: 48px;
+    max-height: 36px;
     overflow-y: hidden;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
