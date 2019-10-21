@@ -60,7 +60,7 @@ function haxGetMembersPriceData() {
             });
         }, {});
 
-        if (Number.isInteger(priceData.Monthly) && Number.isInteger(priceData.Yearly)) {
+        if (Number.isInteger(priceData.monthly) && Number.isInteger(priceData.yearly)) {
             return priceData;
         }
 
@@ -90,7 +90,7 @@ function updateGlobalTemplateOptions(req, res, next) {
             site: siteData,
             labs: labsData,
             config: themeData,
-            prices: priceData
+            price: priceData
         }
     });
 
