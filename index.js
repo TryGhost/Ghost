@@ -11,6 +11,7 @@ ghost = require('./core');
 
 debug('Required ghost');
 
+// adding required libraries
 express = require('express');
 common = require('./core/server/lib/common');
 urlService = require('./core/frontend/services/url');
