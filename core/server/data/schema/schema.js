@@ -19,7 +19,7 @@ module.exports = {
         plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         feature_image: {type: 'string', maxlength: 2000, nullable: true},
         featured: {type: 'bool', nullable: false, defaultTo: false},
-        page: {type: 'bool', nullable: false, defaultTo: false},
+        type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'post', validations: {isIn: [['post', 'page']]}},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'draft'},
         locale: {type: 'string', maxlength: 6, nullable: true},
         visibility: {
@@ -29,8 +29,6 @@ module.exports = {
             defaultTo: 'public',
             validations: {isIn: [['public', 'members', 'paid']]}
         },
-        meta_title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
-        meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},
         /**
          * @deprecated: `author_id`, might be removed in Ghost 3.0
          * If we keep it, then only, because you can easier query post.author_id than posts_authors[*].sort_order.
@@ -50,21 +48,25 @@ module.exports = {
         custom_excerpt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
         codeinjection_head: {type: 'text', maxlength: 65535, nullable: true},
         codeinjection_foot: {type: 'text', maxlength: 65535, nullable: true},
+        custom_template: {type: 'string', maxlength: 100, nullable: true},
+        canonical_url: {type: 'text', maxlength: 2000, nullable: true}
+    },
+    posts_meta: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', unique: true},
         og_image: {type: 'string', maxlength: 2000, nullable: true},
         og_title: {type: 'string', maxlength: 300, nullable: true},
         og_description: {type: 'string', maxlength: 500, nullable: true},
         twitter_image: {type: 'string', maxlength: 2000, nullable: true},
         twitter_title: {type: 'string', maxlength: 300, nullable: true},
         twitter_description: {type: 'string', maxlength: 500, nullable: true},
-        custom_template: {type: 'string', maxlength: 100, nullable: true},
-        canonical_url: {type: 'text', maxlength: 2000, nullable: true}
+        meta_title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
+        meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}}
     },
     users: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        ghost_auth_access_token: {type: 'string', maxlength: 32, nullable: true},
-        ghost_auth_id: {type: 'string', maxlength: 24, nullable: true},
         password: {type: 'string', maxlength: 60, nullable: false},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         profile_image: {type: 'string', maxlength: 2000, nullable: true},
@@ -212,71 +214,6 @@ module.exports = {
         relatable_id: {type: 'string', maxlength: 24, nullable: false},
         relatable_type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'posts'},
         active: {type: 'bool', nullable: false, defaultTo: true},
-        created_at: {type: 'dateTime', nullable: false},
-        created_by: {type: 'string', maxlength: 24, nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
-        updated_by: {type: 'string', maxlength: 24, nullable: true}
-    },
-    clients: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        uuid: {type: 'string', maxlength: 36, nullable: false},
-        name: {type: 'string', maxlength: 50, nullable: false, unique: true},
-        slug: {type: 'string', maxlength: 50, nullable: false, unique: true},
-        secret: {type: 'string', maxlength: 191, nullable: false},
-        redirection_uri: {type: 'string', maxlength: 2000, nullable: true},
-        client_uri: {type: 'string', maxlength: 2000, nullable: true},
-        auth_uri: {type: 'string', maxlength: 2000, nullable: true},
-        logo: {type: 'string', maxlength: 2000, nullable: true},
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'development'},
-        type: {
-            type: 'string',
-            maxlength: 50,
-            nullable: false,
-            defaultTo: 'ua',
-            validations: {isIn: [['ua', 'web', 'native']]}
-        },
-        description: {type: 'string', maxlength: 2000, nullable: true},
-        created_at: {type: 'dateTime', nullable: false},
-        created_by: {type: 'string', maxlength: 24, nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
-        updated_by: {type: 'string', maxlength: 24, nullable: true}
-    },
-    client_trusted_domains: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        client_id: {type: 'string', maxlength: 24, nullable: false, references: 'clients.id'},
-        trusted_domain: {type: 'string', maxlength: 2000, nullable: true}
-    },
-    accesstokens: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        token: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        user_id: {type: 'string', maxlength: 24, nullable: false, references: 'users.id'},
-        client_id: {type: 'string', maxlength: 24, nullable: false, references: 'clients.id'},
-        issued_by: {type: 'string', maxlength: 24, nullable: true},
-        expires: {type: 'bigInteger', nullable: false}
-    },
-    refreshtokens: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        token: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        user_id: {type: 'string', maxlength: 24, nullable: false, references: 'users.id'},
-        client_id: {type: 'string', maxlength: 24, nullable: false, references: 'clients.id'},
-        expires: {type: 'bigInteger', nullable: false}
-    },
-    subscribers: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        name: {type: 'string', maxlength: 191, nullable: true},
-        email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
-        status: {
-            type: 'string',
-            maxlength: 50,
-            nullable: false,
-            defaultTo: 'pending',
-            validations: {isIn: [['subscribed', 'pending', 'unsubscribed']]}
-        },
-        post_id: {type: 'string', maxlength: 24, nullable: true},
-        subscribed_url: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
-        subscribed_referrer: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
-        unsubscribed_url: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
-        unsubscribed_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},

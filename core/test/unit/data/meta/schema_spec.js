@@ -5,8 +5,8 @@ var should = require('should'),
 describe('getSchema', function () {
     it('should return post schema if context starts with post', function (done) {
         var metadata = {
-                blog: {
-                    title: 'Blog Title',
+                site: {
+                    title: 'Site Title',
                     url: 'http://mysite.com',
                     logo: {
                         url: 'http://mysite.com/author/image/url/logo.jpg',
@@ -89,7 +89,7 @@ describe('getSchema', function () {
             },
             publisher: {
                 '@type': 'Organization',
-                name: 'Blog Title',
+                name: 'Site Title',
                 logo: {
                     '@type': 'ImageObject',
                     url: 'http://mysite.com/author/image/url/logo.jpg',
@@ -104,8 +104,8 @@ describe('getSchema', function () {
 
     it('should return page schema if context starts with page', function (done) {
         var metadata = {
-                blog: {
-                    title: 'Blog Title',
+                site: {
+                    title: 'Site Title',
                     url: 'http://mysite.com',
                     logo: {
                         url: 'http://mysite.com/author/image/url/logo.jpg',
@@ -189,7 +189,7 @@ describe('getSchema', function () {
             },
             publisher: {
                 '@type': 'Organization',
-                name: 'Blog Title',
+                name: 'Site Title',
                 logo: {
                     '@type': 'ImageObject',
                     url: 'http://mysite.com/author/image/url/logo.jpg',
@@ -204,8 +204,8 @@ describe('getSchema', function () {
 
     it('should return post schema if context starts with amp', function (done) {
         var metadata = {
-                blog: {
-                    title: 'Blog Title',
+                site: {
+                    title: 'Site Title',
                     url: 'http://mysite.com',
                     logo: {
                         url: 'http://mysite.com/author/image/url/logo.jpg',
@@ -292,7 +292,7 @@ describe('getSchema', function () {
             },
             publisher: {
                 '@type': 'Organization',
-                name: 'Blog Title',
+                name: 'Site Title',
                 logo: {
                     '@type': 'ImageObject',
                     url: 'http://mysite.com/author/image/url/logo.jpg',
@@ -307,8 +307,8 @@ describe('getSchema', function () {
 
     it('should return post schema removing null or undefined values', function (done) {
         var metadata = {
-                blog: {
-                    title: 'Blog Title'
+                site: {
+                    title: 'Site Title'
                 },
                 authorImage: null,
                 authorFacebook: undefined,
@@ -354,7 +354,7 @@ describe('getSchema', function () {
             },
             publisher: {
                 '@type': 'Organization',
-                name: 'Blog Title',
+                name: 'Site Title',
                 logo: null
             },
             url: 'http://mysite.com/post/my-post-slug/'
@@ -364,8 +364,8 @@ describe('getSchema', function () {
 
     it('should return image url instead of ImageObjects if no dimensions supplied', function (done) {
         var metadata = {
-                blog: {
-                    title: 'Blog Title',
+                site: {
+                    title: 'Site Title',
                     url: 'http://mysite.com',
                     logo: {
                         url: 'http://mysite.com/author/image/url/logo.jpg'
@@ -428,7 +428,7 @@ describe('getSchema', function () {
             },
             publisher: {
                 '@type': 'Organization',
-                name: 'Blog Title',
+                name: 'Site Title',
                 logo: 'http://mysite.com/author/image/url/logo.jpg'
             },
             url: 'http://mysite.com/post/my-post-slug/'
@@ -438,8 +438,8 @@ describe('getSchema', function () {
 
     it('should return home schema if context starts with home', function () {
         var metadata = {
-                blog: {
-                    title: 'Blog Title'
+                site: {
+                    title: 'Site Title'
                 },
                 url: 'http://mysite.com/post/my-post-slug/',
                 coverImage: {
@@ -470,7 +470,7 @@ describe('getSchema', function () {
             },
             publisher: {
                 '@type': 'Organization',
-                name: 'Blog Title',
+                name: 'Site Title',
                 logo: null
             },
             url: 'http://mysite.com/post/my-post-slug/'
@@ -479,8 +479,8 @@ describe('getSchema', function () {
 
     it('should return tag schema if context starts with tag', function () {
         var metadata = {
-                blog: {
-                    title: 'Blog Title'
+                site: {
+                    title: 'Site Title'
                 },
                 url: 'http://mysite.com/post/my-post-slug/',
                 coverImage: {
@@ -515,7 +515,7 @@ describe('getSchema', function () {
             name: 'Great Tag',
             publisher: {
                 '@type': 'Organization',
-                name: 'Blog Title',
+                name: 'Site Title',
                 logo: null
             },
             url: 'http://mysite.com/post/my-post-slug/'
@@ -524,8 +524,8 @@ describe('getSchema', function () {
 
     it('should return author schema if context starts with author', function () {
         var metadata = {
-                blog: {
-                    title: 'Blog Title',
+                site: {
+                    title: 'Site Title',
                     url: 'http://mysite.com'
                 },
                 authorImage: {

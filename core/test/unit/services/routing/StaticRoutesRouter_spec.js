@@ -77,14 +77,15 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);
             next.called.should.be.true();
-            res.routerOptions.should.eql({
-                type: 'custom',
-                templates: [],
-                defaultTemplate: 'default',
-                context: ['about'],
-                data: {},
-                contentType: undefined
-            });
+
+            res.routerOptions.should.have.properties('type', 'templates', 'defaultTemplate', 'context', 'data', 'contentType');
+            res.routerOptions.type.should.eql('custom');
+            res.routerOptions.templates.should.eql([]);
+            res.routerOptions.defaultTemplate.should.be.a.Function();
+            res.routerOptions.context.should.eql(['about']);
+            res.routerOptions.data.should.eql({});
+
+            should(res.routerOptions.contentType).be.undefined();
             should.not.exist(res.locals.slug);
         });
 
@@ -93,14 +94,14 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);
             next.called.should.be.true();
-            res.routerOptions.should.eql({
-                type: 'custom',
-                templates: [],
-                defaultTemplate: 'default',
-                context: ['index'],
-                data: {},
-                contentType: undefined
-            });
+
+            res.routerOptions.should.have.properties('type', 'templates', 'defaultTemplate', 'context', 'data', 'contentType');
+            res.routerOptions.type.should.eql('custom');
+            res.routerOptions.templates.should.eql([]);
+            res.routerOptions.defaultTemplate.should.be.a.Function();
+            res.routerOptions.context.should.eql(['index']);
+            res.routerOptions.data.should.eql({});
+
             should.not.exist(res.locals.slug);
         });
     });

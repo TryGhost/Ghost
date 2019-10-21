@@ -381,9 +381,6 @@ describe('Integration: Importer', function () {
         it('ensure complex JSON get\'s fully imported', function () {
             const exportData = exportedLatestBody().db[0];
 
-            exportData.data.subscribers[0] = testUtils.DataGenerator.forKnex.createSubscriber({email: 'subscriber1@ghost.org'});
-            exportData.data.subscribers[1] = testUtils.DataGenerator.forKnex.createSubscriber({email: 'subscriber2@ghost.org'});
-
             return dataImporter.doImport(exportData, importOptions)
                 .then(function () {
                     // Grab the data from tables
@@ -391,25 +388,22 @@ describe('Integration: Importer', function () {
                         knex('users').select(),
                         models.Post.findPage(testUtils.context.internal),
                         knex('settings').select(),
-                        knex('tags').select(),
-                        knex('subscribers').select()
+                        knex('tags').select()
                     ]);
                 })
                 .then(function (importedData) {
                     should.exist(importedData);
 
-                    importedData.length.should.equal(5, 'Did not get data successfully');
+                    importedData.length.should.equal(4, 'Did not get data successfully');
 
                     const users = importedData[0],
                         posts = importedData[1].data,
                         settings = importedData[2],
-                        tags = importedData[3],
-                        subscribers = importedData[4];
+                        tags = importedData[3];
 
                     // we always have 1 user, the owner user we added
                     users.length.should.equal(1, 'There should only be one user');
 
-                    subscribers.length.should.equal(2, 'There should be two subscribers');
                     settings.length.should.be.above(0, 'Wrong number of settings');
                     posts.length.should.equal(exportData.data.posts.length, 'no new posts');
                     tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -1024,34 +1018,6 @@ describe('Integration: Importer', function () {
                 });
         });
 
-        it('skips importing clients, trusted domains by default', function () {
-            const exportData = exportedLatestBody().db[0];
-
-            exportData.data.clients = [];
-            exportData.data.clients[0] = testUtils.DataGenerator.forKnex.createClient({
-                slug: 'ghost-something',
-                secret: '678910'
-            });
-
-            exportData.data.client_trusted_domains = [];
-            exportData.data.client_trusted_domains[0] = testUtils.DataGenerator.forKnex.createTrustedDomain({
-                trusted_domain: 'https://test.com'
-            });
-
-            return dataImporter.doImport(exportData, importOptions)
-                .then(function () {
-                    return models.Client.findOne({slug: 'ghost-something'}, testUtils.context.internal);
-                })
-                .then(function (model) {
-                    should.not.exist(model);
-
-                    return models.ClientTrustedDomain.findOne({trusted_domain: 'https://test.com'}, testUtils.context.internal);
-                })
-                .then(function (model) {
-                    should.not.exist(model);
-                });
-        });
-
         it('ensure authors are imported correctly', function () {
             const exportData = exportedLatestBody().db[0];
 
@@ -1196,19 +1162,19 @@ describe('Integration: Importer', function () {
                     posts.length.should.eql(2);
 
                     posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]]}');
-                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><!--kg-card-begin: image--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image"></figure><!--kg-card-end: image-->');
+                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image"></figure>');
 
                     posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"cardName":"markdown","markdown":"# Post Content"}]],"sections":[[10,0],[10,1]]}');
-                    posts[1].html.should.eql('<!--kg-card-begin: image--><figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image"></figure><!--kg-card-end: image--><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
+                    posts[1].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image"></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
                 });
         });
     });
 
     describe('Existing database', function () {
         beforeEach(testUtils.teardown);
-        beforeEach(testUtils.setup('users:roles', 'posts', 'settings', 'clients', 'client:trusted-domain'));
+        beforeEach(testUtils.setup('users:roles', 'posts', 'settings'));
 
-        it('import multiple users, tags, posts, clients', function () {
+        it('import multiple users, tags, posts', function () {
             const exportData = exportedLatestBody().db[0];
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser({
@@ -1285,38 +1251,7 @@ describe('Integration: Importer', function () {
                 updated_by: exportData.data.users[2].id
             });
 
-            exportData.data.clients = [];
-
-            // override ghost-frontend
-            exportData.data.clients[0] = testUtils.DataGenerator.forKnex.createClient({
-                slug: 'ghost-frontend',
-                secret: '678910'
-            });
-
-            // add new client
-            exportData.data.clients[1] = testUtils.DataGenerator.forKnex.createClient({
-                slug: 'ghost-new',
-                secret: '88888',
-                name: 'Ghost New'
-            });
-
-            exportData.data.client_trusted_domains = [];
-            exportData.data.client_trusted_domains[0] = testUtils.DataGenerator.forKnex.createTrustedDomain({
-                trusted_domain: 'https://test.com'
-            });
-
-            exportData.data.client_trusted_domains[1] = testUtils.DataGenerator.forKnex.createTrustedDomain({
-                client_id: ObjectId.generate(),
-                trusted_domain: 'https://example.com'
-            });
-
-            exportData.data.client_trusted_domains[2] = testUtils.DataGenerator.forKnex.createTrustedDomain({
-                client_id: exportData.data.clients[1].id,
-                trusted_domain: 'https://world.com'
-            });
-
             const clonedImportOptions = _.cloneDeep(importOptions);
-            clonedImportOptions.include = ['clients', 'client_trusted_domains'];
 
             const postOptions = Object.assign({withRelated: ['tags']}, testUtils.context.internal);
             const tagOptions = Object.assign({order: 'slug ASC'}, testUtils.context.internal);
@@ -1327,50 +1262,17 @@ describe('Integration: Importer', function () {
                     return Promise.all([
                         models.Post.findPage(postOptions),
                         models.Tag.findPage(tagOptions),
-                        models.User.findPage(userOptions),
-                        models.Client.findAll(testUtils.context.internal),
-                        models.ClientTrustedDomain.findAll(testUtils.context.internal)
+                        models.User.findPage(userOptions)
                     ]);
                 }).then(function (result) {
                     const posts = result[0].data.map(model => model.toJSON(postOptions));
                     const tags = result[1].data.map(model => model.toJSON(tagOptions));
                     const users = result[2].data.map(model => model.toJSON(userOptions));
 
-                    let clients = result[3];
-                    let trustedDomains = result[4];
-
                     posts.length.should.equal(exportData.data.posts.length + testUtils.DataGenerator.Content.posts.length, 'Wrong number of posts');
                     tags.length.should.equal(exportData.data.tags.length + testUtils.DataGenerator.Content.tags.length, 'Wrong number of tags');
                     // the test env only inserts the user defined in the `forKnex` array
                     users.length.should.equal(exportData.data.users.length + testUtils.DataGenerator.forKnex.users.length, 'Wrong number of users');
-
-                    clients.models.length.should.eql(7);
-                    clients = clients.toJSON();
-                    const clientSlugs = _.map(clients, 'slug');
-
-                    clientSlugs.should.containEql('ghost-scheduler');
-                    clientSlugs.should.containEql('ghost-admin');
-                    clientSlugs.should.containEql('ghost-backup');
-                    clientSlugs.should.containEql('ghost-auth');
-                    clientSlugs.should.containEql('ghost-frontend');
-                    clientSlugs.should.containEql('ghost-new');
-                    clientSlugs.should.containEql('ghost-test');
-
-                    _.find(clients, {slug: 'ghost-frontend'}).secret.should.eql('678910');
-                    _.find(clients, {slug: 'ghost-new'}).secret.should.eql('88888');
-
-                    trustedDomains.models.length.should.eql(3);
-                    trustedDomains = trustedDomains.toJSON();
-
-                    _.map(trustedDomains, 'trusted_domain').should.eql([
-                        'https://example.com',
-                        'https://test.com',
-                        'https://world.com'
-                    ]);
-
-                    _.find(trustedDomains, {trusted_domain: 'https://test.com'}).client_id.should.eql(testUtils.DataGenerator.forKnex.clients[0].id);
-                    _.find(trustedDomains, {trusted_domain: 'https://example.com'}).client_id.should.eql(_.find(clients, {slug: 'ghost-test'}).id);
-                    _.find(trustedDomains, {trusted_domain: 'https://world.com'}).client_id.should.eql(_.find(clients, {slug: 'ghost-new'}).id);
                 });
         });
     });
@@ -1602,10 +1504,10 @@ describe('1.0', function () {
                     posts.length.should.eql(2);
 
                     posts[0].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"cardName":"markdown","markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]]}');
-                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><!--kg-card-begin: image--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image"></figure><!--kg-card-end: image-->');
+                    posts[0].html.should.eql('<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image"></figure>');
 
                     posts[1].mobiledoc.should.eql('{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"cardName":"markdown","markdown":"# Post Content"}]],"sections":[[10,0],[10,1]]}');
-                    posts[1].html.should.eql('<!--kg-card-begin: image--><figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image"></figure><!--kg-card-end: image--><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
+                    posts[1].html.should.eql('<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image"></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
                 });
         });
     });

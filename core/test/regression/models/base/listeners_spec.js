@@ -22,7 +22,7 @@ describe('Models: listeners', function () {
 
     before(testUtils.teardown);
 
-    beforeEach(testUtils.setup('owner', 'user-token:0', 'settings'));
+    beforeEach(testUtils.setup('owner', 'settings'));
 
     beforeEach(function () {
         sinon.stub(common.events, 'on').callsFake(function (eventName, callback) {
@@ -324,39 +324,6 @@ describe('Models: listeners', function () {
                     })
                     .catch(done);
             });
-        });
-    });
-
-    describe('on user is deactived', function () {
-        it('ensure tokens get deleted', function (done) {
-            var userId = testUtils.DataGenerator.Content.users[0].id,
-                timeout,
-                retries = 0;
-
-            (function retry() {
-                Promise.props({
-                    accesstokens: models.Accesstoken.findAll({context: {internal: true}, id: userId}),
-                    refreshtokens: models.Refreshtoken.findAll({context: {internal: true}, id: userId})
-                }).then(function (result) {
-                    if (retries === 0) {
-                        // trigger event after first check how many tokens the user has
-                        eventsToRemember['user.deactivated']({
-                            id: userId
-                        });
-
-                        result.accesstokens.length.should.eql(1);
-                        result.refreshtokens.length.should.eql(1);
-                    }
-
-                    if (!result.accesstokens.length && !result.refreshtokens.length) {
-                        return done();
-                    }
-
-                    retries = retries + 1;
-                    clearTimeout(timeout);
-                    timeout = setTimeout(retry, 500);
-                }).catch(done);
-            })();
         });
     });
 

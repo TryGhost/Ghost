@@ -121,7 +121,7 @@ describe('Themes middleware', function () {
             const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
             const data = templateOptions.data;
 
-            data.should.be.an.Object().with.properties('site', 'blog', 'labs', 'config');
+            data.should.be.an.Object().with.properties('site', 'labs', 'config');
 
             // Check Theme Config
             data.config.should.be.an.Object()
@@ -134,7 +134,6 @@ describe('Themes middleware', function () {
             should.deepEqual(data.labs, fakeLabsData);
 
             should.equal(data.site, fakeSiteData);
-            should.equal(data.blog, fakeSiteData);
 
             done();
         });

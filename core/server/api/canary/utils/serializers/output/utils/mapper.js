@@ -5,6 +5,7 @@ const date = require('./date');
 const members = require('./members');
 const clean = require('./clean');
 const extraAttrs = require('./extra-attrs');
+const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
 
 const mapUser = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
@@ -35,6 +36,10 @@ const mapPost = (model, frame) => {
     url.forPost(model.id, jsonModel, frame);
 
     if (utils.isContentAPI(frame)) {
+        // Content api v2 still expects page prop
+        if (jsonModel.type === 'page') {
+            jsonModel.page = true;
+        }
         date.forPost(jsonModel);
         members.forPost(jsonModel, frame);
     }
@@ -57,12 +62,35 @@ const mapPost = (model, frame) => {
         });
     }
 
+    // Transforms post/page metadata to flat structure
+    let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
+    _(metaAttrs).filter((k) => {
+        return (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k)));
+    }).each((attr) => {
+        jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || null;
+    });
+    delete jsonModel.posts_meta;
+
     return jsonModel;
 };
 
 const mapSettings = (attrs, frame) => {
     url.forSettings(attrs);
     extraAttrs.forSettings(attrs, frame);
+
+    // NOTE: The cleanup of deprecated ghost_head/ghost_foot has to happen here
+    //       because codeinjection_head/codeinjection_foot are assigned on a previous
+    //      `forSettings` step. This logic can be rewritten once we get rid of deprecated
+    //      fields completely.
+    if (_.isArray(attrs)) {
+        attrs = _.filter(attrs, (o) => {
+            return o.key !== 'ghost_head' && o.key !== 'ghost_foot';
+        });
+    } else {
+        delete attrs.ghost_head;
+        delete attrs.ghost_foot;
+    }
+
     return attrs;
 };
 

@@ -16,8 +16,6 @@ var proxy = require('./proxy'),
  * Content API v2 returns a calculated `post.excerpt` field.
  * See https://github.com/TryGhost/Ghost/issues/10062.
  * We have not touched this helper yet, we will revisit later.
- *
- * @TODO: remove or change if we drop v0.1
  */
 module.exports = function excerpt(options) {
     var truncateOptions = (options || {}).hash || {},

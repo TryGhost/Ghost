@@ -1,8 +1,7 @@
 const _ = require('lodash'),
     Promise = require('bluebird'),
     debug = require('ghost-ignition').debug('services:routing:controllers:static'),
-    helpers = require('../helpers'),
-    config = require('../../../../server/config');
+    helpers = require('../helpers');
 
 function processQuery(query, locals) {
     const api = require('../../../../server/api')[locals.apiVersion];
@@ -14,18 +13,15 @@ function processQuery(query, locals) {
     //       We override the `include` property for now, because the full data set is required anyway.
     if (_.get(query, 'resource') === 'posts') {
         _.extend(query.options, {
-            // @TODO: Remove "author" when we drop v0.1
-            include: 'author,authors,tags'
+            include: 'authors,tags'
         });
     }
 
-    if (config.get('enableDeveloperExperiments')) {
-        Object.assign(query.options, {
-            context: {
-                members: locals.member
-            }
-        });
-    }
+    Object.assign(query.options, {
+        context: {
+            members: locals.member
+        }
+    });
 
     return api[query.controller][query.type](query.options);
 }

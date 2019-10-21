@@ -9,7 +9,6 @@ var _ = require('lodash'),
  *
  * - remove if we drop `extraFilters` (see e.g. post model)
  * - we currently accept `?status={value}` in the API
- * - we currently accept `?staticPages={value}` in the API
  * - but instead people should use the `?filter=status:{value}`
  *
  * This function protects against:

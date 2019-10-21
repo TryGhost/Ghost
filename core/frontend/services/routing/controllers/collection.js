@@ -14,7 +14,7 @@ const _ = require('lodash'),
  * @returns {Promise}
  */
 module.exports = function collectionController(req, res, next) {
-    debug('collectionController', req.params, res.routerOptions);
+    debug('collectionController beging', req.params, res.routerOptions);
 
     const pathOptions = {
         page: req.params.page !== undefined ? req.params.page : 1,
@@ -43,6 +43,7 @@ module.exports = function collectionController(req, res, next) {
         }
     }
 
+    debug('fetching data');
     return helpers.fetchData(pathOptions, res.routerOptions, res.locals)
         .then(function handleResult(result) {
             // CASE: requested page is greater than number of pages we have
@@ -52,7 +53,7 @@ module.exports = function collectionController(req, res, next) {
                 }));
             }
 
-            debug(result.posts.length);
+            debug(`posts in collection ${result.posts.length}`);
 
             /**
              * CASE:

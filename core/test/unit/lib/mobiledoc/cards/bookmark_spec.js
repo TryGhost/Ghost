@@ -22,7 +22,7 @@ describe('Bookmark card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<!--kg-card-begin: bookmark--><figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure><!--kg-card-end: bookmark-->');
+            .should.equal('<figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure>');
     });
 
     it('skips icon when missing', function () {
@@ -43,7 +43,7 @@ describe('Bookmark card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<!--kg-card-begin: bookmark--><figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure><!--kg-card-end: bookmark-->');
+            .should.equal('<figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure>');
     });
 
     it('skips thumbnail when missing', function () {
@@ -64,7 +64,7 @@ describe('Bookmark card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<!--kg-card-begin: bookmark--><figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div></a><figcaption>Caption</figcaption></figure><!--kg-card-end: bookmark-->');
+            .should.equal('<figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div></a><figcaption>Caption</figcaption></figure>');
     });
 
     it('skips author when missing', function () {
@@ -85,7 +85,7 @@ describe('Bookmark card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<!--kg-card-begin: bookmark--><figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure><!--kg-card-end: bookmark-->');
+            .should.equal('<figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure>');
     });
 
     it('skips publisher when missing', function () {
@@ -106,7 +106,7 @@ describe('Bookmark card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<!--kg-card-begin: bookmark--><figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure><!--kg-card-end: bookmark-->');
+            .should.equal('<figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure>');
     });
 
     it('skips caption when missing', function () {
@@ -127,7 +127,7 @@ describe('Bookmark card', function () {
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<!--kg-card-begin: bookmark--><figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a></figure><!--kg-card-end: bookmark-->');
+            .should.equal('<figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a></figure>');
     });
 
     it('renders nothing when payload is undefined', function () {

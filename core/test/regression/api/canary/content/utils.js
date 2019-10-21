@@ -18,15 +18,20 @@ const expectedProperties = {
         // canary doesn't return author_id OR author
         .without('author_id', 'author')
         // and always returns computed properties: url, primary_tag, primary_author
-        .concat('url', 'primary_tag', 'primary_author')
+        .concat('url')
         // canary API doesn't return unused fields
         .without('locale')
         // These fields aren't useful as they always have known values
         .without('status')
         // @TODO: https://github.com/TryGhost/Ghost/issues/10335
         // .without('page')
+        .without('type')
         // canary returns a calculated excerpt field
         .concat('excerpt')
+        // returns meta fields from `posts_meta` schema
+        .concat(
+            ..._(schema.posts_meta).keys().without('post_id', 'id')
+        )
         .concat('reading_time')
     ,
     author: _(schema.users)
@@ -34,8 +39,6 @@ const expectedProperties = {
         .without(
             'password',
             'email',
-            'ghost_auth_access_token',
-            'ghost_auth_id',
             'created_at',
             'created_by',
             'updated_at',

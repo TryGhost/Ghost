@@ -1,13 +1,8 @@
-&nbsp;
 <p align="center">
   <a href="https://ghost.org">
-    <img src="https://user-images.githubusercontent.com/120485/43974508-b64b2fe8-9cd2-11e8-8e58-707254b8817c.png" width="200px" alt="Ghost" />
+    <img src="https://user-images.githubusercontent.com/120485/43974508-b64b2fe8-9cd2-11e8-8e58-707254b8817c.png" width="140px" alt="Ghost" />
   </a>
 </p>
-<h3 align="center">Fiercely independent, professional publishing</h3>
-<p align="center">A fully open source, powerful platform for building and running modern publications,<br>
-    we power serious blogs, magazines and journalism from DuckDuckGo to OpenAI & Sky News.</p>
-<hr />
 <p align="center">
     <a href="https://ghost.org">Ghost.org</a> |
     <a href="https://ghost.org/features">Features</a> |
@@ -15,7 +10,6 @@
     <a href="https://forum.ghost.org">Forum</a> |
     <a href="https://ghost.org/docs/">Documentation</a> |
     <a href="https://github.com/TryGhost/Ghost/blob/master/.github/CONTRIBUTING.md">Contributing</a> |
-    <a href="https://opencollective.com/ghost">Donate</a> |
     <a href="https://twitter.com/ghost">Twitter</a>
     <br /><br />
     <a href="https://ghost.org">
@@ -37,19 +31,7 @@
 
 &nbsp;
 
-<br>
-
-<p align="center">
-    <img src="https://user-images.githubusercontent.com/120485/43994697-62e2bdc2-9d99-11e8-94fc-021ab9756f33.gif" width="800" />
-</p>
-
-<br>
-
-&nbsp;
-
----
-
-&nbsp;
+<a href="https://ghost.org"><img src="https://user-images.githubusercontent.com/120485/66918181-f88fdc80-f048-11e9-8135-d9c0e7b35ebc.png" alt="Fiercely independent, professional publishing. Ghost is the most popular open source, headless Node.js CMS which already works with all the tools you know and love." /></a>
 
 <a href="https://ghost.org/pricing"><img src="https://user-images.githubusercontent.com/120485/43995179-556d7620-9da1-11e8-8410-4b2ba48ea8d0.png" alt="Ghost(Pro)" width="165px" /></a>
 

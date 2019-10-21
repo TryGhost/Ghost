@@ -19,7 +19,7 @@ module.exports = function (Bookshelf) {
 
                     if (options.context && options.context.public) {
                         // @TODO use the filter behavior for posts
-                        qb.andWhere('posts.page', '=', false);
+                        qb.andWhere('posts.type', '=', 'post');
                         qb.andWhere('posts.status', '=', 'published');
                     }
                 });
@@ -36,7 +36,7 @@ module.exports = function (Bookshelf) {
 
                     if (options.context && options.context.public) {
                         // @TODO use the filter behavior for posts
-                        qb.andWhere('posts.page', '=', false);
+                        qb.andWhere('posts.type', '=', 'post');
                         qb.andWhere('posts.status', '=', 'published');
                     }
                 });

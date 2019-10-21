@@ -10,7 +10,6 @@ function createPublicFileMiddleware(file, type, maxAge) {
     const filePath = file.match(/^public/) ? path.join(publicFilePath, file.replace(/^public/, '')) : path.join(publicFilePath, file);
     const blogRegex = /(\{\{blog-url\}\})/g;
     const adminRegex = /(\{\{admin-url\}\})/g;
-    const apiRegex = /(\{\{api-url\}\})/g;
 
     return function servePublicFile(req, res, next) {
         if (content) {
@@ -26,7 +25,6 @@ function createPublicFileMiddleware(file, type, maxAge) {
 
             if (type === 'text/xsl' || type === 'text/plain' || type === 'application/javascript') {
                 str = str.replace(blogRegex, urlUtils.urlFor('home', true).replace(/\/$/, ''));
-                str = str.replace(apiRegex, urlUtils.urlFor('api', {cors: true, version: 'v0.1', versionType: 'content'}, true));
                 str = str.replace(adminRegex, urlUtils.urlFor('admin', true).replace(/\/$/, ''));
             }
 

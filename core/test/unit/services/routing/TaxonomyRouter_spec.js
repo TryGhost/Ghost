@@ -5,8 +5,9 @@ const should = require('should'),
     common = require('../../../../server/lib/common'),
     controllers = require('../../../../frontend/services/routing/controllers'),
     TaxonomyRouter = require('../../../../frontend/services/routing/TaxonomyRouter'),
-    RESOURCE_CONFIG = require('../../../../frontend/services/routing/config/v2'),
-    RESOURCE_CONFIG_CANARY = require('../../../../frontend/services/routing/config/canary');
+    RESOURCE_CONFIG_V2 = require('../../../../frontend/services/routing/config/v2'),
+    RESOURCE_CONFIG_CANARY = require('../../../../frontend/services/routing/config/canary'),
+    RESOURCE_CONFIG_V3 = require('../../../../frontend/services/routing/config/v3');
 
 describe('UNIT - services/routing/TaxonomyRouter', function () {
     let req, res, next;
@@ -63,7 +64,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
     });
 
     it('v2:fn: _prepareContext', function () {
-        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG);
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG_V2);
         taxonomyRouter._prepareContext(req, res, next);
         next.calledOnce.should.eql(true);
 
@@ -71,9 +72,9 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
             type: 'channel',
             name: 'tag',
             permalinks: '/tag/:slug/',
-            resourceType: RESOURCE_CONFIG.QUERY.tag.resource,
-            data: {tag: RESOURCE_CONFIG.QUERY.tag},
-            filter: RESOURCE_CONFIG.TAXONOMIES.tag.filter,
+            resourceType: RESOURCE_CONFIG_V2.QUERY.tag.resource,
+            data: {tag: RESOURCE_CONFIG_V2.QUERY.tag},
+            filter: RESOURCE_CONFIG_V2.TAXONOMIES.tag.filter,
             context: ['tag'],
             slugTemplate: true,
             identifier: taxonomyRouter.identifier
@@ -89,9 +90,27 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
             type: 'channel',
             name: 'tag',
             permalinks: '/tag/:slug/',
-            resourceType: RESOURCE_CONFIG.QUERY.tag.resource,
-            data: {tag: RESOURCE_CONFIG.QUERY.tag},
-            filter: RESOURCE_CONFIG.TAXONOMIES.tag.filter,
+            resourceType: RESOURCE_CONFIG_V2.QUERY.tag.resource,
+            data: {tag: RESOURCE_CONFIG_V2.QUERY.tag},
+            filter: RESOURCE_CONFIG_V2.TAXONOMIES.tag.filter,
+            context: ['tag'],
+            slugTemplate: true,
+            identifier: taxonomyRouter.identifier
+        });
+    });
+
+    it('v3:fn: _prepareContext', function () {
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG_V3);
+        taxonomyRouter._prepareContext(req, res, next);
+        next.calledOnce.should.eql(true);
+
+        res.routerOptions.should.eql({
+            type: 'channel',
+            name: 'tag',
+            permalinks: '/tag/:slug/',
+            resourceType: RESOURCE_CONFIG_V2.QUERY.tag.resource,
+            data: {tag: RESOURCE_CONFIG_V2.QUERY.tag},
+            filter: RESOURCE_CONFIG_V2.TAXONOMIES.tag.filter,
             context: ['tag'],
             slugTemplate: true,
             identifier: taxonomyRouter.identifier

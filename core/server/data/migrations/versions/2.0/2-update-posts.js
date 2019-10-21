@@ -1,7 +1,6 @@
 const _ = require('lodash'),
     Promise = require('bluebird'),
     common = require('../../../../lib/common'),
-    models = require('../../../../models'),
     converters = require('../../../../lib/mobiledoc/converters'),
     message1 = 'Updating posts: apply new editor format and set comment_id field.',
     message2 = 'Updated posts: apply new editor format and set comment_id field.',
@@ -38,14 +37,17 @@ module.exports.up = (options) => {
 
     common.logging.info(message1);
 
-    return models.Post.findAll(_.merge({columns: postAllColumns}, localOptions))
-        .then(function (posts) {
-            return Promise.map(posts.models, function (post) {
+    // @NOTE: raw knex query, because of https://github.com/TryGhost/Ghost/issues/9983
+    return localOptions
+        .transacting('posts')
+        .select(postAllColumns)
+        .then((posts) => {
+            return Promise.map(posts, function (post) {
                 let mobiledoc;
                 let html;
 
                 try {
-                    mobiledoc = JSON.parse(post.get('mobiledoc') || null);
+                    mobiledoc = JSON.parse(post.mobiledoc || null);
 
                     if (!mobiledoc) {
                         mobiledoc = converters.mobiledocConverter.blankStructure();
@@ -58,18 +60,19 @@ module.exports.up = (options) => {
                 // CASE: convert all old editor posts to the new editor format
                 // CASE: if mobiledoc field is null, we auto set a blank structure in the model layer
                 // CASE: if html field is null, we auto generate the html in the model layer
-                if (mobiledoc && post.get('html') && post.get('html').match(/^<div class="kg-card-markdown">/)) {
+                if (mobiledoc && post.html && post.html.match(/^<div class="kg-card-markdown">/)) {
                     html = converters.mobiledocConverter.render(mobiledoc);
                 }
-
-                return models.Post.edit({
-                    comment_id: post.get('comment_id') || post.id,
-                    html: html || post.get('html'),
-                    mobiledoc: JSON.stringify(mobiledoc)
-                }, _.merge({id: post.id}, localOptions));
+                return localOptions
+                    .transacting('posts')
+                    .where('id', '=', post.id)
+                    .update({
+                        comment_id: post.comment_id || post.id,
+                        html: html || post.html,
+                        mobiledoc: JSON.stringify(mobiledoc)
+                    });
             }, {concurrency: 100});
-        })
-        .then(() => {
+        }).then(() => {
             common.logging.info(message2);
         });
 };
@@ -83,26 +86,30 @@ module.exports.down = (options) => {
     }, options);
 
     common.logging.info(message3);
-
-    return models.Post.findAll(_.merge({columns: postAllColumns}, localOptions))
-        .then(function (posts) {
-            return Promise.map(posts.models, function (post) {
+    return localOptions
+        .transacting('posts')
+        .select(postAllColumns)
+        .then((posts) => {
+            return Promise.map(posts, function (post) {
                 let version = 1;
                 let html;
-                let mobiledoc = JSON.parse(post.get('mobiledoc') || null);
+                let mobiledoc = JSON.parse(post.mobiledoc || null);
 
                 if (!mobiledocIsCompatibleWithV1(mobiledoc)) {
                     version = 2;
                 }
 
                 // CASE: revert: all new editor posts to the old editor format
-                if (mobiledoc && post.get('html')) {
+                if (mobiledoc && post.html) {
                     html = converters.mobiledocConverter.render(mobiledoc, version);
                 }
 
-                return models.Post.edit({
-                    html: html || post.get('html')
-                }, _.merge({id: post.id}, localOptions));
+                return localOptions
+                    .transacting('posts')
+                    .where('id', '=', post.id)
+                    .update({
+                        html: html || post.html
+                    });
             }, {concurrency: 100});
         })
         .then(() => {

@@ -19,7 +19,7 @@ describe('{{date}} helper', function () {
                     format: format
                 },
                 data: {
-                    blog: {
+                    site: {
                         timezone: 'Europe/Dublin'
                     }
                 }
@@ -47,7 +47,7 @@ describe('{{date}} helper', function () {
                     timeago: true
                 },
                 data: {
-                    blog: {
+                    site: {
                         timezone: 'Europe/Dublin'
                     }
                 }

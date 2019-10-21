@@ -13,7 +13,7 @@ const _ = require('lodash'),
     activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
     /**
      * inactive: owner user before blog setup, suspended users
-     * locked user: imported users, they get a random passport
+     * locked user: imported users, they get a random password
      */
     inactiveStates = ['inactive', 'locked'],
     allStates = activeStates.concat(inactiveStates);
@@ -215,26 +215,6 @@ User = ghostBookshelf.Model.extend({
 
         // remove password hash for security reasons
         delete attrs.password;
-        delete attrs.ghost_auth_access_token;
-
-        // NOTE: We don't expose the email address for for external, app and public context.
-        // @TODO: Why? External+Public is actually the same context? Was also mentioned here https://github.com/TryGhost/Ghost/issues/9043
-        // @TODO: move to api serialization when we drop v0.1
-        if (!options || !options.context || (!options.context.user && !options.context.internal && (!options.context.api_key || options.context.api_key.type === 'content'))) {
-            delete attrs.email;
-        }
-
-        // @TODO remove this when we remove v0.1 API as its handled in serialization for v2
-        // We don't expose these fields when fetching data via the public API.
-        if (options && options.context && options.context.public) {
-            delete attrs.created_at;
-            delete attrs.created_by;
-            delete attrs.updated_at;
-            delete attrs.updated_by;
-            delete attrs.last_seen;
-            delete attrs.status;
-            delete attrs.ghost_auth_id;
-        }
 
         return attrs;
     },

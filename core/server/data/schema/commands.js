@@ -149,7 +149,7 @@ function createColumnMigration(...migrations) {
         const hasColumn = await conn.schema.hasColumn(table, column);
         const isInCorrectState = dbIsInCorrectState(hasColumn);
 
-        const log = createLog(isInCorrectState ? 'info' : 'warn');
+        const log = createLog(isInCorrectState ? 'warn' : 'info');
 
         log(`${operationVerb} ${table}.${column}`);
 

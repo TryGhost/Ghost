@@ -74,14 +74,14 @@ DataGenerator.Content = {
             title: 'This is a static page',
             slug: 'static-page-test',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Static page test is what this is for.</h1><p>Hopefully you don\'t find it a bore.</p>'),
-            page: true
+            type: 'page'
         },
         {
             id: ObjectId.generate(),
             title: 'This is a draft static page',
             slug: 'static-page-draft',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Static page test is what this is for.</h1><p>Hopefully you don\'t find it a bore.</p>'),
-            page: true,
+            type: 'page',
             status: 'draft'
         },
         {
@@ -480,7 +480,7 @@ DataGenerator.forKnex = (function () {
             status: 'published',
             feature_image: null,
             featured: false,
-            page: false,
+            type: 'post',
             slug: 'slug',
             author_id: DataGenerator.Content.users[0].id,
             updated_at: new Date(),
@@ -657,7 +657,6 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             id: ObjectId.generate(),
             token: uuid.v4(),
-            client_id: clients[0].id,
             expires: Date.now() + constants.ONE_DAY_MS
         });
     }
@@ -674,16 +673,6 @@ DataGenerator.forKnex = (function () {
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             status: 'sent'
-        });
-    }
-
-    function createTrustedDomain(overrides) {
-        var newObj = _.cloneDeep(overrides);
-
-        return _.defaults(newObj, {
-            id: ObjectId.generate(),
-            client_id: clients[0].id,
-            trusted_domain: 'https://example.com'
         });
     }
 
@@ -749,13 +738,6 @@ DataGenerator.forKnex = (function () {
         createUser(DataGenerator.Content.users[2]),
         createUser(DataGenerator.Content.users[3]),
         createUser(DataGenerator.Content.users[7])
-    ];
-
-    const clients = [
-        createClient({name: 'Ghost Admin', slug: 'ghost-admin', type: 'ua'}),
-        createClient({name: 'Ghost Scheduler', slug: 'ghost-scheduler', type: 'web'}),
-        createClient({name: 'Ghost Auth', slug: 'ghost-auth', type: 'web'}),
-        createClient({name: 'Ghost Backup', slug: 'ghost-backup', type: 'web'})
     ];
 
     const roles_users = [
@@ -943,7 +925,6 @@ DataGenerator.forKnex = (function () {
         createSubscriber: createSubscriber,
         createMember: createMember,
         createInvite: createInvite,
-        createTrustedDomain: createTrustedDomain,
         createWebhook: createWebhook,
         createIntegration: createIntegration,
 
@@ -957,7 +938,6 @@ DataGenerator.forKnex = (function () {
         roles: roles,
         users: users,
         roles_users: roles_users,
-        clients: clients,
         webhooks: webhooks,
         integrations: integrations,
         api_keys: api_keys

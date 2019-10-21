@@ -25,7 +25,7 @@ describe('getImageDimensions', function () {
             ogImage: {
                 url: 'http://mysite.com/content/image/super-facebook-image.jpg'
             },
-            blog: {
+            site: {
                 logo: {
                     url: 'http://mysite.com/author/image/url/logo.jpg'
                 }
@@ -45,7 +45,7 @@ describe('getImageDimensions', function () {
             sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
             sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
             sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.blog.logo.url).should.be.true();
+            sizeOfStub.calledWith(metaData.site.logo.url).should.be.true();
             result.coverImage.should.have.property('dimensions');
             result.coverImage.should.have.property('url');
             result.coverImage.dimensions.should.have.property('width', 50);
@@ -58,10 +58,10 @@ describe('getImageDimensions', function () {
             result.ogImage.should.have.property('url');
             result.ogImage.dimensions.should.have.property('width', 50);
             result.ogImage.dimensions.should.have.property('height', 50);
-            result.blog.logo.should.have.property('dimensions');
-            result.blog.logo.should.have.property('url');
-            result.blog.logo.dimensions.should.have.property('width', 50);
-            result.blog.logo.dimensions.should.have.property('height', 50);
+            result.site.logo.should.have.property('dimensions');
+            result.site.logo.should.have.property('url');
+            result.site.logo.dimensions.should.have.property('width', 50);
+            result.site.logo.dimensions.should.have.property('height', 50);
             done();
         }).catch(done);
     });
@@ -80,7 +80,7 @@ describe('getImageDimensions', function () {
             twitterImage: {
                 url: null
             },
-            blog: {
+            site: {
                 logo: {
                     url: 'noUrl'
                 }
@@ -96,15 +96,15 @@ describe('getImageDimensions', function () {
             sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
             sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
             sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.blog.logo.url).should.be.true();
+            sizeOfStub.calledWith(metaData.site.logo.url).should.be.true();
             result.coverImage.should.not.have.property('dimensions');
             result.coverImage.should.have.property('url');
             result.authorImage.should.not.have.property('dimensions');
             result.authorImage.should.have.property('url');
             result.ogImage.should.not.have.property('dimensions');
             result.ogImage.should.have.property('url');
-            result.blog.logo.should.not.have.property('dimensions');
-            result.blog.logo.should.have.property('url');
+            result.site.logo.should.not.have.property('dimensions');
+            result.site.logo.should.have.property('url');
             done();
         }).catch(done);
     });
@@ -120,7 +120,7 @@ describe('getImageDimensions', function () {
             ogImage: {
                 url: 'http://mysite.com/content/image/super-facebook-image.jpg'
             },
-            blog: {
+            site: {
                 logo: {
                     url: 'http://mysite.com/author/image/url/favicon.ico'
                 }
@@ -140,15 +140,15 @@ describe('getImageDimensions', function () {
             sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
             sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
             sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.blog.logo.url).should.be.true();
+            sizeOfStub.calledWith(metaData.site.logo.url).should.be.true();
             result.coverImage.should.have.property('url');
             result.coverImage.should.have.property('dimensions');
             result.coverImage.dimensions.should.have.property('height', 480);
             result.coverImage.dimensions.should.have.property('width', 480);
-            result.blog.logo.should.have.property('url');
-            result.blog.logo.should.have.property('dimensions');
-            result.blog.logo.dimensions.should.have.property('height', 60);
-            result.blog.logo.dimensions.should.have.property('width', 60);
+            result.site.logo.should.have.property('url');
+            result.site.logo.should.have.property('dimensions');
+            result.site.logo.dimensions.should.have.property('height', 60);
+            result.site.logo.dimensions.should.have.property('width', 60);
             result.authorImage.should.have.property('url');
             result.authorImage.should.have.property('dimensions');
             result.authorImage.dimensions.should.have.property('height', 480);
@@ -172,7 +172,7 @@ describe('getImageDimensions', function () {
             ogImage: {
                 url: 'http://mysite.com/content/image/super-facebook-image.jpg'
             },
-            blog: {
+            site: {
                 logo: {
                     url: 'http://mysite.com/author/image/url/logo.jpg'
                 }
@@ -192,7 +192,7 @@ describe('getImageDimensions', function () {
             sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
             sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
             sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.blog.logo.url).should.be.true();
+            sizeOfStub.calledWith(metaData.site.logo.url).should.be.true();
             result.coverImage.should.have.property('dimensions');
             result.coverImage.should.have.property('url');
             result.coverImage.dimensions.should.have.property('height', 480);
@@ -205,8 +205,8 @@ describe('getImageDimensions', function () {
             result.ogImage.should.have.property('url');
             result.ogImage.dimensions.should.have.property('height', 480);
             result.ogImage.dimensions.should.have.property('width', 80);
-            result.blog.logo.should.have.property('url');
-            result.blog.logo.should.not.have.property('dimensions');
+            result.site.logo.should.have.property('url');
+            result.site.logo.should.not.have.property('dimensions');
             done();
         }).catch(done);
     });

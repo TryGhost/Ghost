@@ -23,17 +23,20 @@ const expectedProperties = {
         .without('locale', 'visibility')
         // These fields aren't useful as they always have known values
         .without('status')
-        // @TODO: https://github.com/TryGhost/Ghost/issues/10335
-        // .without('page')
+        .concat('page')
+        .without('type')
         // v2 returns a calculated excerpt field
         .concat('excerpt')
+        // returns meta fields from `posts_meta` schema
+        .concat(
+            ..._(schema.posts_meta).keys().without('post_id', 'id')
+        )
     ,
     author: _(schema.users)
         .keys()
         .without(
             'password',
             'email',
-            'ghost_auth_access_token',
             'ghost_auth_id',
             'created_at',
             'created_by',

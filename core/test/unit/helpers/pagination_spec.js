@@ -129,13 +129,13 @@ describe('{{pagination}} helper with custom template', function () {
         });
     });
 
-    it('can render single page with @blog.title', function () {
+    it('can render single page with @site.title', function () {
         var rendered = helpers.pagination.call({
             pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
             tag: {slug: 'slug'}
         }, {
             data: {
-                blog: {
+                site: {
                     title: 'Chaos is a ladder.'
                 }
             }
@@ -154,7 +154,7 @@ describe('{{pagination}} helper with custom template', function () {
         }, {
             hash: {isHeader: true},
             data: {
-                blog: {}
+                site: {}
             }
         });
         should.exist(rendered);

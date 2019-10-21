@@ -10,7 +10,7 @@ var proxy = require('./proxy'),
 module.exports = function twitter_url(username, options) { // eslint-disable-line camelcase
     if (!options) {
         options = username;
-        username = localUtils.findKey('twitter', this, options.data.blog);
+        username = localUtils.findKey('twitter', this, options.data.site);
     }
 
     if (username) {

@@ -45,7 +45,7 @@ function ping(post) {
     if (slackSettings && slackSettings.url && slackSettings.url !== '') {
         slackSettings.username = slackSettings.username ? slackSettings.username : 'Ghost';
         // Only ping when not a page
-        if (post.page) {
+        if (post.type === 'page') {
             return;
         }
 

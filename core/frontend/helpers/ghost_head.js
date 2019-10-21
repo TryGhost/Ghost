@@ -43,18 +43,6 @@ function finaliseStructuredData(metaData) {
     return head;
 }
 
-function getAjaxHelper(clientId, clientSecret) {
-    return '<script src="' +
-        getAssetUrl('public/ghost-sdk.js', true) +
-        '"></script>\n' +
-        '<script>\n' +
-        'ghost.init({\n' +
-        '\tclientId: "' + clientId + '",\n' +
-        '\tclientSecret: "' + clientSecret + '"\n' +
-        '});\n' +
-        '</script>';
-}
-
 function getMembersHelper() {
     return `
         <script src="https://js.stripe.com/v3/"></script>
@@ -83,7 +71,7 @@ function getMembersHelper() {
  * hbs forwards the data to any hbs helper like this
  * {
  *   data: {
- *     blog: {},
+ *     site: {},
  *     labs: {},
  *     config: {},
  *     root: {
@@ -93,7 +81,7 @@ function getMembersHelper() {
  *     }
  *  }
  *
- * `blog`, `labs` and `config` are the templateOptions, search for `hbs.updateTemplateOptions` in the code base.
+ * `site`, `labs` and `config` are the templateOptions, search for `hbs.updateTemplateOptions` in the code base.
  *  Also see how the root object gets created, https://github.com/wycats/handlebars.js/blob/v4.0.6/lib/handlebars/runtime.js#L259
  */
 // We use the name ghost_head to match the helper for consistency:
@@ -108,7 +96,6 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
     var head = [],
         dataRoot = options.data.root,
         context = dataRoot._locals.context ? dataRoot._locals.context : null,
-        client = dataRoot._locals.client,
         safeVersion = dataRoot._locals.safeVersion,
         postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null,
         globalCodeinjection = settingsCache.get('ghost_head'),
@@ -176,10 +163,6 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                     }
                 }
 
-                if (client && client.id && client.secret && !_.includes(context, 'amp')) {
-                    head.push(getAjaxHelper(client.id, client.secret));
-                }
-
                 if (!_.includes(context, 'amp') && labs.isSet('members')) {
                     head.push(getMembersHelper());
                 }
@@ -189,7 +172,7 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
                 escapeExpression(safeVersion) + '" />');
 
             head.push('<link rel="alternate" type="application/rss+xml" title="' +
-                escapeExpression(metaData.blog.title) + '" href="' +
+                escapeExpression(metaData.site.title) + '" href="' +
                 escapeExpression(metaData.rssUrl) + '" />');
 
             // no code injection for amp context!!!

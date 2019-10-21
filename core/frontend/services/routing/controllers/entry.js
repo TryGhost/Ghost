@@ -1,8 +1,9 @@
-const debug = require('ghost-ignition').debug('services:routing:controllers:entry'),
-    url = require('url'),
-    urlService = require('../../../services/url'),
-    urlUtils = require('../../../../server/lib/url-utils'),
-    helpers = require('../helpers');
+const debug = require('ghost-ignition').debug('services:routing:controllers:entry');
+const url = require('url');
+const config = require('../../../../server/config');
+const urlService = require('../../../services/url');
+const urlUtils = require('../../../../server/lib/url-utils');
+const helpers = require('../helpers');
 
 /**
  * @description Entry controller.
@@ -32,6 +33,11 @@ module.exports = function entryController(req, res, next) {
 
             // CASE: last param is of url is /edit, redirect to admin
             if (lookup.isEditURL) {
+                if (!config.get('admin:redirects')) {
+                    debug('is edit url but admin redirects are disabled');
+                    return next();
+                }
+
                 debug('redirect. is edit url');
                 const resourceType = entry.page ? 'page' : 'post';
 
@@ -67,13 +73,6 @@ module.exports = function entryController(req, res, next) {
              * @NOTE:
              *
              * Ensure we redirect to the correct post url including subdirectory.
-             *
-             * @NOTE:
-             * Keep in mind, that the logic here is used for v0.1 and v2.
-             * v0.1 returns relative urls, v2 returns absolute urls.
-             *
-             * @TODO:
-             * Simplify if we drop v0.1.
              */
             if (urlUtils.absoluteToRelative(entry.url, {withoutSubdirectory: true}) !== req.path) {
                 debug('redirect');
@@ -82,6 +81,11 @@ module.exports = function entryController(req, res, next) {
                     pathname: url.parse(entry.url).pathname,
                     search: url.parse(req.originalUrl).search
                 }));
+            }
+
+            // CASE: Add access property to entry for v3+ api
+            if (res.locals.apiVersion !== 'v0.1' && res.locals.apiVersion !== 'v2') {
+                entry.access = !!entry.html;
             }
 
             helpers.secure(req, entry);

@@ -9,8 +9,6 @@ module.exports = {
             authors: models.data.map(model => mapper.mapUser(model, frame)),
             meta: models.meta
         };
-
-        debug(frame.response);
     },
 
     read(model, apiConfig, frame) {
@@ -19,7 +17,5 @@ module.exports = {
         frame.response = {
             authors: [mapper.mapUser(model, frame)]
         };
-
-        debug(frame.response);
     }
 };

@@ -9,7 +9,7 @@ Webhook = ghostBookshelf.Model.extend({
 
     defaults() {
         return {
-            api_version: 'v2',
+            api_version: 'v3',
             status: 'available'
         };
     },

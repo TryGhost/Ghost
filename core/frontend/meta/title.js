@@ -47,14 +47,6 @@ function getTitle(data, root, options) {
         } else {
             title = data.post.meta_title || data.post.title;
         }
-    // Page title v0.1
-    } else if (_.includes(context, 'page') && data.post) {
-        if (options && options.property) {
-            postSdTitle = options.property + '_title';
-            title = data.post[postSdTitle] || '';
-        } else {
-            title = data.post.meta_title || data.post.title;
-        }
     // Page title v2
     } else if (_.includes(context, 'page') && data.page) {
         if (options && options.property) {

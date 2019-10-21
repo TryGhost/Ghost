@@ -9,7 +9,7 @@ function getStructuredData(metaData) {
     }
 
     structuredData = {
-        'og:site_name': metaData.blog.title,
+        'og:site_name': metaData.site.title,
         'og:type': metaData.ogType,
         'og:title': metaData.ogTitle || metaData.metaTitle,
         // CASE: metaData.excerpt for post context is populated by either the custom excerpt,
@@ -21,7 +21,7 @@ function getStructuredData(metaData) {
         'article:published_time': metaData.publishedDate,
         'article:modified_time': metaData.modifiedDate,
         'article:tag': metaData.keywords,
-        'article:publisher': metaData.blog.facebook ? socialUrls.facebook(metaData.blog.facebook) : undefined,
+        'article:publisher': metaData.site.facebook ? socialUrls.facebook(metaData.site.facebook) : undefined,
         'article:author': metaData.authorFacebook ? socialUrls.facebook(metaData.authorFacebook) : undefined,
         'twitter:card': card,
         'twitter:title': metaData.twitterTitle || metaData.metaTitle,
@@ -32,7 +32,7 @@ function getStructuredData(metaData) {
         'twitter:data1': metaData.authorName,
         'twitter:label2': metaData.keywords ? 'Filed under' : undefined,
         'twitter:data2': metaData.keywords ? metaData.keywords.join(', ') : undefined,
-        'twitter:site': metaData.blog.twitter || undefined,
+        'twitter:site': metaData.site.twitter || undefined,
         'twitter:creator': metaData.creatorTwitter || undefined
     };
 

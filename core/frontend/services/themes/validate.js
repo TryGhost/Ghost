@@ -18,11 +18,11 @@ const check = function check(theme, isZip) {
     if (isZip) {
         checkPromise = gscan.checkZip(theme, {
             keepExtractedDir: true,
-            checkVersion: 'v2'
+            checkVersion: 'canary'
         });
     } else {
         checkPromise = gscan.check(theme.path, {
-            checkVersion: 'v2'
+            checkVersion: 'canary'
         });
     }
 
@@ -30,7 +30,7 @@ const check = function check(theme, isZip) {
         .then(function resultHandler(checkedTheme) {
             checkedTheme = gscan.format(checkedTheme, {
                 onlyFatalErrors: config.get('env') === 'production',
-                checkVersion: 'v2'
+                checkVersion: 'canary'
             });
 
             return checkedTheme;

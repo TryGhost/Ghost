@@ -8,7 +8,7 @@ const {socialUrls, localUtils} = require('./proxy');
 module.exports = function facebook_url(username, options) { // eslint-disable-line camelcase
     if (!options) {
         options = username;
-        username = localUtils.findKey('facebook', this, options.data.blog);
+        username = localUtils.findKey('facebook', this, options.data.site);
     }
 
     if (username) {

@@ -18,10 +18,7 @@ const tag = (attrs, frame) => {
         }
     }
 
-    // Already deleted in model.toJSON, but leaving here so that we can clean that up when we deprecate v0.1
     delete attrs.parent_id;
-
-    // @NOTE: unused fields
     delete attrs.parent;
 
     return attrs;
@@ -29,11 +26,11 @@ const tag = (attrs, frame) => {
 
 const author = (attrs, frame) => {
     if (localUtils.isContentAPI(frame)) {
-        // Already deleted in model.toJSON, but leaving here so that we can clean that up when we deprecate v0.1
         delete attrs.created_at;
         delete attrs.updated_at;
         delete attrs.last_seen;
         delete attrs.status;
+        delete attrs.email;
 
         // @NOTE: used for night shift
         delete attrs.accessibility;
@@ -68,7 +65,6 @@ const author = (attrs, frame) => {
     // @NOTE: unused fields
     delete attrs.visibility;
     delete attrs.locale;
-    delete attrs.ghost_auth_id;
 
     return attrs;
 };
@@ -114,6 +110,7 @@ const post = (attrs, frame) => {
 
     delete attrs.locale;
     delete attrs.author;
+    delete attrs.type;
 
     return attrs;
 };

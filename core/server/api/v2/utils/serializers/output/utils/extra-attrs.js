@@ -17,7 +17,6 @@ module.exports.forPost = (frame, model, attrs) => {
     }
 };
 
-// @NOTE: ghost_head & ghost_foot are deprecated, remove in Ghost 3.0
 module.exports.forSettings = (attrs, frame) => {
     const _ = require('lodash');
 
