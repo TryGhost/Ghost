@@ -1,8 +1,8 @@
-{{#link-to "member" member class="gh-list-data" title="Member details"}}
+<LinkTo @route="member" @model={{this.member}} title="Member details" class="gh-list-data gh-members-list-basic">
     <div class="flex items-center">
         <GhMemberAvatar @member={{member}} class="w9 h9 mr3" />
         <div>
-            <h3 class="ma0 pa0 gh-members-list-name">
+            <h3 class="ma0 pa0 gh-members-list-name {{if (not member.name) "gh-members-name-noname"}}">
                 {{#if this.name}}
                     {{this.name}}
                 {{else}}
@@ -14,12 +14,14 @@
             {{/if}}
         </div>
     </div>
-{{/link-to}}
+</LinkTo>
 
-{{#link-to "member" member class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap middarkgrey f8 nowrap" title="Member details" }}
+<LinkTo @route="member" @model={{this.member}} title="Member details" class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not member.name) "gh-members-subscribed-noname"}}">
     {{this.createdDate}} <span class="midgrey-l2">({{this.memberSince}})</span>
-{{/link-to}}
+</LinkTo>
 
-{{#link-to "member" member class="gh-list-data gh-list-cellwidth-chevron align-right" title="Member details"}}
-    {{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1 nr2"}}
-{{/link-to}}
+<LinkTo @route="member" @model={{this.member}} title="Member details" class="gh-list-data gh-list-cellwidth-chevron gh-members-list-chevron">
+    <div class="flex items-center justify-end w-100 h-100">
+        <span class="nr2">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
+    </div>
+</LinkTo>

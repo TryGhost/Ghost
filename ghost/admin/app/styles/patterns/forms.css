@@ -501,6 +501,7 @@ textarea {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     padding-right: 0;
+    min-width: 0; /* Firefox fix */
 }
 
 .gh-input-group .gh-input:focus + .gh-input-append {

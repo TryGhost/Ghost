@@ -64,8 +64,8 @@
         </div>
 
         {{#liquid-if membersPricingOpen}}
-            <div class="w-50 flex mt8">
-                <div class="w-50 mr3">
+            <div class="w-100 w-50-l flex flex-column flex-row-ns mt8">
+                <div class="w-100 w-50-ns mr3-ns">
                     {{#gh-form-group}}
                     <label class="fw6 f8">Monthly price</label>
 
@@ -79,7 +79,7 @@
                     </div>
                     {{/gh-form-group}}
                 </div>
-                <div class="w-50 ml2">
+                <div class="w-100 w-50-ns ml2-ns">
                     {{#gh-form-group class="description-container"}}
                     <label class="fw6 f8">Yearly price</label>
                     <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
@@ -172,7 +172,7 @@
         </div>
 
         {{#liquid-if membersEmailOpen}}
-        <div class="flex flex-column w-40 flex mt8">
+        <div class="flex flex-column w-100 w-50-l flex mt8">
             {{#gh-form-group}}
             <label class="fw6 f8">From Address</label>
             <div class="flex items-center justify-center mt1 gh-input-group">
