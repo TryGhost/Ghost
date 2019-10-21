@@ -44,15 +44,15 @@ function ensureActiveTheme(req, res, next) {
  * This should be definitely refactored and we need to consider _some_
  * members settings as publicly readable
  */
-function haxGetMembersPricesData() {
-    const defaultPricesData = {Monthly: 0, Yearly: 0};
+function haxGetMembersPriceData() {
+    const defaultPriceData = {monthly: 0, yearly: 0};
     try {
         const membersSettings = settingsCache.get('members_subscription_settings');
         const stripeProcessor = membersSettings.paymentProcessors.find(
             processor => processor.adapter === 'stripe'
         );
 
-        const pricesData = stripeProcessor.config.plans.reduce((prices, plan) => {
+        const priceData = stripeProcessor.config.plans.reduce((prices, plan) => {
             const numberAmount = 0 + plan.amount;
             const dollarAmount = numberAmount ? Math.round(numberAmount / 100) : 0;
             return Object.assign(prices, {
@@ -60,13 +60,13 @@ function haxGetMembersPricesData() {
             });
         }, {});
 
-        if (Number.isInteger(pricesData.Monthly) && Number.isInteger(pricesData.Yearly)) {
-            return pricesData;
+        if (Number.isInteger(priceData.Monthly) && Number.isInteger(priceData.Yearly)) {
+            return priceData;
         }
 
-        return defaultPricesData;
+        return defaultPriceData;
     } catch (err) {
-        return defaultPricesData;
+        return defaultPriceData;
     }
 }
 
@@ -80,7 +80,7 @@ function updateGlobalTemplateOptions(req, res, next) {
         posts_per_page: activeTheme.get().config('posts_per_page'),
         image_sizes: activeTheme.get().config('image_sizes')
     };
-    const pricesData = haxGetMembersPricesData();
+    const priceData = haxGetMembersPriceData();
 
     // @TODO: only do this if something changed?
     // @TODO: remove blog if we drop v0.1 (Ghost 3.0)
@@ -90,7 +90,7 @@ function updateGlobalTemplateOptions(req, res, next) {
             site: siteData,
             labs: labsData,
             config: themeData,
-            prices: pricesData
+            prices: priceData
         }
     });
 
