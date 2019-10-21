@@ -10,7 +10,7 @@ export default Component.extend({
     router: service(),
 
     tagName: 'li',
-    classNames: ['gh-list-row'],
+    classNames: ['gh-list-row', 'gh-members-list-item'],
 
     active: false,
 

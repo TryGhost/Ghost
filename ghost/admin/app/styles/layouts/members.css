@@ -45,6 +45,101 @@ p.gh-members-list-email {
 
 .gh-member-actions-menu.fade-out {
     animation-duration: .001s;
+    pointer-events: none;
+}
+
+@media (max-width: 1000px) {
+    .members-list .gh-list-header, .gh-list-hidecell-m {
+        display: table-cell;
+    }
+}
+
+@media (max-width: 900px) {
+    .members-list .gh-list-header, .gh-list-hidecell-m {
+        display: none;
+    }
+
+    .gh-members-list-item {
+        display: flex;
+        position: relative;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--lightgrey);
+        margin: 0;
+    }
+
+    .gh-members-list-item:nth-of-type(2) {
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+
+    .gh-members-list-item .gh-list-data {
+        border-top: none !important;
+    }
+
+    .gh-members-list-item:hover {
+        background: var(--whitegrey-l2);
+    }
+
+    .gh-members-list-item:hover .gh-list-data {
+        background: none !important;
+    }
+
+    .gh-members-list-basic {
+        display: block;
+        flex: 1 1 100%;
+    }
+
+    .gh-members-list-subscribed-at {
+        display: inline-block;
+        width: unset;
+        padding: 0 0 16px 64px;
+        margin-top: -7px;
+        font-size: 1.2rem;
+    }
+
+    .gh-members-list-chevron {
+        display: block;
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
+
+    .gh-list h3.gh-members-name-noname {
+        margin-top: -14px;
+    }
+
+    .gh-members-subscribed-noname {
+        display: inline-block;
+        margin-top: -32px;
+        padding-bottom: 16px;
+    }
+}
+
+@media (max-width: 450px) {
+    .members-header {
+        justify-content: flex-end;
+        min-height: 120px;
+    }
+
+    .members-header .gh-canvas-title {
+        position: absolute;
+        top: 29px;
+        left: 21px;
+    }
+
+    .members-header .view-actions {
+        margin-top: 62px;
+        width: 100%;
+    }
+
+    .members-header .view-actions .gh-members-header-search {
+        width: 100%;
+    }
+
+    .view-actions input.gh-members-list-searchfield {
+        min-width: 0;
+    }
 }
 
 
