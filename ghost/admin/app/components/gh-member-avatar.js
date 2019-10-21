@@ -17,7 +17,7 @@ export default Component.extend({
 
     member: null,
     initialsClass: computed('sizeClass', function () {
-        return this.sizeClass || 'f5 fw4 lh-zero';
+        return this.sizeClass || 'gh-member-list-avatar';
     }),
 
     backgroundStyle: computed('member.{name,email}', function () {

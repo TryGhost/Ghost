@@ -3,7 +3,7 @@ export default [{
     database: 'mysql',
     enableDeveloperExperiments: true,
     environment: 'development',
-    labs: {publicAPI: true, subscribers: false},
+    labs: {},
     mail: 'SMTP',
     version: '2.15.0',
     useGravatar: 'true'

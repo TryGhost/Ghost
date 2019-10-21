@@ -29,9 +29,10 @@ export const AVAILABLE_EVENTS = [
     {event: 'tag.edited', name: 'Tag updated', group: 'Tags'},
     {event: 'tag.deleted', name: 'Tag deleted', group: 'Tags'},
 
-    // GROUPNAME: Subscribers
-    {event: 'subscriber.added', name: 'Subscriber added', group: 'Subscribers'},
-    {event: 'subscriber.deleted', name: 'Subscriber deleted', group: 'Subscribers'}
+    // GROUPNAME: Members
+    {event: 'member.added', name: 'Member added', group: 'Members'}
+    // TODO: enable once server-side payload is fixed
+    // {event: 'member.deleted', name: 'Member deleted', group: 'Members'}
 ];
 
 export function eventName([event]/*, hash*/) {

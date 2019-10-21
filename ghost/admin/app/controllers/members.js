@@ -9,7 +9,7 @@ import {task} from 'ember-concurrency';
 export default Controller.extend({
     store: service(),
 
-    meta: null,
+    memberCount: null,
     members: null,
     searchText: '',
     init() {
@@ -54,25 +54,23 @@ export default Controller.extend({
     
     fetchMembers: task(function* () {
         let newFetchDate = new Date();
-        let results;
 
         if (this._hasFetchedAll) {
             // fetch any records modified since last fetch
-            results = yield this.store.query('member', {
+            yield this.store.query('member', {
                 limit: 'all',
                 filter: `updated_at:>='${moment.utc(this._lastFetchDate).format('YYYY-MM-DD HH:mm:ss')}'`,
                 order: 'created_at desc'
             });
         } else {
             // fetch all records
-            results = yield this.store.query('member', {
+            yield this.store.query('member', {
                 limit: 'all',
                 order: 'created_at desc'
             });
             this._hasFetchedAll = true;
-            this.set('meta', results.meta);
         }
-
+        this.set('memberCount', this.store.peekAll('member').length);
         this._lastFetchDate = newFetchDate;
     })
 });

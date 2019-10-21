@@ -658,6 +658,7 @@
     margin: -3px 0 0 1px;
     padding: 0;
     text-overflow: ellipsis;
+    text-indent: -1px;
     white-space: nowrap;
     font-size: 2.8rem;
     line-height: 1.2em;
@@ -668,9 +669,6 @@
 }
 
 @media (max-width: 500px) {
-    .gh-canvas-title {
-        display: block;
-    }
     .gh-canvas-title svg {
         margin: 0 5px;
     }

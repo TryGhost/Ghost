@@ -15,7 +15,7 @@
             </section>
         </GhCanvasHeader>
         <div class="flex items-center mb10 bt b--lightgrey-d1 pt8">
-            <GhMemberAvatar @member={{member}} @sizeClass={{if member.name 'f-subheadline fw4 lh-zero' 'f-headline fw4 lh-zero'}} class="w18 h18 mr4" />
+            <GhMemberAvatar @member={{member}} @sizeClass={{if member.name 'f-subheadline fw4 lh-zero tracked-1' 'f-headline fw4 lh-zero tracked-1'}} class="w18 h18 mr4" />
             <div>
                 <h3 class="f2 fw5 ma0 pa0">
                     {{if member.name member.name member.email}}
@@ -24,7 +24,7 @@
                     {{#if member.name}}
                         <span class="darkgrey fw5">{{member.email}}</span> – 
                     {{/if}}
-                    Member since {{this.subscribedAt}}
+                    Created on {{this.subscribedAt}}
                 </p>
             </div>
         </div>

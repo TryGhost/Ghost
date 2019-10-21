@@ -146,8 +146,9 @@
 }
 
 .gh-post-list-featured {
-    padding: 20px 0px 20px 10px;
+    padding: 15px 0px 20px 10px;
     width: 1px;
+    vertical-align: top;
 }
 
 .gh-post-list-updated,
@@ -246,13 +247,27 @@
         margin: 0;
     }
 
+    .gh-posts-list-item:nth-of-type(2) {
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+
+    .gh-posts-list-item:hover {
+        background: var(--whitegrey-l2);
+    }
+
+    .gh-posts-list-item:hover .gh-list-data {
+        background: none !important;
+    }
+
     .gh-post-list-featured {
         display: block;
         order: 1;
         border-bottom: none;
         position: absolute;
-        left: 0;
-        top: -1px;
+        left: -6px;
+        top: 4px;
+        border: none;
     }
 
     .gh-post-list-title {
@@ -323,12 +338,13 @@
         flex-direction: column;
         align-items: flex-end;
         margin-top: 18px;
+        overflow-y: hidden;
     }
 
     .post-header .view-actions .gh-contentfilter {
         order: 2;
-        margin: 10px 0;
-        padding: 6px 2px;
+        margin: 10px 0 -20px;
+        padding: 6px 2px 26px 22px;
         max-width: calc(100vw - 10px);
         overflow-x: auto;
     }
@@ -340,7 +356,7 @@
     }
 
     .post-header .gh-canvas-title {
-        left: 20px;
+        left: 25px;
     }
 
     .gh-post-list-updated {
@@ -349,6 +365,16 @@
 
     .gh-post-list-author {
         max-width: calc(100% - 140px);
+    }
+}
+
+@media (max-width: 430px) {
+    .post-header .view-actions .gh-contentfilter {
+        border-right: 1px solid var(--whitegrey-d1);
+    }
+    
+    .gh-contentfilter-sort {
+        padding-right: 8px;
     }
 }
 
