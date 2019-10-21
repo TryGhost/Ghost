@@ -161,7 +161,7 @@ export default Component.extend({
     _loadPosts() {
         let store = this.store;
         let postsUrl = `${store.adapterFor('post').urlForQuery({}, 'post')}/`;
-        let postsQuery = {fields: 'id,title,page', limit: 'all', status: 'all'};
+        let postsQuery = {fields: 'id,title,page', limit: 'all'};
         let content = this.content;
 
         return this.ajax.request(postsUrl, {data: postsQuery}).then((posts) => {
@@ -178,7 +178,7 @@ export default Component.extend({
     _loadPages() {
         let store = this.store;
         let pagesUrl = `${store.adapterFor('page').urlForQuery({}, 'page')}/`;
-        let pagesQuery = {fields: 'id,title,page', limit: 'all', status: 'all'};
+        let pagesQuery = {fields: 'id,title,page', limit: 'all'};
         let content = this.content;
 
         return this.ajax.request(pagesUrl, {data: pagesQuery}).then((pages) => {

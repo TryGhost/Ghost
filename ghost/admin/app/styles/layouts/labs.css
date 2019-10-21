@@ -1,7 +1,3 @@
-.gh-labs-price-label input {
-    padding-right: 96px;
-}
-
 .gh-labs-price-label input::-webkit-outer-spin-button, .gh-labs-price-label input::-webkit-inner-spin-button {
     /* display: none; <- Crashes Chrome on hover */
     -webkit-appearance: none;
@@ -11,21 +7,6 @@
 .gh-labs-price-label input[type=number] {
     -moz-appearance: textfield;
     /* Firefox */
-}
-
-.gh-labs-price-label::after {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    color: var(--midlightgrey);
-}
-
-.gh-labs-monthly-price::after {
-    content: "USD/month";
-}
-
-.gh-labs-yearly-price::after {
-    content: "USD/year";
 }
 
 .gh-labs-toggle-wrapper {
@@ -69,6 +50,57 @@
 
 .gh-labs-disabled .gh-setting-content, .gh-labs-disabled .gh-setting-action {
     opacity: 0.25;
+}
+
+.gh-members-stripe-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gh-members-stripe-info-header h4 {
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-members-stripe-info {
+    border-radius: 0.9rem;
+    border: 1px solid var(--whitegrey);
+    background: var(--whitegrey-l2);
+    padding: 12px;
+    width: 380px;
+}
+
+.gh-members-stripe-badge {
+    width: 180px;
+}
+
+.gh-members-stripe-link {
+    color: #555ABF;
+}
+
+@media (max-width: 500px) {
+    .gh-members-stripe-info-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .gh-members-stripe-info-header h4 {
+        order: 2;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--whitegrey);
+    }
+
+    .gh-members-stripe-badge {
+        order: 1;
+        /* margin: -10px 0 0 -10px; */
+    }
+
+    .gh-members-stripe-info {
+        width: 100%;
+    }
 }
 
 .gh-labs-disabled .for-checkbox label,
