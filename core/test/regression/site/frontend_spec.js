@@ -123,35 +123,23 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
-            it('should respond with html for valid url', function (done) {
+            it('should respond with html for valid post url', function (done) {
                 request.get('/welcome/')
                     .expect('Content-Type', /html/)
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(200)
                     .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
                         var $ = cheerio.load(res.text);
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        should.not.exist(res.headers['X-CSRF-Token']);
-                        should.not.exist(res.headers['set-cookie']);
-                        should.exist(res.headers.date);
 
                         // NOTE: This is the title from the settings.
                         $('title').text().should.equal('Welcome to Ghost');
 
-                        // @TODO: change or remove?
-                        // $('.content .post').length.should.equal(1);
-                        // $('.poweredby').text().should.equal('Proudly published with Ghost');
-                        // $('body.post-template').length.should.equal(1);
-                        // $('body.tag-getting-started').length.should.equal(1);
-                        // $('article.post').length.should.equal(1);
-                        // $('article.tag-getting-started').length.should.equal(1);
+                        $('body.post-template').length.should.equal(1);
+                        $('body.tag-getting-started').length.should.equal(1);
+                        $('article.post').length.should.equal(2);
+                        $('article.tag-getting-started').length.should.equal(2);
 
-                        done();
+                        doEnd(done)(err, res);
                     });
             });
 
@@ -355,7 +343,20 @@ describe('Frontend Routing', function () {
                     .expect('Content-Type', /html/)
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(200)
-                    .end(doEnd(done));
+                    .end(function (err, res) {
+                        var $ = cheerio.load(res.text);
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        should.not.exist(res.headers['X-CSRF-Token']);
+                        should.not.exist(res.headers['set-cookie']);
+                        should.exist(res.headers.date);
+
+                        $('title').text().should.equal('Ghost');
+                        $('body.page-template').length.should.equal(1);
+                        $('article.post').length.should.equal(1);
+
+                        doEnd(done)(err, res);
+                    });
             });
 
             it('should redirect without slash', function (done) {
