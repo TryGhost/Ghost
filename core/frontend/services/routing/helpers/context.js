@@ -55,7 +55,13 @@ function setResponseContext(req, res, data) {
         }
     }
 
-    if (data && data.post) {
+    // @TODO: remove first if condition when only page key is returned
+    //        ref.: https://github.com/TryGhost/Ghost/issues/10042
+    if (data && data.post && data.post.page) {
+        if (!res.locals.context.includes('page')) {
+            res.locals.context.push('page');
+        }
+    } else if (data && data.post) {
         if (!res.locals.context.includes('post')) {
             res.locals.context.push('post');
         }
