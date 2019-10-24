@@ -1,0 +1,32 @@
+{
+  "name": "@tryghost/vhost-middleware",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost-Utils/tree/master/packages/vhost-middleware",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "mocha": "6.2.2",
+    "should": "13.2.3",
+    "sinon": "7.5.0",
+    "supertest": "^4.0.2"
+  },
+  "dependencies": {
+    "bluebird": "^3.7.1",
+    "ghost-ignition": "^3.1.0",
+    "lodash": "^4.17.15"
+  }
+}
