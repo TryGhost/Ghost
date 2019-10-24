@@ -96,7 +96,7 @@ _private.getBlogRedirectUrl = (options) => {
  */
 _private.redirect = (req, res, next, redirectFn) => {
     const redirectUrl = redirectFn({
-        requestedHost: req.get('host'),
+        requestedHost: req.hostname,
         requestedUrl: url.parse(req.originalUrl || req.url).pathname,
         queryParameters: req.query,
         secure: req.secure

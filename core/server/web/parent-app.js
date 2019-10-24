@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('web:parent');
 const express = require('express');
-const vhost = require('vhost');
+const vhost = require('@tryghost/vhost-middleware');
 const config = require('../config');
 const compress = require('compression');
 const netjet = require('netjet');
