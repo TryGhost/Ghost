@@ -29,6 +29,30 @@ describe('vhost(hostname, server)', function () {
             .expect(200, 'tobi', done);
     });
 
+    it('should route by `req.hostname` (express v4)', function (done) {
+        const vhosts = [];
+
+        vhosts.push(vhost('anotherhost.com', anotherhost));
+        vhosts.push(vhost('loki.com', loki));
+
+        const app = createServer(vhosts, null, function (req) {
+            // simulate express setting req.hostname based on x-forwarded-host
+            req.hostname = 'anotherhost.com';
+        });
+
+        function anotherhost(req, res) {
+            res.end('anotherhost');
+        }
+        function loki(req, res) {
+            res.end('loki');
+        }
+
+        request(app)
+            .get('/')
+            .set('Host', 'loki.com')
+            .expect(200, 'anotherhost', done);
+    });
+
     it('should ignore port in Host', function (done) {
         const app = createServer('tobi.com', function (req, res) {
             res.end('tobi');
@@ -234,14 +258,19 @@ describe('vhost(hostname, server)', function () {
     });
 });
 
-function createServer(hostname, server) {
+function createServer(hostname, server, pretest) {
     const vhosts = !Array.isArray(hostname)
         ? [vhost(hostname, server)]
         : hostname;
 
     return http.createServer(function onRequest(req, res) {
-        let index = 0;
+        // This allows you to perform changes to the request/response
+        // objects before our assertions
+        if (pretest) {
+            pretest(req, res);
+        }
 
+        let index = 0;
         function next(err) {
             const vhost = vhosts[index];
             index = index + 1;
