@@ -35,6 +35,10 @@ property will be populated with an object. This object will have numeric propert
 corresponding to each wildcard (or capture group if RegExp object provided) and the
 `hostname` that was matched.
 
+Where the `hostname` of the request comes from depends on the type of server you're running.
+If you're running a raw Node.js/connect server, this comes from [`req.headers.host`](https://nodejs.org/dist/latest/docs/api/http.html#http_message_headers).
+If you're running an express v4 server, this comes from [`req.hostname`](http://expressjs.com/en/4x/api.html#req.hostname).
+
 ```js
 var connect = require('connect')
 var vhost = require('vhost')

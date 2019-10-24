@@ -74,7 +74,10 @@ function vhost(hostname, handle) {
  */
 
 function hostnameof(req) {
-    var host = req.headers.host;
+    var host =
+        req.hostname || // express v4
+        req.host || // express v3
+        req.headers.host; // http
 
     if (!host) {
         return;
