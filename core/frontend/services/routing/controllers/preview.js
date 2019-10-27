@@ -53,6 +53,10 @@ module.exports = function previewController(req, res, next) {
                 return urlUtils.redirect301(res, urlService.getUrlByResourceId(post.id, {withSubdirectory: true}));
             }
 
+            if (res.locals.apiVersion !== 'v0.1' && res.locals.apiVersion !== 'v2') {
+                post.access = !!post.html;
+            }
+
             // @TODO: See helpers/secure
             helpers.secure(req, post);
 
