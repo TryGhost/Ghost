@@ -5472,12 +5472,12 @@ metascraper-logo-favicon@5.7.6:
     got "~9.6.0"
     lodash "~4.17.15"
 
-metascraper-logo@5.7.6:
-  version "5.7.6"
-  resolved "https://registry.yarnpkg.com/metascraper-logo/-/metascraper-logo-5.7.6.tgz#92680c8e839c6c357ecb4d7fe0445f46233d0f09"
-  integrity sha512-0pMHxua4dNUcWLCk4WGCqBcuMoUoMAr3kFT34tJZTAd345iCagtwNNs2iAcNLdpNqyXzKyGIKcZPNkbWByVcCQ==
+metascraper-logo@5.7.14:
+  version "5.7.14"
+  resolved "https://registry.yarnpkg.com/metascraper-logo/-/metascraper-logo-5.7.14.tgz#c5e7f4d4191672e48130e10f21f4a31a9faf539d"
+  integrity sha512-5kgH+2+chlJ4mUajHItg1lsXhkcWQbnkLcGrE+7YMIIf/7uHFGehg+dqVNw1CRBPNpwJKibrZSb9aHMlWJPwlg==
   dependencies:
-    "@metascraper/helpers" "^5.7.6"
+    "@metascraper/helpers" "^5.7.14"
 
 metascraper-publisher@5.7.6:
   version "5.7.6"
