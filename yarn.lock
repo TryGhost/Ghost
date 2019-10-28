@@ -69,6 +69,32 @@
   dependencies:
     "@hapi/hoek" "8.x.x"
 
+"@metascraper/helpers@^5.7.14":
+  version "5.7.14"
+  resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.7.14.tgz#676b11bdc82b1fbe4e6cc1fe0c4be2dddf7d5ba1"
+  integrity sha512-xQa24LVinzyT/5H4LKNP4YDdR/kcz+j5GIIB123DyxvhQZTRuDu8BRmEUB/Yj+jY7U5qhwabIgwCT/eN1Y9Uag==
+  dependencies:
+    audio-extensions "0.0.0"
+    chrono-node "~1.3.11"
+    condense-whitespace "~2.0.0"
+    entities "~2.0.0"
+    file-extension "~4.0.5"
+    has-values "~2.0.1"
+    image-extensions "~1.1.0"
+    is-relative-url "~3.0.0"
+    is-uri "~1.2.0"
+    iso-639-3 "~1.2.0"
+    isostring "0.0.1"
+    lodash "~4.17.15"
+    memoize-one "~5.1.1"
+    mime-types "~2.1.24"
+    normalize-url "~4.5.0"
+    smartquotes "~2.3.1"
+    title "~3.4.1"
+    truncate "~2.1.0"
+    url-regex "~5.0.0"
+    video-extensions "~1.1.0"
+
 "@metascraper/helpers@^5.7.6":
   version "5.7.6"
   resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.7.6.tgz#84007215d3b31525995fd85cf0d28bf6a12bf7bb"
@@ -5352,6 +5378,11 @@ mem@~5.1.1:
     mimic-fn "^2.1.0"
     p-is-promise "^2.1.0"
 
+memoize-one@~5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/memoize-one/-/memoize-one-5.1.1.tgz#047b6e3199b508eaec03504de71229b8eb1d75c0"
+  integrity sha512-HKeeBpWvqiVJD57ZUAsJNm71eHTykffzcLZVYWiVfQeI1rJtuEaS7hQiEpWfVVk18donPwJEcFKIkCmPJNOhHA==
+
 meow@^3.3.0:
   version "3.7.0"
   resolved "https://registry.yarnpkg.com/meow/-/meow-3.7.0.tgz#72cb668b425228290abbfa856892587308a801fb"
@@ -5401,12 +5432,12 @@ metascraper-author@5.7.6:
     "@metascraper/helpers" "^5.7.6"
     lodash "~4.17.15"
 
-metascraper-description@5.7.6:
-  version "5.7.6"
-  resolved "https://registry.yarnpkg.com/metascraper-description/-/metascraper-description-5.7.6.tgz#3a26b8bb8f325b1e959864f2c983ad4ef6050c24"
-  integrity sha512-DtcIRTwI2RFdy2NBSYCUpekNSqMH4BVNjAJNpWWYsDJZbk5rw6w2gOgzJH4HUM4eYKDkd0/tVd+HZYz57xxYBQ==
+metascraper-description@5.7.14:
+  version "5.7.14"
+  resolved "https://registry.yarnpkg.com/metascraper-description/-/metascraper-description-5.7.14.tgz#4b77b04120f5f4f17dcabb4f549a7954da74b581"
+  integrity sha512-++qN4Rf0Hx13SbhJgRiLSuVOZHsYwhUkMfHa5sVVihSJkrLVjOSdBTpNBajRC7yHwG6m6/qIesuERbT1jdu5bw==
   dependencies:
-    "@metascraper/helpers" "^5.7.6"
+    "@metascraper/helpers" "^5.7.14"
 
 metascraper-image@5.7.6:
   version "5.7.6"
