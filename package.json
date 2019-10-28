@@ -77,7 +77,7 @@
     "fs-extra": "8.1.0",
     "ghost-ignition": "3.1.0",
     "ghost-storage-base": "0.0.3",
-    "glob": "7.1.4",
+    "glob": "7.1.5",
     "got": "9.6.0",
     "gscan": "3.0.0",
     "html-to-text": "5.1.1",
