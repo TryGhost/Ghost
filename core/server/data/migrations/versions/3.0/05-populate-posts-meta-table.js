@@ -42,7 +42,11 @@ module.exports.up = (options) => {
                     postsMetaEntry.id = ObjectId.generate();
                     return postsMetaEntry;
                 });
-                return localOptions.transacting('posts_meta').insert(postsMetaEntries);
+
+                // NOTE: iterative method is needed to prevent from `SQLITE_ERROR: too many variables` error
+                return Promise.map(postsMetaEntries, (postsMeta) => {
+                    return localOptions.transacting('posts_meta').insert(postsMeta);
+                });
             } else {
                 common.logging.info('Skipping populating posts_meta table: found 0 posts with metadata');
                 return Promise.resolve();
