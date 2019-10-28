@@ -4,11 +4,11 @@
 //
 // Checks if a post has a particular property
 
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    logging = proxy.logging,
-    i18n = proxy.i18n,
-    validAttrs = ['tag', 'author', 'slug', 'id', 'number', 'index', 'any', 'all'];
+const proxy = require('./proxy');
+const _ = require('lodash');
+const logging = proxy.logging;
+const i18n = proxy.i18n;
+const validAttrs = ['tag', 'author', 'slug', 'id', 'number', 'index', 'any', 'all'];
 
 function handleCount(ctxAttr, data) {
     if (!data || !_.isFinite(data.length)) {
