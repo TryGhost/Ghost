@@ -5493,12 +5493,12 @@ metascraper-logo@5.7.14:
   dependencies:
     "@metascraper/helpers" "^5.7.14"
 
-metascraper-publisher@5.7.6:
-  version "5.7.6"
-  resolved "https://registry.yarnpkg.com/metascraper-publisher/-/metascraper-publisher-5.7.6.tgz#d0b04ae2f260a5bf0536fad29b3617fb9b6df296"
-  integrity sha512-RVvyNbzJnWutA2rSbK0CytokBXu1SVfsnME+IeKOGmtiSnKtGx5Q0lALHNVHt+bIShEYgba0UlVO/mPE37dU8g==
+metascraper-publisher@5.7.14:
+  version "5.7.14"
+  resolved "https://registry.yarnpkg.com/metascraper-publisher/-/metascraper-publisher-5.7.14.tgz#74218cd2c1042264a3df754930e18d5e1f731750"
+  integrity sha512-6WHVr03tu4+KtcETR/q8y7ND9HxKI8QEEI1NAVpAolm1szDSpzV1PXVxWILcc2zPsaAHBSvM0iMwmE1zBEs+BA==
   dependencies:
-    "@metascraper/helpers" "^5.7.6"
+    "@metascraper/helpers" "^5.7.14"
 
 metascraper-title@5.7.6:
   version "5.7.6"
