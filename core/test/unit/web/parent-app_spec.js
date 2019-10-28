@@ -30,7 +30,7 @@ describe('parent app', function () {
 
         parentApp = proxyquire('../../../server/web/parent-app', {
             express: expressStub,
-            vhost: vhostSpy,
+            '@tryghost/vhost-middleware': vhostSpy,
             './api': apiSpy,
             './admin': adminSpy,
             './site': siteSpy,

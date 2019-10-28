@@ -11,6 +11,10 @@ module.exports = function setupAdminApp() {
     debug('Admin setup start');
     const adminApp = express();
 
+    // Make sure 'req.secure' and `req.hostname` is valid for proxied requests
+    // (X-Forwarded-Proto header will be checked, if present)
+    adminApp.enable('trust proxy');
+
     // Admin assets
     // @TODO ensure this gets a local 404 error handler
     const configMaxAge = config.get('caching:admin:maxAge');

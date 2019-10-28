@@ -13,7 +13,7 @@ describe('UNIT: url redirects', function () {
 
     beforeEach(function () {
         req = {
-            get: function get() {
+            get hostname() {
                 return host;
             }
         };
