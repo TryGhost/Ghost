@@ -11,6 +11,9 @@ var proxy = require('./proxy'),
     validAttrs = ['tag', 'author', 'slug', 'id', 'number', 'index', 'any', 'all'];
 
 function handleCount(ctxAttr, data) {
+    if (!data || !_.isFinite(data.length)) {
+        return false;
+    }
     let count;
 
     if (ctxAttr.match(/count:\d+/)) {
