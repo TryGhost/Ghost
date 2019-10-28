@@ -5456,12 +5456,12 @@ metascraper-description@5.7.14:
   dependencies:
     "@metascraper/helpers" "^5.7.14"
 
-metascraper-image@5.7.6:
-  version "5.7.6"
-  resolved "https://registry.yarnpkg.com/metascraper-image/-/metascraper-image-5.7.6.tgz#77c45dfd28f6f0903417545196c129ec64cdbe6d"
-  integrity sha512-SIztcREe0m1p1wCUNh+mFVfXPbFQfOu6dZVhU1BIxb6+0km+pUOtPi6Kxnax10ZH4k0ZlFDmLr98yV/ydYdgvw==
+metascraper-image@5.7.14:
+  version "5.7.14"
+  resolved "https://registry.yarnpkg.com/metascraper-image/-/metascraper-image-5.7.14.tgz#7084754111312eac876728f8dd801fa1c143a794"
+  integrity sha512-TxnUKYU92iWapq2G55E4AF7VjGyiDO2x01Z6AyjbmRxoM4U2IaHkNpE5msyc7TQhxGoYOSvdUtOeUnqdPqr+aA==
   dependencies:
-    "@metascraper/helpers" "^5.7.6"
+    "@metascraper/helpers" "^5.7.14"
 
 metascraper-logo-favicon@5.7.6:
   version "5.7.6"
