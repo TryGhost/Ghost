@@ -28,7 +28,7 @@
                     <button
                         type="button"
                         title={{item.title}}
-                        class="dib dim-lite link h10 w9 nudge-top--1 justify-center {{item.buttonClass}}"
+                        class="dib dim-lite link h9 w9 nudge-top--1 justify-center {{item.buttonClass}}"
                         onmousedown={{action item.action}}
                     >
                         {{#if item.icon}}{{svg-jar item.icon class=(concat item.iconClass (if item.text " mr2") " w4 h4")}} {{/if}}{{item.text}}
