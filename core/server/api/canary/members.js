@@ -119,6 +119,9 @@ const members = {
     },
 
     exportCSV: {
+        options: [
+            'limit'
+        ],
         headers: {
             disposition: {
                 type: 'csv',
