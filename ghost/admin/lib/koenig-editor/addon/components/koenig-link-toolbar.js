@@ -1,10 +1,11 @@
 import Component from '@ember/component';
 import layout from '../templates/components/koenig-link-toolbar';
-// import {TOOLBAR_MARGIN} from './koenig-toolbar';
+import relativeToAbsolute from '../lib/relative-to-absolute';
 import {computed} from '@ember/object';
 import {getEventTargetMatchingTag} from 'mobiledoc-kit/utils/element-utils';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 // gap between link and toolbar bottom
 const TOOLBAR_MARGIN = 8;
@@ -17,6 +18,8 @@ const TOOLBAR_PADDING = 12;
 const DELAY = 120;
 
 export default Component.extend({
+    config: service(),
+
     layout,
 
     attributeBindings: ['style'],
@@ -163,8 +166,12 @@ export default Component.extend({
     },
 
     _showToolbar(target) {
+        // extract the href attribute value and convert it to absolute based
+        // on the configured blog url
         this._target = target;
-        this.set('url', target.href);
+        let href = target.getAttribute('href');
+        let blogUrl = this.config.get('blogUrl');
+        this.set('url', relativeToAbsolute(href, blogUrl));
         this.set('showToolbar', true);
         run.schedule('afterRender', this, function () {
             this._positionToolbar(target);

@@ -1,10 +1,12 @@
 import Component from '@ember/component';
 import layout from '../templates/components/koenig-link-input';
+import relativeToAbsolute from '../lib/relative-to-absolute';
 import {TOOLBAR_MARGIN} from './koenig-toolbar';
 import {computed} from '@ember/object';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 
 // pixels that should be added to the `left` property of the tick adjustment styles
 // TODO: handle via CSS?
@@ -26,6 +28,8 @@ function getScrollParent(node) {
 }
 
 export default Component.extend({
+    config: service(),
+
     layout,
 
     attributeBindings: ['style'],
@@ -120,7 +124,8 @@ export default Component.extend({
                 // prevent Enter from triggering in the editor and removing text
                 event.preventDefault();
 
-                let href = this.href;
+                let href = relativeToAbsolute(this.href, this.config.get('blogUrl'));
+                this.set('href', href);
 
                 // create a single editor runloop here so that we don't get
                 // separate remove and replace ops pushed onto the undo stack
