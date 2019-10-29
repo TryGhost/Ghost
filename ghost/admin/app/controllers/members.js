@@ -39,7 +39,7 @@ export default Controller.extend({
     actions: {
         exportData() {
             let exportUrl = ghostPaths().url.api('members/csv');
-            let downloadURL = `${exportUrl}`;
+            let downloadURL = `${exportUrl}?limit=all`;
             let iframe = document.getElementById('iframeDownload');
 
             if (!iframe) {
