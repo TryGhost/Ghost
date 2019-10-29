@@ -39,8 +39,7 @@ module.exports.up = (options) => {
                 const html = converters.mobiledocConverter.render(mobiledoc);
 
                 const updatedAttrs = {
-                    html: html,
-                    mobiledoc: JSON.stringify(mobiledoc)
+                    html: html
                 };
 
                 // NOTE: block comes straight from the Post model (https://github.com/TryGhost/Ghost/blob/3.0.0/core/server/models/post.js#L416)
