@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
+const htmlToText = require('html-to-text');
 const common = require('../../../../lib/common');
-const models = require('../../../../models');
 const converters = require('../../../../lib/mobiledoc/converters');
 
 module.exports.config = {
@@ -9,7 +9,7 @@ module.exports.config = {
 };
 
 module.exports.up = (options) => {
-    const postAllColumns = ['id', 'html', 'mobiledoc'];
+    const columns = ['id', 'html', 'mobiledoc', 'plaintext'];
 
     let localOptions = _.merge({
         context: {internal: true},
@@ -17,14 +17,15 @@ module.exports.up = (options) => {
     }, options);
 
     common.logging.info('Starting re-generation of posts html.');
-
-    return models.Post.findAll(_.merge({columns: postAllColumns}, localOptions))
-        .then(function (posts) {
-            return Promise.map(posts.models, function (post) {
+    return localOptions
+        .transacting('posts')
+        .select(columns)
+        .then((posts) => {
+            return Promise.map(posts, function (post) {
                 let mobiledoc;
 
                 try {
-                    mobiledoc = JSON.parse(post.get('mobiledoc') || null);
+                    mobiledoc = JSON.parse(post.mobiledoc || null);
 
                     if (!mobiledoc) {
                         common.logging.warn(`No mobiledoc for ${post.id}. Skipping.`);
@@ -37,7 +38,33 @@ module.exports.up = (options) => {
 
                 const html = converters.mobiledocConverter.render(mobiledoc);
 
-                return models.Post.edit({html}, _.merge({id: post.id}, localOptions));
+                const updatedAttrs = {
+                    html: html
+                };
+
+                // NOTE: block comes straight from the Post model (https://github.com/TryGhost/Ghost/blob/3.0.0/core/server/models/post.js#L416)
+                if (html !== post.html || !post.plaintext) {
+                    const plaintext = htmlToText.fromString(post.html, {
+                        wordwrap: 80,
+                        ignoreImage: true,
+                        hideLinkHrefIfSameAsText: true,
+                        preserveNewlines: true,
+                        returnDomByDefault: true,
+                        uppercaseHeadings: false
+                    });
+
+                    // CASE: html is e.g. <p></p>
+                    // @NOTE: Otherwise we will always update the resource to `plaintext: ''` and Bookshelf thinks that this
+                    //        value was modified.
+                    if (plaintext || plaintext !== post.plaintext) {
+                        updatedAttrs.plaintext = plaintext;
+                    }
+                }
+
+                return localOptions
+                    .transacting('posts')
+                    .where('id', '=', post.id)
+                    .update(updatedAttrs);
             }, {concurrency: 100});
         })
         .then(() => {
