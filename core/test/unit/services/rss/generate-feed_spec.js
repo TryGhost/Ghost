@@ -142,7 +142,7 @@ describe('RSS: Generate Feed', function () {
             }).catch(done);
         });
 
-        it('should no error if author is somehow not present', function (done) {
+        it('should not error if author is somehow not present', function (done) {
             data.posts = [_.omit(posts[2], 'primary_author')];
 
             generateFeed(baseUrl, data).then(function (xmlData) {
@@ -155,6 +155,23 @@ describe('RSS: Generate Feed', function () {
                 xmlData.should.match(/<img src="http:\/\/placekitten.com\/500\/200"/);
                 xmlData.should.match(/<media:content url="http:\/\/placekitten.com\/500\/200" medium="image"\/>/);
                 xmlData.should.not.match(/<dc:creator>/);
+
+                done();
+            }).catch(done);
+        });
+
+        it('should not error if post content is null', function (done) {
+            data.posts = [Object.assign({}, posts[2], {html: null})];
+
+            generateFeed(baseUrl, data).then(function (xmlData) {
+                should.exist(xmlData);
+
+                // special/optional tags
+                xmlData.should.match(/<title><!\[CDATA\[Short and Sweet\]\]>/);
+                xmlData.should.match(/<description><!\[CDATA\[test stuff/);
+                xmlData.should.match(/<content:encoded\/>/);
+                xmlData.should.match(/<media:content url="http:\/\/placekitten.com\/500\/200" medium="image"\/>/);
+                xmlData.should.match(/<dc:creator>/);
 
                 done();
             }).catch(done);

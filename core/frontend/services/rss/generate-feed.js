@@ -23,7 +23,7 @@ generateTags = function generateTags(data) {
 
 generateItem = function generateItem(post, secure) {
     const itemUrl = urlService.getUrlByResourceId(post.id, {secure, absolute: true});
-    const htmlContent = cheerio.load(urlUtils.htmlRelativeToAbsolute(post.html, itemUrl, {secure}), {decodeEntities: false});
+    const htmlContent = cheerio.load(urlUtils.htmlRelativeToAbsolute(post.html, itemUrl, {secure}) || '', {decodeEntities: false});
     const item = {
         title: post.title,
         // @TODO: DRY this up with data/meta/index & other excerpt code
