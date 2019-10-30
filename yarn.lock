@@ -227,25 +227,25 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^0.1.3"
 
-"@tryghost/magic-link@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.3.0.tgz#52e4326efba5756a39d219990d8fcbcbd3ba813a"
-  integrity sha512-Ahd4KG8Hz/zndRjx0MQt6cY8Lq8TL3UQEXbNIhEO1zOzgyq7FKGpBoSfaVzYb6aSx1pAG/EP60VuBKetHBmUSw==
+"@tryghost/magic-link@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.3.1.tgz#a06fafb6a6e526a8658cef64c194df5f57ce4436"
+  integrity sha512-jwTVp79ElFKhZm5T5Yn8fzXSWMwzCnMaW2FMEPKgLZnRKDLqHBMqcDkhJDoZ0ilgK7B4wNf1qDRxoMGa+boHoA==
   dependencies:
     bluebird "^3.5.5"
     ghost-ignition "^3.1.0"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@0.8.2":
-  version "0.8.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.8.2.tgz#2d72cb80909c571fb2e6c9de868d438b5319e54d"
-  integrity sha512-maqhvyNpvw0kWG20UpSG0637YXteO5cc/ts+KWiSk4oIDuaH1sycgNXQ98q4Z+MAKzMye0iGoom7NcXQOFh8/Q==
+"@tryghost/members-api@0.8.3":
+  version "0.8.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.8.3.tgz#83b829a7567827f5dc00dc2f93c6e412c405ef8e"
+  integrity sha512-RDIw12MxQn/MUFnJ6OOjxHgerxVHkCNTEtLtj8SaLrVJ+lSw88NVUvDCzKFsC80Pm0bLJjwj81bspH9uftud5A==
   dependencies:
-    "@tryghost/magic-link" "^0.3.0"
+    "@tryghost/magic-link" "^0.3.1"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
-    cookies "^0.7.3"
+    cookies "^0.8.0"
     express "^4.16.4"
     ghost-ignition "^3.1.0"
     jsonwebtoken "^8.5.1"
@@ -1726,6 +1726,14 @@ cookies@0.7.3, cookies@^0.7.3:
   dependencies:
     depd "~1.1.2"
     keygrip "~1.0.3"
+
+cookies@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/cookies/-/cookies-0.8.0.tgz#1293ce4b391740a8406e3c9870e828c4b54f3f90"
+  integrity sha512-8aPsApQfebXnuI+537McwYsDtjVxGm8gTIzQI3FDW6t5t/DAhERxtnbEPN/8RX+uZthoz4eCOgloXaE5cYyNow==
+  dependencies:
+    depd "~2.0.0"
+    keygrip "~1.1.0"
 
 copy-descriptor@^0.1.0:
   version "0.1.1"
@@ -4786,6 +4794,13 @@ keygrip@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/keygrip/-/keygrip-1.0.3.tgz#399d709f0aed2bab0a059e0cdd3a5023a053e1dc"
   integrity sha512-/PpesirAIfaklxUzp4Yb7xBper9MwP6hNRA6BGGUFCgbJ+BM5CKBtsoxinNXkLHAr+GXS1/lSlF2rP7cv5Fl+g==
+
+keygrip@~1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/keygrip/-/keygrip-1.1.0.tgz#871b1681d5e159c62a445b0c74b615e0917e7226"
+  integrity sha512-iYSchDJ+liQ8iwbSI2QqsQOvqv58eJCEanyJPJi+Khyu8smkcKSFUCbPwzFcL7YVtZ6eONjqRX/38caJ7QjRAQ==
+  dependencies:
+    tsscmp "1.0.6"
 
 keypair@1.0.1:
   version "1.0.1"
@@ -8596,6 +8611,11 @@ tslib@^1.9.0:
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.10.0.tgz#c3c19f95973fb0a62973fb09d90d961ee43e5c8a"
   integrity sha512-qOebF53frne81cf0S9B41ByenJ3/IuH8yJKngAX35CmiZySA0khhkovshKK+jGCaMnVomla7gVlIcc3EvKPbTQ==
+
+tsscmp@1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/tsscmp/-/tsscmp-1.0.6.tgz#85b99583ac3589ec4bfef825b5000aa911d605eb"
+  integrity sha512-LxhtAkPDTkVCMQjt2h6eBVY28KCjikZqZfMcC15YBeNjkgUpdCfBu5HoiOTDu86v6smE8yOjyEktJ8hlbANHQA==
 
 tunnel-agent@^0.6.0:
   version "0.6.0"
