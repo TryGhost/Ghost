@@ -10,10 +10,11 @@ module.exports = function setupApiApp() {
     // Mount different API versions
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'content'}), require('./v2/content/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'admin'}), require('./v2/admin/app')());
-    apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'members'}), require('./v2/members/app')());
+
     apiApp.use(urlUtils.getVersionPath({version: 'v3', type: 'content'}), require('./canary/content/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'v3', type: 'admin'}), require('./canary/admin/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'v3', type: 'members'}), require('./canary/members/app')());
+
     apiApp.use(urlUtils.getVersionPath({version: 'canary', type: 'content'}), require('./canary/content/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'canary', type: 'admin'}), require('./canary/admin/app')());
     apiApp.use(urlUtils.getVersionPath({version: 'canary', type: 'members'}), require('./canary/members/app')());

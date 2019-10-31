@@ -80,8 +80,7 @@
             },
             "v2": {
                 "admin": "v2/admin",
-                "content": "v2/content",
-                "members": "v2/members"
+                "content": "v2/content"
             }
         }
     }
