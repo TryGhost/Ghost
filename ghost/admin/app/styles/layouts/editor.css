@@ -358,11 +358,10 @@
     min-height: auto;
     margin-bottom: 2vw;
     border: none;
-    color: var(--darkgrey);
-    font-size: 3.8rem;
-    line-height: 1.333em;
-    font-weight: 700;
-    letter-spacing: 0.04rem;
+    color: var(--darkgrey-d1);
+    font-size: 4.8rem;
+    line-height: 1.15em;
+    font-weight: 600;
     overflow: hidden;
     box-shadow: none;
 }
@@ -381,6 +380,12 @@
 @media (max-width: 1200px) {
     .gh-editor-wordcount {
         display: none;
+    }
+}
+
+@media (max-width: 500px) {
+    .gh-editor-title {
+        font-size: 3.4rem;
     }
 }
 
