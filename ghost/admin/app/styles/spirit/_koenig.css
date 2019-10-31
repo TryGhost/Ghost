@@ -57,43 +57,42 @@
 .koenig-editor__editor h5,
 .koenig-editor__editor h6 {
     font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-    font-weight: 700;
+    font-weight: 600;
+    color: var(--darkgrey-d1);
 }
 
+/* H1 should be almost the same size as the post title to suggest avoid using it */
 .koenig-editor__editor h1 {
-    font-size: 3.2rem;
-    line-height: 1.4em;
-    letter-spacing: .04rem;
+    font-size: 4.4rem;
+    line-height: 1.15em;
 }
 
 .koenig-editor__editor h2 {
-    font-size: 2.7rem;
-    line-height: 1.4em;
-    letter-spacing: .04rem;
+    font-size: 3.2rem;
+    line-height: 1.32em;
 }
 
 .koenig-editor__editor h3 {
-    font-size: 2.2rem;
-    line-height: 1.6em;
-    letter-spacing: .04rem;
+    font-size: 2.5rem;
+    line-height: 1.35em;
 }
 
+/* H4 is almost the same size as H3 to discourage using it */
 .koenig-editor__editor h4 {
-    font-size: 1.92rem;
+    font-size: 2.2rem;
     line-height: 1.4em;
-    letter-spacing: .04rem;
 }
 
 .koenig-editor__editor h5 {
-    font-size: 1.8rem;
+    font-size: 2.0rem;
     line-height: 1.4em;
-    letter-spacing: .06rem;
+    font-weight: 700;
 }
 
 .koenig-editor__editor h6 {
-    font-size: 1.65rem;
+    font-size: 1.85rem;
     line-height: 1.6em;
-    letter-spacing: .04rem;
+    font-weight: 700;
 }
 
 
@@ -226,7 +225,33 @@
 .koenig-editor__editor div + h4,
 .koenig-editor__editor div + h5,
 .koenig-editor__editor div + h6 {
-    margin: 2.8rem 0 0;
+    margin: 4.8rem 0 0;
+}
+
+@media (max-width: 500px) {
+    .koenig-editor__editor h1 {
+        font-size: 3.2rem;
+    }
+
+    .koenig-editor__editor h2 {
+        font-size: 2.8rem;
+    }
+
+    .koenig-editor__editor h3 {
+        font-size: 2.4rem;
+    }
+
+    .koenig-editor__editor h4 {
+        font-size: 2.3rem;
+    }
+
+    .koenig-editor__editor h5 {
+        font-size: 2.0rem;
+    }
+
+    .koenig-editor__editor h6 {
+        font-size: 1.9rem;
+    }
 }
 
 
@@ -240,9 +265,8 @@
  {
     font-family: georgia,serif;
     font-weight: 400;
-    letter-spacing: .02rem;
     line-height: 1.6em;
-    font-size: 1.92rem;
+    font-size: 2.0rem;
 }
 
 .koenig-editor__editor h1 + p {
@@ -250,14 +274,14 @@
 }
 
 .koenig-editor__editor h2 + p {
-    margin: 0.52rem 0 0;
+    margin: 0.8rem 0 0;
 }
 
 .koenig-editor__editor h3 + p,
 .koenig-editor__editor h4 + p,
 .koenig-editor__editor h5 + p,
 .koenig-editor__editor h6 + p {
-    margin: 0.52rem 0 0;
+    margin: 0.8rem 0 0;
 }
 
 .koenig-editor__editor p + p,
@@ -265,11 +289,21 @@
 .koenig-editor__editor ul + p,
 .koenig-editor__editor ol + p
  {
-    margin: 3.6rem 0 0;
+    margin: 3.2rem 0 0;
 }
 
 .koenig-editor__editor div + p { /* Mobiledoc cards can be addressed by their wrapper div element */
     margin: 2.8rem 0 0;
+}
+
+@media (max-width: 500px) {
+    .koenig-editor__editor p,
+    .koenig-editor__editor blockquote,
+    .koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar),
+    .koenig-editor__editor ol
+    {
+        font-size: 1.8rem;
+    }
 }
 
 
@@ -306,7 +340,7 @@
 
 .koenig-editor__editor p + ul:not(.kg-action-bar):not(.kg-link-toolbar),
 .koenig-editor__editor p + ol {
-    margin: 1.0rem 0 0;
+    margin: 3.0rem 0 0;
 }
 
 .koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar) + ul:not(.kg-action-bar):not(.kg-link-toolbar),
@@ -315,7 +349,7 @@
 .koenig-editor__editor ol + ol,
 .koenig-editor__editor blockquote + ul:not(.kg-action-bar):not(.kg-link-toolbar),
 .koenig-editor__editor blockquote + ol {
-    margin: 3.2rem 0 0;
+    margin: 3.0rem 0 0;
 }
 
 .koenig-editor__editor h1 + ul:not(.kg-action-bar):not(.kg-link-toolbar),
@@ -388,7 +422,7 @@
 /* -------------------------------------------------------------------- */
 
 .koenig-editor__editor a {
-    color: var(--darkgrey);
+    color: var(--darkgrey-d2);
     text-decoration: none;
     box-shadow: 0 1px 0 var(--white), 0 2px 0 var(--blue);
 }
@@ -443,7 +477,7 @@
 
 .koenig-editor__editor code {
     border-radius: 2px;
-    color: var(--pink);
+    color: var(--darkgrey-d2);
     font-size: 1.65rem;
     line-height: 1em;
     padding: .4rem .4rem .2rem;
@@ -454,7 +488,7 @@
 .koenig-editor__editor pre code {
     border: none;
     font-size: 1.6rem;
-    color: var(--pink);
+    color: var(--darkgrey-d2);
     padding: 0;
 }
 
@@ -466,7 +500,7 @@
     overflow: auto;
     white-space: pre;
     width: 100%;
-    color: var(--darkgrey);
+    color: var(--darkgrey-d2);
 }
 
 .koenig-editor__editor pre.js-embed-placeholder,
