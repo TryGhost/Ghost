@@ -14,6 +14,12 @@ const Member = ghostBookshelf.Model.extend({
         model.emitChange('added', options);
     },
 
+    onUpdated: function onUpdated(model, attrs, options) {
+        ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
+
+        model.emitChange('edited', options);
+    },
+
     onDestroyed: function onDestroyed(model, options) {
         ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
 
