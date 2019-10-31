@@ -1,9 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
 const labs = require('../../../../../../../../server/services/labs');
-const members = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/members');
+const gating = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/post-gating');
 
-describe('Unit: v2/utils/serializers/output/utils/members', function () {
+describe('Unit: v2/utils/serializers/output/utils/post-gating', function () {
     describe('for post', function () {
         it('does not modify attributes when members is disabled', function () {
             const attrs = {
@@ -14,7 +14,7 @@ describe('Unit: v2/utils/serializers/output/utils/members', function () {
             const frame = {
                 options: {}
             };
-            members.forPost(attrs, frame);
+            gating.forPost(attrs, frame);
 
             attrs.plaintext.should.eql('no touching');
         });
@@ -37,7 +37,7 @@ describe('Unit: v2/utils/serializers/output/utils/members', function () {
                     }
                 };
 
-                members.forPost(attrs, frame);
+                gating.forPost(attrs, frame);
 
                 attrs.plaintext.should.eql('no touching');
             });
@@ -55,7 +55,7 @@ describe('Unit: v2/utils/serializers/output/utils/members', function () {
                     }
                 };
 
-                members.forPost(attrs, frame);
+                gating.forPost(attrs, frame);
 
                 attrs.plaintext.should.eql('');
                 attrs.html.should.eql('');
@@ -76,7 +76,7 @@ describe('Unit: v2/utils/serializers/output/utils/members', function () {
                     }
                 };
 
-                members.forPost(attrs, frame);
+                gating.forPost(attrs, frame);
 
                 attrs.plaintext.should.eql('I see dead people');
                 attrs.html.should.eql('<p>What\'s the matter?</p>');
@@ -101,7 +101,7 @@ describe('Unit: v2/utils/serializers/output/utils/members', function () {
                     }
                 };
 
-                members.forPost(attrs, frame);
+                gating.forPost(attrs, frame);
 
                 attrs.plaintext.should.eql('');
                 attrs.html.should.eql('');
@@ -126,7 +126,7 @@ describe('Unit: v2/utils/serializers/output/utils/members', function () {
                     }
                 };
 
-                members.forPost(attrs, frame);
+                gating.forPost(attrs, frame);
 
                 attrs.plaintext.should.eql('Secret paid content');
                 attrs.html.should.eql('<p>Can read this</p>');
