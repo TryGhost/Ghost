@@ -1,6 +1,9 @@
 const should = require('should');
+const sinon = require('sinon');
+const moment = require('moment');
 const supertest = require('supertest');
 const _ = require('lodash');
+const labs = require('../../../../../server/services/labs');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../../../utils/configUtils');
@@ -218,5 +221,128 @@ describe('api/v3/content/posts', function () {
             .then((res) => {
                 localUtils.API.checkResponse(res.body.posts[0], 'post', null, null, ['id', 'title', 'slug']);
             });
+    });
+
+    describe('content gating', function () {
+        let membersPost;
+        let paidPost;
+
+        before(function () {
+            // NOTE: ideally this would be set through Admin API request not a stub
+            sinon.stub(labs, 'isSet').withArgs('members').returns(true);
+        });
+
+        before (function () {
+            membersPost = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'thou-shalt-not-be-seen',
+                visibility: 'members',
+                published_at: moment().add(45, 'seconds').toDate() // here to ensure sorting is not modified
+            });
+
+            paidPost = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'thou-shalt-be-paid-for',
+                visibility: 'paid',
+                published_at: moment().add(30, 'seconds').toDate() // here to ensure sorting is not modified
+            });
+
+            return testUtils.fixtures.insertPosts([
+                membersPost,
+                paidPost
+            ]);
+        });
+
+        it('cannot read members only post content', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${membersPost.id}/?key=${validKey}`))
+                .set('Origin', testUtils.API.getURL())
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    const post = jsonResponse.posts[0];
+
+                    localUtils.API.checkResponse(post, 'post', null, null);
+                    post.slug.should.eql('thou-shalt-not-be-seen');
+                    post.html.should.eql('');
+                });
+        });
+
+        it('cannot read paid only post content', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${paidPost.id}/?key=${validKey}`))
+                .set('Origin', testUtils.API.getURL())
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    const post = jsonResponse.posts[0];
+
+                    localUtils.API.checkResponse(post, 'post', null, null);
+                    post.slug.should.eql('thou-shalt-be-paid-for');
+                    post.html.should.eql('');
+                });
+        });
+
+        it('cannot read members only post plaintext', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${membersPost.id}/?key=${validKey}&formats=html,plaintext&fields=html,plaintext`))
+                .set('Origin', testUtils.API.getURL())
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    const post = jsonResponse.posts[0];
+
+                    localUtils.API.checkResponse(post, 'post', null, null, ['id', 'html', 'plaintext']);
+                    post.html.should.eql('');
+                    post.plaintext.should.eql('');
+                });
+        });
+
+        it('cannot browse members only posts content', function () {
+            return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
+                .set('Origin', testUtils.API.getURL())
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    res.headers.vary.should.eql('Accept-Encoding');
+                    should.exist(res.headers['access-control-allow-origin']);
+                    should.not.exist(res.headers['x-cache-invalidate']);
+
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    localUtils.API.checkResponse(jsonResponse, 'posts');
+                    jsonResponse.posts.should.have.length(13);
+                    localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                    _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+
+                    // Default order 'published_at desc' check
+                    jsonResponse.posts[0].slug.should.eql('thou-shalt-not-be-seen');
+                    jsonResponse.posts[1].slug.should.eql('thou-shalt-be-paid-for');
+                    jsonResponse.posts[6].slug.should.eql('organising-content');
+
+                    jsonResponse.posts[0].html.should.eql('');
+                    jsonResponse.posts[1].html.should.eql('');
+                    jsonResponse.posts[6].html.should.not.eql('');
+
+                    // check meta response for this test
+                    jsonResponse.meta.pagination.page.should.eql(1);
+                    jsonResponse.meta.pagination.limit.should.eql(15);
+                    jsonResponse.meta.pagination.pages.should.eql(1);
+                    jsonResponse.meta.pagination.total.should.eql(13);
+                    jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
+                    jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
+                    should.not.exist(jsonResponse.meta.pagination.next);
+                    should.not.exist(jsonResponse.meta.pagination.prev);
+                });
+        });
     });
 });
