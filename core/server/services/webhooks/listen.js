@@ -31,6 +31,7 @@ const WEBHOOKS = [
 
     'member.added',
     'member.deleted',
+    'member.edited',
 
     'post.tag.attached',
     'post.tag.detached',
