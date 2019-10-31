@@ -7,7 +7,9 @@ const forPost = (attrs, frame) => {
 
         if (!memberHasAccess) {
             ['plaintext', 'html'].forEach((field) => {
-                attrs[field] = '';
+                if (attrs[field] !== undefined) {
+                    attrs[field] = '';
+                }
             });
         }
     }
