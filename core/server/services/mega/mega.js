@@ -1,3 +1,4 @@
+const juice = require('juice');
 const common = require('../lib/common');
 const membersService = require('./members');
 const bulkEmailService = require('./bulk-email');
@@ -15,7 +16,7 @@ const getSite = () => {
 const sendEmail = async (post) => {
     const emailTmpl = {
         subject: post.posts_meta.email_subject || post.title,
-        html: template({post, site: getSite()})
+        html: juice(template({post, site: getSite()}))
     };
 
     const {members} = await membersService.api.members.list();
