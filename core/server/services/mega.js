@@ -20,6 +20,10 @@ function listener(model, options) {
         return;
     }
 
+    if (!model.get('send_email_when_published')) {
+        return;
+    }
+
     sendEmail(model.toJSON());
 }
 
