@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import Component from '@ember/component';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {computed} from '@ember/object';
 import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
@@ -23,6 +24,7 @@ export default Component.extend({
     isClosing: null,
 
     forcePublishedMenu: reads('post.pastScheduledTime'),
+    sendEmailWhenPublishedScratch: boundOneWay('post.sendEmailWhenPublished'),
 
     postState: computed('post.{isPublished,isScheduled}', 'forcePublishedMenu', function () {
         if (this.forcePublishedMenu || this.get('post.isPublished')) {
@@ -161,6 +163,7 @@ export default Component.extend({
             }
 
             // cleanup
+            this.set('sendEmailWhenPublishedScratch', this.post.sendEmailWhenPublishedScratch);
             this._resetPublishedAtBlogTZ();
             post.set('statusScratch', null);
             post.validate();
@@ -181,6 +184,8 @@ export default Component.extend({
         this.set('runningText', this._runningText);
         this.set('_previousStatus', this.get('post.status'));
         this.setSaveType(this.saveType);
+
+        this.post.set('sendEmailWhenPublished', this.sendEmailWhenPublishedScratch);
 
         try {
             // validate publishedAtBlog first to avoid an alert for displayed errors
