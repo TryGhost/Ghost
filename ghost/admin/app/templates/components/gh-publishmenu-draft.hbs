@@ -24,4 +24,16 @@
             <div class="gh-publishmenu-radio-desc">Set automatic future publish date</div>
         </div>
     </div>
+    <div class="flex mb4">
+        <div class="for-switch mr3">
+            <label class="switch" for="email-when-published-checkbox">
+                <Input @checked={{this.post.sendEmailWhenPublished}} @type="checkbox" @id="email-when-published-checkbox" @name="email-when-published" />
+                <span class="input-toggle-component"></span>
+            </label>
+        </div>
+        <div class="flex-grow-1">
+            <div class="gh-publishmenu-radio-label">Email to members</div>
+            <div class="gh-publishmenu-radio-desc">Send email when published</div>
+        </div>
+    </div>
 </section>
