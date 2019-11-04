@@ -5,7 +5,7 @@ const bulkEmailService = require('./bulk-email');
 const sendEmail = async (post) => {
     const emailTmpl = {
         subject: post.email_subject || post.title,
-        html: post.plaintext
+        html: post.html
     };
 
     const {members} = await membersService.api.members.list();
