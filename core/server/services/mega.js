@@ -2,13 +2,13 @@ const common = require('../lib/common');
 const membersService = require('./members');
 const bulkEmailService = require('./bulk-email');
 
-const sendEmail = (post) => {
+const sendEmail = async (post) => {
     const emailTmpl = {
         subject: post.title, // NOTE: add configurable title here
         html: post.plaintext
     };
 
-    const emails = membersService.listMembers().map(m => m.email);
+    const emails = await membersService.listMembers().map(m => m.email);
 
     return bulkEmailService.send(emailTmpl, emails);
 };
