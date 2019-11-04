@@ -5437,12 +5437,12 @@ metascraper-author@5.7.14:
     "@metascraper/helpers" "^5.7.14"
     lodash "~4.17.15"
 
-metascraper-description@5.7.14:
-  version "5.7.14"
-  resolved "https://registry.yarnpkg.com/metascraper-description/-/metascraper-description-5.7.14.tgz#4b77b04120f5f4f17dcabb4f549a7954da74b581"
-  integrity sha512-++qN4Rf0Hx13SbhJgRiLSuVOZHsYwhUkMfHa5sVVihSJkrLVjOSdBTpNBajRC7yHwG6m6/qIesuERbT1jdu5bw==
+metascraper-description@5.7.17:
+  version "5.7.17"
+  resolved "https://registry.yarnpkg.com/metascraper-description/-/metascraper-description-5.7.17.tgz#b0daa54d0345546ececcc033065790402aabb5ec"
+  integrity sha512-cQfg9Spl3FLK2x8O7DvecwSYEBUmRjtdZW2y1EVqHsOKwT13SeUy1kp+lZa8+8vFh4o8oJPzXHxgbLhAfAmVqQ==
   dependencies:
-    "@metascraper/helpers" "^5.7.14"
+    "@metascraper/helpers" "^5.7.17"
 
 metascraper-image@5.7.14:
   version "5.7.14"
