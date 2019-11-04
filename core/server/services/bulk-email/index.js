@@ -22,7 +22,7 @@ module.exports = {
      * @returns {Promise<boolean>} A promise representing the success of the email sending
      */
     async send(message, recipients) {
-        for (const recipient in recipients) {
+        for (const recipient of recipients) {
             const messageToSend = Object.assign({}, message, {
                 to: recipient
             });
