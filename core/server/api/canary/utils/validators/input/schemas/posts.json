@@ -102,6 +102,10 @@
                     "type": ["string", "null"],
                     "maxLength": 500
                 },
+                "email_subject": {
+                    "type": ["string", "null"],
+                    "maxLength": 300
+                },
                 "custom_template": {
                     "type": ["string", "null"],
                     "maxLength": 100
