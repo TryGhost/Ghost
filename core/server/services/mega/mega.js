@@ -1,8 +1,9 @@
 const juice = require('juice');
-const common = require('../lib/common');
-const membersService = require('./members');
-const bulkEmailService = require('./bulk-email');
-const models = require('../models');
+const common = require('../../lib/common');
+const api = require('../../api');
+const membersService = require('../members');
+const bulkEmailService = require('../bulk-email');
+const models = require('../../models');
 const template = require('./template');
 const settingsCache = require('../../services/settings/cache');
 const urlUtils = require('../../lib/url-utils');
@@ -15,7 +16,7 @@ const getSite = () => {
 
 const sendEmail = async (post) => {
     const emailTmpl = {
-        subject: post.posts_meta.email_subject || post.title,
+        subject: post.email_subject || post.title,
         html: juice(template({post, site: getSite()}))
     };
 
@@ -25,18 +26,35 @@ const sendEmail = async (post) => {
     return bulkEmailService.send(emailTmpl, emails);
 };
 
-function listener(model, options) {
+// NOTE: serialization is needed to make sure we are using current API and do post transformations
+//       such as image URL transformation from relative to absolute
+const serialize = async (model) => {
+    const frame = {options: {previous: true, context: {user: true}}};
+    const apiVersion = model.get('api_version') || 'v3';
+    const docName = 'posts';
+
+    await api.shared
+        .serializers
+        .handle
+        .output(model, {docName: docName, method: 'read'}, api[apiVersion].serializers.output, frame);
+
+    return frame.response[docName][0];
+};
+
+async function listener(model, options) {
     // CASE: do not send email if we import a database
     // TODO: refactor post.published events to never fire on importing
     if (options && options.importing) {
         return;
     }
 
-    if (!model.get('send_email_when_published')) {
+    const post = await serialize(model);
+
+    if (!post.send_email_when_published) {
         return;
     }
 
-    sendEmail(model.toJSON()).then(async () => {
+    sendEmail(post).then(async () => {
         const deliveredEvents = await models.Action.findAll({
             filter: `event:delivered+resource_id:${model.id}`
         });
