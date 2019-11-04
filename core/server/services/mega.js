@@ -4,7 +4,7 @@ const bulkEmailService = require('./bulk-email');
 
 const sendEmail = async (post) => {
     const emailTmpl = {
-        subject: post.title, // NOTE: add configurable title here
+        subject: post.email_subject || post.title,
         html: post.plaintext
     };
 
