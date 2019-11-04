@@ -29,7 +29,7 @@ module.exports = {
             defaultTo: 'public',
             validations: {isIn: [['public', 'members', 'paid']]}
         },
-        send_email_when_published: {type: 'bool', nullable: false, defaultTo: false},
+        send_email_when_published: {type: 'bool', nullable: true, defaultTo: false},
         /**
          * @deprecated: `author_id`, might be removed in Ghost 3.0
          * If we keep it, then only, because you can easier query post.author_id than posts_authors[*].sort_order.
