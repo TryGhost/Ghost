@@ -2,11 +2,20 @@ const common = require('../lib/common');
 const membersService = require('./members');
 const bulkEmailService = require('./bulk-email');
 const models = require('../models');
+const template = require('./template');
+const settingsCache = require('../../services/settings/cache');
+const urlUtils = require('../../lib/url-utils');
+
+const getSite = () => {
+    return Object.assign({}, settingsCache.getPublic(), {
+        url: urlUtils.urlFor('home', true)
+    });
+};
 
 const sendEmail = async (post) => {
     const emailTmpl = {
         subject: post.posts_meta.email_subject || post.title,
-        html: post.html
+        html: template({post, site: getSite()})
     };
 
     const {members} = await membersService.api.members.list();
