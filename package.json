@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@nexes/nql": "0.3.0",
-    "@tryghost/helpers": "1.1.17",
+    "@tryghost/helpers": "1.1.18",
     "@tryghost/members-api": "0.8.3",
     "@tryghost/members-ssr": "0.7.1",
     "@tryghost/social-urls": "0.1.4",
