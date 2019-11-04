@@ -14,6 +14,8 @@ export default Component.extend({
     postStatus: 'draft',
     saveTask: null,
     runningText: null,
+    backgroundTask: null,
+    deliveredAction: null,
 
     _publishedAtBlogTZ: null,
     _previousStatus: null,

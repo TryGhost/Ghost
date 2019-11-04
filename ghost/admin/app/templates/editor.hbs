@@ -55,7 +55,9 @@
                             postStatus=post.status
                             saveTask=save
                             setSaveType=(action "setSaveType")
-                            onOpen=(action "cancelAutosave")}}
+                            onOpen=(action "cancelAutosave")
+                            backgroundTask=this.backgroundLoader
+                            deliveredAction=this.deliveredAction}}
                     {{/if}}
                 {{/unless}}
 

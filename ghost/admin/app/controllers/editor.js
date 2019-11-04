@@ -3,6 +3,7 @@ import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
+import moment from 'moment';
 import {alias, mapBy} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as controller} from '@ember/controller';
@@ -130,6 +131,10 @@ export default Controller.extend({
         set(key, value) {
             return value;
         }
+    }),
+
+    deliveredAction: computed('actionsList', function () {
+        return this.actionsList && this.actionsList.findBy('event', 'delivered');
     }),
 
     _autosaveRunning: computed('_autosave.isRunning', '_timedSave.isRunning', function () {
@@ -531,6 +536,15 @@ export default Controller.extend({
         }
     }).enqueue(),
 
+    // load supplementel data such as the actions list in the background
+    backgroundLoader: task(function* () {
+        let actions = yield this.store.query('action', {
+            filter: `resource_type:post+resource_id:${this.post.id}+event:delivered`,
+            limit: 'all'
+        });
+        this.set('actionsList', actions);
+    }).restartable(),
+
     /* Public methods --------------------------------------------------------*/
 
     // called by the new/edit routes to change the post model
@@ -546,6 +560,7 @@ export default Controller.extend({
         this.reset();
 
         this.set('post', post);
+        this.backgroundLoader.perform();
 
         // autofocus the editor if we have a new post
         this.set('shouldFocusEditor', post.get('isNew'));

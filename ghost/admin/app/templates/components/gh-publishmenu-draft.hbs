@@ -25,17 +25,32 @@
         </div>
     </div>
     {{#if this.feature.labs.members}}
-        <div class="flex mb4">
-            <div class="for-switch mr3">
-                <label class="switch" for="email-when-published-checkbox">
-                    <Input @checked={{this.post.sendEmailWhenPublished}} @type="checkbox" @id="email-when-published-checkbox" @name="email-when-published" />
-                    <span class="input-toggle-component"></span>
-                </label>
-            </div>
-            <div class="flex-grow-1">
-                <div class="gh-publishmenu-radio-label">Email to members</div>
-                <div class="gh-publishmenu-radio-desc">Send email when published</div>
-            </div>
+        <div class="flex mb4 justify-center">
+            {{#if this.backgroundLoader.isRunning}}
+                <div class="gh-loading-spinner" style="zoom: 50%"></div>
+            {{else}}
+                {{#if this.deliveredAction}}
+                    <div class="mr3">
+                        💌
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="gh-publishmenu-radio-label">Sent</div>
+                        <div class="gh-publishmenu-radio-desc">Post was sent {{gh-format-post-time this.deliveredAction.createdAtUTC}}</div>
+                    </div>
+                {{else}}
+                    <div class="for-switch mr3">
+                        <label class="switch" for="email-when-published-checkbox">
+                            <Input @checked={{this.post.sendEmailWhenPublished}} @type="checkbox" @id="email-when-published-checkbox" @name="email-when-published" />
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="gh-publishmenu-radio-label">Email post</div>
+                        <div class="gh-publishmenu-radio-desc">Send post to 56 members when published</div>
+                    </div>
+                {{/if}}
+            {{/if}}
         </div>
     {{/if}}
 </section>
+
