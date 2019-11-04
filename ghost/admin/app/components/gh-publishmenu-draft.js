@@ -1,8 +1,10 @@
 import Component from '@ember/component';
 import moment from 'moment';
 import {isEmpty} from '@ember/utils';
+import {inject as service} from '@ember/service';
 
 export default Component.extend({
+    feature: service(),
 
     post: null,
     saveType: null,
