@@ -1,7 +1,6 @@
 const common = require('../lib/common');
 const membersService = require('./members');
 const bulkEmailService = require('./bulk-email');
-const ghostBookshelf = require('../models/base');
 const models = require('../models');
 
 const sendEmail = async (post) => {
@@ -27,7 +26,13 @@ function listener(model, options) {
         return;
     }
 
-    sendEmail(model.toJSON()).then(() => {
+    sendEmail(model.toJSON()).then(async () => {
+        const deliveredEvents = await models.Action.findAll({
+            filter: `event:delivered+resource_id:${model.id}`
+        });
+        if (deliveredEvents && deliveredEvents.toJSON().length > 0) {
+            return;
+        }
         let actor = {id: null, type: null};
         if (options.context && options.context.user) {
             actor = {
@@ -42,7 +47,7 @@ function listener(model, options) {
             actor_id: actor.id,
             actor_type: actor.type
         };
-        models.Action.add(action, {context: {internal: true}});
+        return models.Action.add(action, {context: {internal: true}});
     });
 }
 
