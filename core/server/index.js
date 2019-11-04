@@ -28,6 +28,7 @@ function initialiseServices() {
         apps = require('./services/apps'),
         xmlrpc = require('./services/xmlrpc'),
         slack = require('./services/slack'),
+        mega = require('./services/mega'),
         webhooks = require('./services/webhooks'),
         scheduling = require('./adapters/scheduling');
 
@@ -38,6 +39,7 @@ function initialiseServices() {
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
+        mega.listen(),
         webhooks.listen(),
         apps.init(),
         scheduling.init({
@@ -50,7 +52,7 @@ function initialiseServices() {
             contentPath: config.getContentPath('scheduling')
         })
     ).then(function () {
-        debug('XMLRPC, Slack, Webhooks, Apps, Scheduling, Permissions done');
+        debug('XMLRPC, Slack, MEGA, Webhooks, Apps, Scheduling, Permissions done');
 
         // Initialise analytics events
         if (config.get('segment:key')) {
