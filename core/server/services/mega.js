@@ -8,7 +8,8 @@ const sendEmail = async (post) => {
         html: post.plaintext
     };
 
-    const emails = await membersService.listMembers().map(m => m.email);
+    const {members} = await membersService.api.members.list();
+    const emails = members.map(m => m.email);
 
     return bulkEmailService.send(emailTmpl, emails);
 };
