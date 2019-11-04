@@ -31,6 +31,7 @@ export default Factory.extend({
     twitterDescription: null,
     twitterImage: null,
     twitterTitle: null,
+    emailSubject: null,
     updatedAt: '2015-10-19T16:25:07.756Z',
     updatedBy: 1,
     uuid(i) { return `post-${i}`; },
