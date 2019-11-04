@@ -1,6 +1,8 @@
 const common = require('../lib/common');
 const membersService = require('./members');
 const bulkEmailService = require('./bulk-email');
+const ghostBookshelf = require('../models/base');
+const models = require('../models');
 
 const sendEmail = async (post) => {
     const emailTmpl = {
@@ -15,7 +17,7 @@ const sendEmail = async (post) => {
 };
 
 function listener(model, options) {
-    // CASE: do not ping slack if we import a database
+    // CASE: do not send email if we import a database
     // TODO: refactor post.published events to never fire on importing
     if (options && options.importing) {
         return;
@@ -25,7 +27,23 @@ function listener(model, options) {
         return;
     }
 
-    sendEmail(model.toJSON());
+    sendEmail(model.toJSON()).then(() => {
+        let actor = {id: null, type: null};
+        if (options.context && options.context.user) {
+            actor = {
+                id: options.context.user,
+                type: 'user'
+            };
+        }
+        const action = {
+            event: 'delivered',
+            resource_id: model.id,
+            resource_type: 'post',
+            actor_id: actor.id,
+            actor_type: actor.type
+        };
+        models.Action.add(action, {context: {internal: true}});
+    });
 }
 
 function listen() {
