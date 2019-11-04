@@ -55,7 +55,30 @@ module.exports = function ({
     }
 
     async function list(options) {
-        return listMembers(options);
+        const {meta, members} = await listMembers(options);
+
+        const membersWithSubscriptions = await Promise.all(members.map(async function (member) {
+            if (!stripe) {
+                return Object.assign(member, {
+                    stripe: {
+                        subscriptions: []
+                    }
+                });
+            }
+
+            const subscriptions = await stripe.getActiveSubscriptions(member);
+
+            return Object.assign(member, {
+                stripe: {
+                    subscriptions
+                }
+            });
+        }));
+
+        return {
+            meta,
+            members: membersWithSubscriptions
+        };
     }
 
     async function create(data, options = {}) {
