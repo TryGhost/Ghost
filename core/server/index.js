@@ -28,7 +28,7 @@ function initialiseServices() {
         apps = require('./services/apps'),
         xmlrpc = require('./services/xmlrpc'),
         slack = require('./services/slack'),
-        mega = require('./services/mega'),
+        {mega} = require('./services/mega'),
         webhooks = require('./services/webhooks'),
         scheduling = require('./adapters/scheduling');
 
