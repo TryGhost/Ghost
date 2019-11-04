@@ -1,6 +1,7 @@
 // @ts-check
 const mailService = require('../mail');
 const ghostMailer = new mailService.GhostMailer();
+const common = require('../../lib/common');
 
 /*
  * An email address
@@ -11,6 +12,7 @@ const ghostMailer = new mailService.GhostMailer();
  * An object representing an email to send
  * @typedef { Object } Email
  * @property { string } html - The html content of the email
+ * @property { string } subject - The subject of the email
  */
 
 module.exports = {
@@ -28,7 +30,7 @@ module.exports = {
                 await ghostMailer.send(messageToSend);
             } catch (err) {
                 // @TODO log this somewhere with state?
-                console.log(`Oh no! an email failed to send :( ${recipient}`);
+                common.logging.warn(`Oh no! an email failed to send :( ${recipient}`);
             }
         }
         return true;
