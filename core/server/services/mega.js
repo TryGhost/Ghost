@@ -1,0 +1,33 @@
+const common = require('../lib/common');
+const membersService = require('./members');
+const bulkEmailService = require('./bulk-email');
+
+const sendEmail = (post) => {
+    const emailTmpl = {
+        subject: post.title, // NOTE: add configurable title here
+        html: post.plaintext
+    };
+
+    const emails = membersService.listMembers().map(m => m.email);
+
+    return bulkEmailService.send(emailTmpl, emails);
+};
+
+function listener(model, options) {
+    // CASE: do not ping slack if we import a database
+    // TODO: refactor post.published events to never fire on importing
+    if (options && options.importing) {
+        return;
+    }
+
+    sendEmail(model.toJSON());
+}
+
+function listen() {
+    common.events.on('post.published', listener);
+}
+
+// Public API
+module.exports = {
+    listen: listen
+};
