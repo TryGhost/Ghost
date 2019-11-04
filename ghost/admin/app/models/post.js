@@ -91,6 +91,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     twitterImage: attr('string'),
     twitterTitle: attr('string'),
     twitterDescription: attr('string'),
+    emailSubject: attr('string'),
     html: attr('string'),
     locale: attr('string'),
     visibility: attr('string'),
@@ -147,6 +148,8 @@ export default Model.extend(Comparable, ValidationEngine, {
     ogTitleScratch: boundOneWay('ogTitle'),
     twitterDescriptionScratch: boundOneWay('twitterDescription'),
     twitterTitleScratch: boundOneWay('twitterTitle'),
+
+    emailSubjectScratch: boundOneWay('emailSubject'),
 
     isPublished: equal('status', 'published'),
     isDraft: equal('status', 'draft'),

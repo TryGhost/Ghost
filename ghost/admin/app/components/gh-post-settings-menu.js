@@ -37,6 +37,7 @@ export default Component.extend(SettingsMenuMixin, {
     ogTitleScratch: alias('post.ogTitleScratch'),
     twitterDescriptionScratch: alias('post.twitterDescriptionScratch'),
     twitterTitleScratch: alias('post.twitterTitleScratch'),
+    emailSubjectScratch: alias('post.emailSubjectScratch'),
     slugValue: boundOneWay('post.slug'),
 
     facebookDescription: or('ogDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
@@ -45,6 +46,7 @@ export default Component.extend(SettingsMenuMixin, {
     twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
     twitterImage: or('post.twitterImage', 'post.featureImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
+    emailSubject: alias('emailSubjectScratch', 'post.title'),
 
     showVisibilityInput: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
 
@@ -397,6 +399,29 @@ export default Component.extend(SettingsMenuMixin, {
 
             // Make sure the twitter description is valid and if so, save it into the post
             return post.validate({property: 'twitterDescription'}).then(() => {
+                if (post.get('isNew')) {
+                    return;
+                }
+
+                return this.savePost.perform();
+            });
+        },
+
+        setEmailSubject(emailSubject) {
+            // Grab the post and current stored email subject
+            let post = this.post;
+            let currentEmailSubject = post.get('emailSubject');
+
+            // If the subject entered matches the stored email subject, do nothing
+            if (currentEmailSubject === emailSubject) {
+                return;
+            }
+
+            // If the subject entered is different, set it as the new email subject
+            post.set('emailSubject', emailSubject);
+
+            // Make sure the email subject is valid and if so, save it into the post
+            return post.validate({property: 'emailSubject'}).then(() => {
                 if (post.get('isNew')) {
                     return;
                 }

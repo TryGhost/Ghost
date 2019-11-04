@@ -130,6 +130,15 @@
                         </button>
                         {{svg-jar "arrow-right"}}
                     </li>
+                    {{#if feature.members}}
+                        <li class="nav-list-item" {{action "showSubview" "email-settings"}} data-test-button="email-settings">
+                            <button type="button">
+                                <b>Email Settings</b>
+                                <span>Customise Email Settings</span>
+                            </button>
+                            {{svg-jar "arrow-right"}}
+                        </li>
+                    {{/if}}
                     <li class="nav-list-item" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
                         <button type="button">
                             <b>Code Injection</b>
@@ -301,6 +310,33 @@
                                     </div>
                                 </div>
 
+                            </form>
+                        </div>
+                    {{/if}}
+
+                    {{#if (eq subview "email-settings")}}
+                        <div class="settings-menu-header subview">
+                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Email Settings</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content">
+                            <form {{action "discardEnter" on="submit"}}>
+                                {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="emailSubject"}}
+                                    <label for="og-title">Email Subject</label>
+                                    {{gh-text-input
+                                        class="post-setting-email-subject"
+                                        id="email-subject"
+                                        name="post-setting-email-subject"
+                                        placeholder=(truncate emailSubject 40)
+                                        value=(readonly emailSubjectScratch)
+                                        input=(action (mut emailSubjectScratch) value="target.value")
+                                        focus-out=(action "setEmailSubject" emailSubjectScratch)
+                                        stopEnterKeyDownPropagation=true
+                                        data-test-field="email-subject"}}
+                                    {{gh-error-message errors=post.errors property="emailSubject" data-test-error="email-subject"}}
+                                {{/gh-form-group}}
                             </form>
                         </div>
                     {{/if}}
