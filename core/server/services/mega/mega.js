@@ -54,13 +54,16 @@ async function listener(model, options) {
         return;
     }
 
+    const deliveredEvents = await models.Action.findAll({
+        filter: `event:delivered+resource_id:${model.id}`
+    });
+
+    if (deliveredEvents && deliveredEvents.toJSON().length > 0) {
+        return;
+    }
+
     sendEmail(post).then(async () => {
-        const deliveredEvents = await models.Action.findAll({
-            filter: `event:delivered+resource_id:${model.id}`
-        });
-        if (deliveredEvents && deliveredEvents.toJSON().length > 0) {
-            return;
-        }
+
         let actor = {id: null, type: null};
         if (options.context && options.context.user) {
             actor = {
