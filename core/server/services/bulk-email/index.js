@@ -3,12 +3,12 @@ const mailService = require('../mail');
 const ghostMailer = new mailService.GhostMailer();
 const common = require('../../lib/common');
 
-/*
+/**
  * An email address
  * @typedef { string } EmailAddress
  */
 
-/*
+/**
  * An object representing an email to send
  * @typedef { Object } Email
  * @property { string } html - The html content of the email
