@@ -3,10 +3,10 @@ import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
-import moment from 'moment';
 import {alias, mapBy} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as controller} from '@ember/controller';
+import {get} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
@@ -543,6 +543,9 @@ export default Controller.extend({
             limit: 'all'
         });
         this.set('actionsList', actions);
+
+        let membersResponse = yield this.store.query('member', {limit: 1});
+        this.set('memberCount', get(membersResponse, 'meta.pagination.total'));
     }).restartable(),
 
     /* Public methods --------------------------------------------------------*/
