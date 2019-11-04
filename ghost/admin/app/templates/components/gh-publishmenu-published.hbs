@@ -14,4 +14,19 @@
             <div class="gh-publishmenu-radio-desc">Display this {{post.displayName}} publicly</div>
         </div>
     </div>
+    {{#if (and this.feature.labs.members (or this.deliveredAction this.backgroundLoader.isRunning))}}
+        <div class="flex mb4 justify-center">
+            {{#if this.backgroundLoader.isRunning}}
+                <div class="gh-loading-spinner" style="zoom: 50%"></div>
+            {{else}}
+                <div class="mr3">
+                    💌
+                </div>
+                <div class="flex-grow-1">
+                    <div class="gh-publishmenu-radio-label">Sent</div>
+                    <div class="gh-publishmenu-radio-desc">Post was sent {{gh-format-post-time this.deliveredAction.createdAtUTC}}</div>
+                </div>
+            {{/if}}
+        </div>
+    {{/if}}
 </section>
