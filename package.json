@@ -129,7 +129,7 @@
   },
   "optionalDependencies": {
     "@tryghost/html-to-mobiledoc": "0.6.0",
-    "sharp": "0.23.1",
+    "sharp": "0.23.2",
     "sqlite3": "4.1.0"
   },
   "devDependencies": {
