@@ -97,6 +97,7 @@ export default Controller.extend({
     showDeletePostModal: false,
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
+    showEmailPreviewModal: false,
 
     // koenig related properties
     wordcount: null,
@@ -244,6 +245,10 @@ export default Controller.extend({
             if (!this.get('post.isNew')) {
                 this.toggleProperty('showDeletePostModal');
             }
+        },
+
+        toggleEmailPreviewModal() {
+            this.toggleProperty('showEmailPreviewModal');
         },
 
         toggleReAuthenticateModal() {

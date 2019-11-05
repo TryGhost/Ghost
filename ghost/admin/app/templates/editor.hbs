@@ -118,10 +118,18 @@
             modifier="action wide"}}
     {{/if}}
 
+    {{#if showEmailPreviewModal}}
+        {{gh-fullscreen-modal "post-email-preview"
+            model=post
+            close=(action "toggleEmailPreviewModal")
+            modifier="full-overlay"}}
+    {{/if}}
+
     {{#liquid-wormhole}}
         {{gh-post-settings-menu
             post=post
             showSettingsMenu=ui.showSettingsMenu
+            toggleEmailPreviewModal=(action "toggleEmailPreviewModal")
             deletePost=(action "toggleDeletePostModal")
             updateSlug=updateSlug
             savePost=savePost
