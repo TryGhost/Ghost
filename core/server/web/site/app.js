@@ -14,7 +14,8 @@ const urlService = require('../../../frontend/services/url');
 const labsService = require('../../services/labs');
 const urlUtils = require('../../lib/url-utils');
 const sitemapHandler = require('../../../frontend/services/sitemap/handler');
-const themeMiddleware = require('../../../frontend/services/themes').middleware;
+const themeService = require('../../../frontend/services/themes');
+const themeMiddleware = themeService.middleware;
 const membersService = require('../../services/members');
 const siteRoutes = require('./routes');
 const shared = require('../shared');
@@ -260,7 +261,7 @@ module.exports = function setupSiteApp(options = {}) {
 
 module.exports.reload = () => {
     // https://github.com/expressjs/express/issues/2596
-    router = siteRoutes({start: true});
+    router = siteRoutes({start: themeService.getApiVersion()});
     Object.setPrototypeOf(SiteRouter, router);
 
     // re-initialse apps (register app routers, because we have re-initialised the site routers)
