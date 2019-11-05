@@ -23,6 +23,7 @@ export default Component.extend({
         subscriptionSettings.stripeConfig = stripeProcessor.config;
         subscriptionSettings.allowSelfSignup = !!subscriptionSettings.allowSelfSignup;
         subscriptionSettings.fromAddress = subscriptionSettings.fromAddress || '';
+        subscriptionSettings.mailgunApiKey = subscriptionSettings.mailgunApiKey || '';
 
         return subscriptionSettings;
     }),
@@ -64,6 +65,9 @@ export default Component.extend({
             }
             if (key === 'fromAddress') {
                 subscriptionSettings.fromAddress = event.target.value;
+            }
+            if (key === 'mailgunApiKey') {
+                subscriptionSettings.mailgunApiKey = event.target.value;
             }
             this.setMembersSubscriptionSettings(subscriptionSettings);
         }
