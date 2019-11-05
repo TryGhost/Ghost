@@ -8,12 +8,14 @@ const postEmailSerializer = require('./post-email-serializer');
 const sendEmail = async (post) => {
     const emailTmpl = postEmailSerializer.serialize(post);
 
-    const {members} = await membersService.api.members.list({limit: 'all'});
+    const {members} = await membersService.api.members.list(Object.assign({filter: 'subscribed:true'}, {limit: 'all'}));
     const emails = members.filter((member) => {
         return membersService.contentGating.checkPostAccess(post, member);
     }).map(m => m.email);
 
-    return bulkEmailService.send(emailTmpl, emails);
+    if (members.length) {
+        return bulkEmailService.send(emailTmpl, emails);
+    }
 };
 
 const sendTestEmail = async (post, emails) => {
