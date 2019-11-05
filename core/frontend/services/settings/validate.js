@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('services:settings:validate');
+const debug = require('ghost-ignition').debug('frontend:services:settings:validate');
 const common = require('../../../server/lib/common');
 const themeService = require('../themes');
 const _private = {};

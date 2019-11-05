@@ -1,7 +1,7 @@
 const fs = require('fs-extra'),
     Promise = require('bluebird'),
     path = require('path'),
-    debug = require('ghost-ignition').debug('services:settings:ensure-settings'),
+    debug = require('ghost-ignition').debug('frontend:services:settings:ensure-settings'),
     common = require('../../../server/lib/common'),
     config = require('../../../server/config');
 
