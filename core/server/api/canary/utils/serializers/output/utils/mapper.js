@@ -78,6 +78,7 @@ const mapPost = (model, frame) => {
 const mapSettings = (attrs, frame) => {
     url.forSettings(attrs);
     extraAttrs.forSettings(attrs, frame);
+    clean.settings(attrs, frame);
 
     // NOTE: The cleanup of deprecated ghost_head/ghost_foot has to happen here
     //       because codeinjection_head/codeinjection_foot are assigned on a previous
