@@ -48,7 +48,7 @@ async function listener(model, options) {
         return;
     }
 
-    if (!post.get('send_email_when_published')) {
+    if (!model.get('send_email_when_published')) {
         return;
     }
 
