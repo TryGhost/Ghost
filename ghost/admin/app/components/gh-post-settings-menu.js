@@ -15,6 +15,7 @@ export default Component.extend(SettingsMenuMixin, {
     feature: service(),
     store: service(),
     config: service(),
+    ajax: service(),
     ghostPaths: service(),
     notifications: service(),
     slugGenerator: service(),
@@ -27,6 +28,7 @@ export default Component.extend(SettingsMenuMixin, {
     _showSettingsMenu: false,
     _showThrobbers: false,
 
+    emailTestScratch: '',
     canonicalUrlScratch: alias('post.canonicalUrlScratch'),
     customExcerptScratch: alias('post.customExcerptScratch'),
     codeinjectionFootScratch: alias('post.codeinjectionFootScratch'),
@@ -46,7 +48,7 @@ export default Component.extend(SettingsMenuMixin, {
     twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
     twitterImage: or('post.twitterImage', 'post.featureImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
-    emailSubject: alias('emailSubjectScratch', 'post.title'),
+    emailSubject: or('emailSubjectScratch', 'post.title'),
 
     showVisibilityInput: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
 
@@ -409,6 +411,19 @@ export default Component.extend(SettingsMenuMixin, {
 
                 return this.savePost.perform();
             });
+        },
+        
+        async sendTestEmail() {
+            const resourceId = this.post.id;
+            const testEmail = this.emailTestScratch;
+            const url = this.get('ghostPaths.url').api('/email_preview/posts', resourceId);
+            const data = {emails: [testEmail]};
+            const options = {
+                data,
+                dataType: 'json'
+            };
+            console.log('Resource id', resourceId, url, options);
+            await this.ajax.post(url, options);
         },
 
         setEmailSubject(emailSubject) {
