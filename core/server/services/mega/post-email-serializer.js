@@ -12,7 +12,8 @@ const getSite = () => {
 const serialize = (post) => {
     return {
         subject: post.email_subject || post.title,
-        html: juice(template({post, site: getSite()}))
+        html: juice(template({post, site: getSite()})),
+        plaintext: post.plaintext
     };
 };
 
