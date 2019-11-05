@@ -323,6 +323,7 @@ module.exports = {
     },
     members: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        uuid: {type: 'string', maxlength: 36, nullable: true, unique: true, validations: {isUUID: true}},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         name: {type: 'string', maxlength: 191, nullable: true},
         note: {type: 'string', maxlength: 2000, nullable: true},
