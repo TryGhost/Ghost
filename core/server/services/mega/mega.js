@@ -51,7 +51,6 @@ async function listener(model, options) {
     }
 
     sendEmail(post).then(async () => {
-
         let actor = {id: null, type: null};
         if (options.context && options.context.user) {
             actor = {
