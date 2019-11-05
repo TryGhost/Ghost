@@ -107,6 +107,10 @@ module.exports = {
         return shared.pipeline(require('./actions'), localUtils);
     },
 
+    get email_preview() {
+        return shared.pipeline(require('./email-preview'), localUtils);
+    },
+
     get site() {
         return shared.pipeline(require('./site'), localUtils);
     },
