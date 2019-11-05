@@ -1,7 +1,15 @@
 const ghostBookshelf = require('./base');
+const uuid = require('uuid');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
+
+    defaults() {
+        return {
+            subscribed: true,
+            uuid: uuid.v4()
+        };
+    },
 
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'member' + '.' + event;
