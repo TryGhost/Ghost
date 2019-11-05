@@ -362,6 +362,11 @@
                     "name": "Backup database",
                     "action_type": "backupContent",
                     "object_type": "db"
+                },
+                {
+                    "name": "Email preview",
+                    "action_type": "read",
+                    "object_type": "email_preview"
                 }
             ]
         },
@@ -556,7 +561,8 @@
                     "integration": "all",
                     "api_key": "all",
                     "action": "all",
-                    "member": "all"
+                    "member": "all",
+                    "email_preview": "all"
                 },
                 "DB Backup Integration": {
                     "db": "all"
@@ -578,7 +584,8 @@
                     "redirect": "all",
                     "webhook": "all",
                     "action": "all",
-                    "member": "all"
+                    "member": "all",
+                    "email_preview": "all"
                 },
                 "Editor": {
                     "notification": "all",
@@ -589,7 +596,8 @@
                     "user": "all",
                     "role": "all",
                     "invite": "all",
-                    "theme": ["browse"]
+                    "theme": ["browse"],
+                    "email_preview": "all"
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -598,7 +606,8 @@
                     "tag": ["browse", "read", "add"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
-                    "theme": ["browse"]
+                    "theme": ["browse"],
+                    "email_preview": "read"
                 },
                 "Contributor": {
                     "post": ["browse", "read", "add"],
@@ -607,7 +616,8 @@
                     "tag": ["browse", "read"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
-                    "theme": ["browse"]
+                    "theme": ["browse"],
+                    "email_preview": "read"
                 }
             }
         },
