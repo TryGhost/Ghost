@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const localUtils = require('../../../index');
+const config = require('../../../../../../config');
 
 const tag = (attrs, frame) => {
     if (localUtils.isContentAPI(frame)) {
@@ -138,7 +139,28 @@ const action = (attrs) => {
     }
 };
 
+const settings = (attrs, frame) => {
+    // @NOTE: Admin & Content API return a different format, need to mappers
+    // We don't send mail provider API key in settings API if set in config
+    let membersSubscriptionSettings = {};
+    if (_.isArray(attrs)) {
+        membersSubscriptionSettings = attrs.find(({key}) => {
+            return key === 'members_subscription_settings';
+        }).value;
+        if (config.get('mailgunApiKey')) {
+            let membersSubscriptionSettingsJson = JSON.parse(membersSubscriptionSettings);
+            delete membersSubscriptionSettingsJson.mailgunApiKey;
+            attrs.forEach((attr) => {
+                if (attr.key === 'members_subscription_settings') {
+                    attr.value = JSON.stringify(membersSubscriptionSettingsJson);
+                }
+            });
+        }
+    }
+};
+
 module.exports.post = post;
 module.exports.tag = tag;
 module.exports.author = author;
 module.exports.action = action;
+module.exports.settings = settings;
