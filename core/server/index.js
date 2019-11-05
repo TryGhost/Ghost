@@ -17,12 +17,17 @@ const migrator = require('./data/db/migrator');
 const urlUtils = require('./lib/url-utils');
 let parentApp;
 
+// Frontend Components
+const themeService = require('../frontend/services/themes');
+
 function initialiseServices() {
     // CASE: When Ghost is ready with bootstrapping (db migrations etc.), we can trigger the router creation.
     //       Reason is that the routers access the routes.yaml, which shouldn't and doesn't have to be validated to
     //       start Ghost in maintenance mode.
+    // Routing is a bridge between the frontend and API
     const routing = require('../frontend/services/routing');
-    routing.bootstrap.start();
+    // We pass the themeService API version here, so that the frontend services are less tightly-coupled
+    routing.bootstrap.start(themeService.getApiVersion());
 
     const permissions = require('./services/permissions'),
         apps = require('./services/apps'),
@@ -73,9 +78,10 @@ function initialiseServices() {
 const minimalRequiredSetupToStartGhost = (dbState) => {
     const settings = require('./services/settings');
     const models = require('./models');
-    const frontendSettings = require('../frontend/services/settings');
-    const themes = require('../frontend/services/themes');
     const GhostServer = require('./ghost-server');
+
+    // Frontend
+    const frontendSettings = require('../frontend/services/settings');
 
     let ghostServer;
 
@@ -94,7 +100,7 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
         })
         .then(() => {
             debug('Frontend settings done');
-            return themes.init();
+            return themeService.init();
         })
         .then(() => {
             debug('Themes done');
