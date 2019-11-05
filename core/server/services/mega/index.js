@@ -1,3 +1,10 @@
 module.exports = {
-    mega: require('./mega')
+    get mega() {
+        return require('./mega');
+    },
+
+    get postEmailSerializer() {
+        return require('./post-email-serializer');
+    }
 };
+
