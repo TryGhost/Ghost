@@ -22,7 +22,7 @@ export default ModalComponent.extend({
             const url = this.get('ghostPaths.url').api('/email_preview/posts', resourceId);
             let htmlData = this.get('previewHtml');
             if (!htmlData) {
-                const response = await this.ajax.request(`${url}`);
+                const response = await this.ajax.request(url);
                 let [emailPreview] = response.email_previews;
                 htmlData = emailPreview.html;
             }

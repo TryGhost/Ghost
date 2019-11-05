@@ -339,22 +339,21 @@
                                 {{/gh-form-group}}
                                 <div class="form-group">
                                     <label>Test and Preview</label>
-                                    <div class="gh-twitter-preview">
-                                        {{#if twitterImage}}
-                                            <div class="gh-twitter-preview-image" style={{background-image-style twitterImage}}></div>
-                                        {{/if}}
-                                        <div class="gh-twitter-preview-content">
-                                            <div class="gh-twitter-preview-title">{{twitterTitle}}</div>
-                                            <div class="gh-twitter-preview-description">{{truncate twitterDescription 155}}</div>
-                                            <div class="gh-twitter-preview-footer">
-                                                <div class="gh-twitter-preview-footer-left">
-                                                    {{config.blogDomain}}
-                                                </div>
-                                                <div class="gh-twitter-preview-footer-right">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        {{gh-text-input
+                                            class="post-setting-email-test"
+                                            id="email-test"
+                                            name="post-setting-email-test"
+                                            placeholder=(truncate 'noreply@example.com' 40)
+                                            value=(readonly emailTestScratch)
+                                            input=(action (mut emailTestScratch) value="target.value")
+                                            stopEnterKeyDownPropagation=true
+                                            data-test-field="email-test"}}
+                                    <button type="button" class="gh-btn gh-btn-icon w-100 mt4 mb4"
+                                        onclick={{action "sendTestEmail"}} data-test-button="send-test-email">
+                                        <span>
+                                            Send Test Email
+                                        </span>
+                                    </button>
                                     <button type="button" class="gh-btn gh-btn-icon"
                                         onclick={{action "toggleEmailPreview"}} data-test-button="toggle-email-preview">
                                         <span>
