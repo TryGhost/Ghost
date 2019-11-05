@@ -25,6 +25,15 @@
             input=(action (mut scratchEmail) value="target.value")}}
         {{/gh-form-group}}
 
+        {{#gh-form-group}}
+        <label for="subscribed-checkbox">Subscribed</label>
+        <div class="for-switch mr-3">
+            <label class="switch" for="subscribed-checkbox">
+                <Input @checked={{this.member.subscribed}} @type="checkbox" @id="subscribed-checkbox" @name="subscribed" />
+                <span class="input-toggle-component"></span>
+            </label>
+        </div>
+        {{/gh-form-group}}
     </div>
     <div class="mb6 mb0-ns w-100 w-50-ns">
         {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="note"}}
