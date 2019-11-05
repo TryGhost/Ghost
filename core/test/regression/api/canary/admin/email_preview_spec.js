@@ -58,14 +58,19 @@ describe('Email Preview API', function () {
 
         it('can read post email preview with fields', function () {
             return request
-                .get(localUtils.API.getApiQuery(`email_preview/posts/${testUtils.DataGenerator.Content.posts[0].id}/?fields=html,plaintext,subject`))
+                .get(localUtils.API.getApiQuery(`email_preview/posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .then((res) => {
-                    localUtils.API.checkResponse(res.body.email_previews[0], 'email_preview', null, null, ['id', 'html', 'plaintext', 'subject']);
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.email_previews);
+
+                    localUtils.API.checkResponse(jsonResponse.email_previews[0], 'email_preview', null, null);
                 });
         });
     });
