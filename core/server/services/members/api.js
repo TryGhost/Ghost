@@ -75,11 +75,17 @@ async function getMetadata(module, member) {
     };
 }
 
-async function updateMember({name, note}, options = {}) {
-    const model = await models.Member.edit({
+async function updateMember({name, note, subscribed}, options = {}) {
+    const attrs = {
         name: name || null,
         note: note || null
-    }, options);
+    };
+
+    if (subscribed !== undefined) {
+        attrs.subscribed = subscribed;
+    }
+
+    const model = await models.Member.edit(attrs, options);
 
     const member = model.toJSON(options);
     return member;
