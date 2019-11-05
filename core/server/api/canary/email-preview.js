@@ -33,5 +33,31 @@ module.exports = {
                     return mega.postEmailSerializer.serialize(post);
                 });
         }
+    },
+    sendTestEmail: {
+        statusCode: 200,
+        headers: {},
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: false,
+        async query(frame) {
+            let model = await models.Post.findOne(frame.options);
+            if (!model) {
+                throw new common.errors.NotFoundError({
+                    message: common.i18n.t('errors.api.posts.postNotFound')
+                });
+            }
+            const post = model.toJSON();
+            const {emails = []} = frame.data;
+            return mega.mega.sendTestEmail(post, emails);
+        }
     }
 };
