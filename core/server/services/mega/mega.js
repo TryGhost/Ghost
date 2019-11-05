@@ -16,6 +16,12 @@ const sendEmail = async (post) => {
     return bulkEmailService.send(emailTmpl, emails);
 };
 
+const sendTestEmail = async (post, emails) => {
+    const emailTmpl = postEmailSerializer.serialize(post);
+
+    return bulkEmailService.send(emailTmpl, emails);
+};
+
 // NOTE: serialization is needed to make sure we are using current API and do post transformations
 //       such as image URL transformation from relative to absolute
 const serialize = async (model) => {
@@ -77,5 +83,6 @@ function listen() {
 
 // Public API
 module.exports = {
-    listen: listen
+    listen,
+    sendTestEmail
 };
