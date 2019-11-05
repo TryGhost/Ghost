@@ -23,9 +23,13 @@ export default Component.extend({
         subscriptionSettings.stripeConfig = stripeProcessor.config;
         subscriptionSettings.allowSelfSignup = !!subscriptionSettings.allowSelfSignup;
         subscriptionSettings.fromAddress = subscriptionSettings.fromAddress || '';
-        subscriptionSettings.mailgunApiKey = subscriptionSettings.mailgunApiKey || '';
 
         return subscriptionSettings;
+    }),
+
+    hasMailgunAPIKeyOption: computed('settings.membersSubscriptionSettings', function () {
+        let subscriptionSettings = this.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
+        return Object.keys(subscriptionSettings).includes('mailgunApiKey');
     }),
 
     defaultContentVisibility: computed('settings.defaultContentVisibility', function () {
