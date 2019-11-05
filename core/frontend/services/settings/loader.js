@@ -1,6 +1,6 @@
 const fs = require('fs-extra'),
     path = require('path'),
-    debug = require('ghost-ignition').debug('services:settings:settings-loader'),
+    debug = require('ghost-ignition').debug('frontend:services:settings:settings-loader'),
     common = require('../../../server/lib/common'),
     config = require('../../../server/config'),
     yamlParser = require('./yaml-parser'),
