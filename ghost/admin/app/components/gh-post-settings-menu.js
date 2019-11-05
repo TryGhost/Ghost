@@ -412,7 +412,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return this.savePost.perform();
             });
         },
-        
+
         async sendTestEmail() {
             const resourceId = this.post.id;
             const testEmail = this.emailTestScratch;
@@ -422,7 +422,6 @@ export default Component.extend(SettingsMenuMixin, {
                 data,
                 dataType: 'json'
             };
-            console.log('Resource id', resourceId, url, options);
             await this.ajax.post(url, options);
         },
 
