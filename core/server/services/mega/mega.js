@@ -1,3 +1,4 @@
+const url = require('url');
 const common = require('../../lib/common');
 const api = require('../../api');
 const membersService = require('../members');
@@ -38,6 +39,52 @@ const serialize = async (model) => {
 
     return frame.response[docName][0];
 };
+
+/**
+ * handleUnsubscribeRequest
+ *
+ * Takes a request/response pair and reads the `unsubscribe` query parameter,
+ * using the content to update the members service to set the `subscribed` flag
+ * to false on the member
+ *
+ * If any operation fails, or the request is invalid the function will error - so using
+ * as middleware should consider wrapping with `try/catch`
+ *
+ * @param {Request} req
+ * @returns {Promise<void>}
+ */
+async function handleUnsubscribeRequest(req) {
+    if (!req.url) {
+        throw new common.errors.BadRequestError({
+            message: 'Expected unsubscribe param containing token'
+        });
+    }
+
+    const {query} = url.parse(req.url, true);
+    if (!query || !query.unsubscribe) {
+        throw new common.errors.BadRequestError({
+            message: 'Expected unsubscribe param containing token'
+        });
+    }
+
+    const member = await membersService.api.members.get({
+        uuid: query.unsubscribe
+    });
+
+    if (!member) {
+        throw new common.errors.BadRequestError({
+            message: 'Expected valid subscribe param - could not find member'
+        });
+    }
+
+    try {
+        await membersService.api.members.update({subscribed: false}, {id: member.id});
+    } catch (err) {
+        throw new common.errors.InternalServerError({
+            message: 'Failed to unsubscribe member'
+        });
+    }
+}
 
 async function listener(model, options) {
     // CASE: do not send email if we import a database
@@ -86,5 +133,6 @@ function listen() {
 // Public API
 module.exports = {
     listen,
-    sendTestEmail
+    sendTestEmail,
+    handleUnsubscribeRequest
 };
