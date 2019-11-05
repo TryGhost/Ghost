@@ -75,6 +75,15 @@ const mapPost = (model, frame) => {
     return jsonModel;
 };
 
+const mapPage = (model, frame) => {
+    const jsonModel = mapPost(model, frame);
+
+    delete jsonModel.email_subject;
+    delete jsonModel.send_email_when_published;
+
+    return jsonModel;
+};
+
 const mapSettings = (attrs, frame) => {
     url.forSettings(attrs);
     extraAttrs.forSettings(attrs, frame);
@@ -126,6 +135,7 @@ const mapMember = (model, frame) => {
 };
 
 module.exports.mapPost = mapPost;
+module.exports.mapPage = mapPage;
 module.exports.mapUser = mapUser;
 module.exports.mapTag = mapTag;
 module.exports.mapIntegration = mapIntegration;
