@@ -2,7 +2,6 @@ const debug = require('ghost-ignition').debug('services:routing:bootstrap');
 const _ = require('lodash');
 const common = require('../../../server/lib/common');
 const settingsService = require('../settings');
-const themeService = require('../themes');
 const StaticRoutesRouter = require('./StaticRoutesRouter');
 const StaticPagesRouter = require('./StaticPagesRouter');
 const CollectionRouter = require('./CollectionRouter');
@@ -38,7 +37,7 @@ module.exports.init = (options = {start: false}) => {
     registry.setRouter('siteRouter', siteRouter);
 
     if (options.start) {
-        this.start();
+        this.start(options.start);
     }
 
     return siteRouter.router();
@@ -57,8 +56,7 @@ module.exports.init = (options = {start: false}) => {
  * 5. Static Pages: Weaker than collections, because we first try to find a post slug and fallback to lookup a static page.
  * 6. Apps: Weakest
  */
-module.exports.start = () => {
-    const apiVersion = themeService.getApiVersion();
+module.exports.start = (apiVersion) => {
     const RESOURCE_CONFIG = require(`./config/${apiVersion}`);
 
     const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
