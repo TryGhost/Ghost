@@ -60,6 +60,11 @@
     max-width: 550px;
 }
 
+.fullscreen-modal-full-overlay {
+    width: 100%;
+    max-width: 90%;
+}
+
 .fullscreen-modal-action {
     margin: 6vw 0;
 }
