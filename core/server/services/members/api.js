@@ -22,7 +22,7 @@ async function createMember({email, name, note}, options = {}) {
 }
 
 async function getMember(data, options = {}) {
-    if (!data.email && !data.id) {
+    if (!data.email && !data.id && !data.uuid) {
         return Promise.resolve(null);
     }
     const model = await models.Member.findOne(data, options);
