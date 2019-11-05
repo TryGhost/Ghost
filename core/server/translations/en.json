@@ -57,7 +57,7 @@
                 "unknownOrigin": "Could not determine origin of request. Please ensure an Origin or Referrer header is present.",
                 "mismatchedOrigin": "Request made from incorrect origin. Expected '{expected}' received '{actual}'.",
                 "missingUserIDForSession": "Cannot create session without user id.",
-                "accessDenied": "Access denied.",
+                "accessDenied": "Username or Password is incorrect. Please try again.",
                 "pleaseSignIn": "Please Sign In",
                 "authorizationFailed": "Authorization failed",
                 "missingContentMemberOrIntegration": "Unable to determine the authenticated member or integration. Check the supplied Content API Key and ensure cookies are being passed through if member auth is failing.",
@@ -238,7 +238,7 @@
                     "context": "Error thrown from user update during login",
                     "help": "Visit and save your profile after logging in to check for problems."
                 },
-                "incorrectPassword": "Your password is incorrect.",
+                "incorrectPassword": "Username or Password is incorrect. Please try again.",
                 "accountLocked": "Your account is locked. Please reset your password to log in again by clicking the \"Forgotten password?\" link!",
                 "accountSuspended": "Your account was suspended.",
                 "newPasswordsDoNotMatch": "Your new passwords do not match",
