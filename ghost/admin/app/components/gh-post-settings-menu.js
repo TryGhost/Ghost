@@ -168,6 +168,10 @@ export default Component.extend(SettingsMenuMixin, {
             });
         },
 
+        toggleEmailPreview() {
+            this.toggleEmailPreviewModal();
+        },
+
         /**
          * triggered by user manually changing slug
          */

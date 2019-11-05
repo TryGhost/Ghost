@@ -324,7 +324,7 @@
                         <div class="settings-menu-content">
                             <form {{action "discardEnter" on="submit"}}>
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="emailSubject"}}
-                                    <label for="og-title">Email Subject</label>
+                                    <label for="og-title">Subject</label>
                                     {{gh-text-input
                                         class="post-setting-email-subject"
                                         id="email-subject"
@@ -337,6 +337,31 @@
                                         data-test-field="email-subject"}}
                                     {{gh-error-message errors=post.errors property="emailSubject" data-test-error="email-subject"}}
                                 {{/gh-form-group}}
+                                <div class="form-group">
+                                    <label>Test and Preview</label>
+                                    <div class="gh-twitter-preview">
+                                        {{#if twitterImage}}
+                                            <div class="gh-twitter-preview-image" style={{background-image-style twitterImage}}></div>
+                                        {{/if}}
+                                        <div class="gh-twitter-preview-content">
+                                            <div class="gh-twitter-preview-title">{{twitterTitle}}</div>
+                                            <div class="gh-twitter-preview-description">{{truncate twitterDescription 155}}</div>
+                                            <div class="gh-twitter-preview-footer">
+                                                <div class="gh-twitter-preview-footer-left">
+                                                    {{config.blogDomain}}
+                                                </div>
+                                                <div class="gh-twitter-preview-footer-right">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="gh-btn gh-btn-icon"
+                                        onclick={{action "toggleEmailPreview"}} data-test-button="toggle-email-preview">
+                                        <span>
+                                            Preview email in browser
+                                        </span>
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     {{/if}}

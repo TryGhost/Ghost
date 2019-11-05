@@ -1,0 +1,38 @@
+.modal-preview-email-content {
+    height: calc(100vh - 170px);
+}
+
+.gh-pe-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: -32px -32px 0;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    overflow: hidden;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background: var(--midgrey);
+    background: linear-gradient(135deg, color-mod(var(--midgrey) h(-10) s(+5%) l(-10%)) 0%, #738a94 100%);
+    padding: 18px 32px 12px;
+}
+
+.gh-pe-header .background-img {
+    position: absolute;
+    top: -30px;
+    left: 0;
+}
+
+.gh-pe-header h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #FFF;
+    margin: 0 8px 4px;
+}
+
+.gh-pe-content {
+    margin: 0px -32px;
+    max-height: calc(100vh - 170px);
+}

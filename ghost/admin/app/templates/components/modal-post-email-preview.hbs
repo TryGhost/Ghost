@@ -1,0 +1,26 @@
+<header class="modal-header gh-pe-header" data-test-modal="preview-email" style="display:flex">
+    <img style="width:20px" src="assets/img/mailchimp.svg" />
+    <h2>Email Preview</h2>
+        <div class="gh-contentfilter gh-btn-group" style="display:flex;flex-grow:1;justify-content:center">
+            <button class="gh-btn {{if (eq type "desktop") "gh-btn-group-selected"}}" {{action "changeType" "desktop"}}><span>Desktop</span></button>
+            <button class="gh-btn {{if (eq type "mobile") "gh-btn-group-selected"}}" {{action "changeType" "mobile"}}><span>Mobile</span></button>
+        </div>
+</header>
+
+<button class="close gh-wn-close" href="" title="Close" {{on "click" this.closeModal}}>
+    {{svg-jar "close"}}
+</button>
+{{#if (eq type "mobile")}}
+    <div class="modal-body gh-pe-content modal-preview-email-content" style="display: flex;justify-content: center;padding-top: 12px;">
+        <div style="width: 350px;border: 1px solid black;border-radius: 16px;display: flex;"> 
+            <div style="margin: 12px;border: 1px solid black;border-radius: 16px;flex-grow:1"> 
+                <iframe class="bn" style="height:100%;width:320px;overflow-x:hidden;padding:6px" {{did-insert this.renderEmailPreview}}></iframe>
+            </div>
+        </div>
+    </div>
+{{/if}}
+{{#if (eq type "desktop")}}
+    <div class="modal-body gh-pe-content modal-preview-email-content">
+        <iframe class="bn miw-100" style="height:100%;" {{did-insert this.renderEmailPreview}}></iframe>
+    </div>
+{{/if}}
