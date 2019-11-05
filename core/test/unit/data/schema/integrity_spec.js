@@ -19,7 +19,7 @@ var should = require('should'),
  */
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    const currentSchemaHash = 'b76727048bd7851cb9fbfbefc9b00745';
+    const currentSchemaHash = 'd7af2f707b0221871d27d9387e0de2e2';
     const currentFixturesHash = '84005b6e8f62231b6fd0fc261ce893db';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
