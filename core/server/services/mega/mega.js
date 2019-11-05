@@ -48,11 +48,11 @@ async function listener(model, options) {
         return;
     }
 
-    const post = await serialize(model);
-
-    if (!post.send_email_when_published) {
+    if (!post.get('send_email_when_published')) {
         return;
     }
+
+    const post = await serialize(model);
 
     const deliveredEvents = await models.Action.findAll({
         filter: `event:delivered+resource_id:${model.id}`
