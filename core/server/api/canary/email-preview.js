@@ -19,7 +19,8 @@ module.exports = {
         ],
         permissions: true,
         query(frame) {
-            return models.Post.findOne(frame.data, frame.options)
+            const options = Object.assign(frame.options, {formats: 'html,plaintext'});
+            return models.Post.findOne(frame.data, options)
                 .then((model) => {
                     if (!model) {
                         throw new common.errors.NotFoundError({
@@ -27,7 +28,7 @@ module.exports = {
                         });
                     }
 
-                    const post = model.toJSON();
+                    const post = model.toJSON(options);
 
                     return mega.postEmailSerializer.serialize(post);
                 });
