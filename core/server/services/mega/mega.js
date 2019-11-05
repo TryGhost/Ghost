@@ -19,7 +19,7 @@ const sendEmail = async (post) => {
 // NOTE: serialization is needed to make sure we are using current API and do post transformations
 //       such as image URL transformation from relative to absolute
 const serialize = async (model) => {
-    const frame = {options: {previous: true, context: {user: true}}};
+    const frame = {options: {context: {user: true}}};
     const apiVersion = model.get('api_version') || 'v3';
     const docName = 'posts';
 
