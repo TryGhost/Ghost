@@ -185,6 +185,18 @@
             </div>
             <div class="f8 fw4 midgrey mt1">Your members will receive system emails from this address</div>
             {{/gh-form-group}}
+            {{#gh-form-group}}
+                <label class="fw6 f8">Mailgun API key</label>
+                {{gh-text-input
+                    type="password"
+                    value=(readonly subscriptionSettings.mailgunApiKey)
+                    input=(action "setSubscriptionSettings" "mailgunApiKey")
+                    class="mt1 password"
+                }}
+                <a href="https://help.mailgun.com/hc/en-us/articles/203380100-Where-Can-I-Find-My-API-Key-and-SMTP-Credentials-" target="_blank" class="mt1 fw4 f8">
+                    Find your Mailgun API keys here &raquo;
+                </a>
+            {{/gh-form-group}}
         </div>
         {{/liquid-if}}
     </section>
