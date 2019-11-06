@@ -1,3 +1,5 @@
+const date = require('../../../frontend/helpers/date');
+
 module.exports = ({post, site}) => `
 <!doctype html>
 <html>
@@ -129,7 +131,7 @@ dt {
     float: left;
     margin: 0 20px 0 0;
     width: 120px;
-    color: #15171A;
+    color: #15212A;
     font-weight: 500;
     text-align: right;
 }
@@ -140,12 +142,12 @@ dd {
 }
 
 blockquote {
-    margin: 1.5em 0;
+    margin: 2em 0;
     padding: 0 1.6em 0 1.2em;
-    border-left: #e5eff5 3px solid;
+    border-left: #15212A 2px solid;
     font-style: italic;
     font-size: 22px;
-    line-height: 1.55em;
+    line-height: 1.75em;
     letter-spacing: -0.2px;
 }
 
@@ -170,7 +172,7 @@ blockquote cite a {
 }
 
 a {
-    color: #3eb0ef;
+    color: #15212A;
     text-decoration: none;
 }
 
@@ -182,46 +184,45 @@ h5,
 h6 {
     margin-top: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-    line-height: 1.18em;
+    line-height: 1.15em;
     font-weight: 600;
     text-rendering: optimizeLegibility;
 }
 
 h1 {
     margin: 1.5em 0 0.5em 0;
-    font-size: 38px;
+    font-size: 46px;
     font-weight: 600;
 }
 
 h2 {
     margin: 1.5em 0 0.5em 0;
-    font-size: 30px;
+    font-size: 32px;
     line-height: 1.22em;
 }
 
 h3 {
     margin: 1.5em 0 0.5em 0;
-    font-size: 25px;
+    font-size: 26px;
     line-height: 1.25em;
 }
 
 h4 {
-    margin: 1.5em 0 0.5em 0;
+    margin: 1.8em 0 0.5em 0;
     font-size: 21px;
     line-height: 1.3em;
 }
 
 h5 {
-    margin: 1.5em 0 0.5em 0;
+    margin: 2em 0 0.5em 0;
     font-size: 19px;
-    line-height: 1.3em;
-    font-weight: 700;
+    line-height: 1.4em;
 }
 
 h6 {
-    margin: 1.5em 0 0.5em 0;
+    margin: 2em 0 0.5em 0;
     font-size: 19px;
-    line-height: 1.3em;
+    line-height: 1.4em;
     font-weight: 700;
 }
 
@@ -240,57 +241,84 @@ figcaption {
     font-size: 14px;
 }
 
+code {
+    font-size: 0.9em;
+}
+
 pre {
     white-space: pre-wrap;
+    background: #15212A;
+    padding: 15px;
+    border-radius: 3px;
+    line-height: 1.2em;
+    color: #ffffff;
+}
+
+p code {
+    background: #F2F7FA;
+    word-break: break-all;
+    padding: 1px 7px;
+    border-radius: 3px;
 }
 
 figure blockquote p {
     font-size: 1em;
 }
 
-.site-info {
-    padding-bottom: 40px;
+.site-icon {
+    padding-bottom: 4px;
     padding-top: 20px;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
-    text-transform: uppercase;
+    text-align: center;
+    border-radius: 3px;
+}
+
+.site-icon img {
+    width: 48px;
+    height: 48px;
+    border-radius: 3px;
+}
+
+.site-info {
+    padding-top: 15px;
+    padding-bottom: 60px;
 }
 
 .site-url {
-    color: #15171A;
+    color: #15212A;
+    font-size: 16px;
+    letter-spacing: -0.1px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    border-bottom: 1px solid #e5eff5;
+    padding-bottom: 15px;
 }
 
 .post-title {
-    padding-bottom: 10px;
-    font-size: 40px;
+    padding-bottom: 0px;
+    font-size: 48px;
     line-height: 1.18em;
     font-weight: 600;
-    border-bottom: 1px solid #e5eff5;
+    text-align: center;
 }
 
 .post-title-link {
-    color: #15171A;
+    color: #15212A;
 }
 
-.post-meta {
+.post-meta,
+.view-online {
     padding-top: 10px;
-    padding-bottom: 40px;
+    padding-bottom: 60px;
     white-space: nowrap;
     color: #738a94;
     font-size: 13px;
     letter-spacing: 0.2px;
     text-transform: uppercase;
+    text-align: center;
 }
 
 .view-online {
-    padding-top: 10px;
-    padding-bottom: 40px;
-    white-space: nowrap;
-    color: #738a94;
-    font-size: 13px;
-    letter-spacing: 0.2px;
-    text-transform: uppercase;
     text-align: right;
 }
 
@@ -300,17 +328,31 @@ figure blockquote p {
     color: #738a94;
 }
 
+.feature-image {
+    padding-bottom: 30px;
+    width: 100%;
+}
+
 .post-content {
     max-width: 600px !important;
     font-family: Georgia, serif;
     font-size: 18px;
     line-height: 1.5em;
-    color: #15212A;
+    color: #23323D;
+}
+
+.post-content a {
+    color: #08121A;
+    text-decoration: underline;
 }
 
 .kg-bookmark-card {
     width: 100%;
     background: #ffffff;
+}
+
+.kg-bookmark-card a {
+    text-decoration: none;
 }
 
 .kg-card + .kg-bookmark-card {
@@ -635,7 +677,7 @@ figure blockquote p {
 </head>
 
 <body class="">
-    <span class="preheader">${post.title}</span>
+    <span class="preheader">${ post.excerpt ? post.excerpt : `${post.title} – ` }</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
         <tr>
             <td>&nbsp;</td>
@@ -650,7 +692,18 @@ figure blockquote p {
                             <td class="wrapper">
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                     <tr>
-                                        <td class="site-info"><a href="${site.url}" class="site-url">${site.title}</a></td>
+                                        <td class="site-info">
+                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                                ${ site.icon ? `
+                                                <tr>
+                                                    <td class="site-icon"><img src="${site.url}${site.icon}"></td>
+                                                </tr>
+                                                ` : ``}
+                                                <tr>
+                                                    <td class="site-url"><a href="${site.url}">${site.title}</a></td>
+                                                </tr>
+                                            </table>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td class="post-title"><a href="${post.url}" class="post-title-link">${post.title}</a></td>
@@ -660,16 +713,21 @@ figure blockquote p {
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                                 <tr>
                                                     <td class="post-meta">
-                                                        ${post.published_at}
-                                                    </td>
-                                                    <td class="view-online">
-                                                        <a href="${post.url}" class="view-online-link">View online</a> →
+                                                        ${post.published_at} – 
+                                                        <a href="${post.url}" class="view-online-link">View online →</a>
                                                     </td>
                                                 </tr>
                                             </table>
                                             
                                         </td>
                                     </tr>
+                                    ${
+                                        post.feature_image ? `
+                                        <tr>
+                                            <td class="feature-image"><img src="${post.feature_image}"></td>
+                                        </tr>
+                                        ` : ``
+                                    }
                                     <tr>
                                         <td class="post-content">
                                             
@@ -684,6 +742,17 @@ figure blockquote p {
                         </tr>
 
                         <!-- END MAIN CONTENT AREA -->
+
+                        <tr>
+                            <td class="wrapper">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td class="footer">${site.title} – <a href="http://example.com">Unsubscribe</a></td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+
                     </table>
                     <!-- END CENTERED WHITE CONTAINER -->
                 </div>
