@@ -142,12 +142,12 @@ const action = (attrs) => {
 const settings = (attrs) => {
     // @NOTE: Admin & Content API return a different format, need to mappers
     // We don't send mail provider API key in settings API if set in config
-    let membersSubscriptionSettings = {};
     if (_.isArray(attrs)) {
-        membersSubscriptionSettings = attrs.find(({key}) => {
+        const membersSubscriptionSettingsObj = attrs.find(({key}) => {
             return key === 'members_subscription_settings';
-        }).value;
-        if (config.get('mailgunApiKey')) {
+        }) || {};
+        const membersSubscriptionSettings = membersSubscriptionSettingsObj.value;
+        if (membersSubscriptionSettings && config.get('mailgunApiKey')) {
             let membersSubscriptionSettingsJson = JSON.parse(membersSubscriptionSettings);
             delete membersSubscriptionSettingsJson.mailgunApiKey;
             attrs.forEach((attr) => {
