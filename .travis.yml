@@ -17,13 +17,11 @@ matrix:
   include:
   - node_js: '10'
     env: TEST_SUITE=lint
-  allow_failures:
-  - node_js: '12'
 install:
-- if [ "$TRAVIS_NODE_VERSION" == "12" ]; then yarn --ignore-engines; else yarn; fi
+- yarn
 before_script:
 - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
-- if [ "$DB" == "sqlite3" ]; then yarn add --ignore-engines --force sqlite3; fi
+- if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi
 script: |
   if [ "$TEST_SUITE" == "lint" ]; then
     yarn lint
