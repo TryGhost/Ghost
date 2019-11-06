@@ -15,7 +15,8 @@ module.exports = {
             }
         },
         data: [
-            'id'
+            'id',
+            'status'
         ],
         permissions: true,
         query(frame) {
