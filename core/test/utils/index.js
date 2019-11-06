@@ -464,6 +464,12 @@ fixtures = {
         return Promise.map(DataGenerator.forKnex.api_keys, function (api_key) {
             return models.ApiKey.add(api_key, module.exports.context.internal);
         });
+    },
+
+    insertEmails: function insertEmails() {
+        return Promise.map(DataGenerator.forKnex.emails, function (email) {
+            return models.Email.add(email, module.exports.context.internal);
+        });
     }
 };
 
@@ -613,6 +619,9 @@ toDoList = {
     },
     api_keys: function insertApiKeys() {
         return fixtures.insertApiKeys();
+    },
+    emails: function insertEmails() {
+        return fixtures.insertEmails();
     }
 };
 
