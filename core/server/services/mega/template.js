@@ -1,5 +1,3 @@
-const date = require('../../../frontend/helpers/date');
-
 module.exports = ({post, site}) => `
 <!doctype html>
 <html>
