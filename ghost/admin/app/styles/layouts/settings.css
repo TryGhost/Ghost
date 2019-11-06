@@ -530,8 +530,8 @@
     padding: 0;
     min-width: 250px;
     min-height: 300px;
-    max-width: 1180px;
-    width: 100%;
+    max-width: 1130px;
+    width: calc(100vw - 360px);
     height: auto;
     line-height: 22px;
     border: 1px solid var(--lightgrey);
@@ -557,6 +557,12 @@
 
 .settings-code-editor .cm-s-xq-light span.cm-meta {
     color: #000;
+}
+
+@media (max-width: 800px) {
+    .settings-code-editor {
+        width: calc(100vw - 8vw - 40px);
+    }
 }
 
 
