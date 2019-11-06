@@ -14,8 +14,6 @@ module.exports = function post_class() { // eslint-disable-line camelcase
         image = this.post && this.post.feature_image ? this.post.feature_image : this.feature_image || false,
         page = this.post && this.post.page ? this.post.page : this.page || false;
 
-    console.log(this);
-
     if (tags) {
         classes = classes.concat(tags.map(function (tag) {
             return 'tag-' + tag.slug;

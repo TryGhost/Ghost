@@ -31,7 +31,7 @@ describe('{{post_class}} helper', function () {
             rendered = helpers.post_class.call(post);
 
         should.exist(rendered);
-        rendered.string.should.equal('post featured no-image');
+        rendered.string.should.equal('post featured');
     });
 
     it('can render page class', function () {
@@ -42,8 +42,8 @@ describe('{{post_class}} helper', function () {
         rendered.string.should.equal('post no-image page');
     });
 
-    it('can render page class  without no-image class', function () {
-        var post = {page: true, featured_image: 'asdasdas'},
+    it('can render page class without no-image class', function () {
+        var post = {page: true, feature_image: 'asdasdas'},
             rendered = helpers.post_class.call(post);
 
         should.exist(rendered);
