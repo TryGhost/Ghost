@@ -57,3 +57,32 @@
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }
+
+.fullscreen-modal-email-preview .gh-pe-mobile-container {
+    height: calc(100% - 64px);
+    max-height: 812px;
+}
+
+.gh-pe-mobile-bezel {
+    width: 100%;
+    max-width: 43vh;
+    border: 1px solid var(--midgrey-l2);
+    border-radius: 40px;
+    display: flex;
+}
+
+.gh-pe-mobile-screen {
+    width: 100%;
+    margin: 18px;
+    border: 1px solid var(--midgrey-l2);
+    border-radius: 23px;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.gh-pe-iframe {
+    height: 100%; 
+    width: calc(43vh - 40px);
+    overflow-x: hidden;
+    padding: 0;
+}
