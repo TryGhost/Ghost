@@ -376,5 +376,28 @@ module.exports = {
         // @NOTE: The context object can be used to store information about an action e.g. diffs, meta
         context: {type: 'text', maxlength: 1000000000, nullable: true},
         created_at: {type: 'dateTime', nullable: false}
+    },
+    emails: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', unique: true},
+        uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
+        status: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'sending',
+            validations: {isIn: [['sending', 'sent', 'failed']]}
+        },
+        error: {type: 'string', maxlength: 2000, nullable: true},
+        stats: {type: 'text', maxlength: 65535, nullable: true},
+        email_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        subject: {type: 'string', maxlength: 300, nullable: true},
+        html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        submitted_at: {type: 'dateTime', nullable: false},
+        created_at: {type: 'dateTime', nullable: false},
+        created_by: {type: 'string', maxlength: 24, nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        updated_by: {type: 'string', maxlength: 24, nullable: true}
     }
 };
