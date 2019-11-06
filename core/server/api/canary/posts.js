@@ -1,6 +1,7 @@
 const models = require('../../models');
 const common = require('../../lib/common');
 const urlUtils = require('../../lib/url-utils');
+const {mega} = require('../../services/mega');
 const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
@@ -141,6 +142,24 @@ module.exports = {
         },
         query(frame) {
             return models.Post.edit(frame.data.posts[0], frame.options)
+                .then(async (model) => {
+                    if (!model.get('send_email_when_published')) {
+                        return model;
+                    }
+
+                    if (!model.get('email') && (model.get('status') === 'published') && model.wasChanged()) {
+
+                        const email = await mega.addEmail(model.toJSON());
+
+                        if (frame.options.include && frame.options.includes('email')) {
+                            model.set('email', email);
+                        }
+
+                        return model;
+                    } else {
+                        return model;
+                    }
+                })
                 .then((model) => {
                     if (
                         model.get('status') === 'published' && model.wasChanged() ||
