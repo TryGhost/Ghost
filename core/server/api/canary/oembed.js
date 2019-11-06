@@ -3,18 +3,19 @@ const {extract, hasProvider} = require('oembed-parser');
 const Promise = require('bluebird');
 const request = require('../../lib/request');
 const cheerio = require('cheerio');
-const metascraper = require('metascraper')([
-    require('metascraper-url')(),
-    require('metascraper-title')(),
-    require('metascraper-description')(),
-    require('metascraper-author')(),
-    require('metascraper-publisher')(),
-    require('metascraper-image')(),
-    require('metascraper-logo-favicon')(),
-    require('metascraper-logo')()
-]);
 
 async function fetchBookmarkData(url, html) {
+    const metascraper = require('metascraper')([
+        require('metascraper-url')(),
+        require('metascraper-title')(),
+        require('metascraper-description')(),
+        require('metascraper-author')(),
+        require('metascraper-publisher')(),
+        require('metascraper-image')(),
+        require('metascraper-logo-favicon')(),
+        require('metascraper-logo')()
+    ]);
+
     if (!html) {
         const response = await request(url, {
             headers: {
