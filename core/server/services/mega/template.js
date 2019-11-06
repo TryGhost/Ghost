@@ -324,7 +324,7 @@ figure blockquote p {
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
-    color: #738a94;
+    color: #15212A;
 }
 
 .feature-image {
@@ -471,6 +471,7 @@ figure blockquote p {
 }
 
 .footer {
+    color: #738a94;
     margin-top: 20px;
     text-align: center;
     border-top: 1px solid #e5eff5;
@@ -786,7 +787,7 @@ figure blockquote p {
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                                 ${ site.icon ? `
                                                 <tr>
-                                                    <td class="site-icon"><img src="${site.url}${site.icon}"></td>
+                                                    <td class="site-icon"><a href="${site.url}"><img src="${site.url}${site.icon}" border="0"></a></td>
                                                 </tr>
                                                 ` : ``}
                                                 <tr>
@@ -803,6 +804,7 @@ figure blockquote p {
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                                 <tr>
                                                     <td class="post-meta">
+                                                        By Authors – 
                                                         ${post.published_at} – 
                                                         <a href="${post.url}" class="view-online-link">View online →</a>
                                                     </td>
