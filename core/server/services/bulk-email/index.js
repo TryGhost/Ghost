@@ -19,13 +19,16 @@ module.exports = {
     /**
      * @param {Email} message - The message to send
      * @param {[EmailAddress]} recipients - the recipients to send the email to
+     * @param {[object]} recipientData - list of data keyed by email to inject into the email
      * @returns {Promise<boolean>} A promise representing the success of the email sending
      */
-    async send(message, recipients) {
+    async send(message, recipients, recipientData) {
         for (const recipient of recipients) {
             const messageToSend = Object.assign({}, message, {
                 to: recipient
             });
+            const unsubscribeUrl = recipientData[recipient].unsubscribe_url;
+            messageToSend.html = messageToSend.html.replace('%recipient.unsubscribe_url%', unsubscribeUrl);
             try {
                 await ghostMailer.send(messageToSend);
             } catch (err) {
