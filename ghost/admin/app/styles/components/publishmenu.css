@@ -230,5 +230,6 @@
 }
 
 .gh-publishmenu-email-label {
+    display: block;
     margin-left: 12px;
 }
