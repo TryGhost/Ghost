@@ -1,7 +1,15 @@
+const uuid = require('uuid');
 const ghostBookshelf = require('./base');
 
 const Email = ghostBookshelf.Model.extend({
     tableName: 'emails',
+
+    defaults: function defaults() {
+        return {
+            uuid: uuid.v4(),
+            status: 'sending'
+        };
+    },
 
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'email' + '.' + event;
