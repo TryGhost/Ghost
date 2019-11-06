@@ -719,6 +719,11 @@ figure blockquote p {
         margin: 2em 0 !important;
     }
 
+    table[class=body] figcaption,
+    table[class=body] figcaption a {
+        font-size: 13px !important;
+    }
+
 }
 
 /* -------------------------------------
