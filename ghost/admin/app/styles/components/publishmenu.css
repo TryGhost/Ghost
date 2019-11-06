@@ -226,6 +226,7 @@
 
 .for-checkbox .gh-publishmenu-email-checkbox {
     margin-right: 0;
+    margin-top: 2px;
     background: var(--white);
 }
 
