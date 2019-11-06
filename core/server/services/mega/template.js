@@ -578,10 +578,6 @@ figure blockquote p {
     RESPONSIVE AND MOBILE FRIENDLY STYLES
 ------------------------------------- */
 @media only screen and (max-width: 620px) {
-    table[class=body] h1 {
-        font-size: 28px !important;
-        margin-bottom: 10px !important;
-    }
 
     table[class=body] p,
     table[class=body] ul,
@@ -590,6 +586,12 @@ figure blockquote p {
     table[class=body] span,
     table[class=body] a {
         font-size: 16px !important;
+    }
+
+    table[class=body] pre {
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+        width: 80vw !important;
     }
 
     table[class=body] .wrapper,
@@ -625,6 +627,95 @@ figure blockquote p {
         max-width: 100% !important;
         width: auto !important;
     }
+
+    table[class=body] .site-icon img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    table[class=body] .site-info {
+        padding-top: 15px !important;
+        padding-bottom: 60px !important;
+    }
+
+    table[class=body] .site-url a {
+        font-size: 14px !important;
+        padding-bottom: 15px !important;
+    }
+
+    table[class=body] .post-meta {
+        white-space: normal !important;
+        font-size: 12px !important;
+        line-height: 1.5em;
+    }
+
+    table[class=body] .view-online-link,
+    table[class=body] .footer,
+    table[class=body] .footer a {
+        font-size: 12px !important;
+    }
+
+    table[class=body] .post-title a {
+        font-size: 32px !important;
+        line-height: 1.3em !important;
+    }
+
+    table[class=body] .kg-bookmark-card {
+        width: 90vw !important;
+    }
+
+    table[class=body] .kg-bookmark-thumbnail {
+        display: none !important;
+    }
+    
+    table[class=body] .kg-bookmark-metadata span {
+        font-size: 13px !important;
+    }
+
+    table[class=body] .kg-embed-card {
+        max-width: 90vw !important;
+    }
+
+    table[class=body] h1 {
+        font-size: 32px !important;
+        line-height: 1.3em !important;
+    }
+
+    table[class=body] h2 {
+        font-size: 26px !important;
+        line-height: 1.22em !important;
+    }
+
+    table[class=body] h3 {
+        font-size: 21px !important;
+        line-height: 1.25em !important;
+    }
+
+    table[class=body] h4 {
+        font-size: 19px !important;
+        line-height: 1.3em !important;
+    }
+
+    table[class=body] h5 {
+        font-size: 16px !important;
+        line-height: 1.4em !important;
+    }
+
+    table[class=body] h6 {
+        font-size: 16px !important;
+        line-height: 1.4em !important;
+    }
+
+    table[class=body] blockquote {
+        font-size: 19px !important;
+        line-height: 1.6em !important;
+        margin: 1.5em 0 !important;
+    }
+    
+    table[class=body] hr {
+        margin: 2em 0 !important;
+    }
+
 }
 
 /* -------------------------------------
