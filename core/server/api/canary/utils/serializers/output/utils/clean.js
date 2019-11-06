@@ -139,7 +139,7 @@ const action = (attrs) => {
     }
 };
 
-const settings = (attrs, frame) => {
+const settings = (attrs) => {
     // @NOTE: Admin & Content API return a different format, need to mappers
     // We don't send mail provider API key in settings API if set in config
     let membersSubscriptionSettings = {};
