@@ -133,7 +133,7 @@
                     {{#if (and this.feature.members (eq this.post.displayName "post"))}}
                         <li class="nav-list-item" {{action "showSubview" "email-settings"}} data-test-button="email-settings">
                             <button type="button">
-                                <b>Email Settings</b>
+                                <b>Email</b>
                                 <span>Customise Email Settings</span>
                             </button>
                             {{svg-jar "arrow-right"}}
@@ -317,7 +317,7 @@
                     {{#if (eq subview "email-settings")}}
                         <div class="settings-menu-header subview">
                             <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
-                            <h4>Email Settings</h4>
+                            <h4>Email</h4>
                             <div style="width:23px;"></div>
                         </div>
 
@@ -338,26 +338,30 @@
                                     {{gh-error-message errors=post.errors property="emailSubject" data-test-error="email-subject"}}
                                 {{/gh-form-group}}
                                 <div class="form-group">
-                                    <label>Test and Preview</label>
-                                        {{gh-text-input
-                                            class="post-setting-email-test"
-                                            id="email-test"
-                                            name="post-setting-email-test"
-                                            placeholder=(truncate 'noreply@example.com' 40)
-                                            value=(readonly emailTestScratch)
-                                            input=(action (mut emailTestScratch) value="target.value")
-                                            stopEnterKeyDownPropagation=true
-                                            data-test-field="email-test"}}
-                                    <button type="button" class="gh-btn gh-btn-icon w-100 mt4 mb4"
+                                    <div class="flex">
+                                        <label class="nowrap flex-auto">Test email</label>
+                                        <button type="button" class="gh-btn gh-btn-link gh-preview-email-button" onclick={{action "toggleEmailPreview"}}
+                                            data-test-button="toggle-email-preview">
+                                            <span class="blue">
+                                                Preview in browser
+                                            </span>
+                                        </button>
+                                    </div>
+
+                                    {{gh-text-input
+                                        class="post-setting-email-test"
+                                        id="email-test"
+                                        name="post-setting-email-test"
+                                        placeholder=(truncate 'noreply@example.com' 40)
+                                        value=(readonly emailTestScratch)
+                                        input=(action (mut emailTestScratch) value="target.value")
+                                        stopEnterKeyDownPropagation=true
+                                        data-test-field="email-test"}}
+
+                                    <button type="button" class="gh-btn w-100 mt2"
                                         onclick={{action "sendTestEmail"}} data-test-button="send-test-email">
                                         <span>
                                             Send Test Email
-                                        </span>
-                                    </button>
-                                    <button type="button" class="gh-btn gh-btn-icon"
-                                        onclick={{action "toggleEmailPreview"}} data-test-button="toggle-email-preview">
-                                        <span>
-                                            Preview email in browser
                                         </span>
                                     </button>
                                 </div>

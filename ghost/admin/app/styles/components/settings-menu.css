@@ -308,3 +308,12 @@
 .gh-setting-title .gh-badge {
     font-size: 13px;
 }
+
+/* Email
+/* ---------------------------------------------------------- */
+.gh-preview-email-button span {
+    padding: 4px 0;
+    line-height: 1em;
+    height: unset;
+    margin-bottom: 4px;
+}
