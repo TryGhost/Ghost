@@ -372,6 +372,11 @@
                     "name": "Send test email",
                     "action_type": "sendTestEmail",
                     "object_type": "email_preview"
+                },
+                {
+                    "name": "Email",
+                    "action_type": "read",
+                    "object_type": "email"
                 }
             ]
         },
@@ -567,7 +572,8 @@
                     "api_key": "all",
                     "action": "all",
                     "member": "all",
-                    "email_preview": "all"
+                    "email_preview": "all",
+                    "email": "all"
                 },
                 "DB Backup Integration": {
                     "db": "all"
@@ -590,7 +596,8 @@
                     "webhook": "all",
                     "action": "all",
                     "member": "all",
-                    "email_preview": "all"
+                    "email_preview": "all",
+                    "email": "all"
                 },
                 "Editor": {
                     "notification": "all",
@@ -602,7 +609,8 @@
                     "role": "all",
                     "invite": "all",
                     "theme": ["browse"],
-                    "email_preview": "all"
+                    "email_preview": "all",
+                    "email": "all"
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -612,7 +620,8 @@
                     "user": ["browse", "read"],
                     "role": ["browse"],
                     "theme": ["browse"],
-                    "email_preview": "read"
+                    "email_preview": "read",
+                    "email": "read"
                 },
                 "Contributor": {
                     "post": ["browse", "read", "add"],
@@ -622,7 +631,8 @@
                     "user": ["browse", "read"],
                     "role": ["browse"],
                     "theme": ["browse"],
-                    "email_preview": "read"
+                    "email_preview": "read",
+                    "email": "read"
                 }
             }
         },
