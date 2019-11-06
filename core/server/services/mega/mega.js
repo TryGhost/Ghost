@@ -11,11 +11,19 @@ const urlUtils = require('../../lib/url-utils');
 const sendEmail = async (post, members) => {
     const emailTmpl = postEmailSerializer.serialize(post);
 
-    const emails = members.filter((member) => {
+    const membersToSendTo = members.filter((member) => {
         return membersService.contentGating.checkPostAccess(post, member);
-    }).map(m => m.email);
+    });
+    const emails = membersToSendTo.map(member => member.email);
+    const emailData = membersToSendTo.reduce((emailData, member) => {
+        return Object.assign({
+            [member.email]: {
+                unsubscribe_url: createUnsubscribeUrl(member)
+            }
+        }, emailData);
+    }, {});
 
-    return bulkEmailService.send(emailTmpl, emails)
+    return bulkEmailService.send(emailTmpl, emails, emailData)
         .then(() => ({emailTmpl, emails}));
 };
 
