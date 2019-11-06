@@ -1,3 +1,4 @@
+/* eslint indent: warn, no-irregular-whitespace: warn */
 module.exports = ({post, site}) => `
 <!doctype html>
 <html>
