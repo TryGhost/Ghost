@@ -29,7 +29,7 @@ const sendEmail = async (post, members) => {
 
 const sendTestEmail = async (post, emails) => {
     const emailTmpl = postEmailSerializer.serialize(post);
-
+    emailTmpl.subject = `${emailTmpl.subject} [Test]`;
     return bulkEmailService.send(emailTmpl, emails);
 };
 
