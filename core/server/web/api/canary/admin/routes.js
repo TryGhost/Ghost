@@ -215,9 +215,12 @@ module.exports = function apiRoutes() {
     // ## Actions
     router.get('/actions', mw.authAdminApi, http(apiCanary.actions.browse));
 
-    // ## Emails
+    // ## Email Preview
     router.get('/email_preview/posts/:id', mw.authAdminApi, http(apiCanary.email_preview.read));
     router.post('/email_preview/posts/:id', mw.authAdminApi, http(apiCanary.email_preview.sendTestEmail));
+
+    // ## Emails
+    router.get('/emails/:id', mw.authAdminApi, http(apiCanary.emails.read));
 
     return router;
 };
