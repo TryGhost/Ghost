@@ -63,9 +63,9 @@ const expectedProperties = {
         // returns meta fields from `posts_meta` schema
         .concat(
             ..._(schema.posts_meta).keys()
-            .without('post_id', 'id')
-            // pages are not sent as emails
-            .without('email_subject')
+                .without('post_id', 'id')
+                // pages are not sent as emails
+                .without('email_subject')
         )
     ,
 
