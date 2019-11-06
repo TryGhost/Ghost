@@ -840,7 +840,7 @@ figure blockquote p {
                             <td class="wrapper">
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                     <tr>
-                                        <td class="footer">${site.title} &copy; ${currentYear.getFullYear()} – <a href="http://example.com">Unsubscribe</a></td>
+                                        <td class="footer">${site.title} &copy; ${currentYear.getFullYear()} – <a href="%recipient.unsubscribe_url%">Unsubscribe</a></td>
                                     </tr>
                                 </table>
                             </td>
