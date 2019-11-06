@@ -49,6 +49,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         return {
+            send_email_when_published: false,
             uuid: uuid.v4(),
             status: 'draft',
             featured: false,
