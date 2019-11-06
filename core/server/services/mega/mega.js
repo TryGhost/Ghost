@@ -1,4 +1,5 @@
 const url = require('url');
+const moment = require('moment');
 const common = require('../../lib/common');
 const api = require('../../api');
 const membersService = require('../members');
@@ -6,17 +7,15 @@ const bulkEmailService = require('../bulk-email');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 
-const sendEmail = async (post) => {
+const sendEmail = async (post, members) => {
     const emailTmpl = postEmailSerializer.serialize(post);
 
-    const {members} = await membersService.api.members.list(Object.assign({filter: 'subscribed:true'}, {limit: 'all'}));
     const emails = members.filter((member) => {
         return membersService.contentGating.checkPostAccess(post, member);
     }).map(m => m.email);
 
-    if (members.length) {
-        return bulkEmailService.send(emailTmpl, emails);
-    }
+    return bulkEmailService.send(emailTmpl, emails)
+        .then(() => ({emailTmpl, emails}));
 };
 
 const sendTestEmail = async (post, emails) => {
@@ -107,23 +106,41 @@ async function listener(model, options) {
         return;
     }
 
-    sendEmail(post).then(async () => {
-        let actor = {id: null, type: null};
-        if (options.context && options.context.user) {
-            actor = {
-                id: options.context.user,
-                type: 'user'
+    const {members} = await membersService.api.members.list(Object.assign({filter: 'subscribed:true'}, {limit: 'all'}));
+
+    if (!members.length) {
+        return;
+    }
+
+    sendEmail(post, members)
+        .then(async ({emailTmpl, emails}) => {
+            return models.Email.add({
+                post_id: post.id,
+                status: 'sent',
+                email_count: emails.length,
+                subject: emailTmpl.subject,
+                html: emailTmpl.html,
+                plaintext: emailTmpl.plaintext,
+                submitted_at: moment().toDate()
+            }, {context: {internal: true}});
+        })
+        .then(async () => {
+            let actor = {id: null, type: null};
+            if (options.context && options.context.user) {
+                actor = {
+                    id: options.context.user,
+                    type: 'user'
+                };
+            }
+            const action = {
+                event: 'delivered',
+                resource_id: model.id,
+                resource_type: 'post',
+                actor_id: actor.id,
+                actor_type: actor.type
             };
-        }
-        const action = {
-            event: 'delivered',
-            resource_id: model.id,
-            resource_type: 'post',
-            actor_id: actor.id,
-            actor_type: actor.type
-        };
-        return models.Action.add(action, {context: {internal: true}});
-    });
+            return models.Action.add(action, {context: {internal: true}});
+        });
 }
 
 function listen() {
