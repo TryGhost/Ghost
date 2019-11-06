@@ -10,10 +10,10 @@
     {{svg-jar "close"}}
 </button>
 {{#if (eq type "mobile")}}
-    <div class="modal-body modal-preview-email-content" style="display: flex;justify-content: center;padding-top: 12px;">
-        <div style="width: 350px;border: 1px solid black;border-radius: 16px;display: flex;"> 
-            <div style="margin: 12px;border: 1px solid black;border-radius: 16px;flex-grow:1"> 
-                <iframe class="bn" style="height:100%;width:320px;overflow-x:hidden;padding:6px" {{did-insert this.renderEmailPreview}}></iframe>
+    <div class="modal-body modal-preview-email-content gh-pe-mobile-container" style="display: flex;justify-content: center;padding-top: 12px;">
+        <div class="gh-pe-mobile-bezel"> 
+            <div class="gh-pe-mobile-screen"> 
+                <iframe class="bn gh-pe-iframe" {{did-insert this.renderEmailPreview}}></iframe>
             </div>
         </div>
     </div>
