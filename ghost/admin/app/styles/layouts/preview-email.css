@@ -1,3 +1,19 @@
+.fullscreen-modal-email-preview {
+    margin: 30px;
+    max-width: 100%;
+}
+
+.fullscreen-modal-email-preview .modal-content {
+    padding-bottom: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
+.fullscreen-modal-email-preview .modal-body {
+    height: 100%;
+    margin: 0 -32px;
+}
+
 .modal-preview-email-content {
     height: calc(100vh - 170px);
 }
@@ -24,7 +40,7 @@
 }
 
 .gh-pe-header-border {
-    border-bottom: 1px solid var(--whitegrey-l1);
+    border-bottom: 1px solid var(--whitegrey);
 }
 
 .modal-content .gh-pe-close {
@@ -63,6 +79,10 @@
     max-height: 812px;
 }
 
+.fullscreen-modal-email-preview .gh-pe-desktop-container {
+    height: calc(100vh - 130px);
+}
+
 .gh-pe-mobile-bezel {
     width: 100%;
     max-width: 43vh;
@@ -81,6 +101,10 @@
 }
 
 .gh-pe-iframe {
+    pointer-events: none !important;
+}
+
+.gh-pe-mobile-container .gh-pe-iframe {
     height: 100%; 
     width: calc(43vh - 40px);
     overflow-x: hidden;
