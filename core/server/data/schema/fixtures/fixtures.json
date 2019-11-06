@@ -367,6 +367,11 @@
                     "name": "Email preview",
                     "action_type": "read",
                     "object_type": "email_preview"
+                },
+                {
+                    "name": "Send test email",
+                    "action_type": "sendTestEmail",
+                    "object_type": "email_preview"
                 }
             ]
         },
