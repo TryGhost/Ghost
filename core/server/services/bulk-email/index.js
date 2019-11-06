@@ -27,7 +27,10 @@ module.exports = {
             const messageToSend = Object.assign({}, message, {
                 to: recipient
             });
-            const unsubscribeUrl = recipientData[recipient].unsubscribe_url;
+            let unsubscribeUrl = '';
+            if (recipientData && recipientData[recipient]) {
+                unsubscribeUrl = recipientData[recipient].unsubscribe_url;
+            }
             messageToSend.html = messageToSend.html.replace('%recipient.unsubscribe_url%', unsubscribeUrl);
             try {
                 await ghostMailer.send(messageToSend);
