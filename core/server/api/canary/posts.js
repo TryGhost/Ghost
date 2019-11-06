@@ -1,7 +1,7 @@
 const models = require('../../models');
 const common = require('../../lib/common');
 const urlUtils = require('../../lib/url-utils');
-const allowedIncludes = ['tags', 'authors', 'authors.roles'];
+const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
 module.exports = {
