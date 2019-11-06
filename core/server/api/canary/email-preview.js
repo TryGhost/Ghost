@@ -21,7 +21,8 @@ module.exports = {
         permissions: true,
         query(frame) {
             const options = Object.assign(frame.options, {formats: 'html,plaintext', withRelated: ['authors']});
-            return models.Post.findOne(frame.data, options)
+            const data = Object.assign(frame.data, {status: 'all'});
+            return models.Post.findOne(data, options)
                 .then((model) => {
                     if (!model) {
                         throw new common.errors.NotFoundError({
