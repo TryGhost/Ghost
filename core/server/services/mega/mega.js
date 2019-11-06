@@ -8,7 +8,9 @@ const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 const urlUtils = require('../../lib/url-utils');
 
-const sendEmail = async (post, members) => {
+const internalContext = {context: {internal: true}};
+
+const getEmailData = (post, members) => {
     const emailTmpl = postEmailSerializer.serialize(post);
 
     const membersToSendTo = members.filter((member) => {
@@ -23,14 +25,40 @@ const sendEmail = async (post, members) => {
         }, emailData);
     }, {});
 
-    return bulkEmailService.send(emailTmpl, emails, emailData)
-        .then(() => ({emailTmpl, emails}));
+    return {emailTmpl, emails, emailData};
+};
+
+const sendEmail = async (post, members) => {
+    const {emailTmpl, emails, emailData} = getEmailData(post, members);
+
+    return bulkEmailService.send(emailTmpl, emails, emailData);
 };
 
 const sendTestEmail = async (post, emails) => {
     const emailTmpl = postEmailSerializer.serialize(post);
     emailTmpl.subject = `${emailTmpl.subject} [Test]`;
     return bulkEmailService.send(emailTmpl, emails);
+};
+
+const addEmail = async (post) => {
+    const {members} = await membersService.api.members.list(Object.assign({filter: 'subscribed:true'}, {limit: 'all'}));
+    const {emailTmpl, emails} = getEmailData(post, members);
+
+    const existing = await models.Email.findOne({post_id: post.id}, internalContext);
+
+    if (!existing) {
+        return models.Email.add({
+            post_id: post.id,
+            status: 'pending',
+            email_count: emails.length,
+            subject: emailTmpl.subject,
+            html: emailTmpl.html,
+            plaintext: emailTmpl.plaintext,
+            submitted_at: moment().toDate()
+        }, internalContext);
+    } else {
+        return existing;
+    }
 };
 
 // NOTE: serialization is needed to make sure we are using current API and do post transformations
@@ -111,24 +139,18 @@ async function handleUnsubscribeRequest(req) {
     }
 }
 
-async function listener(model, options) {
+async function listener(emailModel, options) {
     // CASE: do not send email if we import a database
     // TODO: refactor post.published events to never fire on importing
     if (options && options.importing) {
         return;
     }
 
-    if (!model.get('send_email_when_published')) {
-        return;
-    }
+    const postModel = await models.Post.findOne({id: emailModel.get('post_id')}, internalContext);
 
-    const post = await serialize(model);
+    const post = await serialize(postModel);
 
-    const deliveredEvents = await models.Action.findAll({
-        filter: `event:delivered+resource_id:${model.id}`
-    });
-
-    if (deliveredEvents && deliveredEvents.toJSON().length > 0) {
+    if (emailModel.get('status') !== 'pending') {
         return;
     }
 
@@ -139,43 +161,24 @@ async function listener(model, options) {
     }
 
     sendEmail(post, members)
-        .then(async ({emailTmpl, emails}) => {
-            return models.Email.add({
-                post_id: post.id,
-                status: 'sent',
-                email_count: emails.length,
-                subject: emailTmpl.subject,
-                html: emailTmpl.html,
-                plaintext: emailTmpl.plaintext,
-                submitted_at: moment().toDate()
-            }, {context: {internal: true}});
-        })
         .then(async () => {
-            let actor = {id: null, type: null};
-            if (options.context && options.context.user) {
-                actor = {
-                    id: options.context.user,
-                    type: 'user'
-                };
-            }
-            const action = {
-                event: 'delivered',
-                resource_id: model.id,
-                resource_type: 'post',
-                actor_id: actor.id,
-                actor_type: actor.type
-            };
-            return models.Action.add(action, {context: {internal: true}});
+            return models.Email.edit({
+                status: 'sent'
+            }, {
+                id: emailModel.id,
+                context: {internal: true}
+            });
         });
 }
 
 function listen() {
-    common.events.on('post.published', listener);
+    common.events.on('email.added', listener);
 }
 
 // Public API
 module.exports = {
     listen,
+    addEmail,
     sendTestEmail,
     handleUnsubscribeRequest,
     createUnsubscribeUrl
