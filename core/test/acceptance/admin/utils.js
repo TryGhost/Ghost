@@ -101,6 +101,9 @@ const expectedProperties = {
     ,
     webhook: _(schema.webhooks)
         .keys()
+    ,
+    email: _(schema.emails)
+        .keys()
 };
 
 _.each(expectedProperties, (value, key) => {
