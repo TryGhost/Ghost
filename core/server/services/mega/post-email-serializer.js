@@ -12,6 +12,7 @@ const getSite = () => {
 
 const serialize = (post) => {
     post.published_at = post.published_at ? moment(post.published_at).format('DD MMM YYYY') : moment().format('DD MMM YYYY');
+    post.authors = post.authors && post.authors.map(author => author.name).join(',');
     return {
         subject: post.email_subject || post.title,
         html: juice(template({post, site: getSite()})),

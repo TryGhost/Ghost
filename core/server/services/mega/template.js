@@ -1,6 +1,6 @@
 /* eslint indent: warn, no-irregular-whitespace: warn */
 module.exports = ({post, site}) => {
-    const currentYear = new Date();
+    const date = new Date();
     return `<!doctype html>
 <html>
 
@@ -805,7 +805,7 @@ figure blockquote p {
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                                 <tr>
                                                     <td class="post-meta">
-                                                        By Authors – 
+                                                        By ${post.authors} – 
                                                         ${post.published_at} – 
                                                         <a href="${post.url}" class="view-online-link">View online →</a>
                                                     </td>
@@ -840,7 +840,7 @@ figure blockquote p {
                             <td class="wrapper">
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                     <tr>
-                                        <td class="footer">${site.title} &copy; ${currentYear.getFullYear()} – <a href="%recipient.unsubscribe_url%">Unsubscribe</a></td>
+                                        <td class="footer">${site.title} &copy; ${date.getFullYear()} – <a href="%recipient.unsubscribe_url%">Unsubscribe</a></td>
                                     </tr>
                                 </table>
                             </td>

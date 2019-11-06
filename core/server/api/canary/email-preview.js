@@ -20,7 +20,7 @@ module.exports = {
         ],
         permissions: true,
         query(frame) {
-            const options = Object.assign(frame.options, {formats: 'html,plaintext'});
+            const options = Object.assign(frame.options, {formats: 'html,plaintext', withRelated: ['authors']});
             return models.Post.findOne(frame.data, options)
                 .then((model) => {
                     if (!model) {
