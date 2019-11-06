@@ -48,7 +48,7 @@ module.exports = {
                 }
             }
         },
-        permissions: false,
+        permissions: true,
         async query(frame) {
             let model = await models.Post.findOne(frame.options);
             if (!model) {
