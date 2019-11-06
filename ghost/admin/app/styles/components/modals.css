@@ -206,22 +206,3 @@
         margin-right: 10px;
     }
 }
-
-
-/* Email preview modal
-/* ---------------------------------------------------------- */
-.fullscreen-modal-email-preview {
-    margin: 30px;
-    max-width: 100%;
-}
-
-.fullscreen-modal-email-preview .modal-content {
-    padding-bottom: 0;
-    overflow: hidden;
-    height: 100%;
-}
-
-.fullscreen-modal-email-preview .modal-body {
-    height: 100%;
-    margin: 0 -32px;
-}
