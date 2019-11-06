@@ -223,3 +223,12 @@
     font-weight: 200;
     color: var(--red);
 }
+
+.for-checkbox .gh-publishmenu-email-checkbox {
+    margin-right: 0;
+    background: var(--white);
+}
+
+.gh-publishmenu-email-label {
+    margin-left: 12px;
+}
