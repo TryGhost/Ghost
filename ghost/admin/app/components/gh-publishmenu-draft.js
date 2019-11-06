@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import moment from 'moment';
+import {computed} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
@@ -14,6 +15,8 @@ export default Component.extend({
     _publishedAtBlogTZ: null,
 
     'data-test-publishmenu-draft': true,
+
+    disableEmailOption: computed.equal('memberCount', 0),
 
     didInsertElement() {
         this.post.set('publishedAtBlogTZ', this.get('post.publishedAtUTC'));

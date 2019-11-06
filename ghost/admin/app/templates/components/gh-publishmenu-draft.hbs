@@ -32,13 +32,17 @@
                 {{#unless this.deliveredAction}}
                     <div class="for-checkbox">
                         <label class="checkbox" for="email-when-published-checkbox">
-                            <Input @checked={{this.sendEmailWhenPublished}} @type="checkbox" @id="email-when-published-checkbox" @name="email-when-published" />
+                            <Input @checked={{this.sendEmailWhenPublished}} @type="checkbox" @id="email-when-published-checkbox" @name="email-when-published" @disabled={{disableEmailOption}} />
                             <span class="input-toggle-component gh-publishmenu-email-checkbox"></span>
                         </label>
                     </div>
                     <div class="gh-publishmenu-email-label">
                         <div class="gh-publishmenu-radio-label">Email post</div>
-                        <div class="gh-publishmenu-radio-desc">Send post to {{this.memberCount}} members when published</div>
+                        {{#if this.memberCount}}
+                            <div class="gh-publishmenu-radio-desc">Send post to {{this.memberCount}} members when published</div>
+                        {{else}}
+                            <div class="gh-publishmenu-radio-desc">You have 0 members</div>
+                        {{/if}}
                     </div>
                 {{/unless}}
             {{/if}}
