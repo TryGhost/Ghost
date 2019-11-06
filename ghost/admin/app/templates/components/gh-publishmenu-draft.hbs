@@ -24,20 +24,23 @@
             <div class="gh-publishmenu-radio-desc">Set automatic future publish date</div>
         </div>
     </div>
-    {{#if this.feature.labs.members}}
+    {{#if (and this.feature.labs.members (eq this.post.displayName "post"))}}
         <div class="gh-publishmenu-radio">
             {{#if this.backgroundLoader.isRunning}}
                 <div class="gh-loading-spinner" style="zoom: 50%"></div>
             {{else}}
                 {{#unless this.deliveredAction}}
                     <div class="for-checkbox">
-                        <label class="checkbox" for="email-when-published-checkbox">
+                        <div class="checkbox" for="email-when-published-checkbox">
                             <Input @checked={{this.sendEmailWhenPublished}} @type="checkbox" @id="email-when-published-checkbox" @name="email-when-published" @disabled={{disableEmailOption}} />
-                            <span class="input-toggle-component gh-publishmenu-email-checkbox"></span>
-                        </label>
+                            <span
+                                class="input-toggle-component gh-publishmenu-email-checkbox"
+                                {{on "click" (toggle "sendEmailWhenPublished" this)}}
+                            ></span>
+                        </div>
                     </div>
                     <div class="gh-publishmenu-email-label">
-                        <div class="gh-publishmenu-radio-label">Email post</div>
+                        <label class="gh-publishmenu-radio-label" for="email-when-published-checkbox">Email post</label>
                         {{#if this.memberCount}}
                             <div class="gh-publishmenu-radio-desc">Send post to {{this.memberCount}} members when published</div>
                         {{else}}
