@@ -31,7 +31,7 @@ module.exports.up = (options) => {
         const modelToAdd = _private.getPermissions(resource);
 
         return utils.addFixturesForModel(modelToAdd, localOptions)
-            .then(result => _private.printResult(result, `Adding permissions fixtures for ${resource}s`))
+            .then(result => _private.printResult(result, `Adding permissions fixtures for ${resource}`))
             .then(() => permissions.init(localOptions));
     });
 };
