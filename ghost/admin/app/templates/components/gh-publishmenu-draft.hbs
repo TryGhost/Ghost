@@ -25,30 +25,22 @@
         </div>
     </div>
     {{#if this.feature.labs.members}}
-        <div class="flex mb4 justify-center">
+        <div class="gh-publishmenu-radio">
             {{#if this.backgroundLoader.isRunning}}
                 <div class="gh-loading-spinner" style="zoom: 50%"></div>
             {{else}}
-                {{#if this.deliveredAction}}
-                    <div class="mr3">
-                        💌
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="gh-publishmenu-radio-label">Sent</div>
-                        <div class="gh-publishmenu-radio-desc">Post was sent {{gh-format-post-time this.deliveredAction.createdAtUTC}}</div>
-                    </div>
-                {{else}}
-                    <div class="for-switch mr3">
-                        <label class="switch" for="email-when-published-checkbox">
+                {{#unless this.deliveredAction}}
+                    <div class="for-checkbox">
+                        <label class="checkbox" for="email-when-published-checkbox">
                             <Input @checked={{this.sendEmailWhenPublished}} @type="checkbox" @id="email-when-published-checkbox" @name="email-when-published" />
-                            <span class="input-toggle-component"></span>
+                            <span class="input-toggle-component gh-publishmenu-email-checkbox"></span>
                         </label>
                     </div>
-                    <div class="flex-grow-1">
+                    <div class="gh-publishmenu-email-label">
                         <div class="gh-publishmenu-radio-label">Email post</div>
                         <div class="gh-publishmenu-radio-desc">Send post to {{this.memberCount}} members when published</div>
                     </div>
-                {{/if}}
+                {{/unless}}
             {{/if}}
         </div>
     {{/if}}
