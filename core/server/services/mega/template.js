@@ -307,8 +307,8 @@ figure blockquote p {
 
 .post-meta,
 .view-online {
-    padding-top: 10px;
-    padding-bottom: 60px;
+    padding-top: 6px;
+    padding-bottom: 80px;
     white-space: nowrap;
     color: #738a94;
     font-size: 13px;
