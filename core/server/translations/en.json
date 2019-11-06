@@ -255,6 +255,9 @@
             "api_key": {
                 "apiKeyNotFound": "API Key not found"
             },
+            "email": {
+                "emailNotFound": "Email not found."
+            },
             "base": {
                 "index": {
                     "missingContext": "missing context"
