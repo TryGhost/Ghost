@@ -6,6 +6,7 @@ const membersService = require('../members');
 const bulkEmailService = require('../bulk-email');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
+const urlUtils = require('../../lib/url-utils');
 
 const sendEmail = async (post, members) => {
     const emailTmpl = postEmailSerializer.serialize(post);
@@ -38,6 +39,23 @@ const serialize = async (model) => {
 
     return frame.response[docName][0];
 };
+
+/**
+ * createUnsubscribeUrl
+ *
+ * Takes a member and returns the url that should be used to unsubscribe
+ *
+ * @param {object} member
+ * @param {string} member.uuid
+ */
+function createUnsubscribeUrl(member) {
+    const siteUrl = urlUtils.getSiteUrl();
+    const unsubscribeUrl = new URL(siteUrl);
+    unsubscribeUrl.searchParams.set('action', 'unsubscribe');
+    unsubscribeUrl.searchParams.set('unsubscribe', member.uuid);
+
+    return unsubscribeUrl.href;
+}
 
 /**
  * handleUnsubscribeRequest
@@ -151,5 +169,6 @@ function listen() {
 module.exports = {
     listen,
     sendTestEmail,
-    handleUnsubscribeRequest
+    handleUnsubscribeRequest,
+    createUnsubscribeUrl
 };
