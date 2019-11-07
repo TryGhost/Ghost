@@ -349,6 +349,7 @@
                                         </button>
                                     </div>
 
+                                    <div>
                                     {{gh-text-input
                                         class="post-setting-email-test"
                                         id="email-test"
@@ -358,14 +359,17 @@
                                         input=(action (mut emailTestScratch) value="target.value")
                                         stopEnterKeyDownPropagation=true
                                         data-test-field="email-test"}}
-                                    {{unless isValidTestEmail "Please enter a valid email"}}
-                                    {{gh-task-button "Send Test Email"
+                                    {{#unless isValidTestEmail}}
+                                    <div class="error"><p class="response">Please enter a valid email</p></div>
+                                    {{/unless}}
+                                    {{gh-task-button "Send test email"
                                         task=sendTestEmail
-                                        successText="Sent"
+                                        successText="Email sent"
                                         runningText="Sending..."
                                         class="gh-btn w-100 mt2 gh-btn-icon"
                                         data-test-send-test-mail=true
                                     }}
+                                    </div>
                                 </div>
                             </form>
                         </div>
