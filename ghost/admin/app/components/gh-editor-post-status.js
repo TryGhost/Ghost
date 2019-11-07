@@ -12,16 +12,6 @@ export default Component.extend({
 
     _isSaving: false,
 
-    isNew: reads('post.isNew'),
-    isScheduled: reads('post.isScheduled'),
-
-    isPublished: computed('post.{isPublished,pastScheduledTime}', function () {
-        let isPublished = this.get('post.isPublished');
-        let pastScheduledTime = this.get('post.pastScheduledTime');
-
-        return isPublished || pastScheduledTime;
-    }),
-
     // isSaving will only be true briefly whilst the post is saving,
     // we want to ensure that the "Saving..." message is shown for at least
     // a few seconds so that it's noticeable

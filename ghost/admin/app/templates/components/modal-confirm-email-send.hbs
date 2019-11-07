@@ -1,0 +1,29 @@
+<header class="modal-header" data-test-modal="delete-user">
+    <h1>Are you sure you want to send email?</h1>
+</header>
+<a class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p><strong>PLEASE NOTE:</strong> You are about to email this post to <strong>{{pluralize this.model.memberCount "member"}}</strong>.</p>
+    <ul>
+        {{#if this.model.isScheduled}}
+        <li>Email will be sent when the post is published at the scheduled time</li>
+        {{else}}
+        <li>Email will be sent immediately</li>
+        {{/if}}
+        <li>It will <em>not</em> be possible to email this post again in the future</li>
+    </ul>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="gh-btn" data-test-button="cancel-publish-and-email">
+        <span>Cancel</span>
+    </button>
+    <GhTaskButton
+        @buttonText={{if this.model.isScheduled "Schedule" "Publish and send"}}
+        @runningText={{if this.model.isScheduled "Scheduling..." "Publishing..."}}
+        @task={{this.confirmTask}}
+        @class="gh-btn gh-btn-green gh-btn-icon"
+        data-test-button="confirm-publish-and-email"
+    />
+</div>
