@@ -40,6 +40,14 @@ const sendTestEmail = async (post, emails) => {
     return bulkEmailService.send(emailTmpl, emails);
 };
 
+/**
+ * addEmail
+ *
+ * Accepts a post object and creates an email record based on it. Only creates one
+ * record per post
+ *
+ * @param {object} post JSON object
+ */
 const addEmail = async (post) => {
     const {members} = await membersService.api.members.list(Object.assign({filter: 'subscribed:true'}, {limit: 'all'}));
     const {emailTmpl, emails} = getEmailData(post, members);
