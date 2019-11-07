@@ -8,8 +8,6 @@ const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 const urlUtils = require('../../lib/url-utils');
 
-const internalContext = {context: {internal: true}};
-
 const getEmailData = (post, members) => {
     const emailTmpl = postEmailSerializer.serialize(post);
 
@@ -57,7 +55,7 @@ const addEmail = async (post) => {
         return null;
     }
 
-    const existing = await models.Email.findOne({post_id: post.id}, internalContext);
+    const existing = await models.Email.findOne({post_id: post.id}, {context: {internal: true}});
 
     if (!existing) {
         return models.Email.add({
@@ -68,7 +66,7 @@ const addEmail = async (post) => {
             html: emailTmpl.html,
             plaintext: emailTmpl.plaintext,
             submitted_at: moment().toDate()
-        }, internalContext);
+        }, {context: {internal: true}});
     } else {
         return existing;
     }
@@ -159,7 +157,7 @@ async function listener(emailModel, options) {
         return;
     }
 
-    const postModel = await models.Post.findOne({id: emailModel.get('post_id')}, internalContext);
+    const postModel = await models.Post.findOne({id: emailModel.get('post_id')}, {context: {internal: true}});
 
     const post = await serialize(postModel);
 
