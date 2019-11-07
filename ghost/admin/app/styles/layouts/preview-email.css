@@ -111,6 +111,10 @@
     padding: 0;
 }
 
+.gh-pe-mobile-container .gh-pe-iframe .left-col {
+    display: none;
+}
+
 @media (max-width: 850px) {
     .gh-pe-header {
         flex-direction: column;
