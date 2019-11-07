@@ -30,7 +30,7 @@ export default Component.extend(SettingsMenuMixin, {
     _showThrobbers: false,
 
     emailTestScratch: '',
-    isValidTestEmail: true,
+    sendTestEmailError: '',
     canonicalUrlScratch: alias('post.canonicalUrlScratch'),
     customExcerptScratch: alias('post.customExcerptScratch'),
     codeinjectionFootScratch: alias('post.codeinjectionFootScratch'),
@@ -550,15 +550,28 @@ export default Component.extend(SettingsMenuMixin, {
         this.set('_showThrobbers', true);
     }).restartable(),
 
+    isMailgunConfigured: function () {
+        let subSettingsValue = this.get('settings.membersSubscriptionSettings');
+        let subscriptionSettings = subSettingsValue ? JSON.parse(subSettingsValue) : {};
+        if (Object.keys(subscriptionSettings).includes('mailgunApiKey')) {
+            return (subscriptionSettings.mailgunApiKey && subscriptionSettings.mailgunDomain);
+        }
+        return true;
+    },
+
     sendTestEmail: task(function* () {
         try {
             const resourceId = this.post.id;
             const testEmail = this.emailTestScratch.trim();
             if (!validator.isEmail(testEmail)) {
-                this.set('isValidTestEmail', false);
+                this.set('sendTestEmailError', 'Please enter a valid email');
                 return false;
             }
-            this.set('isValidTestEmail', true);
+            if (!this.isMailgunConfigured()) {
+                this.set('sendTestEmailError', 'Please configure mailgun in settings');
+                return false;
+            }
+            this.set('sendTestEmailError', '');
             const url = this.get('ghostPaths.url').api('/email_preview/posts', resourceId);
             const data = {emails: [testEmail]};
             const options = {

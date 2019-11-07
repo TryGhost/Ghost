@@ -6,7 +6,7 @@ import {inject as service} from '@ember/service';
 
 export default Component.extend({
     feature: service(),
-
+    settings: service(),
     post: null,
     saveType: null,
 
@@ -16,7 +16,17 @@ export default Component.extend({
 
     'data-test-publishmenu-draft': true,
 
-    disableEmailOption: computed.equal('memberCount', 0),
+    disableEmailOption: computed('memberCount', 'settings.membersSubscriptionSettings', function () {
+        if (!this.feature.members) {
+            return true;
+        }
+        let subSettingsValue = this.get('settings.membersSubscriptionSettings');
+        let subscriptionSettings = subSettingsValue ? JSON.parse(subSettingsValue) : {};
+        if (Object.keys(subscriptionSettings).includes('mailgunApiKey')) {
+            return !subscriptionSettings.mailgunApiKey || !subscriptionSettings.mailgunDomain || this.membersCount === 0;
+        }
+        return this.membersCount === 0;
+    }),
 
     didInsertElement() {
         this.post.set('publishedAtBlogTZ', this.get('post.publishedAtUTC'));
