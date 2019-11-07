@@ -24,7 +24,7 @@
             <div class="gh-publishmenu-radio-desc">Set automatic future publish date</div>
         </div>
     </div>
-    {{#if (and this.feature.labs.members (eq this.post.displayName "post"))}}
+    {{#if (and this.feature.labs.members (eq this.post.displayName "post") (not mailgunError))}}
         <div class="gh-publishmenu-radio">
             {{#if this.backgroundLoader.isRunning}}
                 <div class="gh-loading-spinner" style="zoom: 50%"></div>

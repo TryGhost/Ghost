@@ -559,6 +559,10 @@ export default Component.extend(SettingsMenuMixin, {
         return true;
     },
 
+    mailgunError: computed('settings.memberSubscriptionSettings', function () {
+        return !this.isMailgunConfigured();
+    }),
+
     sendTestEmail: task(function* () {
         try {
             const resourceId = this.post.id;
@@ -568,7 +572,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return false;
             }
             if (!this.isMailgunConfigured()) {
-                this.set('sendTestEmailError', 'Please configure mailgun in settings');
+                this.set('sendTestEmailError', 'Please configure Mailgun in Labs → Members');
                 return false;
             }
             this.set('sendTestEmailError', '');

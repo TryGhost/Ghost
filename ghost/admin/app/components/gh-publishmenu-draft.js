@@ -16,16 +16,24 @@ export default Component.extend({
 
     'data-test-publishmenu-draft': true,
 
+    mailgunError: computed('settings.memberSubscriptionSettings', function() {
+        return !this.isMailgunConfigured();
+    }),
+
+    isMailgunConfigured: function() {
+        let subSettingsValue = this.get('settings.membersSubscriptionSettings');
+        let subscriptionSettings = subSettingsValue ? JSON.parse(subSettingsValue) : {};
+        if (Object.keys(subscriptionSettings).includes('mailgunApiKey')) {
+            return subscriptionSettings.mailgunApiKey && subscriptionSettings.mailgunDomain;
+        }
+        return false;
+    },
+
     disableEmailOption: computed('memberCount', 'settings.membersSubscriptionSettings', function () {
         if (!this.feature.members) {
             return true;
         }
-        let subSettingsValue = this.get('settings.membersSubscriptionSettings');
-        let subscriptionSettings = subSettingsValue ? JSON.parse(subSettingsValue) : {};
-        if (Object.keys(subscriptionSettings).includes('mailgunApiKey')) {
-            return !subscriptionSettings.mailgunApiKey || !subscriptionSettings.mailgunDomain || this.membersCount === 0;
-        }
-        return this.membersCount === 0;
+        return !this.isMailgunConfigured() || this.membersCount === 0;
     }),
 
     didInsertElement() {
