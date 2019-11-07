@@ -13,6 +13,7 @@ const getSite = () => {
 const serialize = (post) => {
     post.published_at = post.published_at ? moment(post.published_at).format('DD MMM YYYY') : moment().format('DD MMM YYYY');
     post.authors = post.authors && post.authors.map(author => author.name).join(',');
+    post.html = post.html || '';
     if (post.posts_meta) {
         post.email_subject = post.posts_meta.email_subject;
     }
