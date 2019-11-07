@@ -385,8 +385,8 @@ module.exports = {
             type: 'string',
             maxlength: 50,
             nullable: false,
-            defaultTo: 'sending',
-            validations: {isIn: [['pending', 'sending', 'sent', 'failed']]}
+            defaultTo: 'pending',
+            validations: {isIn: [['pending', 'submitting', 'submitted', 'failed']]}
         },
         error: {type: 'string', maxlength: 2000, nullable: true},
         stats: {type: 'text', maxlength: 65535, nullable: true},
