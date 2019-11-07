@@ -29,12 +29,20 @@ module.exports.up = (options) => {
             let subscriptionSettings = JSON.parse(subscriptionSettingsEntry.value);
 
             let hasMailgunApiKeyProperty = Object.prototype.hasOwnProperty.call(subscriptionSettings, 'mailgunApiKey');
+            let hasMailgunDomainProperty = Object.prototype.hasOwnProperty.call(subscriptionSettings, 'mailgunDomain');
 
             if (!hasMailgunApiKeyProperty) {
                 subscriptionSettings.mailgunApiKey = '';
                 common.logging.info('Adding mail provider API key to members settings');
             } else {
                 common.logging.warn('Mail provider API key setting already exists in members settings.');
+            }
+
+            if (!hasMailgunDomainProperty) {
+                subscriptionSettings.mailgunDomain = '';
+                common.logging.info('Adding mailgun domain to members settings');
+            } else {
+                common.logging.warn('Mailgun domain setting already exists in members settings.');
             }
 
             return localOptions
