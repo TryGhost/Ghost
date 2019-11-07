@@ -148,7 +148,6 @@ module.exports = {
                     }
 
                     if (!model.get('email') && (model.get('status') === 'published') && model.wasChanged()) {
-
                         const email = await mega.addEmail(model.toJSON());
 
                         if (frame.options.include && frame.options.includes('email')) {
