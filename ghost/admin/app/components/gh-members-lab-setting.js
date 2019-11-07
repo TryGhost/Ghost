@@ -7,6 +7,12 @@ export default Component.extend({
     config: service(),
     mediaQueries: service(),
 
+    blogDomain: computed('config.blogDomain', function () {
+        let domain = this.config.blogDomain || '';
+        const host = domain.replace('https://', '').replace('http://', '').split('/');
+        return (host && host[0]) || '';
+    }),
+
     subscriptionSettings: computed('settings.membersSubscriptionSettings', function () {
         let subscriptionSettings = this.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
         let stripeProcessor = subscriptionSettings.paymentProcessors.find((proc) => {
