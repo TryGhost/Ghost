@@ -46,16 +46,6 @@
                         {{else}}
                             <div class="gh-publishmenu-radio-desc">You have 0 members</div>
                         {{/if}}
-                        {{#unless this.deliveredAction}}
-                        <div class="nudge-bottom--2">
-                            <button type="button" class="gh-btn gh-btn-link gh-preview-email-button"
-                                onclick={{action "toggleEmailPreviewModal"}} data-test-button="toggle-email-preview">
-                                <span class="blue">
-                                    Preview email
-                                </span>
-                            </button>
-                        </div>
-                        {{/unless}}
                     </div>
                 {{/unless}}
             {{/if}}
