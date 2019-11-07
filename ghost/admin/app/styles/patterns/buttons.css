@@ -329,6 +329,14 @@ svg.gh-btn-icon-right {
     margin: 0;
 }
 
+.gh-btn-icon-grey svg {
+    fill: var(--midgrey);
+}
+
+.gh-btn-icon-grey svg path {
+    stroke: var(--midgrey);
+}
+
 
 /*
 /* Button Variations

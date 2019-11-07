@@ -22,6 +22,7 @@
     position: relative;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     margin: -32px -32px 0;
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
@@ -34,23 +35,26 @@
 }
 
 .gh-pe-header h2 {
-    position: absolute;
-    top: 25px;
-    left: 24px;
+    width: calc(50vw - 200px);
+    margin: 0;
 }
 
 .gh-pe-header-border {
     border-bottom: 1px solid var(--whitegrey);
 }
 
-.modal-content .gh-pe-close {
+.gh-pe-close {
+    width: calc(50vw - 200px)
+}
+
+.modal-content .gh-pe-close button {
     stroke: var(--midgrey);
     opacity: 0.6;
     transition: all 0.2s ease-in-out;
-    top: 23px;
+    top: 25px;
 }
 
-.gh-pe-close:hover {
+.gh-pe-close button:hover {
     opacity: 1.0;
 }
 
@@ -109,4 +113,14 @@
     width: calc(43vh - 40px);
     overflow-x: hidden;
     padding: 0;
+}
+
+@media (max-width: 850px) {
+    .gh-pe-header {
+        flex-direction: column;
+    }
+    
+    .gh-pe-header h2 {
+        display: none
+    }
 }
