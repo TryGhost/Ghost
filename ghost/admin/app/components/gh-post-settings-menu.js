@@ -413,18 +413,6 @@ export default Component.extend(SettingsMenuMixin, {
             });
         },
 
-        async sendTestEmail() {
-            const resourceId = this.post.id;
-            const testEmail = this.emailTestScratch;
-            const url = this.get('ghostPaths.url').api('/email_preview/posts', resourceId);
-            const data = {emails: [testEmail]};
-            const options = {
-                data,
-                dataType: 'json'
-            };
-            await this.ajax.post(url, options);
-        },
-
         setEmailSubject(emailSubject) {
             // Grab the post and current stored email subject
             let post = this.post;
@@ -559,6 +547,24 @@ export default Component.extend(SettingsMenuMixin, {
         yield timeout(PSM_ANIMATION_LENGTH);
         this.set('_showThrobbers', true);
     }).restartable(),
+
+    sendTestEmail: task(function* () {
+        try {
+            const resourceId = this.post.id;
+            const testEmail = this.emailTestScratch;
+            const url = this.get('ghostPaths.url').api('/email_preview/posts', resourceId);
+            const data = {emails: [testEmail]};
+            const options = {
+                data,
+                dataType: 'json'
+            };
+            return yield this.ajax.post(url, options);
+        } catch (error) {
+            if (error) {
+                this.notifications.showAPIError(error, {key: 'send.previewEmail'});
+            }
+        }
+    }).drop(),
 
     showError(error) {
         // TODO: remove null check once ValidationEngine has been removed
