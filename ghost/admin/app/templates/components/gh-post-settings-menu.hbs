@@ -359,12 +359,13 @@
                                         stopEnterKeyDownPropagation=true
                                         data-test-field="email-test"}}
 
-                                    <button type="button" class="gh-btn w-100 mt2"
-                                        onclick={{action "sendTestEmail"}} data-test-button="send-test-email">
-                                        <span>
-                                            Send Test Email
-                                        </span>
-                                    </button>
+                                    {{gh-task-button "Send Test Email"
+                                        task=sendTestEmail
+                                        successText="Sent"
+                                        runningText="Sending..."
+                                        class="gh-btn w-100 mt2 gh-btn-icon"
+                                        data-test-send-test-mail=true
+                                    }}
                                 </div>
                             </form>
                         </div>
