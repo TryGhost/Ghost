@@ -42,7 +42,7 @@
     right: 0;
     margin: 5px 0 20px 0;
     padding: 20px;
-    width: 300px;
+    width: 320px;
     background-color: #fff;
     background-clip: padding-box;
     border-radius: 4px;
@@ -123,6 +123,7 @@
     line-height: 1.4em;
     font-weight: 200;
     color: color-mod(var(--midgrey) l(+10%));
+    margin-top: 2px;
 }
 
 .gh-publishmenu-radio-label:hover,
@@ -227,7 +228,7 @@
 
 .for-checkbox .gh-publishmenu-email-checkbox {
     margin-right: 0;
-    margin-top: 2px;
+    margin-top: -2px;
     background: var(--white);
 }
 
