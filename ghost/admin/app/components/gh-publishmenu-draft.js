@@ -55,6 +55,10 @@ export default Component.extend({
             }
         },
 
+        toggleEmailPreviewModal() {
+            this.toggleEmailPreviewModal();
+        },
+
         setDate(date) {
             let post = this.post;
             let dateString = moment(date).format('YYYY-MM-DD');
