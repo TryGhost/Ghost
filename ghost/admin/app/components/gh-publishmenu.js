@@ -154,10 +154,6 @@ export default Component.extend({
             }
         },
 
-        toggleEmailPreviewModal() {
-            this.toggleEmailPreviewModal();
-        },
-
         close(dropdown, e) {
             let post = this.post;
 
