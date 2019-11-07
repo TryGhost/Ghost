@@ -173,15 +173,21 @@ async function listener(emailModel, options) {
         return;
     }
 
-    sendEmail(post, members)
-        .then(async () => {
-            return models.Email.edit({
-                status: 'sent'
-            }, {
-                id: emailModel.id,
-                context: {internal: true}
-            });
-        });
+    await models.Email.edit({
+        status: 'submitting'
+    }, {
+        id: emailModel.id,
+        internalContext
+    });
+
+    await sendEmail(post, members);
+
+    await models.Email.edit({
+        status: 'submitted'
+    }, {
+        id: emailModel.id,
+        internalContext
+    });
 }
 
 function listen() {
