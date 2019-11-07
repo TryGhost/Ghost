@@ -424,7 +424,7 @@ DataGenerator.Content = {
         {
             id: ObjectId.generate(),
             uuid: '6b6afda6-4b5e-4893-bff6-f16859e8349a',
-            status: 'sending',
+            status: 'submitted',
             stats: '',
             email_count: 2,
             subject: 'You got mailed!',
