@@ -159,6 +159,9 @@
                 },
                 "plaintext": {
                     "strip": true
+                },
+                "email": {
+                    "strip": true
                 }
             }
         },
