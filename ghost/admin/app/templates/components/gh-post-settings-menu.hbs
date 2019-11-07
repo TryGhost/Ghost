@@ -359,9 +359,9 @@
                                         input=(action (mut emailTestScratch) value="target.value")
                                         stopEnterKeyDownPropagation=true
                                         data-test-field="email-test"}}
-                                    {{#unless isValidTestEmail}}
-                                    <div class="error"><p class="response">Please enter a valid email</p></div>
-                                    {{/unless}}
+                                    {{#if sendTestEmailError}}
+                                        <div class="error"><p class="response">{{sendTestEmailError}}</p></div>
+                                    {{/if}}
                                     {{gh-task-button "Send test email"
                                         task=sendTestEmail
                                         successText="Email sent"
