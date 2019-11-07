@@ -61,9 +61,6 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
             delete json.visibility;
         }
 
-        delete json.email_id;
-        delete json.email;
-
         return json;
     }
 });
