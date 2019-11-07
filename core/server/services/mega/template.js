@@ -448,7 +448,7 @@ figure blockquote p {
 
 .kg-gallery-image img {
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important;
 }
 
 
