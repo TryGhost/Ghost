@@ -3,6 +3,7 @@ import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import moment from 'moment';
+import validator from 'validator';
 import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {run} from '@ember/runloop';
@@ -29,6 +30,7 @@ export default Component.extend(SettingsMenuMixin, {
     _showThrobbers: false,
 
     emailTestScratch: '',
+    isValidTestEmail: true,
     canonicalUrlScratch: alias('post.canonicalUrlScratch'),
     customExcerptScratch: alias('post.customExcerptScratch'),
     codeinjectionFootScratch: alias('post.codeinjectionFootScratch'),
@@ -551,7 +553,12 @@ export default Component.extend(SettingsMenuMixin, {
     sendTestEmail: task(function* () {
         try {
             const resourceId = this.post.id;
-            const testEmail = this.emailTestScratch;
+            const testEmail = this.emailTestScratch.trim();
+            if (!validator.isEmail(testEmail)) {
+                this.set('isValidTestEmail', false);
+                return false;
+            }
+            this.set('isValidTestEmail', true);
             const url = this.get('ghostPaths.url').api('/email_preview/posts', resourceId);
             const data = {emails: [testEmail]};
             const options = {
