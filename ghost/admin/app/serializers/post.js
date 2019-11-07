@@ -30,6 +30,21 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
         return this._super(...arguments);
     },
 
+    // TODO: do not keep - workaround for API returning `email: {}`
+    normalize() {
+        let json = this._super(...arguments);
+
+        if (json.data.relationships.email && !json.data.relationships.email.data.id) {
+            delete json.data.relationships.email;
+
+            json.included = json.included.filter((include) => {
+                return include.type !== 'email';
+            });
+        }
+
+        return json;
+    },
+
     serialize(/*snapshot, options*/) {
         let json = this._super(...arguments);
 
