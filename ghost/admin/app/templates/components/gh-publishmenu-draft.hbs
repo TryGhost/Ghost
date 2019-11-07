@@ -39,12 +39,12 @@
                             ></span>
                         </div>
                     </div>
-                    <div class="gh-publishmenu-email-label">
+                    <div class="gh-publishmenu-email-label {{if disableEmailOption "pe-none"}}">
                         <label class="gh-publishmenu-radio-label" for="email-when-published-checkbox">Email post</label>
                         {{#if this.memberCount}}
                             <div class="gh-publishmenu-radio-desc">Send post to members when published</div>
                         {{else}}
-                            <div class="gh-publishmenu-radio-desc">You have 0 members</div>
+                            <div class="gh-publishmenu-radio-desc">You haven't got any members</div>
                         {{/if}}
                     </div>
                 {{/unless}}

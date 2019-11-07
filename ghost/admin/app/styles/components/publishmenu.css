@@ -235,3 +235,11 @@
 .gh-publishmenu-email-label {
     margin-left: 12px;
 }
+
+.gh-publishmenu-email-label.disabled {
+    pointer-events: none;
+}
+
+.gh-publishmenu-content .for-checkbox.pe-none span {
+    background: color-mod(var(--whitegrey) l(+4%));
+}
