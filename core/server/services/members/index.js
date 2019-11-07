@@ -30,6 +30,8 @@ const membersService = {
 
     contentGating: require('./content-gating'),
 
+    config: require('./config'),
+
     get api() {
         if (!membersApi) {
             membersApi = createMembersApiInstance();
