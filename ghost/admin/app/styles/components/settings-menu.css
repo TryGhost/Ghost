@@ -109,8 +109,8 @@
 /* Content
 /* ---------------------------------------------------------- */
 
-.settings-menu-container:not(.ember-power-select-multiple-trigger):not(.tag-settings) input,
-.settings-menu-container:not(.tag-settings) .gh-input,
+.settings-menu-container:not(.ember-power-select-multiple-trigger):not(.tag-settings) input:not([disabled]),
+.settings-menu-container:not(.tag-settings) .gh-input:not([disabled]),
 .settings-menu-pane .gh-date-time-picker-date,
 .settings-menu-pane .gh-date-time-picker-time {
     background: var(--white);
@@ -321,15 +321,16 @@
 .settings-menu-mailgun-warning {
     border-radius: 5px;
     padding: 8px 12px;
-    background: var(--yellow);
-    color: #fff;
+    background: rgba(254, 205, 53, 0.1);
+    color: color-mod(var(--yellow) l(-8%) s(+10%));
+    border: 1px solid var(--yellow);
     font-size: 13px;
     font-weight: 500;
 }
 
 .settings-menu-mailgun-warning a {
     text-decoration: underline;
-    color: #fff;
+    color: color-mod(var(--yellow) l(-8%) s(+10%));
 }
 
 .settings-menu-email .disabled button,
