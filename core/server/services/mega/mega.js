@@ -55,7 +55,7 @@ const addEmail = async (post) => {
         return null;
     }
 
-    const existing = await models.Email.findOne({post_id: post.id}, {context: {internal: true}});
+    const existing = await models.Email.findOne({post_id: post.id});
 
     if (!existing) {
         return models.Email.add({
@@ -66,7 +66,7 @@ const addEmail = async (post) => {
             html: emailTmpl.html,
             plaintext: emailTmpl.plaintext,
             submitted_at: moment().toDate()
-        }, {context: {internal: true}});
+        });
     } else {
         return existing;
     }
@@ -157,7 +157,7 @@ async function listener(emailModel, options) {
         return;
     }
 
-    const postModel = await models.Post.findOne({id: emailModel.get('post_id')}, {context: {internal: true}});
+    const postModel = await models.Post.findOne({id: emailModel.get('post_id')});
 
     const post = await serialize(postModel);
 
@@ -174,8 +174,7 @@ async function listener(emailModel, options) {
     await models.Email.edit({
         status: 'submitting'
     }, {
-        id: emailModel.id,
-        internalContext
+        id: emailModel.id
     });
 
     await sendEmail(post, members);
@@ -183,8 +182,7 @@ async function listener(emailModel, options) {
     await models.Email.edit({
         status: 'submitted'
     }, {
-        id: emailModel.id,
-        internalContext
+        id: emailModel.id
     });
 }
 
