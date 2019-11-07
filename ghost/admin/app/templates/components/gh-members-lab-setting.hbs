@@ -198,6 +198,15 @@
                         Find your Mailgun API keys here &raquo;
                     </a>
                 {{/gh-form-group}}
+
+                {{#gh-form-group}}
+                    <label class="fw6 f8">Mailgun domain</label>
+                    {{gh-text-input
+                        value=(readonly subscriptionSettings.mailgunDomain)
+                        input=(action "setSubscriptionSettings" "mailgunDomain")
+                        class="mt1"
+                    }}
+                {{/gh-form-group}}
             {{/if}}
         </div>
         {{/liquid-if}}
