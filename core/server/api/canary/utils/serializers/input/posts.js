@@ -37,7 +37,7 @@ function defaultRelations(frame) {
         return false;
     }
 
-    frame.options.withRelated = ['tags', 'authors', 'authors.roles'];
+    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email'];
 }
 
 function setDefaultOrder(frame) {
