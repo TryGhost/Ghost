@@ -63,7 +63,6 @@ body {
             this.set('previewHtml', htmlData);
             this.set('previewEmailSubject', emailSubject);
         } catch (error) {
-            console.log({error});
             // re-throw if we don't have a validation error
             if (error) {
                 throw error;
