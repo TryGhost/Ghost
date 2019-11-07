@@ -358,7 +358,7 @@
                                         input=(action (mut emailTestScratch) value="target.value")
                                         stopEnterKeyDownPropagation=true
                                         data-test-field="email-test"}}
-                                    {{if isValidTestEmail "Please enter a valid email"}}
+                                    {{unless isValidTestEmail "Please enter a valid email"}}
                                     {{gh-task-button "Send Test Email"
                                         task=sendTestEmail
                                         successText="Sent"
