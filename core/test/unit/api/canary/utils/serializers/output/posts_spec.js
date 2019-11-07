@@ -38,7 +38,7 @@ describe('Unit: canary/utils/serializers/output/posts', function () {
             meta: {}
         };
 
-        serializers.output.pages.all(ctrlResponse, apiConfig, frame);
+        serializers.output.posts.all(ctrlResponse, apiConfig, frame);
 
         mapper.mapPost.callCount.should.equal(2);
         mapper.mapPost.getCall(0).args.should.eql([ctrlResponse.data[0], frame]);
