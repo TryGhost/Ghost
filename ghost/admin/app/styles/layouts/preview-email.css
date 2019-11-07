@@ -104,12 +104,8 @@
     overflow: hidden;
 }
 
-.gh-pe-iframe {
-    pointer-events: none !important;
-}
-
 .gh-pe-mobile-container .gh-pe-iframe {
-    height: 100%; 
+    height: 100%;
     width: calc(43vh - 40px);
     overflow-x: hidden;
     padding: 0;
@@ -119,7 +115,7 @@
     .gh-pe-header {
         flex-direction: column;
     }
-    
+
     .gh-pe-header h2 {
         display: none
     }
