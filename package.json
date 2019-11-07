@@ -93,6 +93,7 @@
     "knex": "0.19.5",
     "knex-migrator": "3.4.0",
     "lodash": "4.17.15",
+    "mailgun-js": "0.22.0",
     "markdown-it": "10.0.0",
     "markdown-it-footnote": "3.0.2",
     "markdown-it-lazy-headers": "0.1.3",
