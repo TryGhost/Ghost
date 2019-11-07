@@ -7,7 +7,7 @@ const Email = ghostBookshelf.Model.extend({
     defaults: function defaults() {
         return {
             uuid: uuid.v4(),
-            status: 'sending'
+            status: 'pending'
         };
     },
 
