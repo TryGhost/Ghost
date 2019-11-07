@@ -30,7 +30,7 @@
                 <div class="gh-loading-spinner" style="zoom: 50%"></div>
             {{else}}
                 {{#unless this.deliveredAction}}
-                    <div class="for-checkbox">
+                    <div class="for-checkbox {{if disableEmailOption "pe-none"}}">
                         <div class="checkbox" for="email-when-published-checkbox">
                             <Input @checked={{this.sendEmailWhenPublished}} @type="checkbox" @id="email-when-published-checkbox" @name="email-when-published" @disabled={{disableEmailOption}} />
                             <span
