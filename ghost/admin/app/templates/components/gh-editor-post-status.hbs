@@ -1,10 +1,13 @@
 {{#if _isSaving}}
     Saving...
-{{else if isPublished}}
-    Published
-{{else if isScheduled}}
+{{else if (or this.post.isPublished this.post.pastScheduledTime)}}
+    Published on {{gh-format-post-time post.publishedAtUTC draft=false}}
+    {{#if this.post.email}}
+        and sent to {{this.post.email.emailCount}} members
+    {{/if}}
+{{else if this.post.isScheduled}}
     Scheduled
-{{else if isNew}}
+{{else if this.post.isNew}}
     New
 {{else}}
     Draft

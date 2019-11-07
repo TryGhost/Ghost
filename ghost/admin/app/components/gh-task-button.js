@@ -27,6 +27,7 @@ const GhTaskButton = Component.extend({
     attributeBindings: ['disabled', 'form', 'type', 'tabindex'],
 
     task: null,
+    taskParams: null,
     disabled: false,
     defaultClick: false,
     buttonText: 'Save',
@@ -129,7 +130,7 @@ const GhTaskButton = Component.extend({
         }
 
         this.action();
-        task.perform();
+        task.perform(this.taskArgs);
 
         this._restartAnimation.perform();
 

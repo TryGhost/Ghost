@@ -40,6 +40,7 @@
             </button>
             {{gh-task-button buttonText
                 task=save
+                taskArgs=(hash dropdown=dd)
                 successText=successText
                 runningText=runningText
                 class="gh-btn gh-btn-blue gh-publishmenu-button gh-btn-icon"
@@ -47,3 +48,13 @@
         </footer>
     {{/dd.content}}
 {{/basic-dropdown}}
+
+{{#if showEmailConfirmationModal}}
+    <GhFullscreenModal
+        @modal="confirm-email-send"
+        @model={{hash memberCount=this.memberCount isScheduled=(eq this.saveType "schedule")}}
+        @confirm={{this.confirmEmailSend}}
+        @close={{this.closeEmailConfirmationModal}}
+        @modifier="action wide"
+    />
+{{/if}}
