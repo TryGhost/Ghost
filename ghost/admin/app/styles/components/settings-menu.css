@@ -318,14 +318,8 @@
     margin-bottom: 4px;
 }
 
-.settings-menu-mailgun-warning {
-    border-radius: 5px;
-    padding: 8px 12px;
-    background: rgba(254, 205, 53, 0.1);
-    color: color-mod(var(--yellow) l(-8%) s(+10%));
-    border: 1px solid var(--yellow);
-    font-size: 13px;
-    font-weight: 500;
+.settings-menu-mailgun-warning .gh-box-info {
+    border-left: var(--yellow);
 }
 
 .settings-menu-mailgun-warning a {
