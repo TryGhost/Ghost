@@ -543,14 +543,16 @@ export default Controller.extend({
 
     // load supplementel data such as the actions list in the background
     backgroundLoader: task(function* () {
-        let actions = yield this.store.query('action', {
-            filter: `resource_type:post+resource_id:${this.post.id}+event:delivered`,
-            limit: 'all'
-        });
-        this.set('actionsList', actions);
-
-        let membersResponse = yield this.store.query('member', {limit: 1});
-        this.set('memberCount', get(membersResponse, 'meta.pagination.total'));
+        if (this.feature.members) {
+            let actions = yield this.store.query('action', {
+                filter: `resource_type:post+resource_id:${this.post.id}+event:delivered`,
+                limit: 'all'
+            });
+            this.set('actionsList', actions);
+    
+            let membersResponse = yield this.store.query('member', {limit: 1});
+            this.set('memberCount', get(membersResponse, 'meta.pagination.total'));
+        }
     }).restartable(),
 
     /* Public methods --------------------------------------------------------*/
