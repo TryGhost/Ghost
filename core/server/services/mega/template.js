@@ -594,7 +594,6 @@ figure blockquote p {
     table[class=body] pre {
         white-space: pre-wrap !important;
         word-break: break-word !important;
-        width: 80vw !important;
     }
 
     table[class=body] .wrapper,
