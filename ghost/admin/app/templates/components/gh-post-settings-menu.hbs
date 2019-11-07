@@ -321,7 +321,10 @@
                             <div style="width:23px;"></div>
                         </div>
 
-                        <div class="settings-menu-content">
+                        <div class="settings-menu-content settings-menu-email">
+                            {{#if mailgunError}}
+                                <p class="settings-menu-mailgun-warning">You need to configure Mailgun in {{#link-to "settings.labs" data-test-nav="labs"}}Labs → Members settings{{/link-to}} to enable sending posts in email.</p>
+                            {{/if}}
                             <form {{action "discardEnter" on="submit"}}>
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="emailSubject"}}
                                     <label for="og-title">Subject</label>
@@ -341,7 +344,7 @@
                                 <div class="form-group">
                                     <div class="flex">
                                         <label class="nowrap flex-auto">Test email</label>
-                                        <button type="button" class="gh-btn gh-btn-link gh-preview-email-button" onclick={{action "toggleEmailPreview"}}
+                                        <button type="button" class="gh-btn gh-btn-link settings-menu-email-button" onclick={{action "toggleEmailPreview"}}
                                             data-test-button="toggle-email-preview">
                                             <span class="blue">
                                                 Preview in browser
@@ -349,7 +352,7 @@
                                         </button>
                                     </div>
 
-                                    <div>
+                                    <div class="{{if mailgunError "disabled"}}">
                                     {{gh-text-input
                                         class="post-setting-email-test"
                                         id="email-test"
@@ -358,6 +361,7 @@
                                         value=(readonly emailTestScratch)
                                         input=(action (mut emailTestScratch) value="target.value")
                                         stopEnterKeyDownPropagation=true
+                                        disabled=mailgunError
                                         data-test-field="email-test"}}
                                     {{#if sendTestEmailError}}
                                         <div class="error"><p class="response">{{sendTestEmailError}}</p></div>
@@ -367,6 +371,7 @@
                                         successText="Email sent"
                                         runningText="Sending..."
                                         class="gh-btn w-100 mt2 gh-btn-icon"
+                                        disabled=mailgunError
                                         data-test-send-test-mail=true
                                     }}
                                     </div>
