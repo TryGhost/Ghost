@@ -30,3 +30,15 @@
 .gh-box-info svg {
     fill: var(--blue);
 }
+
+.gh-box-warning {
+    border-left-color: var(--yellow);
+}
+
+.gh-box-warning svg {
+    fill: var(--yellow);
+}
+
+.gh-box-warning a {
+    color: var(--yellow);
+}
