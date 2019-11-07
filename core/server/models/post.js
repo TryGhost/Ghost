@@ -576,7 +576,7 @@ Post = ghostBookshelf.Model.extend({
         return this.hasOne('PostsMeta', 'post_id');
     },
 
-    email: function postsMeta() {
+    email: function email() {
         return this.hasOne('Email', 'post_id');
     },
 
