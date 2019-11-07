@@ -52,6 +52,11 @@ const addEmail = async (post) => {
     const {members} = await membersService.api.members.list(Object.assign({filter: 'subscribed:true'}, {limit: 'all'}));
     const {emailTmpl, emails} = getEmailData(post, members);
 
+    // NOTE: don't create email object when there's nobody to send the email to
+    if (!emails.length) {
+        return null;
+    }
+
     const existing = await models.Email.findOne({post_id: post.id}, internalContext);
 
     if (!existing) {
