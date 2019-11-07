@@ -109,16 +109,11 @@ export default Model.extend(Comparable, ValidationEngine, {
     uuid: attr('string'),
     sendEmailWhenPublished: attr('boolean', {defaultValue: false}),
 
-    authors: hasMany('user', {
-        embedded: 'always',
-        async: false
-    }),
+    authors: hasMany('user', {embedded: 'always', async: false}),
     createdBy: belongsTo('user', {async: true}),
+    email: belongsTo('email', {async: false}),
     publishedBy: belongsTo('user', {async: true}),
-    tags: hasMany('tag', {
-        embedded: 'always',
-        async: false
-    }),
+    tags: hasMany('tag', {embedded: 'always', async: false}),
 
     primaryAuthor: computed('authors.[]', function () {
         return this.get('authors.firstObject');

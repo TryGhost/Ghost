@@ -10,7 +10,8 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
         tags: {embedded: 'always'},
         publishedAtUTC: {key: 'published_at'},
         createdAtUTC: {key: 'created_at'},
-        updatedAtUTC: {key: 'updated_at'}
+        updatedAtUTC: {key: 'updated_at'},
+        email: {embedded: 'always'}
     },
 
     normalizeSingleResponse(store, primaryModelClass, payload) {
@@ -44,6 +45,9 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
         if (json.visibility === null) {
             delete json.visibility;
         }
+
+        delete json.email_id;
+        delete json.email;
 
         return json;
     }

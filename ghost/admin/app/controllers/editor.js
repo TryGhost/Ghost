@@ -134,10 +134,6 @@ export default Controller.extend({
         }
     }),
 
-    deliveredAction: computed('actionsList', function () {
-        return this.actionsList && this.actionsList.findBy('event', 'delivered');
-    }),
-
     _autosaveRunning: computed('_autosave.isRunning', '_timedSave.isRunning', function () {
         let autosave = this.get('_autosave.isRunning');
         let timedsave = this.get('_timedSave.isRunning');
@@ -544,12 +540,6 @@ export default Controller.extend({
     // load supplementel data such as the actions list in the background
     backgroundLoader: task(function* () {
         if (this.feature.members) {
-            let actions = yield this.store.query('action', {
-                filter: `resource_type:post+resource_id:${this.post.id}+event:delivered`,
-                limit: 'all'
-            });
-            this.set('actionsList', actions);
-    
             let membersResponse = yield this.store.query('member', {limit: 1});
             this.set('memberCount', get(membersResponse, 'meta.pagination.total'));
         }
@@ -769,6 +759,10 @@ export default Controller.extend({
         if (status === 'published') {
             type = this.get('post.page') ? 'Page' : 'Post';
             path = this.get('post.url');
+
+            if (prevStatus === 'draft' && this.post.email) {
+                message = `Published and sent to ${this.post.email.emailCount} members!`;
+            }
         } else {
             type = 'Preview';
             path = this.get('post.previewUrl');

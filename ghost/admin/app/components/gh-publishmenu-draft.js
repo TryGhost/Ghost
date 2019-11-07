@@ -1,6 +1,7 @@
 import Component from '@ember/component';
 import moment from 'moment';
 import {computed} from '@ember/object';
+import {equal} from '@ember/object/computed';
 import {isEmpty} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
@@ -16,24 +17,15 @@ export default Component.extend({
 
     'data-test-publishmenu-draft': true,
 
-    mailgunError: computed('settings.memberSubscriptionSettings', function() {
-        return !this.isMailgunConfigured();
-    }),
+    disableEmailOption: equal('memberCount', 0),
 
-    isMailgunConfigured: function() {
-        let subSettingsValue = this.get('settings.membersSubscriptionSettings');
-        let subscriptionSettings = subSettingsValue ? JSON.parse(subSettingsValue) : {};
-        if (Object.keys(subscriptionSettings).includes('mailgunApiKey')) {
-            return subscriptionSettings.mailgunApiKey && subscriptionSettings.mailgunDomain;
-        }
-        return false;
-    },
+    canSendEmail: computed('feature.labs.members', 'post.{displayName,email}', function () {
+        let membersEnabled = this.feature.get('labs.members');
+        let mailgunIsConfigured = this._isMailgunConfigured();
+        let isPost = this.post.displayName === 'post';
+        let hasSentEmail = !!this.post.email;
 
-    disableEmailOption: computed('memberCount', 'settings.membersSubscriptionSettings', function () {
-        if (!this.feature.members) {
-            return true;
-        }
-        return !this.isMailgunConfigured() || this.membersCount === 0;
+        return membersEnabled && mailgunIsConfigured && isPost && !hasSentEmail;
     }),
 
     didInsertElement() {
@@ -87,6 +79,16 @@ export default Component.extend({
             post.set('publishedAtBlogTime', time);
             return post.validate();
         }
+    },
+
+    // TODO: put this on settings model
+    _isMailgunConfigured: function () {
+        let subSettingsValue = this.get('settings.membersSubscriptionSettings');
+        let subscriptionSettings = subSettingsValue ? JSON.parse(subSettingsValue) : {};
+        if (Object.keys(subscriptionSettings).includes('mailgunApiKey')) {
+            return subscriptionSettings.mailgunApiKey && subscriptionSettings.mailgunDomain;
+        }
+        return false;
     },
 
     // API only accepts dates at least 2 mins in the future, default the

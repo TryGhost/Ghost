@@ -1,6 +1,6 @@
-import $ from 'jquery';
 import Component from '@ember/component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
+import {action} from '@ember/object';
 import {computed} from '@ember/object';
 import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
@@ -22,6 +22,8 @@ export default Component.extend({
     _previousStatus: null,
 
     isClosing: null,
+
+    onClose() {},
 
     forcePublishedMenu: reads('post.pastScheduledTime'),
     sendEmailWhenPublishedScratch: boundOneWay('post.sendEmailWhenPublished'),
@@ -155,30 +157,63 @@ export default Component.extend({
         },
 
         close(dropdown, e) {
-            let post = this.post;
+            // don't close the menu if the datepicker popup or confirm modal is clicked
+            if (e) {
+                let onDatepicker = !!e.target.closest('.ember-power-datepicker-content');
+                let onModal = !!e.target.closest('.fullscreen-modal-container');
 
-            // don't close the menu if the datepicker popup is clicked
-            if (e && $(e.target).closest('.ember-power-datepicker-content').length) {
-                return false;
+                if (onDatepicker || onModal) {
+                    return false;
+                }
             }
 
-            // cleanup
-            this.set('sendEmailWhenPublishedScratch', this.post.sendEmailWhenPublishedScratch);
-            this._resetPublishedAtBlogTZ();
-            post.set('statusScratch', null);
-            post.validate();
-
-            if (this.onClose) {
-                this.onClose();
+            if (!this._skipDropdownCloseCleanup) {
+                this._cleanup();
             }
+            this._skipDropdownCloseCleanup = false;
 
+            this.onClose();
             this.set('isClosing', true);
 
             return true;
         }
     },
 
-    save: task(function* () {
+    // action is required because <GhFullscreenModal> only uses actions
+    confirmEmailSend: action(function () {
+        return this._confirmEmailSend.perform();
+    }),
+
+    _confirmEmailSend: task(function* () {
+        this.sendEmailConfirmed = true;
+        yield this.save.perform();
+        this.set('showEmailConfirmationModal', false);
+    }),
+
+    openEmailConfirmationModal: action(function (dropdown) {
+        if (dropdown) {
+            this._skipDropdownCloseCleanup = true;
+            dropdown.actions.close();
+        }
+        this.set('showEmailConfirmationModal', true);
+    }),
+
+    closeEmailConfirmationModal: action(function () {
+        this.set('showEmailConfirmationModal', false);
+        this._cleanup();
+    }),
+
+    save: task(function* ({dropdown} = {}) {
+        if (
+            this.post.status === 'draft' &&
+            !this.post.email && // email sent previously
+            this.sendEmailWhenPublishedScratch &&
+            !this.sendEmailConfirmed // set once confirmed so normal save happens
+        ) {
+            this.openEmailConfirmationModal(dropdown);
+            return;
+        }
+
         // runningText needs to be declared before the other states change during the
         // save action.
         this.set('runningText', this._runningText);
@@ -208,9 +243,15 @@ export default Component.extend({
         this._publishedAtBlogTZ = this.get('post.publishedAtBlogTZ');
     },
 
-    // when closing the menu we reset the publishedAtBlogTZ date so that the
-    // unsaved changes made to the scheduled date aren't reflected in the PSM
-    _resetPublishedAtBlogTZ() {
+    _cleanup() {
+        this.set('showConfirmEmailModal', false);
+        this.set('sendEmailWhenPublishedScratch', this.post.sendEmailWhenPublishedScratch);
+
+        // when closing the menu we reset the publishedAtBlogTZ date so that the
+        // unsaved changes made to the scheduled date aren't reflected in the PSM
         this.post.set('publishedAtBlogTZ', this._publishedAtBlogTZ);
+
+        this.post.set('statusScratch', null);
+        this.post.validate();
     }
 });

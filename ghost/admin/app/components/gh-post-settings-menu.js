@@ -103,6 +103,10 @@ export default Component.extend(SettingsMenuMixin, {
         }
     }),
 
+    mailgunError: computed('settings.memberSubscriptionSettings', function () {
+        return !this._isMailgunConfigured();
+    }),
+
     didReceiveAttrs() {
         this._super(...arguments);
 
@@ -550,19 +554,6 @@ export default Component.extend(SettingsMenuMixin, {
         this.set('_showThrobbers', true);
     }).restartable(),
 
-    isMailgunConfigured: function () {
-        let subSettingsValue = this.get('settings.membersSubscriptionSettings');
-        let subscriptionSettings = subSettingsValue ? JSON.parse(subSettingsValue) : {};
-        if (Object.keys(subscriptionSettings).includes('mailgunApiKey')) {
-            return (subscriptionSettings.mailgunApiKey && subscriptionSettings.mailgunDomain);
-        }
-        return true;
-    },
-
-    mailgunError: computed('settings.memberSubscriptionSettings', function () {
-        return !this.isMailgunConfigured();
-    }),
-
     sendTestEmail: task(function* () {
         try {
             const resourceId = this.post.id;
@@ -595,5 +586,15 @@ export default Component.extend(SettingsMenuMixin, {
         if (error) {
             this.notifications.showAPIError(error);
         }
+    },
+
+    // TODO: put this on settings model
+    _isMailgunConfigured: function () {
+        let subSettingsValue = this.get('settings.membersSubscriptionSettings');
+        let subscriptionSettings = subSettingsValue ? JSON.parse(subSettingsValue) : {};
+        if (Object.keys(subscriptionSettings).includes('mailgunApiKey')) {
+            return (subscriptionSettings.mailgunApiKey && subscriptionSettings.mailgunDomain);
+        }
+        return true;
     }
 });
