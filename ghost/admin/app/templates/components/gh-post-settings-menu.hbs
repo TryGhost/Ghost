@@ -2,7 +2,7 @@
     <div id="entry-controls">
         <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
             <div class="settings-menu-header">
-                <h4>{{capitalize post.displayName}} Settings</h4>
+                <h4>{{capitalize post.displayName}} settings</h4>
                 <button class="close settings-menu-header-action" {{action "closeMenus" target=ui}} data-test-close-settings-menu>
                     {{svg-jar "close"}}<span class="hidden">Close</span>
                 </button>
@@ -47,9 +47,9 @@
 
                 <div class="form-group">
                     {{#if (or post.isDraft post.isPublished post.pastScheduledTime)}}
-                        <label>Publish Date</label>
+                        <label>Publish date</label>
                     {{else}}
-                        <label>Scheduled Date</label>
+                        <label>Scheduled date</label>
                     {{/if}}
                     {{gh-date-time-picker
                         date=post.publishedAtBlogDate
@@ -111,21 +111,21 @@
                 <ul class="nav-list nav-list-block">
                     <li class="nav-list-item" {{action "showSubview" "meta-data"}} data-test-button="meta-data">
                         <button type="button">
-                            <b>Meta Data</b>
+                            <b>Meta data</b>
                             <span>Extra content for search engines</span>
                         </button>
                         {{svg-jar "arrow-right"}}
                     </li>
                     <li class="nav-list-item" {{action "showSubview" "twitter-data"}} data-test-button="twitter-data">
                         <button type="button">
-                            <b>Twitter Card</b>
+                            <b>Twitter card</b>
                             <span>Customise structured data for Twitter</span>
                         </button>
                         {{svg-jar "arrow-right"}}
                     </li>
                     <li class="nav-list-item" {{action "showSubview" "facebook-data"}} data-test-button="facebook-data">
                         <button type="button">
-                            <b>Facebook Card</b>
+                            <b>Facebook card</b>
                             <span>Customise Open Graph data</span>
                         </button>
                         {{svg-jar "arrow-right"}}
@@ -133,15 +133,15 @@
                     {{#if (and this.feature.members (eq this.post.displayName "post"))}}
                         <li class="nav-list-item" {{action "showSubview" "email-settings"}} data-test-button="email-settings">
                             <button type="button">
-                                <b>Email</b>
-                                <span>Customise Email Settings</span>
+                                <b>Email newsletter</b>
+                                <span>Customise email settings</span>
                             </button>
                             {{svg-jar "arrow-right"}}
                         </li>
                     {{/if}}
                     <li class="nav-list-item" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
                         <button type="button">
-                            <b>Code Injection</b>
+                            <b>Code injection</b>
                             <span>Add styles/scripts to the header &amp; footer</span>
                         </button>
                         {{svg-jar "arrow-right"}}
@@ -169,7 +169,7 @@
                     onTemplateSelect=(action (mut post.customTemplate))}}
 
                 {{#unless post.isNew}}
-                    <button type="button" class="gh-btn gh-btn-hover-red gh-btn-icon settings-menu-delete-button" {{action "deletePost"}}><span>{{svg-jar "trash"}} Delete {{capitalize post.displayName}}</span></button>
+                    <button type="button" class="gh-btn gh-btn-hover-red gh-btn-icon settings-menu-delete-button" {{action "deletePost"}}><span>{{svg-jar "trash"}} Delete {{post.displayName}}</span></button>
                 {{/unless}}
 
                 </form>
@@ -182,14 +182,14 @@
                     {{#if (eq subview "meta-data")}}
                         <div class="settings-menu-header subview">
                             <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
-                            <h4>Meta Data</h4>
+                            <h4>Meta data</h4>
                             <div style="width:23px;"></div>
                         </div>
 
                         <div class="settings-menu-content">
                             <form {{action "discardEnter" on="submit"}}>
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="metaTitle"}}
-                                    <label for="meta-title">Meta Title</label>
+                                    <label for="meta-title">Meta title</label>
                                     {{gh-text-input
                                         class="post-setting-meta-title"
                                         id="meta-title"
@@ -204,7 +204,7 @@
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="metaDescription"}}
-                                    <label for="meta-description">Meta Description</label>
+                                    <label for="meta-description">Meta description</label>
                                     {{gh-textarea
                                         class="post-setting-meta-description"
                                         id="meta-description"
@@ -246,7 +246,7 @@
                     {{#if (eq subview "twitter-data")}}
                         <div class="settings-menu-header subview">
                             <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
-                            <h4>Twitter Card</h4>
+                            <h4>Twitter card</h4>
                             <div style="width:23px;"></div>
                         </div>
 
@@ -261,7 +261,7 @@
                                     remove=(action "clearTwitterImage")
                                 }}
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="twitterTitle"}}
-                                    <label for="twitter-title">Twitter Title</label>
+                                    <label for="twitter-title">Twitter title</label>
                                     {{gh-text-input
                                         class="post-setting-twitter-title"
                                         id="twitter-title"
@@ -276,7 +276,7 @@
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="twitterDescription"}}
-                                    <label for="twitter-description">Twitter Description</label>
+                                    <label for="twitter-description">Twitter description</label>
                                     {{gh-textarea
                                         class="post-setting-twitter-description"
                                         id="twitter-description"
@@ -317,7 +317,7 @@
                     {{#if (eq subview "email-settings")}}
                         <div class="settings-menu-header subview">
                             <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
-                            <h4>Email</h4>
+                            <h4>Email newsletter</h4>
                             <div style="width:23px;"></div>
                         </div>
 
@@ -387,7 +387,7 @@
                     {{#if (eq subview "facebook-data")}}
                         <div class="settings-menu-header subview">
                             <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
-                            <h4>Facebook Card</h4>
+                            <h4>Facebook card</h4>
                             <div style="width:23px;"></div>
                         </div>
 
@@ -401,7 +401,7 @@
                                     remove=(action "clearOgImage")
                                 }}
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="ogTitle"}}
-                                    <label for="og-title">Facebook Title</label>
+                                    <label for="og-title">Facebook title</label>
                                     {{gh-text-input
                                         class="post-setting-og-title"
                                         id="og-title"
@@ -416,7 +416,7 @@
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="ogDescription"}}
-                                    <label for="og-description">Facebook Description</label>
+                                    <label for="og-description">Facebook description</label>
                                     {{gh-textarea
                                         class="post-setting-og-description"
                                         id="og-description"
@@ -457,14 +457,14 @@
                     {{#if (eq subview "codeinjection")}}
                         <div class="settings-menu-header subview">
                             <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
-                            <h4>Code Injection</h4>
+                            <h4>Code injection</h4>
                             <div style="width:23px;"></div>
                         </div>
 
                         <div class="settings-menu-content settings-menu-content-codeinjection">
                             <form {{action "discardEnter" on="submit"}}>
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="codeinjectionHead"}}
-                                    <label for="codeinjection-head">{{capitalize post.displayName}} Header <code>\{{ghost_head}}</code></label>
+                                    <label for="codeinjection-head">{{capitalize post.displayName}} header <code>\{{ghost_head}}</code></label>
                                     {{gh-cm-editor codeinjectionHeadScratch
                                         id="post-setting-codeinjection-head"
                                         class="post-setting-codeinjection"
@@ -477,7 +477,7 @@
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="codeinjectionFoot"}}
-                                    <label for="codeinjection-foot">{{capitalize post.displayName}} Footer <code>\{{ghost_foot}}</code></label>
+                                    <label for="codeinjection-foot">{{capitalize post.displayName}} footer <code>\{{ghost_foot}}</code></label>
                                     {{gh-cm-editor codeinjectionFootScratch
                                         id="post-setting-codeinjection-foot"
                                         class="post-setting-codeinjection"
