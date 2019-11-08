@@ -60,6 +60,10 @@ const mapPost = (model, frame) => {
             if (relation === 'authors' && jsonModel.authors) {
                 jsonModel.authors = jsonModel.authors.map(author => mapUser(author, frame));
             }
+
+            if (relation === 'email' && _.isEmpty(jsonModel.email)) {
+                jsonModel.email = null;
+            }
         });
     }
 
