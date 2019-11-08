@@ -13,9 +13,9 @@ export default Model.extend({
     submittedAtUTC: attr('moment-utc'),
     uuid: attr('string'),
 
-    createdAtUTC: attr('string'),
+    createdAtUTC: attr('moment-utc'),
     createdBy: attr('string'),
-    updatedAtUTC: attr('string'),
+    updatedAtUTC: attr('moment-utc'),
     updatedBy: attr('string'),
 
     post: belongsTo('post')
