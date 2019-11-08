@@ -3,7 +3,7 @@
 {{else if (or this.post.isPublished this.post.pastScheduledTime)}}
     Published
     {{#if this.post.email}}
-        – Sent to {{this.post.email.emailCount}} members
+        and sent to {{pluralize this.post.email.emailCount "member"}}
     {{/if}}
 {{else if this.post.isScheduled}}
     Scheduled
