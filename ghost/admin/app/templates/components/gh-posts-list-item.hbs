@@ -10,7 +10,7 @@
     </h3>
     {{#if isScheduled}}
         <p>
-            <span class="gh-schedule-time">Will go live {{gh-format-post-time this.post.publishedAtUTC scheduled=true}}</span>
+            <span class="gh-schedule-time">Scheduled to be published and sent {{gh-format-post-time this.post.publishedAtUTC scheduled=true}}</span>
             <span class="gh-schedule-subtext">&dash; {{this.subText}}</span>
         </p>
     {{else}}
