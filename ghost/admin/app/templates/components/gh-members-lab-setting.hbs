@@ -187,6 +187,17 @@
             {{/gh-form-group}}
             {{#if hasMailgunAPIKeyOption}}
                 {{#gh-form-group}}
+                    <label class="fw6 f8">Mailgun domain</label>
+                    {{gh-text-input
+                        value=(readonly subscriptionSettings.mailgunDomain)
+                        input=(action "setSubscriptionSettings" "mailgunDomain")
+                        class="mt1"
+                    }}
+                    <a href="https://app.mailgun.com/app/sending/domains" target="_blank" class="mt1 fw4 f8">
+                        Find your Mailgun domain here &raquo;
+                    </a>
+                {{/gh-form-group}}
+                {{#gh-form-group}}
                     <label class="fw6 f8">Mailgun API key</label>
                     {{gh-text-input
                         type="password"
@@ -198,15 +209,6 @@
                     <a href="https://app.mailgun.com/app/account/security/api_keys" target="_blank" class="mt1 fw4 f8">
                         Find your Mailgun API keys here &raquo;
                     </a>
-                {{/gh-form-group}}
-
-                {{#gh-form-group}}
-                    <label class="fw6 f8">Mailgun domain</label>
-                    {{gh-text-input
-                        value=(readonly subscriptionSettings.mailgunDomain)
-                        input=(action "setSubscriptionSettings" "mailgunDomain")
-                        class="mt1"
-                    }}
                 {{/gh-form-group}}
             {{/if}}
         </div>
