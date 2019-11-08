@@ -9,6 +9,8 @@ const TaxonomyRouter = require('./TaxonomyRouter');
 const PreviewRouter = require('./PreviewRouter');
 const ParentRouter = require('./ParentRouter');
 
+const defaultApiVersion = 'v3';
+
 const registry = require('./registry');
 let siteRouter;
 
@@ -37,7 +39,8 @@ module.exports.init = (options = {start: false}) => {
     registry.setRouter('siteRouter', siteRouter);
 
     if (options.start) {
-        this.start(options.start);
+        let apiVersion = _.isBoolean(options.start) ? defaultApiVersion : options.start;
+        this.start(apiVersion);
     }
 
     return siteRouter.router();
