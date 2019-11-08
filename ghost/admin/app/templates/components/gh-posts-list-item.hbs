@@ -32,6 +32,10 @@
     {{#if (and this.isPublished (not this.post.page))}}
     <span class="gh-content-status-published nowrap">Published</span>
     {{/if}}
+
+    {{#if this.post.email}}
+        <span class="dib w5">{{svg-jar "email"}}</div>
+    {{/if}}
 {{/link-to}}
 
 {{#link-to "editor.edit" this.post.displayName this.post.id class="permalink gh-list-data gh-post-list-updated" title="Edit this post"}}
