@@ -3,7 +3,6 @@ import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
 import moment from 'moment';
-import validator from 'validator';
 import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {run} from '@ember/runloop';
@@ -29,8 +28,6 @@ export default Component.extend(SettingsMenuMixin, {
     _showSettingsMenu: false,
     _showThrobbers: false,
 
-    emailTestScratch: '',
-    sendTestEmailError: '',
     canonicalUrlScratch: alias('post.canonicalUrlScratch'),
     customExcerptScratch: alias('post.customExcerptScratch'),
     codeinjectionFootScratch: alias('post.codeinjectionFootScratch'),
@@ -41,7 +38,6 @@ export default Component.extend(SettingsMenuMixin, {
     ogTitleScratch: alias('post.ogTitleScratch'),
     twitterDescriptionScratch: alias('post.twitterDescriptionScratch'),
     twitterTitleScratch: alias('post.twitterTitleScratch'),
-    emailSubjectScratch: alias('post.emailSubjectScratch'),
     slugValue: boundOneWay('post.slug'),
 
     facebookDescription: or('ogDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
@@ -50,7 +46,6 @@ export default Component.extend(SettingsMenuMixin, {
     twitterDescription: or('twitterDescriptionScratch', 'customExcerptScratch', 'seoDescription'),
     twitterImage: or('post.twitterImage', 'post.featureImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
-    emailSubject: or('emailSubjectScratch', 'post.title'),
 
     showVisibilityInput: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
 
@@ -101,10 +96,6 @@ export default Component.extend(SettingsMenuMixin, {
 
             return seoURL;
         }
-    }),
-
-    mailgunError: computed('settings.memberSubscriptionSettings', function () {
-        return !this._isMailgunConfigured();
     }),
 
     didReceiveAttrs() {
@@ -174,10 +165,6 @@ export default Component.extend(SettingsMenuMixin, {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
-        },
-
-        toggleEmailPreview() {
-            this.toggleEmailPreviewModal();
         },
 
         /**
@@ -419,29 +406,6 @@ export default Component.extend(SettingsMenuMixin, {
             });
         },
 
-        setEmailSubject(emailSubject) {
-            // Grab the post and current stored email subject
-            let post = this.post;
-            let currentEmailSubject = post.get('emailSubject');
-
-            // If the subject entered matches the stored email subject, do nothing
-            if (currentEmailSubject === emailSubject) {
-                return;
-            }
-
-            // If the subject entered is different, set it as the new email subject
-            post.set('emailSubject', emailSubject);
-
-            // Make sure the email subject is valid and if so, save it into the post
-            return post.validate({property: 'emailSubject'}).then(() => {
-                if (post.get('isNew')) {
-                    return;
-                }
-
-                return this.savePost.perform();
-            });
-        },
-
         setCoverImage(image) {
             this.set('post.featureImage', image);
 
@@ -554,47 +518,10 @@ export default Component.extend(SettingsMenuMixin, {
         this.set('_showThrobbers', true);
     }).restartable(),
 
-    sendTestEmail: task(function* () {
-        try {
-            const resourceId = this.post.id;
-            const testEmail = this.emailTestScratch.trim();
-            if (!validator.isEmail(testEmail)) {
-                this.set('sendTestEmailError', 'Please enter a valid email');
-                return false;
-            }
-            if (!this.isMailgunConfigured()) {
-                this.set('sendTestEmailError', 'Please configure Mailgun in Labs → Members');
-                return false;
-            }
-            this.set('sendTestEmailError', '');
-            const url = this.get('ghostPaths.url').api('/email_preview/posts', resourceId);
-            const data = {emails: [testEmail]};
-            const options = {
-                data,
-                dataType: 'json'
-            };
-            return yield this.ajax.post(url, options);
-        } catch (error) {
-            if (error) {
-                this.notifications.showAPIError(error, {key: 'send.previewEmail'});
-            }
-        }
-    }).drop(),
-
     showError(error) {
         // TODO: remove null check once ValidationEngine has been removed
         if (error) {
             this.notifications.showAPIError(error);
         }
-    },
-
-    // TODO: put this on settings model
-    _isMailgunConfigured: function () {
-        let subSettingsValue = this.get('settings.membersSubscriptionSettings');
-        let subscriptionSettings = subSettingsValue ? JSON.parse(subSettingsValue) : {};
-        if (Object.keys(subscriptionSettings).includes('mailgunApiKey')) {
-            return (subscriptionSettings.mailgunApiKey && subscriptionSettings.mailgunDomain);
-        }
-        return true;
     }
 });
