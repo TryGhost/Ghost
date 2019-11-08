@@ -37,7 +37,7 @@ const expectedProperties = {
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         // returned by default
-        .concat('tags', 'authors')
+        .concat('tags', 'authors', 'email')
         // returns meta fields from `posts_meta` schema
         .concat(
             ..._(schema.posts_meta).keys().without('post_id', 'id')

@@ -22,7 +22,7 @@ describe('Posts API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return localUtils.doAuth(request, 'users:extra', 'posts');
+                return localUtils.doAuth(request, 'users:extra', 'posts', 'emails');
             })
             .then(function (cookie) {
                 ownerCookie = cookie;
@@ -95,7 +95,7 @@ describe('Posts API', function () {
             });
     });
 
-    it('Can includes single relation', function (done) {
+    it('Can include single relation', function (done) {
         request.get(localUtils.API.getApiQuery('posts/?include=tags'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -115,7 +115,7 @@ describe('Posts API', function () {
                     jsonResponse.posts[0],
                     'post',
                     null,
-                    ['authors', 'primary_author']
+                    ['authors', 'primary_author', 'email']
                 );
 
                 localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
@@ -232,7 +232,7 @@ describe('Posts API', function () {
 
     it('Can include relations for a single post', function (done) {
         request
-            .get(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=authors,tags'))
+            .get(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=authors,tags,email'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -254,6 +254,9 @@ describe('Posts API', function () {
 
                 jsonResponse.posts[0].tags[0].should.be.an.Object();
                 localUtils.API.checkResponse(jsonResponse.posts[0].tags[0], 'tag', ['url']);
+
+                jsonResponse.posts[0].email.should.be.an.Object();
+                localUtils.API.checkResponse(jsonResponse.posts[0].email, 'email');
                 done();
             });
     });

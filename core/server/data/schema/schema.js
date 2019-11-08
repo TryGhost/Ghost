@@ -379,7 +379,7 @@ module.exports = {
     },
     emails: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', unique: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, index: true, unique: true},
         uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
         status: {
             type: 'string',
