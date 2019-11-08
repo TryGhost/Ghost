@@ -61,7 +61,7 @@ describe('{{meta_title}} helper', function () {
 
         it('returns correct title for a page with meta_title set', function () {
             var rendered = helpers.meta_title.call(
-                {page: {title: 'About Page', meta_title: 'All about my awesomeness', page: true}},
+                {post: {title: 'About Page', meta_title: 'All about my awesomeness', page: true}},
                 {data: {root: {context: ['page']}}}
             );
 
