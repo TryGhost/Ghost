@@ -1,32 +1,27 @@
 const should = require('should');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid');
-const testUtils = require('../../../../utils');
-const config = require('../../../../../server/config');
+const testUtils = require('../../utils');
 const localUtils = require('./utils');
+const config = require('../../../server/config');
+
 const ghost = testUtils.startGhost;
-let request;
 
 describe('Email Preview API', function () {
-    let ghostServer;
-    let ownerCookie;
+    let request;
 
     before(function () {
         return ghost()
             .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
                 return localUtils.doAuth(request, 'users:extra', 'posts');
-            })
-            .then(function (cookie) {
-                ownerCookie = cookie;
             });
     });
 
     describe('Read', function () {
-        it('can\'t retrieve non existent post', function (done) {
+        it('can\'t retrieve for non existent post', function (done) {
             request.get(localUtils.API.getApiQuery(`posts/${ObjectId.generate()}/`))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
