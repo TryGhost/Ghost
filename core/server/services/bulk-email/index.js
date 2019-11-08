@@ -17,7 +17,7 @@ function createMailgun(config) {
     });
 }
 
-const config = configService.get('bulk-email');
+const config = configService.get('bulkEmail');
 
 if (!config || !config.mailgun) {
     common.logging.warn(`Bulk email service is not configured`);
