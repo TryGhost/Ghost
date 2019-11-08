@@ -69,7 +69,7 @@
     margin: 0 0 15px 0;
     padding: 20px 20px 0;
     font-size: 1.8rem;
-    line-height: 1.15em;
+    line-height: 1.25em;
 }
 
 .gh-publishmenu-content {
@@ -249,4 +249,9 @@
 
 .gh-publishmenu-content .for-switch.pe-none {
     opacity: 0.6;
+}
+
+.gh-publishmenu-email-info {
+    margin: 15px 0;
+    color: var(--midgrey);
 }

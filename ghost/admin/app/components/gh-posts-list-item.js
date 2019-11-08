@@ -36,7 +36,7 @@ export default Component.extend({
         }
 
         if (this.isScheduled) {
-            return `${text.slice(0, 40)}...`;
+            return `${text.slice(0, 35)}...`;
         } else {
             return `${text.slice(0, 80)}...`;
         }
