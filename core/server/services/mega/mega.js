@@ -10,6 +10,7 @@ const urlUtils = require('../../lib/url-utils');
 
 const getEmailData = (post, members) => {
     const emailTmpl = postEmailSerializer.serialize(post);
+    emailTmpl.from = membersService.config.getEmailFromAddress();
 
     const membersToSendTo = members.filter((member) => {
         return membersService.contentGating.checkPostAccess(post, member);
