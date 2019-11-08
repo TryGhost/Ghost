@@ -19,6 +19,7 @@ const sendEmail = async (post, members) => {
     const emailData = membersToSendTo.reduce((emailData, member) => {
         return Object.assign({
             [member.email]: {
+                unique_id: member.uuid,
                 unsubscribe_url: createUnsubscribeUrl(member)
             }
         }, emailData);
