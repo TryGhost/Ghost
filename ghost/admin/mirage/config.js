@@ -1,4 +1,3 @@
-import mockActions from './config/actions';
 import mockApiKeys from './config/api-keys';
 import mockAuthentication from './config/authentication';
 import mockConfig from './config/config';
