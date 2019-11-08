@@ -238,6 +238,11 @@
     margin: -30px 0 15px;
 }
 
+.gh-post-list-email {
+    padding: 0 15px 2px;
+    width: 1px;
+}
+
 /* Mobile style of post list */
 @media (max-width: 1000px) {
     .gh-posts-list-item {
