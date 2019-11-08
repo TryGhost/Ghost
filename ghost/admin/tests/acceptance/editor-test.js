@@ -223,7 +223,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'post status updated after draft published'
-            ).to.equal('Published');
+            ).to.equal('Published on 09 Apr 2017');
 
             await click('[data-test-publishmenu-cancel]');
             await click('[data-test-publishmenu-trigger]');
