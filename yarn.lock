@@ -1911,10 +1911,10 @@ cssstyle@^1.1.1:
   dependencies:
     cssom "0.3.x"
 
-csv-parser@2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/csv-parser/-/csv-parser-2.3.1.tgz#dbc3cbef59241693bb78119634dbc879c2c83995"
-  integrity sha512-/u51FlBo75BcY/IL0WGibT628rr/xn4cXS9jX+AwT4x9yE7kqGqss7YgXpbdFai6m3uNbr4g1F19BoXBFeiJbA==
+csv-parser@2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/csv-parser/-/csv-parser-2.3.2.tgz#3a4146abb9a0be7c3cbcae9c289f0a7e622dc07b"
+  integrity sha512-ggurTYuhhoUJyrPXTAkiO1x6QXkxAoimV+YSz2eSAXF+jQ/Xve/030T34tVStKFmX56pPtY5PiZl3bR4HkZK+Q==
   dependencies:
     "@hapi/joi" "^16.1.4"
     buffer-alloc "^1.1.0"
