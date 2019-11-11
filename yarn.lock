@@ -69,32 +69,6 @@
   dependencies:
     "@hapi/hoek" "8.x.x"
 
-"@metascraper/helpers@^5.7.14":
-  version "5.7.14"
-  resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.7.14.tgz#676b11bdc82b1fbe4e6cc1fe0c4be2dddf7d5ba1"
-  integrity sha512-xQa24LVinzyT/5H4LKNP4YDdR/kcz+j5GIIB123DyxvhQZTRuDu8BRmEUB/Yj+jY7U5qhwabIgwCT/eN1Y9Uag==
-  dependencies:
-    audio-extensions "0.0.0"
-    chrono-node "~1.3.11"
-    condense-whitespace "~2.0.0"
-    entities "~2.0.0"
-    file-extension "~4.0.5"
-    has-values "~2.0.1"
-    image-extensions "~1.1.0"
-    is-relative-url "~3.0.0"
-    is-uri "~1.2.0"
-    iso-639-3 "~1.2.0"
-    isostring "0.0.1"
-    lodash "~4.17.15"
-    memoize-one "~5.1.1"
-    mime-types "~2.1.24"
-    normalize-url "~4.5.0"
-    smartquotes "~2.3.1"
-    title "~3.4.1"
-    truncate "~2.1.0"
-    url-regex "~5.0.0"
-    video-extensions "~1.1.0"
-
 "@metascraper/helpers@^5.7.17":
   version "5.7.17"
   resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.7.17.tgz#401897c7239090ca7149b83e581712845bbb3709"
@@ -1937,10 +1911,10 @@ cssstyle@^1.1.1:
   dependencies:
     cssom "0.3.x"
 
-csv-parser@2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/csv-parser/-/csv-parser-2.3.1.tgz#dbc3cbef59241693bb78119634dbc879c2c83995"
-  integrity sha512-/u51FlBo75BcY/IL0WGibT628rr/xn4cXS9jX+AwT4x9yE7kqGqss7YgXpbdFai6m3uNbr4g1F19BoXBFeiJbA==
+csv-parser@2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/csv-parser/-/csv-parser-2.3.2.tgz#3a4146abb9a0be7c3cbcae9c289f0a7e622dc07b"
+  integrity sha512-ggurTYuhhoUJyrPXTAkiO1x6QXkxAoimV+YSz2eSAXF+jQ/Xve/030T34tVStKFmX56pPtY5PiZl3bR4HkZK+Q==
   dependencies:
     "@hapi/joi" "^16.1.4"
     buffer-alloc "^1.1.0"
