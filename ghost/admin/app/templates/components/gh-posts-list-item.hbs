@@ -23,7 +23,7 @@
 {{#link-to "editor.edit" this.post.displayName this.post.id class="permalink gh-list-data gh-post-list-status" title="Edit this post"}}
     {{#if this.isScheduled}}
     <span class="gh-content-status-draft gh-badge nowrap">
-        Scheduled 
+        Scheduled
     </span>
     {{/if}}
 
@@ -35,7 +35,7 @@
 
     {{#if (and this.isPublished (not this.post.page))}}
     <span class="gh-content-status-published nowrap" title="Post has been sent by email">
-        Published 
+        Published
     </span>
     {{/if}}
 {{/link-to}}
@@ -49,7 +49,7 @@
 {{/link-to}}
 
 {{#link-to "editor.edit" this.post.displayName this.post.id class="permalink gh-list-data gh-post-list-email" title="Post has been sent by email"}}
-    {{#if this.post.email}}
+    {{#if (or this.post.email (and this.post.isScheduled this.post.sendEmailWhenPublished))}}
         {{svg-jar "email" class="w4 h4 fill-midgrey nudge-top--4"}}
     {{/if}}
 {{/link-to}}
