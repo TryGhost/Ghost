@@ -29,7 +29,7 @@
   "devDependencies": {
     "@babel/core": "7.7.2",
     "@babel/preset-env": "7.7.1",
-    "jsdom": "15.2.0",
+    "jsdom": "15.2.1",
     "mocha": "6.2.0",
     "rollup": "1.26.4",
     "rollup-plugin-babel": "4.3.3",
