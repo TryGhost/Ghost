@@ -10484,10 +10484,10 @@ redeyed@~1.0.0:
   dependencies:
     esprima "~3.0.0"
 
-reframe.js@2.2.5:
-  version "2.2.5"
-  resolved "https://registry.yarnpkg.com/reframe.js/-/reframe.js-2.2.5.tgz#38a11ec5574587fa3d3719dc6374fcdd940fbd2c"
-  integrity sha512-xYiBMcTV+7p3HdZAa/UCutP9vr7n76eGyz2fo3rd03Y9pcE3VPBeCNE2WxI3Cx3Ag14CabfNUUq3OA1hr0k5PQ==
+reframe.js@2.2.6:
+  version "2.2.6"
+  resolved "https://registry.yarnpkg.com/reframe.js/-/reframe.js-2.2.6.tgz#7b2927ce0c96abffad568ea6fbbbbe1693d4abb9"
+  integrity sha512-potGRlJHD1ijyss4LJtPEQWbJyn7XaJ7+QrhvqccKjiRmv+eKRSA+IIbMXSmKZBWZkEhFSV3T7H93e4dVrinUg==
 
 regenerate-unicode-properties@^8.1.0:
   version "8.1.0"
