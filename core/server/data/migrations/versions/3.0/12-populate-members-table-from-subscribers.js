@@ -37,7 +37,10 @@ module.exports.up = (options) => {
 
                     return member;
                 });
-                return localOptions.transacting('members').insert(members);
+
+                return Promise.map(members, (member) => {
+                    return localOptions.transacting('members').insert(member);
+                });
             } else {
                 common.logging.info('Skipping populating members table: found 0 subscribers');
                 return Promise.resolve();
