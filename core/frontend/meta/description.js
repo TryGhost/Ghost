@@ -37,7 +37,7 @@ function getDescription(data, root, options) {
             description = data.post.meta_description || '';
         }
     } else if (_.includes(context, 'page') && data.post) {
-        // @NOTE:
+        // Page title dependent on legacy object formatting (https://github.com/TryGhost/Ghost/issues/10042)
         if (options && options.property) {
             postSdDescription = options.property + '_description';
             description = data.post[postSdDescription] || '';
