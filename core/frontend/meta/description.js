@@ -36,6 +36,14 @@ function getDescription(data, root, options) {
         } else {
             description = data.post.meta_description || '';
         }
+    } else if (_.includes(context, 'page') && data.post) {
+        // @NOTE:
+        if (options && options.property) {
+            postSdDescription = options.property + '_description';
+            description = data.post[postSdDescription] || '';
+        } else {
+            description = data.post.meta_description || '';
+        }
     } else if (_.includes(context, 'page') && data.page) {
         if (options && options.property) {
             postSdDescription = options.property + '_description';
