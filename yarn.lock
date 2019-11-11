@@ -5721,10 +5721,10 @@ mocha@^4.0.0:
     mkdirp "0.5.1"
     supports-color "4.4.0"
 
-mock-knex@0.4.6:
-  version "0.4.6"
-  resolved "https://registry.yarnpkg.com/mock-knex/-/mock-knex-0.4.6.tgz#3256db9bd29fb3ed1755142aa6a3719eeb9c354a"
-  integrity sha512-zWZqAd1RauA9YBeEZaiGHwqtuMnKH3z1fYxbCbe/cPrKdsWJh5aIXFtDEfa8Cz8xJ4B/dZOOp9VcBugaAAJHfQ==
+mock-knex@0.4.7:
+  version "0.4.7"
+  resolved "https://registry.yarnpkg.com/mock-knex/-/mock-knex-0.4.7.tgz#ec476e14df22773e37ea7a9020959a4573c38c59"
+  integrity sha512-jg9l4WnIxHaL4SsyrDWxNa7ilo3XgWti8w6zVaXzELFXhlAPY/pUYIjJLdkuCNxQpN8Wq1TMHZsrdf6UkLvTew==
   dependencies:
     bluebird "^3.4.1"
     lodash "^4.14.2"
