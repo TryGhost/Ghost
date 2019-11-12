@@ -294,7 +294,7 @@ export function createParserPlugins(_options = {}) {
 
         _readFigCaptionFromNode(node, payload);
 
-        payload.html = node.innerHTML;
+        payload.html = iframe.outerHTML;
 
         let cardSection = builder.createCardSection('embed', payload);
         addSection(cardSection);
