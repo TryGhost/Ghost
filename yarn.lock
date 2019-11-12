@@ -121,6 +121,32 @@
     url-regex "~5.0.0"
     video-extensions "~1.1.0"
 
+"@metascraper/helpers@^5.8.7":
+  version "5.8.7"
+  resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.8.7.tgz#b05f83f2a90001f7753c18a8b1bb978bd7c2f9d9"
+  integrity sha512-gDErMAA3d1CdkGxvAG4cDi7D2+fReZpD6lzYNJ/gsq45U3Pdz7ltsAvbp4amK92bGKYYPZtnUq85Wrr+Q+e06Q==
+  dependencies:
+    audio-extensions "0.0.0"
+    chrono-node "~1.3.11"
+    condense-whitespace "~2.0.0"
+    entities "~2.0.0"
+    file-extension "~4.0.5"
+    has-values "~2.0.1"
+    image-extensions "~1.1.0"
+    is-relative-url "~3.0.0"
+    is-uri "~1.2.0"
+    iso-639-3 "~1.2.0"
+    isostring "0.0.1"
+    lodash "~4.17.15"
+    memoize-one "~5.1.1"
+    mime-types "~2.1.25"
+    normalize-url "~4.5.0"
+    smartquotes "~2.3.1"
+    title "~3.4.1"
+    truncate "~2.1.0"
+    url-regex "~5.0.0"
+    video-extensions "~1.1.0"
+
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@mrmlnc/readdir-enhanced/-/readdir-enhanced-2.2.1.tgz#524af240d1a360527b730475ecfa1344aa540dde"
@@ -5489,12 +5515,12 @@ metascraper-title@5.7.21:
     "@metascraper/helpers" "^5.7.21"
     lodash "~4.17.15"
 
-metascraper-url@5.7.21:
-  version "5.7.21"
-  resolved "https://registry.yarnpkg.com/metascraper-url/-/metascraper-url-5.7.21.tgz#8ddcbb8f2467ff600467f39d71cb8e6765a9b084"
-  integrity sha512-/I0IdQcaxWubtvdi0kY3WCYnU09XbHFk22UIpIBJIf8Q9ajpMSZBEzWGHBNrF0Ad+XsZ7oj/pdUKkbkzfQvhFg==
+metascraper-url@5.8.7:
+  version "5.8.7"
+  resolved "https://registry.yarnpkg.com/metascraper-url/-/metascraper-url-5.8.7.tgz#8c04a8f9b82af1058145f21788655b7b6b04fd9c"
+  integrity sha512-K79mT509wV6B1Ak9vSslAbDPQMMRjjWowVgjcby5bOyFpO2j7mQkQIZYobEFpYLHlpb2R9myWJaTKAZe9KrF0A==
   dependencies:
-    "@metascraper/helpers" "^5.7.21"
+    "@metascraper/helpers" "^5.8.7"
 
 metascraper@5.7.21:
   version "5.7.21"
@@ -5538,7 +5564,7 @@ mime-db@1.40.0:
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.40.0.tgz#a65057e998db090f732a68f6c276d387d4126c32"
   integrity sha512-jYdeOMPy9vnxEqFRRo6ZvTZ8d9oPb+k18PKoYNYUe2stVEBPPwsln/qWzdbmaIvnhZ9v2P+CuecK+fpUfsV2mA==
 
-"mime-db@>= 1.40.0 < 2":
+mime-db@1.42.0, "mime-db@>= 1.40.0 < 2":
   version "1.42.0"
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.42.0.tgz#3e252907b4c7adb906597b4b65636272cf9e7bac"
   integrity sha512-UbfJCR4UAVRNgMpfImz05smAXK7+c+ZntjaA26ANtkXLlOe947Aag5zdIcKQULAiF9Cq4WxBi9jUs5zkA84bYQ==
@@ -5561,6 +5587,13 @@ mime-types@^2.1.12, mime-types@~2.1.19, mime-types@~2.1.24:
   integrity sha512-WaFHS3MCl5fapm3oLxU4eYDw77IQM2ACcxQ9RIxfaC3ooc6PFuBMGZZsYpvoXS5D5QTWPieo1jjLdAm3TBP3cQ==
   dependencies:
     mime-db "1.40.0"
+
+mime-types@~2.1.25:
+  version "2.1.25"
+  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.25.tgz#39772d46621f93e2a80a856c53b86a62156a6437"
+  integrity sha512-5KhStqB5xpTAeGqKBAMgwaYMnQik7teQN4IAzC7npDv6kzeU6prfkR67bc87J1kWMPGkoaZSq1npmexMgkmEVg==
+  dependencies:
+    mime-db "1.42.0"
 
 mime@1.6.0, mime@^1.4.1:
   version "1.6.0"
