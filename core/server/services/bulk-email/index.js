@@ -5,8 +5,6 @@ const configService = require('../../config');
 const common = require('../../lib/common');
 let mailgunInstance;
 
-const BATCH_SIZE = 2;
-
 function createMailgun(config) {
     const baseUrl = new URL(config.baseUrl);
 
@@ -52,6 +50,8 @@ module.exports = {
      * @returns {Array{Promise<boolean>}} An array of promises representing the success of the batch email sending
      */
     async send(message, recipients, recipientData) {
+        let BATCH_SIZE = 1000;
+
         if (!mailgunInstance) {
             return;
         }
@@ -59,11 +59,13 @@ module.exports = {
         if (/@localhost$/.test(message.from) || /@ghost.local$/.test(message.from)) {
             fromAddress = 'localhost@example.com';
             common.logging.warn(`Rewriting bulk email from address ${message.from} to ${fromAddress}`);
+
+            BATCH_SIZE = 2;
         }
         try {
             let chunks = _.chunk(recipients, BATCH_SIZE);
 
-            return chunks.map((chunk) => {
+            return Promise.map(chunks, (chunk) => {
                 const messageData = Object.assign({}, message, {
                     to: chunk.join(', '),
                     from: fromAddress,
