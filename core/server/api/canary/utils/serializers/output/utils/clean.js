@@ -140,22 +140,22 @@ const action = (attrs) => {
 };
 
 const settings = (attrs) => {
-    // We don't send mail provider API key in settings API if set in config
     if (_.isArray(attrs)) {
-        const membersSubscriptionSettingsObj = attrs.find(({key}) => {
-            return key === 'members_subscription_settings';
-        }) || {};
-        const membersSubscriptionSettings = membersSubscriptionSettingsObj.value;
-        if (membersSubscriptionSettings && config.get('mailgunApiKey')) {
-            let membersSubscriptionSettingsJson = JSON.parse(membersSubscriptionSettings);
-            delete membersSubscriptionSettingsJson.mailgunApiKey;
-            delete membersSubscriptionSettingsJson.mailgunDomain;
-            attrs.forEach((attr) => {
-                if (attr.key === 'members_subscription_settings') {
-                    attr.value = JSON.stringify(membersSubscriptionSettingsJson);
-                }
-            });
-        }
+        attrs.forEach((attr) => {
+            if (attr.key === 'bulk_email_settings') {
+                let {provider, apiKey, domain, baseUrl} = attr.value ? JSON.parse(attr.value) : {};
+
+                const bulkEmailConfig = config.get('bulkEmail');
+                const hasMailgunConfig = !!(bulkEmailConfig && bulkEmailConfig.mailgun);
+                const hasMailgunSetting = !!(apiKey && baseUrl && domain);
+
+                attr.value = JSON.stringify({
+                    provider, apiKey, domain, baseUrl,
+                    isEnabled: (hasMailgunConfig || hasMailgunSetting),
+                    isConfig: hasMailgunConfig
+                });
+            }
+        });
     }
 };
 
