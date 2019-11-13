@@ -1,6 +1,6 @@
 import Component from '@ember/component';
 import validator from 'validator';
-import {alias, or} from '@ember/object/computed';
+import {alias, oneWay, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -9,10 +9,10 @@ export default Component.extend({
     ajax: service(),
     ghostPaths: service(),
     notifications: service(),
+    session: service(),
     settings: service(),
 
     post: null,
-    emailTestScratch: '',
     sendTestEmailError: '',
     savePost: null,
 
@@ -21,6 +21,8 @@ export default Component.extend({
 
     emailSubject: or('emailSubjectScratch', 'post.title'),
     emailSubjectScratch: alias('post.emailSubjectScratch'),
+
+    testEmailAddress: oneWay('session.user.email'),
 
     mailgunError: computed('settings.memberSubscriptionSettings', function () {
         return !this._isMailgunConfigured();
@@ -62,7 +64,7 @@ export default Component.extend({
     sendTestEmail: task(function* () {
         try {
             const resourceId = this.post.id;
-            const testEmail = this.emailTestScratch.trim();
+            const testEmail = this.testEmailAddress.trim();
             if (!validator.isEmail(testEmail)) {
                 this.set('sendTestEmailError', 'Please enter a valid email');
                 return false;
