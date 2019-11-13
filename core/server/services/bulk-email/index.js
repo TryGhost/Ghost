@@ -72,7 +72,7 @@ module.exports = {
                 });
 
                 const messageData = Object.assign({}, message, {
-                    to: toAddresses.join(', '),
+                    to: toAddresses,
                     from: fromAddress,
                     'recipient-variables': recipientVariables
                 });
