@@ -6,7 +6,13 @@
         and sent to {{pluralize this.post.email.emailCount "member"}}
     {{/if}}
 {{else if this.post.isScheduled}}
-    Scheduled
+    {{#if countdown}}
+        <time datetime="{{post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>
+            Scheduled to be published {{if post.sendEmailWhenPublished "and sent"}} {{countdown}}.
+        </time>
+    {{else}}
+        Scheduled
+    {{/if}}
 {{else if this.post.isNew}}
     New
 {{else}}
