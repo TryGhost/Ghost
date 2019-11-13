@@ -26,7 +26,7 @@ export default Component.extend({
     testEmailAddress: oneWay('session.user.email'),
 
     mailgunError: computed('settings.memberSubscriptionSettings', function () {
-        return !this._isMailgunConfigured();
+        return !this.settings.get('bulkEmailSettings.isEnabled');
     }),
 
     actions: {
@@ -70,7 +70,7 @@ export default Component.extend({
                 this.set('sendTestEmailError', 'Please enter a valid email');
                 return false;
             }
-            if (!this._isMailgunConfigured()) {
+            if (!this.settings.get('bulkEmailSettings.isEnabled')) {
                 this.set('sendTestEmailError', 'Please configure Mailgun in Labs → Members');
                 return false;
             }
@@ -87,15 +87,5 @@ export default Component.extend({
                 this.notifications.showAPIError(error, {key: 'send.previewEmail'});
             }
         }
-    }).drop(),
-
-    // TODO: put this on settings model
-    _isMailgunConfigured() {
-        let subSettingsValue = this.settings.get('membersSubscriptionSettings');
-        let subscriptionSettings = subSettingsValue ? JSON.parse(subSettingsValue) : {};
-        if (Object.keys(subscriptionSettings).includes('mailgunApiKey')) {
-            return (subscriptionSettings.mailgunApiKey && subscriptionSettings.mailgunDomain);
-        }
-        return true;
-    }
+    }).drop()
 });
