@@ -7,6 +7,7 @@ import {task, timeout} from 'ember-concurrency';
 
 export default Component.extend({
     clock: service(),
+
     post: null,
     isSaving: false,
 
