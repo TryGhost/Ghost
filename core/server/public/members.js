@@ -15,12 +15,6 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
             emailType = form.dataset.membersForm;
         }
 
-        if (!email.includes('@')) {
-            form.classList.add('invalid')
-            form.addEventListener('submit', submitHandler);
-            return;
-        }
-
         form.classList.add('loading');
         fetch('{{admin-url}}/api/canary/members/send-magic-link/', {
             method: 'POST',
