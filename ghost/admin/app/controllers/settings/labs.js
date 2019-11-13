@@ -163,6 +163,10 @@ export default Controller.extend({
 
         setMembersSubscriptionSettings(subscriptionSettings) {
             this.set('settings.membersSubscriptionSettings', JSON.stringify(subscriptionSettings));
+        },
+
+        setBulkEmailSettings(bulkEmailSettings) {
+            this.set('settings.bulkEmailSettings', bulkEmailSettings);
         }
     },
 
