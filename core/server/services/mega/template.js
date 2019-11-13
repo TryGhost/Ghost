@@ -191,7 +191,7 @@ h6 {
 
 h1 {
     margin: 1.5em 0 0.5em 0;
-    font-size: 46px;
+    font-size: 42px;
     font-weight: 600;
 }
 
@@ -266,7 +266,7 @@ figure blockquote p {
 }
 
 .site-icon {
-    padding-bottom: 4px;
+    padding-bottom: 10px;
     padding-top: 20px;
     text-align: center;
     border-radius: 3px;
@@ -279,8 +279,8 @@ figure blockquote p {
 }
 
 .site-info {
-    padding-top: 15px;
-    padding-bottom: 60px;
+    padding-top: 50px;
+    padding-bottom: 50px;
 }
 
 .site-url {
@@ -291,13 +291,13 @@ figure blockquote p {
     text-transform: uppercase;
     text-align: center;
     border-bottom: 1px solid #e5eff5;
-    padding-bottom: 15px;
+    padding-bottom: 50px;
 }
 
 .post-title {
-    padding-bottom: 0px;
-    font-size: 48px;
-    line-height: 1.18em;
+    padding-bottom: 15px;
+    font-size: 42px;
+    line-height: 1.1em;
     font-weight: 600;
     text-align: center;
 }
@@ -308,8 +308,7 @@ figure blockquote p {
 
 .post-meta,
 .view-online {
-    padding-top: 6px;
-    padding-bottom: 80px;
+    padding-bottom: 50px;
     white-space: nowrap;
     color: #738a94;
     font-size: 13px;
@@ -339,6 +338,7 @@ figure blockquote p {
     font-size: 18px;
     line-height: 1.5em;
     color: #23323D;
+    padding-bottom: 50px;
 }
 
 .post-content a {
@@ -463,7 +463,7 @@ figure blockquote p {
 
 .wrapper {
     box-sizing: border-box;
-    padding: 20px;
+    padding: 0 20px;
 }
 
 .content-block {
@@ -598,7 +598,7 @@ figure blockquote p {
 
     table[class=body] .wrapper,
     table[class=body] .article {
-        padding: 10px !important;
+        padding: 0 10px !important;
     }
 
     table[class=body] .content {
@@ -635,11 +635,6 @@ figure blockquote p {
         height: 40px !important;
     }
 
-    table[class=body] .site-info {
-        padding-top: 15px !important;
-        padding-bottom: 60px !important;
-    }
-
     table[class=body] .site-url a {
         font-size: 14px !important;
         padding-bottom: 15px !important;
@@ -659,7 +654,7 @@ figure blockquote p {
 
     table[class=body] .post-title a {
         font-size: 32px !important;
-        line-height: 1.3em !important;
+        line-height: 1.15em !important;
     }
 
     table[class=body] .kg-bookmark-card {
