@@ -88,17 +88,5 @@ module.exports = {
         } catch (err) {
             common.logging.error({err});
         }
-    },
-
-    async getStats(messageId) {
-        try {
-            let filter = {
-                'message-id': messageId
-            };
-
-            return await mailgunInstance.events().get(filter);
-        } catch (err) {
-            common.logging.error({err});
-        }
     }
 };
