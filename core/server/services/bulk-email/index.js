@@ -1,34 +1,8 @@
-const {URL} = require('url');
 const _ = require('lodash');
-const mailgun = require('mailgun-js');
-const configService = require('../../config');
 const common = require('../../lib/common');
-let mailgunInstance;
-
-function createMailgun(config) {
-    const baseUrl = new URL(config.baseUrl);
-
-    return mailgun({
-        apiKey: config.apiKey,
-        domain: config.domain,
-        protocol: baseUrl.protocol,
-        host: baseUrl.host,
-        port: baseUrl.port,
-        endpoint: baseUrl.pathname
-    });
-}
-
-const config = configService.get('bulkEmail');
-
-if (!config || !config.mailgun) {
-    common.logging.warn(`Bulk email service is not configured`);
-} else {
-    try {
-        mailgunInstance = createMailgun(config.mailgun);
-    } catch (err) {
-        common.logging.warn(`Bulk email service is not configured`);
-    }
-}
+const mailgunProvider = require('./mailgun');
+const configService = require('../../config');
+const mailgunInstance = mailgunProvider.getInstance();
 
 /**
  * An email address
@@ -76,10 +50,11 @@ module.exports = {
                     from: fromAddress,
                     'recipient-variables': recipientVariables
                 });
+                const bulkEmailConfig = configService.get('bulkEmail');
 
-                if (config.mailgun.tag) {
+                if (bulkEmailConfig && bulkEmailConfig.mailgun && bulkEmailConfig.mailgun.tag) {
                     Object.assign(messageData, {
-                        'o:tag': config.mailgun.tag
+                        'o:tag': bulkEmailConfig.mailgun.tag
                     });
                 }
 
@@ -95,6 +70,10 @@ module.exports = {
             let filter = {
                 'message-id': messageId
             };
+
+            if (!mailgunInstance) {
+                return;
+            }
 
             return await mailgunInstance.events().get(filter);
         } catch (err) {
