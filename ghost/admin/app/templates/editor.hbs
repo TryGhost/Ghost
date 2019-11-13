@@ -59,7 +59,6 @@
                             setSaveType=(action "setSaveType")
                             onOpen=(action "cancelAutosave")
                             backgroundTask=this.backgroundLoader
-                            deliveredAction=this.deliveredAction
                             memberCount=this.memberCount}}
                     {{/if}}
                 {{/unless}}
@@ -135,7 +134,6 @@
             deletePost=(action "toggleDeletePostModal")
             updateSlug=updateSlug
             savePost=savePost
-            deliveredAction=this.deliveredAction
         }}
     {{/liquid-wormhole}}
 {{/if}}

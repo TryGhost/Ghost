@@ -9,8 +9,7 @@
             post=post
             saveType=saveType
             setSaveType=(action "setSaveType")
-            backgroundTask=this.backgroundTask
-            deliveredAction=this.deliveredAction}}
+            backgroundTask=this.backgroundTask}}
 
         {{else if (eq displayState "scheduled")}}
         {{gh-publishmenu-scheduled
@@ -26,7 +25,6 @@
             saveType=saveType
             setSaveType=(action "setSaveType")
             backgroundTask=this.backgroundTask
-            deliveredAction=this.deliveredAction
             memberCount=this.memberCount
             sendEmailWhenPublished=this.sendEmailWhenPublishedScratch}}
         {{/if}}
