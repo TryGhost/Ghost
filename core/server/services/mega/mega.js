@@ -8,7 +8,7 @@ const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 const urlUtils = require('../../lib/url-utils');
 
-const getEmailData = (post, members) => {
+const getEmailData = (post, members = []) => {
     const emailTmpl = postEmailSerializer.serialize(post);
     emailTmpl.from = membersService.config.getEmailFromAddress();
 
@@ -35,9 +35,17 @@ const sendEmail = async (post, members) => {
 };
 
 const sendTestEmail = async (post, emails) => {
-    const emailTmpl = postEmailSerializer.serialize(post);
+    const {emailTmpl} = getEmailData(post);
+    const emailData = emails.reduce((emailData, email) => {
+        return Object.assign({
+            [email]: {
+                unique_id: '',
+                unsubscribe_url: ''
+            }
+        }, emailData);
+    }, {});
     emailTmpl.subject = `${emailTmpl.subject} [Test]`;
-    return bulkEmailService.send(emailTmpl, emails);
+    return bulkEmailService.send(emailTmpl, emails, emailData);
 };
 
 /**
