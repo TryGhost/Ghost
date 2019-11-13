@@ -69,32 +69,6 @@
   dependencies:
     "@hapi/hoek" "8.x.x"
 
-"@metascraper/helpers@^5.7.17":
-  version "5.7.17"
-  resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.7.17.tgz#401897c7239090ca7149b83e581712845bbb3709"
-  integrity sha512-t21LqfDpaIrWg2JaivXG6mVzUsIVW05cAsKySA5Tj9Hgi9oZXxaaNes5XipOzk6P242RI48SDo7CkSbYiio7Tw==
-  dependencies:
-    audio-extensions "0.0.0"
-    chrono-node "~1.3.11"
-    condense-whitespace "~2.0.0"
-    entities "~2.0.0"
-    file-extension "~4.0.5"
-    has-values "~2.0.1"
-    image-extensions "~1.1.0"
-    is-relative-url "~3.0.0"
-    is-uri "~1.2.0"
-    iso-639-3 "~1.2.0"
-    isostring "0.0.1"
-    lodash "~4.17.15"
-    memoize-one "~5.1.1"
-    mime-types "~2.1.24"
-    normalize-url "~4.5.0"
-    smartquotes "~2.3.1"
-    title "~3.4.1"
-    truncate "~2.1.0"
-    url-regex "~5.0.0"
-    video-extensions "~1.1.0"
-
 "@metascraper/helpers@^5.7.21":
   version "5.8.0"
   resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.8.0.tgz#8e47224ec4d118f882c5759f9a1ecf43bf680d08"
@@ -5484,12 +5458,12 @@ metascraper-image@5.7.21:
   dependencies:
     "@metascraper/helpers" "^5.7.21"
 
-metascraper-logo-favicon@5.7.17:
-  version "5.7.17"
-  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.7.17.tgz#913c1cf5cfa96dc7d7c74fad1c53e7deb946445d"
-  integrity sha512-/tff0N+XCerc5YvwzjvyyPEF+q+cpz+p6vOnqU7zzrOlXj7+8mSMYEeFTKmhhkp9zwoi5Tev//pFH1aHXdGmyw==
+metascraper-logo-favicon@5.7.21:
+  version "5.7.21"
+  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.7.21.tgz#e2ac0c41e9007b990283f7a4f5aac54a7a223abc"
+  integrity sha512-7sS+Mv/ebBAF61OavF6kv9BIL22l6FjbE/nXYXeqJvq+0Sc8Ur3rsOcsWRc3xMZdq0oWIHTn/+6xJOLqENZQ+w==
   dependencies:
-    "@metascraper/helpers" "^5.7.17"
+    "@metascraper/helpers" "^5.7.21"
     got "~9.6.0"
     lodash "~4.17.15"
 
