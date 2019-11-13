@@ -63,6 +63,13 @@ module.exports = {
                 from: fromAddress,
                 'recipient-variables': recipientData
             });
+
+            if (config.mailgun.tag) {
+                Object.assign(messageData, {
+                    'o:tag': config.mailgun.tag
+                });
+            }
+
             await mailgunInstance.messages().send(messageData);
         } catch (err) {
             common.logging.error({err});
