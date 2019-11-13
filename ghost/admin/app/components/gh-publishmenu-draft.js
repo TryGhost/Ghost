@@ -21,7 +21,7 @@ export default Component.extend({
 
     canSendEmail: computed('feature.labs.members', 'post.{displayName,email}', function () {
         let membersEnabled = this.feature.get('labs.members');
-        let mailgunIsConfigured = this._isMailgunConfigured();
+        let mailgunIsConfigured = this.get('settings.bulkEmailSettings.isEnabled');
         let isPost = this.post.displayName === 'post';
         let hasSentEmail = !!this.post.email;
 
@@ -79,16 +79,6 @@ export default Component.extend({
             post.set('publishedAtBlogTime', time);
             return post.validate();
         }
-    },
-
-    // TODO: put this on settings model
-    _isMailgunConfigured: function () {
-        let subSettingsValue = this.get('settings.membersSubscriptionSettings');
-        let subscriptionSettings = subSettingsValue ? JSON.parse(subSettingsValue) : {};
-        if (Object.keys(subscriptionSettings).includes('mailgunApiKey')) {
-            return subscriptionSettings.mailgunApiKey && subscriptionSettings.mailgunDomain;
-        }
-        return false;
     },
 
     // API only accepts dates at least 2 mins in the future, default the
