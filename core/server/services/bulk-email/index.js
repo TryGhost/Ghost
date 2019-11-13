@@ -49,7 +49,7 @@ module.exports = {
      * @param {[object]} recipientData - list of data keyed by email to inject into the email
      * @returns {Promise<Array<object>>} An array of promises representing the success of the batch email sending
      */
-    async send(message, recipients, recipientData) {
+    async send(message, recipients, recipientData = {}) {
         let BATCH_SIZE = 1000;
 
         if (!mailgunInstance) {
