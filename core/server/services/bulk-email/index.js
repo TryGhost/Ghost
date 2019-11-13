@@ -47,7 +47,7 @@ module.exports = {
      * @param {Email} message - The message to send
      * @param {[EmailAddress]} recipients - the recipients to send the email to
      * @param {[object]} recipientData - list of data keyed by email to inject into the email
-     * @returns {Array{Promise<boolean>}} An array of promises representing the success of the batch email sending
+     * @returns {Promise<Array<object>>} An array of promises representing the success of the batch email sending
      */
     async send(message, recipients, recipientData) {
         let BATCH_SIZE = 1000;
@@ -85,6 +85,18 @@ module.exports = {
 
                 return mailgunInstance.messages().send(messageData);
             });
+        } catch (err) {
+            common.logging.error({err});
+        }
+    },
+
+    async getStats(messageId) {
+        try {
+            let filter = {
+                'message-id': messageId
+            };
+
+            return await mailgunInstance.events().get(filter);
         } catch (err) {
             common.logging.error({err});
         }
