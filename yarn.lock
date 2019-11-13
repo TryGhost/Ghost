@@ -5470,12 +5470,12 @@ metascraper-author@5.7.21:
     "@metascraper/helpers" "^5.7.21"
     lodash "~4.17.15"
 
-metascraper-description@5.7.21:
-  version "5.7.21"
-  resolved "https://registry.yarnpkg.com/metascraper-description/-/metascraper-description-5.7.21.tgz#316059a05b7d8150fdca053662c12da5df4df5d7"
-  integrity sha512-F0EyZIzQZZj/XRlmohSxUfkHNV88wF0EFcmHRRXbNc8kWHGaAtoKPwetFXITSwNZNCALTIiFbekUN2cSqdl4BA==
+metascraper-description@5.8.7:
+  version "5.8.7"
+  resolved "https://registry.yarnpkg.com/metascraper-description/-/metascraper-description-5.8.7.tgz#e85ce218daf33b74813b1523ad7dc7dc3fb128af"
+  integrity sha512-KOv5gnQVvGF1CgpUczu7KJm76rWJ7SH5UFcqFST60hRNgR9xy0y3aHbVDOhZkjNN4UKqnxMF6XTS/WaQxCK/AA==
   dependencies:
-    "@metascraper/helpers" "^5.7.21"
+    "@metascraper/helpers" "^5.8.7"
 
 metascraper-image@5.7.21:
   version "5.7.21"
