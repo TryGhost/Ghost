@@ -5493,12 +5493,12 @@ metascraper-logo-favicon@5.7.17:
     got "~9.6.0"
     lodash "~4.17.15"
 
-metascraper-logo@5.7.21:
-  version "5.7.21"
-  resolved "https://registry.yarnpkg.com/metascraper-logo/-/metascraper-logo-5.7.21.tgz#79f4e18ffdb4e475a8a72804bd8b5291ed28da4c"
-  integrity sha512-1hcheFFCpxTPvhAoTf5hA9xRxDMKTwj2TV6U8Ql1e/Rn9VZuaUrFt0j1pYVMQSG2/bNEKhIoriNhj7JNVcmvkQ==
+metascraper-logo@5.8.7:
+  version "5.8.7"
+  resolved "https://registry.yarnpkg.com/metascraper-logo/-/metascraper-logo-5.8.7.tgz#5efb7e6c5f91ccad812e2d9ec3facfef179f40b6"
+  integrity sha512-QudGVJBBeXLWU54Xw2PmnsTf+qPUnbyYaOl4aFLg2wkLLza1GbuvOYGMiH9Y8k0WcRoesi9sQk+P0a/611blew==
   dependencies:
-    "@metascraper/helpers" "^5.7.21"
+    "@metascraper/helpers" "^5.8.7"
 
 metascraper-publisher@5.8.7:
   version "5.8.7"
