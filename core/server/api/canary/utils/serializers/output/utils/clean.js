@@ -143,7 +143,7 @@ const settings = (attrs) => {
     if (_.isArray(attrs)) {
         attrs.forEach((attr) => {
             if (attr.key === 'bulk_email_settings') {
-                let {provider, apiKey, domain, baseUrl} = attr.value ? JSON.parse(attr.value) : {};
+                const {provider, apiKey, domain, baseUrl} = attr.value ? JSON.parse(attr.value) : {};
 
                 const bulkEmailConfig = config.get('bulkEmail');
                 const hasMailgunConfig = !!(bulkEmailConfig && bulkEmailConfig.mailgun);
