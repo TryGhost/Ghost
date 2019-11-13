@@ -7,8 +7,8 @@
     {{/if}}
 {{else if this.post.isScheduled}}
     {{#if countdown}}
-        <time datetime="{{post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>
-            Scheduled to be published {{if post.sendEmailWhenPublished "and sent"}} {{countdown}}.
+        <time datetime="{{this.post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>
+            Scheduled to be published {{if this.post.sendEmailWhenPublished "and sent"}} {{this.countdown}}.
         </time>
     {{else}}
         Scheduled
