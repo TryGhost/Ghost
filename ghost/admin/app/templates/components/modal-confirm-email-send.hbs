@@ -4,7 +4,10 @@
 <a class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
 <div class="modal-body">
-    <p><strong>PLEASE NOTE:</strong> You are about to email this post to <strong>{{pluralize this.model.memberCount "member"}}</strong>.</p>
+    <p>
+        <strong>PLEASE NOTE:</strong> You are about to email this post to
+        <strong>{{if this.model.paidOnly "all paid members" (pluralize this.model.memberCount "member")}}</strong>.
+    </p>
     <ul>
         {{#if this.model.isScheduled}}
         <li>Email will be sent when the post is published at the scheduled time</li>

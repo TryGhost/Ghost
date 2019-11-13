@@ -53,7 +53,11 @@
 {{#if showEmailConfirmationModal}}
     <GhFullscreenModal
         @modal="confirm-email-send"
-        @model={{hash memberCount=this.memberCount isScheduled=(eq this.saveType "schedule")}}
+        @model={{hash
+            memberCount=this.memberCount
+            isScheduled=(eq this.saveType "schedule")
+            paidOnly=(eq this.post.visibility "paid")
+        }}
         @confirm={{this.confirmEmailSend}}
         @close={{this.closeEmailConfirmationModal}}
         @modifier="action wide"

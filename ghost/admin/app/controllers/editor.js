@@ -537,7 +537,7 @@ export default Controller.extend({
         }
     }).enqueue(),
 
-    // load supplementel data such as the actions list in the background
+    // load supplementel data such as the members count in the background
     backgroundLoader: task(function* () {
         if (this.feature.members) {
             let membersResponse = yield this.store.query('member', {limit: 1});
