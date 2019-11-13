@@ -1,4 +1,5 @@
 const {URL} = require('url');
+const _ = require('lodash');
 const mailgun = require('mailgun-js');
 const configService = require('../../config');
 const common = require('../../lib/common');
@@ -46,31 +47,56 @@ module.exports = {
      * @param {Email} message - The message to send
      * @param {[EmailAddress]} recipients - the recipients to send the email to
      * @param {[object]} recipientData - list of data keyed by email to inject into the email
-     * @returns {Promise<boolean>} A promise representing the success of the email sending
+     * @returns {Promise<Array<object>>} An array of promises representing the success of the batch email sending
      */
     async send(message, recipients, recipientData) {
+        let BATCH_SIZE = 1000;
+
         if (!mailgunInstance) {
             return;
         }
         let fromAddress = message.from;
-        if (/@localhost$/.test(message.from)) {
+        if (/@localhost$/.test(message.from) || /@ghost.local$/.test(message.from)) {
             fromAddress = 'localhost@example.com';
             common.logging.warn(`Rewriting bulk email from address ${message.from} to ${fromAddress}`);
+
+            BATCH_SIZE = 2;
         }
         try {
-            const messageData = Object.assign({}, message, {
-                to: recipients.join(', '),
-                from: fromAddress,
-                'recipient-variables': recipientData
-            });
+            const chunkedRecipients = _.chunk(recipients, BATCH_SIZE);
 
-            if (config.mailgun.tag) {
-                Object.assign(messageData, {
-                    'o:tag': config.mailgun.tag
+            return Promise.map(chunkedRecipients, (toAddresses) => {
+                const recipientVariables = {};
+                toAddresses.forEach((email) => {
+                    recipientVariables[email] = recipientData[email];
                 });
-            }
 
-            await mailgunInstance.messages().send(messageData);
+                const messageData = Object.assign({}, message, {
+                    to: toAddresses,
+                    from: fromAddress,
+                    'recipient-variables': recipientVariables
+                });
+
+                if (config.mailgun.tag) {
+                    Object.assign(messageData, {
+                        'o:tag': config.mailgun.tag
+                    });
+                }
+
+                return mailgunInstance.messages().send(messageData);
+            });
+        } catch (err) {
+            common.logging.error({err});
+        }
+    },
+
+    async getStats(messageId) {
+        try {
+            let filter = {
+                'message-id': messageId
+            };
+
+            return await mailgunInstance.events().get(filter);
         } catch (err) {
             common.logging.error({err});
         }
