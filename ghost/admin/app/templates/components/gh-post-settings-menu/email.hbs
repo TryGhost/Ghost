@@ -53,9 +53,8 @@
                         class="post-setting-email-test"
                         id="email-test"
                         name="post-setting-email-test"
-                        placeholder=(truncate 'noreply@example.com' 40)
-                        value=(readonly emailTestScratch)
-                        input=(action (mut emailTestScratch) value="target.value")
+                        placeholder="noreply@example.com"
+                        value=testEmailAddress
                         stopEnterKeyDownPropagation=true
                         disabled=mailgunError
                         data-test-field="email-test"}}
