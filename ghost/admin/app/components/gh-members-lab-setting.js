@@ -29,17 +29,19 @@ export default Component.extend({
         subscriptionSettings.stripeConfig = stripeProcessor.config;
         subscriptionSettings.allowSelfSignup = !!subscriptionSettings.allowSelfSignup;
         subscriptionSettings.fromAddress = subscriptionSettings.fromAddress || '';
-        if (Object.keys(subscriptionSettings).includes('mailgunApiKey')) {
-            subscriptionSettings.mailgunApiKey = subscriptionSettings.mailgunApiKey || '';
-            subscriptionSettings.mailgunDomain = subscriptionSettings.mailgunDomain || '';
-        }
 
         return subscriptionSettings;
     }),
 
-    hasMailgunAPIKeyOption: computed('settings.membersSubscriptionSettings', function () {
-        let subscriptionSettings = this.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
-        return Object.keys(subscriptionSettings).includes('mailgunApiKey');
+    bulkEmailSettings: computed('settings.bulkEmailSettings', function () {
+        let bulkEmailSettings = this.get('settings.bulkEmailSettings') || {};
+        const {apiKey = '', baseUrl = '', domain = ''} = bulkEmailSettings;
+        return {apiKey, baseUrl, domain};
+    }),
+
+    hasBulkEmailConfig: computed('settings.bulkEmailSettings', function () {
+        let bulkEmailSettings = this.get('settings.bulkEmailSettings');
+        return !!bulkEmailSettings.isConfig;
     }),
 
     defaultContentVisibility: computed('settings.defaultContentVisibility', function () {
@@ -49,6 +51,11 @@ export default Component.extend({
     actions: {
         setDefaultContentVisibility(value) {
             this.setDefaultContentVisibility(value);
+        },
+        setBulkEmailSettings(key, event) {
+            let bulkEmailSettings = this.get('settings.bulkEmailSettings') || {};
+            bulkEmailSettings[key] = event.target.value;
+            this.setBulkEmailSettings(bulkEmailSettings);
         },
         setSubscriptionSettings(key, event) {
             let subscriptionSettings = this.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
@@ -79,12 +86,6 @@ export default Component.extend({
             }
             if (key === 'fromAddress') {
                 subscriptionSettings.fromAddress = event.target.value;
-            }
-            if (key === 'mailgunApiKey') {
-                subscriptionSettings.mailgunApiKey = event.target.value;
-            }
-            if (key === 'mailgunDomain') {
-                subscriptionSettings.mailgunDomain = event.target.value;
             }
             this.setMembersSubscriptionSettings(subscriptionSettings);
         }

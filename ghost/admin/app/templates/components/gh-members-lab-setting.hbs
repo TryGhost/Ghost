@@ -185,12 +185,12 @@
             </div>
             <div class="f8 fw4 midgrey mt1">Your members will receive system emails from this address</div>
             {{/gh-form-group}}
-            {{#if hasMailgunAPIKeyOption}}
+            {{#unless hasBulkEmailConfig}}
                 {{#gh-form-group}}
                     <label class="fw6 f8">Mailgun domain</label>
                     {{gh-text-input
-                        value=(readonly subscriptionSettings.mailgunDomain)
-                        input=(action "setSubscriptionSettings" "mailgunDomain")
+                        value=(readonly bulkEmailSettings.domain)
+                        input=(action "setBulkEmailSettings" "domain")
                         class="mt1"
                     }}
                     <a href="https://app.mailgun.com/app/sending/domains" target="_blank" class="mt1 fw4 f8">
@@ -201,8 +201,8 @@
                     <label class="fw6 f8">Mailgun API key</label>
                     {{gh-text-input
                         type="password"
-                        value=(readonly subscriptionSettings.mailgunApiKey)
-                        input=(action "setSubscriptionSettings" "mailgunApiKey")
+                        value=(readonly bulkEmailSettings.apiKey)
+                        input=(action "setBulkEmailSettings" "apiKey")
                         class="mt1 password"
                         autocomplete="new-password"
                     }}
@@ -210,7 +210,16 @@
                         Find your Mailgun API keys here &raquo;
                     </a>
                 {{/gh-form-group}}
-            {{/if}}
+
+                {{#gh-form-group}}
+                    <label class="fw6 f8">Mailgun base url</label>
+                    {{gh-text-input
+                        value=(readonly bulkEmailSettings.baseUrl)
+                        input=(action "setBulkEmailSettings" "baseUrl")
+                        class="mt1"
+                    }}
+                {{/gh-form-group}}
+            {{/unless}}
         </div>
         {{/liquid-if}}
     </section>
