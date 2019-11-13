@@ -63,13 +63,18 @@ module.exports = {
             BATCH_SIZE = 2;
         }
         try {
-            let chunks = _.chunk(recipients, BATCH_SIZE);
+            const chunkedRecipients = _.chunk(recipients, BATCH_SIZE);
 
-            return Promise.map(chunks, (chunk) => {
+            return Promise.map(chunkedRecipients, (toAddresses) => {
+                const recipientVariables = {};
+                toAddresses.forEach((email) => {
+                    recipientVariables[email] = recipientData[email];
+                });
+
                 const messageData = Object.assign({}, message, {
-                    to: chunk.join(', '),
+                    to: toAddresses.join(', '),
                     from: fromAddress,
-                    'recipient-variables': recipientData
+                    'recipient-variables': recipientVariables
                 });
 
                 if (config.mailgun.tag) {
