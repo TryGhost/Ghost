@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import validator from 'validator';
+import {action} from '@ember/object';
 import {alias, oneWay, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -52,14 +53,14 @@ export default Component.extend({
             });
         },
 
-        toggleEmailPreview() {
-            this.toggleEmailPreviewModal();
-        },
-
         discardEnter() {
             return false;
         }
     },
+
+    toggleEmailPreview: action(function () {
+        this.toggleEmailPreviewModal();
+    }),
 
     sendTestEmail: task(function* () {
         try {
