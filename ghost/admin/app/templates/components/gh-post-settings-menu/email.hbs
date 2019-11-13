@@ -11,6 +11,7 @@
         <p>Status: {{this.post.email.status}}</p>
         <p>Sent on: {{gh-format-post-time this.post.email.createdAtUTC}}</p>
         <p>Sent to {{pluralize this.post.email.emailCount "member"}}</p>
+        <p><button {{on "click" this.toggleEmailPreview}}>View email</button></p>
     {{else}}
         {{!-- Mail not sent yet --}}
         {{#if mailgunError}}
@@ -40,8 +41,7 @@
             <div class="form-group">
                 <div class="flex">
                     <label class="nowrap flex-auto">Test email</label>
-                    <button type="button" class="gh-btn gh-btn-link settings-menu-email-button" onclick={{action "toggleEmailPreview"}}
-                        data-test-button="toggle-email-preview">
+                    <button type="button" class="gh-btn gh-btn-link settings-menu-email-button" {{on "click" this.toggleEmailPreview}} data-test-button="toggle-email-preview">
                         <span class="blue">
                             Preview in browser
                         </span>
