@@ -179,10 +179,11 @@ async function listener(emailModel, options) {
         id: emailModel.id
     });
 
-    await sendEmail(post, members);
+    const meta = await sendEmail(post, members);
 
     await models.Email.edit({
-        status: 'submitted'
+        status: 'submitted',
+        meta: JSON.stringify(meta)
     }, {
         id: emailModel.id
     });
