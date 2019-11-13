@@ -16,7 +16,6 @@ export default Component.extend({
     saveTask: null,
     runningText: null,
     backgroundTask: null,
-    deliveredAction: null,
 
     _publishedAtBlogTZ: null,
     _previousStatus: null,

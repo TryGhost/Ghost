@@ -32,7 +32,7 @@
                     input=(action (mut emailSubjectScratch) value="target.value")
                     focus-out=(action "setEmailSubject" emailSubjectScratch)
                     stopEnterKeyDownPropagation=true
-                    disabled=deliveredAction
+                    disabled=mailgunError
                     data-test-field="email-subject"}}
                 {{gh-error-message errors=post.errors property="emailSubject" data-test-error="email-subject"}}
             {{/gh-form-group}}
