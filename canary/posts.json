@@ -37,9 +37,6 @@
                     "type": "string",
                     "enum": ["published", "draft", "scheduled"]
                 },
-                "send_email_when_published": {
-                    "type": "boolean"
-                },
                 "locale": {
                     "type": ["string", "null"],
                     "maxLength": 6
@@ -161,6 +158,9 @@
                     "strip": true
                 },
                 "email": {
+                    "strip": true
+                },
+                "send_email_when_published": {
                     "strip": true
                 }
             }
