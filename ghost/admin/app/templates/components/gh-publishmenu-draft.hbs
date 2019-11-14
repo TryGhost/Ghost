@@ -43,8 +43,13 @@
                 </div>
                 <div class="for-switch small {{if disableEmailOption "pe-none"}}">
                     <div class="switch container" for="email-when-published-checkbox">
-                        <Input @checked={{this.sendEmailWhenPublished}} @type="checkbox" @id="email-when-published-checkbox"
-                            @name="email-when-published" @disabled={{disableEmailOption}} />
+                        <Input
+                            @checked={{this.sendEmailWhenPublished}}
+                            @type="checkbox"
+                            @id="email-when-published-checkbox"
+                            @name="email-when-published"
+                            @disabled={{disableEmailOption}}
+                        />
                         <span class="input-toggle-component gh-publishmenu-email-checkbox"
                             {{on "click" (toggle "sendEmailWhenPublished" this)}}></span>
                     </div>
