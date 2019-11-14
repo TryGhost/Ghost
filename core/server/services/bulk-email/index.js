@@ -48,18 +48,21 @@ module.exports = {
                 recipientVariables[email] = recipientData[email];
             });
 
-            const messageData = Object.assign({}, message, {
+            const batchData = {
                 to: toAddresses,
                 from: fromAddress,
                 'recipient-variables': recipientVariables
-            });
+            };
+
             const bulkEmailConfig = configService.get('bulkEmail');
 
             if (bulkEmailConfig && bulkEmailConfig.mailgun && bulkEmailConfig.mailgun.tag) {
-                Object.assign(messageData, {
+                Object.assign(batchData, {
                     'o:tag': [bulkEmailConfig.mailgun.tag, 'bulk-email']
                 });
             }
+
+            const messageData = Object.assign({}, message, batchData);
 
             return new Promise((resolve) => {
                 mailgunInstance.messages().send(messageData, (error, body) => {
@@ -73,7 +76,7 @@ module.exports = {
 
                         resolve({
                             error,
-                            messageData
+                            batchData
                         });
                     } else {
                         resolve(body);
