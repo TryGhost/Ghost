@@ -62,21 +62,5 @@ module.exports = {
         } catch (err) {
             common.logging.error({err});
         }
-    },
-
-    async getStats(messageId) {
-        const mailgunInstance = mailgunProvider.getInstance();
-        try {
-            let filter = {
-                'message-id': messageId
-            };
-            if (!mailgunInstance) {
-                return;
-            }
-
-            return await mailgunInstance.events().get(filter);
-        } catch (err) {
-            common.logging.error({err});
-        }
     }
 };
