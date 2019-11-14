@@ -308,6 +308,13 @@ export default Controller.extend({
                     status = 'draft';
                 }
             }
+
+            // let the adapter know it should use the `?send_email_when_published` QP when saving
+            let isPublishing = status === 'published' && !this.post.isPublished;
+            let isScheduling = status === 'scheduled' && !this.post.isScheduled;
+            if (options.sendEmailWhenPublished && (isPublishing || isScheduling)) {
+                options.adapterOptions = Object.assign({}, options.adapterOptions, {sendEmailWhenPublished: true});
+            }
         }
 
         // ensure we remove any blank cards when performing a full save

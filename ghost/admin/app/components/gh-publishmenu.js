@@ -1,5 +1,4 @@
 import Component from '@ember/component';
-import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {action} from '@ember/object';
 import {computed} from '@ember/object';
 import {reads} from '@ember/object/computed';
@@ -16,6 +15,7 @@ export default Component.extend({
     saveTask: null,
     runningText: null,
     backgroundTask: null,
+    sendEmailWhenPublished: false,
 
     _publishedAtBlogTZ: null,
     _previousStatus: null,
@@ -25,7 +25,6 @@ export default Component.extend({
     onClose() {},
 
     forcePublishedMenu: reads('post.pastScheduledTime'),
-    sendEmailWhenPublishedScratch: boundOneWay('post.sendEmailWhenPublished'),
 
     postState: computed('post.{isPublished,isScheduled}', 'forcePublishedMenu', function () {
         if (this.forcePublishedMenu || this.get('post.isPublished')) {
@@ -203,11 +202,13 @@ export default Component.extend({
     }),
 
     save: task(function* ({dropdown} = {}) {
+        let {post, sendEmailWhenPublished, sendEmailConfirmed, saveType} = this;
+
         if (
-            this.post.status === 'draft' &&
-            !this.post.email && // email sent previously
-            this.sendEmailWhenPublishedScratch &&
-            !this.sendEmailConfirmed // set once confirmed so normal save happens
+            post.status === 'draft' &&
+            !post.email && // email sent previously
+            sendEmailWhenPublished &&
+            !sendEmailConfirmed // set once confirmed so normal save happens
         ) {
             this.openEmailConfirmationModal(dropdown);
             return;
@@ -217,16 +218,17 @@ export default Component.extend({
         // save action.
         this.set('runningText', this._runningText);
         this.set('_previousStatus', this.get('post.status'));
-        this.setSaveType(this.saveType);
-
-        this.post.set('sendEmailWhenPublished', this.sendEmailWhenPublishedScratch);
+        this.setSaveType(saveType);
 
         try {
             // validate publishedAtBlog first to avoid an alert for displayed errors
-            yield this.post.validate({property: 'publishedAtBlog'});
+            yield post.validate({property: 'publishedAtBlog'});
 
             // actual save will show alert for other failed validations
-            let post = yield this.saveTask.perform();
+            post = yield this.saveTask.perform({sendEmailWhenPublished});
+
+            // revert the email checkbox to avoid weird inbetween states
+            this.set('sendEmailWhenPublished', false);
 
             this._cachePublishedAtBlogTZ();
             return post;
@@ -244,7 +246,7 @@ export default Component.extend({
 
     _cleanup() {
         this.set('showConfirmEmailModal', false);
-        this.set('sendEmailWhenPublishedScratch', this.post.sendEmailWhenPublishedScratch);
+        this.set('sendEmailWhenPublished', false);
 
         // when closing the menu we reset the publishedAtBlogTZ date so that the
         // unsaved changes made to the scheduled date aren't reflected in the PSM

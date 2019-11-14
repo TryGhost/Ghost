@@ -33,12 +33,12 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
     serialize(/*snapshot, options*/) {
         let json = this._super(...arguments);
 
-        // Properties that exist on the model but we don't want sent in the payload
-        delete json.uuid;
         // Inserted locally as a convenience.
         delete json.author_id;
-        // Read-only virtual property.
+        // Read-only virtual properties
+        delete json.uuid;
         delete json.url;
+        delete json.send_email_when_published;
         // Deprecated property (replaced with data.authors)
         delete json.author;
 
