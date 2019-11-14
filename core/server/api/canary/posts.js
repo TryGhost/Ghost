@@ -85,7 +85,8 @@ module.exports = {
         headers: {},
         options: [
             'include',
-            'source'
+            'source',
+            'send_email_when_published'
         ],
         validation: {
             options: {
@@ -120,6 +121,7 @@ module.exports = {
             'include',
             'id',
             'source',
+            'send_email_when_published',
             // NOTE: only for internal context
             'forUpdate',
             'transacting'

@@ -457,6 +457,24 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
+        // send_email_when_published is read-only and should only be set using a query param when publishing/scheduling
+        if (options.send_email_when_published && this.hasChanged('status') && (newStatus === 'published' || newStatus === 'scheduled')) {
+            this.set('send_email_when_published', true);
+        }
+
+        // ensure draft posts have the send_email_when_published reset unless an email has already been sent
+        if (newStatus === 'draft' && this.hasChanged('status')) {
+            ops.push(function ensureSendEmailWhenPublishedIsUnchanged() {
+                return self.related('email').fetch().then((email) => {
+                    if (email) {
+                        self.set('send_email_when_published', true);
+                    } else {
+                        self.set('send_email_when_published', false);
+                    }
+                });
+            });
+        }
+
         // If a title is set, not the same as the old title, a draft post, and has never been published
         if (prevTitle !== undefined && newTitle !== prevTitle && newStatus === 'draft' && !publishedAt) {
             ops.push(function updateSlug() {
@@ -760,7 +778,7 @@ Post = ghostBookshelf.Model.extend({
                 findPage: ['status'],
                 findAll: ['columns', 'filter'],
                 destroy: ['destroyAll', 'destroyBy'],
-                edit: ['filter']
+                edit: ['filter', 'send_email_when_published']
             };
 
         // The post model additionally supports having a formats option
