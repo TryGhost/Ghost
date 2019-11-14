@@ -113,7 +113,7 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
-                    eventSpy.callCount.should.equal(82);
+                    eventSpy.callCount.should.equal(84);
                     const eventsEmitted = eventSpy.args.map(args => args[0]);
                     const checkEventEmitted = event => should.ok(eventsEmitted.includes(event), `${event} event should be emitted`);
 
@@ -135,7 +135,7 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
-                    eventSpy.callCount.should.equal(80);
+                    eventSpy.callCount.should.equal(82);
 
                     eventSpy.args[13][0].should.equal('settings.logo.added');
                 });
