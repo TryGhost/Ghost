@@ -36,33 +36,50 @@ module.exports = {
 
             BATCH_SIZE = 2;
         }
-        try {
-            const chunkedRecipients = _.chunk(recipients, BATCH_SIZE);
-            const blogTitle = settingsCache.get('title');
-            fromAddress = blogTitle ? `${blogTitle}<${fromAddress}>` : fromAddress;
-            return Promise.map(chunkedRecipients, (toAddresses) => {
-                const recipientVariables = {};
-                toAddresses.forEach((email) => {
-                    recipientVariables[email] = recipientData[email];
-                });
 
-                const messageData = Object.assign({}, message, {
-                    to: toAddresses,
-                    from: fromAddress,
-                    'recipient-variables': recipientVariables
-                });
-                const bulkEmailConfig = configService.get('bulkEmail');
+        const blogTitle = settingsCache.get('title');
+        fromAddress = blogTitle ? `${blogTitle}<${fromAddress}>` : fromAddress;
 
-                if (bulkEmailConfig && bulkEmailConfig.mailgun && bulkEmailConfig.mailgun.tag) {
-                    Object.assign(messageData, {
-                        'o:tag': [bulkEmailConfig.mailgun.tag, 'bulk-email']
-                    });
-                }
+        const chunkedRecipients = _.chunk(recipients, BATCH_SIZE);
 
-                return mailgunInstance.messages().send(messageData);
+        return Promise.mapSeries(chunkedRecipients, (toAddresses) => {
+            const recipientVariables = {};
+            toAddresses.forEach((email) => {
+                recipientVariables[email] = recipientData[email];
             });
-        } catch (err) {
-            common.logging.error({err});
-        }
+
+            const messageData = Object.assign({}, message, {
+                to: toAddresses,
+                from: fromAddress,
+                'recipient-variables': recipientVariables
+            });
+            const bulkEmailConfig = configService.get('bulkEmail');
+
+            if (bulkEmailConfig && bulkEmailConfig.mailgun && bulkEmailConfig.mailgun.tag) {
+                Object.assign(messageData, {
+                    'o:tag': [bulkEmailConfig.mailgun.tag, 'bulk-email']
+                });
+            }
+
+            return new Promise((resolve) => {
+                mailgunInstance.messages().send(messageData, (error, body) => {
+                    if (error) {
+                        // NOTE: logging an error here only but actual handling should happen in more sophisticated batch retry handler
+                        common.logging.error(new common.errors.GhostError({
+                            err: error,
+                            context: 'The bulk email service was unable to send a message, your site will continue to function.',
+                            help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'https://ghost.org/docs/'})
+                        }));
+
+                        resolve({
+                            error,
+                            messageData
+                        });
+                    } else {
+                        resolve(body);
+                    }
+                });
+            });
+        });
     }
 };
