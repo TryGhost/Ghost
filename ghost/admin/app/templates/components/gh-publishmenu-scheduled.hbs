@@ -26,29 +26,31 @@
             </div>
         </div>
     </section>
-    <section class="gh-publishmenu-section">
-        <div class="gh-publishmenu-radio gh-publishmenu-email">
-            {{#if this.backgroundLoader.isRunning}}
-            <div class="gh-loading-spinner" style="zoom: 50%"></div>
-            {{else}}
-            <div class="gh-publishmenu-email-label">
-                <label class="gh-publishmenu-radio-label pe-none midgrey"
-                    for="email-when-published-checkbox">Send by email</label>
-                {{#if this.memberCount}}
-                <div class="gh-publishmenu-radio-desc">Deliver post to members</div>
+    {{#unless this.post.email}}
+        <section class="gh-publishmenu-section">
+            <div class="gh-publishmenu-radio gh-publishmenu-email">
+                {{#if this.backgroundLoader.isRunning}}
+                <div class="gh-loading-spinner" style="zoom: 50%"></div>
                 {{else}}
-                <div class="gh-publishmenu-radio-desc">You haven't got any members</div>
+                <div class="gh-publishmenu-email-label">
+                    <label class="gh-publishmenu-radio-label pe-none midgrey"
+                        for="email-when-published-checkbox">Send by email</label>
+                    {{#if this.memberCount}}
+                    <div class="gh-publishmenu-radio-desc">Deliver post to members</div>
+                    {{else}}
+                    <div class="gh-publishmenu-radio-desc">You haven't got any members</div>
+                    {{/if}}
+                </div>
+                <div class="for-switch small pe-none">
+                    <div class="switch container" for="email-when-published-checkbox">
+                        <Input @checked={{post.sendEmailWhenPublished}} @type="checkbox" @id="email-when-published-checkbox"
+                            @name="email-when-published" @disabled={{disableEmailOption}} />
+                        <span class="input-toggle-component gh-publishmenu-email-checkbox"
+                            {{on "click" (toggle "sendEmailWhenPublished" this)}}></span>
+                    </div>
+                </div>
                 {{/if}}
             </div>
-            <div class="for-switch small pe-none">
-                <div class="switch container" for="email-when-published-checkbox">
-                    <Input @checked={{post.sendEmailWhenPublished}} @type="checkbox" @id="email-when-published-checkbox"
-                        @name="email-when-published" @disabled={{disableEmailOption}} />
-                    <span class="input-toggle-component gh-publishmenu-email-checkbox"
-                        {{on "click" (toggle "sendEmailWhenPublished" this)}}></span>
-                </div>
-            </div>
-            {{/if}}
-        </div>
-    </section>
+        </section>
+    {{/unless}}
 </div>
