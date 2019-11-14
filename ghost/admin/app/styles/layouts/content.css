@@ -137,8 +137,17 @@
 .content-list .gh-list-header.no-padding {
     padding: 0 !important;
 }
+
 .gh-posts-title-header {
     padding-left: 10px;
+}
+
+.gh-posts-status-header {
+    width: 160px;
+}
+
+.gh-posts-lastupdate-header {
+    width: 160px;
 }
 
 .gh-post-list-title {
@@ -186,8 +195,6 @@
     margin: 4px 0 0 0;
     font-size: 1.3rem;
     color: var(--midlightgrey);
-    font-weight: 200;
-    letter-spacing: 0.3px;
 }
 
 .gh-content-entry-meta .gh-badge {
@@ -222,6 +229,16 @@
 
 .gh-content-status-featured svg path {
     fill: var(--blue);
+}
+
+.gh-content-emailed {
+    display: inline-block;
+    margin: 2px 6px 0;
+}
+
+.gh-content-emailed svg {
+    width: 13px;
+    height: 13px;
 }
 
 .gh-content-entry-author {
