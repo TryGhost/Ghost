@@ -186,11 +186,20 @@ async function listener(emailModel, options) {
         id: emailModel.id
     });
 
-    const meta = await sendEmail(post, members);
+    let meta;
+    let error;
+
+    try {
+        meta = await sendEmail(post, members);
+    } catch (err) {
+        // NOTE: need to add some check here to only save non-generic/readable errors
+        error = err;
+    }
 
     await models.Email.edit({
         status: 'submitted',
-        meta: JSON.stringify(meta)
+        meta: JSON.stringify(meta),
+        error: error
     }, {
         id: emailModel.id
     });
