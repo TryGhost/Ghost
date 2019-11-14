@@ -7,11 +7,34 @@
 <div class="settings-menu-content settings-menu-email">
     {{#if post.email}}
         {{!-- Mail has already been sent --}}
-        <p>Subject: {{this.post.email.subject}}</p>
-        <p>Status: {{this.post.email.status}}</p>
-        <p>Sent on: {{gh-format-post-time this.post.email.createdAtUTC}}</p>
-        <p>Sent to {{pluralize this.post.email.emailCount "member"}}</p>
-        <p><button {{on "click" this.toggleEmailPreview}}>View email</button></p>
+        <div class="ba b--whitegrey bg-white br3">
+            <div class="flex pa5 pt4 pb4 items-center bb b--whitegrey">
+                <div class="w16 flex flex-column items-center">
+                    <span class="db mr4 mt3">{{svg-jar "send-email" class="w7 h7 stroke-darkgrey"}}</span>
+                </div>
+                <div class="flex flex-column justify-center">
+                    <p class="ma0 pa0 midgrey">Post was sent by email to</p>
+                    <p class="ma0 pa0 f5 lh-solid">{{pluralize this.post.email.emailCount "member"}}</p>
+                </div>
+            </div>
+            <div class="pa5 pt3 pb3 f7 bb b--whitegrey">
+                <table class="ma0" style="table-layout: fixed">
+                    <tbody>
+                        <tr>
+                            <td class="pa2 pl0 fw7 f8 w16">Subject:</td>
+                            <td class="pa0 truncate midgrey">{{this.post.email.subject}}</td>
+                        </tr>
+                        <tr>
+                            <td class="pa2 pl0 fw7 f8 w16 nowrap">Sent on:</td>
+                            <td class="pa0 truncate midgrey">{{gh-format-post-time this.post.email.createdAtUTC}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pa5 pt3 pb3">
+                <p class="ma0 pa0"><button {{on "click" this.toggleEmailPreview}} class="blue">View sent email</button></p>
+            </div>
+        </div>
     {{else}}
         {{!-- Mail not sent yet --}}
         {{#if mailgunError}}
