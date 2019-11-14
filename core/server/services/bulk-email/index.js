@@ -2,7 +2,6 @@ const _ = require('lodash');
 const common = require('../../lib/common');
 const mailgunProvider = require('./mailgun');
 const configService = require('../../config');
-const mailgunInstance = mailgunProvider.getInstance();
 
 /**
  * An email address
@@ -25,7 +24,7 @@ module.exports = {
      */
     async send(message, recipients, recipientData = {}) {
         let BATCH_SIZE = 1000;
-
+        const mailgunInstance = mailgunProvider.getInstance();
         if (!mailgunInstance) {
             return;
         }
@@ -66,11 +65,11 @@ module.exports = {
     },
 
     async getStats(messageId) {
+        const mailgunInstance = mailgunProvider.getInstance();
         try {
             let filter = {
                 'message-id': messageId
             };
-
             if (!mailgunInstance) {
                 return;
             }
