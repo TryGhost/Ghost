@@ -52,7 +52,7 @@ module.exports = {
         permissions: true,
         async query(frame) {
             const options = Object.assign(frame.options, {status: 'all'});
-            let model = await models.Post.findOne(options);
+            let model = await models.Post.findOne(options, {withRelated: ['authors']});
             if (!model) {
                 throw new common.errors.NotFoundError({
                     message: common.i18n.t('errors.api.posts.postNotFound')
