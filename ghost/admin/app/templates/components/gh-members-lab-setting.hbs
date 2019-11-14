@@ -187,6 +187,14 @@
             {{/gh-form-group}}
             {{#unless hasBulkEmailConfig}}
                 {{#gh-form-group}}
+                <label class="fw6 f8">Mailgun base url</label>
+                {{gh-text-input
+                    value=(readonly bulkEmailSettings.baseUrl)
+                    input=(action "setBulkEmailSettings" "baseUrl")
+                    class="mt1"
+                }}
+                {{/gh-form-group}}
+                {{#gh-form-group}}
                     <label class="fw6 f8">Mailgun domain</label>
                     {{gh-text-input
                         value=(readonly bulkEmailSettings.domain)
@@ -209,15 +217,6 @@
                     <a href="https://app.mailgun.com/app/account/security/api_keys" target="_blank" class="mt1 fw4 f8">
                         Find your Mailgun API keys here &raquo;
                     </a>
-                {{/gh-form-group}}
-
-                {{#gh-form-group}}
-                    <label class="fw6 f8">Mailgun base url</label>
-                    {{gh-text-input
-                        value=(readonly bulkEmailSettings.baseUrl)
-                        input=(action "setBulkEmailSettings" "baseUrl")
-                        class="mt1"
-                    }}
                 {{/gh-form-group}}
             {{/unless}}
         </div>
