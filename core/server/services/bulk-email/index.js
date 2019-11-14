@@ -2,6 +2,7 @@ const _ = require('lodash');
 const common = require('../../lib/common');
 const mailgunProvider = require('./mailgun');
 const configService = require('../../config');
+const settingsCache = require('../settings/cache');
 
 /**
  * An email address
@@ -37,7 +38,8 @@ module.exports = {
         }
         try {
             const chunkedRecipients = _.chunk(recipients, BATCH_SIZE);
-
+            const blogTitle = settingsCache.get('title');
+            fromAddress = blogTitle ? `${blogTitle}<${fromAddress}>` : fromAddress;
             return Promise.map(chunkedRecipients, (toAddresses) => {
                 const recipientVariables = {};
                 toAddresses.forEach((email) => {
