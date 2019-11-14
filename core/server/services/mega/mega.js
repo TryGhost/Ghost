@@ -166,8 +166,7 @@ async function listener(emailModel, options) {
     if (options && options.importing) {
         return;
     }
-
-    const postModel = await models.Post.findOne({id: emailModel.get('post_id')});
+    const postModel = await models.Post.findOne({id: emailModel.get('post_id')}, {withRelated: ['authors']});
 
     const post = await serialize(postModel);
 
