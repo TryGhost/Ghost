@@ -52,7 +52,7 @@ module.exports = {
 
             //CASE: Ensure we don't store calculated fields `isEnabled/Config` in bulk email settings
             if (setting.key === 'bulk_email_settings') {
-                const {apiKey, domain, baseUrl, provider} = setting.value ? JSON.parse(setting.value) : '';
+                const {apiKey = '', domain = '', baseUrl = '', provider = 'mailgun'} = setting.value ? JSON.parse(setting.value) : {};
                 setting.value = JSON.stringify({apiKey, domain, baseUrl, provider});
             }
         });
