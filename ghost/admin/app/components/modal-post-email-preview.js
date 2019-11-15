@@ -12,9 +12,6 @@ html::-webkit-scrollbar {
 html {
     scrollbar-width: none;
 }
-body {
-    pointer-events: none !important;
-}
 `;
 
 export default ModalComponent.extend({
