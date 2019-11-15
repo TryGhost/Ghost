@@ -68,6 +68,7 @@ module.exports = {
                 mailgunInstance.messages().send(messageData, (error, body) => {
                     if (error) {
                         // NOTE: logging an error here only but actual handling should happen in more sophisticated batch retry handler
+                        // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#errors
                         common.logging.error(new common.errors.GhostError({
                             err: error,
                             context: 'The bulk email service was unable to send a message, your site will continue to function.',
