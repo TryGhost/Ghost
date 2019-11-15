@@ -53,6 +53,7 @@ export default Controller.extend({
     jsonMimeType: null,
     yamlExtension: null,
     yamlMimeType: null,
+
     init() {
         this._super(...arguments);
         this.importMimeType = IMPORT_MIME_TYPES;
