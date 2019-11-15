@@ -552,6 +552,7 @@ textarea {
     border-radius: var(--border-radius);
     word-wrap: none;
     border-left: none;
+    white-space: nowrap;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     flex: 1;

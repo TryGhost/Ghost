@@ -117,6 +117,10 @@
     margin-right: 12px;
 }
 
+.gh-labs-mailgun-region .ember-power-select-trigger {
+    white-space: nowrap;
+}
+
 .gh-labs-mailgun-region .ember-power-select-trigger svg {
     margin-left: 23px;
     width: 10px;
