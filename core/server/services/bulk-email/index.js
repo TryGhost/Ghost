@@ -75,9 +75,11 @@ module.exports = {
                             help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'https://ghost.org/docs/'})
                         }));
 
+                        // NOTE: these are generated variables, so can be regenerated when retry is done
+                        const data = _.omit(batchData, ['recipient-variables']);
                         resolve({
                             error,
-                            batchData
+                            data
                         });
                     } else {
                         resolve(body);
