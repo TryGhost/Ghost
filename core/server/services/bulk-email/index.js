@@ -5,6 +5,29 @@ const configService = require('../../config');
 const settingsCache = require('../settings/cache');
 
 /**
+ * An object representing batch request result
+ * @typedef { Object } BatchResultBase
+ * @property { string } data - data that is returned from Mailgun or one which Mailgun was called with
+ */
+class BatchResultBase {
+}
+
+class SuccessfulBatch extends BatchResultBase {
+    constructor(data) {
+        super();
+        this.data = data;
+    }
+}
+
+class FailedBatch extends BatchResultBase {
+    constructor(error, data) {
+        super();
+        this.error = error;
+        this.data = data;
+    }
+}
+
+/**
  * An email address
  * @typedef { string } EmailAddress
  */
@@ -17,11 +40,13 @@ const settingsCache = require('../settings/cache');
  */
 
 module.exports = {
+    SuccessfulBatch,
+    FailedBatch,
     /**
      * @param {Email} message - The message to send
      * @param {[EmailAddress]} recipients - the recipients to send the email to
      * @param {[object]} recipientData - list of data keyed by email to inject into the email
-     * @returns {Promise<Array<object>>} An array of promises representing the success of the batch email sending
+     * @returns {Promise<Array<BatchResultBase>>} An array of promises representing the success of the batch email sending
      */
     async send(message, recipients, recipientData = {}) {
         let BATCH_SIZE = 1000;
@@ -76,12 +101,9 @@ module.exports = {
 
                         // NOTE: these are generated variables, so can be regenerated when retry is done
                         const data = _.omit(batchData, ['recipient-variables']);
-                        resolve({
-                            error,
-                            data
-                        });
+                        resolve(new FailedBatch(error, data));
                     } else {
-                        resolve(body);
+                        resolve(new SuccessfulBatch(body));
                     }
                 });
             });

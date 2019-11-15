@@ -201,8 +201,8 @@ async function listener(emailModel, options) {
         error = err.message;
     }
 
-    const successes = meta.filter(response => !response.error);
-    const failures = meta.filter(response => !!response.error);
+    const successes = meta.filter(response => (response instanceof bulkEmailService.SuccessfulBatch));
+    const failures = meta.filter(response => (response instanceof bulkEmailService.FailedBatch));
     const batchStatus = successes.length ? 'submitted' : 'failed';
 
     if (!error && failures.length) {
