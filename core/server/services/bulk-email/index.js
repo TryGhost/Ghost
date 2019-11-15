@@ -55,7 +55,7 @@ module.exports = {
 
                 if (bulkEmailConfig && bulkEmailConfig.mailgun && bulkEmailConfig.mailgun.tag) {
                     Object.assign(messageData, {
-                        'o:tag': bulkEmailConfig.mailgun.tag
+                        'o:tag': [bulkEmailConfig.mailgun.tag, 'bulk-email']
                     });
                 }
 
