@@ -203,7 +203,7 @@ async function listener(emailModel, options) {
 
     const successes = meta.filter(response => !response.error);
     const failures = meta.filter(response => !!response.error);
-    const batchStatus = successes.length ? 'submitted' : 'submitting';
+    const batchStatus = successes.length ? 'submitted' : 'failed';
 
     if (!error && failures.length) {
         error = failures[0].error.message;
