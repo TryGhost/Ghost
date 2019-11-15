@@ -194,8 +194,11 @@ async function listener(emailModel, options) {
         //       needs filtering and saving objects of {error, batchData} form to separate property
         meta = await sendEmail(post, members);
     } catch (err) {
-        // NOTE: need to add some check here to only save non-generic/readable errors
-        error = err;
+        common.logging.error(new common.errors.GhostError({
+            err: err,
+            context: common.i18n.t('errors.services.mega.requestFailed.error')
+        }));
+        error = err.message;
     }
 
     const successes = meta.filter(response => !response.error);

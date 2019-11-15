@@ -71,8 +71,7 @@ module.exports = {
                         // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#errors
                         common.logging.error(new common.errors.GhostError({
                             err: error,
-                            context: 'The bulk email service was unable to send a message, your site will continue to function.',
-                            help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'https://ghost.org/docs/'})
+                            context: common.i18n.t('errors.services.mega.requestFailed.error')
                         }));
 
                         // NOTE: these are generated variables, so can be regenerated when retry is done
