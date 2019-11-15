@@ -108,8 +108,8 @@ const serialize = async (model) => {
 function createUnsubscribeUrl(member) {
     const siteUrl = urlUtils.getSiteUrl();
     const unsubscribeUrl = new URL(siteUrl);
-    unsubscribeUrl.searchParams.set('action', 'unsubscribe');
-    unsubscribeUrl.searchParams.set('unsubscribe', member.uuid);
+    unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
+    unsubscribeUrl.searchParams.set('uuid', member.uuid);
 
     return unsubscribeUrl.href;
 }
@@ -135,14 +135,14 @@ async function handleUnsubscribeRequest(req) {
     }
 
     const {query} = url.parse(req.url, true);
-    if (!query || !query.unsubscribe) {
+    if (!query || !query.uuid) {
         throw new common.errors.BadRequestError({
             message: 'Expected unsubscribe param containing token'
         });
     }
 
     const member = await membersService.api.members.get({
-        uuid: query.unsubscribe
+        uuid: query.uuid
     });
 
     if (!member) {
@@ -152,7 +152,7 @@ async function handleUnsubscribeRequest(req) {
     }
 
     try {
-        await membersService.api.members.update({subscribed: false}, {id: member.id});
+        return await membersService.api.members.update({subscribed: false}, {id: member.id});
     } catch (err) {
         throw new common.errors.InternalServerError({
             message: 'Failed to unsubscribe member'
