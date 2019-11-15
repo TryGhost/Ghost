@@ -3,6 +3,7 @@ const template = require('./template');
 const settingsCache = require('../../services/settings/cache');
 const urlUtils = require('../../lib/url-utils');
 const moment = require('moment');
+const cheerio = require('cheerio');
 
 const getSite = () => {
     return Object.assign({}, settingsCache.getPublic(), {
@@ -17,9 +18,14 @@ const serialize = (post) => {
     if (post.posts_meta) {
         post.email_subject = post.posts_meta.email_subject;
     }
+    let juicedHtml = juice(template({post, site: getSite()}));
+    // Force all links to open in new tab
+    let _cheerio = cheerio.load(juicedHtml);
+    _cheerio('a').attr('target','_blank');
+    juicedHtml = _cheerio.html();
     return {
         subject: post.email_subject || post.title,
-        html: juice(template({post, site: getSite()})),
+        html: juicedHtml,
         plaintext: post.plaintext
     };
 };
