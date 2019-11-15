@@ -5,6 +5,29 @@ const configService = require('../../config');
 const settingsCache = require('../settings/cache');
 
 /**
+ * An object representing batch request result
+ * @typedef { Object } BatchResultBase
+ * @property { string } data - data that is returned from Mailgun or one which Mailgun was called with
+ */
+class BatchResultBase {
+}
+
+class SuccessfulBatch extends BatchResultBase {
+    constructor(data) {
+        super();
+        this.data = data;
+    }
+}
+
+class FailedBatch extends BatchResultBase {
+    constructor(error, data) {
+        super();
+        this.error = error;
+        this.data = data;
+    }
+}
+
+/**
  * An email address
  * @typedef { string } EmailAddress
  */
@@ -17,11 +40,13 @@ const settingsCache = require('../settings/cache');
  */
 
 module.exports = {
+    SuccessfulBatch,
+    FailedBatch,
     /**
      * @param {Email} message - The message to send
      * @param {[EmailAddress]} recipients - the recipients to send the email to
      * @param {[object]} recipientData - list of data keyed by email to inject into the email
-     * @returns {Promise<Array<object>>} An array of promises representing the success of the batch email sending
+     * @returns {Promise<Array<BatchResultBase>>} An array of promises representing the success of the batch email sending
      */
     async send(message, recipients, recipientData = {}) {
         let BATCH_SIZE = 1000;
@@ -36,33 +61,52 @@ module.exports = {
 
             BATCH_SIZE = 2;
         }
-        try {
-            const chunkedRecipients = _.chunk(recipients, BATCH_SIZE);
-            const blogTitle = settingsCache.get('title');
-            fromAddress = blogTitle ? `${blogTitle}<${fromAddress}>` : fromAddress;
-            return Promise.map(chunkedRecipients, (toAddresses) => {
-                const recipientVariables = {};
-                toAddresses.forEach((email) => {
-                    recipientVariables[email] = recipientData[email];
-                });
 
-                const messageData = Object.assign({}, message, {
-                    to: toAddresses,
-                    from: fromAddress,
-                    'recipient-variables': recipientVariables
-                });
-                const bulkEmailConfig = configService.get('bulkEmail');
+        const blogTitle = settingsCache.get('title');
+        fromAddress = blogTitle ? `${blogTitle}<${fromAddress}>` : fromAddress;
 
-                if (bulkEmailConfig && bulkEmailConfig.mailgun && bulkEmailConfig.mailgun.tag) {
-                    Object.assign(messageData, {
-                        'o:tag': [bulkEmailConfig.mailgun.tag, 'bulk-email']
-                    });
-                }
+        const chunkedRecipients = _.chunk(recipients, BATCH_SIZE);
 
-                return mailgunInstance.messages().send(messageData);
+        return Promise.mapSeries(chunkedRecipients, (toAddresses) => {
+            const recipientVariables = {};
+            toAddresses.forEach((email) => {
+                recipientVariables[email] = recipientData[email];
             });
-        } catch (err) {
-            common.logging.error({err});
-        }
+
+            const batchData = {
+                to: toAddresses,
+                from: fromAddress,
+                'recipient-variables': recipientVariables
+            };
+
+            const bulkEmailConfig = configService.get('bulkEmail');
+
+            if (bulkEmailConfig && bulkEmailConfig.mailgun && bulkEmailConfig.mailgun.tag) {
+                Object.assign(batchData, {
+                    'o:tag': [bulkEmailConfig.mailgun.tag, 'bulk-email']
+                });
+            }
+
+            const messageData = Object.assign({}, message, batchData);
+
+            return new Promise((resolve) => {
+                mailgunInstance.messages().send(messageData, (error, body) => {
+                    if (error) {
+                        // NOTE: logging an error here only but actual handling should happen in more sophisticated batch retry handler
+                        // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#errors
+                        common.logging.warn(new common.errors.GhostError({
+                            err: error,
+                            context: common.i18n.t('errors.services.mega.requestFailed.error')
+                        }));
+
+                        // NOTE: these are generated variables, so can be regenerated when retry is done
+                        const data = _.omit(batchData, ['recipient-variables']);
+                        resolve(new FailedBatch(error, data));
+                    } else {
+                        resolve(new SuccessfulBatch(body));
+                    }
+                });
+            });
+        });
     }
 };
