@@ -15,7 +15,6 @@ const labsService = require('../../services/labs');
 const urlUtils = require('../../lib/url-utils');
 const sitemapHandler = require('../../../frontend/services/sitemap/handler');
 const themeMiddleware = require('../../../frontend/services/themes').middleware;
-const megaService = require('../../services/mega');
 const membersService = require('../../services/members');
 const siteRoutes = require('./routes');
 const shared = require('../shared');
@@ -184,21 +183,6 @@ module.exports = function setupSiteApp(options = {}) {
         try {
             const member = await membersService.ssr.exchangeTokenForSession(req, res);
             Object.assign(req, {member});
-            next();
-        } catch (err) {
-            common.logging.warn(err.message);
-            return next();
-        }
-    });
-    siteApp.use(async function (req, res, next) {
-        if (!labsService.isSet('members')) {
-            return next();
-        }
-        if (!req.url.includes('unsubscribe=')) {
-            return next();
-        }
-        try {
-            await megaService.mega.handleUnsubscribeRequest(req);
             next();
         } catch (err) {
             common.logging.warn(err.message);
