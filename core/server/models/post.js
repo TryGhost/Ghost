@@ -465,7 +465,7 @@ Post = ghostBookshelf.Model.extend({
         // ensure draft posts have the send_email_when_published reset unless an email has already been sent
         if (newStatus === 'draft' && this.hasChanged('status')) {
             ops.push(function ensureSendEmailWhenPublishedIsUnchanged() {
-                return self.related('email').fetch().then((email) => {
+                return self.related('email').fetch({transacting: options.transacting}).then((email) => {
                     if (email) {
                         self.set('send_email_when_published', true);
                     } else {
