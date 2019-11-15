@@ -84,7 +84,7 @@ export default Component.extend({
             return yield this.ajax.post(url, options);
         } catch (error) {
             if (error) {
-                this.notifications.showAPIError(error, {key: 'send.previewEmail'});
+                this.set('sendTestEmailError', 'Error sending mail, please check your mailgun config');
             }
         }
     }).drop()
