@@ -186,14 +186,46 @@ async function listener(emailModel, options) {
         id: emailModel.id
     });
 
-    const meta = await sendEmail(post, members);
+    let meta = [];
+    let error;
 
-    await models.Email.edit({
-        status: 'submitted',
-        meta: JSON.stringify(meta)
-    }, {
-        id: emailModel.id
-    });
+    try {
+        // NOTE: meta can contains an array which can be a mix of successful and error responses
+        //       needs filtering and saving objects of {error, batchData} form to separate property
+        meta = await sendEmail(post, members);
+    } catch (err) {
+        common.logging.error(new common.errors.GhostError({
+            err: err,
+            context: common.i18n.t('errors.services.mega.requestFailed.error')
+        }));
+        error = err.message;
+    }
+
+    const successes = meta.filter(response => (response instanceof bulkEmailService.SuccessfulBatch));
+    const failures = meta.filter(response => (response instanceof bulkEmailService.FailedBatch));
+    const batchStatus = successes.length ? 'submitted' : 'failed';
+
+    if (!error && failures.length) {
+        error = failures[0].error.message;
+    }
+
+    if (error && error.length > 2000) {
+        error = error.substring(0, 2000);
+    }
+
+    try {
+        // CASE: the batch partially succeeded
+        await models.Email.edit({
+            status: batchStatus,
+            meta: JSON.stringify(successes),
+            error: error,
+            error_data: JSON.stringify(failures) // NOTE:need to discuss how we store this
+        }, {
+            id: emailModel.id
+        });
+    } catch (err) {
+        common.logging.error(err);
+    }
 }
 
 function listen() {

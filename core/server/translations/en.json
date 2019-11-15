@@ -519,6 +519,11 @@
                 },
                 "loader": "Error trying to load YAML setting for {setting} from '{path}'.",
                 "ensureSettings": "Error trying to access settings files in {path}."
+            },
+            "mega": {
+                "requestFailed": {
+                    "error" : "The email service was unable to send an email batch."
+                }
             }
         },
         "errors": {

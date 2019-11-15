@@ -13,7 +13,8 @@ function createMailgun(config) {
         protocol: baseUrl.protocol,
         host: baseUrl.host,
         port: baseUrl.port,
-        endpoint: baseUrl.pathname
+        endpoint: baseUrl.pathname,
+        retry: 5
     });
 }
 

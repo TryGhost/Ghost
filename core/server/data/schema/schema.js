@@ -389,6 +389,7 @@ module.exports = {
             validations: {isIn: [['pending', 'submitting', 'submitted', 'failed']]}
         },
         error: {type: 'string', maxlength: 2000, nullable: true},
+        error_data: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         meta: {type: 'text', maxlength: 65535, nullable: true},
         stats: {type: 'text', maxlength: 65535, nullable: true},
         email_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
