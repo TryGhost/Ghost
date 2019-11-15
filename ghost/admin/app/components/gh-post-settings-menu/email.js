@@ -15,7 +15,7 @@ export default Component.extend({
 
     post: null,
     sendTestEmailError: '',
-    savePost: null,
+    savePostTask: null,
 
     close() {},
     toggleEmailPreviewModal() {},
@@ -49,7 +49,7 @@ export default Component.extend({
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
