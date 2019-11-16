@@ -241,12 +241,12 @@
     fill: var(--blue);
 }
 
-/* Inside settings */
+/* Inside settings / Mailgun region */
 /* TODO: make these general styles? */
 
-.form-group .ember-power-select-trigger {
+.gh-labs-mailgun-region .ember-power-select-trigger {
     padding: 6px 12px;
 }
-.form-group .ember-power-select-selected-item {
+.gh-labs-mailgun-region .ember-power-select-selected-item {
     margin-left: 0;
 }
