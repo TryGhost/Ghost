@@ -37,8 +37,11 @@
                     <div class="gh-flow-content-wrap">
                         <section class="gh-flow-content gh-flow-content-regular">
                             <p>
-                                {{#if member}}<span class="gh-flow-em">{{member.email}}</span> has been successfully unsubscribed{{/if}}
-                                {{#if error}}Uh oh! Unsubscribe failed: "{{error}}"{{/if}}
+                                {{#if error}}
+                                    Uh oh! Unsubscribe failed: "{{error}}"
+                                {{else}}
+                                    {{#if member}}<span class="gh-flow-em">{{member.email}}</span> has been successfully unsubscribed{{/if}}
+                                {{/if}}
                             </p>
                         </section>
                     </div>
