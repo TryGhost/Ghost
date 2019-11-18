@@ -5470,10 +5470,10 @@ metascraper-url@5.8.7:
   dependencies:
     "@metascraper/helpers" "^5.8.7"
 
-metascraper@5.8.7:
-  version "5.8.7"
-  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.8.7.tgz#99447fdb63b247775d35523e2ef37c85d0b0c339"
-  integrity sha512-tE4YIPqYRGyx5K5IOTFMd2rJPQ2QWwOOenKaSrNedhmBQknsbrWMx3T5FRumpqsa7JfSz5YNywxcfiGaiwaPPg==
+metascraper@5.8.8:
+  version "5.8.8"
+  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.8.8.tgz#9fbf6913f55bb448a9195e40e38f3599bc5a818f"
+  integrity sha512-z4G3SXGBVnd0+FSHqR3LJF+6emO03GlY2KoOTqsFCnRuY0B72nJyR/NRRYLn4PRX6PMQ6QZ+GWKa7oxBX6hZqQ==
   dependencies:
     "@metascraper/helpers" "^5.8.7"
     cheerio "~1.0.0-rc.2"
