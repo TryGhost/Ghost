@@ -60,7 +60,13 @@ module.exports = {
             }
             const post = model.toJSON();
             const {emails = []} = frame.data;
-            return mega.mega.sendTestEmail(post, emails);
+            const response = await mega.mega.sendTestEmail(post, emails);
+            if (response && response[0] && response[0].error) {
+                throw new common.errors.EmailError({
+                    message: response[0].error.message
+                });
+            }
+            return response;
         }
     }
 };
