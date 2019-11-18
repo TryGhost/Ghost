@@ -149,9 +149,18 @@ module.exports = {
                         return model;
                     }
 
-                    if (!model.get('email') && (model.get('status') === 'published') && model.wasChanged()) {
-                        const email = await mega.addEmail(model.toJSON());
-                        model.set('email', email);
+                    const postPublished = model.wasChanged() && (model.get('status') === 'published') && (model.previous('status') !== 'published');
+
+                    if (postPublished) {
+                        let postEmail = model.relations.email;
+
+                        if (!postEmail) {
+                            const email = await mega.addEmail(model.toJSON());
+                            model.set('email', email);
+                        } else if (postEmail && postEmail.get('status') === 'failed') {
+                            const email = await mega.retryFailedEmail(postEmail);
+                            model.set('email', email);
+                        }
                     }
 
                     return model;

@@ -82,6 +82,21 @@ const addEmail = async (post) => {
     }
 };
 
+/**
+ * retryFailedEmail
+ *
+ * Accepts an Email model and resets it's fields to trigger retry listeners
+ *
+ * @param {object} model Email model
+ */
+const retryFailedEmail = async (model) => {
+    return await models.Email.edit({
+        status: 'pending'
+    }, {
+        id: model.get('id')
+    });
+};
+
 // NOTE: serialization is needed to make sure we are using current API and do post transformations
 //       such as image URL transformation from relative to absolute
 const serialize = async (model) => {
@@ -160,7 +175,7 @@ async function handleUnsubscribeRequest(req) {
     }
 }
 
-async function listener(emailModel, options) {
+async function pendingEmailHandler(emailModel, options) {
     // CASE: do not send email if we import a database
     // TODO: refactor post.published events to never fire on importing
     if (options && options.importing) {
@@ -187,7 +202,7 @@ async function listener(emailModel, options) {
     });
 
     let meta = [];
-    let error;
+    let error = null;
 
     try {
         // NOTE: meta can contains an array which can be a mix of successful and error responses
@@ -228,14 +243,24 @@ async function listener(emailModel, options) {
     }
 }
 
+const statusChangedHandler = (emailModel, options) => {
+    const emailRetried = emailModel.wasChanged() && (emailModel.get('status') === 'pending') && (emailModel.previous('status') === 'failed');
+
+    if (emailRetried) {
+        pendingEmailHandler(emailModel, options);
+    }
+};
+
 function listen() {
-    common.events.on('email.added', listener);
+    common.events.on('email.added', pendingEmailHandler);
+    common.events.on('email.edited', statusChangedHandler);
 }
 
 // Public API
 module.exports = {
     listen,
     addEmail,
+    retryFailedEmail,
     sendTestEmail,
     handleUnsubscribeRequest,
     createUnsubscribeUrl
