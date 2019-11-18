@@ -69,32 +69,6 @@
   dependencies:
     "@hapi/hoek" "8.x.x"
 
-"@metascraper/helpers@^5.7.21":
-  version "5.8.0"
-  resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.8.0.tgz#8e47224ec4d118f882c5759f9a1ecf43bf680d08"
-  integrity sha512-12UG36W2X8oirM3M88Z13PVyLiOwKCvshydDNAK4/naO95Xi7dzMOcf8VXw375DYKnllfi8YdWzYJU8ie0BejA==
-  dependencies:
-    audio-extensions "0.0.0"
-    chrono-node "~1.3.11"
-    condense-whitespace "~2.0.0"
-    entities "~2.0.0"
-    file-extension "~4.0.5"
-    has-values "~2.0.1"
-    image-extensions "~1.1.0"
-    is-relative-url "~3.0.0"
-    is-uri "~1.2.0"
-    iso-639-3 "~1.2.0"
-    isostring "0.0.1"
-    lodash "~4.17.15"
-    memoize-one "~5.1.1"
-    mime-types "~2.1.24"
-    normalize-url "~4.5.0"
-    smartquotes "~2.3.1"
-    title "~3.4.1"
-    truncate "~2.1.0"
-    url-regex "~5.0.0"
-    video-extensions "~1.1.0"
-
 "@metascraper/helpers@^5.8.7":
   version "5.8.7"
   resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.8.7.tgz#b05f83f2a90001f7753c18a8b1bb978bd7c2f9d9"
@@ -5496,10 +5470,10 @@ metascraper-url@5.8.7:
   dependencies:
     "@metascraper/helpers" "^5.8.7"
 
-metascraper@5.8.7:
-  version "5.8.7"
-  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.8.7.tgz#99447fdb63b247775d35523e2ef37c85d0b0c339"
-  integrity sha512-tE4YIPqYRGyx5K5IOTFMd2rJPQ2QWwOOenKaSrNedhmBQknsbrWMx3T5FRumpqsa7JfSz5YNywxcfiGaiwaPPg==
+metascraper@5.8.8:
+  version "5.8.8"
+  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.8.8.tgz#9fbf6913f55bb448a9195e40e38f3599bc5a818f"
+  integrity sha512-z4G3SXGBVnd0+FSHqR3LJF+6emO03GlY2KoOTqsFCnRuY0B72nJyR/NRRYLn4PRX6PMQ6QZ+GWKa7oxBX6hZqQ==
   dependencies:
     "@metascraper/helpers" "^5.8.7"
     cheerio "~1.0.0-rc.2"
