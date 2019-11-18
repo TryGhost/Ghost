@@ -3,22 +3,29 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const SafeString = require('../../frontend/services/themes/engine').SafeString;
 const common = require('../lib/common');
-let labs = module.exports = {};
+const deprecatedFeatures = ['subscribers', 'publicAPI'];
 
-labs.isSet = function isSet(flag) {
-    var labsConfig = settingsCache.get('labs');
-    return labsConfig && labsConfig[flag] && labsConfig[flag] === true;
+module.exports.getAll = () => {
+    let labs = _.cloneDeep(settingsCache.get('labs')) || {};
+    // Remove old labs flags that should always be false now
+    deprecatedFeatures.forEach((feature) => {
+        delete labs[feature];
+    });
+
+    return labs;
 };
 
-labs.getAll = () => {
-    return settingsCache.get('labs');
+module.exports.isSet = function isSet(flag) {
+    const labsConfig = module.exports.getAll();
+
+    return !!(labsConfig && labsConfig[flag] && labsConfig[flag] === true);
 };
 
-labs.enabledHelper = function enabledHelper(options, callback) {
+module.exports.enabledHelper = function enabledHelper(options, callback) {
     const errDetails = {};
     let errString;
 
-    if (labs.isSet(options.flagKey) === true) {
+    if (module.exports.isSet(options.flagKey) === true) {
         // helper is active, use the callback
         return callback();
     }

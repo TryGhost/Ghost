@@ -128,6 +128,17 @@ describe('getTitle', function () {
         title.should.equal('Tag Name - My site title 3 (Page 39)');
     });
 
+    it('should return post title if in page context', function () {
+        var title = getTitle({
+            // 'post' property is dependent on legacy object formatting (https://github.com/TryGhost/Ghost/issues/10042
+            post: {
+                title: 'My awesome page!'
+            }
+        }, {context: ['page']});
+
+        title.should.equal('My awesome page!');
+    });
+
     it('should return translated pagination-string if passed in options object', function () {
         localSettingsCache.title = 'This is my site title';
 
@@ -259,7 +270,7 @@ describe('getTitle', function () {
     // NOTE: this case is unlikely as Ghost doesn't support AMP for static pages
     it('should return post title if in amp and page context', function () {
         var title = getTitle({
-            page: {
+            post: {
                 title: 'My awesome page!'
             }
         }, {context: ['amp', 'page']});

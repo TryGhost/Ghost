@@ -351,7 +351,7 @@ describe('Frontend Routing', function () {
                         should.not.exist(res.headers['set-cookie']);
                         should.exist(res.headers.date);
 
-                        $('title').text().should.equal('Ghost');
+                        $('title').text().should.equal('This is a static page');
                         $('body.page-template').length.should.equal(1);
                         $('article.post').length.should.equal(1);
 

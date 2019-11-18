@@ -420,7 +420,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on static page', function (done) {
             var renderObject = {
-                page: posts[0]
+                post: posts[0]
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({
@@ -469,7 +469,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on static page with custom post structured data', function (done) {
             var renderObject = {
-                page: posts[1]
+                post: posts[1]
             };
 
             helpers.ghost_head(testUtils.createHbsResponse({

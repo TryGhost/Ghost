@@ -1,5 +1,5 @@
 const yaml = require('js-yaml'),
-    debug = require('ghost-ignition').debug('services:settings:yaml-parser'),
+    debug = require('ghost-ignition').debug('frontend:services:settings:yaml-parser'),
     common = require('../../../server/lib/common');
 
 /**

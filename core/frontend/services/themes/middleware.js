@@ -4,6 +4,7 @@ const urlUtils = require('../../../server/lib/url-utils');
 const config = require('../../../server/config');
 const common = require('../../../server/lib/common');
 const settingsCache = require('../../../server/services/settings/cache');
+const labs = require('../../../server/services/labs');
 const activeTheme = require('./active');
 
 // ### Ensure Active Theme
@@ -75,7 +76,8 @@ function updateGlobalTemplateOptions(req, res, next) {
     // @TODO: bind this once and then update based on events?
     // @TODO: decouple theme layer from settings cache using the Content API
     const siteData = settingsCache.getPublic();
-    const labsData = _.cloneDeep(settingsCache.get('labs'));
+    const labsData = labs.getAll();
+
     const themeData = {
         posts_per_page: activeTheme.get().config('posts_per_page'),
         image_sizes: activeTheme.get().config('image_sizes')
