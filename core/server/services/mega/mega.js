@@ -91,8 +91,7 @@ const addEmail = async (post) => {
  */
 const retryFailedEmail = async (model) => {
     return await models.Email.edit({
-        status: 'pending',
-        error: null
+        status: 'pending'
     }, {
         id: model.get('id')
     });
@@ -203,7 +202,7 @@ async function listener(emailModel, options) {
     });
 
     let meta = [];
-    let error;
+    let error = null;
 
     try {
         // NOTE: meta can contains an array which can be a mix of successful and error responses
