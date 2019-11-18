@@ -1029,7 +1029,7 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
-            it('can generate a safe slug when a reserved keyword is used', function (done) {
+            it('can generate a safe slug when a protected keyword is used', function (done) {
                 var newPost = {
                     title: 'rss',
                     mobiledoc: markdownToMobiledoc('Test Content 1')
