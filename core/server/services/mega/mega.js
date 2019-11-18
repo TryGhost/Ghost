@@ -175,7 +175,7 @@ async function handleUnsubscribeRequest(req) {
     }
 }
 
-async function listener(emailModel, options) {
+async function pendingEmailHandler(emailModel, options) {
     // CASE: do not send email if we import a database
     // TODO: refactor post.published events to never fire on importing
     if (options && options.importing) {
@@ -243,17 +243,17 @@ async function listener(emailModel, options) {
     }
 }
 
-const statusChangeListener = (emailModel, options) => {
+const statusChangedHandler = (emailModel, options) => {
     const emailRetried = emailModel.wasChanged() && (emailModel.get('status') === 'pending') && (emailModel.previous('status') === 'failed');
 
     if (emailRetried) {
-        listener(emailModel, options);
+        pendingEmailHandler(emailModel, options);
     }
 };
 
 function listen() {
-    common.events.on('email.added', listener);
-    common.events.on('email.edited', statusChangeListener);
+    common.events.on('email.added', pendingEmailHandler);
+    common.events.on('email.edited', statusChangedHandler);
 }
 
 // Public API
