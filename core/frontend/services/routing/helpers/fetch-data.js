@@ -19,9 +19,6 @@ const queryDefaults = {
  */
 const defaultQueryOptions = {
     options: {
-        /**
-         * @deprecated: `author`, will be removed in Ghost 3.0
-         */
         include: 'authors,tags'
     }
 };
