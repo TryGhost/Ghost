@@ -32,21 +32,21 @@ _private.getSchedulerIntegration = function () {
  *
  * @return {Promise}
  */
-_private.getSignedAdminToken = function (options) {
-    const {model, apiUrl, integration} = options;
+_private.getSignedAdminToken = function ({publishedAt, apiUrl, integration}) {
     let key = integration.api_keys[0];
 
     const JWT_OPTIONS = {
         keyid: key.id,
         algorithm: 'HS256',
-        audience: apiUrl
+        audience: apiUrl,
+        noTimestamp: true
     };
 
     // Default token expiry is till 6 hours after scheduled time
     // or if published_at is in past then till 6 hours after blog start
     // to allow for retries in case of network issues
     // and never before 10 mins to publish time
-    let tokenExpiry = moment(model.get('published_at')).add(6, 'h');
+    let tokenExpiry = moment(publishedAt).add(6, 'h');
     if (tokenExpiry.isBefore(moment())) {
         tokenExpiry = moment().add(6, 'h');
     }
@@ -54,7 +54,7 @@ _private.getSignedAdminToken = function (options) {
     return jwt.sign(
         {
             exp: tokenExpiry.unix(),
-            nbf: moment(model.get('published_at')).subtract(10, 'm').unix()
+            nbf: moment(publishedAt).subtract(10, 'm').unix()
         },
         Buffer.from(key.secret, 'hex'),
         JWT_OPTIONS
@@ -66,14 +66,14 @@ _private.getSignedAdminToken = function (options) {
  * @param {Object} options
  * @return {Object}
  */
-_private.normalize = function normalize(options) {
-    const {model, apiUrl, resourceType} = options;
+_private.normalize = function normalize({model, apiUrl, resourceType, integration}, event = '') {
     const resource = `${resourceType}s`;
-    const signedAdminToken = _private.getSignedAdminToken(options);
+    let publishedAt = (event === 'unscheduled') ? model.previous('published_at') : model.get('published_at');
+    const signedAdminToken = _private.getSignedAdminToken({publishedAt, apiUrl, integration});
     let url = `${urlUtils.urlJoin(apiUrl, 'schedules', resource, model.get('id'))}/?token=${signedAdminToken}`;
     return {
         // NOTE: The scheduler expects a unix timestamp.
-        time: moment(model.get('published_at')).valueOf(),
+        time: moment(publishedAt).valueOf(),
         url: url,
         extra: {
             httpMethod: 'PUT',
@@ -148,7 +148,8 @@ exports.init = function init(options = {}) {
             // and not an in-process implementation!
             Object.keys(scheduledResources).forEach((resourceType) => {
                 scheduledResources[resourceType].forEach((model) => {
-                    adapter.reschedule(_private.normalize({model, apiUrl, integration, resourceType}), {bootstrap: true});
+                    adapter.unschedule(_private.normalize({model, apiUrl, integration, resourceType}, 'unscheduled'));
+                    adapter.schedule(_private.normalize({model, apiUrl, integration, resourceType}));
                 });
             });
         })
@@ -161,12 +162,17 @@ exports.init = function init(options = {}) {
                     adapter.schedule(_private.normalize({model, apiUrl, integration, resourceType: resource}));
                 });
 
+                /** We want to do reschedule as (unschedule + schedule) due to how token(+url) is generated
+                 * We want to first remove existing schedule by generating a matching token(+url)
+                 * followed by generating a new token(+url) for the new schedule
+                */
                 common.events.on(`${resource}.rescheduled`, (model) => {
-                    adapter.reschedule(_private.normalize({model, apiUrl, integration, resourceType: resource}));
+                    adapter.unschedule(_private.normalize({model, apiUrl, integration, resourceType: resource}, 'unscheduled'));
+                    adapter.schedule(_private.normalize({model, apiUrl, integration, resourceType: resource}));
                 });
 
                 common.events.on(`${resource}.unscheduled`, (model) => {
-                    adapter.unschedule(_private.normalize({model, apiUrl, integration, resourceType: resource}));
+                    adapter.unschedule(_private.normalize({model, apiUrl, integration, resourceType: resource}, 'unscheduled'));
                 });
             });
         });
