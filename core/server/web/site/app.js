@@ -94,22 +94,7 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(shared.middlewares.serveFavicon());
 
     // /public/members.js
-    siteApp.get('/public/members-theme-bindings.js',
-        shared.middlewares.labs('members'),
-        shared.middlewares.servePublicFile.createPublicFileMiddleware(
-            'public/members-theme-bindings.js',
-            'application/javascript',
-            constants.ONE_HOUR_S
-        )
-    );
-    siteApp.get('/public/members.js',
-        shared.middlewares.labs('members'),
-        shared.middlewares.servePublicFile.createPublicFileMiddleware(
-            'public/members.js',
-            'application/javascript',
-            constants.ONE_HOUR_S
-        )
-    );
+    membersMiddleware.public(siteApp);
 
     // Serve sitemap.xsl file
     siteApp.use(shared.middlewares.servePublicFile('sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));

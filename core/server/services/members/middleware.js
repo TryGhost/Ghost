@@ -1,7 +1,28 @@
 const common = require('../../lib/common');
+const constants = require('../../lib/constants');
 const shared = require('../../web/shared');
 const labsService = require('../labs');
 const membersService = require('./index');
+
+module.exports.public = (siteApp) => {
+    siteApp.get('/public/members-theme-bindings.js',
+        shared.middlewares.labs('members'),
+        shared.middlewares.servePublicFile.createPublicFileMiddleware(
+            'public/members-theme-bindings.js',
+            'application/javascript',
+            constants.ONE_HOUR_S
+        )
+    );
+
+    siteApp.get('/public/members.js',
+        shared.middlewares.labs('members'),
+        shared.middlewares.servePublicFile.createPublicFileMiddleware(
+            'public/members.js',
+            'application/javascript',
+            constants.ONE_HOUR_S
+        )
+    );
+};
 
 module.exports.use = (siteApp) => {
     // @TODO only loads this stuff if members is enabled
