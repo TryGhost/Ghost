@@ -92,6 +92,6 @@ module.exports = {
     ],
     stripeWebhooks: [
         shared.middlewares.labs.members,
-        membersService.api.middleware.handleStripeWebhook
+        (req, res, next) => membersService.api.middleware.handleStripeWebhook(req, res, next)
     ]
 };
