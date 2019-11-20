@@ -1,9 +1,13 @@
 import Component from '@ember/component';
+import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import {action} from '@ember/object';
 import {computed} from '@ember/object';
 import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
+
+const CONFIRM_EMAIL_POLL_LENGTH = 1000;
+const CONFIRM_EMAIL_MAX_POLL_LENGTH = 10 * 1000;
 
 export default Component.extend({
     clock: service(),
@@ -184,8 +188,30 @@ export default Component.extend({
 
     _confirmEmailSend: task(function* () {
         this.sendEmailConfirmed = true;
-        yield this.save.perform();
-        this.set('showEmailConfirmationModal', false);
+        let post = yield this.save.perform();
+
+        // simulate a validation error if saving failed so that the confirm
+        // modal can react accordingly
+        if (!post || post.errors.length) {
+            throw null;
+        }
+
+        let pollTimeout = 0;
+        if (post.email && post.email.status !== 'submitted') {
+            while (pollTimeout < CONFIRM_EMAIL_MAX_POLL_LENGTH) {
+                yield timeout(CONFIRM_EMAIL_POLL_LENGTH);
+                post = yield post.reload();
+
+                if (post.email.status === 'submitted') {
+                    break;
+                }
+                if (post.email.status === 'failed') {
+                    throw new EmailFailedError(post.email.error);
+                }
+            }
+        }
+
+        return post;
     }),
 
     openEmailConfirmationModal: action(function (dropdown) {
@@ -213,6 +239,8 @@ export default Component.extend({
             this.openEmailConfirmationModal(dropdown);
             return;
         }
+
+        this.sendEmailConfirmed = false;
 
         // runningText needs to be declared before the other states change during the
         // save action.

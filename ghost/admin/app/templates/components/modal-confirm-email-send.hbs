@@ -1,23 +1,45 @@
-<header class="modal-header" data-test-modal="delete-user">
-    <h1>Ready to go? Here’s what happens next</h1>
-</header>
-<a class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+{{#unless errorMessage}}
+    <header class="modal-header" data-test-modal="delete-user">
+        <h1>Ready to go? Here’s what happens next</h1>
+    </header>
+    <button class="close" title="Close" {{on "click" this.closeModal}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
-<div class="modal-body">
-    <p>
-        Your post will be delivered to <strong>{{if this.model.paidOnly "all paid members" (pluralize this.model.memberCount "member")}}</strong> and will be published on your site{{#if this.model.isScheduled}} at the scheduled time{{/if}}. Sounds good?
-    </p>
-</div>
+    <div class="modal-body">
+        <p>
+            Your post will be delivered to
+            <strong>{{if this.model.paidOnly "all paid members" (pluralize this.model.memberCount "member")}}</strong>
+            and will be published on your site{{#if this.model.isScheduled}} at the scheduled time{{/if}}. Sounds good?
+        </p>
+    </div>
 
-<div class="modal-footer">
-    <button {{action "closeModal"}} class="gh-btn" data-test-button="cancel-publish-and-email">
-        <span>Cancel</span>
-    </button>
-    <GhTaskButton
-        @buttonText={{if this.model.isScheduled "Schedule" "Publish and send"}}
-        @runningText={{if this.model.isScheduled "Scheduling..." "Publishing..."}}
-        @task={{this.confirmTask}}
-        @class="gh-btn gh-btn-green gh-btn-icon"
-        data-test-button="confirm-publish-and-email"
-    />
-</div>
+    <div class="modal-footer">
+        <button {{on "click" this.closeModal}} class="gh-btn" data-test-button="cancel-publish-and-email">
+            <span>Cancel</span>
+        </button>
+        <GhTaskButton
+            @buttonText={{if this.model.isScheduled "Schedule" "Publish and send"}}
+            @runningText={{if this.model.isScheduled "Scheduling..." "Publishing..."}}
+            @task={{this.confirmAndCheckError}}
+            @class="gh-btn gh-btn-green gh-btn-icon"
+            data-test-button="confirm-publish-and-email"
+        />
+    </div>
+
+{{else}}
+    <header class="modal-header" data-test-modal="delete-user">
+        <h1>Failed to send email</h1>
+    </header>
+    <button class="close" title="Close" {{on "click" this.closeModal}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>Your post has been published but the email failed to send.</p>
+        <p class="error">Error: {{this.errorMessage}}</p>
+        <p>Check your <LinkTo @route="settings.labs">mailgun settings</LinkTo> if it persists.</p>
+    </div>
+
+    <div class="modal-footer">
+        <button {{on "click" this.closeModal}} class="gh-btn" data-test-button="cancel-publish-and-email">
+            <span>Close</span>
+        </button>
+    </div>
+{{/unless}}
