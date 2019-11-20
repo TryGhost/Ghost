@@ -74,11 +74,20 @@ describe('Scheduling Default Adapter', function () {
                 }
             });
 
-            scope.adapter.reschedule({
+            /**Reschedule is now unschedule+schedule */
+            scope.adapter.unschedule({
                 time: time,
                 url: 'something',
                 extra: {
                     oldTime: time,
+                    method: 'PUT'
+                }
+            });
+            scope.adapter.schedule({
+                time: time,
+                url: 'something',
+                extra: {
+                    oldTime: null,
                     method: 'PUT'
                 }
             });
@@ -94,7 +103,7 @@ describe('Scheduling Default Adapter', function () {
 
             const time = moment().add(20, 'milliseconds').valueOf();
 
-            scope.adapter.reschedule({
+            scope.adapter.unschedule({
                 time: time,
                 url: 'something',
                 extra: {
@@ -102,6 +111,15 @@ describe('Scheduling Default Adapter', function () {
                     method: 'PUT'
                 }
             }, {bootstrap: true});
+
+            scope.adapter.schedule({
+                time: time,
+                url: 'something',
+                extra: {
+                    oldTime: null,
+                    method: 'PUT'
+                }
+            });
 
             setTimeout(() => {
                 scope.adapter._pingUrl.calledOnce.should.eql(true);

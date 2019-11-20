@@ -148,7 +148,7 @@ exports.init = function init(options = {}) {
             // and not an in-process implementation!
             Object.keys(scheduledResources).forEach((resourceType) => {
                 scheduledResources[resourceType].forEach((model) => {
-                    adapter.unschedule(_private.normalize({model, apiUrl, integration, resourceType}, 'unscheduled'));
+                    adapter.unschedule(_private.normalize({model, apiUrl, integration, resourceType}, 'unscheduled'), {bootstrap: true});
                     adapter.schedule(_private.normalize({model, apiUrl, integration, resourceType}));
                 });
             });

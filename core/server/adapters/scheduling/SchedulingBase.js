@@ -1,6 +1,6 @@
 function SchedulingBase() {
     Object.defineProperty(this, 'requiredFns', {
-        value: ['schedule', 'unschedule', 'reschedule', 'run'],
+        value: ['schedule', 'unschedule', 'run'],
         writable: false
     });
 }
