@@ -239,6 +239,7 @@ figcaption {
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     font-size: 14px;
+    padding-top: 5px;
 }
 
 code {
@@ -295,7 +296,7 @@ figure blockquote p {
 }
 
 .post-title {
-    padding-bottom: 15px;
+    padding-bottom: 10px;
     font-size: 42px;
     line-height: 1.1em;
     font-weight: 600;
@@ -338,7 +339,7 @@ figure blockquote p {
     font-size: 18px;
     line-height: 1.5em;
     color: #23323D;
-    padding-bottom: 50px;
+    padding-bottom: 20px;
 }
 
 .post-content a {
@@ -446,9 +447,14 @@ figure blockquote p {
     white-space: nowrap;
 }
 
+.kg-gallery-container {
+    margin-top: -20px;
+}
+
 .kg-gallery-image img {
     width: 100% !important;
     height: auto !important;
+    padding-top: 20px;
 }
 
 
@@ -478,7 +484,7 @@ figure blockquote p {
     border-top: 1px solid #e5eff5;
     font-size: 13px;
     padding-bottom: 40px;
-    padding-top: 20px;
+    padding-top: 50px;
 }
 
 /* -------------------------------------
@@ -586,8 +592,7 @@ figure blockquote p {
     table[class=body] ul,
     table[class=body] ol,
     table[class=body] td,
-    table[class=body] span,
-    table[class=body] a {
+    table[class=body] span {
         font-size: 16px !important;
     }
 
