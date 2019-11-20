@@ -11,7 +11,7 @@
     <p>
         <span class="gh-content-entry-meta">
             By <span class="midgrey-l2 fw5">{{this.authorNames}}</span>
-            
+
             {{#if this.primaryTag}}
                 in <span class="midgrey-l2 fw5">{{this.primaryTag}}</span>
             {{/if}}
@@ -44,8 +44,8 @@
         {{/if}}
 
         {{#if (or this.post.email (and this.post.isScheduled this.post.sendEmailWhenPublished))}}
-        <span data-tooltip="Sent by email" class="gh-content-emailed">
-            {{svg-jar "send-email" class="stroke-midgrey"}}
+        <span data-tooltip={{if (eq this.post.email.status "failed") "Sending failed" "Sent by email"}} class="gh-content-emailed">
+            {{svg-jar "send-email" class=(if (eq this.post.email.status "failed") "stroke-red" "stroke-midgrey")}}
         </span>
         {{/if}}
     </div>
