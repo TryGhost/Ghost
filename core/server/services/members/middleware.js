@@ -6,7 +6,7 @@ const membersService = require('./index');
 
 module.exports.public = (siteApp) => {
     siteApp.get('/public/members-theme-bindings.js',
-        shared.middlewares.labs('members'),
+        shared.middlewares.labs.members,
         shared.middlewares.servePublicFile.createPublicFileMiddleware(
             'public/members-theme-bindings.js',
             'application/javascript',
@@ -15,7 +15,7 @@ module.exports.public = (siteApp) => {
     );
 
     siteApp.get('/public/members.js',
-        shared.middlewares.labs('members'),
+        shared.middlewares.labs.members,
         shared.middlewares.servePublicFile.createPublicFileMiddleware(
             'public/members.js',
             'application/javascript',
