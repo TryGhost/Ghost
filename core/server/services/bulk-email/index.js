@@ -22,6 +22,12 @@ class SuccessfulBatch extends BatchResultBase {
 class FailedBatch extends BatchResultBase {
     constructor(error, data) {
         super();
+
+        // give a better error message for the invalid credentials state
+        if (error.message === 'Forbidden') {
+            error.message = 'Invalid Mailgun credentials';
+        }
+
         this.error = error;
         this.data = data;
     }
