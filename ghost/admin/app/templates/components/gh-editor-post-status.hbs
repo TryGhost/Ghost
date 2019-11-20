@@ -2,7 +2,9 @@
     Saving...
 {{else if (or this.post.isPublished this.post.pastScheduledTime)}}
     Published
-    {{#if this.post.email}}
+    {{#if (or (eq this.post.email.status "submitting") (eq this.post.email.status "submitting"))}}
+        and sending to {{pluralize this.post.email.emailCount "member"}}
+    {{else if (eq this.post.email.status "submitted")}}
         and sent to {{pluralize this.post.email.emailCount "member"}}
     {{/if}}
 {{else if this.post.isScheduled}}
