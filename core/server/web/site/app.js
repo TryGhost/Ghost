@@ -94,7 +94,7 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(shared.middlewares.serveFavicon());
 
     // /public/members.js
-    membersMiddleware.public(siteApp);
+    siteApp.get('/public/members.js', membersMiddleware.public);
 
     // Serve sitemap.xsl file
     siteApp.use(shared.middlewares.servePublicFile('sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
@@ -119,7 +119,11 @@ module.exports = function setupSiteApp(options = {}) {
 
     // Members middleware
     // Initializes members specific routes as well as assigns members specific data to the req/res objects
-    membersMiddleware.use(siteApp);
+    siteApp.get('/members/ssr', membersMiddleware.login);
+    siteApp.delete('/members/ssr', membersMiddleware.logout);
+    siteApp.post('/members/webhooks/stripe', membersMiddleware.stripeWebhooks);
+
+    siteApp.use(membersMiddleware.authentication);
 
     // Theme middleware
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
