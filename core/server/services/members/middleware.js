@@ -51,7 +51,9 @@ module.exports.use = (siteApp) => {
         }
     });
 
+    // NOTE: this route needs a clear note why (if intentional) is it skipping shared.middlewares.labs.members middleware
     siteApp.post('/members/webhooks/stripe', (req, res, next) => membersService.api.middleware.handleStripeWebhook(req, res, next));
+
     siteApp.use(async function (req, res, next) {
         if (!labsService.isSet('members')) {
             req.member = null;
