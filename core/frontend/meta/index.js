@@ -44,7 +44,7 @@ function getMetaData(data, root) {
                 url: getAuthorImage(data, true)
             },
             ogImage: {
-                url: getOgImage(data, true)
+                url: getOgImage(data)
             },
             ogTitle: getTitle(data, root, {property: 'og'}),
             ogDescription: getDescription(data, root, {property: 'og'}),

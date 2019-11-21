@@ -176,7 +176,7 @@ describe('{{meta_title}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('Meta Title Ghost (Page 2)');
+            String(rendered).should.equal('Ghost (Page 2)');
         });
 
         it('returns correct title for a tag page', function () {
@@ -187,7 +187,7 @@ describe('{{meta_title}} helper', function () {
                 );
 
             should.exist(rendered);
-            String(rendered).should.equal('Rasper Red - Meta Title Ghost');
+            String(rendered).should.equal('Rasper Red - Ghost');
         });
 
         it('returns correct title for an author page', function () {
@@ -197,7 +197,7 @@ describe('{{meta_title}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('Donald Duck - Meta Title Ghost');
+            String(rendered).should.equal('Donald Duck - Ghost');
         });
 
         it('returns correct title for a paginated author page', function () {
@@ -207,7 +207,7 @@ describe('{{meta_title}} helper', function () {
             );
 
             should.exist(rendered);
-            String(rendered).should.equal('Donald Duck - Meta Title Ghost (Page 2)');
+            String(rendered).should.equal('Donald Duck - Ghost (Page 2)');
         });
     });
 });

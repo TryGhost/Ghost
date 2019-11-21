@@ -4,118 +4,189 @@ const getOgImage = require('../../../../frontend/meta/og_image');
 const settingsCache = require('../../../../server/services/settings/cache');
 
 describe('getOgImage', function () {
-    describe('[home]', function () {
-        it('should return null if [home] context and no og_image set', function () {
-            sinon.stub(settingsCache, 'get').callsFake(function (key) {
-                return {
-                    og_image: null
-                }[key];
-            });
+    let localSettingsCache = {};
 
-            var ogImageUrl = getOgImage({
-                context: ['home'],
-                home: {}
-            });
-            should(ogImageUrl).equal(null);
-
-            sinon.restore();
-        });
-
-        it('should return image URL if [home] context and og_image set', function () {
-            sinon.stub(settingsCache, 'get').callsFake(function (key) {
-                return {
-                    og_image: '/content/images/home-og.jpg'
-                }[key];
-            });
-
-            var ogImageUrl = getOgImage({
-                context: ['home'],
-                home: {}
-            });
-            ogImageUrl.should.not.equal('/content/images/home-og.jpg');
-            ogImageUrl.should.match(/\/content\/images\/home-og\.jpg$/);
-
-            sinon.restore();
+    beforeEach(function () {
+        sinon.stub(settingsCache, 'get').callsFake(function (key) {
+            return localSettingsCache[key];
         });
     });
 
-    it('[home] should return null if not post context [home] and no og_image set', function () {
-        var ogImageUrl = getOgImage({
-            context: ['home'],
-            home: {}
-        });
-        should(ogImageUrl).equal(null);
+    afterEach(function () {
+        sinon.restore();
+        localSettingsCache = {};
     });
 
-    it('should return null if not post context [author]', function () {
-        var ogImageUrl = getOgImage({
-            context: ['author'],
-            author: {}
-        });
-        should(ogImageUrl).equal(null);
+    it('has correct fallbacks for context: home', function () {
+        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
+
+        getOgImage({context: ['home'], home: {}})
+            .should.endWith('/content/images/settings-og.jpg');
+
+        localSettingsCache.og_image = '';
+
+        getOgImage({context: ['home'], home: {}})
+            .should.endWith('/content/images/settings-cover.jpg');
+
+        localSettingsCache.cover_image = '';
+
+        should(
+            getOgImage({context: ['home'], home: {}})
+        ).equal(null);
     });
 
-    it('should return null if not post context [tag]', function () {
-        var ogImageUrl = getOgImage({
-            context: ['tag'],
-            author: {}
-        });
-        should(ogImageUrl).equal(null);
+    it('has correct fallbacks for context: post', function () {
+        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
+
+        const post = {
+            og_image: '/content/images/post-og.jpg',
+            feature_image: '/content/images/post-feature.jpg'
+        };
+
+        getOgImage({context: ['post'], post})
+            .should.endWith('post-og.jpg');
+
+        post.og_image = '';
+
+        getOgImage({context: ['post'], post})
+            .should.endWith('post-feature.jpg');
+
+        post.feature_image = '';
+
+        should(
+            getOgImage({context: ['post'], post})
+        ).equal(null);
     });
 
-    it('should return absolute url for OG image in post context', function () {
-        var ogImageUrl = getOgImage({
-            context: ['post'],
-            post: {
-                feature_image: '/content/images/my-test-image.jpg',
-                og_image: '/content/images/my-special-og-image.jpg'
-            }
-        });
-        ogImageUrl.should.not.equal('/content/images/my-special-og-image.jpg');
-        ogImageUrl.should.match(/\/content\/images\/my-special-og-image\.jpg$/);
+    it('has correct fallbacks for context: page', function () {
+        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
+
+        const page = {
+            og_image: '/content/images/page-og.jpg',
+            feature_image: '/content/images/page-feature.jpg'
+        };
+
+        getOgImage({context: ['page'], page})
+            .should.endWith('page-og.jpg');
+
+        page.og_image = '';
+
+        getOgImage({context: ['page'], page})
+            .should.endWith('page-feature.jpg');
+
+        page.feature_image = '';
+
+        should(
+            getOgImage({context: ['page'], page})
+        ).equal(null);
     });
 
-    it('should return absolute url for feature image in post context', function () {
-        var ogImageUrl = getOgImage({
-            context: ['post'],
-            post: {
-                feature_image: '/content/images/my-test-image.jpg',
-                og_image: ''
-            }
-        });
-        ogImageUrl.should.not.equal('/content/images/my-test-image.jpg');
-        ogImageUrl.should.match(/\/content\/images\/my-test-image\.jpg$/);
+    it('has correct fallbacks for context: page (legacy format)', function () {
+        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
+
+        const post = {
+            og_image: '/content/images/page-og.jpg',
+            feature_image: '/content/images/page-feature.jpg'
+        };
+
+        getOgImage({context: ['page'], post})
+            .should.endWith('page-og.jpg');
+
+        post.og_image = '';
+
+        getOgImage({context: ['page'], post})
+            .should.endWith('page-feature.jpg');
+
+        post.feature_image = '';
+
+        should(
+            getOgImage({context: ['page'], post})
+        ).equal(null);
     });
 
-    it('should return absolute url for OG image in AMP context', function () {
-        var ogImageUrl = getOgImage({
-            context: ['amp', 'post'],
-            post: {
-                feature_image: '/content/images/my-test-image.jpg',
-                og_image: '/content/images/my-special-og-image.jpg'
-            }
-        });
-        ogImageUrl.should.not.equal('/content/images/my-special-og-image.jpg');
-        ogImageUrl.should.match(/\/content\/images\/my-special-og-image\.jpg$/);
+    it('has correct fallbacks for context: author', function () {
+        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
+
+        const author = {
+            cover_image: '/content/images/author-cover.jpg'
+        };
+
+        getOgImage({context: ['author'], author})
+            .should.endWith('author-cover.jpg');
+
+        author.cover_image = '';
+
+        should(
+            getOgImage({context: ['author'], author})
+        ).equal(null);
     });
 
-    it('should return absolute url for feature image in AMP context', function () {
-        var ogImageUrl = getOgImage({
-            context: ['amp', 'post'],
-            post: {
-                feature_image: '/content/images/my-test-image.jpg',
-                og_image: ''
-            }
-        });
-        ogImageUrl.should.not.equal('/content/images/my-test-image.jpg');
-        ogImageUrl.should.match(/\/content\/images\/my-test-image\.jpg$/);
+    it('has correct fallbacks for context: author_paged', function () {
+        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
+
+        const author = {
+            cover_image: '/content/images/author-cover.jpg'
+        };
+
+        getOgImage({context: ['author', 'paged'], author})
+            .should.endWith('author-cover.jpg');
+
+        author.cover_image = '';
+
+        should(
+            getOgImage({context: ['author', 'paged'], author})
+        ).equal(null);
     });
 
-    it('should return null if missing image', function () {
-        var ogImageUrl = getOgImage({
-            context: ['post'],
-            post: {}
-        });
-        should(ogImageUrl).equal(null);
+    it('has correct fallbacks for context: tag', function () {
+        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
+
+        const tag = {
+            feature_image: '/content/images/tag-feature.jpg'
+        };
+
+        getOgImage({context: ['tag'], tag})
+            .should.endWith('tag-feature.jpg');
+
+        tag.feature_image = '';
+
+        getOgImage({context: ['tag'], tag})
+            .should.endWith('settings-cover.jpg');
+
+        localSettingsCache.cover_image = '';
+
+        should(
+            getOgImage({context: ['tag'], tag})
+        ).equal(null);
+    });
+
+    it('has correct fallbacks for context: tag_paged', function () {
+        localSettingsCache.og_image = '/content/images/settings-og.jpg';
+        localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
+
+        const tag = {
+            feature_image: '/content/images/tag-feature.jpg'
+        };
+
+        getOgImage({context: ['tag', 'paged'], tag})
+            .should.endWith('tag-feature.jpg');
+
+        tag.feature_image = '';
+
+        getOgImage({context: ['tag', 'paged'], tag})
+            .should.endWith('settings-cover.jpg');
+
+        localSettingsCache.cover_image = '';
+
+        should(
+            getOgImage({context: ['tag', 'paged'], tag})
+        ).equal(null);
     });
 });

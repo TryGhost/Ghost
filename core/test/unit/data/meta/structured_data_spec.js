@@ -26,10 +26,10 @@ describe('getStructuredData', function () {
                     url: null
                 },
                 twitterImage: null,
-                ogTitle: '',
-                ogDescription: '',
-                twitterTitle: '',
-                twitterDescription: '',
+                ogTitle: 'Post Title',
+                ogDescription: 'Post meta description',
+                twitterTitle: 'Post Title',
+                twitterDescription: 'Post meta description',
                 authorFacebook: 'testpage',
                 creatorTwitter: '@twitterpage',
                 keywords: ['one', 'two', 'tag'],
@@ -146,9 +146,9 @@ describe('getStructuredData', function () {
                     url: null
                 },
                 twitterImage: null,
-                ogTitle: null,
+                ogTitle: 'Post Title',
                 ogDescription: null,
-                twitterTitle: null,
+                twitterTitle: 'Post Title',
                 twitterDescription: null,
                 keywords: null,
                 metaDescription: null
