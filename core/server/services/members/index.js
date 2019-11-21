@@ -49,3 +49,4 @@ const membersService = {
 };
 
 module.exports = membersService;
+module.exports.middleware = require('./middleware');
