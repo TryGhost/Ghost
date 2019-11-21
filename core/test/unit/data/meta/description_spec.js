@@ -16,211 +16,614 @@ describe('getMetaDescription', function () {
         sinon.restore();
     });
 
+    beforeEach(function () {
+        localSettingsCache.description = 'Site description';
+        localSettingsCache.meta_description = 'Site meta description';
+        localSettingsCache.og_description = 'Site og description';
+        localSettingsCache.twitter_description = 'Site twitter description';
+    });
+
     afterEach(function () {
         localSettingsCache = {};
     });
 
-    it('should return site description when in home context', function () {
-        localSettingsCache.description = 'Site description';
-
-        var description = getMetaDescription({
-        }, {
-            context: ['home']
-        });
-        description.should.equal('Site description');
-    });
-
-    it('should return site OG description when in home context', function () {
-        localSettingsCache.og_description = 'My site Facebook description';
-
-        var description = getMetaDescription({
-        }, {
-            context: ['home']
-        }, {
-            property: 'og'
-        });
-        description.should.equal('My site Facebook description');
-    });
-
-    it('should return site twitter description when in home context', function () {
-        localSettingsCache.twitter_description = 'My site Twitter description';
-
-        var description = getMetaDescription({
-        }, {
-            context: ['home']
-        }, {
-            property: 'twitter'
-        });
-        description.should.equal('My site Twitter description');
-    });
-
-    it('should return site meta_description when it is defined and in home context', function () {
-        localSettingsCache.description = 'Site description';
-        localSettingsCache.meta_description = 'Site meta description';
-
-        var description = getMetaDescription({
-        }, {
-            context: ['home']
-        });
-        description.should.equal('Site meta description');
-    });
-
     it('should return meta_description if on data root', function () {
-        var description = getMetaDescription({
-            meta_description: 'My test description.'
+        const description = getMetaDescription({
+            meta_description: 'My data meta description'
+        }, {
+            context: 'home'
         });
-        description.should.equal('My test description.');
+
+        description.should.equal('My data meta description');
     });
 
-    it('should return empty string if on root context contains paged', function () {
-        var description = getMetaDescription({}, {
-            context: ['paged']
+    // <meta name="description">
+    describe('property: null', function () {
+        it('has correct fallbacks for context: home', function () {
+            getMetaDescription({}, {context: 'home'})
+                .should.equal('Site meta description');
+
+            localSettingsCache.meta_description = '';
+
+            getMetaDescription({}, {context: 'home'})
+                .should.equal('Site description');
+
+            localSettingsCache.description = '';
+
+            should(
+                getMetaDescription({}, {context: 'home'})
+            ).equal(null);
         });
-        description.should.equal('');
+
+        it('has correct fallbacks for context: post', function () {
+            const post = {
+                meta_description: 'Post meta description'
+            };
+
+            getMetaDescription({post}, {context: 'post'})
+                .should.equal('Post meta description');
+
+            post.meta_description = '';
+
+            should(
+                getMetaDescription({post}, {context: 'post'})
+            ).equal(null);
+        });
+
+        it('has correct fallbacks for context: page', function () {
+            const page = {
+                meta_description: 'Page meta description'
+            };
+
+            getMetaDescription({page}, {context: 'page'})
+                .should.equal('Page meta description');
+
+            page.meta_description = '';
+
+            should(
+                getMetaDescription({page}, {context: 'page'})
+            ).equal(null);
+        });
+
+        // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
+        it('has correct fallbacks for context: page (legacy format)', function () {
+            const post = {
+                meta_description: 'Page meta description'
+            };
+
+            getMetaDescription({post}, {context: 'page'})
+                .should.equal('Page meta description');
+
+            post.meta_description = '';
+
+            should(
+                getMetaDescription({post}, {context: 'page'})
+            ).equal(null);
+        });
+
+        it('has correct fallbacks for context: author', function () {
+            const author = {
+                meta_description: 'Author meta description',
+                bio: 'Author bio'
+            };
+
+            getMetaDescription({author}, {context: 'author'})
+                .should.equal('Author meta description');
+
+            author.meta_description = '';
+
+            getMetaDescription({author}, {context: 'author'})
+                .should.equal('Author bio');
+
+            author.bio = '';
+
+            should(
+                getMetaDescription({author}, {context: 'author'})
+            ).equal(null);
+        });
+
+        it('has correct fallbacks for context: author_paged', function () {
+            const author = {
+                meta_description: 'Author meta description',
+                bio: 'Author bio'
+            };
+
+            should(
+                getMetaDescription({author}, {context: ['author', 'paged']})
+            ).equal(null);
+        });
+
+        it('has correct fallbacks for context: tag', function () {
+            const tag = {
+                meta_description: 'Tag meta description',
+                description: 'Tag description'
+            };
+
+            getMetaDescription({tag}, {context: 'tag'})
+                .should.equal('Tag meta description');
+
+            tag.meta_description = '';
+
+            getMetaDescription({tag}, {context: 'tag'})
+                .should.equal('Tag description');
+
+            tag.description = '';
+
+            should(
+                getMetaDescription({tag}, {context: 'tag'})
+            ).equal(null);
+        });
+
+        it('has correct fallbacks for context: tag_paged', function () {
+            const tag = {
+                meta_description: 'Tag meta description',
+                description: 'Tag description'
+            };
+
+            should(
+                getMetaDescription({tag}, {context: ['tag', 'paged']})
+            ).equal(null);
+        });
     });
 
-    it('should not return meta description for author if on root context contains author and no meta description provided', function () {
-        var description = getMetaDescription({
-            author: {
-                bio: 'Just some hack building code to make the world better.'
-            }
-        }, {
-            context: ['author']
+    describe('property: og', function () {
+        let options;
+
+        beforeEach(function () {
+            options = {property: 'og'};
         });
-        description.should.equal('');
+
+        it('has correct fallbacks for context: home', function () {
+            getMetaDescription({}, {context: 'home'}, options)
+                .should.equal('Site og description');
+
+            localSettingsCache.og_description = '';
+
+            getMetaDescription({}, {context: 'home'}, options)
+                .should.equal('Site meta description');
+
+            localSettingsCache.meta_description = '';
+
+            getMetaDescription({}, {context: 'home'}, options)
+                .should.equal('Site description');
+
+            localSettingsCache.description = '';
+
+            should(
+                getMetaDescription({}, {context: 'home'}, options)
+            ).equal(null);
+        });
+
+        it('has correct fallbacks for context: post', function () {
+            const post = {
+                html: '<p>Post html</p>',
+                custom_excerpt: 'Post custom excerpt',
+                meta_description: 'Post meta description',
+                og_description: 'Post og description'
+            };
+
+            getMetaDescription({post}, {context: 'post'}, options)
+                .should.equal('Post og description');
+
+            post.og_description = '';
+
+            getMetaDescription({post}, {context: 'post'}, options)
+                .should.equal('Post custom excerpt');
+
+            post.custom_excerpt = '';
+
+            getMetaDescription({post}, {context: 'post'}, options)
+                .should.equal('Post meta description');
+
+            post.meta_description = '';
+
+            getMetaDescription({post}, {context: 'post'}, options)
+                .should.equal('Post html');
+
+            post.html = '';
+
+            getMetaDescription({post}, {context: 'post'}, options)
+                .should.equal('Site description');
+        });
+
+        it('has correct fallbacks for context: page', function () {
+            const page = {
+                html: '<p>Page html</p>',
+                custom_excerpt: 'Page custom excerpt',
+                meta_description: 'Page meta description',
+                og_description: 'Page og description'
+            };
+
+            getMetaDescription({page}, {context: 'page'}, options)
+                .should.equal('Page og description');
+
+            page.og_description = '';
+
+            getMetaDescription({page}, {context: 'page'}, options)
+                .should.equal('Page custom excerpt');
+
+            page.custom_excerpt = '';
+
+            getMetaDescription({page}, {context: 'page'}, options)
+                .should.equal('Page meta description');
+
+            page.meta_description = '';
+
+            getMetaDescription({page}, {context: 'page'}, options)
+                .should.equal('Page html');
+
+            page.html = '';
+
+            getMetaDescription({page}, {context: 'page'}, options)
+                .should.equal('Site description');
+        });
+
+        // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
+        it('has correct fallbacks for context: page (legacy format)', function () {
+            const post = {
+                html: '<p>Page html</p>',
+                custom_excerpt: 'Page custom excerpt',
+                meta_description: 'Page meta description',
+                og_description: 'Page og description'
+            };
+
+            getMetaDescription({post}, {context: 'page'}, options)
+                .should.equal('Page og description');
+
+            post.og_description = '';
+
+            getMetaDescription({post}, {context: 'page'}, options)
+                .should.equal('Page custom excerpt');
+
+            post.custom_excerpt = '';
+
+            getMetaDescription({post}, {context: 'page'}, options)
+                .should.equal('Page meta description');
+
+            post.meta_description = '';
+
+            getMetaDescription({post}, {context: 'page'}, options)
+                .should.equal('Page html');
+
+            post.html = '';
+
+            getMetaDescription({post}, {context: 'page'}, options)
+                .should.equal('Site description');
+        });
+
+        it('has correct fallbacks for context: author', function () {
+            const author = {
+                meta_description: 'Author meta description',
+                bio: 'Author bio'
+            };
+
+            getMetaDescription({author}, {context: 'author'}, options)
+                .should.equal('Author meta description');
+
+            author.meta_description = '';
+
+            getMetaDescription({author}, {context: 'author'}, options)
+                .should.equal('Author bio');
+
+            author.bio = '';
+
+            getMetaDescription({author}, {context: 'author'}, options)
+                .should.equal('Site meta description');
+
+            localSettingsCache.meta_description = '';
+
+            should(
+                getMetaDescription({author}, {context: 'author'}, options)
+            ).equal(null);
+        });
+
+        it('has correct fallbacks for context: author_paged', function () {
+            const author = {
+                meta_description: 'Author meta description',
+                bio: 'Author bio'
+            };
+
+            getMetaDescription({author}, {context: ['author', 'paged']}, options)
+                .should.equal('Author meta description');
+
+            author.meta_description = '';
+
+            getMetaDescription({author}, {context: ['author', 'paged']}, options)
+                .should.equal('Author bio');
+
+            author.bio = '';
+
+            getMetaDescription({author}, {context: ['author', 'paged']}, options)
+                .should.equal('Site meta description');
+
+            localSettingsCache.meta_description = '';
+
+            should(
+                getMetaDescription({author}, {context: ['author', 'paged']}, options)
+            ).equal(null);
+        });
+
+        it('has correct fallbacks for context: tag', function () {
+            const tag = {
+                meta_description: 'Tag meta description',
+                description: 'Tag description'
+            };
+
+            getMetaDescription({tag}, {context: 'tag'}, options)
+                .should.equal('Tag meta description');
+
+            tag.meta_description = '';
+
+            getMetaDescription({tag}, {context: 'tag'}, options)
+                .should.equal('Tag description');
+
+            tag.description = '';
+
+            getMetaDescription({tag}, {context: 'tag'}, options)
+                .should.equal('Site meta description');
+
+            localSettingsCache.meta_description = '';
+
+            should(
+                getMetaDescription({tag}, {context: 'tag'}, options)
+            ).equal(null);
+        });
+
+        it('has correct fallbacks for context: tag_paged', function () {
+            const tag = {
+                meta_description: 'Tag meta description',
+                description: 'Tag description'
+            };
+
+            getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
+                .should.equal('Tag meta description');
+
+            tag.meta_description = '';
+
+            getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
+                .should.equal('Tag description');
+
+            tag.description = '';
+
+            getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
+                .should.equal('Site meta description');
+
+            localSettingsCache.meta_description = '';
+
+            should(
+                getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
+            ).equal(null);
+        });
     });
 
-    it('should return meta description for author if on root context contains author and meta description provided', function () {
-        var description = getMetaDescription({
-            author: {
-                bio: 'Just some hack building code to make the world better.',
-                meta_description: 'Author meta description.'
-            }
-        }, {
-            context: ['author']
-        });
-        description.should.equal('Author meta description.');
-    });
+    describe('property: twitter', function () {
+        let options;
 
-    it('should return data tag meta description if on root context contains tag', function () {
-        var description = getMetaDescription({
-            tag: {
-                meta_description: 'Best tag ever!'
-            }
-        }, {
-            context: ['tag']
+        beforeEach(function () {
+            options = {property: 'twitter'};
         });
-        description.should.equal('Best tag ever!');
-    });
 
-    it('should not return data tag description if no meta description for tag', function () {
-        var description = getMetaDescription({
-            tag: {
-                meta_description: '',
-                description: 'The normal description'
-            }
-        }, {
-            context: ['tag']
-        });
-        description.should.equal('');
-    });
+        it('has correct fallbacks for context: home', function () {
+            getMetaDescription({}, {context: 'home'}, options)
+                .should.equal('Site twitter description');
 
-    it('should return data post meta description if on root context contains post', function () {
-        var description = getMetaDescription({
-            post: {
-                meta_description: 'Best post ever!'
-            }
-        }, {
-            context: ['post']
-        });
-        description.should.equal('Best post ever!');
-    });
+            localSettingsCache.twitter_description = '';
 
-    it('should return OG data post meta description if on root context contains post', function () {
-        var description = getMetaDescription({
-            post: {
-                meta_description: 'Best post ever!',
-                og_description: 'My custom Facebook description!'
-            }
-        }, {
-            context: ['post']
-        }, {
-            property: 'og'
-        });
-        description.should.equal('My custom Facebook description!');
-    });
+            getMetaDescription({}, {context: 'home'}, options)
+                .should.equal('Site meta description');
 
-    it('should not return data post meta description if on root context contains post and called with OG property', function () {
-        var description = getMetaDescription({
-            post: {
-                meta_description: 'Best post ever!',
-                og_description: ''
-            }
-        }, {
-            context: ['post']
-        }, {
-            property: 'og'
-        });
-        description.should.equal('');
-    });
+            localSettingsCache.meta_description = '';
 
-    it('should return Twitter data post meta description if on root context contains post', function () {
-        var description = getMetaDescription({
-            post: {
-                meta_description: 'Best post ever!',
-                twitter_description: 'My custom Twitter description!'
-            }
-        }, {
-            context: ['post']
-        }, {
-            property: 'twitter'
-        });
-        description.should.equal('My custom Twitter description!');
-    });
+            getMetaDescription({}, {context: 'home'}, options)
+                .should.equal('Site description');
 
-    it('should return data post meta description if on root context contains post for an AMP post', function () {
-        var description = getMetaDescription({
-            post: {
-                meta_description: 'Best AMP post ever!'
-            }
-        }, {
-            context: ['amp', 'post']
-        });
-        description.should.equal('Best AMP post ever!');
-    });
+            localSettingsCache.description = '';
 
-    // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
-    it('legacy: should return data post meta description if on root context contains page', function () {
-        var description = getMetaDescription({
-            post: {
-                meta_description: 'Best page ever!'
-            }
-        }, {
-            context: ['page']
+            should(
+                getMetaDescription({}, {context: 'home'}, options)
+            ).equal(null);
         });
-        description.should.equal('Best page ever!');
-    });
 
-    it('v2: should return data page meta description if on root context contains page', function () {
-        var description = getMetaDescription({
-            page: {
-                meta_description: 'Best page ever!'
-            }
-        }, {
-            context: ['page']
-        });
-        description.should.equal('Best page ever!');
-    });
+        it('has correct fallbacks for context: post', function () {
+            const post = {
+                html: '<p>Post html</p>',
+                custom_excerpt: 'Post custom excerpt',
+                meta_description: 'Post meta description',
+                twitter_description: 'Post twitter description'
+            };
 
-    it('canary: should return data page meta description if on root context contains page', function () {
-        var description = getMetaDescription({
-            page: {
-                meta_description: 'Best page ever!'
-            }
-        }, {
-            context: ['page']
+            getMetaDescription({post}, {context: 'post'}, options)
+                .should.equal('Post twitter description');
+
+            post.twitter_description = '';
+
+            getMetaDescription({post}, {context: 'post'}, options)
+                .should.equal('Post custom excerpt');
+
+            post.custom_excerpt = '';
+
+            getMetaDescription({post}, {context: 'post'}, options)
+                .should.equal('Post meta description');
+
+            post.meta_description = '';
+
+            getMetaDescription({post}, {context: 'post'}, options)
+                .should.equal('Post html');
+
+            post.html = '';
+
+            getMetaDescription({post}, {context: 'post'}, options)
+                .should.equal('Site description');
         });
-        description.should.equal('Best page ever!');
+
+        it('has correct fallbacks for context: page', function () {
+            const page = {
+                html: '<p>Page html</p>',
+                custom_excerpt: 'Page custom excerpt',
+                meta_description: 'Page meta description',
+                twitter_description: 'Page twitter description'
+            };
+
+            getMetaDescription({page}, {context: 'page'}, options)
+                .should.equal('Page twitter description');
+
+            page.twitter_description = '';
+
+            getMetaDescription({page}, {context: 'page'}, options)
+                .should.equal('Page custom excerpt');
+
+            page.custom_excerpt = '';
+
+            getMetaDescription({page}, {context: 'page'}, options)
+                .should.equal('Page meta description');
+
+            page.meta_description = '';
+
+            getMetaDescription({page}, {context: 'page'}, options)
+                .should.equal('Page html');
+
+            page.html = '';
+
+            getMetaDescription({page}, {context: 'page'}, options)
+                .should.equal('Site description');
+        });
+
+        // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
+        it('has correct fallbacks for context: page (legacy format)', function () {
+            const post = {
+                html: '<p>Page html</p>',
+                custom_excerpt: 'Page custom excerpt',
+                meta_description: 'Page meta description',
+                twitter_description: 'Page twitter description'
+            };
+
+            getMetaDescription({post}, {context: 'page'}, options)
+                .should.equal('Page twitter description');
+
+            post.twitter_description = '';
+
+            getMetaDescription({post}, {context: 'page'}, options)
+                .should.equal('Page custom excerpt');
+
+            post.custom_excerpt = '';
+
+            getMetaDescription({post}, {context: 'page'}, options)
+                .should.equal('Page meta description');
+
+            post.meta_description = '';
+
+            getMetaDescription({post}, {context: 'page'}, options)
+                .should.equal('Page html');
+
+            post.html = '';
+
+            getMetaDescription({post}, {context: 'page'}, options)
+                .should.equal('Site description');
+        });
+
+        it('has correct fallbacks for context: author', function () {
+            const author = {
+                meta_description: 'Author meta description',
+                bio: 'Author bio'
+            };
+
+            getMetaDescription({author}, {context: 'author'}, options)
+                .should.equal('Author meta description');
+
+            author.meta_description = '';
+
+            getMetaDescription({author}, {context: 'author'}, options)
+                .should.equal('Author bio');
+
+            author.bio = '';
+
+            getMetaDescription({author}, {context: 'author'}, options)
+                .should.equal('Site meta description');
+
+            localSettingsCache.meta_description = '';
+
+            should(
+                getMetaDescription({author}, {context: 'author'}, options)
+            ).equal(null);
+        });
+
+        it('has correct fallbacks for context: author_paged', function () {
+            const author = {
+                meta_description: 'Author meta description',
+                bio: 'Author bio'
+            };
+
+            getMetaDescription({author}, {context: ['author', 'paged']}, options)
+                .should.equal('Author meta description');
+
+            author.meta_description = '';
+
+            getMetaDescription({author}, {context: ['author', 'paged']}, options)
+                .should.equal('Author bio');
+
+            author.bio = '';
+
+            getMetaDescription({author}, {context: ['author', 'paged']}, options)
+                .should.equal('Site meta description');
+
+            localSettingsCache.meta_description = '';
+
+            should(
+                getMetaDescription({author}, {context: ['author', 'paged']}, options)
+            ).equal(null);
+        });
+
+        it('has correct fallbacks for context: tag', function () {
+            const tag = {
+                meta_description: 'Tag meta description',
+                description: 'Tag description'
+            };
+
+            getMetaDescription({tag}, {context: 'tag'}, options)
+                .should.equal('Tag meta description');
+
+            tag.meta_description = '';
+
+            getMetaDescription({tag}, {context: 'tag'}, options)
+                .should.equal('Tag description');
+
+            tag.description = '';
+
+            getMetaDescription({tag}, {context: 'tag'}, options)
+                .should.equal('Site meta description');
+
+            localSettingsCache.meta_description = '';
+
+            should(
+                getMetaDescription({tag}, {context: 'tag'}, options)
+            ).equal(null);
+        });
+
+        it('has correct fallbacks for context: tag_paged', function () {
+            const tag = {
+                meta_description: 'Tag meta description',
+                description: 'Tag description'
+            };
+
+            getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
+                .should.equal('Tag meta description');
+
+            tag.meta_description = '';
+
+            getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
+                .should.equal('Tag description');
+
+            tag.description = '';
+
+            getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
+                .should.equal('Site meta description');
+
+            localSettingsCache.meta_description = '';
+
+            should(
+                getMetaDescription({tag}, {context: ['tag', 'paged']}, options)
+            ).equal(null);
+        });
     });
 
     it('v3: should return data page meta description if on root context contains page', function () {
