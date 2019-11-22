@@ -9,7 +9,7 @@
 .koenig-editor__editor {
     font-family: var(--font-family);
     font-size: 1.7rem;
-    font-weight: 200;
+    font-weight: 300;
     letter-spacing: 0.1px;
     color: var(--darkgrey);
     text-rendering: optimizeLegibility;

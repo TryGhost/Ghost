@@ -322,7 +322,7 @@ textarea {
 .gh-radio-desc {
     font-size: 1.3rem;
     line-height: 1.4em;
-    font-weight: 200;
+    font-weight: 300;
     color: color-mod(var(--midgrey) l(+10%));
 }
 

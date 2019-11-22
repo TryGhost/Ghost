@@ -57,7 +57,7 @@
     margin: 0;
     font-size: 1.4rem;
     line-height: 1.55em;
-    font-weight: 200;
+    font-weight: 300;
     letter-spacing: 0.5px;
     color: rgba(255,255,255,0.85);
 }
@@ -72,7 +72,7 @@
     align-self: flex-end;
     margin-bottom: 7px;
     font-size: 1.2rem;
-    font-weight: 200;
+    font-weight: 300;
 }
 
  .tour .popover-item .tour-optout em {
