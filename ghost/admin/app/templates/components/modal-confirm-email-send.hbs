@@ -33,6 +33,24 @@
 
     <div class="modal-body">
         <p>Your post has been published but the email failed to send. Please check your <LinkTo @route="settings.labs">Mailgun configuration</LinkTo> under Labs → Members if the error persists.</p>
+        <p class="mb0">
+            <button type="button" class="gh-btn gh-btn-text regular" {{action (toggle "errorDetailsOpen" this)}}
+                data-test-toggle-error>
+                {{#if errorDetailsOpen}}
+                {{svg-jar "arrow-down" class="nudge-top--2 w2 h2 fill-darkgrey mr1"}}
+                {{else}}
+                {{svg-jar "arrow-right" class="nudge-top--1 w2 h2 fill-darkgrey mr1"}}
+                {{/if}}
+                <span>Error details</span>
+            </button>
+        </p>
+        
+        {{#liquid-if errorDetailsOpen}}
+        <p class="error gh-box gh-box-error mt3 mb3">
+            {{svg-jar "warning"}}
+            {{this.errorMessage}}
+        </p>
+        {{/liquid-if}}
     </div>
 
     <div class="modal-footer">
