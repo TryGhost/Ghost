@@ -766,10 +766,6 @@ export default Controller.extend({
         if (status === 'published') {
             type = this.get('post.page') ? 'Page' : 'Post';
             path = this.get('post.url');
-
-            if (prevStatus === 'draft' && this.post.email) {
-                message = `Published and sent to ${this.post.email.emailCount} members!`;
-            }
         } else {
             type = 'Preview';
             path = this.get('post.previewUrl');
