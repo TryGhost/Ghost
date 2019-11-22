@@ -26,5 +26,25 @@ export default ModalComponent.extend({
                 throw e;
             }
         }
+    }),
+
+    retryEmailTask: task(function* () {
+        try {
+            yield this.model.retryEmailSend();
+            this.closeModal();
+            return true;
+        } catch (e) {
+            // update "failed" state if email fails again
+            if (e && e.name === 'EmailFailedError') {
+                this.set('errorMessage', e.message);
+                return;
+            }
+
+            // TODO: test a non-email failure - maybe this needs to go through
+            // the notifications service
+            if (e) {
+                throw e;
+            }
+        }
     })
 });

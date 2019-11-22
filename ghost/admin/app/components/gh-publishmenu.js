@@ -7,7 +7,7 @@ import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 const CONFIRM_EMAIL_POLL_LENGTH = 1000;
-const CONFIRM_EMAIL_MAX_POLL_LENGTH = 10 * 1000;
+const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 
 export default Component.extend({
     clock: service(),
@@ -212,6 +212,35 @@ export default Component.extend({
         }
 
         return post;
+    }),
+
+    retryEmailSend: action(function () {
+        return this._retryEmailSend.perform();
+    }),
+
+    _retryEmailSend: task(function* () {
+        if (!this.post.email) {
+            return;
+        }
+
+        let email = yield this.post.email.retry();
+
+        let pollTimeout = 0;
+        if (email && email.status !== 'submitted') {
+            while (pollTimeout < CONFIRM_EMAIL_POLL_LENGTH) {
+                yield timeout(CONFIRM_EMAIL_POLL_LENGTH);
+                email = yield email.reload();
+
+                if (email.status === 'submitted') {
+                    break;
+                }
+                if (email.status === 'failed') {
+                    throw new EmailFailedError(email.error);
+                }
+            }
+        }
+
+        return email;
     }),
 
     openEmailConfirmationModal: action(function (dropdown) {

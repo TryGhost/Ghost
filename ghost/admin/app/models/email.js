@@ -18,5 +18,9 @@ export default Model.extend({
     updatedAtUTC: attr('moment-utc'),
     updatedBy: attr('string'),
 
-    post: belongsTo('post')
+    post: belongsTo('post'),
+
+    retry() {
+        return this.store.adapterFor('email').retry(this);
+    }
 });
