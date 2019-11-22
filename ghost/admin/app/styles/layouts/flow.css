@@ -38,7 +38,7 @@
     border: transparent 1px solid;
     border-radius: 4px;
     color: #7d878a;
-    font-weight: 100;
+    font-weight: 300;
     transition: all 0.3s ease;
 }
 
@@ -167,7 +167,7 @@
     text-align: center;
     font-size: 1.9rem;
     line-height: 1.5em;
-    font-weight: 100;
+    font-weight: 300;
 }
 
 @media (max-width: 500px) {
@@ -183,7 +183,7 @@
 
 .gh-flow-content h1 {
     font-size: 4.2rem;
-    font-weight: 100;
+    font-weight: 300;
 }
 
 @media (max-width: 600px) {

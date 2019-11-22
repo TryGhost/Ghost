@@ -126,7 +126,7 @@
 .gh-publishmenu-radio-desc {
     font-size: 1.3rem;
     line-height: 1.4em;
-    font-weight: 200;
+    font-weight: 300;
     color: color-mod(var(--midgrey) l(+10%));
     margin-top: 2px;
 }
@@ -218,7 +218,7 @@
 
 .gh-date-time-picker-timezone {
     font-size: 1.1rem;
-    font-weight: 200;
+    font-weight: 300;
     color: color-mod(var(--midgrey) l(+17%));
     margin-left: -30px;
 }
@@ -227,7 +227,7 @@
     display: block;
     font-size: 1.3rem;
     line-height: 1.4em;
-    font-weight: 200;
+    font-weight: 300;
     color: var(--red);
 }
 
