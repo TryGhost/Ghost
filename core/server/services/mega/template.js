@@ -93,6 +93,7 @@ ol,
 dl,
 blockquote {
     margin: 0 0 1.5em 0;
+    line-height: 1.6em;
 }
 
 ol,
@@ -143,10 +144,10 @@ dd {
 
 blockquote {
     margin: 2em 0;
-    padding: 0 1.6em 0 1.2em;
+    padding: 0 25px 0 25px;
     border-left: #15212A 2px solid;
     font-style: italic;
-    font-size: 22px;
+    font-size: 20px;
     line-height: 1.75em;
     letter-spacing: -0.2px;
 }
@@ -281,7 +282,7 @@ figure blockquote p {
 
 .site-info {
     padding-top: 50px;
-    padding-bottom: 50px;
+    border-bottom: 1px solid #e5eff5;
 }
 
 .site-url {
@@ -291,7 +292,6 @@ figure blockquote p {
     font-weight: 700;
     text-transform: uppercase;
     text-align: center;
-    border-bottom: 1px solid #e5eff5;
     padding-bottom: 50px;
 }
 
@@ -305,6 +305,9 @@ figure blockquote p {
 
 .post-title-link {
     color: #15212A;
+    display: block;
+    text-align: center;
+    margin-top: 50px;
 }
 
 .post-meta,
@@ -340,6 +343,7 @@ figure blockquote p {
     line-height: 1.5em;
     color: #23323D;
     padding-bottom: 20px;
+    border-bottom: 1px solid #e5eff5;
 }
 
 .post-content a {
@@ -481,7 +485,6 @@ figure blockquote p {
     color: #738a94;
     margin-top: 20px;
     text-align: center;
-    border-top: 1px solid #e5eff5;
     font-size: 13px;
     padding-bottom: 40px;
     padding-top: 50px;
@@ -587,6 +590,11 @@ figure blockquote p {
     RESPONSIVE AND MOBILE FRIENDLY STYLES
 ------------------------------------- */
 @media only screen and (max-width: 620px) {
+
+    table[class=body] {
+        width: 100%;
+        min-width: 100%;
+    }
 
     table[class=body] p,
     table[class=body] ul,
@@ -709,9 +717,14 @@ figure blockquote p {
     }
 
     table[class=body] blockquote {
-        font-size: 19px !important;
+        font-size: 17px !important;
         line-height: 1.6em !important;
-        margin: 1.5em 0 !important;
+        margin-bottom: 0 !important;
+        padding-left: 15px !important;
+    }
+
+    table[class=body] blockquote + * {
+        margin-top: 1.5em !important;
     }
     
     table[class=body] hr {
@@ -774,21 +787,21 @@ figure blockquote p {
 
 <body class="">
     <span class="preheader">${ post.excerpt ? post.excerpt : `${post.title} – ` }</span>
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" width="100%">
         <tr>
             <td>&nbsp;</td>
             <td class="container">
                 <div class="content">
 
                     <!-- START CENTERED WHITE CONTAINER -->
-                    <table role="presentation" class="main">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
 
                         <!-- START MAIN CONTENT AREA -->
                         <tr>
                             <td class="wrapper">
-                                <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                     <tr>
-                                        <td class="site-info">
+                                        <td class="site-info" width="100%" align="center">
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                                 ${ site.icon ? `
                                                 <tr>
@@ -796,7 +809,7 @@ figure blockquote p {
                                                 </tr>
                                                 ` : ``}
                                                 <tr>
-                                                    <td class="site-url"><a href="${site.url}">${site.title}</a></td>
+                                                    <td class="site-url"><div style="width: 100% !important;"><a href="${site.url}">${site.title}</a></div></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -805,8 +818,8 @@ figure blockquote p {
                                         <td class="post-title"><a href="${post.url}" class="post-title-link">${post.title}</a></td>
                                     </tr>
                                     <tr>
-                                        <td>
-                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                        <td align="center">
+                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                                 <tr>
                                                     <td class="post-meta">
                                                         By ${post.authors} – 
@@ -841,8 +854,8 @@ figure blockquote p {
                         <!-- END MAIN CONTENT AREA -->
 
                         <tr>
-                            <td class="wrapper">
-                                <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                            <td class="wrapper" align="center">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                     <tr>
                                         <td class="footer">${site.title} &copy; ${date.getFullYear()} – <a href="%recipient.unsubscribe_url%">Unsubscribe</a></td>
                                     </tr>
