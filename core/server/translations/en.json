@@ -256,7 +256,8 @@
                 "apiKeyNotFound": "API Key not found"
             },
             "email": {
-                "emailNotFound": "Email not found."
+                "emailNotFound": "Email not found.",
+                "retryNotAllowed": "Only failed emails can be retried"
             },
             "base": {
                 "index": {

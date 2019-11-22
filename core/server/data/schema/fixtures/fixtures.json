@@ -374,8 +374,18 @@
                     "object_type": "email_preview"
                 },
                 {
-                    "name": "Email",
+                    "name": "Browse emails",
+                    "action_type": "browse",
+                    "object_type": "email"
+                },
+                {
+                    "name": "Read emails",
                     "action_type": "read",
+                    "object_type": "email"
+                },
+                {
+                    "name": "Retry emails",
+                    "action_type": "retry",
                     "object_type": "email"
                 }
             ]
