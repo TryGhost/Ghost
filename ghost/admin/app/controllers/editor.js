@@ -722,8 +722,8 @@ export default Controller.extend({
 
         // post.tags is an array so hasDirtyAttributes doesn't pick up
         // changes unless the array ref is changed
-        let currentTags = this.getWithDefault('_tagNames', []).join('');
-        let previousTags = this.getWithDefault('_previousTagNames', []).join('');
+        let currentTags = (this._tagNames || []).join('');
+        let previousTags = (this._previousTagNames || []).join('');
         if (currentTags !== previousTags) {
             return true;
         }

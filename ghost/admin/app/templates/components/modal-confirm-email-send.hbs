@@ -44,5 +44,12 @@
         <button {{on "click" this.closeModal}} class="gh-btn" data-test-button="cancel-publish-and-email">
             <span>Close</span>
         </button>
+        <GhTaskButton
+            @buttonText="Retry email"
+            @runningText="Sending..."
+            @task={{this.retryEmailTask}}
+            @class="gh-btn gh-btn-red gh-btn-icon"
+            data-test-button="retry-email"
+        />
     </div>
 {{/unless}}
