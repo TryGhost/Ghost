@@ -1,5 +1,6 @@
 const models = require('../../models');
 const common = require('../../lib/common');
+const megaService = require('../../services/mega');
 
 module.exports = {
     docName: 'emails',
@@ -22,11 +23,37 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         throw new common.errors.NotFoundError({
-                            message: common.i18n.t('errors.api.email.emailNotFound')
+                            message: common.i18n.t('errors.models.email.emailNotFound')
                         });
                     }
 
                     return model.toJSON(frame.options);
+                });
+        }
+    },
+
+    retry: {
+        data: [
+            'id'
+        ],
+        permissions: true,
+        query(frame) {
+            return models.Email.findOne(frame.data, frame.options)
+                .then(async (model) => {
+                    if (!model) {
+                        throw new common.errors.NotFoundError({
+                            message: common.i18n.t('errors.models.email.emailNotFound')
+                        });
+                    }
+
+                    if (model.get('status') !== 'failed') {
+                        throw new common.errors.IncorrectUsageError({
+                            message: common.i18n.t('errors.models.email.retryNotAllowed')
+                        });
+                    }
+
+                    const result = await megaService.mega.retryFailedEmail(model);
+                    return result.toJSON(frame.options);
                 });
         }
     }

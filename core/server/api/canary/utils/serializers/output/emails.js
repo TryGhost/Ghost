@@ -3,5 +3,9 @@ module.exports = {
         frame.response = {
             emails: [email]
         };
+    },
+
+    get retry() {
+        return this.read;
     }
 };
