@@ -33,8 +33,11 @@
 
     <div class="modal-body">
         <p>Your post has been published but the email failed to send.</p>
-        <p class="error">Error: {{this.errorMessage}}</p>
-        <p>Check your <LinkTo @route="settings.labs">mailgun settings</LinkTo> if it persists.</p>
+        <p class="error gh-box gh-box-error">
+            {{svg-jar "warning"}}
+            Error: {{this.errorMessage}}
+        </p>
+        <p>Please check your Mailgun configuration under <LinkTo @route="settings.labs">Labs → Members</LinkTo> if the error persists.</p>
     </div>
 
     <div class="modal-footer">
