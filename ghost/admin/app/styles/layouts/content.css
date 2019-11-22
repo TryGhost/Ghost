@@ -201,6 +201,17 @@
     margin-right: 3px;
 }
 
+.gh-content-status-draft,
+.gh-content-status-published,
+.gh-content-status-scheduled, 
+.gh-content-status-emailed {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 19px;
+    padding: 0 4px;
+}
+
 .gh-content-status-published {
     color: var(--midgrey);
     background: var(--lightgrey);
@@ -231,14 +242,21 @@
     fill: var(--blue);
 }
 
-.gh-content-emailed {
+.gh-content-status-emailed {
     display: inline-block;
-    margin: 2px 6px 0;
+    margin: 0px 6px;
+    background: var(--lightgrey);
+    padding-right: 5px;
+    border-radius: 3px;
 }
 
-.gh-content-emailed svg {
-    width: 13px;
-    height: 13px;
+.gh-content-status-emailed svg {
+    width: 12px;
+    height: 12px;
+}
+
+.gh-content-status-emailed.error {
+    background: color-mod(var(--red) a(10%));
 }
 
 .gh-content-entry-author {
