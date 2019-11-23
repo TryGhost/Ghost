@@ -1,0 +1,26 @@
+# You need the BCrypt hash string of the plaintext password
+# You can generate the BCrypt hash string at : https://passwordhashing.com/BCrypt
+#
+# This Squash file is using the BCrypt hash string
+# ($2b$10$H3T/cnjaCIgBHwUiMMPlzuMxNFVUrAMdv67CM5S.DEPsF8RF2mWsW)
+# # of the password : Ghost@123
+# You can change the usr_email and usr_password as you wish.
+#
+# The default settings of Admin client panel:
+#   URL: /Ghost
+#   email:  ghost@example.com
+#   password:  Ghost@123
+
+deployments:
+  Ghost:
+    filename:
+      ./Dockerfile
+    environment:
+      - USR_PASSWORD=$2b$10$H3T/cnjaCIgBHwUiMMPlzuMxNFVUrAMdv67CM5S.DEPsF8RF2mWsW
+      - USR_EMAIL=ghost@example.com
+    build_options: --build-arg squash_domain=$SQUASH_DOMAIN --build-arg usr_email=$USR_EMAIL --build-arg usr_password=$USR_PASSWORD
+    vm_size:
+      1GB
+    port_forwarding:
+      80:2368
+    backend_wait: 90
