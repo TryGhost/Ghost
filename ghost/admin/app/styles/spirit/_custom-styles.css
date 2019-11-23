@@ -180,7 +180,6 @@ button, .btn-base {
     position: absolute;
     bottom: calc(100% + 4px);
     left: 50%;
-    width: max-content;
     white-space: nowrap;
     padding: 3px 7px;
     border-radius: 3px;
