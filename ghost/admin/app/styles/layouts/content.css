@@ -259,6 +259,10 @@
     background: color-mod(var(--red) a(10%));
 }
 
+.gh-content-status-emailed.scheduled {
+    background: color-mod(var(--green) a(20%));
+}
+
 .gh-content-entry-author {
     color: var(--middarkgrey);
 }
