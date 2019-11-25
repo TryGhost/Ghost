@@ -21,12 +21,12 @@
                 <table class="ma0" style="table-layout: fixed">
                     <tbody>
                         <tr>
-                            <td class="pa2 pl0 fw7 f8 w16">Subject:</td>
-                            <td class="pa0 truncate midgrey">{{this.post.email.subject}}</td>
+                            <td class="pa1 pl0 fw7 f8 w16 v-top lh-copy">Subject:</td>
+                            <td class="pa1 pa0 word-wrap midgrey v-top lh-copy">{{this.post.email.subject}}</td>
                         </tr>
                         <tr>
-                            <td class="pa2 pl0 fw7 f8 w16 nowrap">Sent on:</td>
-                            <td class="pa0 truncate midgrey">{{gh-format-post-time this.post.email.createdAtUTC}}</td>
+                            <td class="pa1 pl0 fw7 f8 w16 nowrap v-top lh-copy">Sent on:</td>
+                            <td class="pa1 pa0 word-wrap midgrey v-top lh-copy">{{gh-format-post-time this.post.email.createdAtUTC}}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -37,27 +37,11 @@
         </div>
     {{else if (or this.retryEmail.isRunning this.post.email.isFailure)}}
         {{!-- Mail failed to send --}}
-        <p>Email failed to send when publishing this post.  Please check your <LinkTo @route="settings.labs">Mailgun configuration</LinkTo> under Labs → Members if the error persists.</p>
-        <p class="gh-box gh-box-error settings-menu-mailgun-warning">
-            {{svg-jar "warning"}}
-            {{this.post.email.error}}
-        </p>
-        <div class="flex">
-            <GhTaskButton
-                @buttonText="Retry email"
-                @runningText="Sending..."
-                @task={{this.retryEmail}}
-                @class="gh-btn gh-btn-icon flex-grow-1"
-                data-test-button="retry-email"
-            />
-        </div>
 
-        <hr>
-
-        <div class="ba b--whitegrey bg-white br3">
+        <div class="ba b--whitegrey bg-white br3 gh-box-error-border">
             <div class="flex pa5 pt4 pb4 items-center bb b--whitegrey">
                 <div class="w16 flex flex-column items-center">
-                    <span class="db mr4 mt3">{{svg-jar "send-email" class="w7 h7 stroke-darkgrey"}}</span>
+                    <span class="db mr4 mt3">{{svg-jar "warning" class="w7 h7 fill-red"}}</span>
                 </div>
                 <div class="flex flex-column justify-center">
                     <p class="ma0 pa0 midgrey">Post failed to send to</p>
@@ -65,21 +49,38 @@
                 </div>
             </div>
             <div class="pa5 pt3 pb3 f7 bb b--whitegrey">
+                <p class="mb2 lh-copy">
+                    Email failed to send when publishing this post. Please check your <LinkTo @route="settings.labs">Mailgun configuration</LinkTo> under Labs → Members if the error persists.
+                </p>
+                <p class="ma0 pa0">
+                    <table class="ma0" style="table-layout: fixed">
+                        <tbody>
+                            <tr>
+                                <td class="pa1 pl0 fw7 f8 w16 v-top lh-copy">Error:</td>
+                                <td class="pa1 pl0 word-wrap midgrey v-top lh-copy">{{this.post.email.error}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </p>
+            </div>
+            <div class="pa5 pt3 pb3 f7 bb b--whitegrey">
                 <table class="ma0" style="table-layout: fixed">
                     <tbody>
                         <tr>
-                            <td class="pa2 pl0 fw7 f8 w16">Subject:</td>
-                            <td class="pa0 truncate midgrey">{{this.post.email.subject}}</td>
+                            <td class="pa1 pl0 fw7 f8 w16 v-top lh-copy">Subject:</td>
+                            <td class="pa1 pl0 truncate midgrey v-top lh-copy">{{this.post.email.subject}}</td>
                         </tr>
                         <tr>
-                            <td class="pa2 pl0 fw7 f8 w16 nowrap">Tried:</td>
-                            <td class="pa0 truncate midgrey">{{gh-format-post-time this.post.email.createdAtUTC}}</td>
+                            <td class="pa1 pl0 fw7 f8 w16 nowrap v-top lh-copy">Tried:</td>
+                            <td class="pa1 pl0 truncate midgrey v-top lh-copy">{{gh-format-post-time this.post.email.createdAtUTC}}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <div class="pa5 pt3 pb3">
-                <p class="ma0 pa0"><button {{on "click" this.toggleEmailPreview}} class="blue">View saved email</button></p>
+            <div class="pa5 pt3 pb3 flex justify-between items center">
+                <button {{on "click" this.toggleEmailPreview}} class="blue">View email</button>
+                <GhTaskButton @buttonText="Retry send" @runningText="Sending..." @task={{this.retryEmail}}
+                    @class="gh-btn gh-btn-icon" data-test-button="retry-email" />
             </div>
         </div>
     {{else}}
