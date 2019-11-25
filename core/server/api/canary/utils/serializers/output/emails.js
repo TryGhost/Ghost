@@ -1,7 +1,7 @@
 module.exports = {
     read(email, apiConfig, frame) {
         frame.response = {
-            emails: [email]
+            emails: [email.toJSON(frame.options)]
         };
     },
 

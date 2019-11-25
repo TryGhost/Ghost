@@ -27,7 +27,7 @@ module.exports = {
                         });
                     }
 
-                    return model.toJSON(frame.options);
+                    return model;
                 });
         }
     },
@@ -52,8 +52,7 @@ module.exports = {
                         });
                     }
 
-                    const result = await megaService.mega.retryFailedEmail(model);
-                    return result.toJSON(frame.options);
+                    return await megaService.mega.retryFailedEmail(model);
                 });
         }
     }
