@@ -5432,10 +5432,10 @@ metascraper-image@5.8.7:
   dependencies:
     "@metascraper/helpers" "^5.8.7"
 
-metascraper-logo-favicon@5.8.7:
-  version "5.8.7"
-  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.8.7.tgz#843aeec17d69df17e13870d45a9d9b65211cd206"
-  integrity sha512-U60bZttJbD01gV4aSl1qyx9UU0p5UzK1lJ2+mvVzi+uoz8vXYyzIIfUj+9xlOPtOCC+hEK62ys2vlwecDEJObw==
+metascraper-logo-favicon@5.8.9:
+  version "5.8.9"
+  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.8.9.tgz#969a4f531cc218f2677e8f16e5584bfbdbc71f94"
+  integrity sha512-4WSpy+dWv6iIgVWEYH9mRxS08Cuf1B2Uc8123w3ySnCg38ug9pO1atCK8V2OwDS99oIHOucQgpg8eU2xGqlJSg==
   dependencies:
     "@metascraper/helpers" "^5.8.7"
     got "~9.6.0"
