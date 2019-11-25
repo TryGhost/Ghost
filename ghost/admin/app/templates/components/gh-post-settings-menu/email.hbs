@@ -5,7 +5,7 @@
 </div>
 
 <div class="settings-menu-content settings-menu-email">
-    {{#if post.email}}
+    {{#if this.post.email.isSuccess}}
         {{!-- Mail has already been sent --}}
         <div class="ba b--whitegrey bg-white br3">
             <div class="flex pa5 pt4 pb4 items-center bb b--whitegrey">
@@ -35,9 +35,56 @@
                 <p class="ma0 pa0"><button {{on "click" this.toggleEmailPreview}} class="blue">View sent email</button></p>
             </div>
         </div>
+    {{else if (or this.retryEmail.isRunning this.post.email.isFailure)}}
+        {{!-- Mail failed to send --}}
+        <p>Email failed to send when publishing this post.  Please check your <LinkTo @route="settings.labs">Mailgun configuration</LinkTo> under Labs → Members if the error persists.</p>
+        <p class="gh-box gh-box-error settings-menu-mailgun-warning">
+            {{svg-jar "warning"}}
+            {{this.post.email.error}}
+        </p>
+        <div class="flex">
+            <GhTaskButton
+                @buttonText="Retry email"
+                @runningText="Sending..."
+                @task={{this.retryEmail}}
+                @class="gh-btn gh-btn-icon flex-grow-1"
+                data-test-button="retry-email"
+            />
+        </div>
+
+        <hr>
+
+        <div class="ba b--whitegrey bg-white br3">
+            <div class="flex pa5 pt4 pb4 items-center bb b--whitegrey">
+                <div class="w16 flex flex-column items-center">
+                    <span class="db mr4 mt3">{{svg-jar "send-email" class="w7 h7 stroke-darkgrey"}}</span>
+                </div>
+                <div class="flex flex-column justify-center">
+                    <p class="ma0 pa0 midgrey">Post failed to send to</p>
+                    <p class="ma0 pa0 f5 lh-solid">{{pluralize this.post.email.emailCount "member"}}</p>
+                </div>
+            </div>
+            <div class="pa5 pt3 pb3 f7 bb b--whitegrey">
+                <table class="ma0" style="table-layout: fixed">
+                    <tbody>
+                        <tr>
+                            <td class="pa2 pl0 fw7 f8 w16">Subject:</td>
+                            <td class="pa0 truncate midgrey">{{this.post.email.subject}}</td>
+                        </tr>
+                        <tr>
+                            <td class="pa2 pl0 fw7 f8 w16 nowrap">Tried:</td>
+                            <td class="pa0 truncate midgrey">{{gh-format-post-time this.post.email.createdAtUTC}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pa5 pt3 pb3">
+                <p class="ma0 pa0"><button {{on "click" this.toggleEmailPreview}} class="blue">View saved email</button></p>
+            </div>
+        </div>
     {{else}}
         {{!-- Mail not sent yet --}}
-        {{#if mailgunError}}
+        {{#if this.mailgunError}}
             <p class="gh-box gh-box-warning settings-menu-mailgun-warning">
                 {{svg-jar "info" class="w5 h5 fill-yellow nl1"}}
                 You need to configure Mailgun in {{#link-to "settings.labs" data-test-nav="labs"}}Labs → Members settings{{/link-to}} to enable email newsletters.
@@ -45,20 +92,20 @@
         {{/if}}
 
         <form {{action "discardEnter" on="submit"}}>
-            {{#gh-form-group errors=post.errors hasValidated=post.hasValidated property="emailSubject"}}
+            {{#gh-form-group errors=this.post.errors hasValidated=this.post.hasValidated property="emailSubject"}}
                 <label for="og-title">Subject</label>
                 {{gh-text-input
                     class="post-setting-email-subject"
                     id="email-subject"
                     name="post-setting-email-subject"
-                    placeholder=(truncate emailSubject 40)
-                    value=(readonly emailSubjectScratch)
-                    input=(action (mut emailSubjectScratch) value="target.value")
-                    focus-out=(action "setEmailSubject" emailSubjectScratch)
+                    placeholder=(truncate this.emailSubject 40)
+                    value=(readonly this.emailSubjectScratch)
+                    input=(action (mut this.emailSubjectScratch) value="target.value")
+                    focus-out=(action "setEmailSubject" this.emailSubjectScratch)
                     stopEnterKeyDownPropagation=true
-                    disabled=mailgunError
+                    disabled=this.mailgunError
                     data-test-field="email-subject"}}
-                {{gh-error-message errors=post.errors property="emailSubject" data-test-error="email-subject"}}
+                {{gh-error-message errors=this.post.errors property="emailSubject" data-test-error="email-subject"}}
             {{/gh-form-group}}
 
             <div class="form-group">
@@ -77,21 +124,21 @@
                         id="email-test"
                         name="post-setting-email-test"
                         placeholder="noreply@example.com"
-                        value=testEmailAddress
+                        value=this.testEmailAddress
                         stopEnterKeyDownPropagation=true
-                        disabled=mailgunError
+                        disabled=this.mailgunError
                         data-test-field="email-test"}}
 
-                    {{#if sendTestEmailError}}
-                        <div class="error"><p class="response">{{sendTestEmailError}}</p></div>
+                    {{#if this.sendTestEmailError}}
+                        <div class="error"><p class="response">{{this.sendTestEmailError}}</p></div>
                     {{/if}}
 
                     {{gh-task-button "Send test email"
-                        task=sendTestEmail
+                        task=this.sendTestEmail
                         successText="Email sent"
                         runningText="Sending..."
                         class="gh-btn w-100 mt2 gh-btn-icon"
-                        disabled=mailgunError
+                        disabled=this.mailgunError
                         data-test-send-test-mail=true
                     }}
                 </div>

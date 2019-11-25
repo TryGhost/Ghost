@@ -1,10 +1,14 @@
 import Component from '@ember/component';
+import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import validator from 'validator';
 import {action} from '@ember/object';
 import {alias, oneWay, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
+
+const RETRY_EMAIL_POLL_LENGTH = 1000;
+const RETRY_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 
 export default Component.extend({
     ajax: service(),
@@ -87,5 +91,30 @@ export default Component.extend({
                 this.set('sendTestEmailError', 'Error sending mail, please check your Mailgun config in Labs → Members');
             }
         }
-    }).drop()
+    }).drop(),
+
+    retryEmail: task(function* () {
+        let {email} = this.post;
+
+        if (email && email.status === 'failed') {
+            // trigger the retry
+            yield email.retry();
+
+            // poll for success/failure state
+            let pollTimeout = 0;
+            while (pollTimeout < RETRY_EMAIL_MAX_POLL_LENGTH) {
+                yield timeout(RETRY_EMAIL_POLL_LENGTH);
+                yield email.reload();
+
+                if (email.status === 'submitted') {
+                    break;
+                }
+                if (email.status === 'failed') {
+                    throw new EmailFailedError(email.error);
+                }
+            }
+        }
+
+        return true;
+    })
 });
