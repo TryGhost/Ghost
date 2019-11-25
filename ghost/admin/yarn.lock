@@ -5569,10 +5569,10 @@ ember-source-channel-url@^1.1.0:
   dependencies:
     got "^8.0.1"
 
-ember-source@3.12.0:
-  version "3.12.0"
-  resolved "https://registry.yarnpkg.com/ember-source/-/ember-source-3.12.0.tgz#92f72894836d4497e704901c1d061c61b066bddf"
-  integrity sha512-4iA2BgYmNLWysifLyt2LCQgU9ux/NiTR/MT7KTt9HUyTDJyivcdyKNtfrUQst/1InUvn+MxuQ0ZsbQICJkX6yA==
+ember-source@3.12.1:
+  version "3.12.1"
+  resolved "https://registry.yarnpkg.com/ember-source/-/ember-source-3.12.1.tgz#f76820bbc77c45e0bc658559da8f720c33c63ac0"
+  integrity sha512-kJe/W3NhJ+mvpMfliWV9YlOLTzSxjknugLDupVb/MAVIPy08Y6JY3XtTtoKFYk2nJQY2XrmV+6BhefShHUaYIA==
   dependencies:
     broccoli-funnel "^2.0.2"
     broccoli-merge-trees "^3.0.2"
