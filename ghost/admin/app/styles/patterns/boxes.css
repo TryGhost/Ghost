@@ -56,3 +56,7 @@
 .gh-box-error a {
     color: var(--red);
 }
+
+.gh-box-error-border {
+    border-left: 5px solid var(--red);
+}
