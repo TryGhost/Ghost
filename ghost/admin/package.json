@@ -80,7 +80,7 @@
     "ember-infinity": "1.4.9",
     "ember-load": "0.0.17",
     "ember-load-initializers": "2.1.0",
-    "ember-mocha": "0.16.1",
+    "ember-mocha": "0.16.2",
     "ember-moment": "8.0.0",
     "ember-one-way-select": "4.0.0",
     "ember-power-calendar-moment": "0.1.7",
@@ -122,7 +122,7 @@
     "postcss-easy-import": "3.0.0",
     "reframe.js": "2.2.6",
     "simplemde": "https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost",
-    "testem": "3.0.0",
+    "testem": "3.0.1",
     "top-gh-contribs": "2.0.4",
     "validator": "7.2.0",
     "walk-sync": "2.0.2"
