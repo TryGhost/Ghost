@@ -44,9 +44,21 @@
         {{/if}}
 
         {{#if (or this.post.email (and this.post.isScheduled this.post.sendEmailWhenPublished))}}
-        <span data-tooltip={{if (eq this.post.email.status "failed") "Failed to send post by email" "Sent by email"}} class="gh-content-status-emailed {{if (eq this.post.email.status "failed") "error"}}">
-            {{svg-jar "send-email" class=(if (eq this.post.email.status "failed") "stroke-red" "stroke-midgrey")}}
-        </span>
+            {{#if (eq this.post.email.status "failed")}}
+                <span data-tooltip="Failed to send post by email" class="gh-content-status-emailed error">
+                    {{svg-jar "send-email" class="stroke-red"}}
+                </span>
+            {{else}}
+                {{#if this.isScheduled}}
+                    <span data-tooltip="To be sent by email" class="gh-content-status-emailed scheduled">
+                        {{svg-jar "send-email" class="stroke-green-d2"}}
+                    </span>
+                {{else}}
+                    <span data-tooltip="Sent by email" class="gh-content-status-emailed">
+                        {{svg-jar "send-email" class="stroke-midgrey"}}
+                    </span>
+                {{/if}}
+            {{/if}}
         {{/if}}
     </div>
 {{/link-to}}
