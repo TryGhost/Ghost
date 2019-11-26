@@ -1,7 +1,10 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
+    session: service(),
+
     errorMessage: null,
 
     // Allowed actions
