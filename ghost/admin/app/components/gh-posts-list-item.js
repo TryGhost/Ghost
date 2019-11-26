@@ -6,6 +6,7 @@ import {inject as service} from '@ember/service';
 
 export default Component.extend({
     ghostPaths: service(),
+    session: service(),
 
     tagName: 'li',
     classNames: ['gh-list-row', 'gh-posts-list-item'],

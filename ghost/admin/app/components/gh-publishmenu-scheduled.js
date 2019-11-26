@@ -9,6 +9,7 @@ export default Component.extend({
 
     post: null,
     saveType: null,
+    session: service(),
     isClosing: null,
 
     // used to set minDate in datepicker
