@@ -133,6 +133,7 @@ module.exports = function setupSiteApp(options = {}) {
     // Initializes members specific routes as well as assigns members specific data to the req/res objects
     siteApp.get('/members/ssr', membersMiddleware.getIdentityToken);
     siteApp.delete('/members/ssr', membersMiddleware.deleteSession);
+    siteApp.delete('/members/subscriptions', membersMiddleware.cancelSubscription);
     siteApp.post('/members/webhooks/stripe', membersMiddleware.stripeWebhooks);
 
     siteApp.use(membersMiddleware.createSessionFromToken);
