@@ -75,7 +75,7 @@ export default Component.extend({
                 return false;
             }
             if (!this.settings.get('bulkEmailSettings.isEnabled')) {
-                this.set('sendTestEmailError', 'Please configure Mailgun in Labs → Members');
+                this.set('sendTestEmailError', 'Please check your Mailgun configuration');
                 return false;
             }
             this.set('sendTestEmailError', '');
@@ -88,7 +88,7 @@ export default Component.extend({
             return yield this.ajax.post(url, options);
         } catch (error) {
             if (error) {
-                this.set('sendTestEmailError', 'Error sending mail, please check your Mailgun config in Labs → Members');
+                this.set('sendTestEmailError', 'Error sending mail, please check your Mailgun configuration');
             }
         }
     }).drop(),
