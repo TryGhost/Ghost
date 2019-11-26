@@ -133,6 +133,46 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]')
     el.addEventListener('click', clickHandler);
 });
 
+Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-subscription]'), function (el) {
+    function clickHandler(event) {
+        el.removeEventListener('click', clickHandler);
+        event.preventDefault();
+        el.classList.remove('error');
+        el.classList.add('loading');
+
+        var subscriptionId = el.dataset.membersCancelSubscription;
+
+        return fetch('{{blog-url}}/members/ssr', {
+            credentials: 'same-origin'
+        }).then(function (res) {
+            if (!res.ok) {
+                return null;
+            }
+
+            return res.text();
+        }).then(function (identity)  {
+            return fetch(`{{admin-url}}/api/canary/members/subscriptions/${subscriptionId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    identity: identity
+                })
+            });
+        }).then(function (res) {
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                el.addEventListener('click', clickHandler);
+                el.classList.remove('loading');
+                el.classList.add('error');
+            }
+        });
+    }
+    el.addEventListener('click', clickHandler);
+});
+
 var url = new URL(window.location);
 if (url.searchParams.get('token')) {
     url.searchParams.delete('token');
