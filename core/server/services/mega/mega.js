@@ -57,7 +57,7 @@ const sendTestEmail = async (postModel, emails) => {
  *
  * @param {object} post JSON object
  */
-const addEmail = async (post) => {
+const addEmail = async (post, options) => {
     const {members} = await membersService.api.members.list(Object.assign({filter: 'subscribed:true'}, {limit: 'all'}));
     const {emailTmpl, emails} = getEmailData(post, members);
 
@@ -77,7 +77,7 @@ const addEmail = async (post) => {
             html: emailTmpl.html,
             plaintext: emailTmpl.plaintext,
             submitted_at: moment().toDate()
-        });
+        }, {transacting: options.transacting});
     } else {
         return existing;
     }
