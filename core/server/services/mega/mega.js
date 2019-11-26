@@ -1,26 +1,21 @@
 const url = require('url');
 const moment = require('moment');
 const common = require('../../lib/common');
-const api = require('../../api');
 const membersService = require('../members');
 const bulkEmailService = require('../bulk-email');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
-const urlUtils = require('../../lib/url-utils');
 
-const getEmailData = (post, members = []) => {
-    const emailTmpl = postEmailSerializer.serialize(post);
+const getEmailData = async (postModel, members = []) => {
+    const emailTmpl = await postEmailSerializer.serialize(postModel);
     emailTmpl.from = membersService.config.getEmailFromAddress();
 
-    const membersToSendTo = members.filter((member) => {
-        return membersService.contentGating.checkPostAccess(post, member);
-    });
-    const emails = membersToSendTo.map(member => member.email);
-    const emailData = membersToSendTo.reduce((emailData, member) => {
+    const emails = members.map(member => member.email);
+    const emailData = members.reduce((emailData, member) => {
         return Object.assign({
             [member.email]: {
                 unique_id: member.uuid,
-                unsubscribe_url: createUnsubscribeUrl(member)
+                unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(member)
             }
         }, emailData);
     }, {});
@@ -28,23 +23,21 @@ const getEmailData = (post, members = []) => {
     return {emailTmpl, emails, emailData};
 };
 
-const sendEmail = async (post, members) => {
-    const {emailTmpl, emails, emailData} = getEmailData(post, members);
+const sendEmail = async (postModel, members) => {
+    const membersToSendTo = members.filter((member) => {
+        return membersService.contentGating.checkPostAccess(postModel.toJSON(), member);
+    });
+
+    const {emailTmpl, emails, emailData} = await getEmailData(postModel, membersToSendTo);
 
     return bulkEmailService.send(emailTmpl, emails, emailData);
 };
 
-const sendTestEmail = async (postModel, emails) => {
-    const post = await serialize(postModel);
-    const {emailTmpl} = getEmailData(post);
-    const emailData = emails.reduce((emailData, email) => {
-        return Object.assign({
-            [email]: {
-                unique_id: 'preview',
-                unsubscribe_url: createUnsubscribeUrl({})
-            }
-        }, emailData);
-    }, {});
+const sendTestEmail = async (postModel, toEmails) => {
+    const emailList = toEmails.map((email) => {
+        return {email};
+    });
+    const {emailTmpl, emails, emailData} = await getEmailData(postModel, emailList);
     emailTmpl.subject = `${emailTmpl.subject} [Test]`;
     return bulkEmailService.send(emailTmpl, emails, emailData);
 };
@@ -52,25 +45,25 @@ const sendTestEmail = async (postModel, emails) => {
 /**
  * addEmail
  *
- * Accepts a post object and creates an email record based on it. Only creates one
+ * Accepts a post model and creates an email record based on it. Only creates one
  * record per post
  *
- * @param {object} post JSON object
+ * @param {object} postModel Post Model Object
  */
-const addEmail = async (post, options) => {
+const addEmail = async (postModel, options) => {
     const {members} = await membersService.api.members.list(Object.assign({filter: 'subscribed:true'}, {limit: 'all'}));
-    const {emailTmpl, emails} = getEmailData(post, members);
+    const {emailTmpl, emails} = await getEmailData(postModel, members);
 
     // NOTE: don't create email object when there's nobody to send the email to
     if (!emails.length) {
         return null;
     }
-
-    const existing = await models.Email.findOne({post_id: post.id});
+    const postId = postModel.get('id');
+    const existing = await models.Email.findOne({post_id: postId});
 
     if (!existing) {
         return models.Email.add({
-            post_id: post.id,
+            post_id: postId,
             status: 'pending',
             email_count: emails.length,
             subject: emailTmpl.subject,
@@ -97,43 +90,6 @@ const retryFailedEmail = async (model) => {
         id: model.get('id')
     });
 };
-
-// NOTE: serialization is needed to make sure we are using current API and do post transformations
-//       such as image URL transformation from relative to absolute
-const serialize = async (model) => {
-    const frame = {options: {context: {user: true}}};
-    const apiVersion = model.get('api_version') || 'v3';
-    const docName = 'posts';
-
-    await api.shared
-        .serializers
-        .handle
-        .output(model, {docName: docName, method: 'read'}, api[apiVersion].serializers.output, frame);
-
-    return frame.response[docName][0];
-};
-
-/**
- * createUnsubscribeUrl
- *
- * Takes a member and returns the url that should be used to unsubscribe
- * In case of no member, generates the preview unsubscribe url - `?preview=1`
- *
- * @param {object} member
- * @param {string} member.uuid
- */
-function createUnsubscribeUrl(member) {
-    const siteUrl = urlUtils.getSiteUrl();
-    const unsubscribeUrl = new URL(siteUrl);
-    unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
-    if (member.uuid) {
-        unsubscribeUrl.searchParams.set('uuid', member.uuid);
-    } else {
-        unsubscribeUrl.searchParams.set('preview', '1');
-    }
-
-    return unsubscribeUrl.href;
-}
 
 /**
  * handleUnsubscribeRequest
@@ -189,8 +145,6 @@ async function pendingEmailHandler(emailModel, options) {
     }
     const postModel = await models.Post.findOne({id: emailModel.get('post_id')}, {withRelated: ['authors']});
 
-    const post = await serialize(postModel);
-
     if (emailModel.get('status') !== 'pending') {
         return;
     }
@@ -213,7 +167,7 @@ async function pendingEmailHandler(emailModel, options) {
     try {
         // NOTE: meta can contains an array which can be a mix of successful and error responses
         //       needs filtering and saving objects of {error, batchData} form to separate property
-        meta = await sendEmail(post, members);
+        meta = await sendEmail(postModel, members);
     } catch (err) {
         common.logging.error(new common.errors.GhostError({
             err: err,
@@ -268,6 +222,5 @@ module.exports = {
     addEmail,
     retryFailedEmail,
     sendTestEmail,
-    handleUnsubscribeRequest,
-    createUnsubscribeUrl
+    handleUnsubscribeRequest
 };

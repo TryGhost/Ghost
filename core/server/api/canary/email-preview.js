@@ -30,9 +30,7 @@ module.exports = {
                         });
                     }
 
-                    const post = model.toJSON(options);
-
-                    return mega.postEmailSerializer.serialize(post);
+                    return mega.postEmailSerializer.serialize(model, {isBrowserPreview: true});
                 });
         }
     },
