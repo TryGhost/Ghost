@@ -40,8 +40,8 @@ const sendTestEmail = async (postModel, emails) => {
     const emailData = emails.reduce((emailData, email) => {
         return Object.assign({
             [email]: {
-                unique_id: '',
-                unsubscribe_url: ''
+                unique_id: 'preview',
+                unsubscribe_url: createUnsubscribeUrl({})
             }
         }, emailData);
     }, {});
@@ -117,6 +117,7 @@ const serialize = async (model) => {
  * createUnsubscribeUrl
  *
  * Takes a member and returns the url that should be used to unsubscribe
+ * In case of no member, generates the preview unsubscribe url - `?preview=1`
  *
  * @param {object} member
  * @param {string} member.uuid
@@ -125,7 +126,11 @@ function createUnsubscribeUrl(member) {
     const siteUrl = urlUtils.getSiteUrl();
     const unsubscribeUrl = new URL(siteUrl);
     unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
-    unsubscribeUrl.searchParams.set('uuid', member.uuid);
+    if (member.uuid) {
+        unsubscribeUrl.searchParams.set('uuid', member.uuid);
+    } else {
+        unsubscribeUrl.searchParams.set('preview', '1');
+    }
 
     return unsubscribeUrl.href;
 }
