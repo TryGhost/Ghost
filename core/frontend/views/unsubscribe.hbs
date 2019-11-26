@@ -38,7 +38,7 @@
                         <section class="gh-flow-content gh-flow-content-unsubscribe">
                             <p>
                                 {{#if error}}
-                                    Uh oh! Unsubscribe failed: "{{error}}"
+                                    {{error}}
                                 {{else}}
                                     {{#if member}}<span class="gh-flow-em">{{member.email}}</span> has been successfully unsubscribed{{/if}}
                                 {{/if}}

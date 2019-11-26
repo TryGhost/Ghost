@@ -151,14 +151,14 @@ function createUnsubscribeUrl(member) {
 async function handleUnsubscribeRequest(req) {
     if (!req.url) {
         throw new common.errors.BadRequestError({
-            message: 'Expected unsubscribe param containing token'
+            message: 'Unsubscribe failed! Could not find member'
         });
     }
 
     const {query} = url.parse(req.url, true);
     if (!query || !query.uuid) {
         throw new common.errors.BadRequestError({
-            message: 'Expected unsubscribe param containing token'
+            message: (query.preview ? 'Unsubscribe preview' : 'Unsubscribe failed! Could not find member')
         });
     }
 
@@ -168,7 +168,7 @@ async function handleUnsubscribeRequest(req) {
 
     if (!member) {
         throw new common.errors.BadRequestError({
-            message: 'Expected valid subscribe param - could not find member'
+            message: 'Unsubscribe failed! Could not find member'
         });
     }
 
