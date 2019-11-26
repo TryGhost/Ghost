@@ -58,9 +58,8 @@ module.exports = {
                     message: common.i18n.t('errors.api.posts.postNotFound')
                 });
             }
-            const post = model.toJSON();
             const {emails = []} = frame.data;
-            const response = await mega.mega.sendTestEmail(post, emails);
+            const response = await mega.mega.sendTestEmail(model, emails);
             if (response && response[0] && response[0].error) {
                 throw new common.errors.EmailError({
                     message: response[0].error.message
