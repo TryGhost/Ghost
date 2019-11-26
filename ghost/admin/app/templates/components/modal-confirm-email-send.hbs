@@ -32,7 +32,7 @@
     <button class="close" title="Close" {{on "click" this.closeModal}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
-        <p>Your post has been published but the email failed to send. Please check your <LinkTo @route="settings.labs">Mailgun configuration</LinkTo> under Labs → Members if the error persists.</p>
+        <p>Your post has been published but the email failed to send. Please <LinkTo @route="settings.labs">check your Mailgun configuration</LinkTo> if the error persists.</p>
         <p class="mb0">
             <button type="button" class="gh-btn gh-btn-text regular" {{action (toggle "errorDetailsOpen" this)}}
                 data-test-toggle-error>
