@@ -8,6 +8,7 @@ import {inject as service} from '@ember/service';
 export default Component.extend({
     feature: service(),
     settings: service(),
+    session: service(),
     post: null,
     saveType: null,
 

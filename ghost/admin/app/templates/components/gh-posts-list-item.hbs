@@ -43,20 +43,22 @@
         </span>
         {{/if}}
 
-        {{#if (or this.post.email (and this.post.isScheduled this.post.sendEmailWhenPublished))}}
-            {{#if (eq this.post.email.status "failed")}}
-                <span data-tooltip="Failed to send post by email" class="gh-content-status-emailed error">
-                    {{svg-jar "send-email" class="stroke-red"}}
-                </span>
-            {{else}}
-                {{#if this.isScheduled}}
-                    <span data-tooltip="To be sent by email" class="gh-content-status-emailed scheduled">
-                        {{svg-jar "send-email" class="stroke-green-d2"}}
+        {{#if this.session.user.isOwnerOrAdmin}}
+            {{#if (or this.post.email (and this.post.isScheduled this.post.sendEmailWhenPublished))}}
+                {{#if (eq this.post.email.status "failed")}}
+                    <span data-tooltip="Failed to send post by email" class="gh-content-status-emailed error">
+                        {{svg-jar "send-email" class="stroke-red"}}
                     </span>
                 {{else}}
-                    <span data-tooltip="Sent by email" class="gh-content-status-emailed">
-                        {{svg-jar "send-email" class="stroke-midgrey"}}
-                    </span>
+                    {{#if this.isScheduled}}
+                        <span data-tooltip="To be sent by email" class="gh-content-status-emailed scheduled">
+                            {{svg-jar "send-email" class="stroke-green-d2"}}
+                        </span>
+                    {{else}}
+                        <span data-tooltip="Sent by email" class="gh-content-status-emailed">
+                            {{svg-jar "send-email" class="stroke-midgrey"}}
+                        </span>
+                    {{/if}}
                 {{/if}}
             {{/if}}
         {{/if}}
