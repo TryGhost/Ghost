@@ -34,7 +34,8 @@ const sendEmail = async (post, members) => {
     return bulkEmailService.send(emailTmpl, emails, emailData);
 };
 
-const sendTestEmail = async (post, emails) => {
+const sendTestEmail = async (postModel, emails) => {
+    const post = await serialize(postModel);
     const {emailTmpl} = getEmailData(post);
     const emailData = emails.reduce((emailData, email) => {
         return Object.assign({
