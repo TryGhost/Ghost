@@ -4,7 +4,7 @@ const shared = require('../../web/shared');
 const labsService = require('../labs');
 const membersService = require('./index');
 
-const login = async function (req, res) {
+const getIdentityToken = async function (req, res) {
     try {
         const token = await membersService.ssr.getIdentityTokenForMemberFromSession(req, res);
         res.writeHead(200);
@@ -82,9 +82,9 @@ module.exports = {
         exchangeTokenForSession,
         decorateResponse
     ],
-    login: [
+    getIdentityToken: [
         shared.middlewares.labs.members,
-        login
+        getIdentityToken
     ],
     logout: [
         shared.middlewares.labs.members,
