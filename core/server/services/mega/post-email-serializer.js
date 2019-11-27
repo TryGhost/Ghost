@@ -5,6 +5,7 @@ const urlUtils = require('../../lib/url-utils');
 const moment = require('moment');
 const cheerio = require('cheerio');
 const api = require('../../api');
+const {URL} = require('url');
 
 const getSite = () => {
     return Object.assign({}, settingsCache.getPublic(), {
