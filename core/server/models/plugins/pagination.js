@@ -144,11 +144,18 @@ pagination = function pagination(bookshelf) {
             // Get the table name and idAttribute for this model
             var tableName = _.result(this.constructor.prototype, 'tableName'),
                 idAttribute = _.result(this.constructor.prototype, 'idAttribute'),
-                self = this,
+                self = this;
+
+            let countPromise;
+            if (options.transacting) {
+                countPromise = this.query().clone().transacting(options.transacting).select(
+                    bookshelf.knex.raw('count(distinct ' + tableName + '.' + idAttribute + ') as aggregate')
+                );
+            } else {
                 countPromise = this.query().clone().select(
                     bookshelf.knex.raw('count(distinct ' + tableName + '.' + idAttribute + ') as aggregate')
                 );
-
+            }
             // #### Pre count clauses
             // Add any where or join clauses which need to be included with the aggregate query
 
