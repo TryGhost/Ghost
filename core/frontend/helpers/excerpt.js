@@ -25,6 +25,8 @@ module.exports = function excerpt(options) {
         excerptText = String(this.custom_excerpt);
     } else if (this.html) {
         excerptText = String(this.html);
+    } else if (this.excerpt) {
+        excerptText = String(this.excerpt);
     } else {
         excerptText = '';
     }
