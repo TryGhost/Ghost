@@ -18,12 +18,16 @@ var proxy = require('./proxy'),
  * We have not touched this helper yet, we will revisit later.
  */
 module.exports = function excerpt(options) {
-    var truncateOptions = (options || {}).hash || {},
-        excerptText = this.custom_excerpt
-            ? String(this.custom_excerpt)
-            : this.html
-                ? String(this.html)
-                : '';
+    let truncateOptions = (options || {}).hash || {};
+    let excerptText;
+
+    if (this.custom_excerpt) {
+        excerptText = String(this.custom_excerpt);
+    } else if (this.html) {
+        excerptText = String(this.html);
+    } else {
+        excerptText = '';
+    }
 
     truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
     _.keys(truncateOptions).map(function (key) {
