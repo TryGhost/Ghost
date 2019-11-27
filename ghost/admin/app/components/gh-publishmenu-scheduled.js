@@ -6,10 +6,10 @@ import {inject as service} from '@ember/service';
 
 export default Component.extend({
     clock: service(),
+    session: service(),
 
     post: null,
     saveType: null,
-    session: service(),
     isClosing: null,
 
     // used to set minDate in datepicker
