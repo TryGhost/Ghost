@@ -15,18 +15,17 @@ const getSite = () => {
 /**
  * createUnsubscribeUrl
  *
- * Takes a member and returns the url that should be used to unsubscribe
- * In case of no member, generates the preview unsubscribe url - `?preview=1`
+ * Takes a member uuid and returns the url that should be used to unsubscribe
+ * In case of no member uuid, generates the preview unsubscribe url - `?preview=1`
  *
- * @param {object} member
- * @param {string} member.uuid
+ * @param {string} uuid
  */
-const createUnsubscribeUrl = (member) => {
+const createUnsubscribeUrl = (uuid) => {
     const siteUrl = urlUtils.getSiteUrl();
     const unsubscribeUrl = new URL(siteUrl);
     unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
-    if (member.uuid) {
-        unsubscribeUrl.searchParams.set('uuid', member.uuid);
+    if (uuid) {
+        unsubscribeUrl.searchParams.set('uuid', uuid);
     } else {
         unsubscribeUrl.searchParams.set('preview', '1');
     }
@@ -59,7 +58,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     }
     let htmlTemplate = template({post, site: getSite()});
     if (options.isBrowserPreview) {
-        const previewUnsubscribeUrl = createUnsubscribeUrl({});
+        const previewUnsubscribeUrl = createUnsubscribeUrl();
         htmlTemplate = htmlTemplate.replace('%recipient.unsubscribe_url%', previewUnsubscribeUrl);
     }
     let juicedHtml = juice(htmlTemplate);

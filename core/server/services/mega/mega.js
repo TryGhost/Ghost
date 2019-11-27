@@ -7,16 +7,16 @@ const bulkEmailService = require('../bulk-email');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 
-const getEmailData = async (postModel, members = []) => {
+const getEmailData = async (postModel, recipients = []) => {
     const emailTmpl = await postEmailSerializer.serialize(postModel);
     emailTmpl.from = membersService.config.getEmailFromAddress();
 
-    const emails = members.map(member => member.email);
-    const emailData = members.reduce((emailData, member) => {
+    const emails = recipients.map(recipient => recipient.email);
+    const emailData = recipients.reduce((emailData, recipient) => {
         return Object.assign({
-            [member.email]: {
-                unique_id: member.uuid,
-                unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(member)
+            [recipient.email]: {
+                unique_id: recipient.uuid,
+                unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(recipient.uuid)
             }
         }, emailData);
     }, {});
@@ -35,10 +35,10 @@ const sendEmail = async (postModel, members) => {
 };
 
 const sendTestEmail = async (postModel, toEmails) => {
-    const emailList = toEmails.map((email) => {
+    const recipients = toEmails.map((email) => {
         return {email};
     });
-    const {emailTmpl, emails, emailData} = await getEmailData(postModel, emailList);
+    const {emailTmpl, emails, emailData} = await getEmailData(postModel, recipients);
     emailTmpl.subject = `${emailTmpl.subject} [Test]`;
     return bulkEmailService.send(emailTmpl, emails, emailData);
 };
