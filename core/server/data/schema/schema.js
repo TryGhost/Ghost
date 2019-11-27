@@ -29,6 +29,7 @@ module.exports = {
             defaultTo: 'public',
             validations: {isIn: [['public', 'members', 'paid']]}
         },
+        send_email_when_published: {type: 'bool', nullable: true, defaultTo: false},
         /**
          * @deprecated: `author_id`, might be removed in Ghost 3.0
          * If we keep it, then only, because you can easier query post.author_id than posts_authors[*].sort_order.
@@ -61,7 +62,8 @@ module.exports = {
         twitter_title: {type: 'string', maxlength: 300, nullable: true},
         twitter_description: {type: 'string', maxlength: 500, nullable: true},
         meta_title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
-        meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}}
+        meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},
+        email_subject: {type: 'string', maxlength: 300, nullable: true}
     },
     users: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -150,7 +152,7 @@ module.exports = {
             maxlength: 50,
             nullable: false,
             defaultTo: 'core',
-            validations: {isIn: [['core', 'blog', 'theme', 'app', 'plugin', 'private', 'members']]}
+            validations: {isIn: [['core', 'blog', 'theme', 'app', 'plugin', 'private', 'members', 'bulk_email']]}
         },
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
@@ -321,9 +323,11 @@ module.exports = {
     },
     members: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        uuid: {type: 'string', maxlength: 36, nullable: true, unique: true, validations: {isUUID: true}},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         name: {type: 'string', maxlength: 191, nullable: true},
         note: {type: 'string', maxlength: 2000, nullable: true},
+        subscribed: {type: 'bool', nullable: true, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
@@ -372,5 +376,30 @@ module.exports = {
         // @NOTE: The context object can be used to store information about an action e.g. diffs, meta
         context: {type: 'text', maxlength: 1000000000, nullable: true},
         created_at: {type: 'dateTime', nullable: false}
+    },
+    emails: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, index: true, unique: true},
+        uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
+        status: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'pending',
+            validations: {isIn: [['pending', 'submitting', 'submitted', 'failed']]}
+        },
+        error: {type: 'string', maxlength: 2000, nullable: true},
+        error_data: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        meta: {type: 'text', maxlength: 65535, nullable: true},
+        stats: {type: 'text', maxlength: 65535, nullable: true},
+        email_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        subject: {type: 'string', maxlength: 300, nullable: true},
+        html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        submitted_at: {type: 'dateTime', nullable: false},
+        created_at: {type: 'dateTime', nullable: false},
+        created_by: {type: 'string', maxlength: 24, nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        updated_by: {type: 'string', maxlength: 24, nullable: true}
     }
 };
