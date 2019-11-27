@@ -51,17 +51,12 @@ const sendTestEmail = async (postModel, toEmails) => {
  *
  * @param {object} postModel Post Model Object
  */
-const addEmail = async (postModel, options) => {
+
+const addEmail = async (post, options) => {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
 
-    // TODO: this is using the Member model directly rather than the members
-    // service because the service is hardcoded to Member.findPage and our
-    // pagination plugin does not currently work with transactions
-    const members = await models.Member
-        .findAll(Object.assign({filter: 'subscribed:true'}, knexOptions))
-        .map(member => member.toJSON(options));
-
-    const {emailTmpl, emails} = await getEmailData(postModel, members);
+    const {members} = await membersService.api.members.list(Object.assign(knexOptions, {filter: 'subscribed:true'}, {limit: 'all'}));
+    const {emailTmpl, emails} = await getEmailData(post, members);
 
     // NOTE: don't create email object when there's nobody to send the email to
     if (!emails.length) {
