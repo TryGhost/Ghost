@@ -52,11 +52,11 @@ const sendTestEmail = async (postModel, toEmails) => {
  * @param {object} postModel Post Model Object
  */
 
-const addEmail = async (post, options) => {
+const addEmail = async (postModel, options) => {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
 
     const {members} = await membersService.api.members.list(Object.assign(knexOptions, {filter: 'subscribed:true'}, {limit: 'all'}));
-    const {emailTmpl, emails} = await getEmailData(post, members);
+    const {emailTmpl, emails} = await getEmailData(postModel, members);
 
     // NOTE: don't create email object when there's nobody to send the email to
     if (!emails.length) {
