@@ -37,7 +37,7 @@ const createUnsubscribeUrl = (member) => {
 // NOTE: serialization is needed to make sure we are using current API and do post transformations
 //       such as image URL transformation from relative to absolute
 const serializePostModel = async (model) => {
-    const frame = {options: {context: {user: true}}};
+    const frame = {options: {context: {user: true}, formats: 'html, plaintext'}};
     const apiVersion = model.get('api_version') || 'v3';
     const docName = 'posts';
 
