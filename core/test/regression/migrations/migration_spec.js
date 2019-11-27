@@ -189,6 +189,18 @@ describe('Database Migration (special functions)', function () {
             // DB
             permissions[61].name.should.eql('Backup database');
             permissions[61].should.be.AssignedToRoles(['Administrator', 'DB Backup Integration']);
+
+            // Bulk Email
+            permissions[62].name.should.eql('Email preview');
+            permissions[62].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
+            permissions[63].name.should.eql('Send test email');
+            permissions[63].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
+            permissions[64].name.should.eql('Browse emails');
+            permissions[64].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
+            permissions[65].name.should.eql('Read emails');
+            permissions[65].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
+            permissions[66].name.should.eql('Retry emails');
+            permissions[66].should.be.AssignedToRoles(['Administrator', 'Editor', 'Admin Integration']);
         });
 
         describe('Populate', function () {
@@ -246,7 +258,7 @@ describe('Database Migration (special functions)', function () {
                     result.roles.at(7).get('name').should.eql('Scheduler Integration');
 
                     // Permissions
-                    result.permissions.length.should.eql(65);
+                    result.permissions.length.should.eql(67);
                     result.permissions.toJSON().should.be.CompletePermissions();
                 });
             });
