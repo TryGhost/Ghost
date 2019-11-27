@@ -43,7 +43,7 @@ describe('Members API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.members);
                 jsonResponse.members.should.have.length(1);
-                localUtils.API.checkResponse(jsonResponse.members[0], 'member');
+                localUtils.API.checkResponse(jsonResponse.members[0], 'member',  'stripe');
 
                 testUtils.API.isISO8601(jsonResponse.members[0].created_at).should.be.true();
                 jsonResponse.members[0].created_at.should.be.an.instanceof(String);
