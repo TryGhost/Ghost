@@ -306,7 +306,7 @@
 
 /* Paragraph right after title */
 .koenig-editor__editor p:first-child {
-    margin-top: -0.2rem;
+    margin-top: 0rem;
 }
 
 @media (max-width: 500px) {
@@ -399,7 +399,7 @@
 .koenig-editor__editor ol:first-child,
 .koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar):first-child,
 .koenig-editor__editor ol:first-child {
-    margin: -0.4rem 0 0;
+    margin-top: 0rem;
 }
 
 
