@@ -348,9 +348,9 @@ describe('Acceptance: Editor', function () {
                 'publish menu is not shown after closed'
             ).to.not.exist;
 
-            // expect countdown to show warning, that post will go live in x minutes
+            // expect countdown to show warning that post is scheduled to be published
             expect(find('[data-test-schedule-countdown]').textContent.trim(), 'notification countdown')
-                .to.contain('Post will go live in');
+                .to.match(/Scheduled to be published {2}in (4|5) minutes/);
 
             expect(
                 find('[data-test-publishmenu-trigger]').textContent.trim(),
@@ -360,7 +360,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'scheduled post status'
-            ).to.equal('Scheduled');
+            ).to.match(/Scheduled to be published {2}in (4|5) minutes./);
 
             // Re-schedule
             await click('[data-test-publishmenu-trigger]');
@@ -387,7 +387,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'scheduled status text'
-            ).to.equal('Scheduled');
+            ).to.match(/Scheduled to be published {2}in (4|5) minutes\./);
 
             // unschedule
             await click('[data-test-publishmenu-trigger]');
@@ -540,9 +540,9 @@ describe('Acceptance: Editor', function () {
             // Dropdown menu should be 'Update Post' and 'Unschedule'
             expect(find('[data-test-publishmenu-trigger]').textContent.trim(), 'text in save button for scheduled post')
                 .to.equal('Scheduled');
-            // expect countdown to show warning, that post will go live in x minutes
+            // expect countdown to show warning, that post is scheduled to be published
             expect(find('[data-test-schedule-countdown]').textContent.trim(), 'notification countdown')
-                .to.contain('Post will go live in');
+                .to.match(/Scheduled to be published {2}in (4|5) minutes/);
         });
 
         it('shows author token input and allows changing of authors in PSM', async function () {

@@ -1,10 +1,12 @@
 import Component from '@ember/component';
 import moment from 'moment';
 import {computed} from '@ember/object';
+import {equal} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
     clock: service(),
+    session: service(),
 
     post: null,
     saveType: null,
@@ -14,6 +16,8 @@ export default Component.extend({
     _minDate: null,
 
     'data-test-publishmenu-scheduled': true,
+
+    disableEmailOption: equal('memberCount', 0),
 
     timeToPublished: computed('post.publishedAtUTC', 'clock.second', function () {
         let publishedAtUTC = this.get('post.publishedAtUTC');

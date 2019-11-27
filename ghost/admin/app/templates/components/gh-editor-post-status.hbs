@@ -1,10 +1,21 @@
 {{#if _isSaving}}
     Saving...
-{{else if isPublished}}
+{{else if (or this.post.isPublished this.post.pastScheduledTime)}}
     Published
-{{else if isScheduled}}
-    Scheduled
-{{else if isNew}}
+    {{#if (or (eq this.post.email.status "submitting") (eq this.post.email.status "submitting"))}}
+        and sending to {{pluralize this.post.email.emailCount "member"}}
+    {{else if (eq this.post.email.status "submitted")}}
+        and sent to {{pluralize this.post.email.emailCount "member"}}
+    {{/if}}
+{{else if this.post.isScheduled}}
+    {{#if countdown}}
+        <time datetime="{{this.post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>
+            Scheduled to be published {{if this.post.sendEmailWhenPublished "and sent"}} {{this.countdown}}.
+        </time>
+    {{else}}
+        Scheduled
+    {{/if}}
+{{else if this.post.isNew}}
     New
 {{else}}
     Draft

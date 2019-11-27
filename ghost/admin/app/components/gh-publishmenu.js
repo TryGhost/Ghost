@@ -1,9 +1,13 @@
-import $ from 'jquery';
 import Component from '@ember/component';
+import EmailFailedError from 'ghost-admin/errors/email-failed-error';
+import {action} from '@ember/object';
 import {computed} from '@ember/object';
 import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
+
+const CONFIRM_EMAIL_POLL_LENGTH = 1000;
+const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 
 export default Component.extend({
     clock: service(),
@@ -14,11 +18,15 @@ export default Component.extend({
     postStatus: 'draft',
     saveTask: null,
     runningText: null,
+    backgroundTask: null,
+    sendEmailWhenPublished: false,
 
     _publishedAtBlogTZ: null,
     _previousStatus: null,
 
     isClosing: null,
+
+    onClose() {},
 
     forcePublishedMenu: reads('post.pastScheduledTime'),
 
@@ -151,41 +159,133 @@ export default Component.extend({
         },
 
         close(dropdown, e) {
-            let post = this.post;
+            // don't close the menu if the datepicker popup or confirm modal is clicked
+            if (e) {
+                let onDatepicker = !!e.target.closest('.ember-power-datepicker-content');
+                let onModal = !!e.target.closest('.fullscreen-modal-container');
 
-            // don't close the menu if the datepicker popup is clicked
-            if (e && $(e.target).closest('.ember-power-datepicker-content').length) {
-                return false;
+                if (onDatepicker || onModal) {
+                    return false;
+                }
             }
 
-            // cleanup
-            this._resetPublishedAtBlogTZ();
-            post.set('statusScratch', null);
-            post.validate();
-
-            if (this.onClose) {
-                this.onClose();
+            if (!this._skipDropdownCloseCleanup) {
+                this._cleanup();
             }
+            this._skipDropdownCloseCleanup = false;
 
+            this.onClose();
             this.set('isClosing', true);
 
             return true;
         }
     },
 
-    save: task(function* () {
+    // action is required because <GhFullscreenModal> only uses actions
+    confirmEmailSend: action(function () {
+        return this._confirmEmailSend.perform();
+    }),
+
+    _confirmEmailSend: task(function* () {
+        this.sendEmailConfirmed = true;
+        let post = yield this.save.perform();
+
+        // simulate a validation error if saving failed so that the confirm
+        // modal can react accordingly
+        if (!post || post.errors.length) {
+            throw null;
+        }
+
+        let pollTimeout = 0;
+        if (post.email && post.email.status !== 'submitted') {
+            while (pollTimeout < CONFIRM_EMAIL_MAX_POLL_LENGTH) {
+                yield timeout(CONFIRM_EMAIL_POLL_LENGTH);
+                post = yield post.reload();
+
+                if (post.email.status === 'submitted') {
+                    break;
+                }
+                if (post.email.status === 'failed') {
+                    throw new EmailFailedError(post.email.error);
+                }
+            }
+        }
+
+        return post;
+    }),
+
+    retryEmailSend: action(function () {
+        return this._retryEmailSend.perform();
+    }),
+
+    _retryEmailSend: task(function* () {
+        if (!this.post.email) {
+            return;
+        }
+
+        let email = yield this.post.email.retry();
+
+        let pollTimeout = 0;
+        if (email && email.status !== 'submitted') {
+            while (pollTimeout < CONFIRM_EMAIL_POLL_LENGTH) {
+                yield timeout(CONFIRM_EMAIL_POLL_LENGTH);
+                email = yield email.reload();
+
+                if (email.status === 'submitted') {
+                    break;
+                }
+                if (email.status === 'failed') {
+                    throw new EmailFailedError(email.error);
+                }
+            }
+        }
+
+        return email;
+    }),
+
+    openEmailConfirmationModal: action(function (dropdown) {
+        if (dropdown) {
+            this._skipDropdownCloseCleanup = true;
+            dropdown.actions.close();
+        }
+        this.set('showEmailConfirmationModal', true);
+    }),
+
+    closeEmailConfirmationModal: action(function () {
+        this.set('showEmailConfirmationModal', false);
+        this._cleanup();
+    }),
+
+    save: task(function* ({dropdown} = {}) {
+        let {post, sendEmailWhenPublished, sendEmailConfirmed, saveType} = this;
+
+        if (
+            post.status === 'draft' &&
+            !post.email && // email sent previously
+            sendEmailWhenPublished &&
+            !sendEmailConfirmed // set once confirmed so normal save happens
+        ) {
+            this.openEmailConfirmationModal(dropdown);
+            return;
+        }
+
+        this.sendEmailConfirmed = false;
+
         // runningText needs to be declared before the other states change during the
         // save action.
         this.set('runningText', this._runningText);
         this.set('_previousStatus', this.get('post.status'));
-        this.setSaveType(this.saveType);
+        this.setSaveType(saveType);
 
         try {
             // validate publishedAtBlog first to avoid an alert for displayed errors
-            yield this.post.validate({property: 'publishedAtBlog'});
+            yield post.validate({property: 'publishedAtBlog'});
 
             // actual save will show alert for other failed validations
-            let post = yield this.saveTask.perform();
+            post = yield this.saveTask.perform({sendEmailWhenPublished});
+
+            // revert the email checkbox to avoid weird inbetween states
+            this.set('sendEmailWhenPublished', false);
 
             this._cachePublishedAtBlogTZ();
             return post;
@@ -201,9 +301,15 @@ export default Component.extend({
         this._publishedAtBlogTZ = this.get('post.publishedAtBlogTZ');
     },
 
-    // when closing the menu we reset the publishedAtBlogTZ date so that the
-    // unsaved changes made to the scheduled date aren't reflected in the PSM
-    _resetPublishedAtBlogTZ() {
+    _cleanup() {
+        this.set('showConfirmEmailModal', false);
+        this.set('sendEmailWhenPublished', false);
+
+        // when closing the menu we reset the publishedAtBlogTZ date so that the
+        // unsaved changes made to the scheduled date aren't reflected in the PSM
         this.post.set('publishedAtBlogTZ', this._publishedAtBlogTZ);
+
+        this.post.set('statusScratch', null);
+        this.post.validate();
     }
 });

@@ -38,5 +38,6 @@ export default Model.extend(ValidationEngine, {
     twitterImage: attr('string'),
     ogTitle: attr('string'),
     ogDescription: attr('string'),
-    ogImage: attr('string')
+    ogImage: attr('string'),
+    bulkEmailSettings: attr('json-string')
 });

@@ -1,0 +1,72 @@
+{{#unless errorMessage}}
+    <header class="modal-header" data-test-modal="delete-user">
+        <h1>Ready to go? Here’s what happens next</h1>
+    </header>
+    <button class="close" title="Close" {{on "click" this.closeModal}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            Your post will be delivered to
+            <strong>{{if this.model.paidOnly "all paid members" (pluralize this.model.memberCount "member")}}</strong>
+            and will be published on your site{{#if this.model.isScheduled}} at the scheduled time{{/if}}. Sounds good?
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <button {{on "click" this.closeModal}} class="gh-btn" data-test-button="cancel-publish-and-email">
+            <span>Cancel</span>
+        </button>
+        <GhTaskButton
+            @buttonText={{if this.model.isScheduled "Schedule" "Publish and send"}}
+            @runningText={{if this.model.isScheduled "Scheduling..." "Publishing..."}}
+            @task={{this.confirmAndCheckError}}
+            @class="gh-btn gh-btn-green gh-btn-icon"
+            data-test-button="confirm-publish-and-email"
+        />
+    </div>
+
+{{else}}
+    <header class="modal-header" data-test-modal="delete-user">
+        <h1>Failed to send email</h1>
+    </header>
+    <button class="close" title="Close" {{on "click" this.closeModal}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        {{#if this.session.user.isOwner}}
+            <p>Your post has been published but the email failed to send. Please <LinkTo @route="settings.labs">check your Mailgun configuration</LinkTo> if the error persists.</p>
+        {{else}}
+            <p>Your post has been published but the email failed to send. Please check your Mailgun configuration if the error persists.</p>
+        {{/if}}
+        <p class="mb0">
+            <button type="button" class="gh-btn gh-btn-text regular" {{action (toggle "errorDetailsOpen" this)}}
+                data-test-toggle-error>
+                {{#if errorDetailsOpen}}
+                {{svg-jar "arrow-down" class="nudge-top--2 w2 h2 fill-darkgrey mr1"}}
+                {{else}}
+                {{svg-jar "arrow-right" class="nudge-top--1 w2 h2 fill-darkgrey mr1"}}
+                {{/if}}
+                <span>Error details</span>
+            </button>
+        </p>
+        
+        {{#liquid-if errorDetailsOpen}}
+        <p class="error gh-box gh-box-error mt3 mb3">
+            {{svg-jar "warning"}}
+            {{this.errorMessage}}
+        </p>
+        {{/liquid-if}}
+    </div>
+
+    <div class="modal-footer">
+        <button {{on "click" this.closeModal}} class="gh-btn" data-test-button="cancel-publish-and-email">
+            <span>Close</span>
+        </button>
+        <GhTaskButton
+            @buttonText="Retry email"
+            @runningText="Sending..."
+            @task={{this.retryEmailTask}}
+            @class="gh-btn gh-btn-red gh-btn-icon"
+            data-test-button="retry-email"
+        />
+    </div>
+{{/unless}}

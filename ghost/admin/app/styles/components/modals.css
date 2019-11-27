@@ -60,6 +60,11 @@
     max-width: 550px;
 }
 
+.fullscreen-modal-full-overlay {
+    width: 100%;
+    max-width: 90%;
+}
+
 .fullscreen-modal-action {
     margin: 6vw 0;
 }
@@ -118,7 +123,7 @@
     font-size: 2.2rem;
     line-height: 1.15em;
     font-weight: 600;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.2px;
 }
 
 .modal-body {

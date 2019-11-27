@@ -1,6 +1,7 @@
 import mockApiKeys from './config/api-keys';
 import mockAuthentication from './config/authentication';
 import mockConfig from './config/config';
+import mockEmails from './config/emails';
 import mockIntegrations from './config/integrations';
 import mockInvites from './config/invites';
 import mockMembers from './config/members';
@@ -55,6 +56,7 @@ export function testConfig() {
     mockApiKeys(this);
     mockAuthentication(this);
     mockConfig(this);
+    mockEmails(this);
     mockIntegrations(this);
     mockInvites(this);
     mockMembers(this);
