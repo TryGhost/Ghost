@@ -61,7 +61,7 @@ const addEmail = async (postModel, options) => {
         .findAll(Object.assign({filter: 'subscribed:true'}, knexOptions))
         .map(member => member.toJSON(options));
 
-    const {emailTmpl, emails} = getEmailData(postModel, members);
+    const {emailTmpl, emails} = await getEmailData(postModel, members);
 
     // NOTE: don't create email object when there's nobody to send the email to
     if (!emails.length) {
