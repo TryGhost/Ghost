@@ -185,6 +185,10 @@ textarea.gh-member-details-textarea {
     width: 200px;
 }
 
+.gh-members-subscribed-checkbox {
+    max-width: 100%;
+}
+
 /* Import modal
 /* ---------------------------------------------------------- */
 

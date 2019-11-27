@@ -181,10 +181,55 @@
                     input=(action "setSubscriptionSettings" "fromAddress")
                     class="w20"
                 }}
-                <span class="gh-input-append"> @{{config.blogDomain}}</span>
+                <span class="gh-input-append"> @{{blogDomain}}</span>
             </div>
             <div class="f8 fw4 midgrey mt1">Your members will receive system emails from this address</div>
             {{/gh-form-group}}
+
+            {{#unless hasBulkEmailConfig}}
+                <div class="flex items-center">
+                    {{#gh-form-group class="gh-labs-mailgun-region"}}
+                    <label class="fw6 f8">Mailgun region</label>
+                    <div class="mt1">
+                        {{#power-select
+                                                options=this.mailgunRegions
+                                                selected=this.mailgunRegion
+                                                onchange=(action "setBulkEmailRegion")
+                                                searchEnabled=false
+                                                as |region|
+                                            }}
+                        {{region.flag}} {{region.name}}
+                        {{/power-select}}
+                    </div>
+                    {{/gh-form-group}}
+                    {{#gh-form-group}}
+                    <label class="fw6 f8">Mailgun domain</label>
+                    {{gh-text-input
+                                            value=(readonly bulkEmailSettings.domain)
+                                            input=(action "setBulkEmailSettings" "domain")
+                                            class="mt1"
+                                        }}
+                    {{/gh-form-group}}
+                </div>
+                <div class="nt5 mb5">
+                    <a href="https://app.mailgun.com/app/sending/domains" target="_blank" class="mt1 fw4 f8">
+                        Find your Mailgun region and domain here &raquo;
+                    </a>
+                </div>
+                {{#gh-form-group}}
+                    <label class="fw6 f8">Mailgun API key</label>
+                    {{gh-text-input
+                        type="password"
+                        value=(readonly bulkEmailSettings.apiKey)
+                        input=(action "setBulkEmailSettings" "apiKey")
+                        class="mt1 password"
+                        autocomplete="new-password"
+                    }}
+                    <a href="https://app.mailgun.com/app/account/security/api_keys" target="_blank" class="mt1 fw4 f8">
+                        Find your Mailgun API keys here &raquo;
+                    </a>
+                {{/gh-form-group}}
+            {{/unless}}
         </div>
         {{/liquid-if}}
     </section>

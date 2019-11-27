@@ -6,6 +6,7 @@ import {inject as service} from '@ember/service';
 
 export default Component.extend({
     ghostPaths: service(),
+    session: service(),
 
     tagName: 'li',
     classNames: ['gh-list-row', 'gh-posts-list-item'],
@@ -24,6 +25,16 @@ export default Component.extend({
         return authors.map(author => author.get('name') || author.get('email')).join(', ');
     }),
 
+    primaryTag: computed('post.authors.[]', function () {
+        let primaryTag = this.get('post.tags.firstObject');
+
+        if (primaryTag) {
+            return primaryTag.get('name');
+        } else {
+            return false;
+        }
+    }),
+
     subText: computed('post.{excerpt,customExcerpt,metaDescription}', function () {
         let text = this.get('post.excerpt') || '';
         let customExcerpt = this.get('post.customExcerpt');
@@ -36,7 +47,7 @@ export default Component.extend({
         }
 
         if (this.isScheduled) {
-            return `${text.slice(0, 40)}...`;
+            return `${text.slice(0, 35)}...`;
         } else {
             return `${text.slice(0, 80)}...`;
         }

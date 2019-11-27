@@ -1,10 +1,13 @@
 import Component from '@ember/component';
 import config from 'ghost-admin/config/environment';
+import moment from 'moment';
 import {computed} from '@ember/object';
-import {reads} from '@ember/object/computed';
+import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 export default Component.extend({
+    clock: service(),
+
     post: null,
     isSaving: false,
 
@@ -12,14 +15,21 @@ export default Component.extend({
 
     _isSaving: false,
 
-    isNew: reads('post.isNew'),
-    isScheduled: reads('post.isScheduled'),
+    countdown: computed('post.{publishedAtUTC,isScheduled}', 'clock.second', function () {
+        let isScheduled = this.get('post.isScheduled');
+        let publishTime = this.get('post.publishedAtUTC') || moment.utc();
 
-    isPublished: computed('post.{isPublished,pastScheduledTime}', function () {
-        let isPublished = this.get('post.isPublished');
-        let pastScheduledTime = this.get('post.pastScheduledTime');
+        let timeUntilPublished = publishTime.diff(moment.utc(), 'minutes', true);
+        let isPublishedSoon = timeUntilPublished > 0 && timeUntilPublished < 15;
 
-        return isPublished || pastScheduledTime;
+        // force a recompute
+        this.get('clock.second');
+
+        if (isScheduled && isPublishedSoon) {
+            return moment(publishTime).fromNow();
+        } else {
+            return false;
+        }
     }),
 
     // isSaving will only be true briefly whilst the post is saving,

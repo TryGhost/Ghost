@@ -322,7 +322,7 @@ textarea {
 .gh-radio-desc {
     font-size: 1.3rem;
     line-height: 1.4em;
-    font-weight: 200;
+    font-weight: 300;
     color: color-mod(var(--midgrey) l(+10%));
 }
 
@@ -352,7 +352,8 @@ textarea {
 
 /* Switch
 /* ---------------------------------------------------------- */
-.for-switch label {
+.for-switch label,
+.for-switch .container {
     cursor: pointer;
     position: relative;
     display: inline-block;
@@ -360,7 +361,8 @@ textarea {
     height: 28px !important;
 }
 
-.for-switch label p {
+.for-switch label p,
+.for-switch .container p {
     overflow: auto;
     color: var(--darkgrey);
     font-weight: normal;
@@ -388,7 +390,8 @@ textarea {
     transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 
-.for-switch label:hover input:not(:checked) + .input-toggle-component {
+.for-switch label:hover input:not(:checked) + .input-toggle-component,
+.for-switch .container:hover input:not(:checked) + .input-toggle-component {
     border-color: color-mod(var(--lightgrey) l(-10%) s(-10%));
 }
 
@@ -412,6 +415,26 @@ textarea {
 
 .for-switch input:checked + .input-toggle-component:before {
     transform: translateX(22px);
+}
+
+.for-switch .container {
+    width: 38px !important;
+    height: 22px !important;
+}
+
+.for-switch.small .input-toggle-component {
+    width: 38px !important;
+    height: 22px !important;
+}
+
+.for-switch.small .input-toggle-component:before {
+    height: 16px !important;
+    width: 16px !important;
+    box-shadow: 0 0 1px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.1);
+}
+
+.for-switch.small input:checked + .input-toggle-component:before {
+    transform: translateX(16px);
 }
 
 
@@ -529,6 +552,7 @@ textarea {
     border-radius: var(--border-radius);
     word-wrap: none;
     border-left: none;
+    white-space: nowrap;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     flex: 1;
