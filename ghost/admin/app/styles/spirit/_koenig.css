@@ -95,8 +95,6 @@
     font-weight: 700;
 }
 
-
-
 .koenig-editor__editor p + h1,
 .koenig-editor__editor p + h2,
 .koenig-editor__editor p + h3,
@@ -228,6 +226,16 @@
     margin: 4.8rem 0 0;
 }
 
+/* Headings right after post title */
+.koenig-editor__editor h1:first-child,
+.koenig-editor__editor h2:first-child,
+.koenig-editor__editor h3:first-child,
+.koenig-editor__editor h4:first-child,
+.koenig-editor__editor h5:first-child,
+.koenig-editor__editor h6:first-child {
+    margin-top: 0rem;
+}
+
 @media (max-width: 500px) {
     .koenig-editor__editor h1 {
         font-size: 3.2rem;
@@ -294,6 +302,11 @@
 
 .koenig-editor__editor div + p { /* Mobiledoc cards can be addressed by their wrapper div element */
     margin: 2.8rem 0 0;
+}
+
+/* Paragraph right after title */
+.koenig-editor__editor p:first-child {
+    margin-top: -0.2rem;
 }
 
 @media (max-width: 500px) {
@@ -381,6 +394,14 @@
     margin: 1.0rem 0 2rem;
 }
 
+/* Lists right after title */
+.koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar):first-child,
+.koenig-editor__editor ol:first-child,
+.koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar):first-child,
+.koenig-editor__editor ol:first-child {
+    margin: -0.4rem 0 0;
+}
+
 
 /* Cards in general
 /* -------------------------------------------------------------------- */
@@ -417,6 +438,11 @@
     margin: 1.6rem 0;
 }
 
+/* First card right after post title */
+
+.koenig-editor__editor > div:first-child {
+    margin-top: 3.2rem;
+}
 
 /* Links
 /* -------------------------------------------------------------------- */
