@@ -60,6 +60,10 @@ const mapPost = (model, frame) => {
             if (relation === 'authors' && jsonModel.authors) {
                 jsonModel.authors = jsonModel.authors.map(author => mapUser(author, frame));
             }
+
+            if (relation === 'email' && _.isEmpty(jsonModel.email)) {
+                jsonModel.email = null;
+            }
         });
     }
 
@@ -75,9 +79,19 @@ const mapPost = (model, frame) => {
     return jsonModel;
 };
 
+const mapPage = (model, frame) => {
+    const jsonModel = mapPost(model, frame);
+
+    delete jsonModel.email_subject;
+    delete jsonModel.send_email_when_published;
+
+    return jsonModel;
+};
+
 const mapSettings = (attrs, frame) => {
     url.forSettings(attrs);
     extraAttrs.forSettings(attrs, frame);
+    clean.settings(attrs, frame);
 
     // NOTE: The cleanup of deprecated ghost_head/ghost_foot has to happen here
     //       because codeinjection_head/codeinjection_foot are assigned on a previous
@@ -125,6 +139,7 @@ const mapMember = (model, frame) => {
 };
 
 module.exports.mapPost = mapPost;
+module.exports.mapPage = mapPage;
 module.exports.mapUser = mapUser;
 module.exports.mapTag = mapTag;
 module.exports.mapIntegration = mapIntegration;

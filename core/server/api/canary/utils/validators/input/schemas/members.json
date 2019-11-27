@@ -25,6 +25,9 @@
                     "minLength": 0,
                     "maxLength": 2000
                 },
+                "subscribed": {
+                    "type": "boolean"
+                },
                 "id": {
                     "strip": true
                 },

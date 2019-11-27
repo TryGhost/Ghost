@@ -70,6 +70,8 @@ const expectedProperties = {
     ,
     webhook: _(schema.webhooks)
         .keys()
+    ,
+    email_preview: ['html', 'subject', 'plaintext']
 };
 
 _.each(expectedProperties, (value, key) => {

@@ -20,7 +20,7 @@ describe('Posts API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return localUtils.doAuth(request, 'users:extra', 'posts');
+                return localUtils.doAuth(request, 'users:extra', 'posts', 'emails');
             })
             .then(function (cookie) {
                 ownerCookie = cookie;
@@ -60,7 +60,7 @@ describe('Posts API', function () {
         });
 
         it('combined fields, formats, include and non existing', function (done) {
-            request.get(localUtils.API.getApiQuery('posts/?formats=mobiledoc,html,plaintext&fields=id,title,primary_tag,doesnotexist&include=authors,tags'))
+            request.get(localUtils.API.getApiQuery('posts/?formats=mobiledoc,html,plaintext&fields=id,title,primary_tag,doesnotexist&include=authors,tags,email'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -81,7 +81,7 @@ describe('Posts API', function () {
                         'post',
                         null,
                         null,
-                        ['mobiledoc', 'plaintext', 'id', 'title', 'html', 'authors', 'tags', 'primary_tag']
+                        ['mobiledoc', 'plaintext', 'id', 'title', 'html', 'authors', 'tags', 'primary_tag', 'email']
                     );
 
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
