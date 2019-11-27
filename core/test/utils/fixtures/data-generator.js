@@ -418,6 +418,31 @@ DataGenerator.Content = {
             type: 'admin',
             integration_id: undefined // "internal"
         }
+    ],
+
+    emails: [
+        {
+            id: ObjectId.generate(),
+            uuid: '6b6afda6-4b5e-4893-bff6-f16859e8349a',
+            status: 'submitted',
+            email_count: 2,
+            subject: 'You got mailed!',
+            html: '<p>Look! I\'m an email</p>',
+            plaintext: 'Waba-daba-dab-da',
+            submitted_at: moment().toDate()
+        },
+        {
+            id: ObjectId.generate(),
+            uuid: '365daa11-4bf0-4614-ad43-6346387ffa00',
+            status: 'failed',
+            error: 'Everything went south',
+            stats: '',
+            email_count: 3,
+            subject: 'You got mailed! Again!',
+            html: '<p>What\'s that? Another email!</p>',
+            plaintext: 'yes this is an email',
+            submitted_at: moment().toDate()
+        }
     ]
 };
 
@@ -425,6 +450,8 @@ DataGenerator.Content = {
 DataGenerator.Content.subscribers[0].post_id = DataGenerator.Content.posts[0].id;
 DataGenerator.Content.api_keys[0].integration_id = DataGenerator.Content.integrations[0].id;
 DataGenerator.Content.api_keys[1].integration_id = DataGenerator.Content.integrations[0].id;
+DataGenerator.Content.emails[0].post_id = DataGenerator.Content.posts[0].id;
+DataGenerator.Content.emails[1].post_id = DataGenerator.Content.posts[1].id;
 
 DataGenerator.forKnex = (function () {
     function createBasic(overrides) {
@@ -904,6 +931,11 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.api_keys[2])
     ];
 
+    const emails = [
+        createBasic(DataGenerator.Content.emails[0]),
+        createBasic(DataGenerator.Content.emails[1])
+    ];
+
     return {
         createPost: createPost,
         createGenericPost: createGenericPost,
@@ -940,7 +972,8 @@ DataGenerator.forKnex = (function () {
         roles_users: roles_users,
         webhooks: webhooks,
         integrations: integrations,
-        api_keys: api_keys
+        api_keys: api_keys,
+        emails: emails
     };
 }());
 

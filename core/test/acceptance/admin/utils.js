@@ -37,7 +37,7 @@ const expectedProperties = {
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         // returned by default
-        .concat('tags', 'authors')
+        .concat('tags', 'authors', 'email')
         // returns meta fields from `posts_meta` schema
         .concat(
             ..._(schema.posts_meta).keys().without('post_id', 'id')
@@ -54,13 +54,18 @@ const expectedProperties = {
         .without('type')
         // deprecated
         .without('author_id', 'author')
+        // pages are not sent as emails
+        .without('send_email_when_published')
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         // returned by default
         .concat('tags', 'authors')
         // returns meta fields from `posts_meta` schema
         .concat(
-            ..._(schema.posts_meta).keys().without('post_id', 'id')
+            ..._(schema.posts_meta).keys()
+                .without('post_id', 'id')
+                // pages are not sent as emails
+                .without('email_subject')
         )
     ,
 
@@ -96,6 +101,10 @@ const expectedProperties = {
     ,
     webhook: _(schema.webhooks)
         .keys()
+    ,
+    email: _(schema.emails)
+        .keys(),
+    email_preview: ['html', 'subject', 'plaintext']
 };
 
 _.each(expectedProperties, (value, key) => {

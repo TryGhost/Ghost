@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const localUtils = require('../../../index');
+const config = require('../../../../../../config');
 
 const tag = (attrs, frame) => {
     if (localUtils.isContentAPI(frame)) {
@@ -138,7 +139,28 @@ const action = (attrs) => {
     }
 };
 
+const settings = (attrs) => {
+    if (_.isArray(attrs)) {
+        attrs.forEach((attr) => {
+            if (attr.key === 'bulk_email_settings') {
+                const {provider, apiKey, domain, baseUrl} = attr.value ? JSON.parse(attr.value) : {};
+
+                const bulkEmailConfig = config.get('bulkEmail');
+                const hasMailgunConfig = !!(bulkEmailConfig && bulkEmailConfig.mailgun);
+                const hasMailgunSetting = !!(apiKey && baseUrl && domain);
+
+                attr.value = JSON.stringify({
+                    provider, apiKey, domain, baseUrl,
+                    isEnabled: (hasMailgunConfig || hasMailgunSetting),
+                    isConfig: hasMailgunConfig
+                });
+            }
+        });
+    }
+};
+
 module.exports.post = post;
 module.exports.tag = tag;
 module.exports.author = author;
 module.exports.action = action;
+module.exports.settings = settings;

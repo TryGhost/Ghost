@@ -246,7 +246,7 @@ describe('Database Migration (special functions)', function () {
                     result.roles.at(7).get('name').should.eql('Scheduler Integration');
 
                     // Permissions
-                    result.permissions.length.should.eql(62);
+                    result.permissions.length.should.eql(65);
                     result.permissions.toJSON().should.be.CompletePermissions();
                 });
             });

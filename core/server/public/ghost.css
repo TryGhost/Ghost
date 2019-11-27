@@ -691,6 +691,33 @@ h2 {
 .gh-flow-back:hover {
     border: #dae1e3 1px solid;
 }
+.gh-flow-back-plain {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+        align-items: center;
+    margin: 0 0 0 3%;
+    padding: 2px 9px 2px 5px;
+    color: #7d878a;
+    font-weight: 300;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+.gh-flow-back-plain svg {
+    margin-right: 4px;
+    height: 12px;
+    line-height: 14px;
+}
+.gh-flow-back-plain svg path {
+    stroke: #7d878a;
+    stroke-width: 1.2px;
+}
+.gh-flow-back-plain:hover {
+    color: #15212A;
+}
 .gh-flow-nav {
     position: relative;
     -ms-flex: 1;
@@ -714,9 +741,20 @@ h2 {
     padding-left: 35px;
 }
 
+.gh-flow-content-unsubscribe {
+    font-weight: 300;
+}
+
 @media (max-width: 500px) {
+    .gh-flow-head-unsubscribe {
+        padding-top: 2.8vh;
+    }
     .gh-flow-content {
         font-size: 4vw;
+    }
+    .gh-flow-content-unsubscribe {
+        font-size: 1.8rem;
+        line-height: 1.6em;
     }
 }
 .gh-flow-content header {
@@ -746,6 +784,9 @@ h2 {
     font-size: 1.6rem;
     line-height: 1.4em;
     font-weight: 100;
+}
+.gh-flow-em {
+    font-weight: 500;
 }
 
 /* Sign in

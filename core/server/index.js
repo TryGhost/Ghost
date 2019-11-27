@@ -33,6 +33,7 @@ function initialiseServices() {
         apps = require('./services/apps'),
         xmlrpc = require('./services/xmlrpc'),
         slack = require('./services/slack'),
+        {mega} = require('./services/mega'),
         webhooks = require('./services/webhooks'),
         scheduling = require('./adapters/scheduling');
 
@@ -43,6 +44,7 @@ function initialiseServices() {
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
+        mega.listen(),
         webhooks.listen(),
         apps.init(),
         scheduling.init({
@@ -50,12 +52,12 @@ function initialiseServices() {
             active: config.get('scheduling').active,
             // NOTE: When changing API version need to consider how to migrate custom scheduling adapters
             //       that rely on URL to lookup persisted scheduled records (jobs, etc.). Ref: https://github.com/TryGhost/Ghost/pull/10726#issuecomment-489557162
-            apiUrl: urlUtils.urlFor('api', {version: 'v2', versionType: 'admin'}, true),
+            apiUrl: urlUtils.urlFor('api', {version: 'v3', versionType: 'admin'}, true),
             internalPath: config.get('paths').internalSchedulingPath,
             contentPath: config.getContentPath('scheduling')
         })
     ).then(function () {
-        debug('XMLRPC, Slack, Webhooks, Apps, Scheduling, Permissions done');
+        debug('XMLRPC, Slack, MEGA, Webhooks, Apps, Scheduling, Permissions done');
 
         // Initialise analytics events
         if (config.get('segment:key')) {

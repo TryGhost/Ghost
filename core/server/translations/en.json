@@ -255,6 +255,10 @@
             "api_key": {
                 "apiKeyNotFound": "API Key not found"
             },
+            "email": {
+                "emailNotFound": "Email not found.",
+                "retryNotAllowed": "Only failed emails can be retried"
+            },
             "base": {
                 "index": {
                     "missingContext": "missing context"
@@ -516,6 +520,11 @@
                 },
                 "loader": "Error trying to load YAML setting for {setting} from '{path}'.",
                 "ensureSettings": "Error trying to access settings files in {path}."
+            },
+            "mega": {
+                "requestFailed": {
+                    "error" : "The email service was unable to send an email batch."
+                }
             }
         },
         "errors": {

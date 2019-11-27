@@ -362,6 +362,31 @@
                     "name": "Backup database",
                     "action_type": "backupContent",
                     "object_type": "db"
+                },
+                {
+                    "name": "Email preview",
+                    "action_type": "read",
+                    "object_type": "email_preview"
+                },
+                {
+                    "name": "Send test email",
+                    "action_type": "sendTestEmail",
+                    "object_type": "email_preview"
+                },
+                {
+                    "name": "Browse emails",
+                    "action_type": "browse",
+                    "object_type": "email"
+                },
+                {
+                    "name": "Read emails",
+                    "action_type": "read",
+                    "object_type": "email"
+                },
+                {
+                    "name": "Retry emails",
+                    "action_type": "retry",
+                    "object_type": "email"
                 }
             ]
         },
@@ -556,7 +581,9 @@
                     "integration": "all",
                     "api_key": "all",
                     "action": "all",
-                    "member": "all"
+                    "member": "all",
+                    "email_preview": "all",
+                    "email": "all"
                 },
                 "DB Backup Integration": {
                     "db": "all"
@@ -578,7 +605,9 @@
                     "redirect": "all",
                     "webhook": "all",
                     "action": "all",
-                    "member": "all"
+                    "member": "all",
+                    "email_preview": "all",
+                    "email": "all"
                 },
                 "Editor": {
                     "notification": "all",
@@ -589,7 +618,9 @@
                     "user": "all",
                     "role": "all",
                     "invite": "all",
-                    "theme": ["browse"]
+                    "theme": ["browse"],
+                    "email_preview": "all",
+                    "email": "all"
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -598,7 +629,9 @@
                     "tag": ["browse", "read", "add"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
-                    "theme": ["browse"]
+                    "theme": ["browse"],
+                    "email_preview": "read",
+                    "email": "read"
                 },
                 "Contributor": {
                     "post": ["browse", "read", "add"],
@@ -607,7 +640,9 @@
                     "tag": ["browse", "read"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
-                    "theme": ["browse"]
+                    "theme": ["browse"],
+                    "email_preview": "read",
+                    "email": "read"
                 }
             }
         },

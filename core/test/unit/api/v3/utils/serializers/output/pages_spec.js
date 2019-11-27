@@ -12,7 +12,7 @@ describe('Unit: v3/utils/serializers/output/pages', function () {
             return Object.assign(data, {toJSON: sinon.stub().returns(data)});
         };
 
-        sinon.stub(mapper, 'mapPost').returns({});
+        sinon.stub(mapper, 'mapPage').returns({});
     });
 
     afterEach(function () {
@@ -34,11 +34,11 @@ describe('Unit: v3/utils/serializers/output/pages', function () {
             data: [
                 pageModel(testUtils.DataGenerator.forKnex.createPost({
                     id: 'id1',
-                    page: true
+                    type: 'page'
                 })),
                 pageModel(testUtils.DataGenerator.forKnex.createPost({
                     id: 'id2',
-                    page: true
+                    type: 'page'
                 }))
             ],
             meta: {}
@@ -46,7 +46,7 @@ describe('Unit: v3/utils/serializers/output/pages', function () {
 
         serializers.output.pages.all(ctrlResponse, apiConfig, frame);
 
-        mapper.mapPost.callCount.should.equal(2);
-        mapper.mapPost.getCall(0).args.should.eql([ctrlResponse.data[0], frame]);
+        mapper.mapPage.callCount.should.equal(2);
+        mapper.mapPage.getCall(0).args.should.eql([ctrlResponse.data[0], frame]);
     });
 });

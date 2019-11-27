@@ -8,6 +8,7 @@ const CollectionRouter = require('./CollectionRouter');
 const TaxonomyRouter = require('./TaxonomyRouter');
 const PreviewRouter = require('./PreviewRouter');
 const ParentRouter = require('./ParentRouter');
+const UnsubscribeRouter = require('./UnsubscribeRouter');
 
 const defaultApiVersion = 'v3';
 
@@ -52,7 +53,7 @@ module.exports.init = (options = {start: false}) => {
  * The routers are created in a specific order. This order defines who can get a resource first or
  * who can dominant other routers.
  *
- * 1. Preview Router: Is the strongest and is an inbuilt feature, which you can never override.
+ * 1. Preview + Unsubscribe Routers: Strongest inbuilt features, which you can never override.
  * 2. Static Routes: Very strong, because you can override any urls and redirect to a static route.
  * 3. Taxonomies: Stronger than collections, because it's an inbuilt feature.
  * 4. Collections
@@ -62,8 +63,11 @@ module.exports.init = (options = {start: false}) => {
 module.exports.start = (apiVersion) => {
     const RESOURCE_CONFIG = require(`./config/${apiVersion}`);
 
-    const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
+    const unsubscribeRouter = new UnsubscribeRouter();
+    siteRouter.mountRouter(unsubscribeRouter.router());
+    registry.setRouter('unsubscribeRouter', unsubscribeRouter);
 
+    const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
     siteRouter.mountRouter(previewRouter.router());
     registry.setRouter('previewRouter', previewRouter);
 
