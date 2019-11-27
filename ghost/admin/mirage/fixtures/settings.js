@@ -182,5 +182,15 @@ export default [
         created_by: 1,
         updated_at: '2019-10-09T09:49:00.000Z',
         updated_by: 1
+    },
+    {
+        id: 24,
+        type: 'bulk_email',
+        key: 'bulk_email_settings',
+        value: '{"provider":"mailgun","apiKey":"","domain":"","baseUrl":""}',
+        created_at: '2019-10-09T09:49:00.000Z',
+        created_by: 1,
+        updated_at: '2019-10-09T09:49:00.000Z',
+        updated_by: 1
     }
 ];

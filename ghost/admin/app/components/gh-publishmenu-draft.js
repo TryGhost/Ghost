@@ -1,9 +1,14 @@
 import Component from '@ember/component';
 import moment from 'moment';
+import {computed} from '@ember/object';
+import {equal} from '@ember/object/computed';
 import {isEmpty} from '@ember/utils';
+import {inject as service} from '@ember/service';
 
 export default Component.extend({
-
+    feature: service(),
+    settings: service(),
+    session: service(),
     post: null,
     saveType: null,
 
@@ -12,6 +17,17 @@ export default Component.extend({
     _publishedAtBlogTZ: null,
 
     'data-test-publishmenu-draft': true,
+
+    disableEmailOption: equal('memberCount', 0),
+
+    canSendEmail: computed('feature.labs.members', 'post.{displayName,email}', function () {
+        let membersEnabled = this.feature.get('labs.members');
+        let mailgunIsConfigured = this.get('settings.bulkEmailSettings.isEnabled');
+        let isPost = this.post.displayName === 'post';
+        let hasSentEmail = !!this.post.email;
+
+        return membersEnabled && mailgunIsConfigured && isPost && !hasSentEmail;
+    }),
 
     didInsertElement() {
         this.post.set('publishedAtBlogTZ', this.get('post.publishedAtUTC'));

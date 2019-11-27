@@ -111,3 +111,18 @@
 .gh-labs-disabled .for-radio .input-toggle-component {
     cursor: default;
 }
+
+.gh-labs-mailgun-region {
+    width: 140px !important;
+    margin-right: 12px;
+}
+
+.gh-labs-mailgun-region .ember-power-select-trigger {
+    white-space: nowrap;
+}
+
+.gh-labs-mailgun-region .ember-power-select-trigger svg {
+    margin-left: 23px;
+    width: 10px;
+    height: 6px;
+}

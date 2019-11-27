@@ -111,7 +111,7 @@
     color: #fff;
     font-size: 2rem;
     line-height: 1.15em;
-    font-weight: 100;
+    font-weight: 300;
 }
 
 .package-card-theme .package-card-footer {
@@ -221,7 +221,7 @@
     text-overflow: ellipsis;
     font-size: 1.4rem;
     line-height: 1.3em;
-    font-weight: 200;
+    font-weight: 300;
 
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;

@@ -21,7 +21,7 @@ export function kgStyle([style], options) {
         break;
 
     case 'cardmenu-label':
-        cssClass = 'f-supersmall tracked-1 fw1 ma0 mt1';
+        cssClass = 'f-supersmall tracked-1 fw3 ma0 mt1';
         break;
 
     // Container cards

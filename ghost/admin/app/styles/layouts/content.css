@@ -137,8 +137,17 @@
 .content-list .gh-list-header.no-padding {
     padding: 0 !important;
 }
+
 .gh-posts-title-header {
     padding-left: 10px;
+}
+
+.gh-posts-status-header {
+    width: 160px;
+}
+
+.gh-posts-lastupdate-header {
+    width: 160px;
 }
 
 .gh-post-list-title {
@@ -186,12 +195,21 @@
     margin: 4px 0 0 0;
     font-size: 1.3rem;
     color: var(--midlightgrey);
-    font-weight: 200;
-    letter-spacing: 0.3px;
 }
 
 .gh-content-entry-meta .gh-badge {
     margin-right: 3px;
+}
+
+.gh-content-status-draft,
+.gh-content-status-published,
+.gh-content-status-scheduled, 
+.gh-content-status-emailed {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 19px;
+    padding: 0 4px;
 }
 
 .gh-content-status-published {
@@ -224,6 +242,27 @@
     fill: var(--blue);
 }
 
+.gh-content-status-emailed {
+    display: inline-block;
+    margin: 0px 6px;
+    background: var(--lightgrey);
+    padding-right: 5px;
+    border-radius: 3px;
+}
+
+.gh-content-status-emailed svg {
+    width: 12px;
+    height: 12px;
+}
+
+.gh-content-status-emailed.error {
+    background: color-mod(var(--red) a(10%));
+}
+
+.gh-content-status-emailed.scheduled {
+    background: color-mod(var(--green) a(20%));
+}
+
 .gh-content-entry-author {
     color: var(--middarkgrey);
 }
@@ -236,6 +275,11 @@
 .gh-pages-placeholder {
     width: 118px;
     margin: -30px 0 15px;
+}
+
+.gh-post-list-email {
+    padding: 0 15px 2px;
+    width: 1px;
 }
 
 /* Mobile style of post list */
@@ -417,7 +461,7 @@
     margin-bottom: 20px;
     color: var(--midgrey);
     font-size: 2em;
-    font-weight: 200;
+    font-weight: 300;
     letter-spacing: 1px;
 }
 

@@ -21,11 +21,6 @@
                             isSaving=(or autosave.isRunning saveTasks.isRunning)
                         }}
                     </span>
-                {{#gh-scheduled-post-countdown post=post as |post countdown|}}
-                    <time datetime="{{post.publishedAtUTC}}" class="green f8 ml5" data-test-schedule-countdown>
-                        {{capitalize post.displayName}} will go live {{countdown}}.
-                    </time>
-                {{/gh-scheduled-post-countdown}}
                 </div>
             </div>
 
@@ -55,7 +50,9 @@
                             postStatus=post.status
                             saveTask=save
                             setSaveType=(action "setSaveType")
-                            onOpen=(action "cancelAutosave")}}
+                            onOpen=(action "cancelAutosave")
+                            backgroundTask=this.backgroundLoader
+                            memberCount=this.memberCount}}
                     {{/if}}
                 {{/unless}}
 
@@ -115,10 +112,18 @@
             modifier="action wide"}}
     {{/if}}
 
+    {{#if showEmailPreviewModal}}
+        {{gh-fullscreen-modal "post-email-preview"
+            model=post
+            close=(action "toggleEmailPreviewModal")
+            modifier="full-overlay email-preview"}}
+    {{/if}}
+
     {{#liquid-wormhole}}
         {{gh-post-settings-menu
             post=post
             showSettingsMenu=ui.showSettingsMenu
+            toggleEmailPreviewModal=(action "toggleEmailPreviewModal")
             deletePost=(action "toggleDeletePostModal")
             updateSlug=updateSlug
             savePost=savePost

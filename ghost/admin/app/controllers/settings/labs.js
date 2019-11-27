@@ -53,6 +53,7 @@ export default Controller.extend({
     jsonMimeType: null,
     yamlExtension: null,
     yamlMimeType: null,
+
     init() {
         this._super(...arguments);
         this.importMimeType = IMPORT_MIME_TYPES;
@@ -163,6 +164,10 @@ export default Controller.extend({
 
         setMembersSubscriptionSettings(subscriptionSettings) {
             this.set('settings.membersSubscriptionSettings', JSON.stringify(subscriptionSettings));
+        },
+
+        setBulkEmailSettings(bulkEmailSettings) {
+            this.set('settings.bulkEmailSettings', bulkEmailSettings);
         }
     },
 

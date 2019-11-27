@@ -27,7 +27,7 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
     _loadSettings() {
         if (!this._loadingPromise) {
             this._loadingPromise = this.store
-                .queryRecord('setting', {type: 'blog,theme,private,members'})
+                .queryRecord('setting', {type: 'blog,theme,private,members,bulk_email'})
                 .then((settings) => {
                     this._loadingPromise = null;
                     return settings;

@@ -663,7 +663,7 @@
     font-size: 2.8rem;
     line-height: 1.2em;
     font-weight: 600;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.2px;
     /* match button height to avoid jump on navigation between screens*/
     min-height: 35px;
 }
@@ -725,7 +725,7 @@
     font-size: 2.8rem;
     line-height: 1.2em;
     font-weight: 600;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.2px;
     min-height: 35px;
 }
 

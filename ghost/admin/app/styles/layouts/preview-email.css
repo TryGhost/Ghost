@@ -1,0 +1,126 @@
+.fullscreen-modal-email-preview {
+    margin: 30px;
+    max-width: 100%;
+}
+
+.fullscreen-modal-email-preview .modal-content {
+    padding-bottom: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
+.fullscreen-modal-email-preview .modal-body {
+    height: 100%;
+    margin: 0 -32px;
+}
+
+.modal-preview-email-content {
+    height: calc(100vh - 170px);
+}
+
+.gh-pe-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: -32px -32px 0;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    overflow: hidden;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background: var(--white);
+    padding: 18px 32px;
+}
+
+.gh-pe-header h2 {
+    width: calc(50vw - 200px);
+    margin: 0;
+}
+
+.gh-pe-header-border {
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-pe-close {
+    width: calc(50vw - 200px)
+}
+
+.modal-content .gh-pe-close button {
+    stroke: var(--midgrey);
+    opacity: 0.6;
+    transition: all 0.2s ease-in-out;
+    top: 25px;
+}
+
+.gh-pe-close button:hover {
+    opacity: 1.0;
+}
+
+.gh-pe-btn-group button {
+    width: 100px;
+}
+
+.gh-pe-btn-group button span {
+    border: 1px solid var(--whitegrey);
+}
+
+.gh-pe-btn-group button:first-of-type span {
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.gh-pe-btn-group button:last-of-type span {
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.fullscreen-modal-email-preview .gh-pe-mobile-container {
+    height: calc(100% - 64px);
+    max-height: 812px;
+}
+
+.fullscreen-modal-email-preview .gh-pe-desktop-container {
+    height: calc(100vh - 130px);
+}
+
+.gh-pe-mobile-bezel {
+    width: 100%;
+    max-width: 43vh;
+    border: 1px solid var(--midgrey-l2);
+    border-radius: 40px;
+    display: flex;
+}
+
+.gh-pe-mobile-screen {
+    width: 100%;
+    margin: 18px;
+    border: 1px solid var(--midgrey-l2);
+    border-radius: 23px;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.gh-pe-mobile-container .gh-pe-iframe {
+    height: 100%;
+    width: calc(43vh - 40px);
+    overflow-x: hidden;
+    padding: 0;
+}
+
+.gh-pe-mobile-container .gh-pe-iframe .left-col {
+    display: none;
+}
+
+@media (max-width: 850px) {
+    .gh-pe-header {
+        flex-direction: column;
+    }
+
+    .gh-pe-header h2 {
+        display: none
+    }
+}

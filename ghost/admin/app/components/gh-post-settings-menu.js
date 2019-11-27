@@ -15,6 +15,7 @@ export default Component.extend(SettingsMenuMixin, {
     feature: service(),
     store: service(),
     config: service(),
+    ajax: service(),
     ghostPaths: service(),
     notifications: service(),
     slugGenerator: service(),

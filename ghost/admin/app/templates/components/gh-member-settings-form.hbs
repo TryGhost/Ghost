@@ -1,45 +1,63 @@
-<h4 class="midlightgrey f-small fw5 ttu">Basic info</h4>
-<div class="pa5 pb0 pt4 br4 shadow-1 bg-grouped-table mt2 flex flex-column flex-row-ns items-start justify-between gh-tag-basic-settings-form">
-    <div class="flex flex-column items-start mr8 w-100 w-50-ns">
-        {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="name"}}
-        <label for="member-name">Name</label>
-        {{gh-text-input
-                    id="member-name"
-                    name="name"
-                    value=(readonly scratchName)
-                    tabindex="1"
-                    input=(action (mut scratchName) value="target.value")
-                    focus-out=(action 'setProperty' 'name' scratchName)}}
-        {{gh-error-message errors=member.errors property="name"}}
-        {{/gh-form-group}}
-
-        {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="email"}}
-        <label for="member-email">Email</label>
-        {{gh-text-input
-            disabled=true
-            value=(readonly scratchEmail)
-            id="member-email"
-            name="email"
-            tabindex="2"
-            focus-out=(action 'setProperty' 'email' scratchEmail)
-            input=(action (mut scratchEmail) value="target.value")}}
-        {{/gh-form-group}}
-
-    </div>
-    <div class="mb6 mb0-ns w-100 w-50-ns">
-        {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="note"}}
+<h4 class="midlightgrey f-small fw5 ttu mt12">Basic</h4>
+<div class="br4 shadow-1 bg-grouped-table mt2 flex flex-column items-stretch gh-tag-basic-settings-form">
+    <div class="pa5 pb0 pt4 flex flex-column flex-row-ns justify-between">
+        <div class="flex flex-column items-start mr8 w-100 w-50-ns">
+            {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="name"}}
+            <label for="member-name">Name</label>
+            {{gh-text-input
+                            id="member-name"
+                            name="name"
+                            value=(readonly scratchName)
+                            tabindex="1"
+                            input=(action (mut scratchName) value="target.value")
+                            focus-out=(action 'setProperty' 'name' scratchName)}}
+            {{gh-error-message errors=member.errors property="name"}}
+            {{/gh-form-group}}
+        
+            {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="email"}}
+            <label for="member-email">Email</label>
+            {{gh-text-input
+                    disabled=true
+                    value=(readonly scratchEmail)
+                    id="member-email"
+                    name="email"
+                    tabindex="2"
+                    focus-out=(action 'setProperty' 'email' scratchEmail)
+                    input=(action (mut scratchEmail) value="target.value")}}
+            {{/gh-form-group}}
+        </div>
+        <div class="mb6 mb0-ns w-100 w-50-ns">
+            {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="note"}}
             <label for="member-note">Note</label>
             {{gh-textarea
-                        id="member-note"
-                        name="note"
-                        class="gh-member-details-textarea"
-                        tabindex="3"
-                        value=(readonly scratchNote)
-                        input=(action (mut scratchNote) value="target.value")
-                        focus-out=(action 'setProperty' 'note' scratchNote)
-                    }}
+                                id="member-note"
+                                name="note"
+                                class="gh-member-details-textarea"
+                                tabindex="3"
+                                value=(readonly scratchNote)
+                                input=(action (mut scratchNote) value="target.value")
+                                focus-out=(action 'setProperty' 'note' scratchNote)
+                            }}
             {{gh-error-message errors=member.errors property="note"}}
-            <p>Not visible to member. Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchNote 500}}</p>
+            <p>Not visible to member. Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchNote 500}}
+            </p>
+            {{/gh-form-group}}
+        </div>
+    </div>
+    <div class="pa5 pb0 pt4 flex flex-column justify-between bt b--whitegrey">
+        {{#gh-form-group classNames="gh-members-subscribed-checkbox"}}
+        <div class="flex justify-between items-center">
+            <div>
+                <h4 class="gh-setting-title">Subscribed to newsletter</h4>
+                <p class="gh-setting-desc">If disabled, member will <em>not</em> receive newsletter emails</p>
+            </div>
+            <div class="for-switch">
+                <label class="switch" for="subscribed-checkbox">
+                    <Input @checked={{this.member.subscribed}} @type="checkbox" @id="subscribed-checkbox" @name="subscribed" />
+                    <span class="input-toggle-component"></span>
+                </label>
+            </div>
+        </div>
         {{/gh-form-group}}
     </div>
 </div>

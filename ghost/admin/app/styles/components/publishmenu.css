@@ -41,12 +41,12 @@
     top: 100%;
     right: 0;
     margin: 5px 0 20px 0;
-    padding: 20px;
-    width: 300px;
+    padding: 0px;
+    width: 320px;
     background-color: #fff;
     background-clip: padding-box;
     border-radius: 4px;
-    box-shadow: 0 0 0 1px rgba(99,114,130,0.16), 0 8px 16px rgba(27,39,51,0.08);
+    box-shadow: 0 0 0 1px rgba(99,114,130,0.06), 0 8px 16px rgba(27,39,51,0.08);
     list-style: none;
     text-align: left;
     text-transform: none;
@@ -67,21 +67,21 @@
 
 .gh-publishmenu-heading {
     margin: 0 0 15px 0;
+    padding: 20px 20px 0;
     font-size: 1.8rem;
-    line-height: 1.15em;
+    line-height: 1.25em;
 }
 
 .gh-publishmenu-content {
-    margin: 17px 0;
-    border-top: var(--lightgrey) 1px solid;
     border-bottom: var(--lightgrey) 1px solid;
 }
 
 .gh-publishmenu-footer {
+    margin: 15px 0 0 0;
+    padding: 0 20px 20px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    margin: 15px 0 0 0;
 }
 
 .gh-publishmenu-button {
@@ -91,7 +91,12 @@
 
 .gh-publishmenu-radio {
     display: flex;
-    margin: 25px 0;
+    margin: 20px 0;
+}
+
+.gh-publishmenu-section {
+    padding: 0 20px;
+    border-top: var(--lightgrey) 1px solid;
 }
 
 .gh-publishmenu-radio-button {
@@ -112,6 +117,7 @@
 }
 
 .gh-publishmenu-radio-label {
+    display: block;
     font-size: 1.4rem;
     line-height: 1.2em;
     font-weight: 500;
@@ -120,8 +126,9 @@
 .gh-publishmenu-radio-desc {
     font-size: 1.3rem;
     line-height: 1.4em;
-    font-weight: 200;
+    font-weight: 300;
     color: color-mod(var(--midgrey) l(+10%));
+    margin-top: 2px;
 }
 
 .gh-publishmenu-radio-label:hover,
@@ -211,7 +218,7 @@
 
 .gh-date-time-picker-timezone {
     font-size: 1.1rem;
-    font-weight: 200;
+    font-weight: 300;
     color: color-mod(var(--midgrey) l(+17%));
     margin-left: -30px;
 }
@@ -220,6 +227,31 @@
     display: block;
     font-size: 1.3rem;
     line-height: 1.4em;
-    font-weight: 200;
+    font-weight: 300;
     color: var(--red);
+}
+
+.gh-publishmenu-email {
+    margin: 15px 0;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.for-checkbox .gh-publishmenu-email-checkbox {
+    margin-right: 0;
+    margin-top: -2px;
+    background: var(--white);
+}
+
+.gh-publishmenu-email-label.disabled {
+    pointer-events: none;
+}
+
+.gh-publishmenu-content .for-switch.pe-none {
+    opacity: 0.6;
+}
+
+.gh-publishmenu-email-info {
+    margin: 15px 0;
+    color: var(--midgrey);
 }

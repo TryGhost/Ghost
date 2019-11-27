@@ -6,6 +6,7 @@ import isNumber from 'ghost-admin/utils/isNumber';
 import {alias, mapBy} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as controller} from '@ember/controller';
+import {get} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
@@ -96,6 +97,7 @@ export default Controller.extend({
     showDeletePostModal: false,
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
+    showEmailPreviewModal: false,
 
     // koenig related properties
     wordcount: null,
@@ -241,6 +243,10 @@ export default Controller.extend({
             }
         },
 
+        toggleEmailPreviewModal() {
+            this.toggleProperty('showEmailPreviewModal');
+        },
+
         toggleReAuthenticateModal() {
             this.toggleProperty('showReAuthenticateModal');
         },
@@ -302,6 +308,13 @@ export default Controller.extend({
                     status = 'draft';
                 }
             }
+
+            // let the adapter know it should use the `?send_email_when_published` QP when saving
+            let isPublishing = status === 'published' && !this.post.isPublished;
+            let isScheduling = status === 'scheduled' && !this.post.isScheduled;
+            if (options.sendEmailWhenPublished && (isPublishing || isScheduling)) {
+                options.adapterOptions = Object.assign({}, options.adapterOptions, {sendEmailWhenPublished: true});
+            }
         }
 
         // ensure we remove any blank cards when performing a full save
@@ -334,6 +347,7 @@ export default Controller.extend({
         this.set('post.ogDescription', this.get('post.ogDescriptionScratch'));
         this.set('post.twitterTitle', this.get('post.twitterTitleScratch'));
         this.set('post.twitterDescription', this.get('post.twitterDescriptionScratch'));
+        this.set('post.emailSubject', this.get('post.emailSubjectScratch'));
 
         if (!this.get('post.slug')) {
             this.saveTitle.cancelAll();
@@ -530,6 +544,14 @@ export default Controller.extend({
         }
     }).enqueue(),
 
+    // load supplementel data such as the members count in the background
+    backgroundLoader: task(function* () {
+        if (this.feature.members) {
+            let membersResponse = yield this.store.query('member', {limit: 1, filter: 'subscribed:true'});
+            this.set('memberCount', get(membersResponse, 'meta.pagination.total'));
+        }
+    }).restartable(),
+
     /* Public methods --------------------------------------------------------*/
 
     // called by the new/edit routes to change the post model
@@ -545,6 +567,7 @@ export default Controller.extend({
         this.reset();
 
         this.set('post', post);
+        this.backgroundLoader.perform();
 
         // autofocus the editor if we have a new post
         this.set('shouldFocusEditor', post.get('isNew'));
@@ -699,8 +722,8 @@ export default Controller.extend({
 
         // post.tags is an array so hasDirtyAttributes doesn't pick up
         // changes unless the array ref is changed
-        let currentTags = this.getWithDefault('_tagNames', []).join('');
-        let previousTags = this.getWithDefault('_previousTagNames', []).join('');
+        let currentTags = (this._tagNames || []).join('');
+        let previousTags = (this._previousTagNames || []).join('');
         if (currentTags !== previousTags) {
             return true;
         }

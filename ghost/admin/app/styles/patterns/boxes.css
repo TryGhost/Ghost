@@ -18,7 +18,7 @@
 .gh-box svg:first-of-type {
     position: absolute;
     top: 13px;
-    left: 15px;
+    left: 12px;
     height: 2.1rem;
     width: auto;
 }
@@ -27,6 +27,36 @@
     border-left-color: var(--blue);
 }
 
-.gh-box-info svg {
+.gh-box-info svg:first-of-type {
     fill: var(--blue);
+}
+
+.gh-box-warning {
+    border-left-color: var(--yellow);
+}
+
+.gh-box-warning svg:first-of-type {
+    fill: var(--yellow);
+}
+
+.gh-box-warning a {
+    color: var(--yellow);
+}
+
+.gh-box-error {
+    border-left-color: var(--red);
+    color: var(--middarkgrey);
+}
+
+.gh-box-error svg:first-of-type {
+    fill: var(--red);
+    height: 1.8rem;
+}
+
+.gh-box-error a {
+    color: var(--red);
+}
+
+.gh-box-error-border {
+    border-left: 5px solid var(--red);
 }

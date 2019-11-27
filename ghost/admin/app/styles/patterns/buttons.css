@@ -329,6 +329,37 @@ svg.gh-btn-icon-right {
     margin: 0;
 }
 
+.gh-btn-icon-grey svg {
+    fill: var(--midgrey);
+}
+
+.gh-btn-icon-grey svg path {
+    stroke: var(--midgrey);
+}
+
+.gh-btn-text,
+.gh-btn-text:hover {
+    display: flex;
+    align-items: center;
+    border: none;
+    background: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    font-weight: 300;
+}
+
+.gh-btn-text span {
+    height: unset;
+    line-height: unset;
+    padding: 0;
+}
+
+.gh-btn-text.regular span {
+    font-size: 1.4rem;
+    color: var(--darkgrey);
+}
+
 
 /*
 /* Button Variations

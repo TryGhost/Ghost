@@ -8,36 +8,63 @@
     <h3 class="gh-content-entry-title">
         {{this.post.title}}
     </h3>
-    {{#if isScheduled}}
-        <p>
-            <span class="gh-schedule-time">Will go live {{gh-format-post-time this.post.publishedAtUTC scheduled=true}}</span>
-            <span class="gh-schedule-subtext">&dash; {{this.subText}}</span>
-        </p>
-    {{else}}
-        <p>
-            {{this.subText}}
-        </p>
-    {{/if}}
+    <p>
+        <span class="gh-content-entry-meta">
+            By <span class="midgrey-l2 fw5">{{this.authorNames}}</span>
+
+            {{#if this.primaryTag}}
+                in <span class="midgrey-l2 fw5">{{this.primaryTag}}</span>
+            {{/if}}
+
+            {{#if isScheduled}}
+                – <span class="gh-schedule-time">Scheduled to be published and sent {{gh-format-post-time this.post.publishedAtUTC scheduled=true}}</span>
+            {{/if}}
+        </span>
+    </p>
 {{/link-to}}
 
 {{#link-to "editor.edit" this.post.displayName this.post.id class="permalink gh-list-data gh-post-list-status" title="Edit this post"}}
-    {{#if this.isScheduled}}
-    <span class="gh-content-status-draft gh-badge nowrap">Scheduled</span>
-    {{/if}}
+    <div class="flex items-center">
+        {{#if this.isScheduled}}
+        <span class="gh-content-status-draft gh-badge nowrap">
+            Scheduled
+        </span>
+        {{/if}}
 
-    {{#if this.isDraft}}
-    <span class="gh-content-status-draft gh-badge gh-badge-purple nowrap">Draft</span>
-    {{/if}}
+        {{#if this.isDraft}}
+        <span class="gh-content-status-draft gh-badge gh-badge-purple nowrap">
+            Draft
+        </span>
+        {{/if}}
 
-    {{#if (and this.isPublished (not this.post.page))}}
-    <span class="gh-content-status-published nowrap">Published</span>
-    {{/if}}
+        {{#if (and this.isPublished (not this.post.page))}}
+        <span class="gh-content-status-published nowrap" title="Post has been sent by email">
+            Published
+        </span>
+        {{/if}}
+
+        {{#if this.session.user.isOwnerOrAdmin}}
+            {{#if (or this.post.email (and this.post.isScheduled this.post.sendEmailWhenPublished))}}
+                {{#if (eq this.post.email.status "failed")}}
+                    <span data-tooltip="Failed to send post by email" class="gh-content-status-emailed error">
+                        {{svg-jar "send-email" class="stroke-red"}}
+                    </span>
+                {{else}}
+                    {{#if this.isScheduled}}
+                        <span data-tooltip="To be sent by email" class="gh-content-status-emailed scheduled">
+                            {{svg-jar "send-email" class="stroke-green-d2"}}
+                        </span>
+                    {{else}}
+                        <span data-tooltip="Sent by email" class="gh-content-status-emailed">
+                            {{svg-jar "send-email" class="stroke-midgrey"}}
+                        </span>
+                    {{/if}}
+                {{/if}}
+            {{/if}}
+        {{/if}}
+    </div>
 {{/link-to}}
 
 {{#link-to "editor.edit" this.post.displayName this.post.id class="permalink gh-list-data gh-post-list-updated" title="Edit this post"}}
     <span class="nowrap">{{gh-format-post-time this.post.updatedAtUTC draft=true}}</span>
-{{/link-to}}
-
-{{#link-to "editor.edit" this.post.displayName this.post.id class="permalink gh-list-data gh-post-list-author" title="Edit this post"}}
-    <span class="gh-content-entry-author">{{this.authorNames}}</span>
 {{/link-to}}

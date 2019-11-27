@@ -91,6 +91,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     twitterImage: attr('string'),
     twitterTitle: attr('string'),
     twitterDescription: attr('string'),
+    emailSubject: attr('string'),
     html: attr('string'),
     locale: attr('string'),
     visibility: attr('string'),
@@ -106,17 +107,13 @@ export default Model.extend(Comparable, ValidationEngine, {
     updatedBy: attr('number'),
     url: attr('string'),
     uuid: attr('string'),
+    sendEmailWhenPublished: attr('boolean', {defaultValue: false}),
 
-    authors: hasMany('user', {
-        embedded: 'always',
-        async: false
-    }),
+    authors: hasMany('user', {embedded: 'always', async: false}),
     createdBy: belongsTo('user', {async: true}),
+    email: belongsTo('email', {async: false}),
     publishedBy: belongsTo('user', {async: true}),
-    tags: hasMany('tag', {
-        embedded: 'always',
-        async: false
-    }),
+    tags: hasMany('tag', {embedded: 'always', async: false}),
 
     primaryAuthor: computed('authors.[]', function () {
         return this.get('authors.firstObject');
@@ -146,6 +143,8 @@ export default Model.extend(Comparable, ValidationEngine, {
     ogTitleScratch: boundOneWay('ogTitle'),
     twitterDescriptionScratch: boundOneWay('twitterDescription'),
     twitterTitleScratch: boundOneWay('twitterTitle'),
+
+    emailSubjectScratch: boundOneWay('emailSubject'),
 
     isPublished: equal('status', 'published'),
     isDraft: equal('status', 'draft'),

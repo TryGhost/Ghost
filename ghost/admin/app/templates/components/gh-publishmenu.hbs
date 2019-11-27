@@ -1,27 +1,32 @@
 {{#basic-dropdown verticalPosition="below" onOpen=(action "open") onClose=(action "close") as |dd|}}
     {{#dd.trigger class="gh-btn gh-btn-outline gh-publishmenu-trigger"}}
-        <span data-test-publishmenu-trigger>{{triggerText}} {{svg-jar "arrow-down"}}</span>
+        <span data-test-publishmenu-trigger>{{this.triggerText}} {{svg-jar "arrow-down"}}</span>
     {{/dd.trigger}}
 
     {{#dd.content class="gh-publishmenu-dropdown"}}
         {{#if (eq displayState "published")}}
-        {{gh-publishmenu-published
-            post=post
-            saveType=saveType
-            setSaveType=(action "setSaveType")}}
+            {{gh-publishmenu-published
+                post=this.post
+                saveType=this.saveType
+                setSaveType=(action "setSaveType")
+                backgroundTask=this.backgroundTask}}
 
         {{else if (eq displayState "scheduled")}}
-        {{gh-publishmenu-scheduled
-            post=post
-            saveType=saveType
-            isClosing=isClosing
-            setSaveType=(action "setSaveType")}}
+            {{gh-publishmenu-scheduled
+                post=this.post
+                saveType=this.saveType
+                isClosing=this.isClosing
+                memberCount=this.memberCount
+                setSaveType=(action "setSaveType")}}
 
         {{else}}
-        {{gh-publishmenu-draft
-            post=post
-            saveType=saveType
-            setSaveType=(action "setSaveType")}}
+            {{gh-publishmenu-draft
+                post=this.post
+                saveType=this.saveType
+                setSaveType=(action "setSaveType")
+                backgroundTask=this.backgroundTask
+                memberCount=this.memberCount
+                sendEmailWhenPublished=this.sendEmailWhenPublished}}
         {{/if}}
 
         {{!--
@@ -29,15 +34,33 @@
             or cancel the task when the post status updates and switches components
          --}}
         <footer class="gh-publishmenu-footer">
-            <button class="gh-btn gh-btn-outline gh-btn-link" {{action dd.actions.close}} data-test-publishmenu-cancel>
+            <button class="gh-btn gh-btn-outline gh-btn-link" {{on "click" (action dd.actions.close)}} data-test-publishmenu-cancel>
                 <span>Cancel</span>
             </button>
-            {{gh-task-button buttonText
-                task=save
-                successText=successText
-                runningText=runningText
-                class="gh-btn gh-btn-blue gh-publishmenu-button gh-btn-icon"
-                data-test-publishmenu-save=true}}
+            <GhTaskButton
+                @buttonText={{this.buttonText}}
+                @task={{this.save}}
+                @taskArgs={{hash dropdown=dd}}
+                @successText={{this.successText}}
+                @runningText={{this.runningText}}
+                @class="gh-btn gh-btn-blue gh-publishmenu-button gh-btn-icon"
+                data-test-publishmenu-save=true
+            />
         </footer>
     {{/dd.content}}
 {{/basic-dropdown}}
+
+{{#if this.showEmailConfirmationModal}}
+    <GhFullscreenModal
+        @modal="confirm-email-send"
+        @model={{hash
+            memberCount=this.memberCount
+            isScheduled=(eq this.saveType "schedule")
+            paidOnly=(eq this.post.visibility "paid")
+            retryEmailSend=this.retryEmailSend
+        }}
+        @confirm={{this.confirmEmailSend}}
+        @close={{this.closeEmailConfirmationModal}}
+        @modifier="action wide"
+    />
+{{/if}}
