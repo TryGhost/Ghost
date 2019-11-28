@@ -77,7 +77,7 @@ module.exports = {
             constants.ONE_HOUR_S
         )
     ],
-    authentication: [
+    createSessionFromToken: [
         getMemberDataFromSession,
         exchangeTokenForSession,
         decorateResponse

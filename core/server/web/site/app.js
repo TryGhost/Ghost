@@ -123,7 +123,7 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.delete('/members/ssr', membersMiddleware.deleteSession);
     siteApp.post('/members/webhooks/stripe', membersMiddleware.stripeWebhooks);
 
-    siteApp.use(membersMiddleware.authentication);
+    siteApp.use(membersMiddleware.createSessionFromToken);
 
     // Theme middleware
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates
