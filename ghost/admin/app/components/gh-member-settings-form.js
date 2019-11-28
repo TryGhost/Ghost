@@ -2,6 +2,7 @@ import Component from '@ember/component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
 import {computed} from '@ember/object';
+import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
@@ -15,9 +16,12 @@ export default Component.extend({
     setProperty: () => {},
     showDeleteTagModal: () => {},
 
+    canEditEmail: reads('member.isNew'),
+
     scratchName: boundOneWay('member.name'),
     scratchEmail: boundOneWay('member.email'),
     scratchNote: boundOneWay('member.note'),
+
     subscriptions: computed('member.stripe', function () {
         let subscriptions = this.member.get('stripe');
         if (subscriptions && subscriptions.length > 0) {

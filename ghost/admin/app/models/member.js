@@ -1,11 +1,14 @@
-import DS from 'ember-data';
+import Model from 'ember-data/model';
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import attr from 'ember-data/attr';
 
-export default DS.Model.extend({
+export default Model.extend(ValidationEngine, {
+    validationType: 'member',
+
     name: attr('string'),
     email: attr('string'),
     note: attr('string'),
-    createdAt: attr('moment-utc'),
+    createdAtUTC: attr('moment-utc'),
     stripe: attr('member-subscription'),
-    subscribed: attr('boolean')
+    subscribed: attr('boolean', {defaultValue: true})
 });

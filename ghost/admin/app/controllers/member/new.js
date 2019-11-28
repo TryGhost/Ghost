@@ -15,6 +15,10 @@ export default Controller.extend({
     notifications: service(),
 
     member: alias('model'),
+
+    displayName: computed('member.{name,email}', function () {
+        return this.member.name || this.member.email || 'New member';
+    }),
     subscribedAt: computed('member.createdAtUTC', function () {
         let memberSince = moment(this.member.createdAtUTC).from(moment());
         let createdDate = moment(this.member.createdAtUTC).format('MMM DD, YYYY');
@@ -25,9 +29,11 @@ export default Controller.extend({
         setProperty(propKey, value) {
             this._saveMemberProperty(propKey, value);
         },
+
         toggleDeleteMemberModal() {
             this.toggleProperty('showDeleteMemberModal');
         },
+
         finaliseDeletion() {
             // decrement the total member count manually so there's no flash
             // when transitioning back to the members list
@@ -94,16 +100,5 @@ export default Controller.extend({
     _saveMemberProperty(propKey, newValue) {
         let member = this.member;
         member.set(propKey, newValue);
-    },
-
-    fetchMember: task(function* (memberId) {
-        this.set('isLoading', true);
-        yield this.store.findRecord('member', memberId, {
-            reload: true
-        }).then((data) => {
-            this.set('member', data);
-            this.set('isLoading', false);
-        });
-    })
-
+    }
 });

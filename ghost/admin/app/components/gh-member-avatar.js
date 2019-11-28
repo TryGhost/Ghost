@@ -21,7 +21,7 @@ export default Component.extend({
     }),
 
     backgroundStyle: computed('member.{name,email}', function () {
-        let name = this.member.name || this.member.email;
+        let name = this.member.name || this.member.email || 'NM';
         if (name) {
             let color = stringToHslColor(name, 55, 55);
             return htmlSafe(`background-color: ${color}`);
@@ -37,6 +37,8 @@ export default Component.extend({
             let intials = names.length > 1 ? [names[0][0], names[names.length - 1][0]] : [names[0][0]];
             return intials.join('').toUpperCase();
         }
-        return '';
+
+        // New Member initials
+        return 'NM';
     })
 });
