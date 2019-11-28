@@ -30,7 +30,7 @@ export default Controller.extend({
             return (name && name.toLowerCase().indexOf(searchText) >= 0)
                 || (email && email.toLowerCase().indexOf(searchText) >= 0);
         }).sort((a, b) => {
-            return b.get('createdAt').valueOf() - a.get('createdAt').valueOf();
+            return b.get('createdAtUTC').valueOf() - a.get('createdAtUTC').valueOf();
         });
 
         return filtered;
@@ -51,7 +51,7 @@ export default Controller.extend({
             iframe.setAttribute('src', downloadURL);
         }
     },
-    
+
     fetchMembers: task(function* () {
         let newFetchDate = new Date();
 

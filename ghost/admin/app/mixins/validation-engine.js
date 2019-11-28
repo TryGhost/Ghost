@@ -1,6 +1,7 @@
 import DS from 'ember-data';
 import IntegrationValidator from 'ghost-admin/validators/integration';
 import InviteUserValidator from 'ghost-admin/validators/invite-user';
+import MemberValidator from 'ghost-admin/validators/member';
 import Mixin from '@ember/object/mixin';
 import Model from 'ember-data/model';
 import NavItemValidator from 'ghost-admin/validators/nav-item';
@@ -43,6 +44,7 @@ export default Mixin.create({
         slackIntegration: SlackIntegrationValidator,
         tag: TagSettingsValidator,
         user: UserValidator,
+        member: MemberValidator,
         integration: IntegrationValidator,
         webhook: WebhookValidator
     },

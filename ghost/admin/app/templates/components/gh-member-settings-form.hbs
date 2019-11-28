@@ -1,46 +1,55 @@
-<h4 class="midlightgrey f-small fw5 ttu mt12">Basic</h4>
-<div class="br4 shadow-1 bg-grouped-table mt2 flex flex-column items-stretch gh-tag-basic-settings-form">
+<h4 class="midlightgrey f-small fw5 ttu">Basic info</h4>
+<div class="br4 shadow-1 bg-grouped-table mt2 flex flex-column items-stretch gh-member-basic-settings-form">
     <div class="pa5 pb0 pt4 flex flex-column flex-row-ns justify-between">
         <div class="flex flex-column items-start mr8 w-100 w-50-ns">
             {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="name"}}
             <label for="member-name">Name</label>
             {{gh-text-input
-                            id="member-name"
-                            name="name"
-                            value=(readonly scratchName)
-                            tabindex="1"
-                            input=(action (mut scratchName) value="target.value")
-                            focus-out=(action 'setProperty' 'name' scratchName)}}
+                        id="member-name"
+                        name="name"
+                        value=(readonly scratchName)
+                        tabindex="1"
+                        input=(action (mut scratchName) value="target.value")
+                        focus-out=(action 'setProperty' 'name' scratchName)}}
             {{gh-error-message errors=member.errors property="name"}}
             {{/gh-form-group}}
-        
+
             {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="email"}}
             <label for="member-email">Email</label>
-            {{gh-text-input
-                    disabled=true
+            {{#if canEditEmail}}
+                {{gh-text-input
                     value=(readonly scratchEmail)
                     id="member-email"
                     name="email"
                     tabindex="2"
+                    autocapitalize="off"
+                    autocorrect="off"
+                    autocomplete="off"
                     focus-out=(action 'setProperty' 'email' scratchEmail)
                     input=(action (mut scratchEmail) value="target.value")}}
+                {{gh-error-message errors=member.errors property="email"}}
+            {{else}}
+                {{gh-text-input
+                    name="email-disabled"
+                    disabled=true
+                    value=(readonly scratchEmail)}}
+            {{/if}}
             {{/gh-form-group}}
         </div>
         <div class="mb6 mb0-ns w-100 w-50-ns">
             {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="note"}}
-            <label for="member-note">Note</label>
-            {{gh-textarea
-                                id="member-note"
-                                name="note"
-                                class="gh-member-details-textarea"
-                                tabindex="3"
-                                value=(readonly scratchNote)
-                                input=(action (mut scratchNote) value="target.value")
-                                focus-out=(action 'setProperty' 'note' scratchNote)
-                            }}
-            {{gh-error-message errors=member.errors property="note"}}
-            <p>Not visible to member. Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchNote 500}}
-            </p>
+                <label for="member-note">Note</label>
+                {{gh-textarea
+                                    id="member-note"
+                                    name="note"
+                                    class="gh-member-details-textarea"
+                                    tabindex="3"
+                                    value=(readonly scratchNote)
+                                    input=(action (mut scratchNote) value="target.value")
+                                    focus-out=(action 'setProperty' 'note' scratchNote)
+                                }}
+                {{gh-error-message errors=member.errors property="note"}}
+                <p>Not visible to member. Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters scratchNote 500}}</p>
             {{/gh-form-group}}
         </div>
     </div>

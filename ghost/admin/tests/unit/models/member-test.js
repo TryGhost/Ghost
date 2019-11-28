@@ -5,10 +5,15 @@ import {setupTest} from 'ember-mocha';
 describe('Unit: Model: member', function () {
     setupTest();
 
-    // Replace this with your real tests.
-    it('exists', function () {
-        let store = this.owner.lookup('service:store');
-        let model = store.createRecord('member', {});
-        expect(model).to.be.ok;
+    let store;
+
+    beforeEach(function () {
+        store = this.owner.lookup('service:store');
+    });
+
+    it('has a validation type of "member"', function () {
+        let model = store.createRecord('member');
+
+        expect(model.get('validationType')).to.equal('member');
     });
 });
