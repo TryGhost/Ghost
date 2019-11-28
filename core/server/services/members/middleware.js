@@ -16,7 +16,7 @@ const getIdentityToken = async function (req, res) {
     }
 };
 
-const logout = async function (req, res) {
+const deleteSession = async function (req, res) {
     try {
         await membersService.ssr.deleteSession(req, res);
         res.writeHead(204);
@@ -86,9 +86,9 @@ module.exports = {
         shared.middlewares.labs.members,
         getIdentityToken
     ],
-    logout: [
+    deleteSession: [
         shared.middlewares.labs.members,
-        logout
+        deleteSession
     ],
     stripeWebhooks: [
         shared.middlewares.labs.members,
