@@ -2,13 +2,7 @@
     <div class="flex items-center">
         <GhMemberAvatar @member={{member}} class="w9 h9 mr3" />
         <div>
-            <h3 class="ma0 pa0 gh-members-list-name {{if (not member.name) "gh-members-name-noname"}}">
-                {{#if this.name}}
-                    {{this.name}}
-                {{else}}
-                    {{this.email}}
-                {{/if}}
-            </h3>
+            <h3 class="ma0 pa0 gh-members-list-name {{if (not member.name) "gh-members-name-noname"}}">{{this.displayName}}</h3>
             {{#if this.name}}
                 <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{this.email}}</p>
             {{/if}}

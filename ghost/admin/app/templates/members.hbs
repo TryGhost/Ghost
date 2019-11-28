@@ -26,6 +26,7 @@
                 {{svg-jar "search" class="gh-input-search-icon"}}
                 <GhTextInput placeholder="Search members..." @value={{this.searchText}} @input={{action (mut this.searchText) value="target.value"}} class="gh-members-list-searchfield {{if this.searchText "active"}}" />
             </div>
+            {{#link-to "member.new" class="gh-btn gh-btn-green" data-test-new-member-button="true"}}<span>New member</span>{{/link-to}}
         </section>
     </GhCanvasHeader>
     <section class="view-container">

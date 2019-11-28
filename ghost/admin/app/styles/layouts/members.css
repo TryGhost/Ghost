@@ -48,6 +48,12 @@ p.gh-members-list-email {
     pointer-events: none;
 }
 
+.members-header .gh-members-header-search {
+    margin-right: 12px;
+    border-right: 1px solid var(--lightgrey-d2);
+    padding-right: 12px;
+}
+
 @media (max-width: 1000px) {
     .members-list .gh-list-header, .gh-list-hidecell-m {
         display: table-cell;
@@ -187,6 +193,10 @@ textarea.gh-member-details-textarea {
 
 .gh-members-subscribed-checkbox {
     max-width: 100%;
+}
+
+.gh-new-member-avatar {
+    background: var(--midlightgrey-l1);
 }
 
 /* Import modal
