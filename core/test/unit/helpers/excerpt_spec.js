@@ -16,7 +16,7 @@ describe('{{excerpt}} Helper', function () {
         rendered.string.should.equal('');
     });
 
-    it('can render excerpt', function () {
+    it('can render custom_excerpt', function () {
         const html = 'Hello World',
             rendered = helpers.excerpt.call({
                 html: html,
@@ -119,7 +119,7 @@ describe('{{excerpt}} Helper', function () {
         rendered.string.should.equal(expected);
     });
 
-    it('uses custom excerpt if provided instead of truncating html', function () {
+    it('uses custom_excerpt if provided instead of truncating html', function () {
         const html = '<p>Hello <strong>World! It\'s me!</strong></p>',
             customExcerpt = 'My Custom Excerpt wins!',
             expected = 'My Custom Excerpt wins!',
@@ -136,7 +136,7 @@ describe('{{excerpt}} Helper', function () {
         rendered.string.should.equal(expected);
     });
 
-    it('does not truncate custom excerpt if characters options is provided', function () {
+    it('does not truncate custom_excerpt if characters options is provided', function () {
         const html = '<p>Hello <strong>World! It\'s me!</strong></p>',
             customExcerpt = 'This is a custom excerpt. It should always be rendered in full length and not being cut ' +
                        'off. The maximum length of a custom excerpt is 300 characters. Enough to tell a bit about ' +
@@ -160,7 +160,7 @@ describe('{{excerpt}} Helper', function () {
         rendered.string.should.equal(expected);
     });
 
-    it('does not truncate custom excerpt if words options is provided', function () {
+    it('does not truncate custom_excerpt if words options is provided', function () {
         const html = '<p>Hello <strong>World! It\'s me!</strong></p>',
             customExcerpt = 'This is a custom excerpt. It should always be rendered in full length and not being cut ' +
                        'off. The maximum length of a custom excerpt is 300 characters. Enough to tell a bit about ' +
