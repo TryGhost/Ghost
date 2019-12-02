@@ -27,6 +27,18 @@ describe('{{excerpt}} Helper', function () {
         rendered.string.should.equal(html);
     });
 
+    it('can render excerpt when other fields are empty', function () {
+        const html = '',
+            rendered = helpers.excerpt.call({
+                html: html,
+                custom_excerpt: '',
+                excerpt: 'Regular excerpt'
+            });
+
+        should.exist(rendered);
+        rendered.string.should.equal('Regular excerpt');
+    });
+
     it('does not output HTML', function () {
         const html = '<p>There are <br />10<br> types<br/> of people in <img src="a">the world:' +
                 '<img src=b alt="c"> those who <img src="@" onclick="javascript:alert(\'hello\');">' +
