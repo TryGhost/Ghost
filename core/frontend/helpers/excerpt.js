@@ -10,13 +10,6 @@ var proxy = require('./proxy'),
     SafeString = proxy.SafeString,
     getMetaDataExcerpt = proxy.metaData.getMetaDataExcerpt;
 
-/**
- * @NOTE:
- *
- * Content API v2 returns a calculated `post.excerpt` field.
- * See https://github.com/TryGhost/Ghost/issues/10062.
- * We have not touched this helper yet, we will revisit later.
- */
 module.exports = function excerpt(options) {
     let truncateOptions = (options || {}).hash || {};
     let excerptText;
