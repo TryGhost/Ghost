@@ -39,7 +39,7 @@ const sendTestEmail = async (postModel, toEmails) => {
         return {email};
     });
     const {emailTmpl, emails, emailData} = await getEmailData(postModel, recipients);
-    emailTmpl.subject = `${emailTmpl.subject} [Test]`;
+    emailTmpl.subject = `[Test] ${emailTmpl.subject}`;
     return bulkEmailService.send(emailTmpl, emails, emailData);
 };
 
