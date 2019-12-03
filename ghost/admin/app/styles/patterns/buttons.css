@@ -360,6 +360,11 @@ svg.gh-btn-icon-right {
     color: var(--darkgrey);
 }
 
+.gh-btn-outline {
+    background: none;
+    box-shadow: none;
+}
+
 
 /*
 /* Button Variations
