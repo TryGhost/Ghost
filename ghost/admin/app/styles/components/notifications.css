@@ -25,13 +25,11 @@
     color: #fff;
     font-size: 1.4rem;
     line-height: 1.25em;
-    /* opacity: 0.88; */
-    transition: opacity 0.3s ease;
+    opacity: 1.0;
 }
 
 .gh-notification:hover {
     cursor: pointer;
-    /* opacity: 0.95; */
 }
 
 .gh-notification-content {
@@ -73,19 +71,16 @@
 .gh-notification-close svg {
     height: 7px;
     width: 7px;
-    fill: #fff;
+    stroke: #fff;
+    opacity: 0.8;
 }
 
 .gh-notification-close svg path {
     stroke-width: 2px;
 }
 
-.gh-notification-close:hover {
-    background: #fff;
-}
-
 .gh-notification-close:hover svg {
-    fill: var(--red)
+    opacity: 1.0;
 }
 
 .gh-notification-passive {
