@@ -14,7 +14,7 @@ const stringToHslColor = function (str, saturation, lightness) {
 
 export default Component.extend({
     tagName: '',
-
+    containerClass: '',
     member: null,
     initialsClass: computed('sizeClass', function () {
         return this.sizeClass || 'gh-member-list-avatar';

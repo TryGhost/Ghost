@@ -1,6 +1,6 @@
 <LinkTo @route="member" @model={{this.member}} title="Member details" class="gh-list-data gh-members-list-basic">
     <div class="flex items-center">
-        <GhMemberAvatar @member={{member}} class="w9 h9 mr3" />
+        <GhMemberAvatar @member={{member}} @containerClass="w9 h9 mr3" />
         <div>
             <h3 class="ma0 pa0 gh-members-list-name {{if (not member.name) "gh-members-name-noname"}}">{{this.displayName}}</h3>
             {{#if this.name}}
