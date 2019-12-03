@@ -22,8 +22,8 @@
 .gh-pe-header {
     position: sticky;
     top: -32px;
-    left: 0;
-    right: 0;
+    left: -32px;
+    right: -32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
