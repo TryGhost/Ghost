@@ -5,29 +5,25 @@
 
 .fullscreen-modal-email-preview .modal-content {
     position: relative;
-    padding-bottom: 0;
     overflow: scroll;
     height: 100%;
+    padding: 0;
 }
 
 .fullscreen-modal-email-preview .modal-body {
-    height: 100%;
-    margin: 0 -32px;
-}
-
-.modal-preview-email-content {
-    height: calc(100vh - 170px);
+    margin: 0;
 }
 
 .gh-pe-header {
     position: sticky;
-    top: -32px;
-    left: -32px;
-    right: -32px;
+    top: 0;
+    left: 0;
+    right: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: -32px -32px 0;
+    margin: 0;
+    padding: 18px 32px;
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
     overflow: hidden;
@@ -35,7 +31,6 @@
     background-repeat: no-repeat;
     background-size: cover;
     background: var(--white);
-    padding: 18px 32px;
     z-index: 9999;
 }
 
@@ -84,8 +79,10 @@
 }
 
 .fullscreen-modal-email-preview .gh-pe-mobile-container {
-    height: 702px;
-    padding-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0;
 }
 
 .fullscreen-modal-email-preview .gh-pe-desktop-container {
@@ -93,7 +90,8 @@
 }
 
 .gh-pe-mobile-bezel {
-    width: 346px;
+    width: 320px;
+    height: 657px;
     border: 1px solid var(--midgrey-l2);
     border-radius: 40px;
     display: flex;
@@ -109,10 +107,12 @@
 }
 
 .gh-pe-mobile-container .gh-pe-iframe {
-    height: 100%;
-    width: 318px;
-    overflow-x: hidden;
     padding: 0;
+    transform: scale(0.8);
+    transform-origin: 0 0;
+    overflow-x: hidden;
+    width: 365px;
+    height: 786px;
 }
 
 .gh-pe-mobile-container .gh-pe-iframe .left-col {
