@@ -7,6 +7,11 @@
     position: relative;
     overflow: hidden;
     border-radius: 100%;
+    box-shadow: 0 0 0 2px var(--white);
+}
+
+.gh-member-detail-avatar {
+    box-shadow: none;
 }
 
 .gh-member-avatar-label {
@@ -31,7 +36,6 @@
 
 .gh-member-initials {
     border: none;
-    box-shadow: 0 0 0 1px var(--white);
 }
 
 .gh-member-detail-avatar .gh-member-initials {
