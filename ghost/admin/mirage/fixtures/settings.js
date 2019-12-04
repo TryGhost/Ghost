@@ -192,5 +192,15 @@ export default [
         created_by: 1,
         updated_at: '2019-10-09T09:49:00.000Z',
         updated_by: 1
+    },
+    {
+        id: 25,
+        key: 'secondary_navigation',
+        type: 'blog',
+        created_at: '2019-11-20T09:44:30.810Z',
+        created_by: 1,
+        updated_at: '2019-11-20T13:32:49.868Z',
+        updated_by: 1,
+        value: JSON.stringify([])
     }
 ];

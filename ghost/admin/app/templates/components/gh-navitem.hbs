@@ -32,7 +32,7 @@
 </div>
 
 {{#if navItem.isNew}}
-    <button type="button" class="gh-blognav-add" {{action "addItem"}}>
+    <button type="button" class="gh-blognav-add" {{action "addItem" navItem}}>
         {{svg-jar "add"}}<span class="sr-only">Add</span>
     </button>
 {{else}}

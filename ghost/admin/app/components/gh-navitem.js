@@ -23,8 +23,8 @@ export default Component.extend(ValidationState, {
     }),
 
     actions: {
-        addItem() {
-            this.addItem();
+        addItem(item) {
+            this.addItem(item);
         },
 
         deleteItem(item) {
@@ -53,7 +53,7 @@ export default Component.extend(ValidationState, {
         if (event.keyCode === 13 && this.get('navItem.isNew')) {
             event.preventDefault();
             run.scheduleOnce('actions', this, function () {
-                this.send('addItem');
+                this.send('addItem', this.get('navItem'));
             });
         }
     }
