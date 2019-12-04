@@ -7,6 +7,7 @@ export default EmberObject.extend(ValidationEngine, {
     label: '',
     url: '',
     isNew: false,
+    isSecondary: false,
 
     validationType: 'navItem',
 
