@@ -16,7 +16,11 @@ module.exports = function navigation(options) {
     options.hash = options.hash || {};
     options.data = options.data || {};
 
-    var navigationData = options.data.site.navigation,
+    const key = options.hash.type && options.hash.type === 'secondary' ? 'secondary_navigation' : 'navigation';
+    options.hash.isSecondary = options.hash.type && options.hash.type === 'secondary';
+    delete options.hash.type;
+
+    var navigationData = options.data.site[key],
         currentUrl = options.data.root.relativeUrl,
         self = this,
         output;
