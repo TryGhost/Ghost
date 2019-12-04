@@ -102,7 +102,7 @@ describe('Unit: Controller: settings/design', function () {
         ctrl.set('newNavItem.url', '/new');
 
         run(() => {
-            ctrl.send('addNavItem');
+            ctrl.send('addNavItem', ctrl.get('newNavItem'));
         });
 
         expect(ctrl.get('settings.navigation.length')).to.equal(2);
@@ -122,7 +122,7 @@ describe('Unit: Controller: settings/design', function () {
                 NavItem.create({label: '', url: '', last: true})
             ]}));
             expect(ctrl.get('settings.navigation.length')).to.equal(1);
-            ctrl.send('addNavItem');
+            ctrl.send('addNavItem', ctrl.get('settings.navigation.lastObject'));
             expect(ctrl.get('settings.navigation.length')).to.equal(1);
         });
     });

@@ -60,18 +60,18 @@ describe('Acceptance: Settings - Design', function () {
             expect(currentRouteName()).to.equal('settings.design.index');
             expect(find('[data-test-save-button]').textContent.trim(), 'save button text').to.equal('Save');
 
-            // fixtures contain two nav items, check for three rows as we
-            // should have one extra that's blank
+            // fixtures contain two nav items, check for four rows as we
+            // should have one extra that's blank for each navigation section
             expect(
                 findAll('[data-test-navitem]').length,
                 'navigation items count'
-            ).to.equal(3);
+            ).to.equal(4);
         });
 
         it('saves navigation settings', async function () {
             await visit('/settings/design');
-            await fillIn('[data-test-navitem="0"] [data-test-input="label"]', 'Test');
-            await typeIn('[data-test-navitem="0"] [data-test-input="url"]', '/test');
+            await fillIn('#settings-navigation [data-test-navitem="0"] [data-test-input="label"]', 'Test');
+            await typeIn('#settings-navigation [data-test-navitem="0"] [data-test-input="url"]', '/test');
             await click('[data-test-save-button]');
 
             let [navSetting] = this.server.db.settings.where({key: 'navigation'});
@@ -91,23 +91,23 @@ describe('Acceptance: Settings - Design', function () {
             await click('[data-test-save-button]');
 
             expect(
-                findAll('[data-test-navitem]').length,
+                findAll('#settings-navigation [data-test-navitem]').length,
                 'number of nav items after saving with blank new item'
             ).to.equal(3);
 
-            await fillIn('[data-test-navitem="new"] [data-test-input="label"]', 'Test');
-            await fillIn('[data-test-navitem="new"] [data-test-input="url"]', '');
-            await typeIn('[data-test-navitem="new"] [data-test-input="url"]', 'http://invalid domain/');
+            await fillIn('#settings-navigation [data-test-navitem="new"] [data-test-input="label"]', 'Test');
+            await fillIn('#settings-navigation [data-test-navitem="new"] [data-test-input="url"]', '');
+            await typeIn('#settings-navigation [data-test-navitem="new"] [data-test-input="url"]', 'http://invalid domain/');
 
             await click('[data-test-save-button]');
 
             expect(
-                findAll('[data-test-navitem]').length,
+                findAll('#settings-navigation [data-test-navitem]').length,
                 'number of nav items after saving with invalid new item'
             ).to.equal(3);
 
             expect(
-                withText(findAll('[data-test-navitem="new"] [data-test-error]')).length,
+                withText(findAll('#settings-navigation [data-test-navitem="new"] [data-test-error]')).length,
                 'number of invalid fields in new item'
             ).to.equal(1);
         });
@@ -135,7 +135,7 @@ describe('Acceptance: Settings - Design', function () {
 
         it('can add and remove items', async function () {
             await visit('/settings/design');
-            await click('.gh-blognav-add');
+            await click('#settings-navigation .gh-blognav-add');
 
             expect(
                 find('[data-test-navitem="new"] [data-test-error="label"]').textContent.trim(),
@@ -166,17 +166,17 @@ describe('Acceptance: Settings - Design', function () {
             await click('.gh-blognav-add');
 
             expect(
-                findAll('[data-test-navitem]').length,
+                findAll('#settings-navigation [data-test-navitem]').length,
                 'number of nav items after successful add'
             ).to.equal(4);
 
             expect(
-                find('[data-test-navitem="new"] [data-test-input="label"]').value,
+                find('#settings-navigation [data-test-navitem="new"] [data-test-input="label"]').value,
                 'new item label value after successful add'
             ).to.be.empty;
 
             expect(
-                find('[data-test-navitem="new"] [data-test-input="url"]').value,
+                find('#settings-navigation [data-test-navitem="new"] [data-test-input="url"]').value,
                 'new item url value after successful add'
             ).to.equal(`${window.location.origin}/`);
 
@@ -185,10 +185,10 @@ describe('Acceptance: Settings - Design', function () {
                 'number or validation errors shown after successful add'
             ).to.equal(0);
 
-            await click('[data-test-navitem="0"] .gh-blognav-delete');
+            await click('#settings-navigation [data-test-navitem="0"] .gh-blognav-delete');
 
             expect(
-                findAll('[data-test-navitem]').length,
+                findAll('#settings-navigation [data-test-navitem]').length,
                 'number of nav items after successful remove'
             ).to.equal(3);
 
@@ -202,6 +202,81 @@ describe('Acceptance: Settings - Design', function () {
             let [navSetting] = this.server.db.settings.where({key: 'navigation'});
 
             expect(navSetting.value).to.equal('[{"label":"About","url":"/about"},{"label":"New","url":"/new/"}]');
+        });
+
+        it('can also add and remove items from seconday nav', async function () {
+            await visit('/settings/design');
+            await click('#secondary-navigation .gh-blognav-add');
+
+            expect(
+                find('#secondary-navigation [data-test-navitem="new"] [data-test-error="label"]').textContent.trim(),
+                'blank label has validation error'
+            ).to.not.be.empty;
+
+            await fillIn('#secondary-navigation [data-test-navitem="new"] [data-test-input="label"]', '');
+            await typeIn('#secondary-navigation [data-test-navitem="new"] [data-test-input="label"]', 'Foo');
+
+            expect(
+                find('#secondary-navigation [data-test-navitem="new"] [data-test-error="label"]').textContent.trim(),
+                'label validation is visible after typing'
+            ).to.be.empty;
+
+            await fillIn('#secondary-navigation [data-test-navitem="new"] [data-test-input="url"]', '');
+            await typeIn('#secondary-navigation [data-test-navitem="new"] [data-test-input="url"]', '/bar');
+            await blur('#secondary-navigation [data-test-navitem="new"] [data-test-input="url"]');
+
+            expect(
+                find('#secondary-navigation [data-test-navitem="new"] [data-test-error="url"]').textContent.trim(),
+                'url validation is visible after typing'
+            ).to.be.empty;
+
+            expect(
+                find('#secondary-navigation [data-test-navitem="new"] [data-test-input="url"]').value
+            ).to.equal(`${window.location.origin}/bar/`);
+
+            await click('[data-test-save-button]');
+
+            expect(
+                findAll('#secondary-navigation [data-test-navitem]').length,
+                'number of nav items after successful add'
+            ).to.equal(2);
+
+            expect(
+                find('#secondary-navigation [data-test-navitem="new"] [data-test-input="label"]').value,
+                'new item label value after successful add'
+            ).to.be.empty;
+
+            expect(
+                find('#secondary-navigation [data-test-navitem="new"] [data-test-input="url"]').value,
+                'new item url value after successful add'
+            ).to.equal(`${window.location.origin}/`);
+
+            expect(
+                withText(findAll('#secondary-navigation [data-test-navitem] [data-test-error]')).length,
+                'number or validation errors shown after successful add'
+            ).to.equal(0);
+
+            let [navSetting] = this.server.db.settings.where({key: 'secondary_navigation'});
+
+            expect(navSetting.value).to.equal('[{"label":"Foo","url":"/bar/"}]');
+
+            await click('#secondary-navigation [data-test-navitem="0"] .gh-blognav-delete');
+
+            expect(
+                findAll('#secondary-navigation [data-test-navitem]').length,
+                'number of nav items after successful remove'
+            ).to.equal(1);
+
+            // CMD-S shortcut works
+            await triggerEvent('.gh-app', 'keydown', {
+                keyCode: 83, // s
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
+
+            [navSetting] = this.server.db.settings.where({key: 'secondary_navigation'});
+
+            expect(navSetting.value).to.equal('[]');
         });
 
         it('allows management of themes', async function () {
