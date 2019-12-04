@@ -3,6 +3,7 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const {URL} = require('url');
+const common = require('../../lib/common');
 
 // App requires
 const config = require('../../config');
@@ -30,26 +31,37 @@ const corsOptionsDelegate = function corsOptionsDelegate(req, callback) {
         credentials: true // required to allow admin-client to login to private sites
     };
 
-    if (origin) {
-        const originUrl = new URL(origin);
+    if (!origin) {
+        return callback(null, corsOptions);
+    }
 
-        // allow all localhost and 127.0.0.1 requests no matter the port
-        if (originUrl.hostname === 'localhost' || originUrl.hostname === '127.0.0.1') {
+    let originUrl;
+    try {
+        originUrl = new URL(origin);
+    } catch (err) {
+        return callback(new common.errors.BadRequestError({err}));
+    }
+
+    // originUrl will definitely exist here because according to WHATWG URL spec
+    // The class constructor will either throw a TypeError or return a URL object
+    // https://url.spec.whatwg.org/#url-class
+
+    // allow all localhost and 127.0.0.1 requests no matter the port
+    if (originUrl.hostname === 'localhost' || originUrl.hostname === '127.0.0.1') {
+        corsOptions.origin = true;
+    }
+
+    // allow the configured host through on any protocol
+    const siteUrl = new URL(config.get('url'));
+    if (originUrl.host === siteUrl.host) {
+        corsOptions.origin = true;
+    }
+
+    // allow the configured admin:url host through on any protocol
+    if (config.get('admin:url')) {
+        const adminUrl = new URL(config.get('admin:url'));
+        if (originUrl.host === adminUrl.host) {
             corsOptions.origin = true;
-        }
-
-        // allow the configured host through on any protocol
-        const siteUrl = new URL(config.get('url'));
-        if (originUrl.host === siteUrl.host) {
-            corsOptions.origin = true;
-        }
-
-        // allow the configured admin:url host through on any protocol
-        if (config.get('admin:url')) {
-            const adminUrl = new URL(config.get('admin:url'));
-            if (originUrl.host === adminUrl.host) {
-                corsOptions.origin = true;
-            }
         }
     }
 
