@@ -47,7 +47,7 @@ describe('Settings Content API', function () {
                 });
                 publicProperties.push('codeinjection_head', 'codeinjection_foot');
                 settings.should.have.properties(publicProperties);
-                Object.keys(settings).length.should.equal(21);
+                Object.keys(settings).length.should.equal(22);
 
                 // Verify that we are returning the defaults for each value
                 _.forEach(settings, (value, key) => {
@@ -76,7 +76,7 @@ describe('Settings Content API', function () {
                     // Convert empty strings to null
                     defaultValue = defaultValue || null;
 
-                    if (defaultKey === 'navigation') {
+                    if (defaultKey === 'navigation' || defaultKey === 'secondary_navigation') {
                         defaultValue = JSON.parse(defaultValue);
                     }
 

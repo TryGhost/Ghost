@@ -31,7 +31,8 @@ describe('{{navigation}} helper', function () {
         optionsData = {
             data: {
                 site: {
-                    navigation: []
+                    navigation: [],
+                    secondary_navigation: []
                 },
                 root: {
                     relativeUrl: ''
@@ -177,6 +178,41 @@ describe('{{navigation}} helper', function () {
         should.exist(rendered);
         rendered.string.should.not.containEql('foo=space%2520bar');
     });
+
+    describe('type="secondary"', function () {
+        it('can render one item', function () {
+            var singleItem = {label: 'Foo', url: '/foo'},
+                testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
+                rendered;
+
+            optionsData.data.site.secondary_navigation = [singleItem];
+            optionsData.hash = {type: 'secondary'};
+            rendered = runHelper(optionsData);
+
+            should.exist(rendered);
+            rendered.string.should.containEql('li');
+            rendered.string.should.containEql('nav-foo');
+            rendered.string.should.containEql(testUrl);
+        });
+
+        it('can render multiple items', function () {
+            var firstItem = {label: 'Foo', url: '/foo'},
+                secondItem = {label: 'Bar Baz Qux', url: '/qux'},
+                testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
+                testUrl2 = 'href="' + configUtils.config.get('url') + '/qux"',
+                rendered;
+
+            optionsData.data.site.secondary_navigation = [firstItem, secondItem];
+            optionsData.hash = {type: 'secondary'};
+            rendered = runHelper(optionsData);
+
+            should.exist(rendered);
+            rendered.string.should.containEql('nav-foo');
+            rendered.string.should.containEql('nav-bar-baz-qux');
+            rendered.string.should.containEql(testUrl);
+            rendered.string.should.containEql(testUrl2);
+        });
+    });
 });
 
 describe('{{navigation}} helper with custom template', function () {
@@ -196,7 +232,8 @@ describe('{{navigation}} helper with custom template', function () {
         optionsData = {
             data: {
                 site: {
-                    navigation: [{label: 'Foo', url: '/foo'}]
+                    navigation: [{label: 'Foo', url: '/foo'}],
+                    secondary_navigation: [{label: 'Fighters', url: '/foo'}]
                 },
                 root: {
                     relativeUrl: ''
@@ -217,6 +254,7 @@ describe('{{navigation}} helper with custom template', function () {
         should.exist(rendered);
         rendered.string.should.containEql('Chaos is a ladder');
         rendered.string.should.not.containEql('isHeader is set');
+        rendered.string.should.not.containEql('Jeremy Bearimy baby!');
         rendered.string.should.containEql(testUrl);
         rendered.string.should.containEql('Foo');
     });
@@ -233,7 +271,25 @@ describe('{{navigation}} helper with custom template', function () {
         should.exist(rendered);
         rendered.string.should.not.containEql('Chaos is a ladder');
         rendered.string.should.containEql('isHeader is set');
+        rendered.string.should.not.containEql('Jeremy Bearimy baby!');
         rendered.string.should.containEql(testUrl);
         rendered.string.should.containEql('Foo');
+    });
+
+    it('sets isSecondary for type=secondary', function () {
+        var testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
+            rendered;
+
+        // Simulate {{navigation type="secondary"}}
+        optionsData.hash = {type: 'secondary'};
+
+        rendered = runHelper(optionsData);
+
+        should.exist(rendered);
+        rendered.string.should.not.containEql('Chaos is a ladder');
+        rendered.string.should.not.containEql('isHeader is set');
+        rendered.string.should.containEql('Jeremy Bearimy baby!');
+        rendered.string.should.containEql(testUrl);
+        rendered.string.should.containEql('Fighters');
     });
 });
