@@ -20,6 +20,7 @@ module.exports = {
     ghost_head: 'ghost_head',
     ghost_foot: 'ghost_foot',
     navigation: 'navigation',
+    secondary_navigation: 'secondary_navigation',
     meta_title: 'meta_title',
     meta_description: 'meta_description',
     og_image: 'og_image',
