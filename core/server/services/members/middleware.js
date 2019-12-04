@@ -28,22 +28,6 @@ const deleteSession = async function (req, res) {
     }
 };
 
-const cancelSubscription = async function (req, res, next) {
-    if (req.member) {
-        try {
-            await membersService.ssr.cancelSubscription(req.member);
-            res.writeHead(204);
-            res.end();
-        } catch (err) {
-            common.logging.warn(err.message);
-            res.writeHead(err.statusCode);
-            res.end(err.message);
-        }
-    } else {
-        next();
-    }
-};
-
 const getMemberDataFromSession = async function (req, res, next) {
     if (!labsService.isSet('members')) {
         req.member = null;
@@ -105,10 +89,6 @@ module.exports = {
     deleteSession: [
         shared.middlewares.labs.members,
         deleteSession
-    ],
-    cancelSubscription: [
-        getMemberDataFromSession,
-        cancelSubscription
     ],
     stripeWebhooks: [
         shared.middlewares.labs.members,
