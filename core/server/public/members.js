@@ -134,6 +134,8 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]')
 });
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-subscription]'), function (el) {
+    var errorEl = form.querySelector('[data-members-error]');
+
     function clickHandler(event) {
         el.removeEventListener('click', clickHandler);
         event.preventDefault();
@@ -141,6 +143,10 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-sub
         el.classList.add('loading');
 
         var subscriptionId = el.dataset.membersCancelSubscription;
+
+        if (errorEl) {
+            errorEl.innerText = '';
+        }
 
         return fetch('{{blog-url}}/members/ssr', {
             credentials: 'same-origin'
@@ -167,6 +173,10 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-sub
                 el.addEventListener('click', clickHandler);
                 el.classList.remove('loading');
                 el.classList.add('error');
+
+                if (errorEl) {
+                    errorEl.innerText = 'There was an error cancelling the subscription, please try again';
+                }
             }
         });
     }
