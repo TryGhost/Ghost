@@ -1,13 +1,66 @@
 const debug = require('ghost-ignition').debug('users');
+
+let Member;
+
+async function createMember({email, name, note}, options = {}) {
+    const model = await Member.add({
+        email,
+        name: name || null,
+        note: note || null
+    });
+    const member = model.toJSON(options);
+    return member;
+}
+
+async function getMember(data, options = {}) {
+    if (!data.email && !data.id && !data.uuid) {
+        return Promise.resolve(null);
+    }
+    const model = await Member.findOne(data, options);
+    if (!model) {
+        return null;
+    }
+    const member = model.toJSON(options);
+    return member;
+}
+
+async function updateMember({name, note, subscribed}, options = {}) {
+    const attrs = {
+        name: name || null,
+        note: note || null
+    };
+
+    if (subscribed !== undefined) {
+        attrs.subscribed = subscribed;
+    }
+
+    const model = await Member.edit(attrs, options);
+
+    const member = model.toJSON(options);
+    return member;
+}
+
+function deleteMember(options) {
+    options = options || {};
+    return Member.destroy(options);
+}
+
+function listMembers(options) {
+    return Member.findPage(options).then((models) => {
+        return {
+            members: models.data.map(model => model.toJSON(options)),
+            meta: models.meta
+        };
+    });
+}
+
 module.exports = function ({
     sendEmailWithMagicLink,
     stripe,
-    createMember,
-    getMember,
-    updateMember,
-    listMembers,
-    deleteMember
+    memberModel
 }) {
+    Member = memberModel;
+
     async function get(data, options) {
         debug(`get id:${data.id} email:${data.email}`);
         const member = await getMember(data, options);
