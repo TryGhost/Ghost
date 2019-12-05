@@ -27,11 +27,7 @@ module.exports = function MembersApi({
     },
     setMetadata,
     getMetadata,
-    createMember,
-    getMember,
-    updateMember,
-    deleteMember,
-    listMembers,
+    memberModel,
     logger
 }) {
     if (logger) {
@@ -89,11 +85,7 @@ module.exports = function MembersApi({
     const users = Users({
         sendEmailWithMagicLink,
         stripe,
-        createMember,
-        getMember,
-        updateMember,
-        deleteMember,
-        listMembers
+        memberModel
     });
 
     async function getMemberDataFromMagicLinkToken(token){
