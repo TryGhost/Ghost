@@ -183,6 +183,56 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-sub
     el.addEventListener('click', clickHandler);
 });
 
+Array.prototype.forEach.call(document.querySelectorAll('[data-members-uncancel-subscription]'), function (el) {
+    var errorEl = el.querySelector('[data-members-error]');
+    function clickHandler(event) {
+        el.removeEventListener('click', clickHandler);
+        event.preventDefault();
+        el.classList.remove('error');
+        el.classList.add('loading');
+
+        var subscriptionId = el.dataset.membersUncancelSubscription;
+
+        if (errorEl) {
+            errorEl.innerText = '';
+        }
+
+        return fetch('{{blog-url}}/members/ssr', {
+            credentials: 'same-origin'
+        }).then(function (res) {
+            if (!res.ok) {
+                return null;
+            }
+
+            return res.text();
+        }).then(function (identity)  {
+            return fetch(`{{admin-url}}/api/canary/members/subscriptions/${subscriptionId}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    identity: identity,
+                    cancel: false
+                })
+            });
+        }).then(function (res) {
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                el.addEventListener('click', clickHandler);
+                el.classList.remove('loading');
+                el.classList.add('error');
+
+                if (errorEl) {
+                    errorEl.innerText = 'There was an error uncaneling the subscription, please try again';
+                }
+            }
+        });
+    }
+    el.addEventListener('click', clickHandler);
+});
+
 var url = new URL(window.location);
 if (url.searchParams.get('token')) {
     url.searchParams.delete('token');
