@@ -134,8 +134,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]')
 });
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-subscription]'), function (el) {
-    var errorEl = document.querySelector('[data-members-subscription-error]');
-
+    var errorEl = el.querySelector('[data-members-error]');
     function clickHandler(event) {
         el.removeEventListener('click', clickHandler);
         event.preventDefault();
