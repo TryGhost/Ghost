@@ -8,28 +8,6 @@ const signupEmail = require('./emails/signup');
 const subscribeEmail = require('./emails/subscribe');
 const config = require('./config');
 
-async function createMember({email, name, note}, options = {}) {
-    const model = await models.Member.add({
-        email,
-        name: name || null,
-        note: note || null
-    });
-    const member = model.toJSON(options);
-    return member;
-}
-
-async function getMember(data, options = {}) {
-    if (!data.email && !data.id && !data.uuid) {
-        return Promise.resolve(null);
-    }
-    const model = await models.Member.findOne(data, options);
-    if (!model) {
-        return null;
-    }
-    const member = model.toJSON(options);
-    return member;
-}
-
 async function setMetadata(module, metadata) {
     if (module !== 'stripe') {
         return;
@@ -70,42 +48,6 @@ async function getMetadata(module, member) {
         customers: customers,
         subscriptions: subscriptions
     };
-}
-
-async function updateMember({name, note, subscribed}, options = {}) {
-    const attrs = {
-        name: name || null,
-        note: note || null
-    };
-
-    if (subscribed !== undefined) {
-        attrs.subscribed = subscribed;
-    }
-
-    const model = await models.Member.edit(attrs, options);
-
-    const member = model.toJSON(options);
-    return member;
-}
-
-function deleteMember(options) {
-    options = options || {};
-    return models.Member.destroy(options).catch(models.Member.NotFoundError, () => {
-        throw new common.errors.NotFoundError({
-            message: common.i18n.t('errors.api.resource.resourceNotFound', {
-                resource: 'Member'
-            })
-        });
-    });
-}
-
-function listMembers(options) {
-    return models.Member.findPage(options).then((models) => {
-        return {
-            members: models.data.map(model => model.toJSON(options)),
-            meta: models.meta
-        };
-    });
 }
 
 const ghostMailer = new mail.GhostMailer();
@@ -225,11 +167,7 @@ function createApiInstance() {
         },
         setMetadata,
         getMetadata,
-        createMember,
-        updateMember,
-        getMember,
-        deleteMember,
-        listMembers,
+        memberModel: models.Member,
         logger: common.logging
     });
 
