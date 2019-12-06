@@ -157,12 +157,13 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-sub
             return res.text();
         }).then(function (identity)  {
             return fetch(`{{admin-url}}/api/canary/members/subscriptions/${subscriptionId}/`, {
-                method: 'DELETE',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    identity: identity
+                    identity: identity,
+                    cancel: true
                 })
             });
         }).then(function (res) {
