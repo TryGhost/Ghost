@@ -1,6 +1,7 @@
 // NOTE: We must not cache references to membersService.api
 // as it is a getter and may change during runtime.
 const Promise = require('bluebird');
+const models = require('../../models');
 const membersService = require('../../services/members');
 const common = require('../../lib/common');
 const fsLib = require('../../lib/fs');
@@ -113,7 +114,15 @@ const members = {
         permissions: true,
         async query(frame) {
             frame.options.require = true;
-            await membersService.api.members.destroy(frame.options);
+            await membersService.api.members.destroy(frame.options)
+                .catch(models.Member.NotFoundError, () => {
+                    throw new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                            resource: 'Member'
+                        })
+                    });
+                });
+
             return null;
         }
     },
