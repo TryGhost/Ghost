@@ -1,4 +1,3 @@
-{{#unless selectedTag}}
 <section class="gh-canvas tags-view">
     <GhCanvasHeader class="gh-canvas-header tags-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Tags</h2>
@@ -7,7 +6,7 @@
                 <button class="gh-btn {{if (eq type "public") "gh-btn-group-selected"}}" {{action "changeType" "public"}}><span>Public tags</span></button>
                 <button class="gh-btn {{if (eq type "internal") "gh-btn-group-selected"}}" {{action "changeType" "internal"}}><span>Internal tags</span></button>
             </div>
-            {{#link-to "tags.new" class="gh-btn gh-btn-green"}}<span>New tag</span>{{/link-to}}
+            {{#link-to "tag.new" class="gh-btn gh-btn-green"}}<span>New tag</span>{{/link-to}}
         </section>
     </GhCanvasHeader>
     <section class="content-list">
@@ -37,7 +36,7 @@
                     <div class="no-posts">
                             {{svg-jar "tags-placeholder" class="gh-tags-placeholder"}}
                             <h3>You haven't created any {{type}} tags yet!</h3>
-                            {{#link-to "tags.new" class="gh-btn gh-btn-green gh-btn-lg"}}
+                            {{#link-to "tag.new" class="gh-btn gh-btn-green gh-btn-lg"}}
                                 <span>Create a new tag</span>
                             {{/link-to}}
                     </div>
@@ -46,5 +45,5 @@
         </ol>
     </section>
 </section>
-{{/unless}}
+
 {{outlet}}

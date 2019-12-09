@@ -1,15 +1,13 @@
-import Controller, {inject as controller} from '@ember/controller';
+import Controller from '@ember/controller';
 import {alias, sort} from '@ember/object/computed';
 import {computed} from '@ember/object';
 
 export default Controller.extend({
 
-    tagController: controller('tags.tag'),
-
     queryParams: ['type'],
     type: 'public',
+
     tags: alias('model'),
-    selectedTag: alias('tagController.tag'),
 
     filteredTags: computed('tags.@each.isNew', 'type', function () {
         return this.tags.filter((tag) => {

@@ -12,7 +12,6 @@ const {Handlebars} = Ember;
 export default Component.extend({
     feature: service(),
     config: service(),
-    mediaQueries: service(),
 
     tag: null,
 
@@ -27,8 +26,6 @@ export default Component.extend({
     scratchDescription: boundOneWay('tag.description'),
     scratchMetaTitle: boundOneWay('tag.metaTitle'),
     scratchMetaDescription: boundOneWay('tag.metaDescription'),
-
-    isMobile: reads('mediaQueries.maxWidth600'),
 
     title: computed('tag.isNew', function () {
         if (this.get('tag.isNew')) {
