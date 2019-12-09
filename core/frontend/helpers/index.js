@@ -8,6 +8,7 @@ coreHelpers.asset = require('./asset');
 coreHelpers.author = require('./author');
 coreHelpers.authors = require('./authors');
 coreHelpers.body_class = require('./body_class');
+coreHelpers.cancel_link = require('./cancel_link');
 coreHelpers.concat = require('./concat');
 coreHelpers.content = require('./content');
 coreHelpers.date = require('./date');
@@ -46,6 +47,7 @@ registerAllCoreHelpers = function registerAllCoreHelpers() {
     registerThemeHelper('author', coreHelpers.author);
     registerThemeHelper('authors', coreHelpers.authors);
     registerThemeHelper('body_class', coreHelpers.body_class);
+    registerThemeHelper('cancel_link', coreHelpers.cancel_link);
     registerThemeHelper('concat', coreHelpers.concat);
     registerThemeHelper('content', coreHelpers.content);
     registerThemeHelper('date', coreHelpers.date);
