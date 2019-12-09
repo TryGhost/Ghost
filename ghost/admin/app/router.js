@@ -35,10 +35,9 @@ Router.map(function () {
         this.route('user', {path: ':user_slug'});
     });
 
-    this.route('tags', function () {
-        this.route('tag', {path: ':tag_slug'});
-        this.route('new');
-    });
+    this.route('tags');
+    this.route('tag.new', {path: '/tags/new'});
+    this.route('tag', {path: '/tags/:tag_slug'});
 
     this.route('settings.general', {path: '/settings/general'});
     this.route('settings.labs', {path: '/settings/labs'});
@@ -61,7 +60,6 @@ Router.map(function () {
     this.route('members', function () {
         this.route('import');
     });
-
     this.route('member.new', {path: '/members/new'});
     this.route('member', {path: '/members/:member_id'});
 

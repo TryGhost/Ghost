@@ -1,4 +1,4 @@
-import Controller, {inject as controller} from '@ember/controller';
+import Controller from '@ember/controller';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {alias} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
@@ -6,14 +6,12 @@ import {slugify} from '@tryghost/string';
 import {task} from 'ember-concurrency';
 
 export default Controller.extend({
-    tagsController: controller('tags'),
     notifications: service(),
     router: service(),
 
     showDeleteTagModal: false,
 
     tag: alias('model'),
-    isMobile: alias('tagsController.isMobile'),
 
     actions: {
         setProperty(propKey, value) {
@@ -27,6 +25,7 @@ export default Controller.extend({
         deleteTag() {
             return this._deleteTag();
         },
+
         save() {
             return this.save.perform();
         },
@@ -104,7 +103,7 @@ export default Controller.extend({
         try {
             let savedTag = yield tag.save();
             // replace 'new' route with 'tag' route
-            this.replaceRoute('tags.tag', savedTag);
+            this.replaceRoute('tag', savedTag);
 
             // update the URL if the slug changed
             if (!isNewTag) {
@@ -140,7 +139,7 @@ export default Controller.extend({
         let currentRoute = this.router.currentRouteName || '';
 
         if (currentRoute.match(/^tags/)) {
-            this.transitionToRoute('tags.index');
+            this.transitionToRoute('tags');
         }
     },
 
