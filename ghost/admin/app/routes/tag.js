@@ -20,23 +20,15 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
     },
 
     model(params) {
-        return this.store.queryRecord('tag', {slug: params.tag_slug});
+        if (params.tag_slug) {
+            return this.store.queryRecord('tag', {slug: params.tag_slug});
+        } else {
+            return this.store.createRecord('tag');
+        }
     },
 
     serialize(model) {
         return {tag_slug: model.get('slug')};
-    },
-
-    setupController() {
-        this._super(...arguments);
-    },
-
-    // reset the model so that mobile screens react to an empty selectedTag
-    deactivate() {
-        this._super(...arguments);
-        let {controller} = this;
-        controller.model.rollbackAttributes();
-        this.set('controller.model', null);
     },
 
     actions: {
@@ -46,7 +38,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
     },
 
     showUnsavedChangesModal(transition) {
-        if (transition.from && transition.from.name.match(/^tags\.tag/) && transition.targetName) {
+        if (transition.from && transition.from.name.match(/^tag$|^tag\.new$/) && transition.targetName) {
             let {controller} = this;
 
             if (!controller.tag.isDeleted && controller.tag.hasDirtyAttributes) {

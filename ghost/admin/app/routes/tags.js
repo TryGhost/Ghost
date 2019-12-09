@@ -42,7 +42,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
 
     actions: {
         newTag() {
-            this.transitionTo('tags.new');
+            this.transitionTo('tag.new');
         }
     },
 
