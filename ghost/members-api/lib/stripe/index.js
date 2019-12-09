@@ -125,7 +125,7 @@ module.exports = class StripePaymentProcessor {
         const subscriptions = await this.getSubscriptions(member);
 
         const activeSubscriptions = subscriptions.filter((subscription) => {
-            return subscription.status !== 'cancelled';
+            return subscription.status !== 'canceled';
         });
 
         await Promise.all(activeSubscriptions.map((subscription) => {
