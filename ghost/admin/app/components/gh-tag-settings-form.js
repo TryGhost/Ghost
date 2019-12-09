@@ -4,7 +4,6 @@ import Ember from 'ember';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
-import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 const {Handlebars} = Ember;
