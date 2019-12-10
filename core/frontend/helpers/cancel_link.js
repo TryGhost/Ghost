@@ -8,9 +8,15 @@
 const proxy = require('./proxy');
 
 const templates = proxy.templates;
+const errors = proxy.errors;
+const i18n = proxy.i18n;
 
 module.exports = function excerpt(options) {
     let truncateOptions = (options || {}).hash || {};
+
+    if (this.id === undefined || this.cancel_at_period_end === undefined) {
+        throw new errors.IncorrectUsageError({message: i18n.t('warnings.helpers.cancel_link.invalidData')});
+    }
 
     const data = {
         id: this.id,
