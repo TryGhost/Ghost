@@ -38,15 +38,15 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
     },
 
     showUnsavedChangesModal(transition) {
-        if (transition.from && transition.from.name.match(/^tag$|^tag\.new$/) && transition.targetName) {
+        if (transition.from && transition.from.name === this.routeName && transition.targetName) {
             let {controller} = this;
 
-            if (!controller.tag.isDeleted && controller.tag.hasDirtyAttributes) {
+            // tag.changedAttributes is always true for new tags but number of changed attrs is reliable
+            if (!controller.tag.isDeleted && Object.keys(controller.tag.changedAttributes()).length > 0) {
                 transition.abort();
                 controller.send('toggleUnsavedChangesModal', transition);
                 return;
             }
         }
     }
-
 });
