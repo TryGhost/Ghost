@@ -11,6 +11,7 @@ coreHelpers.asset = require('./asset');
 coreHelpers.author = require('./author');
 coreHelpers.authors = require('./authors');
 coreHelpers.body_class = require('./body_class');
+coreHelpers.cancel_link = require('./cancel_link');
 coreHelpers.concat = require('./concat');
 coreHelpers.content = require('./content');
 coreHelpers.date = require('./date');
@@ -52,7 +53,7 @@ function labsEnabledMembers() {
         helperName: 'cancel_link',
         helpUrl: 'https://ghost.org/faq/members/'
     }, () => {
-        return require('./cancel_link').apply(self, args);
+        return coreHelpers.cancel_link.apply(self, args);
     });
 }
 
