@@ -126,24 +126,10 @@ export default Controller.extend({
     }),
 
     _deleteTag() {
-        let tag = this.tag;
-
-        return tag.destroyRecord().then(() => {
-            this._deleteTagSuccess();
+        return this.tag.destroyRecord().then(() => {
+            return this.transitionToRoute('tags');
         }, (error) => {
-            this._deleteTagFailure(error);
+            return this.notifications.showAPIError(error, {key: 'tag.delete'});
         });
-    },
-
-    _deleteTagSuccess() {
-        let currentRoute = this.router.currentRouteName || '';
-
-        if (currentRoute.match(/^tags/)) {
-            this.transitionToRoute('tags');
-        }
-    },
-
-    _deleteTagFailure(error) {
-        this.notifications.showAPIError(error, {key: 'tag.delete'});
     }
 });
