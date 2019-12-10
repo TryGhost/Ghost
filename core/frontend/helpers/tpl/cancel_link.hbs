@@ -1,12 +1,11 @@
 {{#if cancel_at_period_end}}
-    <button class="button small" data-members-uncancel-subscription="{{id}}">
-        Turn on auto-renew
+    <button class="{{className}}" data-members-uncancel-subscription="{{id}}">
+        {{continueLabel}}
         <p data-members-error><!-- error message will appear here --></p>
     </button>
 {{else}}
-
-    <button class="button small" data-members-cancel-subscription="{{id}}">
-        Cancel subscription
+    <button class="{{className}}" data-members-cancel-subscription="{{id}}">
+        {{cancelLabel}}
         <p data-members-error><!-- error message will appear here --></p>
     </button>
 {{/if}}

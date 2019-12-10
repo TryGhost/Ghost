@@ -13,11 +13,13 @@ module.exports = function excerpt(options) {
     let truncateOptions = (options || {}).hash || {};
 
     const data = {
-        className: truncateOptions.cancelLabel || 'cancel-subscription-button',
+        id: this.id,
+        cancel_at_period_end: this.cancel_at_period_end,
+        className: truncateOptions.className || 'cancel-subscription-button',
         cancelLabel: truncateOptions.cancelLabel || 'Cancel subscription',
         continueLabel: truncateOptions.continueLabel || 'Continue subscription'
     };
 
-    return templates.execute('cancel_link', this, {data});
+    return templates.execute('cancel_link', data);
 };
 
