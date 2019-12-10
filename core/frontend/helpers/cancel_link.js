@@ -1,9 +1,9 @@
 // # {{cancel_link}} Helper
 // Usage: `{{cancel_link}}`, `{{cancel_link className="custom-cancel-class"}}`, `{{cancel_link cancelLabel="Cancel please!"}}`
 //
-// Attempts to remove all HTML from the string, and then shortens the result according to the provided option.
+// Outputs cancel/renew buttons to manage subscription renewal after the subscription period ends.
 //
-// Defaults to words="50"
+// Defaults to className="cancel-subscription-button" cancelLabel="Cancel subscription"  continueLabel="Continue subscription"
 
 const proxy = require('./proxy');
 
