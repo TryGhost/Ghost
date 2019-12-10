@@ -14,9 +14,12 @@
             setProperty=(action "setProperty")
             showDeleteTagModal=(action "toggleDeleteTagModal")}}
     </form>
-    <button class="gh-btn gh-btn-red gh-btn-icon mb15" {{action "toggleDeleteTagModal"}}>
-        <span>Delete tag</span>
-    </button>
+
+    {{#unless this.tag.isNew}}
+        <button class="gh-btn gh-btn-red gh-btn-icon mb15" {{action "toggleDeleteTagModal"}}>
+            <span>Delete tag</span>
+        </button>
+    {{/unless}}
 </section>
 
 {{#if showUnsavedChangesModal}}
