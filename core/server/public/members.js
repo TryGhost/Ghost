@@ -183,7 +183,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-sub
     el.addEventListener('click', clickHandler);
 });
 
-Array.prototype.forEach.call(document.querySelectorAll('[data-members-uncancel-subscription]'), function (el) {
+Array.prototype.forEach.call(document.querySelectorAll('[data-members-continue-subscription]'), function (el) {
     var errorEl = el.querySelector('[data-members-error]');
     function clickHandler(event) {
         el.removeEventListener('click', clickHandler);
