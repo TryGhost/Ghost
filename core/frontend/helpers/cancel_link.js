@@ -1,9 +1,9 @@
 // # {{cancel_link}} Helper
 // Usage: `{{cancel_link}}`, `{{cancel_link className="custom-cancel-class"}}`, `{{cancel_link cancelLabel="Cancel please!"}}`
 //
-// Outputs cancel/renew buttons to manage subscription renewal after the subscription period ends.
+// Outputs cancel/renew links to manage subscription renewal after the subscription period ends.
 //
-// Defaults to class="cancel-subscription-button" cancelLabel="Cancel subscription"  continueLabel="Continue subscription"
+// Defaults to class="cancel-subscription-link" errorClass="cancel-subscription-error" cancelLabel="Cancel subscription"  continueLabel="Continue subscription"
 
 const proxy = require('./proxy');
 
@@ -29,4 +29,3 @@ module.exports = function excerpt(options) {
 
     return templates.execute('cancel_link', data);
 };
-
