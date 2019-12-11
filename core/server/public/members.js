@@ -225,7 +225,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-continue-s
                 el.classList.add('error');
 
                 if (errorEl) {
-                    errorEl.innerText = 'There was an error uncaneling the subscription, please try again';
+                    errorEl.innerText = 'There was an error continuing the subscription, please try again';
                 }
             }
         });
