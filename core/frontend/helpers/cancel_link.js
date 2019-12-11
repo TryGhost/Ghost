@@ -3,7 +3,7 @@
 //
 // Outputs cancel/renew buttons to manage subscription renewal after the subscription period ends.
 //
-// Defaults to className="cancel-subscription-button" cancelLabel="Cancel subscription"  continueLabel="Continue subscription"
+// Defaults to class="cancel-subscription-button" cancelLabel="Cancel subscription"  continueLabel="Continue subscription"
 
 const proxy = require('./proxy');
 
@@ -21,7 +21,7 @@ module.exports = function excerpt(options) {
     const data = {
         id: this.id,
         cancel_at_period_end: this.cancel_at_period_end,
-        className: truncateOptions.className || 'cancel-subscription-button',
+        class: truncateOptions.class || 'cancel-subscription-button',
         cancelLabel: truncateOptions.cancelLabel || 'Cancel subscription',
         continueLabel: truncateOptions.continueLabel || 'Continue subscription'
     };

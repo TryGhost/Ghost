@@ -58,7 +58,7 @@ describe('{{cancel_link}} helper', function () {
             cancel_at_period_end: false
         }, {
             hash: {
-                className: 'custom-button-class'
+                class: 'custom-button-class'
             }
         });
         should.exist(rendered);
