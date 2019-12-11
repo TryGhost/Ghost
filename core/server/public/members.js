@@ -134,7 +134,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]')
 });
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-subscription]'), function (el) {
-    var errorEl = el.querySelector('[data-members-error]');
+    var errorEl = el.parentElement.querySelector('[data-members-error]');
     function clickHandler(event) {
         el.removeEventListener('click', clickHandler);
         event.preventDefault();
@@ -184,7 +184,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-sub
 });
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-members-continue-subscription]'), function (el) {
-    var errorEl = el.querySelector('[data-members-error]');
+    var errorEl = el.parentElement.querySelector('[data-members-error]');
     function clickHandler(event) {
         el.removeEventListener('click', clickHandler);
         event.preventDefault();

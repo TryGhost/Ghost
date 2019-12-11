@@ -1,11 +1,11 @@
 {{#if cancel_at_period_end}}
-    <button class="{{class}}" data-members-continue-subscription="{{id}}">
+    <a class="{{class}}" data-members-continue-subscription="{{id}}">
         {{continueLabel}}
-        <p data-members-error><!-- error message will appear here --></p>
-    </button>
+    </a>
 {{else}}
-    <button class="{{class}}" data-members-cancel-subscription="{{id}}">
+    <a class="{{class}}" data-members-cancel-subscription="{{id}}">
         {{cancelLabel}}
-        <p data-members-error><!-- error message will appear here --></p>
-    </button>
+    </a>
 {{/if}}
+
+<span data-members-error><!-- error message will appear here --></span>
