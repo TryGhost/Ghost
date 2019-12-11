@@ -175,7 +175,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-sub
                 el.classList.add('error');
 
                 if (errorEl) {
-                    errorEl.innerText = 'There was an error cancelling the subscription, please try again';
+                    errorEl.innerText = 'There was an error cancelling your subscription, please try again.';
                 }
             }
         });
@@ -225,7 +225,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-continue-s
                 el.classList.add('error');
 
                 if (errorEl) {
-                    errorEl.innerText = 'There was an error continuing the subscription, please try again';
+                    errorEl.innerText = 'There was an error continuing your subscription, please try again.';
                 }
             }
         });

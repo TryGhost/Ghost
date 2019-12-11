@@ -1,9 +1,9 @@
 {{#if cancel_at_period_end}}
-    <a class="{{class}}" data-members-continue-subscription="{{id}}">
+    <a class="{{class}}" data-members-continue-subscription="{{id}}" href="javascript:">
         {{continueLabel}}
     </a>
 {{else}}
-    <a class="{{class}}" data-members-cancel-subscription="{{id}}">
+    <a class="{{class}}" data-members-cancel-subscription="{{id}}" href="javascript:">
         {{cancelLabel}}
     </a>
 {{/if}}
