@@ -191,7 +191,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-continue-s
         el.classList.remove('error');
         el.classList.add('loading');
 
-        var subscriptionId = el.dataset.membersUncancelSubscription;
+        var subscriptionId = el.dataset.membersContinueSubscription;
 
         if (errorEl) {
             errorEl.innerText = '';
