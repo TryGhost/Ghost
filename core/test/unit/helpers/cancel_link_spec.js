@@ -3,7 +3,7 @@ const hbs = require('../../../frontend/services/themes/engine');
 const helpers = require('../../../frontend/helpers');
 const configUtils = require('../../utils/configUtils');
 
-describe.only('{{cancel_link}} helper', function () {
+describe('{{cancel_link}} helper', function () {
     before(function (done) {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
