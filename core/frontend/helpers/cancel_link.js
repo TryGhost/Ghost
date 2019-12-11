@@ -22,6 +22,7 @@ module.exports = function excerpt(options) {
         id: this.id,
         cancel_at_period_end: this.cancel_at_period_end,
         class: truncateOptions.class || 'cancel-subscription-button',
+        errorClass: truncateOptions.errorClass || 'cancel-subscription-error',
         cancelLabel: truncateOptions.cancelLabel || 'Cancel subscription',
         continueLabel: truncateOptions.continueLabel || 'Continue subscription'
     };

@@ -3,7 +3,7 @@ const hbs = require('../../../frontend/services/themes/engine');
 const helpers = require('../../../frontend/helpers');
 const configUtils = require('../../utils/configUtils');
 
-describe('{{cancel_link}} helper', function () {
+describe.only('{{cancel_link}} helper', function () {
     before(function (done) {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
@@ -13,6 +13,7 @@ describe('{{cancel_link}} helper', function () {
     });
 
     const defaultButtonClass = /class="cancel-subscription-button"/;
+    const defaultErrorElementClass = /cancel-subscription-error/;
     const defaultCancelButtonText = /Cancel subscription/;
     const defaultContinueButtonText = /Continue subscription/;
 
@@ -38,6 +39,8 @@ describe('{{cancel_link}} helper', function () {
         rendered.string.should.match(defaultButtonClass);
         rendered.string.should.match(/data-members-cancel-subscription="sub_cancel"/);
         rendered.string.should.match(defaultCancelButtonText);
+
+        rendered.string.should.match(defaultErrorElementClass);
     });
 
     it('can render continue subscription button', function () {
@@ -64,6 +67,20 @@ describe('{{cancel_link}} helper', function () {
         should.exist(rendered);
 
         rendered.string.should.match(/custom-button-class/);
+    });
+
+    it('can render custom error class', function () {
+        const rendered = helpers.cancel_link.call({
+            id: 'sub_cancel',
+            cancel_at_period_end: false
+        }, {
+            hash: {
+                errorClass: 'custom-error-class'
+            }
+        });
+        should.exist(rendered);
+
+        rendered.string.should.match(/custom-error-class/);
     });
 
     it('can render custom cancel subscription button attributes', function () {
