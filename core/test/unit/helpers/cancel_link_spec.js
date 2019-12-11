@@ -12,10 +12,10 @@ describe.only('{{cancel_link}} helper', function () {
         });
     });
 
-    const defaultButtonClass = /class="cancel-subscription-button"/;
+    const defaultLinkClass = /class="cancel-subscription-link"/;
     const defaultErrorElementClass = /cancel-subscription-error/;
-    const defaultCancelButtonText = /Cancel subscription/;
-    const defaultContinueButtonText = /Continue subscription/;
+    const defaultCancelLinkText = /Cancel subscription/;
+    const defaultContinueLinkText = /Continue subscription/;
 
     it('should throw if subscription data is incorrect', function () {
         var runHelper = function (data) {
@@ -29,44 +29,44 @@ describe.only('{{cancel_link}} helper', function () {
         }).should.throwError(expectedMessage);
     });
 
-    it('can render cancel subscription button', function () {
+    it('can render cancel subscription link', function () {
         const rendered = helpers.cancel_link.call({
             id: 'sub_cancel',
             cancel_at_period_end: false
         });
         should.exist(rendered);
 
-        rendered.string.should.match(defaultButtonClass);
+        rendered.string.should.match(defaultLinkClass);
         rendered.string.should.match(/data-members-cancel-subscription="sub_cancel"/);
-        rendered.string.should.match(defaultCancelButtonText);
+        rendered.string.should.match(defaultCancelLinkText);
 
         rendered.string.should.match(defaultErrorElementClass);
     });
 
-    it('can render continue subscription button', function () {
+    it('can render continue subscription link', function () {
         const rendered = helpers.cancel_link.call({
             id: 'sub_continue',
             cancel_at_period_end: true
         });
         should.exist(rendered);
 
-        rendered.string.should.match(defaultButtonClass);
+        rendered.string.should.match(defaultLinkClass);
         rendered.string.should.match(/data-members-continue-subscription="sub_continue"/);
-        rendered.string.should.match(defaultContinueButtonText);
+        rendered.string.should.match(defaultContinueLinkText);
     });
 
-    it('can render custom button class', function () {
+    it('can render custom link class', function () {
         const rendered = helpers.cancel_link.call({
             id: 'sub_cancel',
             cancel_at_period_end: false
         }, {
             hash: {
-                class: 'custom-button-class'
+                class: 'custom-link-class'
             }
         });
         should.exist(rendered);
 
-        rendered.string.should.match(/custom-button-class/);
+        rendered.string.should.match(/custom-link-class/);
     });
 
     it('can render custom error class', function () {
@@ -83,31 +83,31 @@ describe.only('{{cancel_link}} helper', function () {
         rendered.string.should.match(/custom-error-class/);
     });
 
-    it('can render custom cancel subscription button attributes', function () {
+    it('can render custom cancel subscription link attributes', function () {
         const rendered = helpers.cancel_link.call({
             id: 'sub_cancel',
             cancel_at_period_end: false
         }, {
             hash: {
-                cancelLabel: 'custom cancel button text'
+                cancelLabel: 'custom cancel link text'
             }
         });
         should.exist(rendered);
 
-        rendered.string.should.match(/custom cancel button text/);
+        rendered.string.should.match(/custom cancel link text/);
     });
 
-    it('can render custom continue subscription button attributes', function () {
+    it('can render custom continue subscription link attributes', function () {
         const rendered = helpers.cancel_link.call({
             id: 'sub_cancel',
             cancel_at_period_end: true
         }, {
             hash: {
-                continueLabel: 'custom continue button text'
+                continueLabel: 'custom continue link text'
             }
         });
         should.exist(rendered);
 
-        rendered.string.should.match(/custom continue button text/);
+        rendered.string.should.match(/custom continue link text/);
     });
 });
