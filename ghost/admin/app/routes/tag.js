@@ -6,6 +6,8 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
     router: service(),
 
+    _requiresBackgroundRefresh: true,
+
     init() {
         this._super(...arguments);
         this.router.on('routeWillChange', (transition) => {
@@ -20,6 +22,8 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
     },
 
     model(params) {
+        this._requiresBackgroundRefresh = false;
+
         if (params.tag_slug) {
             return this.store.queryRecord('tag', {slug: params.tag_slug});
         } else {
@@ -27,8 +31,24 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
         }
     },
 
-    serialize(model) {
-        return {tag_slug: model.get('slug')};
+    serialize(tag) {
+        return {tag_slug: tag.get('slug')};
+    },
+
+    setupController(controller, tag) {
+        this._super(...arguments);
+        if (this._requiresBackgroundRefresh) {
+            controller.fetchTag.perform(tag.get('slug'));
+        }
+    },
+
+    deactivate() {
+        this._super(...arguments);
+
+        // clean up newly created records and revert unsaved changes to existing
+        this.controller.tag.rollbackAttributes();
+
+        this._requiresBackgroundRefresh = true;
     },
 
     actions: {
@@ -42,7 +62,9 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
             let {controller} = this;
 
             // tag.changedAttributes is always true for new tags but number of changed attrs is reliable
-            if (!controller.tag.isDeleted && Object.keys(controller.tag.changedAttributes()).length > 0) {
+            let isChanged = Object.keys(controller.tag.changedAttributes()).length > 0;
+
+            if (!controller.tag.isDeleted && isChanged) {
                 transition.abort();
                 controller.send('toggleUnsavedChangesModal', transition);
                 return;

@@ -23,7 +23,11 @@ export default Controller.extend({
         },
 
         deleteTag() {
-            return this._deleteTag();
+            return this.tag.destroyRecord().then(() => {
+                return this.transitionToRoute('tags');
+            }, (error) => {
+                return this.notifications.showAPIError(error, {key: 'tag.delete'});
+            });
         },
 
         save() {
@@ -55,17 +59,8 @@ export default Controller.extend({
         },
 
         leaveScreen() {
-            let transition = this.leaveScreenTransition;
-
-            if (!transition) {
-                this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
-                return;
-            }
-
-            // roll back changes on model props
             this.tag.rollbackAttributes();
-
-            return transition.retry();
+            return this.leaveScreenTransition.retry();
         }
     },
 
@@ -93,6 +88,7 @@ export default Controller.extend({
             }
             tag.set('slug', slugValue);
         }
+
         // TODO: This is required until .validate/.save mark fields as validated
         tag.get('hasValidated').addObject(propKey);
     },
@@ -125,11 +121,13 @@ export default Controller.extend({
         }
     }),
 
-    _deleteTag() {
-        return this.tag.destroyRecord().then(() => {
-            return this.transitionToRoute('tags');
-        }, (error) => {
-            return this.notifications.showAPIError(error, {key: 'tag.delete'});
+    fetchTag: task(function* (slug) {
+        this.set('isLoading', true);
+
+        yield this.store.queryRecord('tag', {slug}).then((tag) => {
+            this.set('tag', tag);
+            this.set('isLoading', false);
+            return tag;
         });
-    }
+    })
 });
