@@ -21,6 +21,7 @@ module.exports = function setupMembersApiApp() {
     // NOTE: this is wrapped in a function to ensure we always go via the getter
     apiApp.post('/send-magic-link', (req, res, next) => membersService.api.middleware.sendMagicLink(req, res, next));
     apiApp.post('/create-stripe-checkout-session', (req, res, next) => membersService.api.middleware.createCheckoutSession(req, res, next));
+    apiApp.put('/subscriptions/:id', (req, res, next) => membersService.api.middleware.updateSubscription(req, res, next));
 
     // API error handling
     apiApp.use(shared.middlewares.errorHandler.resourceNotFound);

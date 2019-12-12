@@ -5,9 +5,7 @@ var should = require('should'),
     // Stuff we are testing
     helpers = require('../../../frontend/helpers'),
     models = require('../../../server/models'),
-    api = require('../../../server/api'),
-
-    labs = require('../../../server/services/labs');
+    api = require('../../../server/api');
 
 describe('{{#get}} helper', function () {
     var fn, inverse;

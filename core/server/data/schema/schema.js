@@ -351,6 +351,7 @@ module.exports = {
         subscription_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
         plan_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
         status: {type: 'string', maxlength: 50, nullable: false},
+        cancel_at_period_end: {type: 'bool', nullable: false, defaultTo: false},
         current_period_end: {type: 'dateTime', nullable: false},
         start_date: {type: 'dateTime', nullable: false},
         default_payment_card_last4: {type: 'string', maxlength: 4, nullable: true},
