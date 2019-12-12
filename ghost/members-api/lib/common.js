@@ -14,5 +14,9 @@ module.exports = {
                 Object.assign(loggerInterface, Object.create(newLogger));
             }
         });
+    },
+
+    get errors() {
+        return require('ghost-ignition').errors;
     }
 };

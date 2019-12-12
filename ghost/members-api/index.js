@@ -114,7 +114,8 @@ module.exports = function MembersApi({
     const middleware = {
         sendMagicLink: Router(),
         createCheckoutSession: Router(),
-        handleStripeWebhook: Router()
+        handleStripeWebhook: Router(),
+        updateSubscription: Router({mergeParams: true})
     };
 
     middleware.sendMagicLink.use(body.json(), async function (req, res) {
@@ -229,6 +230,57 @@ module.exports = function MembersApi({
             res.writeHead(400);
             res.end();
         }
+    });
+
+    middleware.updateSubscription.use(ensureStripe, body.json(), async function (req, res) {
+        const identity = req.body.identity;
+        const cancelAtPeriodEnd = req.body.cancel_at_period_end;
+        const subscriptionId = req.params.id;
+
+        let member;
+
+        try {
+            if (!identity) {
+                throw new common.errors.BadRequestError({
+                    message: 'Cancel membership failed! Could not find member'
+                });
+            }
+
+            const claims = await decodeToken(identity);
+            const email = claims.sub;
+            member = email ? await users.get({email}) : null;
+
+            if (!member) {
+                throw new common.errors.BadRequestError({
+                    message: 'Cancel membership failed! Could not find member'
+                });
+            }
+        } catch (err) {
+            res.writeHead(401);
+            return res.end('Unauthorized');
+        }
+
+        // Don't allow removing subscriptions that don't belong to the member
+        const subscription = member.stripe.subscriptions.find(sub => sub.id === subscriptionId);
+
+        if (!subscription) {
+            res.writeHead(403);
+            return res.end('No permission');
+        }
+
+        if (cancelAtPeriodEnd === undefined) {
+            throw new common.errors.BadRequestError({
+                message: 'Canceling membership failed!',
+                help: 'Request should contain boolean "cancel" field.'
+            });
+        }
+
+        subscription.cancel_at_period_end = !!(cancelAtPeriodEnd);
+
+        await stripe.updateSubscriptionFromClient(subscription);
+
+        res.writeHead(204);
+        res.end();
     });
 
     const getPublicConfig = function () {
