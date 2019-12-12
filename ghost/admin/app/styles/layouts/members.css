@@ -236,6 +236,21 @@ textarea.gh-member-details-textarea {
     background: var(--midlightgrey-l1);
 }
 
+.gh-member-cancels-on-label {
+    display: inline-block;
+    background: var(--lightgrey-d1);
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin: -2px 0 -2px -6px;
+    color: var(--darkgrey);
+    font-size: 1.4rem;
+    font-weight: 500;
+}
+
+.gh-member-stripe-status {
+    text-transform: capitalize;
+}
+
 /* Import modal
 /* ---------------------------------------------------------- */
 

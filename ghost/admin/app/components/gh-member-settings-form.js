@@ -27,6 +27,7 @@ export default Component.extend({
         if (subscriptions && subscriptions.length > 0) {
             return subscriptions.map((subscription) => {
                 return {
+                    id: subscription.id,
                     customer: subscription.customer,
                     name: subscription.name || '',
                     email: subscription.email || '',
@@ -34,6 +35,7 @@ export default Component.extend({
                     startDate: subscription.start_date ? moment(subscription.start_date).format('MMM DD YYYY') : '-',
                     plan: subscription.plan,
                     dollarAmount: parseInt(subscription.plan.amount) ? (subscription.plan.amount / 100) : 0,
+                    cancelAtPeriodEnd: subscription.cancel_at_period_end,
                     validUntil: subscription.current_period_end ? moment(subscription.current_period_end).format('MMM DD YYYY') : '-'
                 };
             }).reverse();
