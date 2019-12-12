@@ -163,7 +163,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-sub
                 },
                 body: JSON.stringify({
                     identity: identity,
-                    cancel: true
+                    cancel_at_period_end: true
                 })
             });
         }).then(function (res) {
@@ -213,7 +213,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-continue-s
                 },
                 body: JSON.stringify({
                     identity: identity,
-                    cancel: false
+                    cancel_at_period_end: false
                 })
             });
         }).then(function (res) {
