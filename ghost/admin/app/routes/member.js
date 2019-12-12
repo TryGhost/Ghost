@@ -3,8 +3,9 @@ import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
-
     router: service(),
+
+    _requiresBackgroundRefresh: true,
 
     init() {
         this._super(...arguments);
@@ -20,27 +21,29 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
     },
 
     model(params) {
-        this._isMemberUpdated = true;
-        return this.store.findRecord('member', params.member_id, {
-            reload: true
-        });
+        this._requiresBackgroundRefresh = false;
+
+        if (params.member_id) {
+            return this.store.findRecord('member', params.member_id, {reload: true});
+        } else {
+            return this.store.createRecord('member');
+        }
     },
 
-    setupController(controller, model) {
+    setupController(controller, member) {
         this._super(...arguments);
-        if (!this._isMemberUpdated) {
-            controller.fetchMember.perform(model.get('id'));
+        if (this._requiresBackgroundRefresh) {
+            controller.fetchMember.perform(member.get('id'));
         }
     },
 
     deactivate() {
         this._super(...arguments);
 
-        // clear the properties
-        let {controller} = this;
-        controller.model.rollbackAttributes();
-        this.set('controller.model', null);
-        this._isMemberUpdated = false;
+        // clean up newly created records and revert unsaved changes to existing
+        this.controller.member.rollbackAttributes();
+
+        this._requiresBackgroundRefresh = true;
     },
 
     actions: {
@@ -54,10 +57,13 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
     },
 
     showUnsavedChangesModal(transition) {
-        if (transition.from && transition.from.name.match(/^member$/) && transition.targetName) {
+        if (transition.from && transition.from.name === this.routeName && transition.targetName) {
             let {controller} = this;
 
-            if (!controller.member.isDeleted && controller.member.hasDirtyAttributes) {
+            // member.changedAttributes is always true for new members but number of changed attrs is reliable
+            let isChanged = Object.keys(controller.member.changedAttributes()).length > 0;
+
+            if (!controller.member.isDeleted && isChanged) {
                 transition.abort();
                 controller.send('toggleUnsavedChangesModal', transition);
                 return;
