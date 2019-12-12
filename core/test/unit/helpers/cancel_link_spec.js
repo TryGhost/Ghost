@@ -12,8 +12,8 @@ describe('{{cancel_link}} helper', function () {
         });
     });
 
-    const defaultLinkClass = /class="cancel-subscription-link"/;
-    const defaultErrorElementClass = /cancel-subscription-error/;
+    const defaultLinkClass = /class="gh-subscription-cancel"/;
+    const defaultErrorElementClass = /class="gh-error gh-error-subscription-cancel"/;
     const defaultCancelLinkText = /Cancel subscription/;
     const defaultContinueLinkText = /Continue subscription/;
 
