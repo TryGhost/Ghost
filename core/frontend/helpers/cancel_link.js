@@ -1,6 +1,7 @@
 // # {{cancel_link}} Helper
 // Usage: `{{cancel_link}}`, `{{cancel_link class="custom-cancel-class"}}`, `{{cancel_link cancelLabel="Cancel please!"}}`
 //
+// Should be used inside of a subscription context, e.g.: `{{#foreach @member.subscriptions}} {{cancel_link}} {{/foreach}}`
 // Outputs cancel/renew links to manage subscription renewal after the subscription period ends.
 //
 // Defaults to class="cancel-subscription-link" errorClass="cancel-subscription-error" cancelLabel="Cancel subscription" continueLabel="Continue subscription"
