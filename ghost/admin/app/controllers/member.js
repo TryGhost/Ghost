@@ -8,13 +8,12 @@ import {task} from 'ember-concurrency';
 
 export default Controller.extend({
     members: controller(),
+    notifications: service(),
+    router: service(),
     store: service(),
 
-    router: service(),
-
-    notifications: service(),
-
     member: alias('model'),
+
     subscribedAt: computed('member.createdAtUTC', function () {
         let memberSince = moment(this.member.createdAtUTC).from(moment());
         let createdDate = moment(this.member.createdAtUTC).format('MMM DD, YYYY');
@@ -25,9 +24,15 @@ export default Controller.extend({
         setProperty(propKey, value) {
             this._saveMemberProperty(propKey, value);
         },
+
         toggleDeleteMemberModal() {
             this.toggleProperty('showDeleteMemberModal');
         },
+
+        save() {
+            return this.save.perform();
+        },
+
         finaliseDeletion() {
             // decrement the total member count manually so there's no flash
             // when transitioning back to the members list
@@ -62,21 +67,8 @@ export default Controller.extend({
         },
 
         leaveScreen() {
-            let transition = this.leaveScreenTransition;
-
-            if (!transition) {
-                this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
-                return;
-            }
-
-            // roll back changes on model props
             this.member.rollbackAttributes();
-
-            return transition.retry();
-        },
-
-        save() {
-            return this.save.perform();
+            return this.leaveScreenTransition.retry();
         }
     },
 
@@ -98,11 +90,13 @@ export default Controller.extend({
 
     fetchMember: task(function* (memberId) {
         this.set('isLoading', true);
+
         yield this.store.findRecord('member', memberId, {
             reload: true
-        }).then((data) => {
-            this.set('member', data);
+        }).then((member) => {
+            this.set('member', member);
             this.set('isLoading', false);
+            return member;
         });
     })
 
