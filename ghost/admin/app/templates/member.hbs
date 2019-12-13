@@ -45,9 +45,9 @@
 
         <GhMemberSettingsForm
             @member={{this.member}}
+            @scratchMember={{this.scratchMember}}
             @setProperty={{action "setProperty"}}
-            @isLoading={{this.isLoading}}
-            @showDeleteTagModal={{action "toggleDeleteMemberModal"}} />
+            @isLoading={{this.isLoading}} />
     </form>
 
     {{#unless this.member.isNew}}

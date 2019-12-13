@@ -1,5 +1,4 @@
 import Component from '@ember/component';
-import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
 import {computed} from '@ember/object';
 import {gt, reads} from '@ember/object/computed';
@@ -12,13 +11,8 @@ export default Component.extend({
 
     // Allowed actions
     setProperty: () => {},
-    showDeleteTagModal: () => {},
 
     canEditEmail: reads('member.isNew'),
-
-    scratchName: boundOneWay('member.name'),
-    scratchEmail: boundOneWay('member.email'),
-    scratchNote: boundOneWay('member.note'),
 
     hasMultipleSubscriptions: gt('member.stripe', 1),
 
@@ -46,11 +40,6 @@ export default Component.extend({
     actions: {
         setProperty(property, value) {
             this.setProperty(property, value);
-        },
-
-        deleteTag() {
-            this.showDeleteTagModal();
         }
     }
-
 });
