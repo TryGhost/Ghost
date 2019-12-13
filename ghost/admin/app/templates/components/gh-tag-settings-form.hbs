@@ -12,7 +12,7 @@
         <p class="description">Start with # to create internal tags. <a
                 href="https://ghost.org/docs/concepts/tags/#internal-tag" target="_blank" rel="noreferrer">Learn
                 more</a></p>
-        {{gh-error-message errors=this.tag.errors property="name"}}
+        <GhErrorMessage @errors={{this.tag.errors}} @property="name" />
         {{/gh-form-group}}
 
         {{#gh-form-group errors=this.tag.errors hasValidated=this.tag.hasValidated property="slug"}}
@@ -24,7 +24,7 @@
                     tabindex="2"
                     focus-out=(action 'setProperty' 'slug' this.scratchTag.slug)}}
         {{gh-url-preview prefix="tag" slug=this.scratchTag.slug tagName="p" classNames="description"}}
-        {{gh-error-message errors=this.activeTag.errors property="slug"}}
+        <GhErrorMessage @errors={{this.activeTag.errors}} @property="slug" />
         {{/gh-form-group}}
 
         {{#gh-form-group errors=this.tag.errors hasValidated=this.tag.hasValidated property="description"}}
@@ -37,7 +37,7 @@
                     value=this.scratchTag.description
                     focus-out=(action 'setProperty' 'description' this.scratchTag.description)
                 }}
-        {{gh-error-message errors=this.tag.errors property="description"}}
+        <GhErrorMessage @errors={{this.tag.errors}} @property="description" />
         <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.description 500}}</p>
         {{/gh-form-group}}
     </div>
@@ -65,7 +65,7 @@
                     tabindex="4"
                     value=this.scratchTag.metaTitle
                     focus-out=(action "setProperty" "metaTitle" this.scratchTag.metaTitle)}}
-        {{gh-error-message errors=this.tag.errors property="metaTitle"}}
+        <GhErrorMessage @errors={{this.tag.errors}} @property="metaTitle" />
         <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.metaTitle 70}}</p>
         {{/gh-form-group}}
 
@@ -80,7 +80,7 @@
                     value=this.scratchTag.metaDescription
                     focus-out=(action "setProperty" "metaDescription" this.scratchTag.metaDescription)
                 }}
-        {{gh-error-message errors=this.tag.errors property="metaDescription"}}
+        <GhErrorMessage @errors={{this.tag.errors}} @property="metaDescription" />
         <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.metaDescription 156}}</p>
         {{/gh-form-group}}
     </div>

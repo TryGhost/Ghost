@@ -33,7 +33,7 @@
                                 focus-out=(action "validate" "title" target=this.settings)
                                 data-test-title-input=true
                             }}
-                            {{gh-error-message errors=this.settings.errors property="title"}}
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="title" />
                             <p>The name of your site</p>
                         {{/gh-form-group}}
 
@@ -44,7 +44,7 @@
                                 focus-out=(action "validate" "description" target=this.settings)
                                 data-test-description-input=true
                             }}
-                            {{gh-error-message errors=this.settings.errors property="description"}}
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="description" />
                             <p>Used in your theme, meta data and search results</p>
                         {{/gh-form-group}}
                     </div>
@@ -85,7 +85,7 @@
                                 focus-out=(action "validate" "defaultLocale" target=this.settings)
                                 data-test-default-locale-input=true
                             }}
-                            {{gh-error-message errors=this.settings.errors property="defaultLocale"}}
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="defaultLocale" />
                             <p>Default: English (<strong>en</strong>); you can add translation files to your theme for <a href="https://ghost.org/docs/api/handlebars-themes/helpers/translate/" target="_blank" rel="noopener">any language</a></p>
                         {{/gh-form-group}}
                     </div>
@@ -224,7 +224,7 @@
                                         input=(action (mut this.settings.metaTitle) value="target.value")
                                         data-test-input="metaTitle"
                                     }}
-                                    {{gh-error-message errors=this.settings.errors property="metaTitle" data-test-error="metaTitle"}}
+                                    <GhErrorMessage @errors={{this.settings.errors}} @property="metaTitle" data-test-error="metaTitle" />
                                     <p>Recommended: <b>70</b> characters. You’ve used <b>{{gh-count-down-characters this.settings.metaTitle 70}}</b></p>
                                 {{/gh-form-group}}
                                 {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="metaDescription"}}
@@ -237,7 +237,7 @@
                                         input=(action (mut this.settings.metaDescription) value="target.value")
                                         data-test-input="metaDescription"
                                     }}
-                                    {{gh-error-message errors=this.settings.errors property="metaDescription" data-test-error="metaDescription"}}
+                                    <GhErrorMessage @errors={{this.settings.errors}} @property="metaDescription" data-test-error="metaDescription" />
                                     <p>Recommended: <b>156</b> characters. You’ve used <b>{{gh-count-down-characters this.settings.metaDescription 156}}</b></p>
                                 {{/gh-form-group}}
                             </div>
@@ -286,7 +286,7 @@
                                         input=(action (mut this.settings.twitterTitle) value="target.value")
                                         data-test-input="twitterTitle"
                                     }}
-                                    {{gh-error-message errors=this.settings.errors property="twitterTitle" data-test-error="twitterTitle"}}
+                                    <GhErrorMessage @errors={{this.settings.errors}} @property="twitterTitle" data-test-error="twitterTitle" />
                                 {{/gh-form-group}}
                                 {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="twitterDescription"}}
                                     <label for="twitterDescription">Twitter description</label>
@@ -297,7 +297,7 @@
                                         input=(action (mut this.settings.twitterDescription) value="target.value")
                                         data-test-input="twitterDescription"
                                     }}
-                                    {{gh-error-message errors=this.settings.errors property="twitterDescription" data-test-error="twitterDescription"}}
+                                    <GhErrorMessage @errors={{this.settings.errors}} @property="twitterDescription" data-test-error="twitterDescription" />
                                 {{/gh-form-group}}
                             </div>
                             <div class="flex-basis-1-2-m flex-basis-1-3-l nt4-ns">
@@ -356,7 +356,7 @@
                                         input=(action (mut this.settings.ogTitle) value="target.value")
                                         data-test-input="ogTitle"
                                     }}
-                                    {{gh-error-message errors=this.settings.errors property="ogTitle" data-test-error="ogTitle"}}
+                                    <GhErrorMessage @errors={{this.settings.errors}} @property="ogTitle" data-test-error="ogTitle" />
                                 {{/gh-form-group}}
                                 {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="ogDescription"}}
                                     <label for="ogDescription">Facebook description</label>
@@ -367,7 +367,7 @@
                                         input=(action (mut this.settings.ogDescription) value="target.value")
                                         data-test-input="ogDescription"
                                     }}
-                                    {{gh-error-message errors=this.settings.errors property="ogDescription" data-test-error="ogDescription"}}
+                                    <GhErrorMessage @errors={{this.settings.errors}} @property="ogDescription" data-test-error="ogDescription" />
                                 {{/gh-form-group}}
                             </div>
                             <div class="flex-basis-1-2-m flex-basis-1-3-l nt4-ns">
@@ -412,7 +412,7 @@
                                 focus-out=(action "validateFacebookUrl")
                                 data-test-facebook-input=true
                             }}
-                            {{gh-error-message errors=this.settings.errors property="facebook" data-test-facebook-error=true}}
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="facebook" data-test-facebook-error=true />
                             <p>URL of your publication's Facebook Page</p>
                         {{/gh-form-group}}
                         {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="twitter"}}
@@ -425,7 +425,7 @@
                                 focus-out=(action "validateTwitterUrl")
                                 data-test-twitter-input=true
                             }}
-                            {{gh-error-message errors=this.settings.errors property="twitter" data-test-twitter-error=true}}
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="twitter" data-test-twitter-error=true />
                             <p>URL of your publication's Twitter profile</p>
                         {{/gh-form-group}}
                     </div>
@@ -464,7 +464,7 @@
                                     input=(action (mut this.settings.password) value="target.value")
                                     data-test-password-input=true
                                 }}
-                                {{gh-error-message errors=this.settings.errors property="password" data-test-password-error=true}}
+                                <GhErrorMessage @errors={{this.settings.errors}} @property="password" data-test-password-error=true />
                                 <p>Set the password for this site</p>
                             {{/gh-form-group}}
                         </div>
