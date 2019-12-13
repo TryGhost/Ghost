@@ -53,7 +53,7 @@
                                 Search result
                             {{else}}
                                 {{#if this.fetchMembers.lastSuccessful}}
-                                    {{pluralize this.memberCount "member"}}
+                                    {{pluralize this.members.length "member"}}
                                 {{else}}
                                     Loading...
                                 {{/if}}
