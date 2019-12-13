@@ -27,7 +27,7 @@
                             data-test-input="name"
                         }}
                     </span>
-                    {{gh-error-message errors=this.signupDetails.errors property="name"}}
+                    <GhErrorMessage @errors={{this.signupDetails.errors}} @property="name" />
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=this.signupDetails.errors hasValidated=this.signupDetails.hasValidated property="email"}}
@@ -48,7 +48,7 @@
                             data-test-input="email"
                         }}
                     </span>
-                    {{gh-error-message errors=this.signupDetails.errors property="email"}}
+                    <GhErrorMessage @errors={{this.signupDetails.errors}} @property="email" />
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=this.signupDetails.errors hasValidated=this.signupDetails.hasValidated property="password"}}
@@ -69,7 +69,7 @@
                             data-test-input="password"
                         }}
                     </span>
-                    {{gh-error-message errors=this.signupDetails.errors property="password"}}
+                    <GhErrorMessage @errors={{this.signupDetails.errors}} @property="password" />
                 {{/gh-form-group}}
             </form>
 

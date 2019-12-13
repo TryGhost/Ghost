@@ -21,7 +21,7 @@
                 focus-out=(action "preValidate" "blogTitle")
                 data-test-blog-title-input=true}}
         </span>
-        {{gh-error-message errors=this.errors property="blogTitle"}}
+        <GhErrorMessage @errors={{this.errors}} @property="blogTitle" />
     {{/gh-form-group}}
 
     {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="name"}}
@@ -40,7 +40,7 @@
                 focus-out=(action "preValidate" "name")
                 data-test-name-input=true}}
         </span>
-        {{gh-error-message errors=this.errors property="name"}}
+        <GhErrorMessage @errors={{this.errors}} @property="name" />
     {{/gh-form-group}}
 
     {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="email"}}
@@ -60,7 +60,7 @@
                 focus-out=(action "preValidate" "email")
                 data-test-email-input=true}}
         </span>
-        {{gh-error-message errors=this.errors property="email"}}
+        <GhErrorMessage @errors={{this.errors}} @property="email" />
     {{/gh-form-group}}
 
     {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="password"}}
@@ -80,7 +80,7 @@
                 focus-out=(action "preValidate" "password")
                 data-test-password-input=true}}
         </span>
-        {{gh-error-message errors=this.errors property="password"}}
+        <GhErrorMessage @errors={{this.errors}} @property="password" />
     {{/gh-form-group}}
 
     {{#gh-task-button

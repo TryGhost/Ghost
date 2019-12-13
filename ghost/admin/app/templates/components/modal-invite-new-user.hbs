@@ -26,7 +26,7 @@
                 )
                 focus-out=(action "validate" "email")
             }}
-            {{gh-error-message errors=this.errors property="email"}}
+            <GhErrorMessage @errors={{this.errors}} @property="email" />
         {{/gh-form-group}}
 
 
@@ -44,7 +44,7 @@
                 }}
                 {{svg-jar "arrow-down-small"}}
             </span>
-            {{gh-error-message errors=this.errors property="role"}}
+            <GhErrorMessage @errors={{this.errors}} @property="role" />
         {{/gh-form-group}}
     </fieldset>
 </div>

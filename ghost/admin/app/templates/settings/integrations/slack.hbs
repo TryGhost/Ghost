@@ -54,7 +54,7 @@
                                 {{#unless this.slackSettings.errors.url}}
                                     <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank">here</a>, and grab the URL.</p>
                                 {{else}}
-                                    {{gh-error-message errors=this.slackSettings.errors property="url" data-test-error="slack-url"}}
+                                    <GhErrorMessage @errors={{this.slackSettings.errors}} @property="url" data-test-error="slack-url" />
                                 {{/unless}}
                             {{/gh-form-group}}
                         </div>
@@ -78,7 +78,7 @@
                                     data-test-slack-username-input=true
                                 }}
                                 {{#if this.slackSettings.errors.username}}
-                                    {{gh-error-message errors=this.slackSettings.errors property="username"}}
+                                    <GhErrorMessage @errors={{this.slackSettings.errors}} @property="username" />
                                 {{/if}}
                             {{/gh-form-group}}
                         </div>

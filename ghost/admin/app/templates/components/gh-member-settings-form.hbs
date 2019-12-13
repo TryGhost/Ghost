@@ -10,7 +10,7 @@
                     value=this.scratchMember.name
                     tabindex="1"
                     focus-out=(action 'setProperty' 'name' this.scratchMember.name)}}
-                {{gh-error-message errors=member.errors property="name"}}
+                <GhErrorMessage @errors={{member.errors}} @property="name" />
             {{/gh-form-group}}
 
             {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="email"}}
@@ -25,7 +25,7 @@
                         autocorrect="off"
                         autocomplete="off"
                         focus-out=(action 'setProperty' 'email' this.scratchMember.email)}}
-                    {{gh-error-message errors=member.errors property="email"}}
+                    <GhErrorMessage @errors={{member.errors}} @property="email" />
                 {{else}}
                     {{gh-text-input
                         name="email-disabled"
@@ -45,7 +45,7 @@
                     value=this.scratchMember.note
                     focus-out=(action 'setProperty' 'note' this.scratchMember.note)
                 }}
-                {{gh-error-message errors=member.errors property="note"}}
+                <GhErrorMessage @errors={{member.errors}} @property="note" />
                 <p>Not visible to member. Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters this.scratchMember.note 500}}</p>
             {{/gh-form-group}}
         </div>

@@ -69,7 +69,7 @@
                             focus-out=(action "validate" "name" target=this.integration)
                             data-test-input="name"
                         }}
-                        {{gh-error-message errors=this.integration.errors property="name" data-test-error="name" class="ma0"}}
+                        <GhErrorMessage @errors={{this.integration.errors}} @property="name" data-test-error="name" class="ma0" />
                     {{/gh-validation-status-container}}
 
                     {{#gh-validation-status-container
@@ -88,7 +88,7 @@
                             focus-out=(action "validate" "description" target=this.integration)
                             data-test-input="description"
                         }}
-                        {{gh-error-message errors=this.integration.errors property="description" data-test-error="description" class="ma0"}}
+                        <GhErrorMessage @errors={{this.integration.errors}} @property="description" data-test-error="description" class="ma0" />
                     {{/gh-validation-status-container}}
                 </div>
             </div>

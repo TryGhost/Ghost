@@ -21,7 +21,7 @@
                 autocapitalize="off"
                 autocorrect="off"
                 data-test-input="new-integration-name">
-            {{gh-error-message errors=this.integration.errors property="name" data-test-error="new-integration-name"}}
+            <GhErrorMessage @errors={{this.integration.errors}} @property="name" data-test-error="new-integration-name" />
         {{/gh-form-group}}
     </fieldset>
 </div>
