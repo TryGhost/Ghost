@@ -2,7 +2,6 @@ import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
-import windowProxy from 'ghost-admin/utils/window-proxy';
 import {alias} from '@ember/object/computed';
 import {computed, defineProperty} from '@ember/object';
 import {inject as controller} from '@ember/controller';
