@@ -668,6 +668,7 @@ export default Controller.extend({
         this.set('hasDirtyAttributes', false);
         this.set('shouldFocusEditor', false);
         this.set('leaveEditorTransition', null);
+        this.set('showLeaveEditorModal', false);
         this.set('infoMessage', null);
         this.set('wordCount', null);
 

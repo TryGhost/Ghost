@@ -16,6 +16,12 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
         return this.settings.reload();
     },
 
+    deactivate() {
+        this._super(...arguments);
+        this.controller.set('leaveSettingsTransition', null);
+        this.controller.set('showLeaveSettingsModal', false);
+    },
+
     actions: {
         save() {
             this.controller.send('save');

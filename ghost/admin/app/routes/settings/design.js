@@ -21,10 +21,14 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
     },
 
     setupController(controller) {
-        // reset the leave setting transition
-        controller.set('leaveSettingsTransition', null);
         controller.set('themes', this.store.peekAll('theme'));
         this.controller.send('reset');
+    },
+
+    deactivate() {
+        this._super(...arguments);
+        this.controller.set('leaveSettingsTransition', null);
+        this.controller.set('showLeaveSettingsModal', false);
     },
 
     actions: {

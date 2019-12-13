@@ -28,6 +28,12 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
             .integrationModelHook('id', params.integration_id, this, transition);
     },
 
+    deactivate() {
+        this._super(...arguments);
+        this.controller.set('leaveScreenTransition', null);
+        this.controller.set('showUnsavedChangesModal', false);
+    },
+
     actions: {
         save() {
             this.controller.send('save');
