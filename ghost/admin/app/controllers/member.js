@@ -1,10 +1,15 @@
 import Controller from '@ember/controller';
+import EmberObject from '@ember/object';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
+import windowProxy from 'ghost-admin/utils/window-proxy';
 import {alias} from '@ember/object/computed';
-import {computed} from '@ember/object';
+import {computed, defineProperty} from '@ember/object';
 import {inject as controller} from '@ember/controller';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+
+const SCRATCH_PROPS = ['name', 'email', 'note'];
 
 export default Controller.extend({
     members: controller(),
@@ -13,6 +18,12 @@ export default Controller.extend({
     store: service(),
 
     member: alias('model'),
+
+    scratchMember: computed('member', function () {
+        let scratchMember = EmberObject.create({member: this.member});
+        SCRATCH_PROPS.forEach(prop => defineProperty(scratchMember, prop, boundOneWay(`member.${prop}`)));
+        return scratchMember;
+    }),
 
     subscribedAt: computed('member.createdAtUTC', function () {
         let memberSince = moment(this.member.createdAtUTC).from(moment());
@@ -73,20 +84,26 @@ export default Controller.extend({
     },
 
     save: task(function* () {
-        let member = this.member;
+        let {member, scratchMember} = this;
+
+        // if Cmd+S is pressed before the field loses focus make sure we're
+        // saving the intended property values
+        let scratchProps = scratchMember.getProperties(SCRATCH_PROPS);
+        member.setProperties(scratchProps);
+
         try {
-            return yield member.save();
+            yield member.save();
+
+            // replace 'member.new' route with 'member' route
+            this.replaceRoute('member', member);
+
+            return member;
         } catch (error) {
             if (error) {
                 this.notifications.showAPIError(error, {key: 'member.save'});
             }
         }
     }).drop(),
-
-    _saveMemberProperty(propKey, newValue) {
-        let member = this.member;
-        member.set(propKey, newValue);
-    },
 
     fetchMember: task(function* (memberId) {
         this.set('isLoading', true);
@@ -98,6 +115,10 @@ export default Controller.extend({
             this.set('isLoading', false);
             return member;
         });
-    })
+    }),
 
+    _saveMemberProperty(propKey, newValue) {
+        let member = this.member;
+        member.set(propKey, newValue);
+    }
 });

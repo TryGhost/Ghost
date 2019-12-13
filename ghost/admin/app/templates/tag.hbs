@@ -13,8 +13,8 @@
 
         <GhTagSettingsForm
             @tag={{this.tag}}
-            @setProperty={{action "setProperty"}}
-            @showDeleteTagModal={{action "toggleDeleteTagModal"}} />
+            @scratchTag={{this.scratchTag}}
+            @setProperty={{action "setProperty"}} />
     </form>
 
     {{#unless this.tag.isNew}}
@@ -38,5 +38,5 @@
         @model={{this.tag}}
         @confirm={{action "deleteTag"}}
         @close={{action "toggleDeleteTagModal"}}
-        @modifier="action wide"}} />
+        @modifier="action wide" />
 {{/if}}

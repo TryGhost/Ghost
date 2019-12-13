@@ -1,7 +1,6 @@
 /* global key */
 import Component from '@ember/component';
 import Ember from 'ember';
-import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {inject as service} from '@ember/service';
@@ -18,13 +17,6 @@ export default Component.extend({
 
     // Allowed actions
     setProperty: () => {},
-    showDeleteTagModal: () => {},
-
-    scratchName: boundOneWay('tag.name'),
-    scratchSlug: boundOneWay('tag.slug'),
-    scratchDescription: boundOneWay('tag.description'),
-    scratchMetaTitle: boundOneWay('tag.metaTitle'),
-    scratchMetaDescription: boundOneWay('tag.metaDescription'),
 
     title: computed('tag.isNew', function () {
         if (this.get('tag.isNew')) {
@@ -34,10 +26,10 @@ export default Component.extend({
         }
     }),
 
-    seoTitle: computed('scratchName', 'scratchMetaTitle', function () {
-        let metaTitle = this.scratchMetaTitle || '';
+    seoTitle: computed('scratchTag.{title,metaTitle}', function () {
+        let metaTitle = this.scratchTag.metaTitle || '';
 
-        metaTitle = metaTitle.length > 0 ? metaTitle : this.scratchName;
+        metaTitle = metaTitle.length > 0 ? metaTitle : this.scratchTag.title;
 
         if (metaTitle && metaTitle.length > 70) {
             metaTitle = metaTitle.substring(0, 70).trim();
@@ -48,9 +40,9 @@ export default Component.extend({
         return metaTitle;
     }),
 
-    seoURL: computed('scratchSlug', function () {
+    seoURL: computed('scratchTag.slug', function () {
         let blogUrl = this.get('config.blogUrl');
-        let seoSlug = this.scratchSlug || '';
+        let seoSlug = this.scratchTag.slug || '';
 
         let seoURL = `${blogUrl}/tag/${seoSlug}`;
 
@@ -68,10 +60,10 @@ export default Component.extend({
         return seoURL;
     }),
 
-    seoDescription: computed('scratchDescription', 'scratchMetaDescription', function () {
-        let metaDescription = this.scratchMetaDescription || '';
+    seoDescription: computed('scratchTag.{description,metaDescription}', function () {
+        let metaDescription = this.scratchTag.metaDescription || '';
 
-        metaDescription = metaDescription.length > 0 ? metaDescription : this.scratchDescription;
+        metaDescription = metaDescription.length > 0 ? metaDescription : this.scratchTag.description;
 
         if (metaDescription && metaDescription.length > 156) {
             metaDescription = metaDescription.substring(0, 156).trim();
@@ -114,10 +106,6 @@ export default Component.extend({
 
         closeMeta() {
             this.set('isViewingSubview', false);
-        },
-
-        deleteTag() {
-            this.showDeleteTagModal();
         }
     },
 
