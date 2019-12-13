@@ -23,7 +23,7 @@
                         tabindex="1"
                         autofocus="autofocus"
                         autocorrect="off"
-                        value=(readonly unsplash.searchTerm)
+                        value=(readonly this.unsplash.searchTerm)
                         input=(action "search" value="target.value")
                         focusIn=(action "setKeyScope")
                         focus-out=(action "resetKeyScope")
@@ -35,9 +35,9 @@
             <div class="relative h-100 overflow-hidden">
                 {{!-- scrollable image container --}}
                 <div class="overflow-auto h-100 w-100 pr8 pl8 pr20-l pl20-l">
-                    {{#if unsplash.photos}}
+                    {{#if this.unsplash.photos}}
                         <section class="gh-unsplash-grid">
-                            {{#each unsplash.columns as |photos|}}
+                            {{#each this.unsplash.columns as |photos|}}
                                 <div class="gh-unsplash-grid-column">
                                     {{#each photos as |photo|}}
                                         {{gh-unsplash-photo photo=photo zoom=(action "zoomPhoto") select=(action "select")}}
@@ -45,26 +45,26 @@
                                 </div>
                             {{/each}}
                         </section>
-                    {{else if (and unsplash.searchTerm (not unsplash.error unsplash.isLoading))}}
+                    {{else if (and this.unsplash.searchTerm (not this.unsplash.error this.unsplash.isLoading))}}
                         <section class="gh-unsplash-error h-100 flex items-center justify-center pb30">
                             <div>
                                 <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="No photos found" />
-                                <h4>No photos found for '{{unsplash.searchTerm}}'</h4>
+                                <h4>No photos found for '{{this.unsplash.searchTerm}}'</h4>
                             </div>
                         </section>
                     {{/if}}
 
-                    {{#if unsplash.error}}
+                    {{#if this.unsplash.error}}
                         {{!-- TODO: add better error styles? --}}
                         <section class="gh-unsplash-error h-100 flex items-center justify-center pb30">
                             <div>
                                 <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="Network error" />
-                                <h4>{{unsplash.error}} (<a href="#" {{action "retry"}}>retry</a>)</h4>
+                                <h4>{{this.unsplash.error}} (<a href="#" {{action "retry"}}>retry</a>)</h4>
                             </div>
                         </section>
                     {{/if}}
 
-                    {{#if unsplash.isLoading}}
+                    {{#if this.unsplash.isLoading}}
                         <div class="gh-unsplash-loading h-100 flex items-center justify-center pb30">
                             <div class="gh-loading-spinner"></div>
                         </div>
@@ -76,10 +76,10 @@
                 </div>
 
                 {{!-- zoomed image overlay --}}
-                {{#if zoomedPhoto}}
+                {{#if this.zoomedPhoto}}
                     <div class="absolute flex justify-center top-0 right-0 bottom-0 left-0 pr20 pb10 pl20 bg-white overflow-hidden" {{action "closeZoom"}}>
                         {{gh-unsplash-photo
-                            photo=zoomedPhoto
+                            photo=this.zoomedPhoto
                             zoomed=true
                             zoom=(action "closeZoom")
                             select=(action "select")}}

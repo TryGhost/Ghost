@@ -6,11 +6,11 @@
             AMP
         </h2>
         <section class="view-actions">
-            {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
+            {{gh-task-button task=this.save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
         </section>
     </GhCanvasHeader>
 
-    {{#if showLeaveSettingsModal}}
+    {{#if this.showLeaveSettingsModal}}
         {{gh-fullscreen-modal "leave-settings"
             confirm=(action "leaveSettings")
             close=(action "toggleLeaveSettingsModal")
@@ -42,7 +42,7 @@
                         <label for="amp" class="checkbox">
                             <input
                                 type="checkbox"
-                                checked={{ampSettings}}
+                                checked={{this.ampSettings}}
                                 id="amp"
                                 name="amp"
                                 onclick={{action "update" value="target.checked"}}

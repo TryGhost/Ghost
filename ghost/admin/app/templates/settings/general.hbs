@@ -5,11 +5,11 @@
             General settings
         </h2>
         <section class="view-actions">
-            {{gh-task-button "Save settings" task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
+            {{gh-task-button "Save settings" task=this.save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
         </section>
     </GhCanvasHeader>
 
-    {{#if showLeaveSettingsModal}}
+    {{#if this.showLeaveSettingsModal}}
         {{gh-fullscreen-modal "leave-settings"
             confirm=(action "leaveSettings")
             close=(action "toggleLeaveSettingsModal")
@@ -24,34 +24,34 @@
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Title &amp; description</div>
                     <div class="gh-setting-desc">The details used to identify your publication around the web</div>
-                    {{#liquid-if pubInfoOpen}}
+                    {{#liquid-if this.pubInfoOpen}}
                     <div class="gh-setting-content-extended">
-                        {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="title"}}
+                        {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="title"}}
                             {{gh-text-input
-                                value=(readonly settings.title)
-                                input=(action (mut settings.title) value="target.value")
-                                focus-out=(action "validate" "title" target=settings)
+                                value=(readonly this.settings.title)
+                                input=(action (mut this.settings.title) value="target.value")
+                                focus-out=(action "validate" "title" target=this.settings)
                                 data-test-title-input=true
                             }}
-                            {{gh-error-message errors=settings.errors property="title"}}
+                            {{gh-error-message errors=this.settings.errors property="title"}}
                             <p>The name of your site</p>
                         {{/gh-form-group}}
 
-                        {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="description" class="description-container"}}
+                        {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="description" class="description-container"}}
                             {{gh-text-input
-                                value=(readonly settings.description)
-                                input=(action (mut settings.description) value="target.value")
-                                focus-out=(action "validate" "description" target=settings)
+                                value=(readonly this.settings.description)
+                                input=(action (mut this.settings.description) value="target.value")
+                                focus-out=(action "validate" "description" target=this.settings)
                                 data-test-description-input=true
                             }}
-                            {{gh-error-message errors=settings.errors property="description"}}
+                            {{gh-error-message errors=this.settings.errors property="description"}}
                             <p>Used in your theme, meta data and search results</p>
                         {{/gh-form-group}}
                     </div>
                     {{/liquid-if}}
                 </div>
                 <div class="gh-setting-action">
-                    <button type="button" class="gh-btn" {{action (toggle "pubInfoOpen" this)}} data-test-toggle-pub-info><span>{{if pubInfoOpen "Close" "Expand"}}</span></button>
+                    <button type="button" class="gh-btn" {{action (toggle "pubInfoOpen" this)}} data-test-toggle-pub-info><span>{{if this.pubInfoOpen "Close" "Expand"}}</span></button>
                 </div>
             </div>
 
@@ -59,40 +59,40 @@
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Site timezone</div>
                     <div class="gh-setting-desc">Set the time and date of your publication, used for all published posts</div>
-                    {{#liquid-if timezoneOpen}}
+                    {{#liquid-if this.timezoneOpen}}
                     <div class="gh-setting-content-extended">
                         {{gh-timezone-select
-                                activeTimezone=settings.activeTimezone
-                                availableTimezones=availableTimezones
+                                activeTimezone=this.settings.activeTimezone
+                                availableTimezones=this.availableTimezones
                                 update=(action "setTimezone")}}
                     </div>
                     {{/liquid-if}}
                 </div>
                 <div class="gh-setting-action">
-                    <button type="button" class="gh-btn" {{action (toggle "timezoneOpen" this)}} data-test-toggle-timezone><span>{{if timezoneOpen "Close" "Expand"}}</span></button>
+                    <button type="button" class="gh-btn" {{action (toggle "timezoneOpen" this)}} data-test-toggle-timezone><span>{{if this.timezoneOpen "Close" "Expand"}}</span></button>
                 </div>
             </div>
             <div class="gh-setting-last">
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Publication Language</div>
                     <div class="gh-setting-desc">Set the language/locale which is used on your site</div>
-                    {{#liquid-if defaultLocaleOpen}}
+                    {{#liquid-if this.defaultLocaleOpen}}
                     <div class="gh-setting-content-extended">
-                        {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="defaultLocale"}}
+                        {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="defaultLocale"}}
                             {{gh-text-input
-                                value=(readonly settings.defaultLocale)
-                                input=(action (mut settings.defaultLocale) value="target.value")
-                                focus-out=(action "validate" "defaultLocale" target=settings)
+                                value=(readonly this.settings.defaultLocale)
+                                input=(action (mut this.settings.defaultLocale) value="target.value")
+                                focus-out=(action "validate" "defaultLocale" target=this.settings)
                                 data-test-default-locale-input=true
                             }}
-                            {{gh-error-message errors=settings.errors property="defaultLocale"}}
+                            {{gh-error-message errors=this.settings.errors property="defaultLocale"}}
                             <p>Default: English (<strong>en</strong>); you can add translation files to your theme for <a href="https://ghost.org/docs/api/handlebars-themes/helpers/translate/" target="_blank" rel="noopener">any language</a></p>
                         {{/gh-form-group}}
                     </div>
                     {{/liquid-if}}
                 </div>
                 <div class="gh-setting-action">
-                    <button type="button" class="gh-btn" {{action (toggle "defaultLocaleOpen" this)}} data-test-toggle-default-locale><span>{{if defaultLocaleOpen "Close" "Expand"}}</span></button>
+                    <button type="button" class="gh-btn" {{action (toggle "defaultLocaleOpen" this)}} data-test-toggle-default-locale><span>{{if this.defaultLocaleOpen "Close" "Expand"}}</span></button>
                 </div>
             </div>
         </div>
@@ -101,7 +101,7 @@
         <div class="flex flex-column br3 shadow-1 bg-grouped-table pa5">
             <div class="gh-setting-first" data-test-setting="icon">
                 {{#gh-uploader
-                    extensions=iconExtensions
+                    extensions=this.iconExtensions
                     paramsHash=(hash purpose="icon")
                     onComplete=(action "imageUploaded" "icon")
                     as |uploader|
@@ -116,8 +116,8 @@
                 <div class="gh-setting-action gh-setting-action-smallimg">
                     {{#if uploader.isUploading}}
                         {{uploader.progressBar}}
-                    {{else if settings.icon}}
-                        <img class="blog-icon" src="{{settings.icon}}" onclick={{action "triggerFileDialog"}} alt="icon" data-test-icon-img>
+                    {{else if this.settings.icon}}
+                        <img class="blog-icon" src="{{this.settings.icon}}" onclick={{action "triggerFileDialog"}} alt="icon" data-test-icon-img>
                         <button type="button" class="gh-setting-action-smallimg-delete" {{action "removeImage" "icon"}} data-test-delete-image="icon">
                             <span>delete</span>
                         </button>
@@ -127,14 +127,14 @@
                         </button>
                     {{/if}}
                     <div style="display:none">
-                        {{gh-file-input multiple=false action=uploader.setFiles accept=iconMimeTypes data-test-file-input="icon"}}
+                        {{gh-file-input multiple=false action=uploader.setFiles accept=this.iconMimeTypes data-test-file-input="icon"}}
                     </div>
                 </div>
                 {{/gh-uploader}}
             </div>
             <div class="gh-setting" data-test-setting="logo">
                 {{#gh-uploader
-                    extensions=imageExtensions
+                    extensions=this.imageExtensions
                     onComplete=(action "imageUploaded" "logo")
                     as |uploader|
                 }}
@@ -148,8 +148,8 @@
                 <div class="gh-setting-action gh-setting-action-smallimg">
                     {{#if uploader.isUploading}}
                         {{uploader.progressBar}}
-                    {{else if settings.logo}}
-                        <img class="blog-logo" src="{{settings.logo}}"  onclick={{action "triggerFileDialog"}} alt="logo" data-test-logo-img>
+                    {{else if this.settings.logo}}
+                        <img class="blog-logo" src="{{this.settings.logo}}" onclick={{action "triggerFileDialog"}} alt="logo" data-test-logo-img>
                         <button type="button" class="gh-setting-action-smallimg-delete" {{action "removeImage" "logo"}} data-test-delete-image="logo">
                             <span>delete</span>
                         </button>
@@ -159,14 +159,14 @@
                         </button>
                     {{/if}}
                     <div style="display:none">
-                        {{gh-file-input multiple=false action=uploader.setFiles accept=imageMimeTypes data-test-file-input="logo"}}
+                        {{gh-file-input multiple=false action=uploader.setFiles accept=this.imageMimeTypes data-test-file-input="logo"}}
                     </div>
                 </div>
                 {{/gh-uploader}}
             </div>
             <div class="gh-setting-last" data-test-setting="coverImage">
                 {{#gh-uploader
-                    extensions=imageExtensions
+                    extensions=this.imageExtensions
                     onComplete=(action "imageUploaded" "coverImage")
                     as |uploader|
                 }}
@@ -180,8 +180,8 @@
                 <div class="gh-setting-action gh-setting-action-largeimg">
                     {{#if uploader.isUploading}}
                         {{uploader.progressBar}}
-                    {{else if settings.coverImage}}
-                        <img class="blog-cover" src="{{settings.coverImage}}"  onclick={{action "triggerFileDialog"}} alt="cover photo" data-test-cover-img>
+                    {{else if this.settings.coverImage}}
+                        <img class="blog-cover" src="{{this.settings.coverImage}}" onclick={{action "triggerFileDialog"}} alt="cover photo" data-test-cover-img>
                         <button type="button" class="gh-setting-action-largeimg-delete" {{action "removeImage" "coverImage"}} data-test-delete-image="coverImage">
                             <span>delete</span>
                         </button>
@@ -191,7 +191,7 @@
                         </button>
                     {{/if}}
                     <div style="display:none">
-                        {{gh-file-input multiple=false action=uploader.setFiles accept=imageMimeTypes data-test-file-input="coverImage"}}
+                        {{gh-file-input multiple=false action=uploader.setFiles accept=this.imageMimeTypes data-test-file-input="coverImage"}}
                     </div>
                 </div>
                 {{/gh-uploader}}
@@ -207,10 +207,10 @@
                         <div class="gh-setting-desc">Extra content for search engines</div>
                     </div>
                     <div class="gh-setting-action">
-                        <button type="button" class="gh-btn" {{action (toggle "metaDataOpen" this)}} data-test-toggle-meta><span>{{if metaDataOpen "Close" "Expand"}}</span></button>
+                        <button type="button" class="gh-btn" {{action (toggle "metaDataOpen" this)}} data-test-toggle-meta><span>{{if this.metaDataOpen "Close" "Expand"}}</span></button>
                     </div>
                 </div>
-                {{#liquid-if metaDataOpen}}
+                {{#liquid-if this.metaDataOpen}}
                     <div class="gh-setting-content-extended">
                         <div class="flex flex-column flex-row-ns">
                             <div class="flex-basis-1-2-m flex-basis-2-3-l mr5">
@@ -260,10 +260,10 @@
                         <div class="gh-setting-desc">Customise structured data of your site for Twitter</div>
                     </div>
                     <div class="gh-setting-action">
-                        <button type="button" class="gh-btn" {{action (toggle "twitterCardOpen" this)}} data-test-toggle-twitter><span>{{if twitterCardOpen "Close" "Expand"}}</span></button>
+                        <button type="button" class="gh-btn" {{action (toggle "twitterCardOpen" this)}} data-test-toggle-twitter><span>{{if this.twitterCardOpen "Close" "Expand"}}</span></button>
                     </div>
                 </div>
-                {{#liquid-if twitterCardOpen}}
+                {{#liquid-if this.twitterCardOpen}}
                     <div class="gh-setting-content-extended">
                         <div class="flex flex-column flex-row-ns">
                             <div class="flex-basis-1-2-m flex-basis-2-3-l mr5 nudge-top--7">
@@ -330,10 +330,10 @@
                         <div class="gh-setting-desc">Customise structured data of your site</div>
                     </div>
                     <div class="gh-setting-action">
-                        <button type="button" class="gh-btn" {{action (toggle "facebookCardOpen" this)}} data-test-toggle-facebook><span>{{if facebookCardOpen "Close" "Expand"}}</span></button>
+                        <button type="button" class="gh-btn" {{action (toggle "facebookCardOpen" this)}} data-test-toggle-facebook><span>{{if this.facebookCardOpen "Close" "Expand"}}</span></button>
                     </div>
                 </div>
-                {{#liquid-if facebookCardOpen}}
+                {{#liquid-if this.facebookCardOpen}}
                     <div class="gh-setting-content-extended">
                         <div class="flex flex-column flex-row-ns">
                             <div class="flex-basis-1-2-m flex-basis-2-3-l mr5 nudge-top--7">
@@ -400,39 +400,39 @@
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Social accounts</div>
                     <div class="gh-setting-desc">Link your social accounts for full structured data and rich card support</div>
-                    {{#liquid-if socialOpen}}
+                    {{#liquid-if this.socialOpen}}
                     <div class="gh-setting-content-extended">
-                        {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="facebook"}}
+                        {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="facebook"}}
                             {{gh-text-input
                                 type="url"
                                 placeholder="https://www.facebook.com/ghost"
                                 autocorrect="off"
-                                value=(readonly settings.facebook)
-                                input=(action (mut _scratchFacebook) value="target.value")
+                                value=(readonly this.settings.facebook)
+                                input=(action (mut this._scratchFacebook) value="target.value")
                                 focus-out=(action "validateFacebookUrl")
                                 data-test-facebook-input=true
                             }}
-                            {{gh-error-message errors=settings.errors property="facebook" data-test-facebook-error=true}}
+                            {{gh-error-message errors=this.settings.errors property="facebook" data-test-facebook-error=true}}
                             <p>URL of your publication's Facebook Page</p>
                         {{/gh-form-group}}
-                        {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="twitter"}}
+                        {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="twitter"}}
                             {{gh-text-input
                                 type="url"
                                 placeholder="https://twitter.com/ghost"
                                 autocorrect="off"
-                                value=(readonly settings.twitter)
-                                input=(action (mut _scratchTwitter) value="target.value")
+                                value=(readonly this.settings.twitter)
+                                input=(action (mut this._scratchTwitter) value="target.value")
                                 focus-out=(action "validateTwitterUrl")
                                 data-test-twitter-input=true
                             }}
-                            {{gh-error-message errors=settings.errors property="twitter" data-test-twitter-error=true}}
+                            {{gh-error-message errors=this.settings.errors property="twitter" data-test-twitter-error=true}}
                             <p>URL of your publication's Twitter profile</p>
                         {{/gh-form-group}}
                     </div>
                     {{/liquid-if}}
                 </div>
                 <div class="gh-setting-action">
-                    <button type="button" class="gh-btn" {{action (toggle "socialOpen" this)}} data-test-toggle-social><span>{{if socialOpen "Close" "Expand"}}</span></button>
+                    <button type="button" class="gh-btn" {{action (toggle "socialOpen" this)}} data-test-toggle-social><span>{{if this.socialOpen "Close" "Expand"}}</span></button>
                 </div>
             </div>
         </div>
@@ -445,26 +445,26 @@
                     <div class="gh-setting-desc">
                         Enable protection with simple shared password. All search engine optimization and social features will be disabled.
 
-                        {{#if settings.isPrivate}}
+                        {{#if this.settings.isPrivate}}
                             <span class="avoid-break-out">
                                 <br><br>
                                 A private RSS feed is available at
-                                <a href="{{privateRSSUrl}}" target="_blank" rel="noopener">{{privateRSSUrl}}</a>
+                                <a href="{{this.privateRSSUrl}}" target="_blank" rel="noopener">{{this.privateRSSUrl}}</a>
                             </span>
                         {{/if}}
                     </div>
 
-                    {{#if settings.isPrivate}}
+                    {{#if this.settings.isPrivate}}
                         <div class="gh-setting-content-extended">
-                            {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="password"}}
+                            {{#gh-form-group errors=this.settings.errors hasValidated=this.settings.hasValidated property="password"}}
                                 {{gh-text-input
-                                    value=(readonly settings.password)
+                                    value=(readonly this.settings.password)
                                     name="general[password]"
-                                    focus-out=(action "validate" "password" target=settings)
-                                    input=(action (mut settings.password) value="target.value")
+                                    focus-out=(action "validate" "password" target=this.settings)
+                                    input=(action (mut this.settings.password) value="target.value")
                                     data-test-password-input=true
                                 }}
-                                {{gh-error-message errors=settings.errors property="password" data-test-password-error=true}}
+                                {{gh-error-message errors=this.settings.errors property="password" data-test-password-error=true}}
                                 <p>Set the password for this site</p>
                             {{/gh-form-group}}
                         </div>
@@ -475,7 +475,7 @@
                         <label class="switch" for="settings-private">
                             <input
                                 type="checkbox"
-                                checked={{settings.isPrivate}}
+                                checked={{this.settings.isPrivate}}
                                 id="settings-private"
                                 onclick={{action "toggleIsPrivate" value="target.checked"}}
                                 data-test-private-checkbox

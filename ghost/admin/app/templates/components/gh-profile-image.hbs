@@ -1,14 +1,14 @@
 <figure class="account-image">
 
-    {{#unless previewDataURL}}
-        <div class="placeholder-img" style={{placeholderStyle}}></div>
-        <div id="account-image" class="gravatar-img" style={{avatarStyle}}>
+    {{#unless this.previewDataURL}}
+        <div class="placeholder-img" style={{this.placeholderStyle}}></div>
+        <div id="account-image" class="gravatar-img" style={{this.avatarStyle}}>
             <span class="sr-only">User image</span>
         </div>
     {{/unless}}
 
-    {{#if previewDataURL}}
-        <img src={{previewDataURL}} class="gravatar-img">
+    {{#if this.previewDataURL}}
+        <img src={{this.previewDataURL}} class="gravatar-img">
     {{/if}}
 
     <span class="edit-account-image" onclick={{action "openFileDialog"}} role="button">
@@ -21,5 +21,5 @@
         name="uploadimage"
         multiple=false
         action=(action "imageSelected")
-        accept=imageMimeTypes}}
+        accept=this.imageMimeTypes}}
 </figure>

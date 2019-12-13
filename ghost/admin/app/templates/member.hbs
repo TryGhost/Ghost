@@ -11,12 +11,12 @@
                 {{/if}}
             </h2>
             <section class="view-actions">
-                <GhTaskButton @class="gh-btn gh-btn-blue gh-btn-icon" @type="button" @task={{save}} @data-test-button="save" />
+                <GhTaskButton @class="gh-btn gh-btn-blue gh-btn-icon" @type="button" @task={{this.save}} @data-test-button="save" />
             </section>
         </GhCanvasHeader>
 
         <div class="flex items-center mb10 bt b--lightgrey-d1 pt8">
-            {{#if (or member.name member.email)}}
+            {{#if (or this.member.name this.member.email)}}
                 <GhMemberAvatar
                     @member={{this.member}}
                     @sizeClass={{if this.member.name 'f-subheadline fw4 lh-zero tracked-1' 'f-headline fw4 lh-zero tracked-1'}}
@@ -36,7 +36,7 @@
                         <span class="darkgrey fw5">{{this.member.email}}</span>
                     {{/if}}
                     {{#unless this.member.isNew}}
-                        {{if (and member.name member.email) "–"}}
+                        {{if (and this.member.name this.member.email) "–"}}
                         Created on {{this.subscribedAt}}
                     {{/unless}}
                 </p>

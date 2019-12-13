@@ -1,15 +1,15 @@
 {{#if hasBlock}}
     {{yield (hash
-        isIdle=isIdle
-        isRunning=isRunning
-        isSuccess=isSuccess
-        isFailure=isFailure
+        isIdle=this.isIdle
+        isRunning=this.isRunning
+        isSuccess=this.isSuccess
+        isFailure=this.isFailure
     )}}
 {{else}}
     <span>
-    {{#if isRunning}}{{svg-jar "spinner" class="gh-icon-spinner"}}{{runningText}}{{/if}}
-    {{#if isIdle}}{{buttonText}}{{/if}}
-    {{#if isSuccess}}{{svg-jar "check-circle"}} {{successText}}{{/if}}
-    {{#if isFailure}}{{svg-jar "retry"}} {{failureText}}{{/if}}
+    {{#if this.isRunning}}{{svg-jar "spinner" class="gh-icon-spinner"}}{{this.runningText}}{{/if}}
+    {{#if this.isIdle}}{{this.buttonText}}{{/if}}
+    {{#if this.isSuccess}}{{svg-jar "check-circle"}} {{this.successText}}{{/if}}
+    {{#if this.isFailure}}{{svg-jar "retry"}} {{this.failureText}}{{/if}}
     </span>
 {{/if}}

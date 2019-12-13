@@ -1,18 +1,18 @@
-<a class="gh-unsplash-photo" href="#" onclick={{action "zoom"}} data-unsplash-zoomed-photo={{if zoomed photo.id}} data-test-unsplash-photo={{photo.id}} style={{style}}>
-    <div class="gh-unsplash-photo-container" style={{containerStyle}} data-test-unsplash-photo-container>
-        <img src={{imageUrl}} alt={{photo.description}} width={{width}} height={{height}} data-test-unsplash-photo-image />
+<a class="gh-unsplash-photo" href="#" onclick={{action "zoom"}} data-unsplash-zoomed-photo={{if this.zoomed this.photo.id}} data-test-unsplash-photo={{this.photo.id}} style={{this.style}}>
+    <div class="gh-unsplash-photo-container" style={{this.containerStyle}} data-test-unsplash-photo-container>
+        <img src={{this.imageUrl}} alt={{this.photo.description}} width={{this.width}} height={{this.height}} data-test-unsplash-photo-image />
         <div class="gh-unsplash-photo-overlay">
             <div class="gh-unsplash-photo-header">
-                <a class="gh-unsplash-button-likes gh-unsplash-button" href="{{photo.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">{{svg-jar "unsplash-heart"}}{{photo.likes}}</a>
-                <a class="gh-unsplash-button-download gh-unsplash-button" href="{{photo.links.download}}/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit&force=true">{{svg-jar "download"}}</a>
+                <a class="gh-unsplash-button-likes gh-unsplash-button" href="{{this.photo.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">{{svg-jar "unsplash-heart"}}{{this.photo.likes}}</a>
+                <a class="gh-unsplash-button-download gh-unsplash-button" href="{{this.photo.links.download}}/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit&force=true">{{svg-jar "download"}}</a>
             </div>
             <div class="gh-unsplash-photo-footer">
                 <div class="gh-unsplash-photo-author">
-                    <a class="gh-unsplash-photo-author-img" href="{{photo.user.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">
-                        <img src="{{photo.user.profile_image.medium}}" />
+                    <a class="gh-unsplash-photo-author-img" href="{{this.photo.user.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">
+                        <img src="{{this.photo.user.profile_image.medium}}" />
                     </a>
-                    <a class="gh-unsplash-photo-author-name" href="{{photo.user.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">
-                        {{photo.user.name}}
+                    <a class="gh-unsplash-photo-author-name" href="{{this.photo.user.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">
+                        {{this.photo.user.name}}
                     </a>
                 </div>
                 <a class="gh-unsplash-button" href="#" onclick={{action "select"}}>Insert image</a>

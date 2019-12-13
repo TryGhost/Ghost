@@ -1,28 +1,28 @@
-<header class="modal-header gh-pe-header {{if (eq type "desktop") "gh-pe-header-border"}}" data-test-modal="preview-email" style="display:flex">
-    <h2 class="f6 fw6">{{subject}}</h2>
+<header class="modal-header gh-pe-header {{if (eq this.type "desktop") "gh-pe-header-border"}}" data-test-modal="preview-email" style="display:flex">
+    <h2 class="f6 fw6">{{this.subject}}</h2>
     <div class="gh-contentfilter gh-btn-group gh-pe-btn-group" style="display:flex;flex-grow:1;justify-content:center">
-        <button class="gh-btn {{if (eq type "desktop") "gh-btn-group-selected"}}" {{action "changeType" "desktop"}}><span>Desktop</span></button>
-        <button class="gh-btn {{if (eq type "mobile") "gh-btn-group-selected"}}" {{action "changeType" "mobile"}}><span>Mobile</span></button>
+        <button class="gh-btn {{if (eq this.type "desktop") "gh-btn-group-selected"}}" {{action "changeType" "desktop"}}><span>Desktop</span></button>
+        <button class="gh-btn {{if (eq this.type "mobile") "gh-btn-group-selected"}}" {{action "changeType" "mobile"}}><span>Mobile</span></button>
     </div>
     <div class="gh-pe-close">
-        <button class="close" href="" title="Close" {{on "click" this.closeModal}}>
+        <button class="close" href title="Close" {{on "click" this.closeModal}}>
             {{svg-jar "close"}}
         </button>
     </div>
 </header>
 
-{{#if (eq type "mobile")}}
+{{#if (eq this.type "mobile")}}
     <div class="modal-body modal-preview-email-content gh-pe-mobile-container" style="display: flex;justify-content: center;">
         <div class="gh-pe-mobile-bezel">
             <div class="gh-pe-mobile-screen">
-                <iframe class="bn gh-pe-iframe" {{did-insert this.renderEmailPreview}}></iframe>
+                <iframe class="bn gh-pe-iframe" {{this.did-insert this.renderEmailPreview}}></iframe>
             </div>
         </div>
     </div>
 {{/if}}
 
-{{#if (eq type "desktop")}}
+{{#if (eq this.type "desktop")}}
     <div class="modal-body modal-preview-email-content gh-pe-desktop-container">
-        <iframe class="bn miw-100 gh-pe-iframe" style="height:100%;" {{did-insert this.renderEmailPreview}}></iframe>
+        <iframe class="bn miw-100 gh-pe-iframe" style="height:100%;" {{this.did-insert this.renderEmailPreview}}></iframe>
     </div>
 {{/if}}

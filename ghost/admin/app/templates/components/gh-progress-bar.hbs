@@ -1,10 +1,10 @@
 <div class="gh-progress-container">
     <div class="gh-progress-container-progress">
         <div
-            class="gh-progress-bar {{if isError "-error"}}"
-            style={{progressStyle}}
+            class="gh-progress-bar {{if this.isError "-error"}}"
+            style={{this.progressStyle}}
             data-test-progress-bar
-            data-test-progress-width={{percentage}}
+            data-test-progress-width={{this.percentage}}
         ></div>
     </div>
 </div>

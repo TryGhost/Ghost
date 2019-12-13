@@ -3,14 +3,14 @@
         <h2 class="gh-canvas-title" data-test-screen-title>
             {{link-to "Staff" "staff" data-test-staff-link=true}}
             <span>{{svg-jar "arrow-right"}}</span>
-            {{user.name}}
+            {{this.user.name}}
 
-            {{#if user.isSuspended}}
+            {{#if this.user.isSuspended}}
             <span class="gh-badge suspended" data-test-suspended-badge>Suspended</span>
             {{/if}}
         </h2>
 
-        {{#if showLeaveSettingsModal}}
+        {{#if this.showLeaveSettingsModal}}
             {{gh-fullscreen-modal "leave-settings"
                 confirm=(action "leaveSettings")
                 close=(action "toggleLeaveSettingsModal")
@@ -18,7 +18,7 @@
         {{/if}}
 
         <section class="view-actions">
-            {{#if userActionsAreVisible}}
+            {{#if this.userActionsAreVisible}}
                 <span class="dropdown">
                     {{#gh-dropdown-button dropdownName="user-actions-menu" classNames="gh-btn gh-btn-white gh-btn-icon only-has-icon user-actions-cog" title="User Actions" data-test-user-actions=true}}
                         <span>
@@ -27,12 +27,12 @@
                         </span>
                     {{/gh-dropdown-button}}
                     {{#gh-dropdown name="user-actions-menu" tagName="ul" classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right"}}
-                        {{#if canMakeOwner}}
+                        {{#if this.canMakeOwner}}
                             <li>
                                 <button {{action "toggleTransferOwnerModal"}}>
                                     Make Owner
                                 </button>
-                                {{#if showTransferOwnerModal}}
+                                {{#if this.showTransferOwnerModal}}
                                     {{gh-fullscreen-modal "transfer-owner"
                                                           confirm=(action "transferOwnership")
                                                           close=(action "toggleTransferOwnerModal")
@@ -40,20 +40,20 @@
                                 {{/if}}
                             </li>
                         {{/if}}
-                        {{#if deleteUserActionIsVisible}}
+                        {{#if this.deleteUserActionIsVisible}}
                             <li>
                                 <button {{action "toggleDeleteUserModal"}} class="delete" data-test-delete-button>
                                     Delete User
                                 </button>
                             </li>
-                            {{#if user.isActive}}
+                            {{#if this.user.isActive}}
                                 <li>
                                     <button {{action "toggleSuspendUserModal"}} class="suspend" data-test-suspend-button>
                                         Suspend User
                                     </button>
                                 </li>
                             {{/if}}
-                            {{#if user.isSuspended}}
+                            {{#if this.user.isSuspended}}
                                 <li>
                                     <button {{action "toggleUnsuspendUserModal"}} class="unsuspend" data-test-unsuspend-button>
                                         Un-suspend User
@@ -65,27 +65,27 @@
                 </span>
             {{/if}}
 
-            {{gh-task-button class="gh-btn gh-btn-blue gh-btn-icon" task=save data-test-save-button=true}}
+            {{gh-task-button class="gh-btn gh-btn-blue gh-btn-icon" task=this.save data-test-save-button=true}}
 
-            {{#if showDeleteUserModal}}
+            {{#if this.showDeleteUserModal}}
                 {{gh-fullscreen-modal "delete-user"
-                                      model=user
+                                      model=this.user
                                       confirm=(action "deleteUser")
                                       close=(action "toggleDeleteUserModal")
                                       modifier="action wide"}}
             {{/if}}
 
-            {{#if showSuspendUserModal}}
+            {{#if this.showSuspendUserModal}}
                 {{gh-fullscreen-modal "suspend-user"
-                                      model=user
+                                      model=this.user
                                       confirm=(action "suspendUser")
                                       close=(action "toggleSuspendUserModal")
                                       modifier="action wide"}}
             {{/if}}
 
-            {{#if showUnsuspendUserModal}}
+            {{#if this.showUnsuspendUserModal}}
                 {{gh-fullscreen-modal "unsuspend-user"
-                                      model=user
+                                      model=this.user
                                       confirm=(action "unsuspendUser")
                                       close=(action "toggleUnsuspendUserModal")
                                       modifier="action wide"}}
@@ -96,24 +96,24 @@
     {{!-- <div class="bg-"> --}}
     <section class="br3 shadow-1 bg-grouped-table">
         <div class="gm-main view-container settings-user">
-            <form class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform save) on="submit"}}>
+            <form class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform this.save) on="submit"}}>
 
-                <figure class="user-cover" style={{background-image-style user.coverImageUrl}}>
+                <figure class="user-cover" style={{background-image-style this.user.coverImageUrl}}>
                     <button type="button" class="gh-btn gh-btn-default user-cover-edit" {{action "toggleUploadCoverModal"}}><span>Change Cover</span></button>
-                    {{#if showUploadCoverModal}}
+                    {{#if this.showUploadCoverModal}}
                         {{gh-fullscreen-modal "upload-image"
-                                                model=(hash model=user imageProperty="coverImage")
+                                                model=(hash model=this.user imageProperty="coverImage")
                                                 close=(action "toggleUploadCoverModal")
                                                 modifier="action wide"}}
                     {{/if}}
                 </figure>
 
                 <figure class="user-image bg-whitegrey">
-                    <div id="user-image" class="img" style={{background-image-style user.profileImageUrl}}><span class="hidden">{{user.name}}"s Picture</span></div>
+                    <div id="user-image" class="img" style={{background-image-style this.user.profileImageUrl}}><span class="hidden">{{this.user.name}}"s Picture</span></div>
                     <button type="button" {{action "toggleUploadImageModal"}} class="edit-user-image">Edit Picture</button>
-                    {{#if showUploadImageModal}}
+                    {{#if this.showUploadImageModal}}
                         {{gh-fullscreen-modal "upload-image"
-                                                model=(hash model=user imageProperty="profileImage" paramsHash=(hash purpose="profile_image"))
+                                                model=(hash model=this.user imageProperty="profileImage" paramsHash=(hash purpose="profile_image"))
                                                 close=(action "toggleUploadImageModal")
                                                 modifier="action wide"}}
                     {{/if}}
@@ -122,26 +122,26 @@
                 <div class="pa5">
                     <fieldset class="user-details-bottom">
 
-                        {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="name" class="first-form-group"}}
+                        {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="name" class="first-form-group"}}
                             <label for="user-name">Full Name</label>
                             {{gh-text-input
                                 id="user-name"
                                 class="user-name"
                                 placeholder="Full Name"
                                 autocorrect="off"
-                                value=(readonly user.name)
-                                input=(action (mut user.name) value="target.value")
-                                focus-out=(action "validate" "name" target=user)
+                                value=(readonly this.user.name)
+                                input=(action (mut this.user.name) value="target.value")
+                                focus-out=(action "validate" "name" target=this.user)
                                 data-test-name-input=true
                             }}
-                            {{#if user.errors.name}}
-                                {{gh-error-message errors=user.errors property="name" data-test-error="user-name"}}
+                            {{#if this.user.errors.name}}
+                                {{gh-error-message errors=this.user.errors property="name" data-test-error="user-name"}}
                             {{else}}
                                 <p>Use your real name so people can recognise you</p>
                             {{/if}}
                         {{/gh-form-group}}
 
-                        {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="slug"}}
+                        {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="slug"}}
                             <label for="user-slug">Slug</label>
                             {{gh-text-input
                                 class="user-name"
@@ -150,19 +150,19 @@
                                 placeholder="Slug"
                                 selectOnClick="true"
                                 autocorrect="off"
-                                value=(readonly slugValue)
-                                input=(action (mut slugValue) value="target.value")
-                                focus-out=(action (perform updateSlug slugValue))
+                                value=(readonly this.slugValue)
+                                input=(action (mut this.slugValue) value="target.value")
+                                focus-out=(action (perform this.updateSlug this.slugValue))
                                 data-test-slug-input=true
                             }}
-                            <p>{{gh-blog-url}}/author/{{slugValue}}</p>
-                            {{gh-error-message errors=user.errors property="slug" data-test-error="user-slug"}}
+                            <p>{{gh-blog-url}}/author/{{this.slugValue}}</p>
+                            {{gh-error-message errors=this.user.errors property="slug" data-test-error="user-slug"}}
                         {{/gh-form-group}}
 
-                        {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="email"}}
+                        {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="email"}}
                             <label for="user-email">Email</label>
                             {{!-- Administrators only see text of Owner's email address but not input --}}
-                            {{#if canChangeEmail}}
+                            {{#if this.canChangeEmail}}
                                 {{gh-text-input
                                     type="email"
                                     id="user-email"
@@ -171,27 +171,27 @@
                                     autocapitalize="off"
                                     autocorrect="off"
                                     autocomplete="off"
-                                    value=(readonly user.email)
-                                    input=(action (mut user.email) value="target.value")
-                                    focus-out=(action "validate" "email" target=user)
+                                    value=(readonly this.user.email)
+                                    input=(action (mut this.user.email) value="target.value")
+                                    focus-out=(action "validate" "email" target=this.user)
                                     data-test-email-input=true}}
-                                {{gh-error-message errors=user.errors property="email" data-test-error="user-email"}}
+                                {{gh-error-message errors=this.user.errors property="email" data-test-error="user-email"}}
                             {{else}}
-                                <span>{{user.email}}</span>
+                                <span>{{this.user.email}}</span>
                             {{/if}}
                             <p>Used for notifications</p>
                         {{/gh-form-group}}
 
-                        {{#if rolesDropdownIsVisible}}
+                        {{#if this.rolesDropdownIsVisible}}
                             <div class="form-group">
                                 <label for="user-role">Role</label>
                                 <span class="gh-select" tabindex="0">
                                     {{one-way-select
                                         id="new-user-role"
-                                        options=roles
+                                        options=this.roles
                                         optionValuePath="id"
                                         optionLabelPath="name"
-                                        value=user.role
+                                        value=this.user.role
                                         update=(action "changeRole")
                                     }}
                                 </span>
@@ -199,19 +199,19 @@
                             </div>
                         {{/if}}
 
-                        {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="location"}}
+                        {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="location"}}
                             <label for="user-location">Location</label>
                             {{gh-text-input
                                 id="user-location"
-                                value=(readonly user.location)
-                                input=(action (mut user.location) value="target.value")
-                                focus-out=(action "validate" "location" target=user)
+                                value=(readonly this.user.location)
+                                input=(action (mut this.user.location) value="target.value")
+                                focus-out=(action "validate" "location" target=this.user)
                                 data-test-location-input=true}}
-                            {{gh-error-message errors=user.errors property="location" data-test-error="user-location"}}
+                            {{gh-error-message errors=this.user.errors property="location" data-test-error="user-location"}}
                             <p>Where in the world do you live?</p>
                         {{/gh-form-group}}
 
-                        {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="website"}}
+                        {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="website"}}
                             <label for="user-website">Website</label>
                             {{gh-text-input
                                 type="url"
@@ -219,15 +219,15 @@
                                 autocapitalize="off"
                                 autocorrect="off"
                                 autocomplete="off"
-                                value=(readonly user.website)
-                                input=(action (mut user.website) value="target.value")
-                                focus-out=(action "validate" "website" target=user)
+                                value=(readonly this.user.website)
+                                input=(action (mut this.user.website) value="target.value")
+                                focus-out=(action "validate" "website" target=this.user)
                                 data-test-website-input=true}}
-                            {{gh-error-message errors=user.errors property="website" data-test-error="user-website"}}
+                            {{gh-error-message errors=this.user.errors property="website" data-test-error="user-website"}}
                             <p>Have a website or blog other than this one? Link it!</p>
                         {{/gh-form-group}}
 
-                        {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="facebook"}}
+                        {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="facebook"}}
                             <label for="user-facebook">Facebook Profile</label>
                             {{gh-text-input
                                 type="url"
@@ -235,16 +235,16 @@
                                 autocorrect="off"
                                 id="user-facebook"
                                 name="user[facebook]"
-                                value=(readonly user.facebook)
-                                input=(action (mut _scratchFacebook) value="target.value")
+                                value=(readonly this.user.facebook)
+                                input=(action (mut this._scratchFacebook) value="target.value")
                                 focus-out=(action "validateFacebookUrl")
                                 data-test-facebook-input=true
                             }}
-                            {{gh-error-message errors=user.errors property="facebook" data-test-error="user-facebook"}}
+                            {{gh-error-message errors=this.user.errors property="facebook" data-test-error="user-facebook"}}
                             <p>URL of your personal Facebook Profile</p>
                         {{/gh-form-group}}
 
-                        {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="twitter"}}
+                        {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="twitter"}}
                             <label for="user-twitter">Twitter Profile</label>
                             {{gh-text-input
                                 type="url"
@@ -252,28 +252,28 @@
                                 autocorrect="off"
                                 id="user-twitter"
                                 name="user[twitter]"
-                                value=(readonly user.twitter)
-                                input=(action (mut _scratchTwitter) value="target.value")
+                                value=(readonly this.user.twitter)
+                                input=(action (mut this._scratchTwitter) value="target.value")
                                 focus-out=(action "validateTwitterUrl")
                                 data-test-twitter-input=true
                             }}
-                            {{gh-error-message errors=user.errors property="twitter" data-test-error="user-twitter"}}
+                            {{gh-error-message errors=this.user.errors property="twitter" data-test-error="user-twitter"}}
                             <p>URL of your personal Twitter profile</p>
                         {{/gh-form-group}}
 
-                        {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="bio" class="bio-container"}}
+                        {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="bio" class="bio-container"}}
                             <label for="user-bio">Bio</label>
                             {{gh-textarea
                                 id="user-bio"
-                                value=(readonly user.bio)
-                                input=(action (mut user.bio) value="target.value")
-                                focus-out=(action "validate" "bio" target=user)
+                                value=(readonly this.user.bio)
+                                input=(action (mut this.user.bio) value="target.value")
+                                focus-out=(action "validate" "bio" target=this.user)
                                 data-test-bio-input=true
                             }}
-                            {{gh-error-message errors=user.errors property="bio" data-test-error="user-bio"}}
+                            {{gh-error-message errors=this.user.errors property="bio" data-test-error="user-bio"}}
                             <p>
                                 Write about you, in 200 characters or less.
-                                {{gh-count-characters user.bio}}
+                                {{gh-count-characters this.user.bio}}
                             </p>
                         {{/gh-form-group}}
 
@@ -283,61 +283,61 @@
             </form> {{! user details form }}
 
             {{!-- If an administrator is viewing Owner's profile then hide inputs for change password --}}
-            {{#if canChangePassword}}
-                <form id="password-reset" class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform user.saveNewPassword) on="submit"}}>
+            {{#if this.canChangePassword}}
+                <form id="password-reset" class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform this.user.saveNewPassword) on="submit"}}>
                     <div class="pa5">
                         <fieldset class="user-details-password">
-                            {{#if isOwnProfile}}
-                                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="password"}}
+                            {{#if this.isOwnProfile}}
+                                {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="password"}}
                                     <label for="user-password-old">Old Password</label>
                                     {{gh-text-input
                                         type="password"
                                         id="user-password-old"
                                         autocomplete="current-password"
-                                        value=(readonly user.password)
+                                        value=(readonly this.user.password)
                                         input=(action "updatePassword" value="target.value")
                                         keyEvents=(hash
-                                            Enter=(action (perform user.saveNewPassword))
+                                            Enter=(action (perform this.user.saveNewPassword))
                                         )
                                         data-test-old-pass-input=true
                                     }}
-                                    {{gh-error-message errors=user.errors property="password" data-test-error="user-old-pass"}}
+                                    {{gh-error-message errors=this.user.errors property="password" data-test-error="user-old-pass"}}
                                 {{/gh-form-group}}
                             {{/if}}
 
-                            {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="newPassword"}}
+                            {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="newPassword"}}
                                 <label for="user-password-new">New Password</label>
                                 {{gh-text-input
-                                    value=(readonly user.newPassword)
+                                    value=(readonly this.user.newPassword)
                                     type="password"
                                     autocomplete="new-password"
                                     id="user-password-new"
                                     input=(action "updateNewPassword" value="target.value")
                                     keyEvents=(hash
-                                        Enter=(action (perform user.saveNewPassword))
+                                        Enter=(action (perform this.user.saveNewPassword))
                                     )
                                     data-test-new-pass-input=true
                                 }}
-                                {{gh-error-message errors=user.errors property="newPassword" data-test-error="user-new-pass"}}
+                                {{gh-error-message errors=this.user.errors property="newPassword" data-test-error="user-new-pass"}}
                             {{/gh-form-group}}
 
-                            {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="ne2Password"}}
+                            {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="ne2Password"}}
                                 <label for="user-new-password-verification">Verify Password</label>
                                 {{gh-text-input
-                                    value=(readonly user.ne2Password)
+                                    value=(readonly this.user.ne2Password)
                                     type="password"
                                     id="user-new-password-verification"
                                     input=(action "updateNe2Password" value="target.value")
                                     keyEvents=(hash
-                                        Enter=(action (perform user.saveNewPassword))
+                                        Enter=(action (perform this.user.saveNewPassword))
                                     )
                                     data-test-ne2-pass-input=true
                                 }}
-                                {{gh-error-message errors=user.errors property="ne2Password" data-test-error="user-ne2-pass"}}
+                                {{gh-error-message errors=this.user.errors property="ne2Password" data-test-error="user-ne2-pass"}}
                             {{/gh-form-group}}
 
                             <div class="form-group">
-                                {{gh-task-button "Change Password" class="gh-btn gh-btn-red gh-btn-icon button-change-password" task=user.saveNewPassword data-test-save-pw-button=true}}
+                                {{gh-task-button "Change Password" class="gh-btn gh-btn-red gh-btn-icon button-change-password" task=this.user.saveNewPassword data-test-save-pw-button=true}}
                             </div>
                         </fieldset>
                     </div>

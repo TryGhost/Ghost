@@ -4,10 +4,10 @@
             <h2 class="gh-canvas-title" data-test-screen-title>
                 {{#link-to "settings.integrations" data-test-link="integrations-back"}}Integrations{{/link-to}}
                 <span>{{svg-jar "arrow-right"}}</span>
-                {{integration.name}}
+                {{this.integration.name}}
             </h2>
             <section class="view-actions">
-                {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-button="save"}}
+                {{gh-task-button task=this.save class="gh-btn gh-btn-blue gh-btn-icon" data-test-button="save"}}
             </section>
         </GhCanvasHeader>
 
@@ -16,15 +16,15 @@
             <div class="flex">
                 <div class="flex flex-column items-start">
                     <label class="mb1">Icon</label>
-                    <figure class="relative flex items-center h-100 ma0 br4 hide-child ba b--whitegrey-d2 pa8 bg-white" style={{iconImageStyle}}>
+                    <figure class="relative flex items-center h-100 ma0 br4 hide-child ba b--whitegrey-d2 pa8 bg-white" style={{this.iconImageStyle}}>
                         {{#aspect-ratio-box class="flex items-center h-100" ratio="1/1" base="height"}}
-                            {{#unless integration.iconImage}}
+                            {{#unless this.integration.iconImage}}
                                 {{svg-jar "integration" class="w11 h11"}}
                             {{/unless}}
                         {{/aspect-ratio-box}}
 
                         {{#gh-uploader
-                            extensions=imageExtensions
+                            extensions=this.imageExtensions
                             onComplete=(action "setIconImage")
                             as |uploader|
                         }}
@@ -46,7 +46,7 @@
                                     name="iconImage"
                                     multiple=false
                                     action=uploader.setFiles
-                                    accept=imageMimeTypes
+                                    accept=this.imageMimeTypes
                                     data-test-file-input="icon"}}
                             </div>
                         {{/gh-uploader}}
@@ -55,8 +55,8 @@
                 <div class="flex-auto ml12">
                     {{#gh-validation-status-container
                         class="flex flex-column w-100 mr3"
-                        errors=integration.errors
-                        hasValidated=integration.hasValidated
+                        errors=this.integration.errors
+                        hasValidated=this.integration.hasValidated
                         property="name"
                     }}
                         <label for="integration_name">Name</label>
@@ -64,18 +64,18 @@
                             id="integration_name"
                             class="gh-input mt1 mb1"
                             type="text"
-                            value=(readonly integration.name)
-                            input=(action (mut integration.name) value="target.value")
-                            focus-out=(action "validate" "name" target=integration)
+                            value=(readonly this.integration.name)
+                            input=(action (mut this.integration.name) value="target.value")
+                            focus-out=(action "validate" "name" target=this.integration)
                             data-test-input="name"
                         }}
-                        {{gh-error-message errors=integration.errors property="name" data-test-error="name" class="ma0"}}
+                        {{gh-error-message errors=this.integration.errors property="name" data-test-error="name" class="ma0"}}
                     {{/gh-validation-status-container}}
 
                     {{#gh-validation-status-container
                         class="flex flex-column w-100 mr3"
-                        errors=integration.errors
-                        hasValidated=integration.hasValidated
+                        errors=this.integration.errors
+                        hasValidated=this.integration.hasValidated
                         property="decription"
                     }}
                         <label for="integration_description" class="mt3">Description</label>
@@ -83,12 +83,12 @@
                             id="integration_description"
                             class="gh-input mt1"
                             type="text"
-                            value=(readonly integration.description)
-                            input=(action (mut integration.description) value="target.value")
-                            focus-out=(action "validate" "description" target=integration)
+                            value=(readonly this.integration.description)
+                            input=(action (mut this.integration.description) value="target.value")
+                            focus-out=(action "validate" "description" target=this.integration)
                             data-test-input="description"
                         }}
-                        {{gh-error-message errors=integration.errors property="description" data-test-error="description" class="ma0"}}
+                        {{gh-error-message errors=this.integration.errors property="description" data-test-error="description" class="ma0"}}
                     {{/gh-validation-status-container}}
                 </div>
             </div>
@@ -97,15 +97,14 @@
                     <tr>
                         <td class="pa3 pl0 fw7 f8 w35">Content API Key</td>
                         <td class="pa0 truncate bb b--lightgrey">
-                            <div class="pt3 pb3 relative truncate {{unless copyContentKey.isRunning "hide-child-instant"}}">
+                            <div class="pt3 pb3 relative truncate {{unless this.copyContentKey.isRunning "hide-child-instant"}}">
                                 <span class="midlightgrey" data-test-text="content-key">
                                     {{this.integration.contentKey.secret}}
                                 </span>
                                 <div class="absolute top-1 right-0">
                                     <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
-                                        <button type="button" {{action (perform copyContentKey)}}
-                                            class="white fw4 flex items-center">
-                                            {{#if copyContentKey.isRunning}}
+                                        <button type="button" {{action (perform this.copyContentKey)}} class="white fw4 flex items-center">
+                                            {{#if this.copyContentKey.isRunning}}
                                             {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
                                             {{else}}
                                             Copy
@@ -119,14 +118,14 @@
                     <tr>
                         <td class="pa3 pl0 w50 fw7 f8 w35">Admin API Key</td>
                         <td class="pa0 truncate bb b--lightgrey">
-                            <div class="pt3 pb3 relative truncate {{unless copyAdminKey.isRunning "hide-child-instant"}}">
+                            <div class="pt3 pb3 relative truncate {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
                                 <span class="midlightgrey" data-test-text="admin-key">
                                     {{this.integration.adminKey.secret}}
                                 </span>
                                 <div class="absolute top-1 right-0">
                                     <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
-                                        <button type="button" {{action (perform copyAdminKey)}} class="white fw4 flex items-center">
-                                            {{#if copyAdminKey.isRunning}}
+                                        <button type="button" {{action (perform this.copyAdminKey)}} class="white fw4 flex items-center">
+                                            {{#if this.copyAdminKey.isRunning}}
                                             {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
                                             {{else}}
                                             Copy
@@ -140,14 +139,14 @@
                     <tr>
                         <td class="pa3 pl0 w50 fw7 f8 w35">API URL</td>
                         <td class="pa0 truncate">
-                            <div class="pt3 pb3 relative truncate {{unless copyApiUrl.isRunning "hide-child-instant"}}">
+                            <div class="pt3 pb3 relative truncate {{unless this.copyApiUrl.isRunning "hide-child-instant"}}">
                                 <span class="midlightgrey" data-test-text="api-url">
                                     {{this.apiUrl}}
                                 </span>
                                 <div class="absolute top-1 right-0">
                                     <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
-                                        <button type="button" {{action (perform copyApiUrl)}} class="white fw4 flex items-center">
-                                            {{#if copyApiUrl.isRunning}}
+                                        <button type="button" {{action (perform this.copyApiUrl)}} class="white fw4 flex items-center">
+                                            {{#if this.copyApiUrl.isRunning}}
                                             {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
                                             {{else}}
                                             Copy
@@ -176,7 +175,7 @@
                 </tr>
             </thead>
             <tbody>
-                {{#each filteredWebhooks as |webhook|}}
+                {{#each this.filteredWebhooks as |webhook|}}
                     <tr class="hide-child bt b--whitegrey f7" data-test-webhook-row="{{webhook.id}}">
                         <td class="pa2 pl3" data-test-text="name">{{webhook.name}}</td>
                         <td class="pa2 pl3" data-test-text="event">{{event-name webhook.event}}</td>
@@ -184,7 +183,7 @@
                         <td class="pa2 pl3" data-test-text="last-triggered">{{or webhook.lastTriggeredAtUTC "Not triggered"}}</td>
                         <td class="w1 pa2 pl3 nowrap">
                             <div class="child flex items-center">
-                                {{#link-to "settings.integration.webhooks.edit" integration webhook data-test-link="edit-webhook"}}
+                                {{#link-to "settings.integration.webhooks.edit" this.integration webhook data-test-link="edit-webhook"}}
                                     {{svg-jar "pen" class="w6 h6 fill-midgrey pa1 mr1"}}
                                 {{/link-to}}
                                 <button {{action "confirmWebhookDeletion" webhook}} data-test-button="delete-webhook">
@@ -200,7 +199,7 @@
                             <p class="ma0 pa0 tc midgrey lh-title mt2">
                                 No webhooks configured
                             </p>
-                            {{#link-to "settings.integration.webhooks.new" integration classNames="flex items-center"
+                            {{#link-to "settings.integration.webhooks.new" this.integration classNames="flex items-center"
                             data-test-link="add-webhook"}}
                             <div class="flex items-center pa2 pt1">
                                 {{svg-jar "add" class="w3 h3 fill-blue-d1"}}
@@ -212,11 +211,11 @@
                 </tr>
                 {{/each}}
             </tbody>
-            {{#if filteredWebhooks}}
+            {{#if this.filteredWebhooks}}
             <tfoot class="bt b--lightgrey">
                 <tr class="new-webhook-cell">
                     <td colspan="5">
-                        {{#link-to "settings.integration.webhooks.new" integration classNames="flex items-center"
+                        {{#link-to "settings.integration.webhooks.new" this.integration classNames="flex items-center"
                         data-test-link="add-webhook"}}
                         <div class="pa3 f7">
                             {{svg-jar "add" class="w3 h3 fill-blue-d1"}}
@@ -234,21 +233,21 @@
     </button>
 </section>
 
-{{#if showUnsavedChangesModal}}
+{{#if this.showUnsavedChangesModal}}
     {{gh-fullscreen-modal "leave-settings"
         confirm=(action "leaveScreen")
         close=(action "toggleUnsavedChangesModal")
         modifier="action wide"}}
 {{/if}}
 
-{{#if showDeleteIntegrationModal}}
+{{#if this.showDeleteIntegrationModal}}
     {{gh-fullscreen-modal "delete-integration"
         confirm=(action "deleteIntegration")
         close=(action "cancelIntegrationDeletion")
         modifier="action wide"}}
 {{/if}}
 
-{{#if webhookToDelete}}
+{{#if this.webhookToDelete}}
     {{gh-fullscreen-modal "delete-webhook"
         confirm=(action "deleteWebhook")
         close=(action "cancelWebhookDeletion")

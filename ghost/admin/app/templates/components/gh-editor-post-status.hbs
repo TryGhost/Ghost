@@ -1,4 +1,4 @@
-{{#if _isSaving}}
+{{#if this._isSaving}}
     Saving...
 {{else if (or this.post.isPublished this.post.pastScheduledTime)}}
     Published
@@ -8,7 +8,7 @@
         and sent to {{pluralize this.post.email.emailCount "member"}}
     {{/if}}
 {{else if this.post.isScheduled}}
-    {{#if countdown}}
+    {{#if this.countdown}}
         <time datetime="{{this.post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>
             Scheduled to be published {{if this.post.sendEmailWhenPublished "and sent"}} {{this.countdown}}.
         </time>

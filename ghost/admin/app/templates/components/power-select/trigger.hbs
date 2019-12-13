@@ -1,13 +1,13 @@
 {{#if select.selected}}
-    {{#if selectedItemComponent}}
-        {{component selectedItemComponent option=(readonly select.selected) select=(readonly select)}}
+    {{#if this.selectedItemComponent}}
+        {{component this.selectedItemComponent option=(readonly select.selected) select=(readonly select)}}
     {{else}}
         <span class="ember-power-select-selected-item">{{yield select.selected select}}</span>
     {{/if}}
-    {{#if (and allowClear (not select.disabled))}}
+    {{#if (and this.allowClear (not select.disabled))}}
         <span class="ember-power-select-clear-btn" onmousedown={{action "clear"}} ontouchstart={{action "clear"}}>&times;</span>
     {{/if}}
 {{else}}
-    {{component placeholderComponent placeholder=placeholder}}
+    {{component this.placeholderComponent placeholder=placeholder}}
 {{/if}}
 {{svg-jar "arrow-down-small"}}

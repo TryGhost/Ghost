@@ -5,10 +5,10 @@
     <section class="view-container">
         <section class="gh-env-details">
             <ul class="gh-env-list">
-                <li class="gh-env-list-version"><strong>Version</strong> {{config.version}}</li>
-                <li><strong>Environment</strong> {{config.environment}}</li>
-                <li class="gh-env-list-database-type"><strong>Database</strong> {{config.database}}</li>
-                <li><strong>Mail</strong> {{#if config.mail}}{{config.mail}}{{else}}Native{{/if}}</li>
+                <li class="gh-env-list-version"><strong>Version</strong> {{this.config.version}}</li>
+                <li><strong>Environment</strong> {{this.config.environment}}</li>
+                <li class="gh-env-list-database-type"><strong>Database</strong> {{this.config.database}}</li>
+                <li><strong>Mail</strong> {{#if this.config.mail}}{{this.config.mail}}{{else}}Native{{/if}}</li>
             </ul>
             <div class="gh-env-help">
                 <a class="gh-btn" href="https://ghost.org/docs/" target="_blank"><span>User Documentation</span></a>
@@ -16,10 +16,10 @@
             </div>
         </section>
 
-        {{#if upgradeStatus.message}}
+        {{#if this.upgradeStatus.message}}
             <section class="gh-upgrade-notification">
                 <p>
-                    <strong>Update available!</strong> {{upgradeStatus.message}}
+                    <strong>Update available!</strong> {{this.upgradeStatus.message}}
                 </p>
             </section>
         {{/if}}
@@ -38,7 +38,7 @@
         </section>
 
         <footer class="gh-copyright-info">
-            Copyright &copy; 2013 &ndash; {{copyrightYear}} Ghost Foundation, released under the <a href="https://github.com/TryGhost/Ghost/blob/master/LICENSE" target="_blank">MIT license</a>.
+            Copyright &copy; 2013 &ndash; {{this.copyrightYear}} Ghost Foundation, released under the <a href="https://github.com/TryGhost/Ghost/blob/master/LICENSE" target="_blank">MIT license</a>.
             <br>
             <a href="https://ghost.org/" target="_blank">Ghost</a> is a registered trademark of <a href="https://ghost.org/trademark/" target="_blank">Ghost Foundation Ltd</a>.
         </footer>
