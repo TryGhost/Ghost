@@ -73,7 +73,8 @@
 {{#if this.showDeleteMemberModal}}
     <GhFullscreenModal
         @modal="delete-member"
-        @model={{hash member=this.member onSuccess=(action "finaliseDeletion")}}
+        @model={{this.member}}
+        @confirm={{action "deleteMember"}}
         @close={{action "toggleDeleteMemberModal"}}
         @modifier="action wide" />
 {{/if}}

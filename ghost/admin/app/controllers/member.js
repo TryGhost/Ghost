@@ -44,13 +44,12 @@ export default Controller.extend({
             return this.save.perform();
         },
 
-        finaliseDeletion() {
-            // decrement the total member count manually so there's no flash
-            // when transitioning back to the members list
-            if (this.members.memberCount) {
-                this.members.decrementProperty('memberCount');
-            }
-            this.router.transitionTo('members');
+        deleteMember() {
+            return this.member.destroyRecord().then(() => {
+                return this.transitionToRoute('members');
+            }, (error) => {
+                return this.notifications.showAPIError(error, {key: 'member.delete'});
+            });
         },
 
         toggleUnsavedChangesModal(transition) {

@@ -17,10 +17,6 @@ export default Controller.extend({
         this.set('members', this.store.peekAll('member'));
     },
 
-    memberCount: computed('members.[]', function () {
-        return this.get('members.length', 0);
-    }),
-
     filteredMembers: computed('members.@each.{name,email}', 'searchText', function () {
         let {members, searchText} = this;
         searchText = searchText.toLowerCase();
