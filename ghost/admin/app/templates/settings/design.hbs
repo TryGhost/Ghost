@@ -4,11 +4,11 @@
             Design
         </h2>
         <section class="view-actions">
-            {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
+            {{gh-task-button task=this.save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
         </section>
     </GhCanvasHeader>
 
-    {{#if showLeaveSettingsModal}}
+    {{#if this.showLeaveSettingsModal}}
         {{gh-fullscreen-modal "leave-settings"
             confirm=(action "leaveSettings")
             close=(action "toggleLeaveSettingsModal")
@@ -19,12 +19,12 @@
         <div class="gh-setting-header gh-first-header">Navigation</div>
         <div class="gh-blognav-container pa5 pt6 bg-grouped-table shadow-1 br3">
             <form id="settings-navigation" class="gh-blognav" novalidate="novalidate">
-                {{#sortable-objects sortableObjectList=settings.navigation useSwap=false}}
-                    {{#each settings.navigation as |navItem index|}}
+                {{#sortable-objects sortableObjectList=this.settings.navigation useSwap=false}}
+                    {{#each this.settings.navigation as |navItem index|}}
                         {{#draggable-object content=navItem dragHandle=".gh-blognav-grab" isSortable=true}}
                             {{gh-navitem
                                 navItem=navItem
-                                baseUrl=blogUrl
+                                baseUrl=this.blogUrl
                                 addItem=(action "addNavItem")
                                 deleteItem=(action "deleteNavItem")
                                 updateUrl=(action "updateUrl")
@@ -34,8 +34,8 @@
                     {{/each}}
                 {{/sortable-objects}}
                 {{gh-navitem
-                    navItem=newNavItem
-                    baseUrl=blogUrl
+                    navItem=this.newNavItem
+                    baseUrl=this.blogUrl
                     addItem=(action "addNavItem")
                     updateUrl=(action "updateUrl")
                     data-test-navitem="new"}}
@@ -45,12 +45,12 @@
         <div class="gh-setting-header">Secondary Navigation</div>
         <div class="gh-blognav-container pa5 pt6 bg-grouped-table shadow-1 br3">
             <form id="secondary-navigation" class="gh-blognav" novalidate="novalidate">
-                {{#sortable-objects sortableObjectList=settings.secondaryNavigation useSwap=false}}
-                    {{#each settings.secondaryNavigation as |navItem index|}}
+                {{#sortable-objects sortableObjectList=this.settings.secondaryNavigation useSwap=false}}
+                    {{#each this.settings.secondaryNavigation as |navItem index|}}
                         {{#draggable-object content=navItem dragHandle=".gh-blognav-grab" isSortable=true}}
                             {{gh-navitem
                                 navItem=navItem
-                                baseUrl=blogUrl
+                                baseUrl=this.blogUrl
                                 addItem=(action "addNavItem")
                                 deleteItem=(action "deleteNavItem")
                                 updateUrl=(action "updateUrl")
@@ -60,8 +60,8 @@
                     {{/each}}
                 {{/sortable-objects}}
                 {{gh-navitem
-                    navItem=newSecondaryNavItem
-                    baseUrl=blogUrl
+                    navItem=this.newSecondaryNavItem
+                    baseUrl=this.blogUrl
                     addItem=(action "addNavItem")
                     updateUrl=(action "updateUrl")
                     data-test-navitem="new"}}
@@ -153,7 +153,7 @@
         <div class="gh-themes-container">
 
             {{gh-theme-table
-                themes=themes
+                themes=this.themes
                 activateTheme=(action "activateTheme")
                 downloadTheme=(action "downloadTheme")
                 deleteTheme=(action "deleteTheme")}}
@@ -163,35 +163,35 @@
             {{/link-to}}
 
 
-            {{#if showDeleteThemeModal}}
+            {{#if this.showDeleteThemeModal}}
                 {{gh-fullscreen-modal "delete-theme"
                     model=(hash
-                        theme=themeToDelete
-                        download=(action "downloadTheme" themeToDelete)
+                        theme=this.themeToDelete
+                        download=(action "downloadTheme" this.themeToDelete)
                     )
                     close=(action "hideDeleteThemeModal")
                     confirm=(action "deleteTheme")
                     modifier="action wide"}}
             {{/if}}
 
-            {{#if showThemeWarningsModal}}
+            {{#if this.showThemeWarningsModal}}
                 {{gh-fullscreen-modal "theme-warnings"
                     model=(hash
                         title="Activation successful"
-                        warnings=themeWarnings
-                        errors=themeErrors
+                        warnings=this.themeWarnings
+                        errors=this.themeErrors
                         canActivate=true
                     )
                     close=(action "hideThemeWarningsModal")
                     modifier="action wide"}}
             {{/if}}
 
-            {{#if showThemeErrorsModal}}
+            {{#if this.showThemeErrorsModal}}
                 {{gh-fullscreen-modal "theme-warnings"
                     model=(hash
                         title="Activation failed"
-                        errors=themeErrors
-                        fatalErrors=themeFatalErrors
+                        errors=this.themeErrors
+                        fatalErrors=this.themeFatalErrors
                         canActivate=false
                     )
                     close=(action "hideThemeWarningsModal")

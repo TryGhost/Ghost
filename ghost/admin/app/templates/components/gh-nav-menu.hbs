@@ -1,14 +1,14 @@
 <header class="gh-nav-menu">
     <div class="gh-nav-menu-details">
-        <div class="gh-nav-menu-icon" style={{iconStyle}}></div>
-        <div class="gh-nav-menu-details-blog">{{config.blogTitle}}</div>
+        <div class="gh-nav-menu-icon" style={{this.iconStyle}}></div>
+        <div class="gh-nav-menu-details-blog">{{this.config.blogTitle}}</div>
     </div>
     <div class="gh-nav-menu-search">
         <button class="gh-nav-btn-search" {{action "toggleSearchModal"}} title="Search site (Ctrl/⌘ + K)"><span>{{svg-jar "search" class="w4 h4 fill-midgrey"}}</span></button>
     </div>
 </header>
 
-{{#if showSearchModal}}
+{{#if this.showSearchModal}}
     {{gh-fullscreen-modal "search"
         close=(action "toggleSearchModal")
         modifier="action wide"}}
@@ -19,11 +19,11 @@
         <ul class="gh-nav-list gh-nav-main">
             <li class="relative">
                 <span {{action "transitionToOrRefreshSite" on="click"}}>
-                    {{#link-to "site" data-test-nav="site" current-when=isOnSite preventDefault=false}}
+                    {{#link-to "site" data-test-nav="site" current-when=this.isOnSite preventDefault=false}}
                         {{svg-jar "house"}} View site
                     {{/link-to}}
                 </span>
-                <a href="{{config.blogUrl}}/" class="gh-secondary-action" title="Open site in new tab" target="_blank">
+                <a href="{{this.config.blogUrl}}/" class="gh-secondary-action" title="Open site in new tab" target="_blank">
                     <span>{{svg-jar "expand"}}</span>
                 </a>
             </li>
@@ -32,7 +32,7 @@
             <li class="gh-nav-list-h">Manage</li>
             <li class="gh-nav-list-new relative">
                 {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
-                {{#if (eq router.currentRouteName "posts")}}
+                {{#if (eq this.router.currentRouteName "posts")}}
                     {{#link-to "posts" (query-params type=null author=null tag=null order=null) classNames="active" data-test-nav="posts"}}{{svg-jar "content"}}Posts{{/link-to}}
                 {{else}}
                     {{#link-to "posts" data-test-nav="posts"}}{{svg-jar "content"}}Posts{{/link-to}}
@@ -41,29 +41,29 @@
             </li>
             <li>
                 {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
-                {{#if (eq router.currentRouteName "pages")}}
+                {{#if (eq this.router.currentRouteName "pages")}}
                     {{#link-to "pages" (query-params type=null author=null tag=null order=null) classNames="active" data-test-nav="pages"}}{{svg-jar "page"}}Pages{{/link-to}}
                 {{else}}
                     {{#link-to "pages" data-test-nav="pages"}}{{svg-jar "page"}}Pages{{/link-to}}
                 {{/if}}
             </li>
-            {{#if (gh-user-can-admin session.user)}}
+            {{#if (gh-user-can-admin this.session.user)}}
                 <li>{{#link-to "tags" data-test-nav="tags"}}{{svg-jar "tag"}}Tags{{/link-to}}</li>
             {{/if}}
-            {{#if (and feature.members (gh-user-can-admin session.user))}}
+            {{#if (and this.feature.members (gh-user-can-admin this.session.user))}}
                 <li>
                     {{#link-to "members" current-when="members member" data-test-nav="members"}}{{svg-jar "members"}}Members{{/link-to}}
                 </li>
             {{/if}}
             <li>{{#link-to "staff" data-test-nav="staff"}}{{svg-jar "staff"}}Staff{{/link-to}}</li>
         </ul>
-        {{#if (gh-user-can-admin session.user)}}
+        {{#if (gh-user-can-admin this.session.user)}}
             <ul class="gh-nav-list gh-nav-settings">
                 <li class="gh-nav-list-h">Settings</li>
                 <li>{{#link-to "settings.general" data-test-nav="settings"}}{{svg-jar "settings"}}General{{/link-to}}</li>
                 <li>{{#link-to "settings.design" data-test-nav="design"}}{{svg-jar "paintbrush"}}Design{{/link-to}}</li>
                 <li>{{#link-to "settings.code-injection" data-test-nav="code-injection"}}{{svg-jar "brackets"}}Code injection{{/link-to}}</li>
-                <li>{{#link-to "settings.integrations" current-when=isIntegrationRoute data-test-nav="integrations"}}{{svg-jar "modules"}}Integrations{{/link-to}}</li>
+                <li>{{#link-to "settings.integrations" current-when=this.isIntegrationRoute data-test-nav="integrations"}}{{svg-jar "modules"}}Integrations{{/link-to}}</li>
                 <li class="relative">
                     <button class="gh-secondary-action" title="Toggle Night shift" {{action (toggle "nightShift" this.feature)}}>
                         <span>{{svg-jar "nightshift"}}</span>
@@ -73,12 +73,12 @@
             </ul>
         {{/if}}
 
-        {{#if showMenuExtension}}
+        {{#if this.showMenuExtension}}
             <ul class="gh-nav-list gh-nav-settings">
-                {{#if config.clientExtensions.menu.title}}
-                    <li class="gh-nav-list-h">{{config.clientExtensions.menu.title}}</li>
+                {{#if this.config.clientExtensions.menu.title}}
+                    <li class="gh-nav-list-h">{{this.config.clientExtensions.menu.title}}</li>
                 {{/if}}
-                {{#each config.clientExtensions.menu.items as |menuItem| }}
+                {{#each this.config.clientExtensions.menu.items as |menuItem| }}
                     <li>
                         <a href="{{menuItem.href}}" target="_blank">{{svg-jar menuItem.icon}}{{menuItem.text}}</a>
                     </li>
@@ -86,29 +86,28 @@
             </ul>
         {{/if}}
 
-        {{#if showScriptExtension}}
-            {{{config.clientExtensions.script.container}}}
-            <script src="{{config.clientExtensions.script.src}}"></script>
+        {{#if this.showScriptExtension}}
+            {{{this.config.clientExtensions.script.container}}}
+            <script src="{{this.config.clientExtensions.script.src}}"></script>
         {{/if}}
     </div>
     <div class="gh-nav-bottom">
-        {{#gh-basic-dropdown horizontalPosition="left" verticalPosition="top" calculatePosition=userDropdownPosition as |dropdown|}}
+        {{#gh-basic-dropdown horizontalPosition="left" verticalPosition="top" calculatePosition=this.userDropdownPosition as |dropdown|}}
             {{#dropdown.trigger tagName="div" class="flex items-center outline-0 pointer space-between pa2 pl4 pr3"}}
                 <div class="flex-auto flex items-center">
-                    <div class="gh-user-avatar relative" style={{background-image-style session.user.profileImageUrl}}>
+                    <div class="gh-user-avatar relative" style={{background-image-style this.session.user.profileImageUrl}}>
                         {{#if this.whatsNew.hasNew}}<span class="absolute dib bg-blue ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
                     </div>
                     <div class="flex flex-column items-start justify-center">
-                        <span class="gh-user-name {{if session.user.name "mb1"}}" title="{{session.user.name}}">{{session.user.name}}</span>
-                        <span class="gh-user-email" title="{{session.user.email}}">{{session.user.email}}</span>
+                        <span class="gh-user-name {{if this.session.user.name "mb1"}}" title="{{this.session.user.name}}">{{this.session.user.name}}</span>
+                        <span class="gh-user-email" title="{{this.session.user.email}}">{{this.session.user.email}}</span>
                     </div>
                 </div>
                 {{svg-jar "arrow-down" class="w3 mr1 fill-darkgrey"}}
             {{/dropdown.trigger}}
 
             {{#dropdown.content class="gh-nav-menu-dropdown"}}
-                <ul class="dropdown-menu dropdown-triangle-top" role="menu"
-                    {{action dropdown.actions.close on="click" preventDefault=false}}>
+                <ul class="dropdown-menu dropdown-triangle-top" role="menu" {{action dropdown.actions.close on="click" preventDefault=false}}>
                     <li role="presentation">
                         {{#link-to "about" classNames="dropdown-item" role="menuitem" tabindex="-1" data-test-nav="about"}}
                             {{svg-jar "store"}} About Ghost
@@ -124,7 +123,7 @@
                     </li>
                     <li class="divider"></li>
                     <li role="presentation">
-                        {{#link-to "staff.user" session.user.slug classNames="dropdown-item" role="menuitem" tabindex="-1" data-test-nav="user-profile"}}
+                        {{#link-to "staff.user" this.session.user.slug classNames="dropdown-item" role="menuitem" tabindex="-1" data-test-nav="user-profile"}}
                             {{svg-jar "user-circle"}} Your Profile
                         {{/link-to}}
                     </li>
@@ -148,8 +147,8 @@
                     </li>
                     <li class="divider"></li>
 
-                    {{#if showDropdownExtension}}
-                        {{#each config.clientExtensions.dropdown.items as |menuItem| }}
+                    {{#if this.showDropdownExtension}}
+                        {{#each this.config.clientExtensions.dropdown.items as |menuItem| }}
                             {{#if menuItem.divider}}
                                 <li class="divider"></li>
                             {{else}}

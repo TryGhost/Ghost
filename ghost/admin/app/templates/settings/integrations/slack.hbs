@@ -6,11 +6,11 @@
             Slack
         </h2>
         <section class="view-actions">
-            {{gh-task-button task=save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
+            {{gh-task-button task=this.save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
         </section>
     </GhCanvasHeader>
 
-    {{#if showLeaveSettingsModal}}
+    {{#if this.showLeaveSettingsModal}}
         {{gh-fullscreen-modal "leave-settings"
             confirm=(action "leaveSettings")
             close=(action "toggleLeaveSettingsModal")
@@ -39,11 +39,11 @@
                         <div class="gh-setting-title">Webhook URL</div>
                         <div class="gh-setting-desc">Automatically send newly published posts to a channel in Slack or any Slack-compatible service like Discord or Mattermost.</div>
                         <div class="gh-setting-content-extended">
-                            {{#gh-form-group errors=slackSettings.errors hasValidated=slackSettings.hasValidated property="url"}}
+                            {{#gh-form-group errors=this.slackSettings.errors hasValidated=this.slackSettings.hasValidated property="url"}}
                                 {{gh-text-input
                                     placeholder="https://hooks.slack.com/services/..."
                                     name="slack[url]"
-                                    value=(readonly slackSettings.url)
+                                    value=(readonly this.slackSettings.url)
                                     input=(action "updateURL" value="target.value")
                                     keyEvents=(hash
                                         Enter=(action "save")
@@ -51,10 +51,10 @@
                                     focus-out=(action "triggerDirtyState")
                                     data-test-slack-url-input=true
                                 }}
-                                {{#unless slackSettings.errors.url}}
+                                {{#unless this.slackSettings.errors.url}}
                                     <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank">here</a>, and grab the URL.</p>
                                 {{else}}
-                                    {{gh-error-message errors=slackSettings.errors property="url" data-test-error="slack-url"}}
+                                    {{gh-error-message errors=this.slackSettings.errors property="url" data-test-error="slack-url"}}
                                 {{/unless}}
                             {{/gh-form-group}}
                         </div>
@@ -65,11 +65,11 @@
                         <div class="gh-setting-title">Username</div>
                         <div class="gh-setting-desc">The username to display messages from</div>
                         <div class="gh-setting-content-extended">
-                            {{#gh-form-group errors=slackSettings.errors hasValidated=slackSettings.hasValidated property="username"}}
+                            {{#gh-form-group errors=this.slackSettings.errors hasValidated=this.slackSettings.hasValidated property="username"}}
                                 {{gh-text-input
                                     placeholder="Ghost"
                                     name="slack[username]"
-                                    value=(readonly slackSettings.username)
+                                    value=(readonly this.slackSettings.username)
                                     input=(action "updateUsername" value="target.value")
                                     keyEvents=(hash
                                         Enter=(action "save")
@@ -77,12 +77,12 @@
                                     focus-out=(action "triggerDirtyState")
                                     data-test-slack-username-input=true
                                 }}
-                                {{#if slackSettings.errors.username}}
-                                    {{gh-error-message errors=slackSettings.errors property="username"}}
+                                {{#if this.slackSettings.errors.username}}
+                                    {{gh-error-message errors=this.slackSettings.errors property="username"}}
                                 {{/if}}
                             {{/gh-form-group}}
                         </div>
-                        {{gh-task-button "Send test notification" task=sendTestNotification successText="Sent" class="gh-btn gh-btn-green gh-btn-icon" disabled=testNotificationDisabled data-test-send-notification-button=true}}
+                        {{gh-task-button "Send test notification" task=this.sendTestNotification successText="Sent" class="gh-btn gh-btn-green gh-btn-icon" disabled=this.testNotificationDisabled data-test-send-notification-button=true}}
                     </div>
                 </div>
             </div>

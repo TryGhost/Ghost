@@ -4,14 +4,14 @@
     {{/dd.trigger}}
 
     {{#dd.content class="gh-publishmenu-dropdown"}}
-        {{#if (eq displayState "published")}}
+        {{#if (eq this.displayState "published")}}
             {{gh-publishmenu-published
                 post=this.post
                 saveType=this.saveType
                 setSaveType=(action "setSaveType")
                 backgroundTask=this.backgroundTask}}
 
-        {{else if (eq displayState "scheduled")}}
+        {{else if (eq this.displayState "scheduled")}}
             {{gh-publishmenu-scheduled
                 post=this.post
                 saveType=this.saveType

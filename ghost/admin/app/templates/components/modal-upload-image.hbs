@@ -1,7 +1,7 @@
 <div class="modal-body">
-    {{#if url}}
+    {{#if this.url}}
         <div class="gh-image-uploader -with-image">
-            <div><img src={{url}}></div>
+            <div><img src={{this.url}}></div>
             <a class="image-cancel" title="Delete" {{action 'removeImage'}}>
                 {{svg-jar "trash"}}
                 <span class="hidden">Delete</span>
@@ -9,24 +9,24 @@
         </div>
     {{else}}
         {{gh-image-uploader
-            image=newUrl
+            image=this.newUrl
             saveButton=false
             update=(action 'fileUploaded')
             uploadStarted=(action 'isUploading')
             uploadFinished=(action 'isUploading')
-            accept=model.accept
-            extensions=model.extensions
-            uploadUrl=model.uploadUrl
-            paramsHash=model.paramsHas
+            accept=this.model.accept
+            extensions=this.model.extensions
+            uploadUrl=this.model.uploadUrl
+            paramsHash=this.model.paramsHas
         }}
     {{/if}}
 </div>
 
 <div class="modal-footer">
     <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
-    {{#if _isUploading}}
+    {{#if this._isUploading}}
         <button class="gh-btn gh-btn-blue right gh-btn-icon disabled"><span>Save</span></button>
     {{else}}
-        {{gh-task-button task=uploadImage class="gh-btn gh-btn-blue right gh-btn-icon" data-test-modal-accept-button=true}}
+        {{gh-task-button task=this.uploadImage class="gh-btn gh-btn-blue right gh-btn-icon" data-test-modal-accept-button=true}}
     {{/if}}
 </div>

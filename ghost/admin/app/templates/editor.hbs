@@ -1,54 +1,54 @@
-{{#if post}}
+{{#if this.post}}
     {{#gh-editor
         tagName="section"
         class="gh-editor gh-view"
         as |editor|
     }}
-        <header class="gh-editor-header br2 pe-none {{editor.headerClass}} {{if infoMessage "bg-white"}}">
+        <header class="gh-editor-header br2 pe-none {{editor.headerClass}} {{if this.infoMessage "bg-white"}}">
             <div class="flex items-center pe-auto">
-                {{#if ui.isFullScreen}}
-                    <div class="{{ui-text "ts"}} h9 br b--lightgrey pl3 pr4 flex items-center br2 br--left {{unless infoMessage "bg-white"}}">
-                        {{#link-to (pluralize post.displayName) classNames="blue link fw4 flex items-center" data-test-link=(pluralize post.displayName)}}
+                {{#if this.ui.isFullScreen}}
+                    <div class="{{ui-text "ts"}} h9 br b--lightgrey pl3 pr4 flex items-center br2 br--left {{unless this.infoMessage "bg-white"}}">
+                        {{#link-to (pluralize this.post.displayName) classNames="blue link fw4 flex items-center" data-test-link=(pluralize this.post.displayName)}}
                             {{svg-jar "arrow-left" class="w3 fill-blue mr1 nudge-right--2"}}
-                            {{capitalize (pluralize post.displayName)}}
+                            {{capitalize (pluralize this.post.displayName)}}
                         {{/link-to}}
                     </div>
                 {{/if}}
-                <div class="flex items-center pl4 pr4 f8 nudge-left--1 h9 br2 br--right {{unless infoMessage "bg-white"}}">
+                <div class="flex items-center pl4 pr4 f8 nudge-left--1 h9 br2 br--right {{unless this.infoMessage "bg-white"}}">
                     <span class="fw4 midgrey-l2">
                         {{gh-editor-post-status
-                            post=post
-                            isSaving=(or autosave.isRunning saveTasks.isRunning)
+                            post=this.post
+                            isSaving=(or this.autosave.isRunning this.saveTasks.isRunning)
                         }}
                     </span>
                 </div>
             </div>
 
-            {{#if infoMessage}}
+            {{#if this.infoMessage}}
             <div class="gh-koenig-info miw88 flex flex-auto justify-center" style="pointer-events: auto">
                 <div class="midgrey inline-flex tracked-1 center pa1 pl4 pr4 br3 justify-center items-start {{if (eq editor.headerClass "gh-editor-header-small") "bg-white"}}">
                     {{svg-jar "idea" class="w7 h7 fill-blue"}}
                     <p class="ma0 pa0 ml1 nudge-top--2">
-                        {{infoMessage}}
-                        <button type="button" class="blue fw5" {{action (mut infoMessage "")}}>Got it</button>
+                        {{this.infoMessage}}
+                        <button type="button" class="blue fw5" {{action (mut this.infoMessage "")}}>Got it</button>
                     </p>
                 </div>
             </div>
             {{/if}}
 
-            <section class="view-actions br2 {{unless infoMessage "bg-white"}}" style="pointer-events: auto">
-                {{#unless post.isNew}}
-                    {{#if session.user.isContributor}}
+            <section class="view-actions br2 {{unless this.infoMessage "bg-white"}}" style="pointer-events: auto">
+                {{#unless this.post.isNew}}
+                    {{#if this.session.user.isContributor}}
                         {{gh-task-button "Save"
-                            task=save
+                            task=this.save
                             runningText="Saving"
                             class="gh-btn gh-btn-blue gh-btn-icon contributor-save-button"
                             data-test-contributor-save=true}}
                     {{else}}
                         {{gh-publishmenu
-                            post=post
-                            postStatus=post.status
-                            saveTask=save
+                            post=this.post
+                            postStatus=this.post.status
+                            saveTask=this.save
                             setSaveType=(action "setSaveType")
                             onOpen=(action "cancelAutosave")
                             backgroundTask=this.backgroundLoader
@@ -56,7 +56,7 @@
                     {{/if}}
                 {{/unless}}
 
-                <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu" target=ui}} data-test-psm-trigger>
+                <button type="button" class="post-settings" title="Settings" {{action "openSettingsMenu" target=this.ui}} data-test-psm-trigger>
                     {{svg-jar "settings"}}
                 </button>
             </section>
@@ -67,13 +67,13 @@
             koenig editor canvas to support Ghost-specific editor behaviour
         --}}
         {{gh-koenig-editor
-            title=(readonly post.titleScratch)
-            titlePlaceholder=(concat (capitalize post.displayName) " Title")
+            title=(readonly this.post.titleScratch)
+            titlePlaceholder=(concat (capitalize this.post.displayName) " Title")
             onTitleChange=(action "updateTitleScratch")
-            onTitleBlur=(action (perform saveTitle))
-            body=(readonly post.scratch)
-            bodyPlaceholder=(concat "Begin writing your " post.displayName "...")
-            bodyAutofocus=shouldFocusEditor
+            onTitleBlur=(action (perform this.saveTitle))
+            body=(readonly this.post.scratch)
+            bodyPlaceholder=(concat "Begin writing your " this.post.displayName "...")
+            bodyAutofocus=this.shouldFocusEditor
             onBodyChange=(action "updateScratch")
             headerOffset=editor.headerHeight
             scrollContainerSelector=".gh-koenig-editor"
@@ -85,48 +85,48 @@
 
         <div class="absolute flex items-center br3 bg-white {{if editor.headerClass "right-4 bottom-4" "right-6 bottom-6"}}">
             <div class="midgrey-l2 {{if editor.headerClass "f-supersmall pl2 pr2" "f8 pl4 pr3"}} fw4">
-                {{pluralize wordCount.wordCount "word"}}
+                {{pluralize this.wordCount.wordCount "word"}}
             </div>
             <a href="https://ghost.org/faq/using-the-editor/" class="flex {{if editor.headerClass "pa2" "pa3"}}" target="_blank">{{svg-jar "help" class="w4 h4 stroke-midgrey-l2"}}</a>
         </div>
 
     {{/gh-editor}}
 
-    {{#if showDeletePostModal}}
+    {{#if this.showDeletePostModal}}
         {{gh-fullscreen-modal "delete-post"
-            model=(hash post=post onSuccess=(route-action 'redirectToContentScreen'))
+            model=(hash post=this.post onSuccess=(route-action 'redirectToContentScreen'))
             close=(action "toggleDeletePostModal")
             modifier="action wide"}}
     {{/if}}
 
-    {{#if showLeaveEditorModal}}
+    {{#if this.showLeaveEditorModal}}
         {{gh-fullscreen-modal "leave-editor"
             confirm=(action "leaveEditor")
             close=(action "toggleLeaveEditorModal")
             modifier="action wide"}}
     {{/if}}
 
-    {{#if showReAuthenticateModal}}
+    {{#if this.showReAuthenticateModal}}
         {{gh-fullscreen-modal "re-authenticate"
             close=(action "toggleReAuthenticateModal")
             modifier="action wide"}}
     {{/if}}
 
-    {{#if showEmailPreviewModal}}
+    {{#if this.showEmailPreviewModal}}
         {{gh-fullscreen-modal "post-email-preview"
-            model=post
+            model=this.post
             close=(action "toggleEmailPreviewModal")
             modifier="full-overlay email-preview"}}
     {{/if}}
 
     {{#liquid-wormhole}}
         {{gh-post-settings-menu
-            post=post
-            showSettingsMenu=ui.showSettingsMenu
+            post=this.post
+            showSettingsMenu=this.ui.showSettingsMenu
             toggleEmailPreviewModal=(action "toggleEmailPreviewModal")
             deletePost=(action "toggleDeletePostModal")
-            updateSlug=updateSlug
-            savePost=savePost
+            updateSlug=this.updateSlug
+            savePost=this.savePost
         }}
     {{/liquid-wormhole}}
 {{/if}}

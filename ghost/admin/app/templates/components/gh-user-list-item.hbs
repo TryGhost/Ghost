@@ -15,7 +15,7 @@
                 {{#if user.isLocked}}
                     <span class="gh-badge author">Locked</span>
                 {{/if}}
-                {{#unless session.user.isAuthorOrContributor}}
+                {{#unless this.session.user.isAuthorOrContributor}}
                     {{#each user.roles as |role|}}
                         <span class="gh-badge {{role.lowerCaseName}}" data-test-role-name>{{role.name}}</span>
                     {{/each}}

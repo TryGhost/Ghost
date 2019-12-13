@@ -26,14 +26,14 @@
                     <tr class="bb b--lightgrey">
                         <td class="pa3 w50 fw7">Admin API Key</td>
                         <td class="pa0">
-                            <div class="pa3 relative truncate {{unless copyAdminKey.isRunning "hide-child-instant"}}">
+                            <div class="pa3 relative truncate {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
                                 <span class="midgrey" data-test-text="admin-key">
                                     {{this.integration.adminKey.secret}}
                                 </span>
                                 <div class="absolute top-1 right-2">
                                     <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
-                                        <button type="button" {{action (perform copyAdminKey)}} class="white fw4 flex items-center">
-                                            {{#if copyAdminKey.isRunning}}
+                                        <button type="button" {{action (perform this.copyAdminKey)}} class="white fw4 flex items-center">
+                                            {{#if this.copyAdminKey.isRunning}}
                                                 {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
                                             {{else}}
                                                 Copy
@@ -47,14 +47,14 @@
                     <tr>
                         <td class="pa3 w50 fw7">API URL</td>
                         <td class="pa0 truncate">
-                            <div class="pa3 relative truncate {{unless copyApiUrl.isRunning "hide-child-instant"}}">
+                            <div class="pa3 relative truncate {{unless this.copyApiUrl.isRunning "hide-child-instant"}}">
                                 <span class="midgrey" data-test-text="api-url">
                                     {{this.apiUrl}}
                                 </span>
                                 <div class="absolute top-1 right-2">
                                     <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
-                                        <button type="button" {{action (perform copyApiUrl)}} class="white fw4 flex items-center">
-                                            {{#if copyApiUrl.isRunning}}
+                                        <button type="button" {{action (perform this.copyApiUrl)}} class="white fw4 flex items-center">
+                                            {{#if this.copyApiUrl.isRunning}}
                                                 {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
                                             {{else}}
                                                 Copy
@@ -76,7 +76,7 @@
                 <div class="gh-setting-content-extended">
                     <div id="zapier-templates">
                         {{!-- we don't want the script loading during tests because it errors --}}
-                        {{#unless isTesting}}
+                        {{#unless this.isTesting}}
                             <script src="https://zapier.com/apps/embed/widget.js?services=ghost&container=true&limit=10&html_id=zapier-templates"></script>
                         {{/unless}}
                     </div>

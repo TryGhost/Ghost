@@ -7,7 +7,7 @@
     sortEndAction=(action "reorderItems")
 }}
     {{#each select.selected as |opt idx|}}
-        {{#component (or extra.tokenComponent "draggable-object")
+        {{#component (or this.extra.tokenComponent "draggable-object")
             tagName="li"
             class="ember-power-select-multiple-option"
             select=select
@@ -17,8 +17,8 @@
             mouseDown=(action "handleOptionMouseDown")
             touchStart=(action "handleOptionTouchStart")
         }}
-            {{#if selectedItemComponent}}
-                {{component selectedItemComponent option=(readonly opt) select=(readonly select)}}
+            {{#if this.selectedItemComponent}}
+                {{component this.selectedItemComponent option=(readonly opt) select=(readonly select)}}
             {{else}}
                 {{yield opt select}}
             {{/if}}
@@ -33,25 +33,13 @@
             {{/unless}}
         {{/component}}
     {{else}}
-        {{#if (and placeholder (not searchEnabled))}}
+        {{#if (and placeholder (not this.searchEnabled))}}
             <span class="ember-power-select-placeholder">{{placeholder}}</span>
         {{/if}}
     {{/each}}
 
-    {{#if searchEnabled}}
-        <input type="search" class="ember-power-select-trigger-multiple-input"
-            tabindex="0" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-            id="ember-power-select-trigger-multiple-input-{{select.uniqueId}}"
-            value={{select.searchText}}
-            aria-controls={{listboxId}}
-            style={{triggerMultipleInputStyle}}
-            placeholder={{maybePlaceholder}}
-            disabled={{select.disabled}}
-            oninput={{action "onInput"}}
-            onFocus={{onFocus}}
-            onBlur={{onBlur}}
-            tabindex={{tabindex}}
-            onkeydown={{action "onKeydown"}}>
+    {{#if this.searchEnabled}}
+        <input type="search" class="ember-power-select-trigger-multiple-input" tabindex="0" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="ember-power-select-trigger-multiple-input-{{select.uniqueId}}" value={{select.searchText}} aria-controls={{this.listboxId}} style={{this.triggerMultipleInputStyle}} placeholder={{this.maybePlaceholder}} disabled={{select.disabled}} oninput={{action "onInput"}} onFocus={{this.onFocus}} onBlur={{this.onBlur}} tabindex={{this.tabindex}} onkeydown={{action "onKeydown"}}>
     {{/if}}
 {{/sortable-objects}}
 <span class="ember-power-select-status-icon"></span>

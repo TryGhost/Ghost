@@ -6,98 +6,98 @@
     copied across here
 --}}
 {{#basic-dropdown
-  classNames=(readonly classNames)
-  horizontalPosition=(readonly horizontalPosition)
-  calculatePosition=calculatePosition
+  classNames=(readonly this.classNames)
+  horizontalPosition=(readonly this.horizontalPosition)
+  calculatePosition=this.calculatePosition
   destination=(readonly destination)
-  initiallyOpened=(readonly initiallyOpened)
-  matchTriggerWidth=(readonly matchTriggerWidth)
+  initiallyOpened=(readonly this.initiallyOpened)
+  matchTriggerWidth=(readonly this.matchTriggerWidth)
   onClose=(action "onClose")
   onOpen=(action "onOpen")
   registerAPI=(action "registerAPI")
-  renderInPlace=(readonly renderInPlace)
-  verticalPosition=(readonly verticalPosition)
-  disabled=(readonly disabled)
+  renderInPlace=(readonly this.renderInPlace)
+  verticalPosition=(readonly this.verticalPosition)
+  disabled=(readonly this.disabled)
   as |dropdown|}}
 
   {{#dropdown.trigger
-    tagName=(readonly _triggerTagName)
-    ariaDescribedBy=(readonly ariaDescribedBy)
-    ariaInvalid=(readonly ariaInvalid)
-    ariaLabel=(readonly ariaLabel)
-    ariaLabelledBy=(readonly ariaLabelledBy)
-    ariaRequired=(readonly required)
-    class=(readonly concatenatedTriggerClasses)
-    id=(readonly triggerId)
+    tagName=(readonly this._triggerTagName)
+    ariaDescribedBy=(readonly this.ariaDescribedBy)
+    ariaInvalid=(readonly this.ariaInvalid)
+    ariaLabel=(readonly this.ariaLabel)
+    ariaLabelledBy=(readonly this.ariaLabelledBy)
+    ariaRequired=(readonly this.required)
+    class=(readonly this.concatenatedTriggerClasses)
+    id=(readonly this.triggerId)
     eventType="click"
     onKeyDown=(action "onTriggerKeydown")
     onFocus=(action "onTriggerFocus")
     onBlur=(action "onTriggerBlur")
-    tabindex=(readonly tabindex)}}
-    {{#component triggerComponent
-      allowClear=(readonly allowClear)
-      buildSelection=(readonly buildSelection)
-      extra=(readonly extra)
-      listboxId=(readonly optionsId)
-      loadingMessage=(readonly loadingMessage)
+    tabindex=(readonly this.tabindex)}}
+    {{#component this.triggerComponent
+      allowClear=(readonly this.allowClear)
+      buildSelection=(readonly this.buildSelection)
+      extra=(readonly this.extra)
+      listboxId=(readonly this.optionsId)
+      loadingMessage=(readonly this.loadingMessage)
       onFocus=(action "onFocus")
       onBlur=(action "onBlur")
       onInput=(action "onInput")
       placeholder=(readonly placeholder)
-      placeholderComponent=(readonly placeholderComponent)
+      placeholderComponent=(readonly this.placeholderComponent)
       onKeydown=(action "onKeydown")
-      searchEnabled=(readonly searchEnabled)
-      searchField=(readonly searchField)
-      select=(readonly publicAPI)
-      selectedItemComponent=(readonly selectedItemComponent)
+      searchEnabled=(readonly this.searchEnabled)
+      searchField=(readonly this.searchField)
+      select=(readonly this.publicAPI)
+      selectedItemComponent=(readonly this.selectedItemComponent)
       as |opt term|}}
       {{yield opt term}}
     {{/component}}
   {{/dropdown.trigger}}
 
-  {{#dropdown.content _contentTagName=_contentTagName class=(readonly concatenatedDropdownClasses)}}
-    {{component beforeOptionsComponent
-      extra=(readonly extra)
-      listboxId=(readonly optionsId)
+  {{#dropdown.content _contentTagName=this._contentTagName class=(readonly this.concatenatedDropdownClasses)}}
+    {{component this.beforeOptionsComponent
+      extra=(readonly this.extra)
+      listboxId=(readonly this.optionsId)
       onInput=(action "onInput")
       onKeydown=(action "onKeydown")
-      searchEnabled=(readonly searchEnabled)
+      searchEnabled=(readonly this.searchEnabled)
       onFocus=(action "onFocus")
       onBlur=(action "onBlur")
       placeholder=(readonly placeholder)
-      placeholderComponent=(readonly placeholderComponent)
-      searchPlaceholder=(readonly searchPlaceholder)
-      select=(readonly publicAPI)}}
-    {{#if mustShowSearchMessage}}
-      {{component searchMessageComponent
-        searchMessage=(readonly searchMessage)
-        select=(readonly publicAPI)
+      placeholderComponent=(readonly this.placeholderComponent)
+      searchPlaceholder=(readonly this.searchPlaceholder)
+      select=(readonly this.publicAPI)}}
+    {{#if this.mustShowSearchMessage}}
+      {{component this.searchMessageComponent
+        searchMessage=(readonly this.searchMessage)
+        select=(readonly this.publicAPI)
       }}
-    {{else if mustShowNoMessages}}
+    {{else if this.mustShowNoMessages}}
       {{#if (hasBlock "inverse")}}
         {{yield to="inverse"}}
-      {{else if noMatchesMessage}}
+      {{else if this.noMatchesMessage}}
         <ul class="ember-power-select-options" role="listbox">
           <li class="ember-power-select-option ember-power-select-option--no-matches-message" role="option">
-            {{noMatchesMessage}}
+            {{this.noMatchesMessage}}
           </li>
         </ul>
       {{/if}}
     {{else}}
-      {{#component optionsComponent
+      {{#component this.optionsComponent
         class="ember-power-select-options"
-        extra=(readonly extra)
+        extra=(readonly this.extra)
         groupIndex=""
-        loadingMessage=(readonly loadingMessage)
-        id=(readonly optionsId)
-        options=(readonly publicAPI.results)
-        optionsComponent=(readonly optionsComponent)
-        groupComponent=(readonly groupComponent)
-        select=(readonly publicAPI)
+        loadingMessage=(readonly this.loadingMessage)
+        id=(readonly this.optionsId)
+        options=(readonly this.publicAPI.results)
+        optionsComponent=(readonly this.optionsComponent)
+        groupComponent=(readonly this.groupComponent)
+        select=(readonly this.publicAPI)
         as |option term|}}
         {{yield option term}}
       {{/component}}
     {{/if}}
-    {{component afterOptionsComponent select=(readonly publicAPI) extra=(readonly extra)}}
+    {{component this.afterOptionsComponent select=(readonly this.publicAPI) extra=(readonly this.extra)}}
   {{/dropdown.content}}
 {{/basic-dropdown}}

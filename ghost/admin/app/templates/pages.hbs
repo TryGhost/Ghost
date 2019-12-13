@@ -3,14 +3,14 @@
         <h2 class="gh-canvas-title" data-test-screen-title>Pages</h2>
         <section class="view-actions">
             <div class="gh-contentfilter">
-                {{#unless session.user.isContributor}}
+                {{#unless this.session.user.isContributor}}
                 {{#power-select
-                    selected=selectedType
-                    options=availableTypes
+                    selected=this.selectedType
+                    options=this.availableTypes
                     searchEnabled=false
                     onchange=(action "changeType")
                     tagName="div"
-                    classNames=typeClassNames
+                    classNames=this.typeClassNames
                     triggerClass="gh-contentfilter-menu-trigger"
                     dropdownClass="gh-contentfilter-menu-dropdown"
                     matchTriggerWidth=false
@@ -21,14 +21,14 @@
                 {{/power-select}}
                 {{/unless}}
 
-                {{#unless session.user.isAuthorOrContributor}}
+                {{#unless this.session.user.isAuthorOrContributor}}
                 {{#power-select
-                    selected=selectedAuthor
-                    options=availableAuthors
+                    selected=this.selectedAuthor
+                    options=this.availableAuthors
                     searchField="name"
                     onchange=(action "changeAuthor")
                     tagName="div"
-                    classNames=authorClassNames
+                    classNames=this.authorClassNames
                     triggerClass="gh-contentfilter-menu-trigger"
                     dropdownClass="gh-contentfilter-menu-dropdown"
                     searchPlaceholder="Search authors"
@@ -40,14 +40,14 @@
                 {{/power-select}}
                 {{/unless}}
 
-                {{#unless session.user.isContributor}}
+                {{#unless this.session.user.isContributor}}
                 {{#power-select
-                    selected=selectedTag
-                    options=availableTags
+                    selected=this.selectedTag
+                    options=this.availableTags
                     searchField="name"
                     onchange=(action "changeTag")
                     tagName="div"
-                    classNames=tagClassNames
+                    classNames=this.tagClassNames
                     triggerClass="gh-contentfilter-menu-trigger"
                     dropdownClass="gh-contentfilter-menu-dropdown"
                     searchPlaceholder="Search tags"
@@ -61,8 +61,8 @@
                 {{/unless}}
 
                 {{#power-select
-                    selected=selectedOrder
-                    options=availableOrders
+                    selected=this.selectedOrder
+                    options=this.availableOrders
                     searchEnabled=false
                     onchange=(action "changeOrder")
                     tagName="div"
@@ -82,8 +82,8 @@
     </GhCanvasHeader>
 
     <section class="content-list">
-        <ol class="gh-list {{unless postsInfinityModel "no-posts"}}">
-            {{#if postsInfinityModel}}
+        <ol class="gh-list {{unless this.postsInfinityModel "no-posts"}}">
+            {{#if this.postsInfinityModel}}
                 <li class="gh-list-row header">
                     <div class="gh-list-header no-padding">{{!--Favorite indicator column: no header--}}</div>
                     <div class="gh-list-header gh-posts-title-header">Title</div>
@@ -92,14 +92,14 @@
                 </li>
             {{/if}}
 
-            {{#each postsInfinityModel as |page|}}
+            {{#each this.postsInfinityModel as |page|}}
                 {{gh-posts-list-item
                     post=page
                     data-test-page-id=page.id}}
             {{else}}
                 <li class="no-posts-box">
                     <div class="no-posts">
-                        {{#if showingAll}}
+                        {{#if this.showingAll}}
                             {{svg-jar "pages-placeholder" class="gh-pages-placeholder"}}
                             <h3>You haven't created any pages yet!</h3>
                             {{#link-to "editor.new" "page" class="gh-btn gh-btn-green gh-btn-lg"}}
@@ -117,7 +117,7 @@
         </ol>
 
         {{gh-infinity-loader
-            infinityModel=postsInfinityModel
+            infinityModel=this.postsInfinityModel
             scrollable=".gh-main"
             triggerOffset=1000}}
     </section>
