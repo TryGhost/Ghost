@@ -1,7 +1,5 @@
-import Component from '@ember/component';
-import {computed} from '@ember/object';
+import Component from '@glimmer/component';
 import {isEmpty} from '@ember/utils';
-import {notEmpty} from '@ember/object/computed';
 
 /**
  * Renders one random error message when passed a DS.Errors object
@@ -11,18 +9,9 @@ import {notEmpty} from '@ember/object/computed';
  * @param  {DS.Errors} errors   The DS.Errors object
  * @param  {string} property    The property name
  */
-export default Component.extend({
-    tagName: 'p',
-    classNames: ['response'],
-
-    errors: null,
-    property: '',
-
-    isVisible: notEmpty('errors'),
-
-    message: computed('errors.[]', 'property', function () {
-        let property = this.property;
-        let errors = this.errors;
+export default class GhErrorMessage extends Component {
+    get message() {
+        let {property, errors} = this.args;
         let messages = [];
         let index;
 
@@ -35,5 +24,5 @@ export default Component.extend({
         }
 
         return '';
-    })
-});
+    }
+}

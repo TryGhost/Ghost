@@ -135,7 +135,7 @@
                                 data-test-name-input=true
                             }}
                             {{#if this.user.errors.name}}
-                                {{gh-error-message errors=this.user.errors property="name" data-test-error="user-name"}}
+                                <GhErrorMessage @errors={{this.user.errors}} @property="name" data-test-error="user-name" />
                             {{else}}
                                 <p>Use your real name so people can recognise you</p>
                             {{/if}}
@@ -156,7 +156,7 @@
                                 data-test-slug-input=true
                             }}
                             <p>{{gh-blog-url}}/author/{{this.slugValue}}</p>
-                            {{gh-error-message errors=this.user.errors property="slug" data-test-error="user-slug"}}
+                            <GhErrorMessage @errors={{this.user.errors}} @property="slug" data-test-error="user-slug" />
                         {{/gh-form-group}}
 
                         {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="email"}}
@@ -175,7 +175,7 @@
                                     input=(action (mut this.user.email) value="target.value")
                                     focus-out=(action "validate" "email" target=this.user)
                                     data-test-email-input=true}}
-                                {{gh-error-message errors=this.user.errors property="email" data-test-error="user-email"}}
+                                <GhErrorMessage @errors={{this.user.errors}} @property="email" data-test-error="user-email" />
                             {{else}}
                                 <span>{{this.user.email}}</span>
                             {{/if}}
@@ -207,7 +207,7 @@
                                 input=(action (mut this.user.location) value="target.value")
                                 focus-out=(action "validate" "location" target=this.user)
                                 data-test-location-input=true}}
-                            {{gh-error-message errors=this.user.errors property="location" data-test-error="user-location"}}
+                            <GhErrorMessage @errors={{this.user.errors}} @property="location" data-test-error="user-location" />
                             <p>Where in the world do you live?</p>
                         {{/gh-form-group}}
 
@@ -223,7 +223,7 @@
                                 input=(action (mut this.user.website) value="target.value")
                                 focus-out=(action "validate" "website" target=this.user)
                                 data-test-website-input=true}}
-                            {{gh-error-message errors=this.user.errors property="website" data-test-error="user-website"}}
+                            <GhErrorMessage @errors={{this.user.errors}} @property="website" data-test-error="user-website" />
                             <p>Have a website or blog other than this one? Link it!</p>
                         {{/gh-form-group}}
 
@@ -240,7 +240,7 @@
                                 focus-out=(action "validateFacebookUrl")
                                 data-test-facebook-input=true
                             }}
-                            {{gh-error-message errors=this.user.errors property="facebook" data-test-error="user-facebook"}}
+                            <GhErrorMessage @errors={{this.user.errors}} @property="facebook" data-test-error="user-facebook" />
                             <p>URL of your personal Facebook Profile</p>
                         {{/gh-form-group}}
 
@@ -257,7 +257,7 @@
                                 focus-out=(action "validateTwitterUrl")
                                 data-test-twitter-input=true
                             }}
-                            {{gh-error-message errors=this.user.errors property="twitter" data-test-error="user-twitter"}}
+                            <GhErrorMessage @errors={{this.user.errors}} @property="twitter" data-test-error="user-twitter" />
                             <p>URL of your personal Twitter profile</p>
                         {{/gh-form-group}}
 
@@ -270,7 +270,7 @@
                                 focus-out=(action "validate" "bio" target=this.user)
                                 data-test-bio-input=true
                             }}
-                            {{gh-error-message errors=this.user.errors property="bio" data-test-error="user-bio"}}
+                            <GhErrorMessage @errors={{this.user.errors}} @property="bio" data-test-error="user-bio" />
                             <p>
                                 Write about you, in 200 characters or less.
                                 {{gh-count-characters this.user.bio}}
@@ -301,7 +301,7 @@
                                         )
                                         data-test-old-pass-input=true
                                     }}
-                                    {{gh-error-message errors=this.user.errors property="password" data-test-error="user-old-pass"}}
+                                    <GhErrorMessage @errors={{this.user.errors}} @property="password" data-test-error="user-old-pass" />
                                 {{/gh-form-group}}
                             {{/if}}
 
@@ -318,7 +318,7 @@
                                     )
                                     data-test-new-pass-input=true
                                 }}
-                                {{gh-error-message errors=this.user.errors property="newPassword" data-test-error="user-new-pass"}}
+                                <GhErrorMessage @errors={{this.user.errors}} @property="newPassword" data-test-error="user-new-pass" />
                             {{/gh-form-group}}
 
                             {{#gh-form-group errors=this.user.errors hasValidated=this.user.hasValidated property="ne2Password"}}
@@ -333,7 +333,7 @@
                                     )
                                     data-test-ne2-pass-input=true
                                 }}
-                                {{gh-error-message errors=this.user.errors property="ne2Password" data-test-error="user-ne2-pass"}}
+                                <GhErrorMessage @errors={{this.user.errors}} @property="ne2Password" data-test-error="user-ne2-pass" />
                             {{/gh-form-group}}
 
                             <div class="form-group">

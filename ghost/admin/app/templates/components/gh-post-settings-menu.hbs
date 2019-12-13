@@ -97,14 +97,14 @@
                         focus-out=(action "setCustomExcerpt" this.customExcerptScratch)
                         stopEnterKeyDownPropagation="true"
                         data-test-field="custom-excerpt"}}
-                    {{gh-error-message errors=this.post.errors property="customExcerpt" data-test-error="custom-excerpt"}}
+                    <GhErrorMessage @errors={{this.post.errors}} @property="customExcerpt" data-test-error="custom-excerpt" />
                 {{/gh-form-group}}
 
                 {{#unless this.session.user.isAuthorOrContributor}}
                     {{#gh-form-group class="for-select" errors=this.post.errors hasValidated=this.post.hasValidated property="authors" data-test-input="authors"}}
                         <label for="author-list">Authors</label>
                         {{gh-psm-authors-input selectedAuthors=this.post.authors updateAuthors=(action "changeAuthors") triggerId="author-list"}}
-                        {{gh-error-message errors=this.post.errors property="authors" data-test-error="authors"}}
+                        <GhErrorMessage @errors={{this.post.errors}} @property="authors" data-test-error="authors" />
                     {{/gh-form-group}}
                 {{/unless}}
 
@@ -200,7 +200,7 @@
                                         stopEnterKeyDownPropagation=true
                                         data-test-field="meta-title"}}
                                     <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters this.metaTitleScratch 70}}</p>
-                                    {{gh-error-message errors=this.post.errors property="meta-title"}}
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="meta-title" />
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=this.post.errors hasValidated=this.post.hasValidated property="metaDescription"}}
@@ -215,7 +215,7 @@
                                         stopEnterKeyDownPropagation="true"
                                         data-test-field="meta-description"}}
                                     <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters this.metaDescriptionScratch 156}}</p>
-                                    {{gh-error-message errors=this.post.errors property="meta-description"}}
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="meta-description" />
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=this.post.errors hasValidated=this.post.hasValidated property="canonicalUrl"}}
@@ -228,7 +228,7 @@
                                         focus-out=(action "setCanonicalUrl" this.canonicalUrlScratch)
                                         stopEnterKeyDownPropagation="true"
                                         data-test-field="canonicalUrl"}}
-                                    {{gh-error-message errors=this.post.errors property="canonicalUrl"}}
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="canonicalUrl" />
                                 {{/gh-form-group}}
 
                                 <div class="form-group">
@@ -272,7 +272,7 @@
                                         focus-out=(action "setTwitterTitle" this.twitterTitleScratch)
                                         stopEnterKeyDownPropagation=true
                                         data-test-field="twitter-title"}}
-                                    {{gh-error-message errors=this.post.errors property="twitterTitle" data-test-error="twitter-title"}}
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="twitterTitle" data-test-error="twitter-title" />
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=this.post.errors hasValidated=this.post.hasValidated property="twitterDescription"}}
@@ -287,7 +287,7 @@
                                         input=(action (mut this.twitterDescriptionScratch) value="target.value")
                                         focus-out=(action "setTwitterDescription" this.twitterDescriptionScratch)
                                         data-test-field="twitter-description"}}
-                                    {{gh-error-message errors=this.post.errors property="twitterDescription" data-test-error="twitter-description"}}
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="twitterDescription" data-test-error="twitter-description" />
                                 {{/gh-form-group}}
 
                                 <div class="form-group">
@@ -351,7 +351,7 @@
                                         focus-out=(action "setOgTitle" this.ogTitleScratch)
                                         stopEnterKeyDownPropagation=true
                                         data-test-field="og-title"}}
-                                    {{gh-error-message errors=this.post.errors property="ogTitle" data-test-error="og-title"}}
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="ogTitle" data-test-error="og-title" />
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=this.post.errors hasValidated=this.post.hasValidated property="ogDescription"}}
@@ -366,7 +366,7 @@
                                         focus-out=(action "setOgDescription" this.ogDescriptionScratch)
                                         stopEnterKeyDownPropagation="true"
                                         data-test-field="og-description"}}
-                                    {{gh-error-message errors=this.post.errors property="ogDescription" data-test-error="og-description"}}
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="ogDescription" data-test-error="og-description" />
                                 {{/gh-form-group}}
 
                                 <div class="form-group">
@@ -412,7 +412,7 @@
                                         stopEnterKeyDownPropagation="true"
                                         update=(action (mut this.codeinjectionHeadScratch))
                                         data-test-field="codeinjection-head"}}
-                                    {{gh-error-message errors=this.post.errors property="codeinjectionHead" data-test-error="codeinjection-head"}}
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="codeinjectionHead" data-test-error="codeinjection-head" />
                                 {{/gh-form-group}}
 
                                 {{#gh-form-group errors=this.post.errors hasValidated=this.post.hasValidated property="codeinjectionFoot"}}
@@ -425,7 +425,7 @@
                                         stopEnterKeyDownPropagation="true"
                                         update=(action (mut this.codeinjectionFootScratch))
                                         data-test-field="codeinjection-foot"}}
-                                    {{gh-error-message errors=this.post.errors property="codeinjectionFoot" data-test-error="codeinjection-foot"}}
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="codeinjectionFoot" data-test-error="codeinjection-foot" />
                                 {{/gh-form-group}}
                             </form>
                         </div>

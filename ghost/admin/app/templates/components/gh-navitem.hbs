@@ -16,7 +16,7 @@
             focus-out=(action "updateLabel" this.navItem.label)
             data-test-input="label"
         }}
-        {{gh-error-message errors=this.navItem.errors property="label" data-test-error="label"}}
+        <GhErrorMessage @errors={{this.navItem.errors}} @property="label" data-test-error="label" />
     {{/gh-validation-status-container}}
     {{#gh-validation-status-container tagName="span" class="gh-blognav-url" errors=this.navItem.errors property="url" hasValidated=this.navItem.hasValidated}}
         {{gh-navitem-url-input
@@ -27,7 +27,7 @@
             clearErrors=(action "clearUrlErrors")
             data-test-input="url"
         }}
-        {{gh-error-message errors=this.navItem.errors property="url" data-test-error="url"}}
+        <GhErrorMessage @errors={{this.navItem.errors}} @property="url" data-test-error="url" />
     {{/gh-validation-status-container}}
 </div>
 
