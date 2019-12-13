@@ -2,16 +2,16 @@
     <h1>New custom integration</h1>
 </header>
 {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
-<button class="close" href="" title="Close" {{action "closeModal"}} {{action (optional noop) on="mouseDown"}}>
+<button class="close" href title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
     {{svg-jar "close"}}
 </button>
 
 <div class="modal-body">
     <fieldset>
-        {{#gh-form-group errors=integration.errors hasValidated=integration.hasValidated property="name"}}
+        {{#gh-form-group errors=this.integration.errors hasValidated=this.integration.hasValidated property="name"}}
             <label for="new-integration-name" class="fw6">Name</label>
             <input type="text"
-                value={{integration.name}}
+                value={{this.integration.name}}
                 oninput={{action "updateName" value="target.value"}}
                 id="new-integration-name"
                 class="gh-input mt1"
@@ -21,7 +21,7 @@
                 autocapitalize="off"
                 autocorrect="off"
                 data-test-input="new-integration-name">
-            {{gh-error-message errors=integration.errors property="name" data-test-error="new-integration-name"}}
+            {{gh-error-message errors=this.integration.errors property="name" data-test-error="new-integration-name"}}
         {{/gh-form-group}}
     </fieldset>
 </div>
@@ -31,14 +31,14 @@
         class="gh-btn"
         {{action "closeModal"}}
         {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
-        {{action (optional noop) on="mouseDown"}}
+        {{action (optional this.noop) on="mouseDown"}}
         data-test-button="cancel-new-integration"
     >
         <span>Cancel</span>
     </button>
     {{gh-task-button "Create"
         successText="Created"
-        task=createIntegration
+        task=this.createIntegration
         class="gh-btn gh-btn-green gh-btn-icon"
         data-test-button="create-integration"}}
 </div>

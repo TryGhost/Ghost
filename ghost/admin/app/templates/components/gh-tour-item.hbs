@@ -1,18 +1,18 @@
-{{#if isVisible}}
+{{#if this.isVisible}}
     {{!-- tether the throbber --}}
     {{#liquid-tether
         class="throbber-container"
-        target=target
+        target=this.target
         attachment="middle center"
-        targetAttachment=throbberAttachment
-        targetOffset=throbberOffset
+        targetAttachment=this.throbberAttachment
+        targetOffset=this.throbberOffset
     }}
-        <a class="throbber-trigger" href="#" {{action "open"}} id={{_throbberElementId}}>
+        <a class="throbber-trigger" href="#" {{action "open"}} id={{this._throbberElementId}}>
             <span class="throbber"></span>
         </a>
     {{/liquid-tether}}
 
-    {{#if isOpen}}
+    {{#if this.isOpen}}
         {{!-- wormhole the background click overlay --}}
         {{#liquid-wormhole class="tour-container"}}
             <div class="tour-background" {{action "close" on="click"}}></div>
@@ -21,15 +21,15 @@
         {{!-- tether the popover --}}
         {{#liquid-tether
             class="tour"
-            target=_throbberElementSelector
-            attachment=_popoverAttachment
-            targetAttachment=_popoverTargetAttachment
-            offset=_popoverOffset
+            target=this._throbberElementSelector
+            attachment=this._popoverAttachment
+            targetAttachment=this._popoverTargetAttachment
+            offset=this._popoverOffset
         }}
-            <div class="popover-item popover-triangle-{{popoverTriangleClass}}">
-                <h3 class="popover-title">{{_throbber.title}}</h3>
+            <div class="popover-item popover-triangle-{{this.popoverTriangleClass}}">
+                <h3 class="popover-title">{{this._throbber.title}}</h3>
                 <div class="popover-body">
-                    {{{_throbber.message}}}
+                    {{{this._throbber.message}}}
                 </div>
                 <footer class="popover-foot">
                     <a class="tour-optout" href="#" {{action 'optOut'}}>Not your first time? <em>Skip these tips</em></a>

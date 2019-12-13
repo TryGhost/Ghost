@@ -1,13 +1,13 @@
 <div class="theme-validation-container">
     <header class="modal-header" data-test-modal="upload-theme">
         <h1>
-            {{#if theme}}
-                {{#if hasWarningsOrErrors}}
-                    Upload successful with {{#if validationErrors}}errors{{else}}warnings{{/if}}
+            {{#if this.theme}}
+                {{#if this.hasWarningsOrErrors}}
+                    Upload successful with {{#if this.validationErrors}}errors{{else}}warnings{{/if}}
                 {{else}}
                     Upload successful!
                 {{/if}}
-            {{else if (or validationErrors fatalValidationErrors)}}
+            {{else if (or this.validationErrors this.fatalValidationErrors)}}
                 Invalid theme
             {{else}}
                 Upload a theme
@@ -17,24 +17,24 @@
     <a class="close" href="#" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
     <div class="modal-body">
-        {{#if theme}}
-            {{#if hasWarningsOrErrors}}
+        {{#if this.theme}}
+            {{#if this.hasWarningsOrErrors}}
                 <p>
-                    {{#if canActivateTheme}}
-                        The theme <strong>"{{themeName}}"</strong> was uploaded successfully but we detected some {{#if validationErrors}}errors{{else}}warnings{{/if}}. You are still able to activate and use the theme but it is recommended to fix these {{#if validationErrors}}errors{{else}}warnings{{/if}} before you do so.
+                    {{#if this.canActivateTheme}}
+                        The theme <strong>"{{this.themeName}}"</strong> was uploaded successfully but we detected some {{#if this.validationErrors}}errors{{else}}warnings{{/if}}. You are still able to activate and use the theme but it is recommended to fix these {{#if this.validationErrors}}errors{{else}}warnings{{/if}} before you do so.
                     {{else}}
-                        The theme <strong>"{{themeName}}"</strong> was uploaded successfully but we detected some
-                        {{#if validationErrors}}errors{{else}}warnings{{/if}}.
+                        The theme <strong>"{{this.themeName}}"</strong> was uploaded successfully but we detected some
+                        {{#if this.validationErrors}}errors{{else}}warnings{{/if}}.
                     {{/if}}
                 </p>
 
-                {{#if validationErrors}}
+                {{#if this.validationErrors}}
                     <div>
                         <h2 class="mb0 mt4 f5 fw6">Errors</h2>
                         <p class="mb2">Highly recommended to fix, functionality <strong>could</strong> be restricted</p>
                     </div>
                     <ul class="pa0">
-                    {{#each validationErrors as |error|}}
+                    {{#each this.validationErrors as |error|}}
                         <li class="theme-validation-item theme-error">
                             {{gh-theme-error-li error=error}}
                         </li>
@@ -42,12 +42,12 @@
                     </ul>
                 {{/if}}
 
-                {{#if validationWarnings}}
+                {{#if this.validationWarnings}}
                     <div>
                         <h2 class="mb0 mt4 f5 fw6">Warnings</h2>
                     </div>
                     <ul class="pa0">
-                    {{#each validationWarnings as |error|}}
+                    {{#each this.validationWarnings as |error|}}
                         <li class="theme-validation-item theme-warning">
                             {{gh-theme-error-li error=error}}
                         </li>
@@ -56,28 +56,28 @@
                 {{/if}}
             {{else}}
                 <p>
-                    "{{themeName}}" uploaded successfully.
-                    {{#if canActivateTheme}}Do you want to activate it now?{{/if}}
+                    "{{this.themeName}}" uploaded successfully.
+                    {{#if this.canActivateTheme}}Do you want to activate it now?{{/if}}
                 </p>
             {{/if}}
-        {{else if displayOverwriteWarning}}
+        {{else if this.displayOverwriteWarning}}
             <p>
-                The theme folder <strong>"{{fileThemeName}}"</strong> already exists. Do you want to overwrite it?
+                The theme folder <strong>"{{this.fileThemeName}}"</strong> already exists. Do you want to overwrite it?
             </p>
-        {{else if (or validationErrors fatalValidationErrors)}}
+        {{else if (or this.validationErrors this.fatalValidationErrors)}}
 
             <p>
                 This theme is invalid and cannot be activated. Fix the following errors and re-upload the theme.
             </p>
 
-            {{#if fatalValidationErrors}}
+            {{#if this.fatalValidationErrors}}
                 <div>
                     <h2 class="mb0 mt4 f5 fw6">Fatal Errors</h2>
                     <p class="mb2">Must-fix to activate theme</p>
                 </div>
 
                 <ul class="pa0">
-                {{#each fatalValidationErrors as |error|}}
+                {{#each this.fatalValidationErrors as |error|}}
                     <li class="theme-validation-item theme-fatal-error">
                         {{gh-theme-error-li error=error}}
                     </li>
@@ -85,13 +85,13 @@
                 </ul>
             {{/if}}
 
-            {{#if validationErrors}}
+            {{#if this.validationErrors}}
                 <div>
                     <h2 class="mb0 mt4 f5 fw6">Errors</h2>
                     <p class="mb2">Highly recommended to fix, functionality <strong>could</strong> be restricted</p>
                 </div>
                 <ul class="pa0">
-                {{#each validationErrors as |error|}}
+                {{#each this.validationErrors as |error|}}
                     <li class="theme-validation-item theme-error">
                         {{gh-theme-error-li error=error}}
                     </li>
@@ -100,9 +100,9 @@
             {{/if}}
         {{else}}
             {{gh-file-uploader
-                url=uploadUrl
+                url=this.uploadUrl
                 paramName="file"
-                accept=accept
+                accept=this.accept
                 labelText="Click to select or drag-and-drop your theme zip file here."
                 validate=(action "validateTheme")
                 uploadStarted=(action "uploadStarted")
@@ -115,22 +115,22 @@
 </div>
 
 <div class="modal-footer">
-    <div class="flex items-center justify-between {{if (or displayOverwriteWarning canActivateTheme validationErrors fatalValidationErrors) "flex-auto"}}">
-        <button {{action "closeModal"}} disabled={{closeDisabled}} class="gh-btn" data-test-close-button>
-            <span>{{#if theme}}Close{{else}}Cancel{{/if}}</span>
+    <div class="flex items-center justify-between {{if (or this.displayOverwriteWarning this.canActivateTheme this.validationErrors this.fatalValidationErrors) "flex-auto"}}">
+        <button {{action "closeModal"}} disabled={{this.closeDisabled}} class="gh-btn" data-test-close-button>
+            <span>{{#if this.theme}}Close{{else}}Cancel{{/if}}</span>
         </button>
         <div class="flex items-center">
-            {{#if displayOverwriteWarning}}
+            {{#if this.displayOverwriteWarning}}
                 <button {{action "confirmOverwrite"}} class="gh-btn gh-btn-red" data-test-overwrite-button>
                     <span>Overwrite</span>
                 </button>
             {{/if}}
-            {{#if canActivateTheme}}
+            {{#if this.canActivateTheme}}
                 <button {{action "activate"}} class="gh-btn" data-test-activate-now-button>
-                    <span>Activate{{#if validationErrors}} with errors{{/if}}</span>
+                    <span>Activate{{#if this.validationErrors}} with errors{{/if}}</span>
                 </button>
             {{/if}}
-            {{#if (or validationErrors fatalValidationErrors)}}
+            {{#if (or this.validationErrors this.fatalValidationErrors)}}
                 <button {{action "reset"}} class="gh-btn gh-btn-blue ml2" data-test-try-again-button>
                     <span>Retry</span>
                 </button>

@@ -4,10 +4,10 @@
 <a class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
 <div class="modal-body">
-    <p>You're about to delete "<strong>{{theme.label}}</strong>". This is permanent! We warned you, k? Maybe <a href="#" {{action download}}>Download your theme before continuing</a></p>
+    <p>You're about to delete "<strong>{{this.theme.label}}</strong>". This is permanent! We warned you, k? Maybe <a href="#" {{action this.download}}>Download your theme before continuing</a></p>
 </div>
 
 <div class="modal-footer">
     <button {{action "closeModal"}} class="gh-btn" data-test-cancel-button><span>Cancel</span></button>
-    {{gh-task-button "Delete" successText="Deleted" task=deleteTheme class="gh-btn gh-btn-red gh-btn-icon" data-test-delete-button=true}}
+    {{gh-task-button "Delete" successText="Deleted" task=this.deleteTheme class="gh-btn gh-btn-red gh-btn-icon" data-test-delete-button=true}}
 </div>

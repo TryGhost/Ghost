@@ -8,7 +8,7 @@
     <section class="view-container settings-debug">
         <p class="gh-box gh-box-info">{{svg-jar "idea"}}This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.</p>
 
-        {{#if session.user.isOwner}}
+        {{#if this.session.user.isOwner}}
         <div class="gh-setting-header">Members (BETA) </div>
         <div class="flex flex-column br3 shadow-1 bg-grouped-table mt2">
             <div class="gh-setting-first gh-setting-last">
@@ -22,16 +22,16 @@
                             <div class="for-switch pa5">{{gh-feature-flag "members"}}</div>
                         </div>
                     </div>
-                    {{#liquid-if feature.labs.members}}
+                    {{#liquid-if this.feature.labs.members}}
                     {{gh-members-lab-setting
-                        settings=settings
+                        settings=this.settings
                         setDefaultContentVisibility=(action "setDefaultContentVisibility")
                         setMembersSubscriptionSettings=(action "setMembersSubscriptionSettings")
                         setBulkEmailSettings=(action "setBulkEmailSettings")
                     }}
                     <div class="mt5 pl5 pr5 pb5">
                         {{gh-task-button "Save members settings"
-                            task=saveSettings
+                            task=this.saveSettings
                             successText="Saved"
                             runningText="Saving"
                             class="gh-btn gh-btn-blue gh-btn-icon"
@@ -54,25 +54,25 @@
                         {{gh-file-upload
                             id="importfile"
                             classNames="flex"
-                            uploadButtonText=uploadButtonText
+                            uploadButtonText=this.uploadButtonText
                             onUpload=(action "onUpload")
-                            acceptEncoding=importMimeType
+                            acceptEncoding=this.importMimeType
                             data-test-file-input="import"}}
                     </form>
                 </div>
             </div>
 
-            {{#if importErrors}}
-                <div class="gh-import-errors {{if importSuccessful "gh-import-errors-warning"}}" data-test-import-errors>
+            {{#if this.importErrors}}
+                <div class="gh-import-errors {{if this.importSuccessful "gh-import-errors-warning"}}" data-test-import-errors>
                     <div class="gh-import-errors-title">
-                        {{#if importSuccessful}}
+                        {{#if this.importSuccessful}}
                             Import successful with warnings
                         {{else}}
                             Import failed
                         {{/if}}
                     </div>
 
-                    {{#each importErrors as |error|}}
+                    {{#each this.importErrors as |error|}}
                         <div class="gh-import-error" data-test-import-error>
                             <p class="gh-import-error-message" data-test-import-error-message>
                                 {{#if error.help}}{{error.help}}: {{/if}}{{error.message}}
@@ -121,11 +121,11 @@
             </div>
             <div class="gh-setting">
                 {{#gh-uploader
-                    extensions=jsonExtension
+                    extensions=this.jsonExtension
                     uploadUrl="/redirects/json/"
                     paramName="redirects"
-                    onUploadSuccess=(perform redirectUploadResult true)
-                    onUploadFailure=(perform redirectUploadResult false)
+                    onUploadSuccess=(perform this.redirectUploadResult true)
+                    onUploadFailure=(perform this.redirectUploadResult false)
                     as |uploader|
                 }}
                 <div class="gh-setting-content">
@@ -141,14 +141,14 @@
                     {{else}}
                         <button
                             type="button"
-                            class="gh-btn gh-btn-icon {{if redirectSuccess "gh-btn-green"}} {{if redirectFailure "gh-btn-red"}}"
+                            class="gh-btn gh-btn-icon {{if this.redirectSuccess "gh-btn-green"}} {{if this.redirectFailure "gh-btn-red"}}"
                             onclick={{action "triggerFileDialog"}}
                             data-test-button="upload-redirects"
                         >
                             <span>
-                                {{#if redirectSuccess}}
+                                {{#if this.redirectSuccess}}
                                     {{svg-jar "check-circle"}} Uploaded
-                                {{else if redirectFailure}}
+                                {{else if this.redirectFailure}}
                                     {{svg-jar "retry"}} Upload Failed
                                 {{else}}
                                     Upload redirects JSON
@@ -159,18 +159,18 @@
                     {{/if}}
 
                     <div style="display:none">
-                        {{gh-file-input multiple=false action=uploader.setFiles accept=jsonMimeType data-test-file-input="redirects"}}
+                        {{gh-file-input multiple=false action=uploader.setFiles accept=this.jsonMimeType data-test-file-input="redirects"}}
                     </div>
                 </div>
                 {{/gh-uploader}}
             </div>
             <div class="gh-setting-last">
                 {{#gh-uploader
-                    extensions=yamlExtension
+                    extensions=this.yamlExtension
                     uploadUrl="/settings/routes/yaml/"
                     paramName="routes"
-                    onUploadSuccess=(perform routesUploadResult true)
-                    onUploadFailure=(perform routesUploadResult false)
+                    onUploadSuccess=(perform this.routesUploadResult true)
+                    onUploadFailure=(perform this.routesUploadResult false)
                     as |uploader|
                 }}
                 <div class="gh-setting-content">
@@ -186,14 +186,14 @@
                     {{else}}
                         <button
                             type="button"
-                            class="gh-btn gh-btn-icon {{if routesSuccess "gh-btn-green"}} {{if routesFailure "gh-btn-red"}}"
+                            class="gh-btn gh-btn-icon {{if this.routesSuccess "gh-btn-green"}} {{if this.routesFailure "gh-btn-red"}}"
                             onclick={{action "triggerFileDialog"}}
                             data-test-button="upload-routes"
                         >
                             <span>
-                                {{#if routesSuccess}}
+                                {{#if this.routesSuccess}}
                                     {{svg-jar "check-circle"}} Uploaded
-                                {{else if routesFailure}}
+                                {{else if this.routesFailure}}
                                     {{svg-jar "retry"}} Upload Failed
                                 {{else}}
                                     Upload routes YAML
@@ -204,7 +204,7 @@
                     {{/if}}
 
                     <div style="display:none">
-                        {{gh-file-input multiple=false action=uploader.setFiles accept=yamlMimeType data-test-file-input="routes"}}
+                        {{gh-file-input multiple=false action=uploader.setFiles accept=this.yamlMimeType data-test-file-input="routes"}}
                     </div>
                 </div>
                 {{/gh-uploader}}
@@ -219,7 +219,7 @@
                     <div class="gh-setting-desc">Send yourself a test email to make sure everything is working</div>
                 </div>
                 <div class="gh-setting-action">
-                    {{gh-task-button "Send" successText="Sent" task=sendTestEmail class="gh-btn gh-btn-hover-blue gh-btn-icon"}}
+                    {{gh-task-button "Send" successText="Sent" task=this.sendTestEmail class="gh-btn gh-btn-hover-blue gh-btn-icon"}}
                 </div>
             </div>
         </div>
@@ -227,7 +227,7 @@
     </section>
 </section>
 
-{{#if showDeleteAllModal}}
+{{#if this.showDeleteAllModal}}
     {{gh-fullscreen-modal "delete-all"
                           close=(action "toggleDeleteAllModal")
                           modifier="action wide"}}

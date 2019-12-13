@@ -4,60 +4,60 @@
  --}}
 {{#if (hasBlock "inverse")}}
   {{#gh-token-input/select
-    afterOptionsComponent=afterOptionsComponent
-    allowClear=allowClear
-    ariaDescribedBy=ariaDescribedBy
-    ariaInvalid=ariaInvalid
-    ariaLabel=ariaLabel
-    ariaLabelledBy=ariaLabelledBy
-    beforeOptionsComponent=beforeOptionsComponent
+    afterOptionsComponent=this.afterOptionsComponent
+    allowClear=this.allowClear
+    ariaDescribedBy=this.ariaDescribedBy
+    ariaInvalid=this.ariaInvalid
+    ariaLabel=this.ariaLabel
+    ariaLabelledBy=this.ariaLabelledBy
+    beforeOptionsComponent=this.beforeOptionsComponent
     buildSelection=(action "buildSelection")
-    calculatePosition=calculatePosition
-    class=class
-    closeOnSelect=closeOnSelect
-    defaultHighlighted=defaultHighlighted
+    calculatePosition=this.calculatePosition
+    class=this.class
+    closeOnSelect=this.closeOnSelect
+    defaultHighlighted=this.defaultHighlighted
     destination=destination
-    dir=dir
-    disabled=disabled
-    dropdownClass=dropdownClass
-    extra=(assign extra (hash
+    dir=this.dir
+    disabled=this.disabled
+    dropdownClass=this.dropdownClass
+    extra=(assign this.extra (hash
         optionMouseDown=(action "optionMouseDown")
         optionTouchStart=(action "optionTouchStart")
     ))
-    horizontalPosition=horizontalPosition
-    initiallyOpened=initiallyOpened
-    loadingMessage=loadingMessage
-    matcher=matcher
-    matchTriggerWidth=matchTriggerWidth
-    noMatchesMessage=noMatchesMessage
-    onblur=onblur
-    onchange=onchange
-    onclose=onclose
+    horizontalPosition=this.horizontalPosition
+    initiallyOpened=this.initiallyOpened
+    loadingMessage=this.loadingMessage
+    matcher=this.matcher
+    matchTriggerWidth=this.matchTriggerWidth
+    noMatchesMessage=this.noMatchesMessage
+    onblur=this.onblur
+    onchange=this.onchange
+    onclose=this.onclose
     onfocus=(action "handleFocus")
-    oninput=oninput
+    oninput=this.oninput
     onkeydown=(action "handleKeydown")
     onopen=(action "handleOpen")
     options=options
-    optionsComponent=optionsComponent
-    groupComponent=groupComponent
+    optionsComponent=this.optionsComponent
+    groupComponent=this.groupComponent
     placeholder=placeholder
-    registerAPI=(readonly registerAPI)
-    renderInPlace=renderInPlace
-    required=required
-    scrollTo=scrollTo
+    registerAPI=(readonly this.registerAPI)
+    renderInPlace=this.renderInPlace
+    required=this.required
+    scrollTo=this.scrollTo
     search=search
-    searchEnabled=searchEnabled
-    searchField=searchField
-    searchMessage=searchMessage
-    searchPlaceholder=searchPlaceholder
+    searchEnabled=this.searchEnabled
+    searchField=this.searchField
+    searchMessage=this.searchMessage
+    searchPlaceholder=this.searchPlaceholder
     selected=selected
-    selectedItemComponent=selectedItemComponent
-    tabindex=computedTabIndex
-    tagName=tagName
-    triggerClass=concatenatedTriggerClass
-    triggerComponent=(component triggerComponent tabindex=tabindex)
-    triggerId=triggerId
-    verticalPosition=verticalPosition
+    selectedItemComponent=this.selectedItemComponent
+    tabindex=this.computedTabIndex
+    tagName=this.tagName
+    triggerClass=this.concatenatedTriggerClass
+    triggerComponent=(component this.triggerComponent tabindex=this.tabindex)
+    triggerId=this.triggerId
+    verticalPosition=this.verticalPosition
     as |option select|}}
     {{yield option select}}
   {{else}}
@@ -65,60 +65,60 @@
   {{/gh-token-input/select}}
 {{else}}
   {{#gh-token-input/select
-    afterOptionsComponent=afterOptionsComponent
-    allowClear=allowClear
-    ariaDescribedBy=ariaDescribedBy
-    ariaInvalid=ariaInvalid
-    ariaLabel=ariaLabel
-    ariaLabelledBy=ariaLabelledBy
-    beforeOptionsComponent=beforeOptionsComponent
+    afterOptionsComponent=this.afterOptionsComponent
+    allowClear=this.allowClear
+    ariaDescribedBy=this.ariaDescribedBy
+    ariaInvalid=this.ariaInvalid
+    ariaLabel=this.ariaLabel
+    ariaLabelledBy=this.ariaLabelledBy
+    beforeOptionsComponent=this.beforeOptionsComponent
     buildSelection=(action "buildSelection")
-    calculatePosition=calculatePosition
-    class=class
-    closeOnSelect=closeOnSelect
-    defaultHighlighted=defaultHighlighted
+    calculatePosition=this.calculatePosition
+    class=this.class
+    closeOnSelect=this.closeOnSelect
+    defaultHighlighted=this.defaultHighlighted
     destination=destination
-    dir=dir
-    disabled=disabled
-    dropdownClass=dropdownClass
-    extra=(assign extra (hash
+    dir=this.dir
+    disabled=this.disabled
+    dropdownClass=this.dropdownClass
+    extra=(assign this.extra (hash
         optionMouseDown=(action "optionMouseDown")
         optionTouchStart=(action "optionTouchStart")
     ))
-    horizontalPosition=horizontalPosition
-    initiallyOpened=initiallyOpened
-    loadingMessage=loadingMessage
-    matcher=matcher
-    matchTriggerWidth=matchTriggerWidth
-    noMatchesMessage=noMatchesMessage
-    onblur=onblur
-    onchange=onchange
-    onclose=onclose
+    horizontalPosition=this.horizontalPosition
+    initiallyOpened=this.initiallyOpened
+    loadingMessage=this.loadingMessage
+    matcher=this.matcher
+    matchTriggerWidth=this.matchTriggerWidth
+    noMatchesMessage=this.noMatchesMessage
+    onblur=this.onblur
+    onchange=this.onchange
+    onclose=this.onclose
     onfocus=(action "handleFocus")
-    oninput=oninput
+    oninput=this.oninput
     onkeydown=(action "handleKeydown")
     onopen=(action "handleOpen")
     options=options
-    optionsComponent=optionsComponent
-    groupComponent=groupComponent
+    optionsComponent=this.optionsComponent
+    groupComponent=this.groupComponent
     placeholder=placeholder
-    registerAPI=(readonly registerAPI)
-    renderInPlace=renderInPlace
-    required=required
-    scrollTo=scrollTo
+    registerAPI=(readonly this.registerAPI)
+    renderInPlace=this.renderInPlace
+    required=this.required
+    scrollTo=this.scrollTo
     search=search
-    searchEnabled=searchEnabled
-    searchField=searchField
-    searchMessage=searchMessage
-    searchPlaceholder=searchPlaceholder
+    searchEnabled=this.searchEnabled
+    searchField=this.searchField
+    searchMessage=this.searchMessage
+    searchPlaceholder=this.searchPlaceholder
     selected=selected
-    selectedItemComponent=selectedItemComponent
-    tabindex=computedTabIndex
-    tagName=tagName
-    triggerClass=concatenatedTriggerClass
-    triggerComponent=(component triggerComponent tabindex=tabindex)
-    triggerId=triggerId
-    verticalPosition=verticalPosition
+    selectedItemComponent=this.selectedItemComponent
+    tabindex=this.computedTabIndex
+    tagName=this.tagName
+    triggerClass=this.concatenatedTriggerClass
+    triggerComponent=(component this.triggerComponent tabindex=this.tabindex)
+    triggerId=this.triggerId
+    verticalPosition=this.verticalPosition
     as |option select|}}
     {{yield option select}}
   {{/gh-token-input/select}}

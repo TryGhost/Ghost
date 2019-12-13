@@ -1,4 +1,4 @@
-{{#unless errorMessage}}
+{{#unless this.errorMessage}}
     <header class="modal-header" data-test-modal="delete-user">
         <h1>Ready to go? Here’s what happens next</h1>
     </header>
@@ -38,9 +38,8 @@
             <p>Your post has been published but the email failed to send. Please check your Mailgun configuration if the error persists.</p>
         {{/if}}
         <p class="mb0">
-            <button type="button" class="gh-btn gh-btn-text regular" {{action (toggle "errorDetailsOpen" this)}}
-                data-test-toggle-error>
-                {{#if errorDetailsOpen}}
+            <button type="button" class="gh-btn gh-btn-text regular" {{action (toggle "errorDetailsOpen" this)}} data-test-toggle-error>
+                {{#if this.errorDetailsOpen}}
                 {{svg-jar "arrow-down" class="nudge-top--2 w2 h2 fill-darkgrey mr1"}}
                 {{else}}
                 {{svg-jar "arrow-right" class="nudge-top--1 w2 h2 fill-darkgrey mr1"}}
@@ -49,7 +48,7 @@
             </button>
         </p>
         
-        {{#liquid-if errorDetailsOpen}}
+        {{#liquid-if this.errorDetailsOpen}}
         <p class="error gh-box gh-box-error mt3 mb3">
             {{svg-jar "warning"}}
             {{this.errorMessage}}

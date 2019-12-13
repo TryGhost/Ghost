@@ -1,9 +1,9 @@
 {{#link-to "editor.new" "post" data-test-mobile-nav="new-post"}}{{svg-jar "pen"}}New post{{/link-to}}
-{{#if (eq router.currentRouteName "posts")}}
+{{#if (eq this.router.currentRouteName "posts")}}
     {{#link-to "posts" (query-params type=null) classNames="active" data-test-mobile-nav="posts"}}{{svg-jar "content"}}Posts{{/link-to}}
 {{else}}
     {{#link-to "posts"}}{{svg-jar "content" data-test-mobile-nav="posts"}}Posts{{/link-to}}
 {{/if}}
 {{#link-to "staff" classNames="gh-nav-main-users" data-test-mobile-nav="staff"}}{{svg-jar "account-group"}}Staff{{/link-to}}
-<div class="gh-mobile-nav-bar-more" {{action "openMobileMenu" target=ui data-test-mobile-nav="more"}}>{{svg-jar "icon" class="icon-gh"}}More</div>
+<div class="gh-mobile-nav-bar-more" {{action "openMobileMenu" target=this.ui data-test-mobile-nav="more"}}>{{svg-jar "icon" class="icon-gh"}}More</div>
 {{yield}}

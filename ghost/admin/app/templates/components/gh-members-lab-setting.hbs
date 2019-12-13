@@ -7,18 +7,18 @@
                 <p class="gh-setting-desc pa0 ma0">Configure API keys to create subscriptions and take payments</p>
             </div>
             <div>
-                <button type="button" class="gh-btn" {{action (toggle "membersStripeOpen" this)}} data-test-toggle-membersstripe><span>{{if membersStripeOpen "Close" "Expand"}}</span></button>
+                <button type="button" class="gh-btn" {{action (toggle "membersStripeOpen" this)}} data-test-toggle-membersstripe><span>{{if this.membersStripeOpen "Close" "Expand"}}</span></button>
             </div>
         </div>
 
-        {{#liquid-if membersStripeOpen}}
+        {{#liquid-if this.membersStripeOpen}}
             <div class="flex flex-column flex-row-l items-start justify-between mb4 mt6">
                 <div class="w-100 w-50-l">
                     <div class="mb4">
                         <label class="fw6 f8">Stripe Publishable key</label>
                         {{gh-text-input
                             type="password"
-                            value=(readonly subscriptionSettings.stripeConfig.public_token)
+                            value=(readonly this.subscriptionSettings.stripeConfig.public_token)
                             input=(action "setSubscriptionSettings" "public_token")
                             class="mt1 password"
                         }}
@@ -27,7 +27,7 @@
                         <label class="fw6 f8 mt4">Stripe Secret key</label>
                         {{gh-text-input
                             type="password"
-                            value=(readonly subscriptionSettings.stripeConfig.secret_token)
+                            value=(readonly this.subscriptionSettings.stripeConfig.secret_token)
                             input=(action "setSubscriptionSettings" "secret_token")
                             class="mt1 password"
                         }}
@@ -59,11 +59,11 @@
                 <p class="gh-setting-desc pa0 ma0">Set monthly and yearly recurring subscription prices</p>
             </div>
             <div>
-                <button type="button" class="gh-btn" {{action (toggle "membersPricingOpen" this)}} data-test-toggle-memberspricing><span>{{if membersPricingOpen "Close" "Expand"}}</span></button>
+                <button type="button" class="gh-btn" {{action (toggle "membersPricingOpen" this)}} data-test-toggle-memberspricing><span>{{if this.membersPricingOpen "Close" "Expand"}}</span></button>
             </div>
         </div>
 
-        {{#liquid-if membersPricingOpen}}
+        {{#liquid-if this.membersPricingOpen}}
             <div class="w-100 w-50-l flex flex-column flex-row-ns mt8">
                 <div class="w-100 w-50-ns mr3-ns">
                     {{#gh-form-group}}
@@ -71,7 +71,7 @@
 
                     <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
                         {{gh-text-input
-                            value=(readonly subscriptionSettings.stripeConfig.plans.monthly.dollarAmount)
+                            value=(readonly this.subscriptionSettings.stripeConfig.plans.monthly.dollarAmount)
                             type="number"
                             input=(action "setSubscriptionSettings" "month")
                         }}
@@ -84,7 +84,7 @@
                     <label class="fw6 f8">Yearly price</label>
                     <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
                         {{gh-text-input
-                                value=(readonly subscriptionSettings.stripeConfig.plans.yearly.dollarAmount)
+                                value=(readonly this.subscriptionSettings.stripeConfig.plans.yearly.dollarAmount)
                                 type="number"
                                 input=(action "setSubscriptionSettings" "year")
                             }}
@@ -105,11 +105,8 @@
             </div>
             <div>
                 <div class="for-switch">
-                    <label class="switch" for="members-allow-self-signup"
-                        {{action "setSubscriptionSettings" "allowSelfSignup" bubbles="false"}}>
-                        <input type="checkbox" checked={{subscriptionSettings.allowSelfSignup}} class="gh-input"
-                            onclick={{action "setSubscriptionSettings" "allowSelfSignup"}}
-                            data-test-checkbox="members-allow-self-signup">
+                    <label class="switch" for="members-allow-self-signup" {{action "setSubscriptionSettings" "allowSelfSignup" bubbles="false"}}>
+                        <input type="checkbox" checked={{this.subscriptionSettings.allowSelfSignup}} class="gh-input" onclick={{action "setSubscriptionSettings" "allowSelfSignup"}} data-test-checkbox="members-allow-self-signup">
                         <span class="input-toggle-component mt1"></span>
                     </label>
                 </div>
@@ -124,11 +121,11 @@
                 <p class="gh-setting-desc pa0 ma0">When a new post is created, who should have access to it?</p>
             </div>
             <div>
-                <button type="button" class="gh-btn" {{action (toggle "membersPostAccessOpen" this)}} data-test-toggle-memberspostaccess><span>{{if membersPostAccessOpen "Close" "Expand"}}</span></button>
+                <button type="button" class="gh-btn" {{action (toggle "membersPostAccessOpen" this)}} data-test-toggle-memberspostaccess><span>{{if this.membersPostAccessOpen "Close" "Expand"}}</span></button>
             </div>
         </div>
 
-        {{#liquid-if membersPostAccessOpen}}
+        {{#liquid-if this.membersPostAccessOpen}}
         <div class="flex flex-column w-50 flex mt8">
             <div class="gh-radio {{if (eq settings.defaultContentVisibility "public") "active"}}"
                 {{action "setDefaultContentVisibility" "public" on="click"}}>
@@ -167,26 +164,26 @@
                 <p class="gh-setting-desc pa0 ma0">Customise signup, signin and subscription emails</p>
             </div>
             <div>
-                <button type="button" class="gh-btn" {{action (toggle "membersEmailOpen" this)}} data-test-toggle-membersemail><span>{{if membersEmailOpen "Close" "Expand"}}</span></button>
+                <button type="button" class="gh-btn" {{action (toggle "membersEmailOpen" this)}} data-test-toggle-membersemail><span>{{if this.membersEmailOpen "Close" "Expand"}}</span></button>
             </div>
         </div>
 
-        {{#liquid-if membersEmailOpen}}
+        {{#liquid-if this.membersEmailOpen}}
         <div class="flex flex-column w-100 w-50-l flex mt8">
             {{#gh-form-group}}
             <label class="fw6 f8">From Address</label>
             <div class="flex items-center justify-center mt1 gh-input-group">
                 {{gh-text-input
-                    value=(readonly subscriptionSettings.fromAddress)
+                    value=(readonly this.subscriptionSettings.fromAddress)
                     input=(action "setSubscriptionSettings" "fromAddress")
                     class="w20"
                 }}
-                <span class="gh-input-append"> @{{blogDomain}}</span>
+                <span class="gh-input-append"> @{{this.blogDomain}}</span>
             </div>
             <div class="f8 fw4 midgrey mt1">Your members will receive system emails from this address</div>
             {{/gh-form-group}}
 
-            {{#unless hasBulkEmailConfig}}
+            {{#unless this.hasBulkEmailConfig}}
                 <div class="flex items-center">
                     {{#gh-form-group class="gh-labs-mailgun-region"}}
                     <label class="fw6 f8">Mailgun region</label>
@@ -205,7 +202,7 @@
                     {{#gh-form-group}}
                     <label class="fw6 f8">Mailgun domain</label>
                     {{gh-text-input
-                                            value=(readonly bulkEmailSettings.domain)
+                                            value=(readonly this.bulkEmailSettings.domain)
                                             input=(action "setBulkEmailSettings" "domain")
                                             class="mt1"
                                         }}
@@ -220,7 +217,7 @@
                     <label class="fw6 f8">Mailgun API key</label>
                     {{gh-text-input
                         type="password"
-                        value=(readonly bulkEmailSettings.apiKey)
+                        value=(readonly this.bulkEmailSettings.apiKey)
                         input=(action "setBulkEmailSettings" "apiKey")
                         class="mt1 password"
                         autocomplete="new-password"

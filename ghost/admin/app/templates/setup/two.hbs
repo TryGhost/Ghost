@@ -3,9 +3,9 @@
 </header>
 
 <form id="setup" class="gh-flow-create">
-    {{gh-profile-image email=email setImage=(action "setImage")}}
+    {{gh-profile-image email=this.email setImage=(action "setImage")}}
 
-    {{#gh-form-group errors=errors hasValidated=hasValidated property="blogTitle"}}
+    {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="blogTitle"}}
         <label for="blog-title">Site title</label>
         <span class="gh-input-icon gh-icon-content">
             {{svg-jar "content"}}
@@ -16,15 +16,15 @@
                 name="blog-title"
                 placeholder="Eg. The Daily Awesome"
                 autocorrect="off"
-                value=(readonly blogTitle)
-                input=(action (mut blogTitle) value="target.value")
+                value=(readonly this.blogTitle)
+                input=(action (mut this.blogTitle) value="target.value")
                 focus-out=(action "preValidate" "blogTitle")
                 data-test-blog-title-input=true}}
         </span>
-        {{gh-error-message errors=errors property="blogTitle"}}
+        {{gh-error-message errors=this.errors property="blogTitle"}}
     {{/gh-form-group}}
 
-    {{#gh-form-group errors=errors hasValidated=hasValidated property="name"}}
+    {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="name"}}
         <label for="name">Full name</label>
         <span class="gh-input-icon gh-icon-user">
             {{svg-jar "user-circle"}}
@@ -35,15 +35,15 @@
                 placeholder="Eg. John H. Watson"
                 autocorrect="off"
                 autocomplete="name"
-                value=(readonly name)
-                input=(action (mut name) value="target.value")
+                value=(readonly this.name)
+                input=(action (mut this.name) value="target.value")
                 focus-out=(action "preValidate" "name")
                 data-test-name-input=true}}
         </span>
-        {{gh-error-message errors=errors property="name"}}
+        {{gh-error-message errors=this.errors property="name"}}
     {{/gh-form-group}}
 
-    {{#gh-form-group errors=errors hasValidated=hasValidated property="email"}}
+    {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="email"}}
         <label for="email">Email address</label>
         <span class="gh-input-icon gh-icon-mail">
             {{svg-jar "email"}}
@@ -55,15 +55,15 @@
                 placeholder="Eg. john@example.com"
                 autocorrect="off"
                 autocomplete="username email"
-                value=(readonly email)
-                input=(action (mut email) value="target.value")
+                value=(readonly this.email)
+                input=(action (mut this.email) value="target.value")
                 focus-out=(action "preValidate" "email")
                 data-test-email-input=true}}
         </span>
-        {{gh-error-message errors=errors property="email"}}
+        {{gh-error-message errors=this.errors property="email"}}
     {{/gh-form-group}}
 
-    {{#gh-form-group errors=errors hasValidated=hasValidated property="password"}}
+    {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="password"}}
         <label for="password">Password</label>
         <span class="gh-input-icon gh-icon-lock">
             {{svg-jar "lock"}}
@@ -75,16 +75,16 @@
                 placeholder="At least 10 characters"
                 autocorrect="off"
                 autocomplete="new-password"
-                value=(readonly password)
-                input=(action (mut password) value="target.value")
+                value=(readonly this.password)
+                input=(action (mut this.password) value="target.value")
                 focus-out=(action "preValidate" "password")
                 data-test-password-input=true}}
         </span>
-        {{gh-error-message errors=errors property="password"}}
+        {{gh-error-message errors=this.errors property="password"}}
     {{/gh-form-group}}
 
     {{#gh-task-button
-        task=setup
+        task=this.setup
         type="submit"
         tabindex="5"
         class="gh-btn gh-btn-green gh-btn-lg gh-btn-block gh-btn-icon"
@@ -98,4 +98,4 @@
     {{/gh-task-button}}
 </form>
 
-<p class="main-error">{{flowErrors}}&nbsp;</p>
+<p class="main-error">{{this.flowErrors}}&nbsp;</p>

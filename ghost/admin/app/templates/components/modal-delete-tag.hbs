@@ -4,13 +4,13 @@
 <a class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
 <div class="modal-body">
-    {{#if tag.post_count}}
-        <span class="red">This tag is attached to {{tag.count.posts}} {{postInflection}}.</span>
+    {{#if this.tag.post_count}}
+        <span class="red">This tag is attached to {{this.tag.count.posts}} {{this.postInflection}}.</span>
     {{/if}}
-    You're about to delete "<strong>{{tag.name}}</strong>". This is permanent! We warned you, k?
+    You're about to delete "<strong>{{this.tag.name}}</strong>". This is permanent! We warned you, k?
 </div>
 
 <div class="modal-footer">
     <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
-    {{gh-task-button "Delete" successText="Deleted" task=deleteTag class="gh-btn gh-btn-red gh-btn-icon"}}
+    {{gh-task-button "Delete" successText="Deleted" task=this.deleteTag class="gh-btn gh-btn-red gh-btn-icon"}}
 </div>

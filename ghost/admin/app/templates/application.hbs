@@ -1,12 +1,12 @@
-{{#gh-app showSettingsMenu=ui.showSettingsMenu}}
+{{#gh-app showSettingsMenu=this.ui.showSettingsMenu}}
     {{#gh-skip-link anchor=".gh-main"}}Skip to main content{{/gh-skip-link}}
 
     {{gh-alerts}}
 
-    <div class="gh-viewport {{if ui.showSettingsMenu 'settings-menu-expanded'}} {{if ui.showMobileMenu 'mobile-menu-expanded'}}">
-        {{#if showNavMenu}}
+    <div class="gh-viewport {{if this.ui.showSettingsMenu 'settings-menu-expanded'}} {{if this.ui.showMobileMenu 'mobile-menu-expanded'}}">
+        {{#if this.showNavMenu}}
             {{gh-nav-menu
-                icon=settings.settledIcon
+                icon=this.settings.settledIcon
             }}
         {{/if}}
 

@@ -7,9 +7,9 @@
             </header>
 
             <form id="signup" class="gh-flow-create" method="post" novalidate="novalidate" onsubmit={{action "submit"}}>
-                {{gh-profile-image email=signupDetails.email setImage=(action "setImage")}}
+                {{gh-profile-image email=this.signupDetails.email setImage=(action "setImage")}}
 
-                {{#gh-form-group errors=signupDetails.errors hasValidated=signupDetails.hasValidated property="name"}}
+                {{#gh-form-group errors=this.signupDetails.errors hasValidated=this.signupDetails.hasValidated property="name"}}
                     <label for="name">Full name</label>
                     <span class="gh-input-icon gh-icon-user">
                         {{svg-jar "user-circle"}}
@@ -21,16 +21,16 @@
                             placeholder="Eg. John H. Watson"
                             autocorrect="off"
                             autocomplete="name"
-                            value=(readonly signupDetails.name)
-                            input=(action (mut signupDetails.name) value="target.value")
+                            value=(readonly this.signupDetails.name)
+                            input=(action (mut this.signupDetails.name) value="target.value")
                             focus-out=(action "validate" "name")
                             data-test-input="name"
                         }}
                     </span>
-                    {{gh-error-message errors=signupDetails.errors property="name"}}
+                    {{gh-error-message errors=this.signupDetails.errors property="name"}}
                 {{/gh-form-group}}
 
-                {{#gh-form-group errors=signupDetails.errors hasValidated=signupDetails.hasValidated property="email"}}
+                {{#gh-form-group errors=this.signupDetails.errors hasValidated=this.signupDetails.hasValidated property="email"}}
                     <label for="email">Email address</label>
                     <span class="gh-input-icon gh-icon-mail">
                         {{svg-jar "email"}}
@@ -42,16 +42,16 @@
                             placeholder="Eg. john@example.com"
                             autocorrect="off"
                             autocomplete="username email"
-                            value=(readonly signupDetails.email)
-                            input=(action (mut signupDetails.email) value="target.value")
+                            value=(readonly this.signupDetails.email)
+                            input=(action (mut this.signupDetails.email) value="target.value")
                             focus-out=(action "validate" "email")
                             data-test-input="email"
                         }}
                     </span>
-                    {{gh-error-message errors=signupDetails.errors property="email"}}
+                    {{gh-error-message errors=this.signupDetails.errors property="email"}}
                 {{/gh-form-group}}
 
-                {{#gh-form-group errors=signupDetails.errors hasValidated=signupDetails.hasValidated property="password"}}
+                {{#gh-form-group errors=this.signupDetails.errors hasValidated=this.signupDetails.hasValidated property="password"}}
                     <label for="password">Password</label>
                     <span class="gh-input-icon gh-icon-lock">
                         {{svg-jar "lock"}}
@@ -63,13 +63,13 @@
                             placeholder="At least 10 characters"
                             autocorrect="off"
                             autocomplete="new-password"
-                            value=(readonly signupDetails.password)
-                            input=(action (mut signupDetails.password) value="target.value")
+                            value=(readonly this.signupDetails.password)
+                            input=(action (mut this.signupDetails.password) value="target.value")
                             focus-out=(action "validate" "password")
                             data-test-input="password"
                         }}
                     </span>
-                    {{gh-error-message errors=signupDetails.errors property="password"}}
+                    {{gh-error-message errors=this.signupDetails.errors property="password"}}
                 {{/gh-form-group}}
             </form>
 
@@ -78,11 +78,11 @@
                 form="signup"
                 defaultClick=true
                 runningText="Creating"
-                task=signup
+                task=this.signup
                 class="gh-btn gh-btn-green gh-btn-lg gh-btn-block gh-btn-icon"
                 tabindex="3"}}
 
-            <p class="main-error">{{if flowErrors flowErrors}}&nbsp;</p>
+            <p class="main-error">{{if this.flowErrors this.flowErrors}}&nbsp;</p>
         </section>
     </div>
 

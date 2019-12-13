@@ -5,11 +5,11 @@
 
 <div class="modal-body">
     <p>
-        You're about to delete "<strong>{{or member.name member.email}}</strong>". This is permanent! We warned you, k?
+        You're about to delete "<strong>{{or this.member.name this.member.email}}</strong>". This is permanent! We warned you, k?
     </p>
 </div>
 
 <div class="modal-footer">
     <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
-    {{gh-task-button "Delete" successText="Deleted" task=deleteMember class="gh-btn gh-btn-red gh-btn-icon"}}
+    {{gh-task-button "Delete" successText="Deleted" task=this.deleteMember class="gh-btn gh-btn-red gh-btn-icon"}}
 </div>

@@ -2,10 +2,10 @@
     <div class="theme-validation-type-label"></div>
     <div class="flex items-center flex-auto">
         <h4 class="theme-validation-rule-text">
-            {{{error.rule}}}
+            {{{this.error.rule}}}
         </h4>
         <div class="theme-validation-rule-icon">
-            {{#if showDetails}}
+            {{#if this.showDetails}}
                 {{svg-jar "arrow-down"}}
             {{else}}
                 {{svg-jar "arrow-right"}}
@@ -14,15 +14,15 @@
     </div>
 </a>
 
-{{#if showDetails}}
+{{#if this.showDetails}}
     <p class="theme-validation-details">
-        {{{error.details}}}
+        {{{this.error.details}}}
     </p>
-    {{#if error.failures}}
+    {{#if this.error.failures}}
         <div class="theme-validation-list">
             <h6>Affected files:</h6>
             <ul>
-                {{#each error.failures as |failure|}}
+                {{#each this.error.failures as |failure|}}
                     <li><code>{{failure.ref}}</code>{{#if failure.message}}: {{failure.message}}{{/if}}</li>
                 {{/each}}
             </ul>

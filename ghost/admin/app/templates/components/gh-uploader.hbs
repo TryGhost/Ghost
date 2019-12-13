@@ -1,8 +1,8 @@
 {{yield (hash
     cancel=(action "cancel")
-    errors=errors
-    files=files
-    isUploading=_uploadFiles.isRunning
-    progressBar=(component "gh-progress-bar" percentage=uploadPercentage)
+    errors=this.errors
+    files=this.files
+    isUploading=this._uploadFiles.isRunning
+    progressBar=(component "gh-progress-bar" percentage=this.uploadPercentage)
     setFiles=(action 'setFiles')
 )}}

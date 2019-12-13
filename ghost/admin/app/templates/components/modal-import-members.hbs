@@ -1,6 +1,6 @@
 <header class="modal-header" data-test-modal="import-members">
     <h1>
-        {{#if response}}
+        {{#if this.response}}
             Import result
         {{else}}
             Import members
@@ -10,28 +10,28 @@
 <a class="close" href="" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
 <div class="modal-body bg-whitegrey-l2 ba b--whitegrey br3">
-    {{#if response}}
+    {{#if this.response}}
         <table class="gh-members-import-results">
             <tr>
                 <td>Imported:</td>
-                <td align="left" data-test-text="import-members-imported">{{response.imported}}</td>
+                <td align="left" data-test-text="import-members-imported">{{this.response.imported}}</td>
             </tr>
-            {{#if response.duplicates}}
+            {{#if this.response.duplicates}}
                 <tr>
                     <td>Duplicates:</td>
-                    <td align="left" data-test-text="import-members-duplicates">{{response.duplicates}}</td>
+                    <td align="left" data-test-text="import-members-duplicates">{{this.response.duplicates}}</td>
                 </tr>
             {{/if}}
-            {{#if response.invalid}}
+            {{#if this.response.invalid}}
                 <tr>
                     <td class="red">Invalid:</td>
-                    <td align="left" data-test-text="import-members-invalid" class="red">{{response.invalid}}</td>
+                    <td align="left" data-test-text="import-members-invalid" class="red">{{this.response.invalid}}</td>
                 </tr>
             {{/if}}
         </table>
     {{else}}
         {{gh-file-uploader
-            url=uploadUrl
+            url=this.uploadUrl
             paramName="membersfile"
             labelText="Select or drag-and-drop a CSV file."
             uploadStarted=(action "uploadStarted")
@@ -41,7 +41,7 @@
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} disabled={{closeDisabled}} class="gh-btn" data-test-button="close-import-members">
-        <span>{{#if response}}Close{{else}}Cancel{{/if}}</span>
+    <button {{action "closeModal"}} disabled={{this.closeDisabled}} class="gh-btn" data-test-button="close-import-members">
+        <span>{{#if this.response}}Close{{else}}Cancel{{/if}}</span>
     </button>
 </div>

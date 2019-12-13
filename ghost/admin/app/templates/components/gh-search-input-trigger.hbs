@@ -5,8 +5,9 @@
         autocorrect="off"
         autocapitalize="off"
         autofocus="true"
-        value={{if extra.labelPath (get selected extra.labelPath) selected}}
-        spellcheck="false" role="combobox"
+        value={{if this.extra.labelPath (get selected this.extra.labelPath) selected}}
+        spellcheck="false"
+        role="combobox"
         placeholder={{placeholder}}
         oninput={{action 'search' value="target.value"}}
         onmousedown={{action "captureMouseDown"}}

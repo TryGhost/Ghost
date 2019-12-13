@@ -2,7 +2,7 @@
     <div class="gh-flow-content-wrap">
         <section class="gh-flow-content">
             <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{action "authenticate" on="submit"}}>
-                {{#gh-form-group errors=signin.errors hasValidated=hasValidated property="identification"}}
+                {{#gh-form-group errors=this.signin.errors hasValidated=this.hasValidated property="identification"}}
                     <span class="gh-input-icon gh-icon-mail">
                         {{svg-jar "email"}}
                         {{gh-trim-focus-input
@@ -14,13 +14,13 @@
                             autocorrect="off"
                             autocomplete="username"
                             tabindex="1"
-                            value=(readonly signin.identification)
-                            input=(action (mut signin.identification) value="target.value")
+                            value=(readonly this.signin.identification)
+                            input=(action (mut this.signin.identification) value="target.value")
                             focus-out=(action "validate" "identification")
                         }}
                     </span>
                 {{/gh-form-group}}
-                {{#gh-form-group errors=signin.errors hasValidated=hasValidated property="password"}}
+                {{#gh-form-group errors=this.signin.errors hasValidated=this.hasValidated property="password"}}
                     <span class="gh-input-icon gh-icon-lock forgotten-wrap">
                         {{svg-jar "lock"}}
                         {{gh-text-input
@@ -31,11 +31,11 @@
                             tabindex="2"
                             autocomplete="current-password"
                             autocorrect="off"
-                            value=(readonly signin.password)
-                            input=(action (mut signin.password) value="target.value")}}
+                            value=(readonly this.signin.password)
+                            input=(action (mut this.signin.password) value="target.value")}}
 
                         {{#gh-task-button
-                            task=forgotten
+                            task=this.forgotten
                             class="forgotten-link gh-btn gh-btn-link gh-btn-icon"
                             tabindex="4"
                             type="button"
@@ -49,14 +49,14 @@
                 {{/gh-form-group}}
 
                 {{gh-task-button "Sign in"
-                    task=validateAndAuthenticate
+                    task=this.validateAndAuthenticate
                     showSuccess=false
                     class="login gh-btn gh-btn-blue gh-btn-block gh-btn-icon"
                     type="submit"
                     tabindex="3"}}
             </form>
 
-            <p class="main-error">{{if flowErrors flowErrors}}&nbsp;</p>
+            <p class="main-error">{{if this.flowErrors this.flowErrors}}&nbsp;</p>
         </section>
     </div>
 </div>

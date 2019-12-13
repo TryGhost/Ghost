@@ -1,6 +1,6 @@
 {{#if select.loading}}
-    {{#if loadingMessage}}
-        <li class="ember-power-select-option ember-power-select-option--loading-message" role="option">{{loadingMessage}}</li>
+    {{#if this.loadingMessage}}
+        <li class="ember-power-select-option ember-power-select-option--loading-message" role="option">{{this.loadingMessage}}</li>
     {{/if}}
 {{/if}}
 
@@ -9,7 +9,7 @@
         aria-selected="{{ember-power-select-is-selected opt select.selected}}"
         aria-disabled={{ember-power-select-true-string-if-present opt.disabled}}
         aria-current="{{eq opt select.highlighted}}"
-        data-option-index="{{groupIndex}}{{index}}"
+        data-option-index="{{this.groupIndex}}{{index}}"
         role="option">
         {{yield opt select}}
     </li>

@@ -93,7 +93,7 @@
                     </div>
                     <div class="gh-card-right">
                         <div class="apps-configured">
-                            {{#if settings.slack.isActive}}
+                            {{#if this.settings.slack.isActive}}
                                 <span class="gh-badge" data-test-app-status>Active</span>
                             {{else}}
                                 <span data-test-app-status>Configure</span>
@@ -117,7 +117,7 @@
                     </div>
                     <div class="gh-card-right">
                         <div class="apps-configured">
-                            {{#if settings.amp}}
+                            {{#if this.settings.amp}}
                                 <span class="gh-badge" data-test-app-status>Active</span>
                             {{else}}
                                 <span data-test-app-status>Configure</span>
@@ -141,7 +141,7 @@
                     </div>
                     <div class="gh-card-right">
                         <div class="apps-configured">
-                            {{#if settings.unsplash.isActive}}
+                            {{#if this.settings.unsplash.isActive}}
                                 <span class="gh-badge" data-test-app-status>Active</span>
                             {{else}}
                                 <span data-test-app-status>Configure</span>
@@ -161,7 +161,7 @@
 
         <span class="apps-grid-title pb1">Custom integrations</span>
         <div class="apps-grid">
-            {{#each integrations as |integration|}}
+            {{#each this.integrations as |integration|}}
                 <div class="apps-grid-cell" data-test-custom-integration>
                     {{#link-to "settings.integration" integration data-test-integration=integration.id}}
                         <article class="apps-card-app">
@@ -191,7 +191,7 @@
                 </div>
             {{else}}
                 <div class="flex flex-column justify-center items-center mih30 miw-100" data-test-blank="custom-integrations">
-                    {{#if fetchIntegrations.isRunning}}
+                    {{#if this.fetchIntegrations.isRunning}}
                         <div class="gh-loading-spinner"></div>
                     {{else}}
                         <div class="flex flex-column items-center pa5 pt15 pb15">
@@ -209,7 +209,7 @@
                 </div>
             {{/each}}
 
-            {{#if integrations}}
+            {{#if this.integrations}}
             <div class="apps-grid-cell new-integration-cell">
                 {{#link-to "settings.integrations.new" class="" data-test-button="new-integration"}}
                 <article class="apps-card-app">

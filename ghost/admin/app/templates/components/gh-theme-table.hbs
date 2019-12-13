@@ -1,7 +1,7 @@
 <div class="apps-grid" data-test-themes-list>
-{{#if sortedThemes}}
+{{#if this.sortedThemes}}
 
-    {{#each sortedThemes as |theme|}}
+    {{#each this.sortedThemes as |theme|}}
     <div class="apps-grid-cell" data-test-theme-id="{{theme.name}}" data-test-theme-active="{{theme.active}}">
         <div class="apps-card-app {{if theme.active "theme-list-item--active"}}">
             <div class="apps-card-left">
@@ -14,15 +14,15 @@
                 <div class="apps-configured">
                     {{!--Delete--}}
                     {{#if theme.isDeletable}}
-                        <a href="#" {{action deleteTheme theme}} disabled={{theme.active}} class="apps-configured-action red-hover red-bg-hover" data-test-theme-delete-button>Delete</a>
+                        <a href="#" {{action this.deleteTheme theme}} disabled={{theme.active}} class="apps-configured-action red-hover red-bg-hover" data-test-theme-delete-button>Delete</a>
                     {{/if}}
                     {{!--Download--}}
-                    <a href="#" {{action downloadTheme theme}} class="apps-configured-action darkgrey-hover blue-bg-hover" data-test-theme-download-button>Download</a>
+                    <a href="#" {{action this.downloadTheme theme}} class="apps-configured-action darkgrey-hover blue-bg-hover" data-test-theme-download-button>Download</a>
                     {{!--Active Label / Activate Button--}}
                     {{#if theme.active}}
                         <span class="gh-badge gh-badge-black apps-configured-action" data-test-theme-badge>Active</span>
                     {{else}}
-                        <a href="#" {{action activateTheme theme.model}} class="apps-configured-action apps-configured-action-activate green-hover green-bg-hover" data-test-theme-activate-button>
+                        <a href="#" {{action this.activateTheme theme.model}} class="apps-configured-action apps-configured-action-activate green-hover green-bg-hover" data-test-theme-activate-button>
                             Activate
                         </a>
                     {{/if}}

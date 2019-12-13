@@ -6,10 +6,10 @@
 >
     {{gh-textarea
         class="gh-editor-title"
-        placeholder=titlePlaceholder
+        placeholder=this.titlePlaceholder
         tabindex="1"
         autoExpand=".gh-koenig-editor"
-        value=(readonly title)
+        value=(readonly this.title)
         input=(action "onTitleChange" value="target.value")
         focus-out=(action "onTitleFocusOut")
         keyDown=(action "onTitleKeydown")
@@ -18,18 +18,18 @@
     }}
 
     {{koenig-editor
-        mobiledoc=body
-        placeholder=bodyPlaceholder
-        autofocus=bodyAutofocus
+        mobiledoc=this.body
+        placeholder=this.bodyPlaceholder
+        autofocus=this.bodyAutofocus
         spellcheck=true
         onChange=(action "onBodyChange")
         didCreateEditor=(action "onEditorCreated")
         cursorDidExitAtTop=(action "focusTitle")
-        headerOffset=headerOffset
+        headerOffset=this.headerOffset
         dropTargetSelector=".gh-koenig-editor-pane"
-        scrollContainerSelector=scrollContainerSelector
-        scrollOffsetTopSelector=scrollOffsetTopSelector
-        scrollOffsetBottomSelector=scrollOffsetBottomSelector
-        wordCountDidChange=(action onWordCountChange)
+        scrollContainerSelector=this.scrollContainerSelector
+        scrollOffsetTopSelector=this.scrollOffsetTopSelector
+        scrollOffsetBottomSelector=this.scrollOffsetBottomSelector
+        wordCountDidChange=(action this.onWordCountChange)
     }}
 </div>

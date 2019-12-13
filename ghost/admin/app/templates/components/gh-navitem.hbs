@@ -1,4 +1,4 @@
-{{#unless navItem.isNew}}
+{{#unless this.navItem.isNew}}
     <span class="gh-blognav-grab">
         {{svg-jar "grab"}}
         <span class="sr-only">Reorder</span>
@@ -6,37 +6,37 @@
 {{/unless}}
 
 <div class="gh-blognav-line">
-    {{#gh-validation-status-container tagName="span" class="gh-blognav-label" errors=navItem.errors property="label" hasValidated=navItem.hasValidated}}
+    {{#gh-validation-status-container tagName="span" class="gh-blognav-label" errors=this.navItem.errors property="label" hasValidated=this.navItem.hasValidated}}
         {{gh-trim-focus-input
-            shouldFocus=navItem.last
+            shouldFocus=this.navItem.last
             placeholder="Label"
-            value=(readonly navItem.label)
-            input=(action (mut navItem.label) value="target.value")
+            value=(readonly this.navItem.label)
+            input=(action (mut this.navItem.label) value="target.value")
             keyPress=(action "clearLabelErrors")
-            focus-out=(action "updateLabel" navItem.label)
+            focus-out=(action "updateLabel" this.navItem.label)
             data-test-input="label"
         }}
-        {{gh-error-message errors=navItem.errors property="label" data-test-error="label"}}
+        {{gh-error-message errors=this.navItem.errors property="label" data-test-error="label"}}
     {{/gh-validation-status-container}}
-    {{#gh-validation-status-container tagName="span" class="gh-blognav-url" errors=navItem.errors property="url" hasValidated=navItem.hasValidated}}
+    {{#gh-validation-status-container tagName="span" class="gh-blognav-url" errors=this.navItem.errors property="url" hasValidated=this.navItem.hasValidated}}
         {{gh-navitem-url-input
-            baseUrl=baseUrl
-            isNew=navItem.isNew
-            url=(readonly navItem.url)
+            baseUrl=this.baseUrl
+            isNew=this.navItem.isNew
+            url=(readonly this.navItem.url)
             update=(action "updateUrl")
             clearErrors=(action "clearUrlErrors")
             data-test-input="url"
         }}
-        {{gh-error-message errors=navItem.errors property="url" data-test-error="url"}}
+        {{gh-error-message errors=this.navItem.errors property="url" data-test-error="url"}}
     {{/gh-validation-status-container}}
 </div>
 
-{{#if navItem.isNew}}
-    <button type="button" class="gh-blognav-add" {{action "addItem" navItem}}>
+{{#if this.navItem.isNew}}
+    <button type="button" class="gh-blognav-add" {{action "addItem" this.navItem}}>
         {{svg-jar "add"}}<span class="sr-only">Add</span>
     </button>
 {{else}}
-    <button type="button" class="gh-blognav-delete" {{action "deleteItem" navItem}}>
+    <button type="button" class="gh-blognav-delete" {{action "deleteItem" this.navItem}}>
         {{svg-jar "trash"}}<span class="sr-only">Delete</span>
     </button>
 {{/if}}

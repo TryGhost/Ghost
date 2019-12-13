@@ -15,7 +15,7 @@
 
             {{#gh-form-group errors=member.errors hasValidated=member.hasValidated property="email"}}
                 <label for="member-email">Email</label>
-                {{#if canEditEmail}}
+                {{#if this.canEditEmail}}
                     {{gh-text-input
                         value=this.scratchMember.email
                         id="member-email"
@@ -70,21 +70,21 @@
 
 <h4 class="midlightgrey f-small fw5 ttu mt12">Stripe info</h4>
 
-{{#if isLoading}}
+{{#if this.isLoading}}
     <div class="pa20 br4 shadow-1 bg-grouped-table mt2">
         <div class="flex justify-center flex-auto">
             <div class="gh-loading-spinner"> </div>
         </div>
     </div>
 {{else}}
-    {{#if subscriptions}}
+    {{#if this.subscriptions}}
         <div class="br4 shadow-1 bg-grouped-table mt2">
-            {{#if hasMultipleSubscriptions}}
+            {{#if this.hasMultipleSubscriptions}}
                 <div class="pa2 flex flex-column flex-row-ns items-center justify-center f7 fw5 bg-whitegrey-l2 bb b--whitegrey br4 br--top">
                     {{svg-jar "info" class="gh-member-info-icon mr2 fill-darkgrey"}} Member has multiple Stripe subscriptions
                 </div>
             {{/if}}
-            {{#each subscriptions as |subscription|}}
+            {{#each this.subscriptions as |subscription|}}
                 <section class="gh-member-stripe-info pa5 pb0 pt4 flex flex-column flex-row-ns items-start justify-between">
                     <div class="flex items-start w-100">
                         <div class="w-50 flex-auto mr8">

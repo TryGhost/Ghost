@@ -1,12 +1,12 @@
-<section class="gh-canvas" {{did-insert (action "setMainClass" "gh-main-primarybg" target=this.ui)}}>
+<section class="gh-canvas" {{this.did-insert (action "setMainClass" "gh-main-primarybg" target=this.ui)}}>
     <header class="gh-canvas-header post-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Posts</h2>
         <section class="view-actions">
             <div class="gh-contentfilter">
-                {{#unless session.user.isContributor}}
+                {{#unless this.session.user.isContributor}}
                 {{#power-select
-                    selected=selectedType
-                    options=availableTypes
+                    selected=this.selectedType
+                    options=this.availableTypes
                     searchEnabled=false
                     onchange=(action (mut k))
                     tagName="div"
@@ -21,10 +21,10 @@
                 {{/power-select}}
                 {{/unless}}
 
-                {{#unless session.user.isAuthorOrContributor}}
+                {{#unless this.session.user.isAuthorOrContributor}}
                 {{#power-select
-                    selected=selectedAuthor
-                    options=availableAuthors
+                    selected=this.selectedAuthor
+                    options=this.availableAuthors
                     searchField="name"
                     onchange=(action (mut k))
                     tagName="div"
@@ -40,10 +40,10 @@
                 {{/power-select}}
                 {{/unless}}
 
-                {{#unless session.user.isContributor}}
+                {{#unless this.session.user.isContributor}}
                 {{#power-select
-                    selected=selectedTag
-                    options=availableTags
+                    selected=this.selectedTag
+                    options=this.availableTags
                     searchField="name"
                     onchange=(action (mut k))
                     tagName="div"
@@ -61,8 +61,8 @@
                 {{/unless}}
 
                 {{#power-select
-                    selected=selectedOrder
-                    options=availableOrders
+                    selected=this.selectedOrder
+                    options=this.availableOrders
                     searchEnabled=false
                     onchange=(action (mut k))
                     tagName="div"

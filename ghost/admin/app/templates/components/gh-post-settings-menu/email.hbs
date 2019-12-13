@@ -83,8 +83,7 @@
             </div>
             <div class="pa5 pt3 pb3 flex justify-between items center">
                 <button {{on "click" this.toggleEmailPreview}} class="blue">View email</button>
-                <GhTaskButton @buttonText="Retry send" @runningText="Sending..." @task={{this.retryEmail}}
-                    @class="gh-btn gh-btn-icon" data-test-button="retry-email" />
+                <GhTaskButton @buttonText="Retry send" @runningText="Sending..." @task={{this.retryEmail}} @class="gh-btn gh-btn-icon" data-test-button="retry-email" />
             </div>
         </div>
     {{else}}
@@ -123,7 +122,7 @@
                     </button>
                 </div>
 
-                <div class="{{if mailgunError "disabled"}}">
+                <div class="{{if this.mailgunError "disabled"}}">
                     {{gh-text-input
                         class="post-setting-email-test"
                         id="email-test"

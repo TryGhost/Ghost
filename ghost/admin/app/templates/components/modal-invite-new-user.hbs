@@ -2,13 +2,13 @@
     <h1>Invite a New User</h1>
 </header>
 {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
-<a class="close" href="" title="Close" {{action "closeModal"}} {{action (optional noop) on="mouseDown"}}>
+<a class="close" href title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
     {{svg-jar "close"}}<span class="hidden">Close</span>
 </a>
 
 <div class="modal-body">
     <fieldset>
-        {{#gh-form-group errors=errors hasValidated=hasValidated property="email"}}
+        {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="email"}}
             <label for="new-user-email">Email Address</label>
             {{gh-text-input
                 class="email"
@@ -26,25 +26,25 @@
                 )
                 focus-out=(action "validate" "email")
             }}
-            {{gh-error-message errors=errors property="email"}}
+            {{gh-error-message errors=this.errors property="email"}}
         {{/gh-form-group}}
 
 
-        {{#gh-form-group class="for-select" errors=errors hasValidated=hasValidated property="role"}}
+        {{#gh-form-group class="for-select" errors=this.errors hasValidated=this.hasValidated property="role"}}
             <label for="new-user-role">Role</label>
             <span class="gh-select">
                 {{one-way-select
                     id="new-user-role"
                     name="role"
-                    options=(readonly roles)
+                    options=(readonly this.roles)
                     optionValuePath="id"
                     optionLabelPath="name"
-                    value=role
+                    value=this.role
                     update=(action "setRole")
                 }}
                 {{svg-jar "arrow-down-small"}}
             </span>
-            {{gh-error-message errors=errors property="role"}}
+            {{gh-error-message errors=this.errors property="role"}}
         {{/gh-form-group}}
     </fieldset>
 </div>
@@ -52,8 +52,8 @@
 <div class="modal-footer">
     {{gh-task-button "Send invitation now"
         successText="Sent"
-        task=sendInvitation
+        task=this.sendInvitation
         class="gh-btn gh-btn-green gh-btn-icon"
-        disabled=fetchRoles.isRunning
+        disabled=this.fetchRoles.isRunning
         disableMouseDown=true}}
 </div>

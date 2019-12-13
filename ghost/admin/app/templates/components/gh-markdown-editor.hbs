@@ -1,32 +1,32 @@
 {{yield (hash
     editor=(component "gh-simplemde"
-        value=markdown
-        placeholder=placeholder
-        autofocus=autofocus
+        value=this.markdown
+        placeholder=this.placeholder
+        autofocus=this.autofocus
         onChange=(action "updateMarkdown")
         onFocus=(action "updateFocusState" true)
         onBlur=(action "updateFocusState" false)
         onEditorInit=(action "setEditor")
-        options=simpleMDEOptions)
-    isFullScreen=_isFullScreen
-    isSplitScreen=_isSplitScreen
+        options=this.simpleMDEOptions)
+    isFullScreen=this._isFullScreen
+    isSplitScreen=this._isSplitScreen
     focus=(action "focusEditor")
 )}}
 
 <div style="display:none">
     {{gh-file-input
         multiple=true
-        action=(action onImageFilesSelected)
-        accept=imageMimeTypes}}
+        action=(action this.onImageFilesSelected)
+        accept=this.imageMimeTypes}}
 </div>
 
-{{#if _showUnsplash}}
+{{#if this._showUnsplash}}
     {{gh-unsplash
         select=(action "insertUnsplashPhoto")
         close=(action "toggleUnsplash")}}
 {{/if}}
 
-{{#if showMarkdownHelp}}
+{{#if this.showMarkdownHelp}}
     {{gh-fullscreen-modal "markdown-help"
         close=(action "toggleMarkdownHelp")
         modifier="wide"}}

@@ -7,17 +7,17 @@
             <div class="traveler-2">{{svg-jar "tumbleweed" class="w11 h11 absolute bouncer-2"}}</div>
         </div>
         <div class="absolute mt50 tc">
-            <h1 class="midlightgrey error-code-size fw6">{{code}}</h1>
-            <h2 class="midlightgrey f4 fw3">{{message}}</h2>
+            <h1 class="midlightgrey error-code-size fw6">{{this.code}}</h1>
+            <h2 class="midlightgrey f4 fw3">{{this.message}}</h2>
         </div>
     </section>
 
-    {{#if stack}}
+    {{#if this.stack}}
         <section class="error-stack">
             <h3>Stack Trace</h3>
-            <p><strong>{{message}}</strong></p>
+            <p><strong>{{this.message}}</strong></p>
             <ul class="error-stack-list">
-                {{#each stack as |item|}}
+                {{#each this.stack as |item|}}
                     <li>
                         at
                         {{#if item.function}}<em class="error-stack-function">{{item.function}}</em>{{/if}}
