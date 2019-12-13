@@ -1,9 +1,14 @@
 import Controller from '@ember/controller';
+import EmberObject from '@ember/object';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {alias} from '@ember/object/computed';
+import {computed, defineProperty} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {slugify} from '@tryghost/string';
 import {task} from 'ember-concurrency';
+
+const SCRATCH_PROPS = ['name', 'slug', 'description', 'metaTitle', 'metaDescription'];
 
 export default Controller.extend({
     notifications: service(),
@@ -12,6 +17,12 @@ export default Controller.extend({
     showDeleteTagModal: false,
 
     tag: alias('model'),
+
+    scratchTag: computed('tag', function () {
+        let scratchTag = EmberObject.create({tag: this.tag});
+        SCRATCH_PROPS.forEach(prop => defineProperty(scratchTag, prop, boundOneWay(`tag.${prop}`)));
+        return scratchTag;
+    }),
 
     actions: {
         setProperty(propKey, value) {
@@ -64,56 +75,21 @@ export default Controller.extend({
         }
     },
 
-    _saveTagProperty(propKey, newValue) {
-        let tag = this.tag;
-        let isNewTag = tag.get('isNew');
-        let currentValue = tag.get(propKey);
-
-        if (newValue) {
-            newValue = newValue.trim();
-        }
-
-        // Quit if there was no change
-        if (newValue === currentValue) {
-            return;
-        }
-
-        tag.set(propKey, newValue);
-
-        // Generate slug based on name for new tag when empty
-        if (propKey === 'name' && !tag.get('slug') && isNewTag) {
-            let slugValue = slugify(newValue);
-            if (/^#/.test(newValue)) {
-                slugValue = 'hash-' + slugValue;
-            }
-            tag.set('slug', slugValue);
-        }
-
-        // TODO: This is required until .validate/.save mark fields as validated
-        tag.get('hasValidated').addObject(propKey);
-    },
-
     save: task(function* () {
-        let tag = this.tag;
-        let isNewTag = tag.get('isNew');
+        let {tag, scratchTag} = this;
+
+        // if Cmd+S is pressed before the field loses focus make sure we're
+        // saving the intended property values
+        let scratchProps = scratchTag.getProperties(SCRATCH_PROPS);
+        tag.setProperties(scratchProps);
+
         try {
-            let savedTag = yield tag.save();
+            yield tag.save();
+
             // replace 'new' route with 'tag' route
-            this.replaceRoute('tag', savedTag);
+            this.replaceRoute('tag', tag);
 
-            // update the URL if the slug changed
-            if (!isNewTag) {
-                let currentPath = window.location.hash;
-
-                let newPath = currentPath.split('/');
-                if (newPath[newPath.length - 1] !== savedTag.get('slug')) {
-                    newPath[newPath.length - 1] = savedTag.get('slug');
-                    newPath = newPath.join('/');
-
-                    windowProxy.replaceState({path: newPath}, '', newPath);
-                }
-            }
-            return savedTag;
+            return tag;
         } catch (error) {
             if (error) {
                 this.notifications.showAPIError(error, {key: 'tag.save'});
@@ -129,5 +105,33 @@ export default Controller.extend({
             this.set('isLoading', false);
             return tag;
         });
-    })
+    }),
+
+    _saveTagProperty(propKey, newValue) {
+        let tag = this.tag;
+        let currentValue = tag.get(propKey);
+
+        if (newValue) {
+            newValue = newValue.trim();
+        }
+
+        // Quit if there was no change
+        if (newValue === currentValue) {
+            return;
+        }
+
+        tag.set(propKey, newValue);
+
+        // Generate slug based on name for new tag when empty
+        if (propKey === 'name' && !tag.get('slug') && tag.isNew) {
+            let slugValue = slugify(newValue);
+            if (/^#/.test(newValue)) {
+                slugValue = 'hash-' + slugValue;
+            }
+            tag.set('slug', slugValue);
+        }
+
+        // TODO: This is required until .validate/.save mark fields as validated
+        tag.get('hasValidated').addObject(propKey);
+    }
 });
