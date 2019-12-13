@@ -23,6 +23,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
 
     setupController(controller, models) {
         // reset the leave setting transition
+        controller.set('showLeaveSettingsModal', false);
         controller.set('leaveSettingsTransition', null);
         controller.set('availableTimezones', models.availableTimezones);
     },
