@@ -12,6 +12,7 @@ var should = require('should'),
     urlUtils = require('../../../../../server/lib/url-utils');
 
 // NOTE: to be unskiped and corrected once default scheduler code is migrated
+// eslint-disable-next-line
 describe.skip('Scheduling: Post Scheduling', function () {
     var scope = {
         events: {},

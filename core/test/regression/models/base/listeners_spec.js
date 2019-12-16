@@ -10,7 +10,14 @@ var should = require('should'),
     sequence = require('../../../../server/lib/promise/sequence');
 
 describe('Models: listeners', function () {
-    var eventsToRemember = {},
+    let eventsToRemember, now, listeners, scope;
+
+    before(testUtils.teardown);
+
+    beforeEach(testUtils.setup('owner', 'settings'));
+
+    beforeEach(function () {
+        eventsToRemember = {},
         now = moment(),
         listeners,
         scope = {
@@ -19,12 +26,15 @@ describe('Models: listeners', function () {
             publishedAtFutureMoment2: moment().add(2, 'hours').startOf('hour'),
             publishedAtFutureMoment3: moment().add(10, 'hours').startOf('hour')
         };
+<<<<<<< HEAD
 
     before(testUtils.teardownDb);
 
     beforeEach(testUtils.setup('owner', 'settings'));
 
     beforeEach(function () {
+=======
+>>>>>>> resolving file conflict
         sinon.stub(common.events, 'on').callsFake(function (eventName, callback) {
             eventsToRemember[eventName] = callback;
         });

@@ -163,7 +163,11 @@ describe('Validation', function () {
     });
 
     describe('Assert the Validator dependency', function () {
-        var validator = validation.validator;
+        var validator;
+
+        beforeEach(function (){
+            validator = validation.validator;
+        });
 
         it('isEmptyOrUrl filters javascript urls', function () {
             validator.isEmptyOrURL('javascript:alert(0)').should.be.false();

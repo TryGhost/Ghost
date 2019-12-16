@@ -25,10 +25,11 @@ describe('Migration Fixture Utils', function () {
     });
 
     describe('Match Func', function () {
-        var matchFunc = fixtureUtils.__get__('matchFunc'),
+        var matchFunc,
             getStub;
 
         beforeEach(function () {
+            matchFunc = fixtureUtils.__get__('matchFunc');
             getStub = sinon.stub();
             getStub.withArgs('foo').returns('bar');
             getStub.withArgs('fun').returns('baz');

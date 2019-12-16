@@ -116,14 +116,13 @@ describe('Integration: Importer', function () {
 
     beforeEach(function () {
         sinon.stub(importer, 'cleanUp');
+        should.exist(importer);
     });
 
     afterEach(testUtils.teardownDb);
     afterEach(function () {
         sinon.restore();
     });
-
-    should.exist(importer);
 
     describe('Empty database (except of owner user), general tests', function () {
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));

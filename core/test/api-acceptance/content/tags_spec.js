@@ -9,9 +9,10 @@ const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
 
 describe('Tags Content API', function () {
-    let request;
+    let request, validKey;
 
     before(function () {
+        validKey = localUtils.getValidKey();
         return ghost()
             .then(function (_ghostServer) {
                 request = supertest.agent(config.get('url'));
@@ -24,8 +25,6 @@ describe('Tags Content API', function () {
     afterEach(function () {
         configUtils.restore();
     });
-
-    const validKey = localUtils.getValidKey();
 
     it('Can request tags', function (done) {
         request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}`))

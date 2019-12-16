@@ -8,17 +8,16 @@ describe('getPaginatedUrl', function () {
 
     beforeEach(function () {
         data = {};
-    });
-
-    getTestUrls = function getTestUrls() {
-        return {
-            next: getPaginatedUrl('next', data, true),
-            prev: getPaginatedUrl('prev', data, true),
-            page1: getPaginatedUrl(1, data),
-            page5: getPaginatedUrl(5, data),
-            page10: getPaginatedUrl(10, data)
+        getTestUrls = function getTestUrls() {
+            return {
+                next: getPaginatedUrl('next', data, true),
+                prev: getPaginatedUrl('prev', data, true),
+                page1: getPaginatedUrl(1, data),
+                page5: getPaginatedUrl(5, data),
+                page10: getPaginatedUrl(10, data)
+            };
         };
-    };
+    });
 
     it('should be a function', function () {
         should.exist(getPaginatedUrl);

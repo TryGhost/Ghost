@@ -13,11 +13,12 @@ const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
 
 // TODO: Fix with token in URL
+// eslint-disable-next-line
 describe.skip('v2 Schedules API', function () {
-    const resources = [];
-    let request;
+    let request, resources;
 
     before(function () {
+        resources = [];
         models.init();
 
         // @NOTE: mock the post scheduler, otherwise it will auto publish the post

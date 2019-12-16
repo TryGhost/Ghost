@@ -6,14 +6,19 @@ var should = require('should'),
     helpers = require.main.require('core/frontend/helpers');
 
 describe('Helpers', function () {
-    var hbsHelpers = ['each', 'if', 'unless', 'with', 'helperMissing', 'blockHelperMissing', 'log', 'lookup', 'block', 'contentFor'],
+    let hbsHelpers, ghostHelpers, expectedHelpers;
+    before(function () {
+        hbsHelpers = ['each', 'if', 'unless', 'with', 'helperMissing', 'blockHelperMissing', 'log', 'lookup', 'block', 'contentFor'],
         ghostHelpers = [
             'asset', 'author', 'authors', 'body_class', 'cancel_link', 'concat', 'content', 'date', 'encode', 'excerpt', 'facebook_url', 'foreach', 'get',
             'ghost_foot', 'ghost_head', 'has', 'img_url', 'is', 'lang', 'link', 'link_class', 'meta_description', 'meta_title', 'navigation',
             'next_post', 'page_url', 'pagination', 'plural', 'post_class', 'prev_post', 'price', 'reading_time', 't', 'tags', 'title', 'twitter_url',
             'url'
-        ],
+        ];
+    });
+    beforeEach(function () {
         expectedHelpers = _.concat(hbsHelpers, ghostHelpers);
+    });
 
     describe('Load Core Helpers', function () {
         before(function () {

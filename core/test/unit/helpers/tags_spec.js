@@ -203,18 +203,21 @@ describe('{{tags}} helper', function () {
     });
 
     describe('Internal tags', function () {
-        const tags = [
-            testUtils.DataGenerator.forKnex.createTag({name: 'foo', slug: 'foo-bar'}),
-            testUtils.DataGenerator.forKnex.createTag({name: '#bar', slug: 'hash-bar', visibility: 'internal'}),
-            testUtils.DataGenerator.forKnex.createTag({name: 'bar', slug: 'bar'}),
-            testUtils.DataGenerator.forKnex.createTag({name: 'baz', slug: 'baz'}),
-            testUtils.DataGenerator.forKnex.createTag({name: 'buzz', slug: 'buzz'})
-        ];
+        let tags,tags1;
+        before(function () {
+            tags = [
+                testUtils.DataGenerator.forKnex.createTag({name: 'foo', slug: 'foo-bar'}),
+                testUtils.DataGenerator.forKnex.createTag({name: '#bar', slug: 'hash-bar', visibility: 'internal'}),
+                testUtils.DataGenerator.forKnex.createTag({name: 'bar', slug: 'bar'}),
+                testUtils.DataGenerator.forKnex.createTag({name: 'baz', slug: 'baz'}),
+                testUtils.DataGenerator.forKnex.createTag({name: 'buzz', slug: 'buzz'})
+            ];
 
-        const tags1 = [
-            testUtils.DataGenerator.forKnex.createTag({name: '#foo', slug: 'hash-foo-bar', visibility: 'internal'}),
-            testUtils.DataGenerator.forKnex.createTag({name: '#bar', slug: 'hash-bar', visibility: 'internal'})
-        ];
+            tags1 = [
+                testUtils.DataGenerator.forKnex.createTag({name: '#foo', slug: 'hash-foo-bar', visibility: 'internal'}),
+                testUtils.DataGenerator.forKnex.createTag({name: '#bar', slug: 'hash-bar', visibility: 'internal'})
+            ];
+        });
 
         beforeEach(function () {
             urlService.getUrlByResourceId.withArgs(tags[0].id).returns('1');

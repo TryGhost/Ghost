@@ -14,10 +14,12 @@ describe('lib/image: image size', function () {
     let sizeOfSpy;
     let probeSizeOf;
     let probeSizeOfSpy;
-    let originalStoragePath;
+    let originalStoragePath, GIF1x1;
 
-    // use a 1x1 gif in nock responses because it's really small and easy to work with
-    const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
+    before(function () {
+        // use a 1x1 gif in nock responses because it's really small and easy to work with
+        GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
+    });
 
     beforeEach(function () {
         imageSize = rewire('../../../../server/lib/image/image-size');

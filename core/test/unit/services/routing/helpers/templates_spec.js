@@ -5,8 +5,11 @@ const should = require('should'),
     themes = require('../../../../../frontend/services/themes');
 
 describe('templates', function () {
-    let getActiveThemeStub, hasTemplateStub,
+    let getActiveThemeStub, hasTemplateStub, _private;
+
+    before(function () {
         _private = templates.__get__('_private');
+    });
 
     afterEach(function () {
         sinon.restore();

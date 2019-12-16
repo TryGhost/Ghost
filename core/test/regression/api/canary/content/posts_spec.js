@@ -14,7 +14,10 @@ const ghost = testUtils.startGhost;
 let request;
 
 describe('api/canary/content/posts', function () {
+    let validKey;
+
     before(function () {
+        validKey = localUtils.getValidKey();
         return ghost()
             .then(function () {
                 request = supertest.agent(config.get('url'));
@@ -28,8 +31,6 @@ describe('api/canary/content/posts', function () {
         configUtils.restore();
         urlUtils.restore();
     });
-
-    const validKey = localUtils.getValidKey();
 
     it('browse posts', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))

@@ -338,7 +338,11 @@ describe('Importer', function () {
     });
 
     describe('ImageHandler', function () {
-        var store = storage.getStorage();
+        var store;
+
+        beforeEach(function (){
+            store = storage.getStorage();
+        });
 
         it('has the correct interface', function () {
             ImageHandler.type.should.eql('images');

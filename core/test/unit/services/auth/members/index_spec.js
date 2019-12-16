@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const should = require('should');
 const {UnauthorizedError} = require('../../../../../server/lib/common/errors');
 const members = require('../../../../../server/services/auth/members');
-
+// eslint-disable-next-line
 describe.skip('Auth Service - Members', function () {
     it('exports an authenticateMembersToken method', function () {
         const actual = typeof members.authenticateMembersToken;

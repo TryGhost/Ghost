@@ -13,9 +13,7 @@ describe('Exporter', function () {
     afterEach(function () {
         sinon.restore();
     });
-    beforeEach(testUtils.setup('default', 'settings'));
-
-    should.exist(exporter);
+    beforeEach(testUtils.setup('default', 'settings'), should.exist(exporter));
 
     it('exports data', function (done) {
         exporter.doExport().then(function (exportData) {

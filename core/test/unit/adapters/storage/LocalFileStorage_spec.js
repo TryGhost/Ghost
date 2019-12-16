@@ -221,9 +221,10 @@ describe('Local File System Storage', function () {
 
     // @TODO: remove path.join mock...
     describe('on Windows', function () {
-        var truePathSep = path.sep;
+        let truePathSep;
 
         beforeEach(function () {
+            truePathSep = path.sep;
             sinon.stub(path, 'join');
             sinon.stub(configUtils.config, 'getContentPath').returns('content/images/');
         });

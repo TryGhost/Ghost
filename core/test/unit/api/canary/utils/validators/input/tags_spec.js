@@ -134,28 +134,30 @@ describe('Unit: canary/utils/validators/input/tags', function () {
         });
 
         describe('field formats', function () {
-            const fieldMap = {
-                name: [123, new Date(), ',starts-with-coma', '', _.repeat('a', 192), null],
-                slug: [123, new Date(), _.repeat('a', 192)],
-                description: [123, new Date(), _.repeat('a', 501)],
-                feature_image: [123, new Date(), 'not uri'],
-                visibility: [123, new Date(), 'abc', null],
-                meta_title: [123, new Date(), _.repeat('a', 301)],
-                meta_description: [123, new Date(), _.repeat('a', 501)]
-            };
+            let fieldMap,checks,badValues,tag,key;
+            before(function () {
+                fieldMap = {
+                    name: [123, new Date(), ',starts-with-coma', '', _.repeat('a', 192), null],
+                    slug: [123, new Date(), _.repeat('a', 192)],
+                    description: [123, new Date(), _.repeat('a', 501)],
+                    feature_image: [123, new Date(), 'not uri'],
+                    visibility: [123, new Date(), 'abc', null],
+                    meta_title: [123, new Date(), _.repeat('a', 301)],
+                    meta_description: [123, new Date(), _.repeat('a', 501)]
+                };
+            });
 
-            Object.keys(fieldMap).forEach((key) => {
-                it(`should fail for bad ${key}`, function () {
-                    const badValues = fieldMap[key];
+            beforeEach(function () {
+                Object.keys(fieldMap).forEach((key) => {
+                    badValues = fieldMap[key];
 
-                    const checks = badValues.map((value) => {
-                        const tag = {};
+                    checks = badValues.map((value) => {
+                        tag = {};
                         tag[key] = value;
 
                         if (key !== 'name') {
                             tag.name = 'abc';
                         }
-
                         const frame = {
                             options: {},
                             data: {

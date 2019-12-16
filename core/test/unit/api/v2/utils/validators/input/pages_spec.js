@@ -137,48 +137,52 @@ describe('Unit: v2/utils/validators/input/pages', function () {
         });
 
         describe('field formats', function () {
-            const fieldMap = {
-                title: [123, new Date(), _.repeat('a', 2001)],
-                slug: [123, new Date(), _.repeat('a', 192)],
-                mobiledoc: [123, new Date()],
-                feature_image: [123, new Date(), 'random words'],
-                featured: [123, new Date(), 'abc'],
-                status: [123, new Date(), 'abc'],
-                locale: [123, new Date(), _.repeat('a', 7)],
-                visibility: [123, new Date(), 'abc'],
-                meta_title: [123, new Date(), _.repeat('a', 301)],
-                meta_description: [123, new Date(), _.repeat('a', 501)]
-            };
+            let fieldMap,badValues,checks,page,frame, key;
+            before(function () {
+                fieldMap = {
+                    title: [123, new Date(), _.repeat('a', 2001)],
+                    slug: [123, new Date(), _.repeat('a', 192)],
+                    mobiledoc: [123, new Date()],
+                    feature_image: [123, new Date(), 'random words'],
+                    featured: [123, new Date(), 'abc'],
+                    status: [123, new Date(), 'abc'],
+                    locale: [123, new Date(), _.repeat('a', 7)],
+                    visibility: [123, new Date(), 'abc'],
+                    meta_title: [123, new Date(), _.repeat('a', 301)],
+                    meta_description: [123, new Date(), _.repeat('a', 501)]
+                };
+            }); 
 
-            Object.keys(fieldMap).forEach((key) => {
-                it(`should fail for bad ${key}`, function () {
-                    const badValues = fieldMap[key];
+            beforeEach(function () {
+                Object.keys(fieldMap).forEach((key) => {
+                    badValues = fieldMap[key];
 
-                    const checks = badValues.map((value) => {
-                        const page = {};
+                    checks = badValues.map((value) => {
+                        page = {};
                         page[key] = value;
 
                         if (key !== 'title') {
                             page.title = 'abc';
                         }
 
-                        const frame = {
+                        frame = {
                             options: {},
                             data: {
                                 pages: [page]
                             }
                         };
-
                         return validators.input.pages.add(apiConfig, frame)
                             .then(Promise.reject)
                             .catch((err) => {
                                 (err instanceof common.errors.ValidationError).should.be.true();
                             });
                     });
-
-                    return Promise.all(checks);
                 });
             });
+                
+            it(`should fail for bad ${key}`, function () {
+                return Promise.all(checks);
+            });     
         });
 
         describe('authors structure', function () {

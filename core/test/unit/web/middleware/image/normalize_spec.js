@@ -6,7 +6,7 @@ const common = require('../../../../../server/lib/common');
 const normalize = require('../../../../../server/web/shared/middlewares/image/normalize');
 
 describe('normalize', function () {
-    let res, req;
+    let res, req, extension;
 
     beforeEach(function () {
         req = {
@@ -68,14 +68,14 @@ describe('normalize', function () {
         });
     });
 
-    ['.gif', '.svg', '.svgz'].forEach(function (extension) {
-        it(`should skip processing when file extension is ${extension}`, function (done) {
+    it(`should skip processing when file extension is ${extension}`, function (done) {
+        ['.gif', '.svg', '.svgz'].forEach(function (extension) {
             req.file.ext = extension;
-            normalize(req, res, function () {
-                req.file.should.not.be.equal(undefined);
-                should.not.exist(req.files);
-                done();
-            });
+        });
+        normalize(req, res, function () {
+            req.file.should.not.be.equal(undefined);
+            should.not.exist(req.files);
+            done();
         });
     });
 });

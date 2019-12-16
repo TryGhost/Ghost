@@ -8,10 +8,10 @@ const config = require('../../../../../server/config');
 const ghost = testUtils.startGhost;
 
 describe('Authors Content API', function () {
-    const validKey = localUtils.getValidKey();
-    let request;
+    let request, validKey;
 
     before(function () {
+        validKey = localUtils.getValidKey();
         return ghost()
             .then(function (_ghostServer) {
                 request = supertest.agent(config.get('url'));

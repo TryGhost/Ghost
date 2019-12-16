@@ -12,9 +12,10 @@ const ghost = testUtils.startGhost;
 let request;
 
 describe('Authors Content API', function () {
-    let ghostServer;
+    let ghostServer, validKey;
 
     before(function () {
+        validKey = localUtils.getValidKey();
         return ghost()
             .then(function (_ghostServer) {
                 ghostServer = _ghostServer;
@@ -28,8 +29,6 @@ describe('Authors Content API', function () {
     afterEach(function () {
         configUtils.restore();
     });
-
-    const validKey = localUtils.getValidKey();
 
     it('Can request authors', function (done) {
         request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}`))

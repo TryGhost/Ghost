@@ -9,7 +9,10 @@ const ghost = testUtils.startGhost;
 let request;
 
 describe('api/v3/content/tags', function () {
+    let validKey;
+    
     before(function () {
+        validKey = localUtils.getValidKey();
         return ghost()
             .then(function () {
                 request = supertest.agent(config.get('url'));
@@ -22,8 +25,6 @@ describe('api/v3/content/tags', function () {
     afterEach(function () {
         configUtils.restore();
     });
-
-    const validKey = localUtils.getValidKey();
 
     it('can read tags with fields', function () {
         return request

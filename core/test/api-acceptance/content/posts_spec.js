@@ -10,10 +10,11 @@ const config = require('../../../server/config');
 const localUtils = require('./utils');
 
 const ghost = testUtils.startGhost;
-let request;
+let request, validKey;
 
 describe('Posts Content API', function () {
     before(function () {
+        validKey = localUtils.getValidKey();
         return ghost()
             .then(function () {
                 request = supertest.agent(config.get('url'));
@@ -26,8 +27,6 @@ describe('Posts Content API', function () {
     afterEach(function () {
         configUtils.restore();
     });
-
-    const validKey = localUtils.getValidKey();
 
     it('Can request posts', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))

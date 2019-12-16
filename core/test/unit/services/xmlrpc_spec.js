@@ -69,7 +69,11 @@ describe('XMLRPC', function () {
     });
 
     describe('ping()', function () {
-        var ping = xmlrpc.__get__('ping');
+        let ping;
+
+        before(function () {
+            ping = xmlrpc.__get__('ping');
+        });
 
         it('with a post should execute two pings', function (done) {
             var ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200),

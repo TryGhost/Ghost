@@ -12,10 +12,10 @@ const common = require('../../../server/lib/common');
 const security = require('../../../server/lib/security');
 
 describe('Unit: models/post', function () {
-    const mockDb = require('mock-knex');
-    let tracker;
+    let tracker,mockDb;
 
     before(function () {
+        mockDb = require('mock-knex');
         models.init();
         mockDb.mock(knex);
         tracker = mockDb.getTracker();
@@ -245,9 +245,13 @@ describe('Unit: models/post', function () {
     });
 
     describe('toJSON', function () {
-        const toJSON = function toJSON(model, options) {
-            return new models.Post(model).toJSON(options);
-        };
+        let toJSON;
+        
+        beforeEach(function () {
+            toJSON = function toJSON(model, options) {
+                return new models.Post(model).toJSON(options);
+            };
+        });
 
         it('ensure mobiledoc revisions are never exposed', function () {
             const post = {
@@ -276,10 +280,14 @@ describe('Unit: models/post', function () {
     });
 
     describe('enforcedFilters', function () {
-        const enforcedFilters = function enforcedFilters(model, options) {
-            return new models.Post(model).enforcedFilters(options);
-        };
+        let enforcedFilters;
 
+        beforeEach(function () {
+            enforcedFilters = function enforcedFilters(model, options) {
+                return new models.Post(model).enforcedFilters(options);
+            };
+        });
+        
         it('returns published status filter for public context', function () {
             const options = {
                 context: {
@@ -306,9 +314,13 @@ describe('Unit: models/post', function () {
     });
 
     describe('defaultFilters', function () {
-        const defaultFilters = function defaultFilters(model, options) {
-            return new models.Post(model).defaultFilters(options);
-        };
+        let defaultFilters;
+
+        beforeEach(function () {
+            defaultFilters = function defaultFilters(model, options) {
+                return new models.Post(model).defaultFilters(options);
+            };
+        });
 
         it('returns no default filter for internal context', function () {
             const options = {

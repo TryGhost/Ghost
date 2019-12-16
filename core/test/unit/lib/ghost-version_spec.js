@@ -6,11 +6,13 @@ let ghostVersionUtils,
     version;
 
 describe('Utils: Ghost Version', function () {
-    const beforeEachIt = function be() {
-        testUtils.mockNotExistingModule(/package\.json/, {version: version});
-
-        ghostVersionUtils = rewire('../../../server/lib/ghost-version');
-    };
+    let beforeEachIt;
+    before(function () {
+        beforeEachIt = function be() {
+            testUtils.mockNotExistingModule(/package\.json/, {version: version});
+            ghostVersionUtils = rewire('../../../server/lib/ghost-version');
+        };
+    });
 
     afterEach(function () {
         testUtils.unmockNotExistingModule(/package\.json/);

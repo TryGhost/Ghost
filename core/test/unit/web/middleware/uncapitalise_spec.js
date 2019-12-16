@@ -125,17 +125,22 @@ describe('Middleware: uncapitalise', function () {
     });
 
     describe('An API request', function () {
-        ['v0.1', 'v2', 'v3', 'canary', 'v10'].forEach((apiVersion) => {
-            describe(`for ${apiVersion}`, function () {
-                it('does nothing if there are no capitals', function (done) {
+        let apiVersion;
+        describe(`for ${apiVersion}`, function () {
+            beforeEach(function () {
+                apiVersion = ['v0.1', 'v2', 'canary', 'v10'];
+            });
+            it('does nothing if there are no capitals', function (done) {
+                apiVersion.forEach((apiVersion) => {
                     req.path = `/ghost/api/${apiVersion}/endpoint/`;
                     uncapitalise(req, res, next);
-
                     next.calledOnce.should.be.true();
                     done();
                 });
+            });    
 
-                it('version identifier is uppercase', function (done) {
+            it('version identifier is uppercase', function (done) {
+                apiVersion.forEach((apiVersion) => {
                     req.path = `/ghost/api/${apiVersion.toUpperCase()}/endpoint/`;
                     req.url = req.path;
 
@@ -146,8 +151,9 @@ describe('Middleware: uncapitalise', function () {
                     res.redirect.calledWith(301, `/ghost/api/${apiVersion}/endpoint/`).should.be.true();
                     done();
                 });
-
-                it('redirects to the lower case slug if there are capitals', function (done) {
+            });    
+            it('redirects to the lower case slug if there are capitals', function (done) {
+                apiVersion.forEach((apiVersion) => {
                     req.path = `/ghost/api/${apiVersion}/ASDfJ/`;
                     req.url = req.path;
 
@@ -158,8 +164,9 @@ describe('Middleware: uncapitalise', function () {
                     res.redirect.calledWith(301, `/ghost/api/${apiVersion}/asdfj/`).should.be.true();
                     done();
                 });
-
-                it('redirects to the lower case slug if there are capitals in req.baseUrl', function (done) {
+            });    
+            it('redirects to the lower case slug if there are capitals in req.baseUrl', function (done) {
+                apiVersion.forEach((apiVersion) => {
                     req.baseUrl = '/Blog';
                     req.path = `/ghost/api/${apiVersion}/ASDfJ/`;
                     req.url = req.path;
@@ -172,8 +179,9 @@ describe('Middleware: uncapitalise', function () {
                     res.redirect.calledWith(301, `/blog/ghost/api/${apiVersion}/asdfj/`).should.be.true();
                     done();
                 });
-
-                it('does not convert any capitals after the endpoint', function (done) {
+            });    
+            it('does not convert any capitals after the endpoint', function (done) {
+                apiVersion.forEach((apiVersion) => {
                     var query = '?filter=mAgic';
                     req.path = `/Ghost/API/${apiVersion}/settings/is_private/`;
                     req.url = req.path + query;
@@ -185,8 +193,9 @@ describe('Middleware: uncapitalise', function () {
                     res.redirect.calledWith(301, `/ghost/api/${apiVersion}/settings/is_private/?filter=mAgic`).should.be.true();
                     done();
                 });
-
-                it('does not convert any capitals after the endpoint with baseUrl', function (done) {
+            });    
+            it('does not convert any capitals after the endpoint with baseUrl', function (done) {
+                apiVersion.forEach((apiVersion) => {
                     var query = '?filter=mAgic';
                     req.baseUrl = '/Blog';
                     req.path = `/ghost/api/${apiVersion}/mail/test@example.COM/`;
@@ -203,7 +212,6 @@ describe('Middleware: uncapitalise', function () {
             });
         });
     });
-
     describe('Any other request', function () {
         it('does nothing if there are no capitals', function (done) {
             req.path = '/this-is-my-blog-post';

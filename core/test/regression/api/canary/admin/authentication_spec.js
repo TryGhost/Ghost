@@ -214,9 +214,10 @@ describe('Authentication API v3', function () {
     });
 
     describe('Password reset', function () {
-        const user = testUtils.DataGenerator.forModel.users[0];
+        let user;
 
         before(function () {
+            user = testUtils.DataGenerator.forModel.users[0];
             return ghost({forceStart: true})
                 .then(() => {
                     request = supertest.agent(config.get('url'));

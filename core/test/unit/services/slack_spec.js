@@ -92,12 +92,12 @@ describe('Slack', function () {
     describe('ping()', function () {
         var isPostStub,
             settingsCacheStub,
-
             slackReset,
             makeRequestStub,
-            ping = slack.__get__('ping');
+            ping;
 
         beforeEach(function () {
+            ping = slack.__get__('ping');
             isPostStub = sinon.stub(schema, 'isPost');
             sinon.stub(urlService, 'getUrlByResourceId');
 

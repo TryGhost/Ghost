@@ -15,10 +15,10 @@ describe('Unit: models/tag', function () {
     });
 
     describe('SQL', function () {
-        const mockDb = require('mock-knex');
-        let tracker;
+        let tracker,mockDb;
 
         before(function () {
+            mockDb = require('mock-knex');
             mockDb.mock(knex);
             tracker = mockDb.getTracker();
         });

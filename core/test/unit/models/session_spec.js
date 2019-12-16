@@ -12,9 +12,13 @@ describe('Unit: models/session', function () {
     });
 
     describe('parse', function () {
-        const parse = function parse(attrs) {
-            return new models.Session().parse(attrs);
-        };
+        let parse;
+
+        before(function () {
+            parse = function parse(attrs) {
+                return new models.Session().parse(attrs);
+            };
+        });
 
         it('converts session_data to an object', function () {
             const attrs = {
@@ -30,10 +34,12 @@ describe('Unit: models/session', function () {
     });
 
     describe('format', function () {
-        const format = function format(attrs) {
-            return new models.Session().format(attrs);
-        };
-
+        let format;
+        before(function () {
+            format = function format(attrs) {
+                return new models.Session().format(attrs);
+            };
+        });
         it('converts session_data to a string', function () {
             const attrs = {
                 id: 'something',
