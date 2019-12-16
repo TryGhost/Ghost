@@ -993,7 +993,7 @@
     resolve "^1.8.1"
     semver "^5.6.0"
 
-"@glimmer/component@^1.0.0":
+"@glimmer/component@1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@glimmer/component/-/component-1.0.0.tgz#f9052c8e99fb7b3d48d27c65891c5f0e59084a82"
   integrity sha512-1ERZYNLZRuC8RYbcfkJeAWn3Ly7W2VdoHLQIHCmhQH/m7ubkNOdLQcTnUzje7OnRUs9EJ6DjfoN57XRX9Ux4rA==
