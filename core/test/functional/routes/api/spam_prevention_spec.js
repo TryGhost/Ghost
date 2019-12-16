@@ -161,7 +161,7 @@ describe('Spam Prevention API', function () {
         failedLoginAttempt(owner.email);
     });
 
-    it('Ensure reset works: password grant type', function (done) {
+    it.skip('Ensure reset works: password grant type', function (done) {
         count = 0;
 
         checkBruteTable = function checkBruteTable() {
