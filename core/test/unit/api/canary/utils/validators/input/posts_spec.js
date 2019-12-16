@@ -153,34 +153,28 @@ describe('Unit: canary/utils/validators/input/posts', function () {
                 };
             });
 
-            beforeEach(function () {
-                Object.keys(fieldMap).forEach((key) => {
-                    badValues = fieldMap[key];
+            it(`should fail for bad slug`, function () {
+                badValues = fieldMap.slug;
+                checks = badValues.map((value) => {
+                    post = {};
+                    post[key] = value;
 
-                    checks = badValues.map((value) => {
-                        post = {};
-                        post[key] = value;
-
-                        if (key !== 'title') {
-                            post.title = 'abc';
+                    frame = {
+                        options: {},
+                        data: {
+                            posts: [post]
                         }
-                        frame = {
-                            options: {},
-                            data: {
-                                posts: [post]
-                            }
-                        };
-                        return validators.input.posts.add(apiConfig, frame)
-                            .then(Promise.reject)
-                            .catch((err) => {
-                                (err instanceof common.errors.ValidationError).should.be.true();
-                            });
-                    });
-                });      
-            });
-            it(`should fail for bad ${key}`, function () {
+                    };
+
+                    return validators.input.posts.add(apiConfig, frame)
+                        .then(Promise.reject)
+                        .catch((err) => {
+                            (err instanceof common.errors.ValidationError).should.be.true();
+                        });
+                });
+
                 return Promise.all(checks);
-            });    
+            });
         });    
 
         describe('authors structure', function () {

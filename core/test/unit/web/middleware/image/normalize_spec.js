@@ -16,7 +16,7 @@ describe('normalize', function () {
                 ext: '.jpg'
             }
         };
-
+        extension = ['.gif', '.svg', '.svgz'];
         sinon.stub(image.manipulator, 'process');
         sinon.stub(common.logging, 'error');
     });
@@ -68,8 +68,8 @@ describe('normalize', function () {
         });
     });
 
-    it(`should skip processing when file extension is ${extension}`, function (done) {
-        ['.gif', '.svg', '.svgz'].forEach(function (extension) {
+    it(`should skip processing when file extension is .gif .svg .svgz`, function (done) {
+        extension.forEach(function (extension){
             req.file.ext = extension;
         });
         normalize(req, res, function () {

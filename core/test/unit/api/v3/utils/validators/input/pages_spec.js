@@ -153,36 +153,30 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 };
             }); 
 
-            beforeEach(function () {
-                Object.keys(fieldMap).forEach((key) => {
-                    badValues = fieldMap[key];
+            it(`should fail for bad slug`, function () {
+                badValues = fieldMap.slug;
+                checks = badValues.map((value) => {
+                    page = {};
+                    page[key] = value;
 
-                    checks = badValues.map((value) => {
-                        page = {};
-                        page[key] = value;
+                    if (key !== 'title') {
+                        page.title = 'abc';
+                    }
 
-                        if (key !== 'title') {
-                            page.title = 'abc';
+                    frame = {
+                        options: {},
+                        data: {
+                            pages: [page]
                         }
-
-                        frame = {
-                            options: {},
-                            data: {
-                                pages: [page]
-                            }
-                        };
-                        return validators.input.pages.add(apiConfig, frame)
-                            .then(Promise.reject)
-                            .catch((err) => {
-                                (err instanceof common.errors.ValidationError).should.be.true();
-                            });
-                    });
+                    };
+                    return validators.input.pages.add(apiConfig, frame)
+                        .then(Promise.reject)
+                        .catch((err) => {
+                            (err instanceof common.errors.ValidationError).should.be.true();
+                        });
                 });
-            });
-                
-            it(`should fail for bad ${key}`, function () {
                 return Promise.all(checks);
-            });     
+            });
         });
 
         describe('authors structure', function () {

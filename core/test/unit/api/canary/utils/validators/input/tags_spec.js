@@ -134,7 +134,7 @@ describe('Unit: canary/utils/validators/input/tags', function () {
         });
 
         describe('field formats', function () {
-            let fieldMap,checks,badValues,tag,key;
+            let fieldMap,checks,badValues,tag,key, frame;
             before(function () {
                 fieldMap = {
                     name: [123, new Date(), ',starts-with-coma', '', _.repeat('a', 192), null],
@@ -147,33 +147,30 @@ describe('Unit: canary/utils/validators/input/tags', function () {
                 };
             });
 
-            beforeEach(function () {
-                Object.keys(fieldMap).forEach((key) => {
-                    badValues = fieldMap[key];
+            it(`should fail for bad slug`, function () {
+                badValues = fieldMap.slug;
+                checks = badValues.map((value) => {
+                    tag = {};
+                    tag[key] = value;
 
-                    checks = badValues.map((value) => {
-                        tag = {};
-                        tag[key] = value;
-
-                        if (key !== 'name') {
-                            tag.name = 'abc';
+                    if (key !== 'name') {
+                        tag.name = 'abc';
+                    }
+                    frame = {
+                        options: {},
+                        data: {
+                            tags: [tag]
                         }
-                        const frame = {
-                            options: {},
-                            data: {
-                                tags: [tag]
-                            }
-                        };
+                    };
 
-                        return validators.input.tags.add(apiConfig, frame)
-                            .then(Promise.reject)
-                            .catch((err) => {
-                                (err instanceof common.errors.ValidationError).should.be.true();
-                            });
-                    });
-
-                    return Promise.all(checks);
+                    return validators.input.tags.add(apiConfig, frame)
+                        .then(Promise.reject)
+                        .catch((err) => {
+                            (err instanceof common.errors.ValidationError).should.be.true();
+                        });
                 });
+
+                return Promise.all(checks);
             });
         });
     });

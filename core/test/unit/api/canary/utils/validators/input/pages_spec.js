@@ -152,34 +152,30 @@ describe('Unit: canary/utils/validators/input/pages', function () {
                     meta_description: [123, new Date(), _.repeat('a', 501)]
                 };
             });
-           
-            beforeEach(function () {
-                Object.keys(fieldMap).forEach((key) => {
-                    badValues = fieldMap[key];
-                    checks = badValues.map((value) => {
-                        page = {};
-                        page[key] = value;
-                        if (key !== 'title') {
-                            page.title = 'abc';
+  
+            it(`should fail for bad slug`, function () {
+                badValues = fieldMap.slug;
+                checks = badValues.map((value) => {
+                    page = {};
+                    page[key] = value;
+
+                    frame = {
+                        options: {},
+                        data: {
+                            pages: [page]
                         }
-                        frame = {
-                            options: {},
-                            data: {
-                                pages: [page]
-                            }
-                        };
-                        return validators.input.pages.add(apiConfig, frame)
-                            .then(Promise.reject)
-                            .catch((err) => {
-                                (err instanceof common.errors.ValidationError).should.be.true();
-                            });
-                    });
+                    };
+
+                    return validators.input.pages.add(apiConfig, frame)
+                        .then(Promise.reject)
+                        .catch((err) => {
+                            (err instanceof common.errors.ValidationError).should.be.true();
+                        });
                 });
-            });    
-            it(`should fail for bad ${key}`, function () {
-                return Promise.all(checks);  
+
+                return Promise.all(checks);
             });
-        });  
+        });
 
         describe('authors structure', function () {
             it('should require properties', function () {
