@@ -10,16 +10,20 @@ checkTheme = function checkTheme(theme, isZip) {
 
     if (isZip) {
         checkPromise = gscan.checkZip(theme, {
-            keepExtractedDir: true
+            keepExtractedDir: true,
+            checkVersion: 'v1'
         });
     } else {
-        checkPromise = gscan.check(theme.path);
+        checkPromise = gscan.check(theme.path, {
+            checkVersion: 'v1'
+        });
     }
 
     return checkPromise
         .then(function resultHandler(checkedTheme) {
             checkedTheme = gscan.format(checkedTheme, {
-                onlyFatalErrors: config.get('env') === 'production'
+                onlyFatalErrors: config.get('env') === 'production',
+                checkVersion: 'v1'
             });
 
             // CASE: production and no fatal errors
