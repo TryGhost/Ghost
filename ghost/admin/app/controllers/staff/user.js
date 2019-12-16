@@ -84,11 +84,13 @@ export default Controller.extend({
         },
 
         deleteUser() {
-            return this._deleteUser().then(() => {
-                this._deleteUserSuccess();
-            }, () => {
-                this._deleteUserFailure();
-            });
+            return this._deleteUser()
+                .then(filename => this._exportDb(filename))
+                .then(() => {
+                    this._deleteUserSuccess();
+                }, () => {
+                    this._deleteUserFailure();
+                });
         },
 
         toggleDeleteUserModal() {
@@ -354,6 +356,21 @@ export default Controller.extend({
 
     _deleteUserFailure() {
         this.notifications.showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
+    },
+
+    async _exportDb(filename) {
+        let exportUrl = this.get('ghostPaths.url').api('db');
+        let downloadURL = `${exportUrl}?filename=${filename}`;
+        let iframe = document.getElementById('iframeDownload');
+
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.id = 'iframeDownload';
+            iframe.style.display = 'none';
+            document.body.append(iframe);
+        }
+
+        iframe.setAttribute('src', downloadURL);
     },
 
     updateSlug: task(function* (newSlug) {
