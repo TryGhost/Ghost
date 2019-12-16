@@ -31,7 +31,8 @@ module.exports = {
 
     exportContent: {
         options: [
-            'include'
+            'include',
+            'filename'
         ],
         validation: {
             options: {
@@ -47,7 +48,17 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
+            if (frame.options.filename) {
+                let backup = await dbBackup.readBackup(frame.options.filename);
+
+                if (!backup) {
+                    return new common.errors.NotFoundError();
+                }
+
+                return backup;
+            }
+
             return Promise.resolve()
                 .then(() => exporter.doExport({include: frame.options.withRelated}))
                 .catch((err) => {
