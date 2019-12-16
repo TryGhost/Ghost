@@ -179,7 +179,7 @@ describe('Unit: canary/utils/validators/input/pages', function () {
             it(`should fail for bad ${key}`, function () {
                 return Promise.all(checks);  
             });
-        });    
+        });  
 
         describe('authors structure', function () {
             it('should require properties', function () {
