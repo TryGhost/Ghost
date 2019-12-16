@@ -21,10 +21,6 @@
   },
   "packageRules": [
     {
-      "groupName": "ember addons",
-      "packagePatterns": ["^ember", "^@ember", "^broccoli", "^liquid"]
-    },
-    {
       "groupName": "ember-basic-dropdown addons",
       "packagePatterns": ["^ember-basic", "^ember-power"]
     },
