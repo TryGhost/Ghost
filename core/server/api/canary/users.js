@@ -1,3 +1,4 @@
+const path = require('path');
 const Promise = require('bluebird');
 const common = require('../../lib/common');
 const dbBackup = require('../../data/db/backup');
@@ -122,7 +123,9 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            const filename = await dbBackup.backup();
+            const backupPath = await dbBackup.backup();
+            const parsedFileName = path.parse(backupPath);
+            const filename = `${parsedFileName.name}${parsedFileName.ext}`;
 
             return models.Base.transaction((t) => {
                 frame.options.transacting = t;
