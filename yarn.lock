@@ -2846,13 +2846,13 @@ express-hbs@1.1.1:
     lodash "4.17.11"
     readdirp "2.1.0"
 
-express-hbs@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-2.2.0.tgz#dcd5c890c6be6f5f98bf1c2092a042af02152c5b"
-  integrity sha512-oORcQXUVUBS7gd4+Yuf20BH3l09UNFuJoGDXaV9ERE4Q3GxE86mvbB1v81tQDgRhLUnVxU+7EMNWTMfHq31ttg==
+express-hbs@2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-2.3.0.tgz#ceccd1845674ad70f35d47b2130727be280af086"
+  integrity sha512-vhm9DXIPebBXnajFX5c33fMFe3Y+3Zd02BDn2uWiWVZ+A2VMErZYRLoVTx0fcldHM2wGLajjSO+dwubkklsOGA==
   dependencies:
     bluebird "^3.5.3"
-    handlebars "4.4.5"
+    handlebars "4.5.3"
     js-beautify "1.8.8"
     lodash "4.17.15"
     readdirp "2.2.1"
@@ -3929,10 +3929,10 @@ handlebars@4.1.2:
   optionalDependencies:
     uglify-js "^3.1.4"
 
-handlebars@4.4.5:
-  version "4.4.5"
-  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.4.5.tgz#1b1f94f9bfe7379adda86a8b73fb570265a0dddd"
-  integrity sha512-0Ce31oWVB7YidkaTq33ZxEbN+UDxMMgThvCe8ptgQViymL5DPis9uLdTA13MiRPhgvqyxIegugrP97iK3JeBHg==
+handlebars@4.5.3:
+  version "4.5.3"
+  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.5.3.tgz#5cf75bd8714f7605713511a56be7c349becb0482"
+  integrity sha512-3yPecJoJHK/4c6aZhSvxOyG4vJKDshV36VHp0iVCDVh7o9w2vwi3NSnL2MMPj3YdduqaBcu7cGbggJQM0br9xA==
   dependencies:
     neo-async "^2.6.0"
     optimist "^0.6.1"
