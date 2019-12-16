@@ -1,11 +1,10 @@
 var should = require('should'),
     sinon = require('sinon'),
-    rewire = require('rewire'),
     _ = require('lodash'),
     fs = require('fs-extra'),
     models = require('../../../../server/models'),
     exporter = require('../../../../server/data/exporter'),
-    backupDatabase = rewire('../../../../server/data/db/backup');
+    backupDatabase = require('../../../../server/data/db/backup');
 
 describe('Backup', function () {
     var exportStub, filenameStub, fsStub;
@@ -25,7 +24,7 @@ describe('Backup', function () {
     });
 
     it('should create a backup JSON file', function (done) {
-        backupDatabase().then(function () {
+        backupDatabase.backup().then(function () {
             exportStub.calledOnce.should.be.true();
             filenameStub.calledOnce.should.be.true();
             fsStub.calledOnce.should.be.true();

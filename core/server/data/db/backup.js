@@ -39,4 +39,6 @@ backup = function backup(options) {
         });
 };
 
-module.exports = backup;
+module.exports = {
+    backup
+};

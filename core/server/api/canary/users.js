@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const common = require('../../lib/common');
-const backupDatabase = require('../../data/db/backup');
+const dbBackup = require('../../data/db/backup');
 const models = require('../../models');
 const permissionsService = require('../../services/permissions');
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
@@ -122,7 +122,7 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            const filename = await backupDatabase();
+            const filename = await dbBackup.backup();
 
             return models.Base.transaction((t) => {
                 frame.options.transacting = t;
