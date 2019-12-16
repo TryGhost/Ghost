@@ -5453,16 +5453,16 @@ ember-drag-drop@0.4.8:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-exam@4.0.5:
-  version "4.0.5"
-  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-4.0.5.tgz#de6e3bfcd2c928e6cd3590a6dfbd04f5286c23c1"
-  integrity sha512-XoJB3a37/p9G48lzb+ThKIX7lSoFkSQHJu8uN6MbEU523YOduIHFBvcfuOYo07/EchyAlQC09Jfup2znsw8Keg==
+ember-exam@4.0.9:
+  version "4.0.9"
+  resolved "https://registry.yarnpkg.com/ember-exam/-/ember-exam-4.0.9.tgz#a3a9a85647654549490e73365adb9f64ce9c285f"
+  integrity sha512-tbKoQDTxl79KuCm7PmDWRUt12eDfOJ+uojg5m2NypMvnfN3QHavx/zz8fSTwoBkGoQhK6ae4YXY2HmMnaZH9Fw==
   dependencies:
     chalk "^3.0.0"
     cli-table3 "^0.5.1"
     debug "^4.1.0"
     ember-cli-babel "^7.13.0"
-    execa "^3.3.0"
+    execa "^3.4.0"
     fs-extra "^8.0.1"
     js-yaml "^3.13.1"
     npmlog "^4.1.2"
@@ -6371,7 +6371,7 @@ execa@^2.0.0:
     signal-exit "^3.0.2"
     strip-final-newline "^2.0.0"
 
-execa@^3.0.0, execa@^3.3.0:
+execa@^3.0.0, execa@^3.4.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/execa/-/execa-3.4.0.tgz#c08ed4550ef65d858fac269ffc8572446f37eb89"
   integrity sha512-r9vdGQk4bmCuK1yKQu1KTwcT2zwfWdbdaXfCtAh+5nU/4fSX+JAb7vZGvI5naJrQlvONrEB20jeruESI69530g==
