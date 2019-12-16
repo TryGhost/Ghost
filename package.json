@@ -49,7 +49,7 @@
     "@tryghost/vhost-middleware": "1.0.0",
     "ajv": "6.10.2",
     "amperize": "0.6.0",
-    "analytics-node": "3.3.0",
+    "analytics-node": "3.4.0-beta.1",
     "archiver": "3.1.1",
     "bcryptjs": "2.4.3",
     "bluebird": "3.7.2",
