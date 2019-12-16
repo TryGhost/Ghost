@@ -1,5 +1,6 @@
 const Promise = require('bluebird');
 const common = require('../../lib/common');
+const backupDatabase = require('../../data/db/backup');
 const models = require('../../models');
 const permissionsService = require('../../services/permissions');
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
@@ -106,7 +107,6 @@ module.exports = {
     },
 
     destroy: {
-        statusCode: 204,
         headers: {
             cacheInvalidate: true
         },
@@ -121,7 +121,9 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
+            const filename = await backupDatabase();
+
             return models.Base.transaction((t) => {
                 frame.options.transacting = t;
 
@@ -129,7 +131,7 @@ module.exports = {
                     models.Post.destroyByAuthor(frame.options)
                 ]).then(() => {
                     return models.User.destroy(Object.assign({status: 'all'}, frame.options));
-                }).return(null);
+                }).return(filename);
             }).catch((err) => {
                 return Promise.reject(new common.errors.NoPermissionError({
                     err: err
