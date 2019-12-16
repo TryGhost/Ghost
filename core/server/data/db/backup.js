@@ -17,6 +17,20 @@ writeExportFile = function writeExportFile(exportResult) {
     return fs.writeFile(filename, JSON.stringify(exportResult.data)).return(filename);
 };
 
+const readBackup = async (filename) => {
+    // TODO: prevent from directory traversal - need to sanitize the filename probably on validation layer
+    var backupPath = path.resolve(urlUtils.urlJoin(config.get('paths').contentPath, 'data', filename));
+
+    const exists = await fs.pathExists(backupPath);
+
+    if (exists) {
+        const backup = await fs.readFile(backupPath);
+        return JSON.parse(backup);
+    } else {
+        return null;
+    }
+};
+
 /**
  * ## Backup
  * does an export, and stores this in a local file
@@ -40,5 +54,6 @@ backup = function backup(options) {
 };
 
 module.exports = {
-    backup
+    backup,
+    readBackup
 };
