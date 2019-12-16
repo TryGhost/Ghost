@@ -21,6 +21,8 @@ const expectedProperties = {
         .concat('url', 'primary_tag', 'primary_author')
         // v2 API doesn't return unused fields
         .without('locale', 'visibility')
+        // emails are not supported in API v2
+        .without('send_email_when_published')
         // These fields aren't useful as they always have known values
         .without('status')
         .concat('page')
@@ -29,7 +31,10 @@ const expectedProperties = {
         .concat('excerpt')
         // returns meta fields from `posts_meta` schema
         .concat(
-            ..._(schema.posts_meta).keys().without('post_id', 'id')
+            ..._(schema.posts_meta).keys()
+                .without('post_id', 'id')
+                // emails are not supported in API v2
+                .without('email_subject')
         )
     ,
     author: _(schema.users)

@@ -26,12 +26,17 @@ const expectedProperties = {
         .without('locale')
         .without('page')
         .without('author_id', 'author')
+        // emails are not supported in API v2
+        .without('send_email_when_published')
         // always returns computed properties
         .concat('url', 'primary_tag', 'primary_author', 'excerpt')
         .concat('authors', 'tags')
         // returns meta fields from `posts_meta` schema
         .concat(
-            ..._(schema.posts_meta).keys().without('post_id', 'id')
+            ..._(schema.posts_meta).keys()
+                .without('post_id', 'id')
+                // emails are not supported in API v2
+                .without('email_subject')
         )
     ,
     user: _(schema.users)
