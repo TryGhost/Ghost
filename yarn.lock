@@ -673,7 +673,12 @@ bluebird@3.5.1:
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.1.tgz#d9551f9de98f1fcda1e683d17ee91a0602ee2eb9"
   integrity sha512-MKiLiV+I1AA596t9w1sQJ8jkiSr5+ZKi0WKrYGUn6d1Fx+Ij4tIj+m2WMQSGczs5jZVxV339chE8iwk6F64wjA==
 
-bluebird@^3.4.1, bluebird@^3.4.3, bluebird@^3.4.6, bluebird@^3.5.1, bluebird@^3.5.3:
+bluebird@3.5.5:
+  version "3.5.5"
+  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.5.tgz#a8d0afd73251effbbd5fe384a77d73003c17a71f"
+  integrity sha512-5am6HnnfN+urzt4yfg7IgTbotDjIT/u8AJpEt0sIU9FtXfVeezXAPKswrG+xKUCOYAINpSdgZVDU6QFh+cuH3w==
+
+bluebird@^3.4.3, bluebird@^3.4.6, bluebird@^3.5.1, bluebird@^3.5.3:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
   integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
@@ -736,14 +741,14 @@ body@^5.1.0:
     raw-body "~1.1.0"
     safe-json-parse "~1.0.1"
 
-bookshelf-relations@0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-0.2.1.tgz#6974c0ec92409807d2cf6e73e111a38ebc03e7cd"
-  integrity sha512-0bIfQ4Ux2C2r684hm9+DmqQ5GuGTgSGM0kynQ9pQk+SxMszFgf53D2k57eYzgDOma0gJAzSImQlSzKwSl/dfoQ==
+bookshelf-relations@1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-1.3.0.tgz#0d8157ed2bf1c7b6b024d9cb6176acd7c5618f5e"
+  integrity sha512-GPftytOoLdIFUtgCwQoa1rASEd1sm39ba8asWZ/ZQ0P59SJBTsDYKgEKoSobcrlRWzo4k3Thv8y3AaxR2pGWoQ==
   dependencies:
-    bluebird "^3.4.1"
-    ghost-ignition "2.9.2"
-    lodash "4.17.10"
+    bluebird "3.5.5"
+    ghost-ignition "3.1.0"
+    lodash "4.17.15"
 
 bookshelf@0.13.3:
   version "0.13.3"
@@ -4422,11 +4427,6 @@ lodash.uniq@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
   integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
-
-lodash@4.17.10:
-  version "4.17.10"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
-  integrity sha512-UejweD1pDoXu+AD825lWwp4ZGtSwgnpZxb3JDViD7StjQz+Nb/6l093lx4OQ0foGWNRoc19mWy7BzL+UAK2iVg==
 
 lodash@4.17.15, lodash@^4.13.1, lodash@^4.16.4, lodash@^4.17.10, lodash@^4.17.12, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.3.0, lodash@^4.7.0, lodash@^4.8.0, lodash@~4.17.10, lodash@~4.17.5:
   version "4.17.15"

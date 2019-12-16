@@ -37,7 +37,7 @@
     "bluebird": "3.5.1",
     "body-parser": "1.18.3",
     "bookshelf": "0.13.3",
-    "bookshelf-relations": "0.2.1",
+    "bookshelf-relations": "1.3.0",
     "brute-knex": "3.0.0",
     "bson-objectid": "1.2.3",
     "chalk": "1.1.3",
