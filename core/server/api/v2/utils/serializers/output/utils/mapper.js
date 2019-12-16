@@ -73,7 +73,10 @@ const mapPost = (model, frame) => {
     }).each((attr) => {
         jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || null;
     });
+
     delete jsonModel.posts_meta;
+    delete jsonModel.send_email_when_published;
+    delete jsonModel.email_subject;
 
     return jsonModel;
 };
