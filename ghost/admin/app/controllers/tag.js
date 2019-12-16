@@ -114,6 +114,11 @@ export default Controller.extend({
             newValue = newValue.trim();
         }
 
+        // avoid modifying empty values and triggering inadvertant unsaved changes modals
+        if (newValue !== false && !newValue && !currentValue) {
+            return;
+        }
+
         // Quit if there was no change
         if (newValue === currentValue) {
             return;
@@ -122,7 +127,7 @@ export default Controller.extend({
         tag.set(propKey, newValue);
 
         // Generate slug based on name for new tag when empty
-        if (propKey === 'name' && !tag.get('slug') && tag.isNew) {
+        if (propKey === 'name' && !tag.slug && tag.isNew) {
             let slugValue = slugify(newValue);
             if (/^#/.test(newValue)) {
                 slugValue = 'hash-' + slugValue;

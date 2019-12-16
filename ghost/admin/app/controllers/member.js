@@ -116,7 +116,17 @@ export default Controller.extend({
     }),
 
     _saveMemberProperty(propKey, newValue) {
-        let member = this.member;
-        member.set(propKey, newValue);
+        let currentValue = this.member.get(propKey);
+
+        if (newValue) {
+            newValue = newValue.trim();
+        }
+
+        // avoid modifying empty values and triggering inadvertant unsaved changes modals
+        if (newValue !== false && !newValue && !currentValue) {
+            return;
+        }
+
+        this.member.set(propKey, newValue);
     }
 });
