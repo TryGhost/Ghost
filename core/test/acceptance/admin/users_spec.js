@@ -256,6 +256,12 @@ describe('User API', function () {
                 should.exist(res.body.meta.filename);
 
                 return request
+                    .get(localUtils.API.getApiQuery(`db/?filename=${res.body.meta.filename}/`))
+                    .set('Origin', config.get('url'))
+                    .expect(200);
+            })
+            .then(() => {
+                return request
                     .get(localUtils.API.getApiQuery(`users/${userId}/`))
                     .set('Origin', config.get('url'))
                     .expect(404);
