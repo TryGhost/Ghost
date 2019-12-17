@@ -119,6 +119,19 @@
             modifier="full-overlay email-preview"}}
     {{/if}}
 
+    {{#if this.showUpgradeModal}}
+        <GhFullscreenModal
+            @modal="upgrade-host-limit"
+            @model={{hash
+                message=hostLimitError.context
+                details=hostLimitError.details
+                upgradeLink=hostLimitError.help
+            }}
+            @close={{action "closeUpgradeModal"}}
+            @modifier="action wide"
+        />
+    {{/if}}
+
     {{#liquid-wormhole}}
         {{gh-post-settings-menu
             post=this.post
