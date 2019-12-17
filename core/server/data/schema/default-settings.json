@@ -42,8 +42,8 @@
         "icon": {
             "defaultValue": ""
         },
-        "brand_color": {
-            "defaultValue": ""
+        "brand": {
+            "defaultValue": "{\"primaryColor\":\"\"}"
         },
         "default_locale": {
             "defaultValue": "en",

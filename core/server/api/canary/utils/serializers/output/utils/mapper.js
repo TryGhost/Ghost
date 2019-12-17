@@ -100,7 +100,7 @@ const mapSettings = (attrs, frame) => {
     //      fields completely.
     if (_.isArray(attrs)) {
         attrs = _.filter(attrs, (o) => {
-            if (o.key === 'brand_color' && !config.get('enableDeveloperExperiments')) {
+            if (o.key === 'brand' && !config.get('enableDeveloperExperiments')) {
                 return false;
             }
             return o.key !== 'ghost_head' && o.key !== 'ghost_foot';
@@ -109,7 +109,7 @@ const mapSettings = (attrs, frame) => {
         delete attrs.ghost_head;
         delete attrs.ghost_foot;
         if (!config.get('enableDeveloperExperiments')) {
-            delete attrs.brand_color;
+            delete attrs.brand;
         }
     }
 
