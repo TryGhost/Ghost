@@ -164,6 +164,31 @@
                 </div>
                 {{/gh-uploader}}
             </div>
+            {{#if this.config.enableDeveloperExperiments}}
+                <div class="gh-setting" data-test-setting="brand-color">
+                    <div class="gh-setting-content">
+                        <div class="gh-setting-title">Accent Color</div>
+                        <div class="gh-setting-desc">Primary color used in your publication theme</div>
+                    </div>
+                    <div class="gh-setting-action">
+                        {{#gh-form-group errors=settings.errors hasValidated=settings.hasValidated property="brandColor" class="input-color-form-group"}}
+                            <div class="input-color">
+                                {{gh-text-input
+                                    name="brand-color"
+                                    placeholder="abcdef"
+                                    autocorrect="off"
+                                    maxlength="6"
+                                    focus-out=(action "validateBrandColor")
+                                    value=brandColor
+                                    data-test-brand-color-input=true
+                                }}
+                                <div class="color-box" style={{this.backgroundStyle}}></div>
+                            </div>
+                            {{gh-error-message errors=settings.errors property="brandColor" data-test-brandColor-error=true}}
+                        {{/gh-form-group}}
+                    </div>
+                </div>
+            {{/if}}
             <div class="gh-setting-last" data-test-setting="coverImage">
                 {{#gh-uploader
                     extensions=this.imageExtensions

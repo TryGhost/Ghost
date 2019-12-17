@@ -8,6 +8,7 @@ import {
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {computed} from '@ember/object';
+import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -34,7 +35,6 @@ export default Controller.extend({
     iconMimeTypes: 'image/png,image/x-icon',
     imageExtensions: IMAGE_EXTENSIONS,
     imageMimeTypes: IMAGE_MIME_TYPES,
-
     _scratchFacebook: null,
     _scratchTwitter: null,
 
@@ -48,6 +48,19 @@ export default Controller.extend({
         let publicHash = this.get('settings.publicHash');
 
         return `${blogUrl}/${publicHash}/rss`;
+    }),
+
+    backgroundStyle: computed('settings.brand.primaryColor', function () {
+        let color = this.get('settings.brand.primaryColor') || '#ffffff';
+        return htmlSafe(`background-color: ${color}`);
+    }),
+
+    brandColor: computed('settings.brand.primaryColor', function () {
+        let color = this.get('settings.brand.primaryColor');
+        if (color && color[0] === '#') {
+            return color.slice(1);
+        }
+        return color;
     }),
 
     actions: {
@@ -255,6 +268,42 @@ export default Controller.extend({
                            + 'https://twitter.com/yourUsername';
                 this.get('settings.errors').add('twitter', errMessage);
                 this.get('settings.hasValidated').pushObject('twitter');
+                return;
+            }
+        },
+        validateBrandColor() {
+            let newColor = this.get('brandColor');
+            let oldColor = this.get('settings.brand.primaryColor');
+            let errMessage = '';
+
+            // reset errors and validation
+            this.get('settings.errors').remove('brandColor');
+            this.get('settings.hasValidated').removeObject('brandColor');
+
+            if (newColor === '') {
+                // Clear out the brand color
+                this.set('settings.brand.primaryColor', '');
+                return;
+            }
+
+            // brandColor will be null unless the user has input something
+            if (!newColor) {
+                newColor = oldColor;
+            }
+
+            if (newColor[0] !== '#') {
+                newColor = `#${newColor}`;
+            }
+
+            if (newColor.match(/#[0-9A-Fa-f]{6}$/)) {
+                this.set('settings.brand.primaryColor', '');
+                run.schedule('afterRender', this, function () {
+                    this.set('settings.brand.primaryColor', newColor);
+                });
+            } else {
+                errMessage = 'The color should be in valid hex format';
+                this.get('settings.errors').add('brandColor', errMessage);
+                this.get('settings.hasValidated').pushObject('brandColor');
                 return;
             }
         }
