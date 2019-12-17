@@ -1,4 +1,4 @@
-import Model from 'ember-data/model';
+import Model from '@ember-data/model';
 
 export default Model.extend({
     // this is a hack that gives us access to meta data in single resource responses

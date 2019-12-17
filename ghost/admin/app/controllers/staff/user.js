@@ -8,7 +8,7 @@ import {computed} from '@ember/object';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
-import {task, taskGroup} from 'ember-concurrency';
+import {task, taskGroup, timeout} from 'ember-concurrency';
 
 export default Controller.extend({
     ajax: service(),
@@ -331,16 +331,6 @@ export default Controller.extend({
         }
     },
 
-    _deleteUserSuccess() {
-        this.notifications.closeAlerts('user.delete');
-        this.store.unloadAll('post');
-        this.transitionToRoute('staff');
-    },
-
-    _deleteUserFailure() {
-        this.notifications.showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
-    },
-
     _exportDb(filename) {
         let exportUrl = this.get('ghostPaths.url').api('db');
         let downloadURL = `${exportUrl}?filename=${filename}`;
@@ -360,13 +350,19 @@ export default Controller.extend({
         try {
             const result = yield this.user.destroyRecord();
 
-            if (result.get('meta') && result.get('meta.filename')) {
-                yield this._exportDb(result.meta.filename);
+            if (result._meta && result._meta.filename) {
+                this._exportDb(result._meta.filename);
+                // give the iframe some time to trigger the download before
+                // it's removed from the dom when transitioning
+                yield timeout(300);
             }
 
-            this._deleteUserSuccess();
-        } catch {
-            this._deleteUserFailure();
+            this.notifications.closeAlerts('user.delete');
+            this.store.unloadAll('post');
+            this.transitionToRoute('staff');
+        } catch (error) {
+            this.notifications.showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
+            throw error;
         }
     }),
 
