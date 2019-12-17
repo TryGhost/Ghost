@@ -11,6 +11,7 @@ export default Model.extend(ValidationEngine, {
     logo: attr('string'),
     coverImage: attr('string'),
     icon: attr('string'),
+    brand: attr('json-string'),
     defaultLocale: attr('string'),
     activeTimezone: attr('string', {defaultValue: 'Etc/UTC'}),
     codeinjectionHead: attr('string'),
