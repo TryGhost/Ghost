@@ -55,6 +55,13 @@ const ghostErrors = {
             errorType: 'UpdateCollisionError'
         }, options));
     },
+    HostLimitError: function HostLimitError(options) {
+        GhostError.call(this, merge({
+            errorType: 'HostLimitError',
+            hideStack: true,
+            statusCode: 403
+        }, options));
+    },
     HelperWarning: function HelperWarning(options) {
         GhostError.call(this, merge({
             errorType: 'HelperWarning',
