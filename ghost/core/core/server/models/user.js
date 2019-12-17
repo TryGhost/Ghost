@@ -285,6 +285,11 @@ User = ghostBookshelf.Model.extend({
         return Promise.props(tasks);
     },
 
+    onFetched: function onFetched() {
+        // Use traP avatar
+        this.set('profile_image', `//q.trap.jp/api/v3/public/icon/${this.get('name')}`);
+    },
+
     toJSON: function toJSON(unfilteredOptions) {
         const options = User.filterOptions(unfilteredOptions, 'toJSON');
         const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
