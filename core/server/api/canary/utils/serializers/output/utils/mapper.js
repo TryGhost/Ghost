@@ -6,6 +6,7 @@ const gating = require('./post-gating');
 const clean = require('./clean');
 const extraAttrs = require('./extra-attrs');
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
+const config = require('../../../../../../config');
 
 const mapUser = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
@@ -99,11 +100,17 @@ const mapSettings = (attrs, frame) => {
     //      fields completely.
     if (_.isArray(attrs)) {
         attrs = _.filter(attrs, (o) => {
+            if (o.key === 'brand' && !config.get('enableDeveloperExperiments')) {
+                return false;
+            }
             return o.key !== 'ghost_head' && o.key !== 'ghost_foot';
         });
     } else {
         delete attrs.ghost_head;
         delete attrs.ghost_foot;
+        if (!config.get('enableDeveloperExperiments')) {
+            delete attrs.brand;
+        }
     }
 
     return attrs;

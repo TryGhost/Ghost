@@ -43,7 +43,7 @@ describe('Settings Content API', function () {
 
                 // Verify we have the right keys for settings
                 const publicProperties = _.filter(_.values(publicSettings), (o) => {
-                    return (o !== 'ghost_head' && o !== 'ghost_foot');
+                    return (o !== 'ghost_head' && o !== 'ghost_foot' && o !== 'brand');
                 });
                 publicProperties.push('codeinjection_head', 'codeinjection_foot');
                 settings.should.have.properties(publicProperties);
