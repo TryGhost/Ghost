@@ -53,7 +53,7 @@ module.exports = {
                 let backup = await dbBackup.readBackup(frame.options.filename);
 
                 if (!backup) {
-                    return new common.errors.NotFoundError();
+                    throw new common.errors.NotFoundError();
                 }
 
                 return backup;
