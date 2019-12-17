@@ -44,6 +44,9 @@ export default Component.extend({
     showSavingMessage: task(function* () {
         this.set('_isSaving', true);
         yield timeout(config.environment === 'test' ? 0 : 3000);
-        this.set('_isSaving', false);
+
+        if (!this.isDestroyed && !this.isDestroying) {
+            this.set('_isSaving', false);
+        }
     }).drop()
 });
