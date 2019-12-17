@@ -107,6 +107,14 @@ describe('DB API', function () {
             });
     });
 
+    it('fails when triggering an export from unknown filename ', function () {
+        return request.get(localUtils.API.getApiQuery('db/?filename=this_file_is_not_here.json'))
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(404);
+    });
+
     it('import should fail without file', function () {
         return request.post(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
@@ -123,7 +131,7 @@ describe('DB API', function () {
             .expect(415);
     });
 
-    it('export can be triggered by backup integration', function () {
+    it('backup can be triggered by backup integration', function () {
         const backupQuery = `?filename=test`;
         const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
@@ -139,7 +147,7 @@ describe('DB API', function () {
             });
     });
 
-    it('export can not be triggered by integration other than backup', function () {
+    it('backup can not be triggered by integration other than backup', function () {
         const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
         return request.post(localUtils.API.getApiQuery(`db/backup`))
@@ -154,7 +162,7 @@ describe('DB API', function () {
             });
     });
 
-    it('export can be triggered by Admin authentication', function () {
+    it('backup can be triggered by Admin authentication', function () {
         const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
         return request.post(localUtils.API.getApiQuery(`db/backup`))
