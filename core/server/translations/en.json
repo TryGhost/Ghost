@@ -464,6 +464,7 @@
                 "DatabaseVersionError": "Database version compatibility error, cannot {action}.",
                 "EmailError": "Error sending email!",
                 "ThemeValidationError": "Theme validation error, cannot {action}.",
+                "HostLimitError": "Host Limit error, cannot {action}.",
                 "DisabledFeatureError": "Theme validation error, the {{{helperName}}} helper is not available. Cannot {action}.",
                 "UpdateCollisionError": "Saving failed! Someone else is editing this post."
             }

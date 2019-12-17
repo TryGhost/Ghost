@@ -2,8 +2,11 @@ const models = require('../../models');
 const common = require('../../lib/common');
 const urlUtils = require('../../lib/url-utils');
 const {mega} = require('../../services/mega');
+const membersService = require('../../services/members');
 const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
+const _ = require('lodash');
+const config = require('../../config');
 
 module.exports = {
     docName: 'posts',
@@ -142,50 +145,63 @@ module.exports = {
         permissions: {
             unsafeAttrs: unsafeAttrs
         },
-        query(frame) {
-            return models.Post.edit(frame.data.posts[0], frame.options)
-                .then(async (model) => {
-                    if (!model.get('send_email_when_published')) {
-                        return model;
-                    }
-
-                    const postPublished = model.wasChanged() && (model.get('status') === 'published') && (model.previous('status') !== 'published');
-
-                    if (postPublished) {
-                        let postEmail = model.relations.email;
-
-                        if (!postEmail) {
-                            const email = await mega.addEmail(model, frame.options);
-                            model.set('email', email);
-                        } else if (postEmail && postEmail.get('status') === 'failed') {
-                            const email = await mega.retryFailedEmail(postEmail);
-                            model.set('email', email);
+        async query(frame) {
+            /**Check host limits for members when send email is true*/
+            const membersHostLimit = config.get('host_settings:limits:members');
+            if (frame.options.send_email_when_published && membersHostLimit) {
+                const allowedMembersLimit = membersHostLimit.max;
+                const hostUpgradeLink = config.get('host_settings:limits').upgrade_url;
+                const knexOptions = _.pick(frame.options, ['transacting', 'forUpdate']);
+                const {members} = await membersService.api.members.list(Object.assign(knexOptions, {filter: 'subscribed:true'}, {limit: 'all'}));
+                if (members.length > allowedMembersLimit) {
+                    throw new common.errors.HostLimitError({
+                        message: `Your current plan allows you to send email to up to ${allowedMembersLimit} members, but you currently have ${members.length} members`,
+                        help: hostUpgradeLink,
+                        errorDetails: {
+                            limit: allowedMembersLimit,
+                            total: members.length
                         }
-                    }
+                    });
+                }
+            }
 
-                    return model;
-                })
-                .then((model) => {
-                    if (
-                        model.get('status') === 'published' && model.wasChanged() ||
-                        model.get('status') === 'draft' && model.previous('status') === 'published'
-                    ) {
-                        this.headers.cacheInvalidate = true;
-                    } else if (
-                        model.get('status') === 'draft' && model.previous('status') !== 'published' ||
-                        model.get('status') === 'scheduled' && model.wasChanged()
-                    ) {
-                        this.headers.cacheInvalidate = {
-                            value: urlUtils.urlFor({
-                                relativeUrl: urlUtils.urlJoin('/p', model.get('uuid'), '/')
-                            })
-                        };
-                    } else {
-                        this.headers.cacheInvalidate = false;
-                    }
+            let model = await models.Post.edit(frame.data.posts[0], frame.options);
 
-                    return model;
-                });
+            /**Handle newsletter email */
+            if (model.get('send_email_when_published')) {
+                const postPublished = model.wasChanged() && (model.get('status') === 'published') && (model.previous('status') !== 'published');
+                if (postPublished) {
+                    let postEmail = model.relations.email;
+
+                    if (!postEmail) {
+                        const email = await mega.addEmail(model, frame.options);
+                        model.set('email', email);
+                    } else if (postEmail && postEmail.get('status') === 'failed') {
+                        const email = await mega.retryFailedEmail(postEmail);
+                        model.set('email', email);
+                    }
+                }
+            }
+
+            /**Handle cache invalidation */
+            if (
+                model.get('status') === 'published' && model.wasChanged() ||
+                model.get('status') === 'draft' && model.previous('status') === 'published'
+            ) {
+                this.headers.cacheInvalidate = true;
+            } else if (
+                model.get('status') === 'draft' && model.previous('status') !== 'published' ||
+                model.get('status') === 'scheduled' && model.wasChanged()
+            ) {
+                this.headers.cacheInvalidate = {
+                    value: urlUtils.urlFor({
+                        relativeUrl: urlUtils.urlJoin('/p', model.get('uuid'), '/')
+                    })
+                };
+            } else {
+                this.headers.cacheInvalidate = false;
+            }
+            return model;
         }
     },
 
