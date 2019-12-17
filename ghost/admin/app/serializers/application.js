@@ -3,6 +3,16 @@ import {camelize, decamelize, underscore} from '@ember/string';
 import {pluralize} from 'ember-inflector';
 
 export default RESTSerializer.extend({
+    // hacky method for getting access to meta data for single-resource responses
+    // https://github.com/emberjs/data/pull/4077#issuecomment-200780097
+    // TODO: review once the record links and meta RFC lands
+    // https://github.com/emberjs/rfcs/blob/master/text/0332-ember-data-record-links-and-meta.md
+    extractMeta(store, typeClass) {
+        let meta = this._super(...arguments);
+        typeClass.___meta = meta;
+        return meta;
+    },
+
     serialize(/*snapshot, options*/) {
         let json = this._super(...arguments);
 
