@@ -70,7 +70,7 @@
             {{#if this.showDeleteUserModal}}
                 <GhFullscreenModal @modal="delete-user"
                     @model={{this.user}}
-                    @confirm={{action "deleteUser"}}
+                    @confirm={{action (perform this.deleteUser)}}
                     @close={{action "toggleDeleteUserModal"}}
                     @modifier="action wide" />
             {{/if}}

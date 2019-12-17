@@ -83,16 +83,6 @@ export default Controller.extend({
             this.set('dirtyAttributes', true);
         },
 
-        deleteUser() {
-            return this._deleteUser()
-                .then(filename => this._exportDb(filename))
-                .then(() => {
-                    this._deleteUserSuccess();
-                }, () => {
-                    this._deleteUserFailure();
-                });
-        },
-
         toggleDeleteUserModal() {
             if (this.deleteUserActionIsVisible) {
                 this.toggleProperty('showDeleteUserModal');
@@ -341,13 +331,6 @@ export default Controller.extend({
         }
     },
 
-    _deleteUser() {
-        if (this.deleteUserActionIsVisible) {
-            let user = this.user;
-            return user.destroyRecord();
-        }
-    },
-
     _deleteUserSuccess() {
         this.notifications.closeAlerts('user.delete');
         this.store.unloadAll('post');
@@ -358,7 +341,7 @@ export default Controller.extend({
         this.notifications.showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
     },
 
-    async _exportDb(filename) {
+    _exportDb(filename) {
         let exportUrl = this.get('ghostPaths.url').api('db');
         let downloadURL = `${exportUrl}?filename=${filename}`;
         let iframe = document.getElementById('iframeDownload');
@@ -372,6 +355,20 @@ export default Controller.extend({
 
         iframe.setAttribute('src', downloadURL);
     },
+
+    deleteUser: task(function *() {
+        try {
+            const result = yield this.user.destroyRecord();
+
+            if (result.get('meta') && result.get('meta.filename')) {
+                yield this._exportDb(result.meta.filename);
+            }
+
+            this._deleteUserSuccess();
+        } catch {
+            this._deleteUserFailure();
+        }
+    }),
 
     updateSlug: task(function* (newSlug) {
         let slug = this.get('user.slug');
