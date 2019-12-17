@@ -1,0 +1,7 @@
+node_modules/
+.github/
+/conf.d
+/content
+!/content/themes
+/docker
+/test

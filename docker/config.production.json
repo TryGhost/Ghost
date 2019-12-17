@@ -1,0 +1,36 @@
+{
+    "url": "http://localhost:8180",
+    "server": {
+        "host": "0.0.0.0",
+        "port": 2368
+    },
+    "database": {
+        "client": "mysql",
+        "connection": {
+            "host": "maria",
+            "port": 3306,
+            "user": "ghost",
+            "password": "pass",
+            "database": "ghost"
+        }
+    },
+    "mail": {
+        "transport": "SMTP",
+        "options": {
+            "service": "Mailgun",
+            "host": "smtp.sendgrid.net",
+            "port": 587,
+            "auth": {
+                "user": "apikey",
+                "pass": "pass"
+            }
+        }
+    },
+    "paths": {
+        "contentPath": "/srv/ghost/content/"
+    },
+    "privacy": {
+        "useUpdateCheck": false,
+        "useGravatar": false
+    }
+}

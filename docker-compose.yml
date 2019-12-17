@@ -1,0 +1,39 @@
+version: '3'
+services:
+  ghost:
+    container_name: ghost
+    build:
+      context: .
+      dockerfile: ./docker/DockerfileDockerize
+    volumes:
+      - ./docker/config.production.json:/srv/ghost/config.production.json:ro
+      - ./content/data:/srv/ghost/content/data
+      - ./content/logs:/srv/ghost/content/logs
+      - ./content/settings:/srv/ghost/content/settings
+    ports:
+      - '8180:2368'
+    tty: true
+    restart: always
+    depends_on:
+      - maria
+    command: >
+      bash -c "dockerize -wait tcp://maria:3306 &&
+      node /srv/ghost/index.js"
+  maria:
+    image: mariadb:10.6.4
+    container_name: maria
+    volumes:
+      - maria-volume:/var/lib/maria
+      - ./conf.d:/etc/mysql/conf.d:ro
+    restart: always
+    environment:
+      MYSQL_ROOT_HOST: maria
+      MYSQL_ROOT_PASSWORD: ghost
+      MYSQL_USER: ghost
+      MYSQL_PASSWORD: pass
+      MYSQL_DATABASE: ghost
+    expose:
+      - 3306
+
+volumes:
+  maria-volume:
