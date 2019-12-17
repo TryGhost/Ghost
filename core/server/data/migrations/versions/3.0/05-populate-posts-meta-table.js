@@ -35,7 +35,7 @@ module.exports.up = (options) => {
                 let postsMetaEntries = _.map(posts, (post) => {
                     let postsMetaEntry = metaAttrs.reduce(function (obj, entry) {
                         return Object.assign(obj, {
-                            [entry]: post.get(entry)
+                            [entry]: post.get(entry) || null
                         });
                     }, {});
                     postsMetaEntry.post_id = post.get('id');
