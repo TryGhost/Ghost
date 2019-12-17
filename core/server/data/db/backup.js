@@ -18,8 +18,9 @@ writeExportFile = function writeExportFile(exportResult) {
 };
 
 const readBackup = async (filename) => {
-    // TODO: prevent from directory traversal - need to sanitize the filename probably on validation layer
-    var backupPath = path.resolve(urlUtils.urlJoin(config.get('paths').contentPath, 'data', filename));
+    const parsedFileName = path.parse(filename);
+    const sanitized = `${parsedFileName.name}${parsedFileName.ext}`;
+    const backupPath = path.resolve(urlUtils.urlJoin(config.get('paths').contentPath, 'data', sanitized));
 
     const exists = await fs.pathExists(backupPath);
 
