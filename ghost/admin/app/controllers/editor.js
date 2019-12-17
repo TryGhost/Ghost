@@ -218,6 +218,10 @@ export default Controller.extend({
                 }
 
                 // we genuinely have unsaved data, show the modal
+                if (this.post) {
+                    Object.assign(this._leaveModalReason, {status: this.post.status});
+                }
+                console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
                 this.set('showLeaveEditorModal', true);
             }
         },
@@ -718,19 +722,22 @@ export default Controller.extend({
         // if the Adapter failed to save the post isError will be true
         // and we should consider the post still dirty.
         if (post.get('isError')) {
+            this._leaveModalReason = {reason: 'isError', context: post.errors};
             return true;
         }
 
         // post.tags is an array so hasDirtyAttributes doesn't pick up
         // changes unless the array ref is changed
-        let currentTags = (this._tagNames || []).join('');
-        let previousTags = (this._previousTagNames || []).join('');
+        let currentTags = (this._tagNames || []).join(', ');
+        let previousTags = (this._previousTagNames || []).join(', ');
         if (currentTags !== previousTags) {
+            this._leaveModalReason = {reason: 'tags are different', context: {currentTags, previousTags}};
             return true;
         }
 
         // titleScratch isn't an attr so needs a manual dirty check
         if (this.titleScratch !== this.title) {
+            this._leaveModalReason = {reason: 'title is different', context: {current: this.title, scratch: this.titleScratch}};
             return true;
         }
 
@@ -743,6 +750,7 @@ export default Controller.extend({
             let scratchJSON = JSON.stringify(scratch);
 
             if (scratchJSON !== mobiledocJSON) {
+                this._leaveModalReason = {reason: 'mobiledoc is different', context: {current: mobiledocJSON, scratch: scratchJSON}};
                 return true;
             }
         }
@@ -751,12 +759,22 @@ export default Controller.extend({
         // so we need a manual check to see if any
         if (post.get('isNew')) {
             let changedAttributes = Object.keys(post.changedAttributes());
+
+            if (changedAttributes.length) {
+                this._leaveModalReason = {reason: 'post.changedAttributes.length > 0', context: post.changedAttributes()};
+            }
             return changedAttributes.length ? true : false;
         }
 
         // we've covered all the non-tracked cases we care about so fall
         // back on Ember Data's default dirty attribute checks
-        return post.get('hasDirtyAttributes');
+        let {hasDirtyAttributes} = post;
+
+        if (hasDirtyAttributes) {
+            this._leaveModalReason = {reason: 'post.hasDirtyAttributes === true', context: post.changedAttributes()};
+        }
+
+        return hasDirtyAttributes;
     },
 
     _showSaveNotification(prevStatus, status, delay) {
