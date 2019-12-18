@@ -6,7 +6,6 @@ const {URL} = require('url');
 
 // App requires
 const config = require('../../config');
-const common = require('../../lib/common');
 const apps = require('../../services/apps');
 const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
