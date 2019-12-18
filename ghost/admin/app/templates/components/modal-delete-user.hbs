@@ -7,14 +7,16 @@
     <p><strong>WARNING:</strong> You are about to delete the user '<strong>{{this.user.name}}</strong>'. There is no way to recover this.</p>
     {{#if this.user.count.posts}}
         <ul>
-            <li>The user will not have access to this blog anymore</li>
+            <li>The user will not have access to this site anymore</li>
             <li><strong data-test-text="user-post-count">{{pluralize this.user.count.posts 'post'}}</strong> created by this user will be deleted</li>
             <li>All other user data will be deleted</li>
+            <li>A backup of the site contents will be automatically downloaded to your computer before deletion</li>
         </ul>
     {{else}}
         <ul>
-            <li>User will not have access to this blog anymore</li>
-            <li>All user data will be deleted.</li>
+            <li>User will not have access to this site anymore</li>
+            <li>All user data will be deleted</li>
+            <li>A backup of the site contents will be automatically downloaded to your computer before deletion</li>
         </ul>
     {{/if}}
 </div>
