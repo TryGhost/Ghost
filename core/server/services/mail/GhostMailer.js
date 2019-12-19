@@ -18,13 +18,16 @@ function getDomain() {
 
 function getFromAddress(requestedFromAddress) {
     const configAddress = config.get('mail') && config.get('mail').from;
+    const configEmailDomain = config.get('mail') && config.get('mail').domain || getDomain();
 
-    const address = requestedFromAddress || configAddress;
     // If we don't have a from address at all
-    if (!address) {
-        // Default to noreply@[blog.url]
-        return getFromAddress(`noreply@${getDomain()}`);
+    const fromAddress = requestedFromAddress || configAddress || 'noreply';
+
+    if (configAddress && configAddress.includes('@')) {
+        console.warn('DEPRECATED: config should not contain the domain. You should now use \'mail.domain\' setting');
     }
+
+    const address = fromAddress.includes('@') ? fromAddress : `${fromAddress}@${configEmailDomain}`;
 
     // If we do have a from address, and it's just an email
     if (validator.isEmail(address)) {

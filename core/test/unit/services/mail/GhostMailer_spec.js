@@ -188,7 +188,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.sendMail.firstCall.args[0].from.should.equal('"Blog Title" <static@example.com>');
         });
 
-        describe('should fall back to [blog.title] <noreply@[blog.url]>', function () {
+        describe('should fall back to [blog.title] <noreply@>', function () {
             let mailer;
 
             beforeEach(async function () {
@@ -196,6 +196,19 @@ describe('Mail: Ghostmailer', function () {
                 sandbox.stub(mailer, 'sendMail').resolves();
                 mailer.transport.transportType = 'NOT DIRECT';
                 sandbox.stub(settingsCache, 'get').returns('Test');
+            });
+
+            it('mail domain setting', async function () {
+                sandbox.stub(urlUtils, 'urlFor').returns('http://default.com');
+                configUtils.set({mail: {from: null, domain: 'example-domain.com'}});
+
+                await mailer.send({
+                    to: 'user@example.com',
+                    subject: 'subject',
+                    html: 'content'
+                });
+
+                mailer.sendMail.firstCall.args[0].from.should.equal('"Test" <noreply@example-domain.com>');
             });
 
             it('standard domain', async function () {
