@@ -15,7 +15,7 @@
     <div class="modal-body modal-preview-email-content gh-pe-mobile-container" style="display: flex;justify-content: center;">
         <div class="gh-pe-mobile-bezel">
             <div class="gh-pe-mobile-screen">
-                <iframe class="bn gh-pe-iframe" {{this.did-insert this.renderEmailPreview}}></iframe>
+                <iframe class="bn gh-pe-iframe" {{did-insert this.renderEmailPreview}}></iframe>
             </div>
         </div>
     </div>
@@ -23,6 +23,6 @@
 
 {{#if (eq this.type "desktop")}}
     <div class="modal-body modal-preview-email-content gh-pe-desktop-container">
-        <iframe class="bn miw-100 gh-pe-iframe" style="height:100%;" {{this.did-insert this.renderEmailPreview}}></iframe>
+        <iframe class="bn miw-100 gh-pe-iframe" style="height:100%;" {{did-insert this.renderEmailPreview}}></iframe>
     </div>
 {{/if}}
