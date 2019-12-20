@@ -51,18 +51,31 @@ const exchangeTokenForSession = async function (req, res, next) {
     if (!req.url.includes('token=')) {
         return next();
     }
+
+    Object.assign(req, {action: 'signin'});
+
     try {
         const member = await membersService.ssr.exchangeTokenForSession(req, res);
         Object.assign(req, {member});
         next();
     } catch (err) {
         common.logging.warn(err.message);
+        if (err.name === 'TokenExpiredError') {
+            Object.assign(req, {error: {
+                message: 'Your signin link has expired, please send another login link.'
+            }});
+        }
+
         return next();
     }
 };
 
 const decorateResponse = function (req, res, next) {
     res.locals.member = req.member;
+    res.locals.action = {
+        name: req.action,
+        error: req.error ? req.error.message : null
+    };
     next();
 };
 

@@ -83,6 +83,10 @@ function updateGlobalTemplateOptions(req, res, next) {
         image_sizes: activeTheme.get().config('image_sizes')
     };
     const priceData = haxGetMembersPriceData();
+    const actionData = {
+        name: _.get(res, 'locals.action.name'),
+        error: _.get(res, 'locals.action.error')
+    };
 
     // @TODO: only do this if something changed?
     // @TODO: remove blog if we drop v2 (Ghost 4.0)
@@ -92,7 +96,8 @@ function updateGlobalTemplateOptions(req, res, next) {
             site: siteData,
             labs: labsData,
             config: themeData,
-            price: priceData
+            price: priceData,
+            action: actionData
         }
     });
 
