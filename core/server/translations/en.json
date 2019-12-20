@@ -567,7 +567,7 @@
                 "pathIsRequired": "The \\{\\{asset\\}\\} helper must be passed a path"
             },
             "cancel_link": {
-                "invalidData": "The \\{\\{cancel_link\\}\\} helper was used outside of a subscription context. See https://ghost.org/docs/api/handlebars-themes/helpers/cancel_link/."
+                "invalidData": "The \\{\\{cancel_link\\}\\} helper was used outside of a subscription context. See https://ghost.org/docs/members/cancel-link/."
             },
             "foreach": {
                 "iteratorNeeded": "Need to pass an iterator to #foreach"
