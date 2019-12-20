@@ -18,15 +18,14 @@ describe('{{cancel_link}} helper', function () {
     const defaultContinueLinkText = /Continue subscription/;
 
     it('should throw if subscription data is incorrect', function () {
-        var runHelper = function (data) {
-                return function () {
-                    helpers.cancel_link.call(data);
-                };
-            }, expectedMessage = 'The {{cancel_link}} helper was used outside of a subscription context. See https://ghost.org/docs/api/handlebars-themes/helpers/cancel_link/.';
+        const runHelper = function (data) {
+            return function () {
+                helpers.cancel_link.call(data);
+            };
+        };
 
-        runHelper('not an object').should.throwError(expectedMessage);
-        runHelper(function () {
-        }).should.throwError(expectedMessage);
+        runHelper('not an object').should.throw();
+        runHelper(function () {}).should.throw();
     });
 
     it('can render cancel subscription link', function () {
