@@ -55,10 +55,12 @@ variables:
   ROLLOUT_RESOURCE_TYPE: deployment
 
   DOCKER_TLS_CERTDIR: ""  # https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
+  
+  test: TEST_DISABLED
 
 stages:
   - build
- # - test
+  - test
   - deploy  # dummy stage to follow the template guidelines
   - review
   - dast
