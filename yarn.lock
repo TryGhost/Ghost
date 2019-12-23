@@ -95,32 +95,6 @@
     url-regex "~5.0.0"
     video-extensions "~1.1.0"
 
-"@metascraper/helpers@^5.8.12":
-  version "5.8.12"
-  resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.8.12.tgz#c4c1375a90ee9b674f8fb4d5a65cce6f5c6ce30d"
-  integrity sha512-hmaIRXWcLGFWAXFKBHECHhf3VhHrbz/iV6spPtTeYyxCVO1TX62qYigqbizZwHk4dGeU1cTtbT2YN8/RCr1RiQ==
-  dependencies:
-    audio-extensions "0.0.0"
-    chrono-node "~1.3.11"
-    condense-whitespace "~2.0.0"
-    entities "~2.0.0"
-    file-extension "~4.0.5"
-    has-values "~2.0.1"
-    image-extensions "~1.1.0"
-    is-relative-url "~3.0.0"
-    is-uri "~1.2.0"
-    iso-639-3 "~1.2.0"
-    isostring "0.0.1"
-    lodash "~4.17.15"
-    memoize-one "~5.1.1"
-    mime-types "~2.1.25"
-    normalize-url "~4.5.0"
-    smartquotes "~2.3.1"
-    title "~3.4.1"
-    truncate "~2.1.0"
-    url-regex "~5.0.0"
-    video-extensions "~1.1.0"
-
 "@metascraper/helpers@^5.8.13":
   version "5.8.13"
   resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.8.13.tgz#62e808812e0dfc143668c341f44fac1e09b0fa1a"
@@ -5687,12 +5661,12 @@ metascraper-publisher@5.8.13:
   dependencies:
     "@metascraper/helpers" "^5.8.13"
 
-metascraper-title@5.8.12:
-  version "5.8.12"
-  resolved "https://registry.yarnpkg.com/metascraper-title/-/metascraper-title-5.8.12.tgz#1d57da4d0dd4566e622170630ba9b65fe26a4536"
-  integrity sha512-JJzJIp6O+BVFdxnYiz4lUGtzqeDLAxE5dz/Z0kj8iwJl6z/szdYTeFuI4Sc872GxN14xAgxNe1LJs2gAlZuHsg==
+metascraper-title@5.8.13:
+  version "5.8.13"
+  resolved "https://registry.yarnpkg.com/metascraper-title/-/metascraper-title-5.8.13.tgz#f2f54f18004333cbab559c929d44a7e8a443b9d2"
+  integrity sha512-emlfacAfRwbTn5eYZ3kUx5iHt+8WHjjrQNHe/gGjuSKXJrOQvsdDLznhfa+Ca38119WYyTodzC8WX+MS3/rscg==
   dependencies:
-    "@metascraper/helpers" "^5.8.12"
+    "@metascraper/helpers" "^5.8.13"
     lodash "~4.17.15"
 
 metascraper-url@5.8.10:
