@@ -5082,16 +5082,14 @@ ember-cli-lodash-subset@^2.0.1:
   resolved "https://registry.yarnpkg.com/ember-cli-lodash-subset/-/ember-cli-lodash-subset-2.0.1.tgz#20cb68a790fe0fde2488ddfd8efbb7df6fe766f2"
   integrity sha1-IMtop5D+D94kiN39jvu332/nZvI=
 
-ember-cli-mirage@1.1.4:
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/ember-cli-mirage/-/ember-cli-mirage-1.1.4.tgz#6385d8dc8d696736e19db7765f6491b731f48618"
-  integrity sha512-m9Ae75pbGPc3BZZMDmJWebu+SBnuTOwzxYm3DyG//M9kIg3SDJ07NTQpv4/6ylyweGY3IRxlrLNmfQKC5isk+Q==
+ember-cli-mirage@1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/ember-cli-mirage/-/ember-cli-mirage-1.1.6.tgz#4092966379a77ed2700ee0255c6426b272ef0607"
+  integrity sha512-xvW9ziv9JUKv9IA7SnmeCg0/pKiacro2Vg/kv8iqzFTRGMos51QrrsCI/2rXjAloGJM1SnaKL1TWUp25e76RVw==
   dependencies:
     broccoli-file-creator "^2.1.1"
     broccoli-funnel "^2.0.1"
     broccoli-merge-trees "^3.0.2"
-    broccoli-string-replace "^0.1.2"
-    chalk "^2.4.2"
     ember-auto-import "^1.2.19"
     ember-cli-babel "^7.5.0"
     ember-get-config "^0.2.2"
