@@ -6439,10 +6439,10 @@ object.pick@^1.2.0, object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-oembed-parser@1.3.6:
-  version "1.3.6"
-  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.3.6.tgz#a17d9bdd19983e183428240d2789234f352aee49"
-  integrity sha512-Q7Mr0p85l/jAZhiQGKI/dnV1zLthhECO+rYgfmxRzVmYtgs7Y8OjICMefHVxYWe6Kme/Ar9QhPV1Qi8hsG+/Kw==
+oembed-parser@1.3.7:
+  version "1.3.7"
+  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.3.7.tgz#3741c238a383f595e84dc4f4f3f9c5f6f8d95c53"
+  integrity sha512-u+zIINgVUTMJ5wqs2dpoJhWZ+0yLmChB3wV4NDIT81cZtHlm0xcgR3JuvXdtgJDJK/1diHk3DQtv2zsjhdeEkA==
   dependencies:
     node-fetch "^2.6.0"
 
