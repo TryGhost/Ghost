@@ -5664,12 +5664,12 @@ metascraper-image@5.8.13:
   dependencies:
     "@metascraper/helpers" "^5.8.13"
 
-metascraper-logo-favicon@5.8.10:
-  version "5.8.10"
-  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.8.10.tgz#748fc15466b48ee82d203bcda513cf19c89f010f"
-  integrity sha512-CVKw6qbLDGLjl0iarxd509vSuaoWwvwjKaYSXISG07e3Bf2tisklALfMJKScRqGtA8GTqrF9QTxJT5gTgBzQhQ==
+metascraper-logo-favicon@5.8.13:
+  version "5.8.13"
+  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.8.13.tgz#589a847cd47d85a3bda70c8d7d5f79d702c05747"
+  integrity sha512-p5ggU2dJx78+NOYJzV+n0Xuo4KLPZOUaHyOKA7sgDQavT63wACHNL/daL0jwgW1Pj5MOQPM3QKX4SC3hzmrgcg==
   dependencies:
-    "@metascraper/helpers" "^5.8.10"
+    "@metascraper/helpers" "^5.8.13"
     got "~9.6.0"
     lodash "~4.17.15"
 
