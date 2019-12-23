@@ -58,7 +58,7 @@ variables:
 
 stages:
   - build
-  - test
+ # - test
   - deploy  # dummy stage to follow the template guidelines
   - review
   - dast
