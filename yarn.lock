@@ -5680,12 +5680,12 @@ metascraper-logo@5.8.13:
   dependencies:
     "@metascraper/helpers" "^5.8.13"
 
-metascraper-publisher@5.8.10:
-  version "5.8.10"
-  resolved "https://registry.yarnpkg.com/metascraper-publisher/-/metascraper-publisher-5.8.10.tgz#73da55d56a625b814f2a3ec03f6e5e44d2f0417c"
-  integrity sha512-dxIOoS/ymmOEps9lXyY8OrviY6Ub8XOsZ+lUYHui815OdCWkpuk9+8zRKt1W08ALQhx5OhF4F3EN7lfoYWd1aw==
+metascraper-publisher@5.8.13:
+  version "5.8.13"
+  resolved "https://registry.yarnpkg.com/metascraper-publisher/-/metascraper-publisher-5.8.13.tgz#ff1e35c11979f946089abf0ef803477e0a16d62c"
+  integrity sha512-6icsUcJJA9tLxo8ArbdrnV1CzKDUcH2C2/uNnyo+ebyXGqtIkKAjEgq7ec59/V/fjnHdVV2Pr6QKxffgFG5/QA==
   dependencies:
-    "@metascraper/helpers" "^5.8.10"
+    "@metascraper/helpers" "^5.8.13"
 
 metascraper-title@5.8.12:
   version "5.8.12"
