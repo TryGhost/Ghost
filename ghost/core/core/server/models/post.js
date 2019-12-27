@@ -670,6 +670,7 @@ Post = ghostBookshelf.Model.extend({
             try {
                 this.set('html', mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(this.get('mobiledoc'))));
             } catch (err) {
+                console.error('Mobiledoc Convertion Error:', err);
                 throw new errors.ValidationError({
                     message: tpl(messages.invalidMobiledocStructure),
                     help: 'https://ghost.org/docs/publishing/'
