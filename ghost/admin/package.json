@@ -99,7 +99,7 @@
     "ember-truth-helpers": "2.1.0",
     "ember-useragent": "0.9.1",
     "emberx-file-input": "1.2.1",
-    "eslint": "6.7.2",
+    "eslint": "6.8.0",
     "eslint-plugin-ghost": "0.6.0",
     "faker": "4.1.0",
     "fs-extra": "8.1.0",
