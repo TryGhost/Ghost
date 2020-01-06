@@ -45,7 +45,7 @@ async function fetchBookmarkData(url, html) {
 
 const findUrlWithProvider = url => ({
     url,
-    provider: oEmbed.hasProvider(url)
+    provider: oEmbed.findProvider(url)
 });
 
 const getOembedUrlFromHTML = (html) => {

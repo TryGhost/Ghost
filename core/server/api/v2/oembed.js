@@ -6,7 +6,7 @@ const cheerio = require('cheerio');
 
 const findUrlWithProvider = url => ({
     url,
-    provider: oEmbed.hasProvider(url)
+    provider: oEmbed.findProvider(url)
 });
 
 const getOembedUrlFromHTML = (html) => {
