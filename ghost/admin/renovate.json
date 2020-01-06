@@ -8,7 +8,8 @@
     "normalize.css",
     "validator",
     "ember-in-viewport",
-    "codemirror"
+    "codemirror",
+    "broccoli-concat"
   ],
   "ignorePaths": ["lib/koenig-editor/package.json"],
   "travis": { "enabled": true },
