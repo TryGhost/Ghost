@@ -88,7 +88,7 @@
     "ember-power-calendar-moment": "0.1.7",
     "ember-power-datepicker": "0.6.2",
     "ember-power-select": "2.3.5",
-    "ember-resolver": "5.3.0",
+    "ember-resolver": "7.0.0",
     "ember-route-action-helper": "2.0.7",
     "ember-simple-auth": "1.9.2",
     "ember-sinon": "4.1.1",
