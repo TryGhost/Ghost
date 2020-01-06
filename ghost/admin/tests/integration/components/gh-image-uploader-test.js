@@ -241,26 +241,6 @@ describe('Integration: Component: gh-image-uploader', function () {
         expect(findAll('input[type="file"]').length).to.equal(1);
     });
 
-    it('displays upload progress', async function () {
-        // pretender fires a progress event every 50ms
-        stubSuccessfulUpload(server, 150);
-
-        await render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
-        fileUpload('input[type="file"]', ['test'], {name: 'test.png'});
-
-        await waitFor('.progress .bar');
-
-        let progressBar = find('.progress .bar');
-
-        await waitUntil(function () {
-            let [, percentageWidth] = progressBar.getAttribute('style').match(/width: (\d+)%?/);
-            percentageWidth = Number.parseInt(percentageWidth);
-            return percentageWidth > 0;
-        }, {timeout: 150});
-
-        await settled();
-    });
-
     it('handles drag over/leave', async function () {
         stubSuccessfulUpload(server);
 
