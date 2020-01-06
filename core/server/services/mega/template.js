@@ -677,7 +677,7 @@ figure blockquote p {
     table[class=body] .kg-bookmark-thumbnail {
         display: none !important;
     }
-    
+
     table[class=body] .kg-bookmark-metadata span {
         font-size: 13px !important;
     }
@@ -726,7 +726,7 @@ figure blockquote p {
     table[class=body] blockquote + * {
         margin-top: 1.5em !important;
     }
-    
+
     table[class=body] hr {
         margin: 2em 0 !important;
     }
@@ -822,25 +822,23 @@ figure blockquote p {
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                                 <tr>
                                                     <td class="post-meta">
-                                                        By ${post.authors} – 
-                                                        ${post.published_at} – 
+                                                        By ${post.authors} –
+                                                        ${post.published_at} –
                                                         <a href="${post.url}" class="view-online-link">View online →</a>
                                                     </td>
                                                 </tr>
                                             </table>
-                                            
+
                                         </td>
                                     </tr>
-                                    ${
-                                        post.feature_image ? `
+                                    ${post.feature_image ? `
                                         <tr>
                                             <td class="feature-image"><img src="${post.feature_image}"></td>
                                         </tr>
-                                        ` : ``
-                                    }
+                                        ` : ``}
                                     <tr>
                                         <td class="post-content">
-                                            
+
                                             <!-- POST CONTENT START -->
                                             ${post.html}
                                             <!-- POST CONTENT END -->
@@ -857,7 +855,7 @@ figure blockquote p {
                             <td class="wrapper" align="center">
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                     <tr>
-                                        <td class="footer">${site.title} &copy; ${date.getFullYear()} – <a href="%recipient.unsubscribe_url%">Unsubscribe</a></td>
+                                        <td class="footer">${site.title} &copy; ${date.getFullYear()} – <a href="%recipient.unsubscribe_url%">Unsubscribe</a></td>
                                     </tr>
                                 </table>
                             </td>
