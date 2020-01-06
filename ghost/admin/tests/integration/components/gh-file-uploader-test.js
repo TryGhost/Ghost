@@ -249,27 +249,6 @@ describe('Integration: Component: gh-file-uploader', function () {
         expect(findAll('input[type="file"]').length).to.equal(1);
     });
 
-    // skipped due to random failures on Travis - https://github.com/TryGhost/Ghost/issues/10308
-    it.skip('displays upload progress', async function () {
-        // pretender fires a progress event every 50ms
-        stubSuccessfulUpload(server, 150);
-
-        await render(hbs`{{gh-file-uploader url=uploadUrl}}`);
-        fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
-
-        // TODO: replace with waitFor/waitUntil helpers
-        // after 75ms we should have had one progress event
-        run.later(this, function () {
-            expect(findAll('.progress .bar').length).to.equal(1);
-            let [, percentageWidth] = find('.progress .bar').getAttribute('style').match(/width: (\d+)%?/);
-            percentageWidth = Number.parseInt(percentageWidth);
-            expect(percentageWidth).to.be.above(0);
-            expect(percentageWidth).to.be.below(100);
-        }, 75);
-
-        await settled();
-    });
-
     it('handles drag over/leave', async function () {
         await render(hbs`{{gh-file-uploader}}`);
 
