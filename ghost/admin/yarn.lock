@@ -1351,7 +1351,7 @@ abbrev@1:
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
   integrity sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==
 
-abortcontroller-polyfill@^1.1.9, abortcontroller-polyfill@^1.3.0:
+abortcontroller-polyfill@^1.1.9, abortcontroller-polyfill@^1.3.0, abortcontroller-polyfill@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/abortcontroller-polyfill/-/abortcontroller-polyfill-1.4.0.tgz#0d5eb58e522a461774af8086414f68e1dda7a6c4"
   integrity sha512-3ZFfCRfDzx3GFjO6RAkYx81lPGpUS20ISxux9gLxuKnqafNcFQo59+IoZqpO2WvQlyc287B62HDnDdNYRmlvWA==
@@ -2682,7 +2682,7 @@ broccoli-concat@4.2.2:
     lodash.omit "^4.1.0"
     lodash.uniq "^4.2.0"
 
-broccoli-concat@^3.2.2, broccoli-concat@^3.7.4:
+broccoli-concat@^3.2.2, broccoli-concat@^3.7.4, broccoli-concat@^3.7.5:
   version "3.7.5"
   resolved "https://registry.yarnpkg.com/broccoli-concat/-/broccoli-concat-3.7.5.tgz#223beda8c1184252cf08ae020a3d45ffa6a48218"
   integrity sha512-rDs1Mej3Ej0Cy5yIO9oIQq5+BCv0opAwS2NW7M0BeCsAMeFM42Z/zacDUC6jKc5OV5wiHvGTyCPLnZkMe0h6kQ==
@@ -5517,7 +5517,26 @@ ember-factory-for-polyfill@^1.3.1:
   dependencies:
     ember-cli-version-checker "^2.1.0"
 
-ember-fetch@6.7.2, "ember-fetch@^2.1.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0":
+ember-fetch@7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-7.0.0.tgz#8ac4ce20e3ab7a66aba97bdd58bf675e54044cf4"
+  integrity sha512-kmTdRTbLRv8gtHEBxsi3kxgMNa2VEqQFv1QM+3ZH3xJHdGG/SbIgCItY6JBu9wPR8EOARgoxFMprI1anFDHKrw==
+  dependencies:
+    abortcontroller-polyfill "^1.4.0"
+    broccoli-concat "^3.7.5"
+    broccoli-debug "^0.6.5"
+    broccoli-merge-trees "^3.0.0"
+    broccoli-rollup "^2.1.1"
+    broccoli-stew "^3.0.0"
+    broccoli-templater "^2.0.1"
+    calculate-cache-key-for-tree "^2.0.0"
+    caniuse-api "^3.0.0"
+    ember-cli-babel "^7.13.0"
+    ember-cli-typescript "^2.0.2"
+    node-fetch "^2.6.0"
+    whatwg-fetch "^3.0.0"
+
+"ember-fetch@^2.1.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0":
   version "6.7.2"
   resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-6.7.2.tgz#82efce4a55a64863104347b71e598208b9acf518"
   integrity sha512-+Dd++MJVkCXoqX2DPtFDjuoDMcLk+7fphLq7D8OoXwJq9KQMTff07sH18qhxWXV5Hqknvz3Uwy214g54vOboag==
