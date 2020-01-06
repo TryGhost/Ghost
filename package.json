@@ -117,7 +117,7 @@
     "node-jose": "1.1.3",
     "nodemailer": "0.7.1",
     "oauth2orize": "1.11.0",
-    "oembed-spec": "1.1.1",
+    "oembed-spec": "1.1.7",
     "path-match": "1.2.4",
     "probe-image-size": "5.0.0",
     "rss": "1.2.2",

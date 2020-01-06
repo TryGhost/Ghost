@@ -6176,11 +6176,6 @@ node-environment-flags@1.0.5:
     object.getownpropertydescriptors "^2.0.3"
     semver "^5.7.0"
 
-node-fetch@^2.6.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.0.tgz#e633456386d4aa55863f676a7ab0daa8fdecb0fd"
-  integrity sha512-8dG4H5ujfvFiqDmVu9fQ5bOHUC15JMjMY/Zumv26oOvvVJjM67KF8koCWIabKQ1GJIa9r2mMZscBq/TbdOcmNA==
-
 node-forge@^0.8.1:
   version "0.8.5"
   resolved "https://registry.yarnpkg.com/node-forge/-/node-forge-0.8.5.tgz#57906f07614dc72762c84cef442f427c0e1b86ee"
@@ -6439,12 +6434,13 @@ object.pick@^1.2.0, object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-oembed-parser@1.3.7:
-  version "1.3.7"
-  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.3.7.tgz#3741c238a383f595e84dc4f4f3f9c5f6f8d95c53"
-  integrity sha512-u+zIINgVUTMJ5wqs2dpoJhWZ+0yLmChB3wV4NDIT81cZtHlm0xcgR3JuvXdtgJDJK/1diHk3DQtv2zsjhdeEkA==
+oembed-spec@^1.1.7:
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/oembed-spec/-/oembed-spec-1.1.7.tgz#061359ac2d9043eef1e22b65e28851b030c2880c"
+  integrity sha512-55lwSvDkGdrxtkfDLBgrH3z9LCj+8JhpwBrJMWOrArebKxxMIoYlrg+3q9nkYvp1TAON85gnO6m+N6t3U/bu2w==
   dependencies:
-    node-fetch "^2.6.0"
+    got "~9.6.0"
+    tldts "~5.6.3"
 
 on-finished@^2.3.0, on-finished@~2.3.0:
   version "2.3.0"
@@ -8759,6 +8755,18 @@ tlds@^1.203.0:
   version "1.203.1"
   resolved "https://registry.yarnpkg.com/tlds/-/tlds-1.203.1.tgz#4dc9b02f53de3315bc98b80665e13de3edfc1dfc"
   integrity sha512-7MUlYyGJ6rSitEZ3r1Q1QNV8uSIzapS8SmmhSusBuIc7uIxPPwsKllEP0GRp1NS6Ik6F+fRZvnjDWm3ecv2hDw==
+
+tldts-core@^5.6.3:
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/tldts-core/-/tldts-core-5.6.3.tgz#d80ce1e93b58ba0614701c28450360fc6986aaf1"
+  integrity sha512-E7Jtwgy5ZKXuKm3tb2Z73t0AgiGTnGnVrGfBAJj0nS2tENCclb/Ym5yt+wOdDW+8uJg0bI/BxHmbvUyLAYpcPQ==
+
+tldts@~5.6.3:
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/tldts/-/tldts-5.6.3.tgz#89159b2180bf18d807bcf38438ef6e35fafa8d9f"
+  integrity sha512-h17D3Q9iRTeEdqncCR5MfRvwPxRbGFwx/g51ky2s6+2i9BicZOPFikc5FE2jG0Se+0bAPaaoZLytQ1kGhH1U0g==
+  dependencies:
+    tldts-core "^5.6.3"
 
 tmp@0.0.33, tmp@^0.0.33:
   version "0.0.33"
