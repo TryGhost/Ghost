@@ -803,7 +803,14 @@ Post = ghostBookshelf.Model.extend({
         if (['edit', 'add', 'destroy'].indexOf(methodName) !== -1) {
             options.withRelated = _.union(['authors', 'tags'], options.withRelated || []);
         }
-        options.withRelated = _.union(['posts_meta'], options.withRelated || []);
+
+        const META_ATTRIBUTES = _.without(ghostBookshelf.model('PostsMeta').prototype.permittedAttributes(), 'id', 'post_id');
+
+        // NOTE: only include post_meta relation when requested in 'columns' or by default
+        //       optimization is needed to be able to perform .findAll on large SQLite datasets
+        if (!options.columns || (options.columns && _.intersection(META_ATTRIBUTES, options.columns).length)) {
+            options.withRelated = _.union(['posts_meta'], options.withRelated || []);
+        }
 
         return options;
     },
