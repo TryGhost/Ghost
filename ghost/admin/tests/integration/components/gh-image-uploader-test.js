@@ -4,7 +4,7 @@ import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 import {UnsupportedMediaTypeError} from 'ghost-admin/services/ajax';
-import {click, find, findAll, render, settled, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
+import {click, find, findAll, render, settled, triggerEvent} from '@ember/test-helpers';
 import {createFile, fileUpload} from '../../helpers/file-upload';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
