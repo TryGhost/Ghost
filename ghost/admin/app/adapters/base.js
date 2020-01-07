@@ -14,10 +14,6 @@ export default RESTAdapter.extend(DataAdapterMixin, AjaxServiceSupport, {
         return false;
     },
 
-    authorize(/*xhr*/) {
-        // noop - we're using server-side session cookies
-    },
-
     query(store, type, query) {
         let id;
 
