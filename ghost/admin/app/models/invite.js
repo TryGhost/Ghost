@@ -19,11 +19,9 @@ export default Model.extend({
     ghostPaths: service(),
 
     resend() {
-        let fullInviteData = this.toJSON();
-
         let inviteData = {
-            email: fullInviteData.email,
-            role_id: fullInviteData.role
+            email: this.email,
+            role_id: this.belongsTo('role').id
         };
 
         let inviteUrl = this.get('ghostPaths.url').api('invites');
