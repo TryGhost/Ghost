@@ -38,4 +38,4 @@ Follow the instructions for the top-level repo.
 
 # Copyright & License
 
-Copyright (c) 2018-2019 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2020 Ghost Foundation - Released under the [MIT license](LICENSE).
