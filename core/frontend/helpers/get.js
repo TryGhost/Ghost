@@ -140,7 +140,8 @@ get = function get(resource, options) {
         return Promise.resolve(options.inverse(self, {data: data}));
     }
 
-    const controller = api[apiVersion][RESOURCES[resource].alias];
+    const controllerName = RESOURCES[resource].alias;
+    const controller = api[apiVersion][controllerName];
     const action = isBrowse(apiOptions) ? 'browse' : 'read';
 
     // Parse the options we're going to pass to the API
@@ -179,7 +180,7 @@ get = function get(resource, options) {
                 message: `{{#get}} helper took ${totalMs}ms to complete`,
                 code: 'SLOW_GET_HELPER',
                 errorDetails: {
-                    api: `${apiVersion}.${controller}.${action}`,
+                    api: `${apiVersion}.${controllerName}.${action}`,
                     apiOptions,
                     returnedRows: returnedRowsCount
                 }
