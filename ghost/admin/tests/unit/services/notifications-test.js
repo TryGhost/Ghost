@@ -9,6 +9,11 @@ import {get} from '@ember/object';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
 
+// notifications service determines if a notification is a model instance by
+// checking `notification.constructor.modelName === 'notification'`
+const NotificationStub = EmberObject.extend();
+NotificationStub.modelName = 'notification';
+
 describe('Unit: Service: notifications', function () {
     setupTest();
 
@@ -35,9 +40,7 @@ describe('Unit: Service: notifications', function () {
 
     it('#handleNotification deals with DS.Notification notifications', function () {
         let notifications = this.owner.lookup('service:notifications');
-        let notification = EmberObject.create({message: '<h1>Test</h1>', status: 'alert'});
-
-        notification.toJSON = function () {};
+        let notification = NotificationStub.create({message: '<h1>Test</h1>', status: 'alert'});
 
         notifications.handleNotification(notification);
 
@@ -315,10 +318,9 @@ describe('Unit: Service: notifications', function () {
     });
 
     it('#closeNotification removes and deletes DS.Notification records', function () {
-        let notification = EmberObject.create({message: 'Close test', status: 'alert'});
         let notifications = this.owner.lookup('service:notifications');
+        let notification = NotificationStub.create({message: 'Close test', status: 'alert'});
 
-        notification.toJSON = function () {};
         notification.deleteRecord = function () {};
         sinon.spy(notification, 'deleteRecord');
         notification.save = function () {
@@ -392,7 +394,6 @@ describe('Unit: Service: notifications', function () {
         let notifications = this.owner.lookup('service:notifications');
         let notificationModel = EmberObject.create({message: 'model'});
 
-        notificationModel.toJSON = function () {};
         notificationModel.deleteRecord = function () {};
         sinon.spy(notificationModel, 'deleteRecord');
         notificationModel.save = function () {
