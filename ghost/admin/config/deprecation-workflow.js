@@ -7,6 +7,9 @@ self.deprecationWorkflow.config = {
         {handler: 'silence', matchId: 'events.remove-all-listeners'},
         {handler: 'silence', matchId: 'ember-polyfills.deprecate-merge'},
         {handler: 'silence', matchId: 'events.inherited-function-listeners'},
-        {handler: 'silence', matchId: 'ember-component.send-action'}
+        {handler: 'silence', matchId: 'ember-component.send-action'},
+        // revert once ember-infinity removes usage of `isVisible`
+        // https://github.com/ember-infinity/ember-infinity/pull/399
+        {handler: 'silence', matchId: 'ember-component.is-visible'}
     ]
 };
