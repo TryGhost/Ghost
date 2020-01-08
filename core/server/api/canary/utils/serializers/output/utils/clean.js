@@ -95,6 +95,10 @@ const post = (attrs, frame) => {
         if (attrs.og_description === '') {
             attrs.og_description = null;
         }
+        // NOTE: the visibility column has to be always present in Content API response to perform content gating
+        if (frame.options.columns && frame.options.columns.includes('visibility') && !frame.original.query.fields.includes('visibility')) {
+            delete attrs.visibility;
+        }
     } else {
         delete attrs.page;
     }

@@ -204,6 +204,7 @@ describe('api/v2/content/posts', function () {
     });
 
     describe('content gating', function () {
+        let publicPost;
         let membersPost;
         let paidPost;
 
@@ -213,6 +214,12 @@ describe('api/v2/content/posts', function () {
         });
 
         before (function () {
+            publicPost = testUtils.DataGenerator.forKnex.createPost({
+                slug: 'free-to-see',
+                visibility: 'public',
+                published_at: moment().add(15, 'seconds').toDate() // here to ensure sorting is not modified
+            });
+
             membersPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'thou-shalt-not-be-seen',
                 visibility: 'members',
@@ -226,9 +233,29 @@ describe('api/v2/content/posts', function () {
             });
 
             return testUtils.fixtures.insertPosts([
+                publicPost,
                 membersPost,
                 paidPost
             ]);
+        });
+
+        it('public post fields are always visible', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`posts/${publicPost.id}/?key=${validKey}&fields=slug,html,plaintext&formats=html,plaintext`))
+                .set('Origin', testUtils.API.getURL())
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse.posts);
+                    const post = jsonResponse.posts[0];
+
+                    localUtils.API.checkResponse(post, 'post', null, null, ['id', 'slug', 'html', 'plaintext']);
+                    post.slug.should.eql('free-to-see');
+                    post.html.should.not.eql('');
+                    post.plaintext.should.not.eql('');
+                });
         });
 
         it('cannot read members only post content', function () {
@@ -299,7 +326,7 @@ describe('api/v2/content/posts', function () {
                     const jsonResponse = res.body;
                     should.exist(jsonResponse.posts);
                     localUtils.API.checkResponse(jsonResponse, 'posts');
-                    jsonResponse.posts.should.have.length(13);
+                    jsonResponse.posts.should.have.length(14);
                     localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -307,17 +334,19 @@ describe('api/v2/content/posts', function () {
                     // Default order 'published_at desc' check
                     jsonResponse.posts[0].slug.should.eql('thou-shalt-not-be-seen');
                     jsonResponse.posts[1].slug.should.eql('thou-shalt-be-paid-for');
-                    jsonResponse.posts[6].slug.should.eql('organising-content');
+                    jsonResponse.posts[2].slug.should.eql('free-to-see');
+                    jsonResponse.posts[7].slug.should.eql('organising-content');
 
                     jsonResponse.posts[0].html.should.eql('');
                     jsonResponse.posts[1].html.should.eql('');
-                    jsonResponse.posts[6].html.should.not.eql('');
+                    jsonResponse.posts[2].html.should.not.eql('');
+                    jsonResponse.posts[7].html.should.not.eql('');
 
                     // check meta response for this test
                     jsonResponse.meta.pagination.page.should.eql(1);
                     jsonResponse.meta.pagination.limit.should.eql(15);
                     jsonResponse.meta.pagination.pages.should.eql(1);
-                    jsonResponse.meta.pagination.total.should.eql(13);
+                    jsonResponse.meta.pagination.total.should.eql(14);
                     jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
                     jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
                     should.not.exist(jsonResponse.meta.pagination.next);

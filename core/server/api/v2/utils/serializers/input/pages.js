@@ -53,6 +53,12 @@ function setDefaultOrder(frame) {
     }
 }
 
+function forceVisibilityColumn(frame) {
+    if (frame.options.columns && !frame.options.columns.includes('visibility')) {
+        frame.options.columns.push('visibility');
+    }
+}
+
 function defaultFormat(frame) {
     if (frame.options.formats) {
         return;
@@ -100,6 +106,7 @@ module.exports = {
         if (localUtils.isContentAPI(frame)) {
             removeMobiledocFormat(frame);
             setDefaultOrder(frame);
+            forceVisibilityColumn(frame);
         }
 
         if (!localUtils.isContentAPI(frame)) {
@@ -119,6 +126,7 @@ module.exports = {
         if (localUtils.isContentAPI(frame)) {
             removeMobiledocFormat(frame);
             setDefaultOrder(frame);
+            forceVisibilityColumn(frame);
         }
 
         if (!localUtils.isContentAPI(frame)) {
