@@ -85,12 +85,16 @@ module.exports = {
         statusCode: 201,
         headers: {},
         options: [
-            'include'
+            'include',
+            'source'
         ],
         validation: {
             options: {
                 include: {
                     values: ALLOWED_INCLUDES
+                },
+                source: {
+                    values: ['html']
                 }
             }
         },
@@ -117,6 +121,7 @@ module.exports = {
         options: [
             'include',
             'id',
+            'source',
             // NOTE: only for internal context
             'forUpdate',
             'transacting'
@@ -128,6 +133,9 @@ module.exports = {
                 },
                 id: {
                     required: true
+                },
+                source: {
+                    values: ['html']
                 }
             }
         },
