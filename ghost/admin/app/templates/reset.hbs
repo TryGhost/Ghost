@@ -11,7 +11,7 @@
                             placeholder="Password"
                             class="password"
                             autocorrect="off"
-                            autofocus="autofocus"
+                            shouldFocus=true
                             value=(readonly this.newPassword)
                             input=(action (mut this.newPassword) value="target.value")}}
                     </span>
@@ -25,7 +25,7 @@
                             placeholder="Confirm Password"
                             class="password"
                             autocorrect="off"
-                            autofocus="autofocus"
+                            shouldFocus=true
                             value=(readonly this.ne2Password)
                             input=(action (mut this.ne2Password) value="target.value")}}
                     </span>
