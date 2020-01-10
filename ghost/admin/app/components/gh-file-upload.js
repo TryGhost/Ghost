@@ -24,7 +24,7 @@ export default Component.extend({
 
             // Reset form
             if (this.shouldResetForm) {
-                this.$().closest('form')[0].reset();
+                this.element.closest('form').reset();
             }
         }
     },

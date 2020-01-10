@@ -16,6 +16,6 @@ export default Component.extend({
     },
 
     click() {
-        this.$('a').blur();
+        this.element.querySelector('a').blur();
     }
 });
