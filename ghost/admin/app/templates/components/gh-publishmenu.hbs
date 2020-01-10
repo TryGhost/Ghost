@@ -17,13 +17,15 @@
                 saveType=this.saveType
                 isClosing=this.isClosing
                 memberCount=this.memberCount
-                setSaveType=(action "setSaveType")}}
+                setSaveType=(action "setSaveType")
+                setTypedDateError=(action (mut this.typedDateError))}}
 
         {{else}}
             {{gh-publishmenu-draft
                 post=this.post
                 saveType=this.saveType
                 setSaveType=(action "setSaveType")
+                setTypedDateError=(action (mut this.typedDateError))
                 backgroundTask=this.backgroundTask
                 memberCount=this.memberCount
                 sendEmailWhenPublished=this.sendEmailWhenPublished}}

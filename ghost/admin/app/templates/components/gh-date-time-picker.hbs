@@ -8,7 +8,14 @@
     }}
         {{#dp.trigger tabindex="-1" data-test-date-time-picker-datepicker=true}}
             <div class="gh-date-time-picker-date {{if this.dateError "error"}}">
-                <input type="text" readonly value={{moment-format this._date "YYYY-MM-DD"}} disabled={{this.disabled}} data-test-date-time-picker-date-input>
+                <input type="text"
+                    placeholder={{this.dateFormat}}
+                    value={{readonly this.dateValue}}
+                    disabled={{this.disabled}}
+                    {{on "input" (fn this.onDateInput dp)}}
+                    {{on "blur" this.onDateBlur}}
+                    {{on "keydown" (fn this.onDateKeydown dp)}}
+                    data-test-date-time-picker-date-input>
                 {{svg-jar "calendar"}}
             </div>
         {{/dp.trigger}}
@@ -25,6 +32,7 @@
             disabled={{this.disabled}}
             oninput={{action (mut this._time) value="target.value"}}
             onblur={{action "setTime" this._time}}
+            {{did-insert this.registerTimeInput}}
             data-test-date-time-picker-time-input
         >
         <small class="gh-date-time-picker-timezone">({{this.timezone}})</small>

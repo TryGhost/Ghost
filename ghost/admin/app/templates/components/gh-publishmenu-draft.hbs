@@ -17,10 +17,12 @@
                     time=this.post.publishedAtBlogTime
                     setDate=(action "setDate")
                     setTime=(action "setTime")
+                    setTypedDateError=this.setTypedDateError
                     errors=this.post.errors
                     dateErrorProperty="publishedAtBlogDate"
                     timeErrorProperty="publishedAtBlogTime"
                     minDate=this._minDate
+                    isActive=(eq this.saveType "schedule")
                 }}
                 <div class="gh-publishmenu-radio-desc">Set automatic future publish date</div>
             </div>
