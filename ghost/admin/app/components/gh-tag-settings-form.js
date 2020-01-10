@@ -72,19 +72,6 @@ export default Component.extend({
         return metaDescription;
     }),
 
-    didReceiveAttrs() {
-        this._super(...arguments);
-
-        let oldTagId = this._oldTagId;
-        let newTagId = this.get('tag.id');
-
-        if (newTagId !== oldTagId) {
-            this.reset();
-        }
-
-        this._oldTagId = newTagId;
-    },
-
     actions: {
         setProperty(property, value) {
             this.setProperty(property, value);
