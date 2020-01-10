@@ -1,4 +1,3 @@
-/* global key */
 import Component from '@ember/component';
 import Ember from 'ember';
 import {computed} from '@ember/object';
@@ -12,8 +11,7 @@ export default Component.extend({
     config: service(),
 
     tag: null,
-
-    isViewingSubview: false,
+    scratchTag: null,
 
     // Allowed actions
     setProperty: () => {},
@@ -98,30 +96,6 @@ export default Component.extend({
 
         clearCoverImage() {
             this.setProperty('featureImage', '');
-        },
-
-        openMeta() {
-            this.set('isViewingSubview', true);
-        },
-
-        closeMeta() {
-            this.set('isViewingSubview', false);
         }
-    },
-
-    reset() {
-        this.set('isViewingSubview', false);
-        if (this.$()) {
-            this.$('.settings-menu-pane').scrollTop(0);
-        }
-    },
-
-    focusIn() {
-        key.setScope('tag-settings-form');
-    },
-
-    focusOut() {
-        key.setScope('default');
     }
-
 });
