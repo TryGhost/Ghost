@@ -12,14 +12,15 @@ const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 export default Component.extend({
     clock: service(),
 
+    backgroundTask: null,
     classNames: 'gh-publishmenu',
     displayState: 'draft',
     post: null,
     postStatus: 'draft',
-    saveTask: null,
     runningText: null,
-    backgroundTask: null,
+    saveTask: null,
     sendEmailWhenPublished: false,
+    typedDateError: null,
 
     _publishedAtBlogTZ: null,
     _previousStatus: null,
@@ -257,7 +258,18 @@ export default Component.extend({
     }),
 
     save: task(function* ({dropdown} = {}) {
-        let {post, sendEmailWhenPublished, sendEmailConfirmed, saveType} = this;
+        let {
+            post,
+            sendEmailWhenPublished,
+            sendEmailConfirmed,
+            saveType,
+            typedDateError
+        } = this;
+
+        // don't allow save if an invalid schedule date is present
+        if (typedDateError) {
+            return false;
+        }
 
         if (
             post.status === 'draft' &&
