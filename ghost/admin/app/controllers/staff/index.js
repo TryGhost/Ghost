@@ -78,13 +78,9 @@ export default Controller.extend({
         }
 
         // ensure roles are loaded before invites. Invites do not have embedded
-        // role records which means Ember Data will try to fetch the roles
-        // automatically when invite.role is queried, loading roles first makes
-        // them available in memory and cuts down on network noise
-        let knownRoles = this.store.peekAll('role');
-        if (knownRoles.length <= 1) {
-            yield this.store.query('role', {limit: 'all'});
-        }
+        // role records which means Ember Data will throw errors when trying to
+        // read the invite.role data when the role has not yet been loaded
+        yield this.store.query('role', {limit: 'all'});
 
         return yield this.store.query('invite', {limit: 'all'});
     })
