@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import {computed} from '@ember/object';
+import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
@@ -32,16 +33,18 @@ export default Component.extend({
     didInsertElement() {
         this._super(...arguments);
 
-        this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', (event) => {
+        this._animationEndHandler = run.bind(this, function () {
             if (event.originalEvent.animationName === 'fade-out') {
                 this.notifications.closeNotification(this.message);
             }
         });
+
+        this.element.addEventListener('animationend', this._animationEndHandler);
     },
 
     willDestroyElement() {
         this._super(...arguments);
-        this.$().off('animationend webkitAnimationEnd oanimationend MSAnimationEnd');
+        this.element.removeEventListener('animationend', this._animationEndHandler);
     },
 
     actions: {

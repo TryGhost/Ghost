@@ -25,21 +25,30 @@ export default Component.extend(DropdownMixin, {
     }),
 
     didInsertElement() {
-        let dropdownService = this.dropdown;
-
         this._super(...arguments);
 
+        let dropdownService = this.dropdown;
         dropdownService.on('close', this, this.close);
         dropdownService.on('toggle', this, this.toggle);
+
+        this._animationEndHandler = run.bind(this, function (event) {
+            if (event.animationName === 'fade-out' && this.closing) {
+                this.set('isOpen', false);
+                this.set('closing', false);
+            }
+        });
+
+        this.element.addEventListener('animationend', this._animationEndHandler);
     },
 
     willDestroyElement() {
-        let dropdownService = this.dropdown;
-
         this._super(...arguments);
 
+        let dropdownService = this.dropdown;
         dropdownService.off('close', this, this.close);
         dropdownService.off('toggle', this, this.toggle);
+
+        this.element.removeEventListener('animationend', this._animationEndHandler);
     },
 
     open() {
@@ -54,17 +63,6 @@ export default Component.extend(DropdownMixin, {
         if (this.button) {
             this.set('button.isOpen', false);
         }
-
-        this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', (event) => {
-            if (event.originalEvent.animationName === 'fade-out') {
-                run(this, function () {
-                    if (this.closing) {
-                        this.set('isOpen', false);
-                        this.set('closing', false);
-                    }
-                });
-            }
-        });
     },
 
     // Called by the dropdown service when any dropdown button is clicked.

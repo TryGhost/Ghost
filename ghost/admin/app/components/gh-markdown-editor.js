@@ -613,7 +613,7 @@ export default Component.extend(ShortcutsMixin, {
 
         // trigger the dialog via gh-file-input, when a file is selected it will
         // trigger the onImageFilesSelected closure action
-        this.$('input[type="file"]').click();
+        this.element.querySelector('input[type="file"]').click();
     },
 
     // wrap SimpleMDE's built-in preview toggle so that we can trigger a closure

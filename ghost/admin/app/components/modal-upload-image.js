@@ -70,9 +70,9 @@ export default ModalComponent.extend({
 
     _setErrorState(state) {
         if (state) {
-            this.$('.url').addClass('error');
+            this.element.querySelector('.url').classList.add('error');
         } else {
-            this.$('.url').removeClass('error');
+            this.element.querySelector('.url').classList.remove('error');
         }
     },
 
