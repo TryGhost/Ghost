@@ -61,7 +61,7 @@
                         timeErrorProperty="publishedAtBlogTime"
                         maxDate='now'
                         disabled=this.post.isScheduled
-                        static=true
+                        isActive=(and this.showSettingsMenu (not this.isViewingSubview))
                     }}
                     {{#unless (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime)}}
                     <p>Use the publish menu to re-schedule</p>
