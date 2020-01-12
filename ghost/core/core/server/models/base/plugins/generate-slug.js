@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const security = require('@tryghost/security');
-
+const db = require('../../../data/db');
 const urlUtils = require('../../../../shared/url-utils');
 
 /**
@@ -89,7 +89,26 @@ module.exports = function (Bookshelf) {
                     slug = 'hash-' + slug;
                 }
             }
-
+            // Generate serially-numbered post slug
+            if (baseName === 'post') {
+                if (base.endsWith('@true')) {
+                    slug = slug.replace(/-true$/, '');
+                } else if (!options.transacting) {
+                    const sql = `
+                        SELECT MIN(slug + 1) AS next
+                        FROM posts
+                        WHERE type = 'post'
+                        AND (slug + 1) NOT IN (
+                            SELECT slug
+                            FROM posts
+                            WHERE type = 'post'
+                        )
+                    `;
+                    return db.knex.raw(sql).then(([[{next}]]) => {
+                        return checkIfSlugExists(`${next}`);
+                    });
+                }
+            }
             // Some keywords cannot be changed
             slug = _.includes(urlUtils.getProtectedSlugs(), slug) ? slug + '-' + baseName : slug;
 
