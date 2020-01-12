@@ -1,9 +1,27 @@
 <nav class="pagination">
-    {{#if prev}}
-        <a class="newer-posts" href="{{page_url prev}}"><span aria-hidden="true">&larr;</span> Newer Posts</a>
-    {{/if}}
-    <span class="page-number">Page {{page}} of {{pages}}</span>
-    {{#if next}}
-        <a class="older-posts" href="{{page_url next}}">Older Posts <span aria-hidden="true">&rarr;</span></a>
-    {{/if}}
+	<ul class="{{#if prev}}with-prev{{/if}} {{#if next}}with-next{{/if}}">
+		{{#if prev}}
+			<li class="prev"><a href="{{page_url prev}}">&lt;</a></li>
+		{{/if}}
+		{{#ghost_paginate page pages limit=7}}
+			{{#if first}}
+				<li {{#if active}} class="active" {{/if}}><a href="{{page_url n}}">{{n}}</a></li>
+				{{#if ellipsis}}
+					<li class="ellipsis">…</li>
+				{{/if}}
+			{{/if}}
+			{{#if middle}}
+				<li {{#if active}} class="active" {{/if}}><a href="{{page_url n}}">{{n}}</a></li>
+			{{/if}}
+			{{#if last}}
+				{{#if ellipsis}}
+					<li class="ellipsis">…</li>
+				{{/if}}
+				<li {{#if active}} class="active" {{/if}}><a href="{{page_url n}}">{{n}}</a></li>
+			{{/if}}
+		{{/ghost_paginate}}
+		{{#if next}}
+			<li class="next"><a href="{{page_url next}}">&gt;</a></li>
+		{{/if}}
+	</ul>
 </nav>
