@@ -20,7 +20,7 @@ module.exports = function handlePageParam(req, res, next, page) {
 
     page = parseInt(page, 10);
 
-    if (page === 1) {
+    if (page === 1 && req.originalUrl !== '/page/1/') {
         // CASE: page 1 is an alias for the collection index, do a permanent 301 redirect
         return urlUtils.redirect301(res, req.originalUrl.replace(pageRegex, '/'));
     } else if (page < 1 || isNaN(page)) {
