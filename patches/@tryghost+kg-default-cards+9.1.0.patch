@@ -1,0 +1,45 @@
+diff --git a/node_modules/@tryghost/kg-default-cards/lib/cards/code.js b/node_modules/@tryghost/kg-default-cards/lib/cards/code.js
+index 4f8bdfa..d29b29e 100644
+--- a/node_modules/@tryghost/kg-default-cards/lib/cards/code.js
++++ b/node_modules/@tryghost/kg-default-cards/lib/cards/code.js
+@@ -3,6 +3,8 @@ const {
+     htmlRelativeToAbsolute,
+     htmlToTransformReady
+ } = require('@tryghost/url-utils/lib/utils');
++const _ = require('lodash');
++const hljs = require('highlight.js');
+ 
+ module.exports = {
+     name: 'code',
+@@ -15,12 +17,30 @@ module.exports = {
+ 
+         let pre = dom.createElement('pre');
+         let code = dom.createElement('code');
++         pre.setAttribute('class', 'blog-code');
++        {
++            const lang = payload.language;
++            const text = payload.code;
++            const noHighlightRe = /^(no-?highlight|plain|text)$/i;
++
++            if (hljs.getLanguage(lang)) {
++                const result = hljs.highlight(lang, text);
++                payload.language = result.language;
++                payload.code = result.value;
++            } else if (!noHighlightRe.test(lang)) {
++                payload.code = _.escape(text);
++            } else {
++                const result = hljs.highlightAuto(text);
++                payload.language = result.language;
++                payload.code = result.value;
++            }
++        }
+ 
+         if (payload.language) {
+             code.setAttribute('class', `language-${payload.language}`);
+         }
+ 
+-        code.appendChild(dom.createTextNode(payload.code));
++        code.appendChild(dom.createRawHTMLSection(payload.code));
+         pre.appendChild(code);
+ 
+         if (payload.caption) {
