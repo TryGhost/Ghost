@@ -8,48 +8,6 @@ const signupEmail = require('./emails/signup');
 const subscribeEmail = require('./emails/subscribe');
 const config = require('./config');
 
-async function setMetadata(module, metadata) {
-    if (module !== 'stripe') {
-        return;
-    }
-
-    if (metadata.customer) {
-        await models.MemberStripeCustomer.upsert(metadata.customer, {
-            customer_id: metadata.customer.customer_id
-        });
-    }
-
-    if (metadata.subscription) {
-        await models.StripeCustomerSubscription.upsert(metadata.subscription, {
-            subscription_id: metadata.subscription.subscription_id
-        });
-    }
-
-    return;
-}
-
-async function getMetadata(module, member) {
-    if (module !== 'stripe') {
-        return;
-    }
-
-    const customers = (await models.MemberStripeCustomer.findAll({
-        filter: `member_id:${member.id}`
-    })).toJSON();
-
-    const subscriptions = await customers.reduce(async (subscriptionsPromise, customer) => {
-        const customerSubscriptions = await models.StripeCustomerSubscription.findAll({
-            filter: `customer_id:${customer.customer_id}`
-        });
-        return (await subscriptionsPromise).concat(customerSubscriptions.toJSON());
-    }, []);
-
-    return {
-        customers: customers,
-        subscriptions: subscriptions
-    };
-}
-
 const ghostMailer = new mail.GhostMailer();
 
 module.exports = createApiInstance;
@@ -165,8 +123,8 @@ function createApiInstance() {
         paymentConfig: {
             stripe: config.getStripePaymentConfig()
         },
-        setMetadata,
-        getMetadata,
+        memberStripeCustomerModel: models.MemberStripeCustomer,
+        stripeCustomerSubscriptionModel: models.StripeCustomerSubscription,
         memberModel: models.Member,
         logger: common.logging
     });
