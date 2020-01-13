@@ -5,6 +5,7 @@ const StripePaymentProcessor = require('./lib/stripe');
 
 const Tokens = require('./lib/tokens');
 const Users = require('./lib/users');
+const Metadata = require('./lib/metadata');
 const common = require('./lib/common');
 
 module.exports = function MembersApi({
@@ -25,8 +26,8 @@ module.exports = function MembersApi({
         getHTML,
         getSubject
     },
-    setMetadata,
-    getMetadata,
+    memberStripeCustomerModel,
+    stripeCustomerSubscriptionModel,
     memberModel,
     logger
 }) {
@@ -35,13 +36,14 @@ module.exports = function MembersApi({
     }
 
     const {encodeIdentityToken, decodeToken} = Tokens({privateKey, publicKey, issuer});
+    const metadata = Metadata({memberStripeCustomerModel, stripeCustomerSubscriptionModel});
 
     const stripeStorage = {
         async get(member) {
-            return getMetadata('stripe', member);
+            return metadata.getMetadata('stripe', member);
         },
-        async set(metadata) {
-            return setMetadata('stripe', metadata);
+        async set(data) {
+            return metadata.setMetadata('stripe', data);
         }
     };
     const stripe = paymentConfig.stripe ? new StripePaymentProcessor(paymentConfig.stripe, stripeStorage, common.logging) : null;
