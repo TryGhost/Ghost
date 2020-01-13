@@ -122,7 +122,7 @@
     "postcss-custom-properties": "9.0.2",
     "postcss-easy-import": "3.0.0",
     "pretender": "3.2.0",
-    "reframe.js": "2.2.6",
+    "reframe.js": "2.2.7",
     "simplemde": "https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost",
     "testem": "3.0.2",
     "top-gh-contribs": "2.0.4",
