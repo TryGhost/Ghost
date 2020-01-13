@@ -5,8 +5,8 @@ let Member;
 async function createMember({email, name, note}, options = {}) {
     const model = await Member.add({
         email,
-        name: name || null,
-        note: note || null
+        name,
+        note
     });
     const member = model.toJSON(options);
     return member;
@@ -26,8 +26,8 @@ async function getMember(data, options = {}) {
 
 async function updateMember({name, note, subscribed}, options = {}) {
     const attrs = {
-        name: name || null,
-        note: note || null
+        name,
+        note
     };
 
     if (subscribed !== undefined) {
