@@ -1,4 +1,5 @@
 const debug = require('ghost-ignition').debug('users');
+const common = require('./common');
 
 let Member;
 
@@ -84,7 +85,7 @@ module.exports = function ({
                 }
             });
         } catch (err) {
-            console.log(err);
+            common.logging.error(err);
             return null;
         }
     }
