@@ -2,80 +2,20 @@
     <GhCanvasHeader class="gh-canvas-header post-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Pages</h2>
         <section class="view-actions">
-            <div class="gh-contentfilter">
-                {{#unless this.session.user.isContributor}}
-                <PowerSelect
-                    @selected={{this.selectedType}}
-                    @options={{this.availableTypes}}
-                    @searchEnabled={{false}}
-                    @onChange={{action "changeType"}}
-                    @tagName="div"
-                    @classNames={{this.typeClassNames}}
-                    @triggerClass="gh-contentfilter-menu-trigger"
-                    @dropdownClass="gh-contentfilter-menu-dropdown"
-                    @matchTriggerWidth={{false}}
-                    data-test-type-select="true"
-                    as |type|
-                >
-                    {{type.name}}
-                </PowerSelect>
-                {{/unless}}
-
-                {{#unless this.session.user.isAuthorOrContributor}}
-                <PowerSelect
-                    @selected={{this.selectedAuthor}}
-                    @options={{this.availableAuthors}}
-                    @searchField="name"
-                    @onChange={{action "changeAuthor"}}
-                    @tagName="div"
-                    @classNames={{this.authorClassNames}}
-                    @triggerClass="gh-contentfilter-menu-trigger"
-                    @dropdownClass="gh-contentfilter-menu-dropdown"
-                    @searchPlaceholder="Search authors"
-                    @matchTriggerWidth={{false}}
-                    data-test-author-select="true"
-                    as |author|
-                >
-                    {{author.name}}
-                </PowerSelect>
-                {{/unless}}
-
-                {{#unless this.session.user.isContributor}}
-                <PowerSelect
-                    @selected={{this.selectedTag}}
-                    @options={{this.availableTags}}
-                    @searchField="name"
-                    @onChange={{action "changeTag"}}
-                    @tagName="div"
-                    @classNames={{this.tagClassNames}}
-                    @triggerClass="gh-contentfilter-menu-trigger"
-                    @dropdownClass="gh-contentfilter-menu-dropdown"
-                    @searchPlaceholder="Search tags"
-                    @matchTriggerWidth={{false}}
-                    @optionsComponent="power-select-vertical-collection-options"
-                    data-test-tag-select="true"
-                    as |tag|
-                >
-                    {{tag.name}}
-                </PowerSelect>
-                {{/unless}}
-
-                <PowerSelect
-                    @selected={{this.selectedOrder}}
-                    @options={{this.availableOrders}}
-                    @searchEnabled={{false}}
-                    @onChange={{action "changeOrder"}}
-                    @tagName="div"
-                    @classNames="gh-contentfilter-menu gh-contentfilter-sort"
-                    @triggerClass="gh-contentfilter-menu-trigger"
-                    @dropdownClass="gh-contentfilter-menu-dropdown"
-                    @matchTriggerWidth={{false}}
-                    @data-test-order-select="true"
-                    as |order|
-                >
-                    {{order.name}}
-                </PowerSelect>
-            </div>
+            <GhContentfilter
+                @selectedType={{this.selectedType}}
+                @availableTypes={{this.availableTypes}}
+                @onTypeChange={{action "changeType"}}
+                @selectedAuthor={{this.selectedAuthor}}
+                @availableAuthors={{this.availableAuthors}}
+                @onAuthorChange={{action "changeAuthor"}}
+                @selectedTag={{this.selectedTag}}
+                @availableTags={{this.availableTags}}
+                @onTagChange={{action "changeTag"}}
+                @selectedOrder={{this.selectedOrder}}
+                @availableOrders={{this.availableOrders}}
+                @onOrderChange={{action "changeOrder"}}
+            />
 
             {{#link-to "editor.new" "page" class="gh-btn gh-btn-green" data-test-new-page-button=true}}<span>New page</span>{{/link-to}}
         </section>
