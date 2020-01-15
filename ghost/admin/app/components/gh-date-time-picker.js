@@ -161,7 +161,8 @@ export default Component.extend({
     }),
 
     onDateInput: action(function (datepicker, event) {
-        datepicker.actions.close();
+        let skipFocus = true;
+        datepicker.actions.close(event, skipFocus);
         this.set('_scratchDate', event.target.value);
     }),
 

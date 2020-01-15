@@ -1,45 +1,51 @@
 import $ from 'jquery';
 import PowerSelectMultiple from 'ember-power-select/components/power-select-multiple';
+import templateLayout from '../../templates/components/gh-token-input/select-multiple';
+import {action} from '@ember/object';
 import {bind} from '@ember/runloop';
+import {layout, tagName} from '@ember-decorators/component';
 
-const endActions = 'click.ghToken mouseup.ghToken touchend.ghToken';
+// TODO: convert from jQuery to native DOM
+const END_ACTIONS = 'click.ghToken mouseup.ghToken touchend.ghToken';
 
 // triggering focus on the search input within ESA's onfocus event breaks the
 // drag-n-drop functionality in ember-drag-drop so we watch for events that
 // could be the start of a drag and disable the default focus behaviour until
 // we get another event signalling the end of a drag
 
-export default PowerSelectMultiple.extend({
-
-    tagName: 'div',
-
-    _canFocus: true,
+export default @tagName('div') @layout(templateLayout) class GhTokenInputSelectMultiple extends PowerSelectMultiple {
+    _canFocus = true;
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
 
         if (this._allowFocusListener) {
-            $(window).off(endActions, this._allowFocusListener);
+            $(window).off(END_ACTIONS, this._allowFocusListener);
         }
-    },
+    }
 
-    actions: {
-        optionMouseDown(event) {
-            if (event.which === 1 && !event.ctrlKey) {
-                this._denyFocus(event);
-            }
-        },
+    // actions
 
-        optionTouchStart(event) {
+    @action
+    optionMouseDown(event) {
+        if (event.which === 1 && !event.ctrlKey) {
             this._denyFocus(event);
-        },
-
-        handleFocus() {
-            if (this._canFocus) {
-                this._super(...arguments);
-            }
         }
-    },
+    }
+
+    @action
+    optionTouchStart(event) {
+        this._denyFocus(event);
+    }
+
+    @action
+    handleFocus() {
+        if (this._canFocus) {
+            super.handleFocus(...arguments);
+        }
+    }
+
+    // internal
 
     _denyFocus() {
         if (this._canFocus) {
@@ -47,14 +53,14 @@ export default PowerSelectMultiple.extend({
 
             this._allowFocusListener = bind(this, this._allowFocus);
 
-            $(window).on(endActions, this._allowFocusListener);
+            $(window).on(END_ACTIONS, this._allowFocusListener);
         }
-    },
+    }
 
     _allowFocus() {
         this._canFocus = true;
 
-        $(window).off(endActions, this._allowFocusListener);
+        $(window).off(END_ACTIONS, this._allowFocusListener);
         this._allowFocusListener = null;
     }
-});
+}

@@ -1,11 +1,12 @@
-{{#power-select
-    search=(action "search")
-    onchange=(action "openSelected")
-    placeholder="Search site..."
-    searchEnabled=false
-    triggerComponent="gh-search-input-trigger"
-    renderInPlace=true
-    loadingMessage="Loading"
-    as |name select|}}
+<PowerSelect
+    @search={{action "search"}}
+    @onChange={{action "openSelected"}}
+    @placeholder="Search site..."
+    @searchEnabled={{false}}
+    @triggerComponent="gh-search-input-trigger"
+    @renderInPlace={{true}}
+    @loadingMessage="Loading"
+    as |name select|
+>
     {{highlighted-text name.title select.searchText}}
-{{/power-select}}
+</PowerSelect>
