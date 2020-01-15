@@ -1,16 +1,17 @@
 /* global key */
 import Component from '@ember/component';
 import Ember from 'ember';
+import fallbackIfUndefined from '../utils/computed-fallback-if-undefined';
 import {A, isArray} from '@ember/array';
+import {action, computed, get} from '@ember/object';
 import {
     advanceSelectableOption,
     defaultMatcher,
     filterOptions
 } from 'ember-power-select/utils/group-utils';
-import {computed} from '@ember/object';
-import {get} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {isBlank} from '@ember/utils';
+import {tagName} from '@ember-decorators/component';
 import {task} from 'ember-concurrency';
 
 const {Handlebars} = Ember;
@@ -18,126 +19,78 @@ const {Handlebars} = Ember;
 const BACKSPACE = 8;
 const TAB = 9;
 
-export default Component.extend({
-
+@tagName('')
+class GhTokenInput extends Component {
     // public attrs
-    allowCreation: true,
-    closeOnSelect: false,
-    labelField: 'name',
-    matcher: defaultMatcher,
-    searchField: 'name',
-    tagName: '',
-    triggerComponent: 'gh-token-input/trigger',
+    @fallbackIfUndefined(true) allowCreation
+    @fallbackIfUndefined(false) closeOnSelect
+    @fallbackIfUndefined('name') labelField
+    @fallbackIfUndefined(defaultMatcher) matcher
+    @fallbackIfUndefined('name') searchField
+    @fallbackIfUndefined('gh-token-input/trigger') triggerComponent
+    @fallbackIfUndefined('power-select-vertical-collection-options') optionsComponent
 
-    optionsWithoutSelected: computed('options.[]', 'selected.[]', function () {
+    @computed('options.[]', 'selected.[]')
+    get optionsWithoutSelected() {
         return this.optionsWithoutSelectedTask.perform();
-    }),
+    }
 
-    actions: {
-        handleKeydown(select, event) {
-            // On backspace with empty text, remove the last token but deviate
-            // from default behaviour by not updating search to match last token
-            if (event.keyCode === BACKSPACE && isBlank(event.target.value)) {
-                let lastSelection = select.selected[select.selected.length - 1];
+    // actions -----------------------------------------------------------------
 
-                if (lastSelection) {
-                    this.onchange(select.selected.slice(0, -1), select);
-                    select.actions.search('');
-                    select.actions.open(event);
-                }
+    @action
+    handleKeydown(select, event) {
+        // On backspace with empty text, remove the last token but deviate
+        // from default behaviour by not updating search to match last token
+        if (event.keyCode === BACKSPACE && isBlank(event.target.value)) {
+            let lastSelection = select.selected[select.selected.length - 1];
 
-                // prevent default
-                return false;
+            if (lastSelection) {
+                this.onChange(select.selected.slice(0, -1), select);
+                select.actions.search('');
+                select.actions.open(event);
             }
 
-            // Tab should work the same as Enter if there's a highlighted option
-            if (event.keyCode === TAB && !isBlank(event.target.value) && select.highlighted) {
-                if (!select.selected || select.selected.indexOf(select.highlighted) === -1) {
-                    select.actions.choose(select.highlighted, event);
-                    return false;
-                }
-            }
-
-            // fallback to default
-            return true;
-        },
-
-        onfocus() {
-            key.setScope('gh-token-input');
-
-            if (this.onfocus) {
-                this.onfocus(...arguments);
-            }
-        },
-
-        onblur() {
-            key.setScope('default');
-
-            if (this.onblur) {
-                this.onblur(...arguments);
-            }
-        }
-    },
-
-    optionsWithoutSelectedTask: task(function* () {
-        let options = yield this.options;
-        let selected = yield this.selected;
-        return options.filter(o => !selected.includes(o));
-    }),
-
-    shouldShowCreateOption(term, options) {
-        if (!this.allowCreation) {
+            // prevent default
             return false;
         }
 
-        if (this.showCreateWhen) {
-            return this.showCreateWhen(term, options);
-        } else {
-            return this.hideCreateOptionOnSameTerm(term, options);
+        // Tab should work the same as Enter if there's a highlighted option
+        if (event.keyCode === TAB && !isBlank(event.target.value) && select.highlighted) {
+            if (!select.selected || select.selected.indexOf(select.highlighted) === -1) {
+                select.actions.choose(select.highlighted, event);
+                event.preventDefault(); // keep focus in search
+                return false;
+            }
         }
-    },
 
-    hideCreateOptionOnSameTerm(term, options) {
-        let searchField = this.searchField;
-        let existingOption = options.findBy(searchField, term);
-        return !existingOption;
-    },
+        // fallback to default
+        return true;
+    }
 
-    addCreateOption(term, options) {
-        if (this.shouldShowCreateOption(term, options)) {
-            options.unshift(this.buildSuggestionForTerm(term));
+    @action
+    handleFocus() {
+        key.setScope('gh-token-input');
+
+        if (this.onFocus) {
+            this.onFocus(...arguments);
         }
-    },
+    }
 
+    @action
+    handleBlur() {
+        key.setScope('default');
+
+        if (this.onBlur) {
+            this.onBlur(...arguments);
+        }
+    }
+
+    @action
     searchAndSuggest(term, select) {
         return this.searchAndSuggestTask.perform(term, select);
-    },
+    }
 
-    searchAndSuggestTask: task(function* (term, select) {
-        let newOptions = (yield this.optionsWithoutSelected).toArray();
-
-        if (term.length === 0) {
-            return newOptions;
-        }
-
-        let searchAction = this.search;
-        if (searchAction) {
-            let results = yield searchAction(term, select);
-
-            if (results.toArray) {
-                results = results.toArray();
-            }
-
-            this.addCreateOption(term, results);
-            return results;
-        }
-
-        newOptions = this.filter(A(newOptions), term);
-        this.addCreateOption(term, newOptions);
-
-        return newOptions;
-    }),
-
+    @action
     selectOrCreate(selection, select, keyboardEvent) {
         // allow tokens to be created with spaces
         if (keyboardEvent && keyboardEvent.code === 'Space') {
@@ -153,40 +106,51 @@ export default Component.extend({
         let suggestion = selection.find(option => option.__isSuggestion__);
 
         if (suggestion) {
-            this.oncreate(suggestion.__value__, select);
+            this.onCreate(suggestion.__value__, select);
         } else {
-            this.onchange(selection, select);
+            this.onChange(selection, select);
         }
 
         // clear select search
         select.actions.search('');
-    },
+    }
 
-    filter(options, searchText) {
-        let matcher;
-        if (this.searchField) {
-            matcher = (option, text) => this.matcher(get(option, this.searchField), text);
-        } else {
-            matcher = (option, text) => this.matcher(option, text);
+    // tasks -------------------------------------------------------------------
+
+    @task(function* () {
+        let options = yield this.options;
+        let selected = yield this.selected;
+        return options.filter(o => !selected.includes(o));
+    })
+    optionsWithoutSelectedTask;
+
+    @task(function* (term, select) {
+        let newOptions = (yield this.optionsWithoutSelected).toArray();
+
+        if (term.length === 0) {
+            return newOptions;
         }
-        return filterOptions(options || [], searchText, matcher);
-    },
 
-    buildSuggestionForTerm(term) {
-        return {
-            __isSuggestion__: true,
-            __value__: term,
-            text: this.buildSuggestionLabel(term)
-        };
-    },
+        let searchAction = this.search;
+        if (searchAction) {
+            let results = yield searchAction(term, select);
 
-    buildSuggestionLabel(term) {
-        let buildSuggestion = this.buildSuggestion;
-        if (buildSuggestion) {
-            return buildSuggestion(term);
+            if (results.toArray) {
+                results = results.toArray();
+            }
+
+            this._addCreateOption(term, results);
+            return results;
         }
-        return htmlSafe(`Add <strong>"${Handlebars.Utils.escapeExpression(term)}"...</strong>`);
-    },
+
+        newOptions = this._filter(A(newOptions), term);
+        this._addCreateOption(term, newOptions);
+
+        return newOptions;
+    })
+    searchAndSuggestTask;
+
+    // internal ----------------------------------------------------------------
 
     // always select the first item in the list that isn't the "Add x" option
     defaultHighlighted(select) {
@@ -200,4 +164,56 @@ export default Component.extend({
         return option;
     }
 
-});
+    // private -----------------------------------------------------------------
+
+    _addCreateOption(term, options) {
+        if (this._shouldShowCreateOption(term, options)) {
+            options.unshift(this._buildSuggestionForTerm(term));
+        }
+    }
+
+    _shouldShowCreateOption(term, options) {
+        if (!this.allowCreation) {
+            return false;
+        }
+
+        if (this.showCreateWhen) {
+            return this.showCreateWhen(term, options);
+        } else {
+            return this._hideCreateOptionOnSameTerm(term, options);
+        }
+    }
+
+    _buildSuggestionForTerm(term) {
+        return {
+            __isSuggestion__: true,
+            __value__: term,
+            text: this._buildSuggestionLabel(term)
+        };
+    }
+
+    _hideCreateOptionOnSameTerm(term, options) {
+        let searchField = this.searchField;
+        let existingOption = options.findBy(searchField, term);
+        return !existingOption;
+    }
+
+    _filter(options, searchText) {
+        let matcher;
+        if (this.searchField) {
+            matcher = (option, text) => this.matcher(get(option, this.searchField), text);
+        } else {
+            matcher = (option, text) => this.matcher(option, text);
+        }
+        return filterOptions(options || [], searchText, matcher);
+    }
+
+    _buildSuggestionLabel(term) {
+        if (this.buildSuggestion) {
+            return this.buildSuggestion(term);
+        }
+        return htmlSafe(`Add <strong>"${Handlebars.Utils.escapeExpression(term)}"...</strong>`);
+    }
+}
+
+export default GhTokenInput;

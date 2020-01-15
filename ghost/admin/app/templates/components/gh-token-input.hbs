@@ -1,55 +1,64 @@
-{{#gh-token-input/select-multiple
-    afterOptionsComponent=this.afterOptionsComponent
-    allowClear=this.allowClear
-    ariaDescribedBy=this.ariaDescribedBy
-    ariaInvalid=this.ariaInvalid
-    ariaLabel=this.ariaLabel
-    ariaLabelledBy=this.ariaLabelledBy
-    beforeOptionsComponent=this.beforeOptionsComponent
-    class=(concat "gh-token-input " this.class)
-    closeOnSelect=this.closeOnSelect
-    defaultHighlighted=this.defaultHighlighted
-    destination=destination
-    dir=this.dir
-    disabled=this.disabled
-    dropdownClass=this.dropdownClass
-    extra=this.extra
-    horizontalPosition=this.horizontalPosition
-    initiallyOpened=this.initiallyOpened
-    loadingMessage=this.loadingMessage
-    matcher=this.matcher
-    matchTriggerWidth=this.matchTriggerWidth
-    noMatchesMessage=this.noMatchesMessage
-    onblur=(action "onblur")
-    onchange=(action this.selectOrCreate)
-    onclose=this.onclose
-    onfocus=(action "onfocus")
-    oninput=this.oninput
-    onkeydown=(action "handleKeydown")
-    onopen=this.onopen
-    options=this.optionsWithoutSelected
-    optionsComponent=(or this.optionsComponent "power-select-vertical-collection-options")
-    placeholder=placeholder
-    registerAPI=this.registerAPI
-    renderInPlace=this.renderInPlace
-    search=(action this.searchAndSuggest)
-    searchEnabled=this.searchEnabled
-    searchField=this.searchField
-    searchMessage=this.searchMessage
-    searchPlaceholder=this.searchPlaceholder
-    selected=selected
-    selectedItemComponent=this.selectedItemComponent
-    tabindex=this.tabindex
-    triggerClass=this.triggerClass
-    triggerComponent=this.triggerComponent
-    triggerId=this.triggerId
-    verticalPosition=this.verticalPosition
-    data-test-token-input=true
-    as |option term|
-}}
+<GhTokenInput::SelectMultiple
+    class={{concat "gh-token-input " @class}}
+    @triggerRole={{@triggerRole}}
+    @ariaDescribedBy={{@ariaDescribedBy}}
+    @ariaInvalid={{@ariaInvalid}}
+    @ariaLabel={{@ariaLabel}}
+    @ariaLabelledBy={{@ariaLabelledBy}}
+    @afterOptionsComponent={{@afterOptionsComponent}}
+    @allowClear={{@allowClear}}
+    @beforeOptionsComponent={{@beforeOptionsComponent}}
+    @buildSelection={{@buildSelection}}
+    @calculatePosition={{@calculatePosition}}
+    @closeOnSelect={{this.closeOnSelect}}
+    @defaultHighlighted={{this.defaultHighlighted}}
+    @destination={{@destination}}
+    @disabled={{@disabled}}
+    @dropdownClass={{@dropdownClass}}
+    @extra={{@extra}}
+    @groupComponent={{@groupComponent}}
+    @horizontalPosition={{@horizontalPosition}}
+    @initiallyOpened={{@initiallyOpened}}
+    @loadingMessage={{@loadingMessage}}
+    @matcher={{this.matcher}}
+    @matchTriggerWidth={{@matchTriggerWidth}}
+    @noMatchesMessage={{@noMatchesMessage}}
+    @onBlur={{this.handleBlur}}
+    @onChange={{this.selectOrCreate}}
+    @onClose={{@onClose}}
+    @onFocus={{this.handleFocus}}
+    @onInput={{@onInput}}
+    @onKeydown={{this.handleKeydown}}
+    @onOpen={{@onOpen}}
+    @options={{this.optionsWithoutSelected}}
+    @optionsComponent={{this.optionsComponent}}
+    @placeholder={{@placeholder}}
+    @placeholderComponent={{@placeholderComponent}}
+    @preventScroll={{@preventScroll}}
+    @registerAPI={{@registerAPI}}
+    @renderInPlace={{@renderInPlace}}
+    @required={{@required}}
+    @scrollTo={{@scrollTo}}
+    @search={{this.searchAndSuggest}}
+    @searchEnabled={{true}}
+    @searchField={{this.searchField}}
+    @searchMessage={{@searchMessage}}
+    @searchPlaceholder={{@searchPlaceholder}}
+    @selected={{@selected}}
+    @selectedItemComponent={{@selectedItemComponent}}
+    @eventType={{@eventType}}
+    @title={{@title}}
+    @triggerClass={{@triggerClass}}
+    @triggerComponent={{this.triggerComponent}}
+    @triggerId={{@triggerId}}
+    @verticalPosition={{@verticalPosition}}
+    @tabindex={{@tabindex}}
+    data-test-token-input="true"
+    as |option|
+>
     {{#if option.__isSuggestion__}}
-        {{gh-token-input/suggested-option option=option term=term}}
+        <GhTokenInput::SuggestedOption @option={{option}} />
     {{else}}
         {{get option this.labelField}}
     {{/if}}
-{{/gh-token-input/select-multiple}}
+</GhTokenInput::SelectMultiple>

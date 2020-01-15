@@ -6,21 +6,21 @@
             <h2 class="f-small ttu midgrey fw5 mb0">Total members</h2>
             <div class="view-actions">
                 <div class="gh-contentfilter">
-                    {{#power-select
-                                            selected=selectedRange
-                                            options=availableRange
-                                            searchEnabled=false
-                                            onchange=(action "changeDateRange")
-                                            tagName="div"
-                                            classNames="gh-contentfilter-menu gh-contentfilter-type"
-                                            triggerClass="gh-contentfilter-menu-trigger"
-                                            dropdownClass="gh-contentfilter-menu-dropdown gh-members-chart-dropdown"
-                                            matchTriggerWidth=false
-                                            data-test-type-select=true
-                                            as |range|
-                                        }}
-                    {{range.name}}
-                    {{/power-select}}
+                    <PowerSelect
+                        @selected={{this.selectedRange}}
+                        @options={{this.availableRange}}
+                        @searchEnabled=false
+                        @onChange={{action "changeDateRange"}}
+                        @tagName="div"
+                        @classNames="gh-contentfilter-menu gh-contentfilter-type"
+                        @triggerClass="gh-contentfilter-menu-trigger"
+                        @dropdownClass="gh-contentfilter-menu-dropdown gh-members-chart-dropdown"
+                        @matchTriggerWidth=false
+                        data-test-type-select="true"
+                        as |range|
+                    >
+                        {{range.name}}
+                    </PowerSelect>
                 </div>
             </div>
         </div>

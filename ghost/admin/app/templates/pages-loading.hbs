@@ -4,77 +4,77 @@
         <section class="view-actions">
             <div class="gh-contentfilter">
                 {{#unless this.session.user.isContributor}}
-                {{#power-select
-                    selected=this.selectedType
-                    options=this.availableTypes
-                    searchEnabled=false
-                    onchange=(action (mut k))
-                    tagName="div"
-                    classNames="gh-contentfilter-menu gh-contentfilter-type"
-                    triggerClass="gh-contentfilter-menu-trigger"
-                    dropdownClass="gh-contentfilter-menu-dropdown"
-                    matchTriggerWidth=false
-                    data-test-type-select=true
+                <PowerSelect
+                    @selected={{this.selectedType}}
+                    @options={{this.availableTypes}}
+                    @searchEnabled={{false}}
+                    @onChange={{action (mut k)}}
+                    @tagName="div"
+                    @classNames="gh-contentfilter-menu gh-contentfilter-type"
+                    @triggerClass="gh-contentfilter-menu-trigger"
+                    @dropdownClass="gh-contentfilter-menu-dropdown"
+                    @matchTriggerWidth={{false}}
+                    data-test-type-select="true"
                     as |type|
-                }}
-                {{type.name}}
-                {{/power-select}}
+                >
+                    {{type.name}}
+                </PowerSelect>
                 {{/unless}}
 
                 {{#unless this.session.user.isAuthorOrContributor}}
-                {{#power-select
-                    selected=this.selectedAuthor
-                    options=this.availableAuthors
-                    searchField="name"
-                    onchange=(action (mut k))
-                    tagName="div"
-                    classNames="gh-contentfilter-menu gh-contentfilter-author"
-                    triggerClass="gh-contentfilter-menu-trigger"
-                    dropdownClass="gh-contentfilter-menu-dropdown"
-                    searchPlaceholder="Search authors"
-                    matchTriggerWidth=false
-                    data-test-author-select=true
+                <PowerSelect
+                    @selected={{this.selectedAuthor}}
+                    @options={{this.availableAuthors}}
+                    @searchField="name"
+                    @onChange={{action (mut k)}}
+                    @tagName="div"
+                    @classNames="gh-contentfilter-menu gh-contentfilter-author"
+                    @triggerClass="gh-contentfilter-menu-trigger"
+                    @dropdownClass="gh-contentfilter-menu-dropdown"
+                    @searchPlaceholder="Search authors"
+                    @matchTriggerWidth={{false}}
+                    data-test-author-select="true"
                     as |author|
-                }}
-                {{author.name}}
-                {{/power-select}}
+                >
+                    {{author.name}}
+                </PowerSelect>
                 {{/unless}}
 
                 {{#unless this.session.user.isContributor}}
-                {{#power-select
-                    selected=this.selectedTag
-                    options=this.availableTags
-                    searchField="name"
-                    onchange=(action (mut k))
-                    tagName="div"
-                    classNames="gh-contentfilter-menu gh-contentfilter-tag"
-                    triggerClass="gh-contentfilter-menu-trigger"
-                    dropdownClass="gh-contentfilter-menu-dropdown"
-                    searchPlaceholder="Search tags"
-                    matchTriggerWidth=false
-                    optionsComponent="power-select-vertical-collection-options"
-                    data-test-tag-select=true
+                <PowerSelect
+                    @selected={{this.selectedTag}}
+                    @options={{this.availableTags}}
+                    @searchField="name"
+                    @onChange={{action (mut k)}}
+                    @tagName="div"
+                    @classNames="gh-contentfilter-menu gh-contentfilter-tag"
+                    @triggerClass="gh-contentfilter-menu-trigger"
+                    @dropdownClass="gh-contentfilter-menu-dropdown"
+                    @searchPlaceholder="Search tags"
+                    @matchTriggerWidth={{false}}
+                    @optionsComponent="power-select-vertical-collection-options"
+                    data-test-tag-select="true"
                     as |tag|
-                }}
-                {{tag.name}}
-                {{/power-select}}
+                >
+                    {{tag.name}}
+                </PowerSelect>
                 {{/unless}}
 
-                {{#power-select
-                    selected=this.selectedOrder
-                    options=this.availableOrders
-                    searchEnabled=false
-                    onchange=(action (mut k))
-                    tagName="div"
-                    classNames="gh-contentfilter-menu gh-contentfilter-sort"
-                    triggerClass="gh-contentfilter-menu-trigger"
-                    dropdownClass="gh-contentfilter-menu-dropdown"
-                    matchTriggerWidth=false
-                    data-test-order-select=true
+                <PowerSelect
+                    @selected={{this.selectedOrder}}
+                    @options={{this.availableOrders}}
+                    @searchEnabled={{false}}
+                    @onChange={{action (mut k)}}
+                    @tagName="div"
+                    @classNames="gh-contentfilter-menu gh-contentfilter-sort"
+                    @triggerClass="gh-contentfilter-menu-trigger"
+                    @dropdownClass="gh-contentfilter-menu-dropdown"
+                    @matchTriggerWidth={{false}}
+                    data-test-order-select="true"
                     as |order|
-                }}
-                {{order.name}}
-                {{/power-select}}
+                >
+                    {{order.name}}
+                </PowerSelect>
             </div>
 
             {{#link-to "editor.new" "page" class="gh-btn gh-btn-green" data-test-new-page-button=true}}<span>New page</span>{{/link-to}}

@@ -1,13 +1,14 @@
-{{#if select.selected}}
-    {{#if this.selectedItemComponent}}
-        {{component this.selectedItemComponent option=(readonly select.selected) select=(readonly select)}}
+{{#if @select.selected}}
+    {{#if @selectedItemComponent}}
+        {{component @selectedItemComponent extra=(readonly @extra) option=(readonly @option.selected) select=(readonly @select)}}
     {{else}}
-        <span class="ember-power-select-selected-item">{{yield select.selected select}}</span>
+        <span class="ember-power-select-selected-item">{{yield @select.selected select}}</span>
     {{/if}}
-    {{#if (and this.allowClear (not select.disabled))}}
-        <span class="ember-power-select-clear-btn" onmousedown={{action "clear"}} ontouchstart={{action "clear"}}>&times;</span>
+    {{#if (and @allowClear (not @select.disabled))}}
+        <span class="ember-power-select-clear-btn" {{on "mousedown" this.clear}} {{on "touchstart" this.clear}}>&times;</span>
     {{/if}}
 {{else}}
-    {{component this.placeholderComponent placeholder=placeholder}}
+    {{component @placeholderComponent placeholder=@placeholder}}
 {{/if}}
+{{!-- this next line is the only difference from original trigger.hbs --}}
 {{svg-jar "arrow-down-small"}}
