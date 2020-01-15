@@ -3,19 +3,19 @@ const common = require('./common');
 
 let Member;
 
-async function createMember({email, name, note}, options = {}) {
+async function createMember({email, name, note}) {
     const model = await Member.add({
         email,
         name,
         note
     });
-    const member = model.toJSON(options);
+    const member = model.toJSON();
     return member;
 }
 
 async function getMember(data, options = {}) {
     if (!data.email && !data.id && !data.uuid) {
-        return Promise.resolve(null);
+        return null;
     }
     const model = await Member.findOne(data, options);
     if (!model) {
@@ -56,11 +56,24 @@ function listMembers(options) {
 }
 
 module.exports = function ({
-    sendEmailWithMagicLink,
     stripe,
     memberModel
 }) {
     Member = memberModel;
+
+    async function getStripeSubscriptions(member) {
+        if (!stripe) {
+            return {subscriptions: []};
+        }
+
+        return await stripe.getActiveSubscriptions(member);
+    }
+
+    async function destroyStripeSubscriptions(member) {
+        if (stripe) {
+            await stripe.cancelAllSubscriptions(member);
+        }
+    }
 
     async function get(data, options) {
         debug(`get id:${data.id} email:${data.email}`);
@@ -69,15 +82,8 @@ module.exports = function ({
             return member;
         }
 
-        if (!stripe) {
-            return Object.assign(member, {
-                stripe: {
-                    subscriptions: []
-                }
-            });
-        }
         try {
-            const subscriptions = await stripe.getActiveSubscriptions(member);
+            const subscriptions = await getStripeSubscriptions(member);
 
             return Object.assign(member, {
                 stripe: {
@@ -96,15 +102,15 @@ module.exports = function ({
         if (!member) {
             return;
         }
-        if (stripe) {
-            await stripe.cancelAllSubscriptions(member);
-        }
-        return deleteMember(data, options);
+
+        await destroyStripeSubscriptions(member);
+
+        return deleteMember(data);
     }
 
     async function update(data, options) {
         debug(`update id:${options.id}`);
-        await getMember({id: options.id});
+
         return updateMember(data, options);
     }
 
@@ -112,15 +118,7 @@ module.exports = function ({
         const {meta, members} = await listMembers(options);
 
         const membersWithSubscriptions = await Promise.all(members.map(async function (member) {
-            if (!stripe) {
-                return Object.assign(member, {
-                    stripe: {
-                        subscriptions: []
-                    }
-                });
-            }
-
-            const subscriptions = await stripe.getActiveSubscriptions(member);
+            const subscriptions = await getStripeSubscriptions(member);
 
             return Object.assign(member, {
                 stripe: {
@@ -135,13 +133,9 @@ module.exports = function ({
         };
     }
 
-    async function create(data, options = {}) {
+    async function create(data) {
         debug(`create email:${data.email}`);
         const member = await createMember(data);
-        if (options.sendEmail) {
-            debug(`create sending email to ${member.email}`);
-            await sendEmailWithMagicLink(member.email, options.emailType);
-        }
         return member;
     }
 
@@ -150,6 +144,8 @@ module.exports = function ({
         update,
         list,
         get,
-        destroy
+        destroy,
+        getStripeSubscriptions,
+        destroyStripeSubscriptions
     };
 };
