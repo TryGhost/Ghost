@@ -85,7 +85,6 @@ module.exports = function MembersApi({
     }
 
     const users = Users({
-        sendEmailWithMagicLink,
         stripe,
         memberModel
     });
@@ -311,6 +310,7 @@ module.exports = function MembersApi({
         getMemberIdentityData,
         getPublicConfig,
         bus,
+        sendEmailWithMagicLink,
         members: users
     };
 };
