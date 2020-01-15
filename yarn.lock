@@ -69,6 +69,32 @@
   dependencies:
     "@hapi/hoek" "8.x.x"
 
+"@metascraper/helpers@^5.10.3":
+  version "5.10.3"
+  resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.10.3.tgz#38abd95ffbcfaf0bd6afbaa85853d4b9aa780c87"
+  integrity sha512-ZiDS3aGIK3OSGBMaYORvUVZAVFKmjh1KZaaFnmjIPi6vWPFOrtLK8r4OrkwroJ0IK6Hg6ZiuDjQo63LDcmLqdA==
+  dependencies:
+    audio-extensions "0.0.0"
+    chrono-node "~1.4.2"
+    condense-whitespace "~2.0.0"
+    entities "~2.0.0"
+    file-extension "~4.0.5"
+    has-values "~2.0.1"
+    image-extensions "~1.1.0"
+    is-relative-url "~3.0.0"
+    is-uri "~1.2.0"
+    iso-639-3 "~1.2.0"
+    isostring "0.0.1"
+    lodash "~4.17.15"
+    memoize-one "~5.1.1"
+    mime-types "~2.1.26"
+    normalize-url "~4.5.0"
+    smartquotes "~2.3.1"
+    title "~3.4.1"
+    truncate "~2.1.0"
+    url-regex "~5.0.0"
+    video-extensions "~1.1.0"
+
 "@metascraper/helpers@^5.8.13":
   version "5.8.13"
   resolved "https://registry.yarnpkg.com/@metascraper/helpers/-/helpers-5.8.13.tgz#62e808812e0dfc143668c341f44fac1e09b0fa1a"
@@ -1371,6 +1397,13 @@ chrono-node@~1.3.11:
   dependencies:
     moment "2.21.0"
 
+chrono-node@~1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/chrono-node/-/chrono-node-1.4.2.tgz#0c7fc1f264e60a660c2b2dab753a3f285dbfd8c9"
+  integrity sha512-fsb82wPDHVZl3xtche8k4ZZtNwf81/ZMueil2ANpSfogUAEa3BuzZAar7ObLXi1ptMjBzdzA6ys/bFq1oBjO8w==
+  dependencies:
+    dayjs "^1.8.19"
+
 circular-json@^0.3.1:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/circular-json/-/circular-json-0.3.3.tgz#815c99ea84f6809529d2f45791bdf82711352d66"
@@ -2022,6 +2055,11 @@ dateformat@~1.0.12:
   dependencies:
     get-stdin "^4.0.1"
     meow "^3.3.0"
+
+dayjs@^1.8.19:
+  version "1.8.19"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.8.19.tgz#5117dc390d8f8e586d53891dbff3fa308f51abfe"
+  integrity sha512-7kqOoj3oQSmqbvtvGFLU5iYqies+SqUiEGNT0UtUPPxcPYgY1BrkXR0Cq2R9HYSimBXN+xHkEN4Hi399W+Ovlg==
 
 debug@2, debug@2.6.9, debug@2.x.x, debug@^2.2.0, debug@^2.3.3, debug@^2.6.9:
   version "2.6.9"
@@ -5628,12 +5666,12 @@ metascraper-logo@5.8.13:
   dependencies:
     "@metascraper/helpers" "^5.8.13"
 
-metascraper-publisher@5.8.13:
-  version "5.8.13"
-  resolved "https://registry.yarnpkg.com/metascraper-publisher/-/metascraper-publisher-5.8.13.tgz#ff1e35c11979f946089abf0ef803477e0a16d62c"
-  integrity sha512-6icsUcJJA9tLxo8ArbdrnV1CzKDUcH2C2/uNnyo+ebyXGqtIkKAjEgq7ec59/V/fjnHdVV2Pr6QKxffgFG5/QA==
+metascraper-publisher@5.10.3:
+  version "5.10.3"
+  resolved "https://registry.yarnpkg.com/metascraper-publisher/-/metascraper-publisher-5.10.3.tgz#caf9dabdae2c118db2125aa34c321e527e88279b"
+  integrity sha512-l2W6YKqybvvhmqEOIvLmb9hTycH5JeIQ8O3d1q21hT3IwMW3BCmy4TyiSoPS+6vWlss0VYdQ8rzmESWdniGRWA==
   dependencies:
-    "@metascraper/helpers" "^5.8.13"
+    "@metascraper/helpers" "^5.10.3"
 
 metascraper-title@5.8.13:
   version "5.8.13"
@@ -5697,6 +5735,11 @@ mime-db@1.42.0, "mime-db@>= 1.40.0 < 2":
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.42.0.tgz#3e252907b4c7adb906597b4b65636272cf9e7bac"
   integrity sha512-UbfJCR4UAVRNgMpfImz05smAXK7+c+ZntjaA26ANtkXLlOe947Aag5zdIcKQULAiF9Cq4WxBi9jUs5zkA84bYQ==
 
+mime-db@1.43.0:
+  version "1.43.0"
+  resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.43.0.tgz#0a12e0502650e473d735535050e7c8f4eb4fae58"
+  integrity sha512-+5dsGEEovYbT8UY9yD7eE4XTc4UwJ1jBYlgaQQF38ENsKR3wj/8q8RFZrF9WIZpB2V1ArTVFUva8sAul1NzRzQ==
+
 mime-db@~1.25.0:
   version "1.25.0"
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.25.0.tgz#c18dbd7c73a5dbf6f44a024dc0d165a1e7b1c392"
@@ -5722,6 +5765,13 @@ mime-types@~2.1.25:
   integrity sha512-5KhStqB5xpTAeGqKBAMgwaYMnQik7teQN4IAzC7npDv6kzeU6prfkR67bc87J1kWMPGkoaZSq1npmexMgkmEVg==
   dependencies:
     mime-db "1.42.0"
+
+mime-types@~2.1.26:
+  version "2.1.26"
+  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.26.tgz#9c921fc09b7e149a65dfdc0da4d20997200b0a06"
+  integrity sha512-01paPWYgLrkqAyrlDorC1uDwl2p3qZT7yl806vW7DvDoxwXi46jsjFbg+WdwotBIk6/MbEhO/dh5aZ5sNj/dWQ==
+  dependencies:
+    mime-db "1.43.0"
 
 mime@1.6.0, mime@^1.4.1:
   version "1.6.0"
