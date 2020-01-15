@@ -1,0 +1,74 @@
+<div class="gh-contentfilter" ...attributes>
+    {{#unless this.session.user.isContributor}}
+    <PowerSelect
+        @selected={{@selectedType}}
+        @options={{@availableTypes}}
+        @searchEnabled={{false}}
+        @onChange={{@onTypeChange}}
+        @tagName="div"
+        @classNames={{concat "gh-contentfilter-menu gh-contentfilter-type " (if @selectedType.value "gh-contentfilter-selected")}}
+        @triggerClass="gh-contentfilter-menu-trigger"
+        @dropdownClass="gh-contentfilter-menu-dropdown"
+        @matchTriggerWidth={{false}}
+        data-test-type-select="true"
+        as |type|
+    >
+        {{type.name}}
+    </PowerSelect>
+    {{/unless}}
+
+    {{#unless this.session.user.isAuthorOrContributor}}
+    <PowerSelect
+        @selected={{@selectedAuthor}}
+        @options={{@availableAuthors}}
+        @searchField="name"
+        @onChange={{@onAuthorChange}}
+        @tagName="div"
+        @classNames={{concat "gh-contentfilter-menu gh-contentfilter-author " (if @selectedAuthor.slug "gh-contentfilter-selected")}}
+        @triggerClass="gh-contentfilter-menu-trigger"
+        @dropdownClass="gh-contentfilter-menu-dropdown"
+        @searchPlaceholder="Search authors"
+        @matchTriggerWidth={{false}}
+        data-test-author-select="true"
+        as |author|
+    >
+        {{author.name}}
+    </PowerSelect>
+    {{/unless}}
+
+    {{#unless this.session.user.isContributor}}
+    <PowerSelect
+        @selected={{@selectedTag}}
+        @options={{@availableTags}}
+        @searchField="name"
+        @onChange={{@onTagChange}}
+        @tagName="div"
+        @classNames={{concat "gh-contentfilter-menu gh-contentfilter-tag " (if @selectedTag.slug "gh-contentfilter-selected")}}
+        @triggerClass="gh-contentfilter-menu-trigger"
+        @dropdownClass="gh-contentfilter-menu-dropdown"
+        @searchPlaceholder="Search tags"
+        @matchTriggerWidth={{false}}
+        @optionsComponent="power-select-vertical-collection-options"
+        data-test-tag-select="true"
+        as |tag|
+    >
+        {{tag.name}}
+    </PowerSelect>
+    {{/unless}}
+
+    <PowerSelect
+        @selected={{@selectedOrder}}
+        @options={{@availableOrders}}
+        @searchEnabled={{false}}
+        @onChange={{@onOrderChange}}
+        @tagName="div"
+        @classNames="gh-contentfilter-menu gh-contentfilter-sort"
+        @triggerClass="gh-contentfilter-menu-trigger"
+        @dropdownClass="gh-contentfilter-menu-dropdown"
+        @matchTriggerWidth={{false}}
+        @data-test-order-select="true"
+        as |order|
+    >
+        {{order.name}}
+    </PowerSelect>
+</div>
