@@ -2,10 +2,12 @@ const debug = require('ghost-ignition').debug('web:api:default:app');
 const express = require('express');
 const urlUtils = require('../../lib/url-utils');
 const errorHandler = require('../shared/middlewares/error-handler');
+const sentry = require('../../sentry');
 
 module.exports = function setupApiApp() {
     debug('Parent API setup start');
     const apiApp = express();
+    apiApp.use(sentry.requestHandler);
 
     // Mount different API versions
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'content'}), require('./v2/content/app')());
@@ -20,6 +22,7 @@ module.exports = function setupApiApp() {
     apiApp.use(urlUtils.getVersionPath({version: 'canary', type: 'members'}), require('./canary/members/app')());
 
     // Error handling for requests to non-existent API versions
+    apiApp.use(sentry.errorHandler);
     apiApp.use(errorHandler.resourceNotFound);
     apiApp.use(errorHandler.handleJSONResponse);
 
