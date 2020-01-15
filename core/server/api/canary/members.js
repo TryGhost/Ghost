@@ -6,6 +6,28 @@ const membersService = require('../../services/members');
 const common = require('../../lib/common');
 const fsLib = require('../../lib/fs');
 
+const listMembers = async function (options) {
+    const res = (await models.Member.findPage(options));
+    const members = res.data.map(model => model.toJSON(options));
+
+    // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
+    //       are in place
+    const membersWithSubscriptions = await Promise.all(members.map(async function (member) {
+        const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
+
+        return Object.assign(member, {
+            stripe: {
+                subscriptions
+            }
+        });
+    }));
+
+    return {
+        members: membersWithSubscriptions,
+        meta: res.meta
+    };
+};
+
 const members = {
     docName: 'members',
     browse: {
@@ -19,8 +41,8 @@ const members = {
         ],
         permissions: true,
         validation: {},
-        query(frame) {
-            return membersService.api.members.list(frame.options);
+        async query(frame) {
+            return listMembers(frame.options);
         }
     },
 
@@ -33,12 +55,24 @@ const members = {
         validation: {},
         permissions: true,
         async query(frame) {
-            const member = await membersService.api.members.get(frame.data, frame.options);
+            let member = await models.Member.findOne(frame.data, frame.options);
+
             if (!member) {
                 throw new common.errors.NotFoundError({
                     message: common.i18n.t('errors.api.members.memberNotFound')
                 });
             }
+
+            // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
+            //       are in place
+            const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
+            member = member.toJSON(frame.options);
+            Object.assign(member, {
+                stripe: {
+                    subscriptions
+                }
+            });
+
             return member;
         }
     },
@@ -63,10 +97,12 @@ const members = {
         permissions: true,
         async query(frame) {
             try {
-                const member = await membersService.api.members.create(frame.data.members[0], {
-                    sendEmail: frame.options.send_email,
-                    emailType: frame.options.email_type
-                });
+                const member = await models.Member.add(frame.data.members[0], frame.options);
+
+                if (frame.options.send_email) {
+                    await membersService.api.sendEmailWithMagicLink(member.get('email'), frame.options.email_type);
+                }
+
                 return member;
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
@@ -93,7 +129,8 @@ const members = {
         },
         permissions: true,
         async query(frame) {
-            const member = await membersService.api.members.update(frame.data.members[0], frame.options);
+            const member = await models.Member.edit(frame.data.members[0], frame.options);
+
             return member;
         }
     },
@@ -114,7 +151,21 @@ const members = {
         permissions: true,
         async query(frame) {
             frame.options.require = true;
-            await membersService.api.members.destroy(frame.options)
+
+            let member = await models.Member.findOne(frame.data, frame.options);
+
+            if (!member) {
+                throw new common.errors.NotFoundError({
+                    message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                        resource: 'Member'
+                    })
+                });
+            }
+
+            // NOTE: move to a model layer once Members/MemberStripeCustomer relations are in place
+            await membersService.api.members.destroyStripeSubscriptions(member);
+
+            await models.Member.destroy(frame.options)
                 .catch(models.Member.NotFoundError, () => {
                     throw new common.errors.NotFoundError({
                         message: common.i18n.t('errors.api.resource.resourceNotFound', {
@@ -147,8 +198,8 @@ const members = {
             method: 'browse'
         },
         validation: {},
-        query(frame) {
-            return membersService.api.members.list(frame.options);
+        async query(frame) {
+            return listMembers(frame.options);
         }
     },
 
