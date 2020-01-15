@@ -39,7 +39,26 @@
     {{/each}}
 
     {{#if this.searchEnabled}}
-        <input type="search" class="ember-power-select-trigger-multiple-input" tabindex="0" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="ember-power-select-trigger-multiple-input-{{select.uniqueId}}" value={{select.searchText}} aria-controls={{this.listboxId}} style={{this.triggerMultipleInputStyle}} placeholder={{this.maybePlaceholder}} disabled={{select.disabled}} oninput={{action "onInput"}} onFocus={{this.onFocus}} onBlur={{this.onBlur}} tabindex={{this.tabindex}} onkeydown={{action "onKeydown"}}>
+        <input
+            type="search"
+            class="ember-power-select-trigger-multiple-input"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            id="ember-power-select-trigger-multiple-input-{{@select.uniqueId}}"
+            value={{@select.searchText}}
+            aria-controls={{this.listboxId}}
+            style={{this.triggerMultipleInputStyle}}
+            placeholder={{this.maybePlaceholder}}
+            disabled={{@select.disabled}}
+            tabindex={{@tabindex}}
+            {{on "focus" @onFocus}}
+            {{on "blur" @onBlur}}
+            {{on "input" this.handleInput}}
+            {{on "keydown" this.handleKeydown}}
+            {{did-insert this.storeInputStyles}}
+        >
     {{/if}}
 {{/sortable-objects}}
 <span class="ember-power-select-status-icon"></span>

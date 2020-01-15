@@ -92,8 +92,8 @@
         {{/if}}
     </div>
     <div class="gh-nav-bottom">
-        {{#gh-basic-dropdown horizontalPosition="left" verticalPosition="top" calculatePosition=this.userDropdownPosition as |dropdown|}}
-            {{#dropdown.trigger tagName="div" class="flex items-center outline-0 pointer space-between pa2 pl4 pr3"}}
+        <GhBasicDropdown @horizontalPosition="left" @verticalPosition="top" @calculatePosition={{this.userDropdownPosition}} as |dropdown|>
+            <dropdown.Trigger class="flex items-center outline-0 pointer space-between pa2 pl4 pr3">
                 <div class="flex-auto flex items-center">
                     <div class="gh-user-avatar relative" style={{background-image-style this.session.user.profileImageUrl}}>
                         {{#if this.whatsNew.hasNew}}<span class="absolute dib bg-blue ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
@@ -104,9 +104,9 @@
                     </div>
                 </div>
                 {{svg-jar "arrow-down" class="w3 mr1 fill-darkgrey"}}
-            {{/dropdown.trigger}}
+            </dropdown.Trigger>
 
-            {{#dropdown.content class="gh-nav-menu-dropdown"}}
+            <dropdown.Content class="gh-nav-menu-dropdown">
                 <ul class="dropdown-menu dropdown-triangle-top" role="menu" {{action dropdown.actions.close on="click" preventDefault=false}}>
                     <li role="presentation">
                         {{#link-to "about" classNames="dropdown-item" role="menuitem" tabindex="-1" data-test-nav="about"}}
@@ -167,8 +167,8 @@
                         {{/link-to}}
                     </li>
                 </ul>
-            {{/dropdown.content}}
-        {{/gh-basic-dropdown}}
+            </dropdown.Content>
+        </GhBasicDropdown>
     </div>
 </section>
 

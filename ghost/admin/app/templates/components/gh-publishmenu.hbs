@@ -1,9 +1,9 @@
-{{#basic-dropdown verticalPosition="below" onOpen=(action "open") onClose=(action "close") as |dd|}}
-    {{#dd.trigger class="gh-btn gh-btn-outline gh-publishmenu-trigger"}}
+<BasicDropdown @verticalPosition="below" @onOpen={{action "open"}} @onClose={{action "close"}} as |dd|>
+    <dd.Trigger class="gh-btn gh-btn-outline gh-publishmenu-trigger">
         <span data-test-publishmenu-trigger>{{this.triggerText}} {{svg-jar "arrow-down"}}</span>
-    {{/dd.trigger}}
+    </dd.Trigger>
 
-    {{#dd.content class="gh-publishmenu-dropdown"}}
+    <dd.Content class="gh-publishmenu-dropdown">
         {{#if (eq this.displayState "published")}}
             {{gh-publishmenu-published
                 post=this.post
@@ -49,8 +49,8 @@
                 data-test-publishmenu-save=true
             />
         </footer>
-    {{/dd.content}}
-{{/basic-dropdown}}
+    </dd.Content>
+</BasicDropdown>
 
 {{#if this.showEmailConfirmationModal}}
     <GhFullscreenModal
