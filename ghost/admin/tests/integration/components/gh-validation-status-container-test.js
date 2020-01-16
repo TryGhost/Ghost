@@ -1,3 +1,5 @@
+// TODO: remove usage of Ember Data's private `Errors` class when refactoring validations
+// eslint-disable-next-line
 import DS from 'ember-data';
 import EmberObject from '@ember/object';
 import hbs from 'htmlbars-inline-precompile';

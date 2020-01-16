@@ -1,5 +1,5 @@
 import ApplicationSerializer from 'ghost-admin/serializers/application';
-import EmbeddedRecordsMixin from 'ember-data/serializers/embedded-records-mixin';
+import {EmbeddedRecordsMixin} from '@ember-data/serializer/rest';
 import {pluralize} from 'ember-inflector';
 
 export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
