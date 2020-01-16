@@ -1,4 +1,4 @@
-{{#link-to "tag" tag class="gh-list-data gh-tag-list-title" title="Edit tag"}}
+<LinkTo @route="tag" @model={{tag}} class="gh-list-data gh-tag-list-title" @title="Edit tag">
     <h3 class="gh-tag-list-name">
         {{this.tag.name}}
     </h3>
@@ -7,24 +7,24 @@
             {{this.description}}
         </p>
     {{/if}}
-{{/link-to}}
+</LinkTo>
 
-{{#link-to "tag" tag class="gh-list-data middarkgrey f8 gh-tag-list-slug gh-list-cellwidth-10" title="Edit tag"}}
+<LinkTo @route="tag" @model={{tag}} class="gh-list-data middarkgrey f8 gh-tag-list-slug gh-list-cellwidth-10" @title="Edit tag">
     <span title="{{this.slug}}">{{this.slug}}</span>
-{{/link-to}}
+</LinkTo>
 
 {{#if this.postsCount}}
-    {{#link-to "posts" (query-params type=null author=null tag=tag.slug order=null) class="gh-list-data blue gh-tag-list-posts-count gh-list-cellwidth-10 f8" title=(concat "List posts tagged with '" this.tag.name "'")}}
+    <LinkTo @route="posts" @query={{hash type=null author=null tag=tag.slug order=null}} class="gh-list-data blue gh-tag-list-posts-count gh-list-cellwidth-10 f8" @title={{concat "List posts tagged with '" this.tag.name "'"}}>
         <span class="nowrap">{{this.postsLabel}}</span>
-    {{/link-to}}
+    </LinkTo>
 {{else}}
-    {{#link-to "tag" tag class="gh-list-data gh-tag-list-posts-count gh-list-cellwidth-10" title="Edit tag"}}
+    <LinkTo @route="tag" @model={{tag}} class="gh-list-data gh-tag-list-posts-count gh-list-cellwidth-10" @title="Edit tag">
         <span class="nowrap f8 midlightgrey">{{this.postsLabel}}</span>
-    {{/link-to}}
+    </LinkTo>
 {{/if}}
 
-{{#link-to "tag" tag class="gh-list-data gh-list-cellwidth-min gh-tag-list-chevron" title="Edit tag"}}
+<LinkTo @route="tag" @model={{tag}} class="gh-list-data gh-list-cellwidth-min gh-tag-list-chevron" @title="Edit tag">
     <div class="flex items-center justify-end w-100 h-100">
         <span class="nr2">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
     </div>
-{{/link-to}}
+</LinkTo>

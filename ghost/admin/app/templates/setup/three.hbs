@@ -6,25 +6,25 @@
 <div><img class="gh-flow-faces" src="assets/img/users.png" alt="" /></div>
 
 <form class="gh-flow-invite" {{action "invite" on="submit"}}>
-    {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="users"}}
+    <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="users">
         <label for="users">Enter one email address per line, we’ll handle the rest! {{svg-jar "email"}}</label>
-        {{gh-textarea
-            name="users"
-            required="required"
-            value=(readonly this.users)
-            input=(action (mut this.users) value="target.value")
-            focus-out=(action "validate")
-        }}
-    {{/gh-form-group}}
+        <GhTextarea
+            @name="users"
+            @required="required"
+            @value={{readonly this.users}}
+            @input={{action (mut this.users) value="target.value"}}
+            @focus-out={{action "validate"}}
+        />
+    </GhFormGroup>
 
-    {{#gh-task-button
-        task=this.invite
-        type="submit"
-        classNameBindings=":gh-btn :gh-btn-default :gh-btn-lg :gh-btn-block buttonClass"
-        successClass=""
-        failureClass=""
+    <GhTaskButton
+        @task={{this.invite}}
+        @type="submit"
+        @class="gh-btn gh-btn-default gh-btn-lg gh-btn-block {{this.buttonClass}}"
+        @successClass=""
+        @failureClass=""
         as |task|
-    }}
+    >
         <span>
             {{#if task.isRunning}}
                 {{svg-jar "spinner" class="no-margin"}}
@@ -32,7 +32,7 @@
                 {{this.buttonText}}
             {{/if}}
         </span>
-    {{/gh-task-button}}
+    </GhTaskButton>
 </form>
 
 <button class="gh-flow-skip" {{action "skipInvite"}}>

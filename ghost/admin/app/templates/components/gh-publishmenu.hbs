@@ -5,30 +5,30 @@
 
     <dd.Content class="gh-publishmenu-dropdown">
         {{#if (eq this.displayState "published")}}
-            {{gh-publishmenu-published
-                post=this.post
-                saveType=this.saveType
-                setSaveType=(action "setSaveType")
-                backgroundTask=this.backgroundTask}}
+            <GhPublishmenuPublished
+                @post={{this.post}}
+                @saveType={{this.saveType}}
+                @setSaveType={{action "setSaveType"}}
+                @backgroundTask={{this.backgroundTask}} />
 
         {{else if (eq this.displayState "scheduled")}}
-            {{gh-publishmenu-scheduled
-                post=this.post
-                saveType=this.saveType
-                isClosing=this.isClosing
-                memberCount=this.memberCount
-                setSaveType=(action "setSaveType")
-                setTypedDateError=(action (mut this.typedDateError))}}
+            <GhPublishmenuScheduled
+                @post={{this.post}}
+                @saveType={{this.saveType}}
+                @isClosing={{this.isClosing}}
+                @memberCount={{this.memberCount}}
+                @setSaveType={{action "setSaveType"}}
+                @setTypedDateError={{action (mut this.typedDateError)}} />
 
         {{else}}
-            {{gh-publishmenu-draft
-                post=this.post
-                saveType=this.saveType
-                setSaveType=(action "setSaveType")
-                setTypedDateError=(action (mut this.typedDateError))
-                backgroundTask=this.backgroundTask
-                memberCount=this.memberCount
-                sendEmailWhenPublished=this.sendEmailWhenPublished}}
+            <GhPublishmenuDraft
+                @post={{this.post}}
+                @saveType={{this.saveType}}
+                @setSaveType={{action "setSaveType"}}
+                @setTypedDateError={{action (mut this.typedDateError)}}
+                @backgroundTask={{this.backgroundTask}}
+                @memberCount={{this.memberCount}}
+                @sendEmailWhenPublished={{this.sendEmailWhenPublished}} />
         {{/if}}
 
         {{!--

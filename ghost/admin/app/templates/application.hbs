@@ -1,27 +1,25 @@
-{{#gh-app showSettingsMenu=this.ui.showSettingsMenu}}
-    {{#gh-skip-link anchor=".gh-main"}}Skip to main content{{/gh-skip-link}}
+<GhApp @showSettingsMenu={{this.ui.showSettingsMenu}}>
+    <GhSkipLink @anchor=".gh-main">Skip to main content</GhSkipLink>
 
-    {{gh-alerts}}
+    <GhAlerts />
 
     <div class="gh-viewport {{if this.ui.showSettingsMenu 'settings-menu-expanded'}} {{if this.ui.showMobileMenu 'mobile-menu-expanded'}}">
         {{#if this.showNavMenu}}
-            {{gh-nav-menu
-                icon=this.settings.settledIcon
-            }}
+            <GhNavMenu @icon={{this.settings.settledIcon}} />
         {{/if}}
 
         <main class="gh-main {{this.ui.mainClass}}" role="main">
             {{outlet}}
         </main>
 
-        {{gh-notifications}}
+        <GhNotifications />
 
-        {{gh-content-cover}}
+        <GhContentCover />
 
-        {{gh-mobile-nav-bar}}
+        <GhMobileNavBar />
 
         <GhWhatsNew />
     </div>{{!gh-viewport}}
-{{/gh-app}}
+</GhApp>
 
-{{ember-load-remover}}
+<EmberLoadRemover />

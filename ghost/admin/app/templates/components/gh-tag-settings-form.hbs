@@ -1,93 +1,93 @@
 <h4 class="midlightgrey f-small fw5 ttu">Basic settings</h4>
 <div class="pa5 pt4 br4 shadow-1 bg-grouped-table mt2 flex flex-column flex-row-ns items-start justify-between gh-tag-basic-settings-form">
     <div class="order-1 flex flex-column items-start mr5 w-100 w-50-m w-two-thirds-l">
-        {{#gh-form-group errors=this.tag.errors hasValidated=this.tag.hasValidated property="name"}}
+        <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="name">
             <label for="tag-name">Name</label>
-            {{gh-text-input
-                id="tag-name"
-                name="name"
-                value=this.scratchTag.name
-                tabindex="1"
-                focus-out=(action 'setProperty' 'name' this.scratchTag.name)
-            }}
+            <GhTextInput
+                @id="tag-name"
+                @name="name"
+                @value={{this.scratchTag.name}}
+                @tabindex="1"
+                @focus-out={{action "setProperty" "name" this.scratchTag.name}}
+            />
             <p class="description">
                 Start with # to create internal tags
                 <a href="https://ghost.org/docs/concepts/tags/#internal-tag" target="_blank" rel="noreferrer">Learn more</a>
             </p>
             <GhErrorMessage @errors={{this.tag.errors}} @property="name" />
-        {{/gh-form-group}}
+        </GhFormGroup>
 
-        {{#gh-form-group errors=this.tag.errors hasValidated=this.tag.hasValidated property="slug"}}
+        <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="slug">
             <label for="tag-slug">Slug</label>
-            {{gh-text-input
-                value=this.scratchTag.slug
-                id="tag-slug"
-                name="slug"
-                tabindex="2"
-                focus-out=(action 'setProperty' 'slug' this.scratchTag.slug)
-            }}
-            {{gh-url-preview prefix="tag" slug=this.scratchTag.slug tagName="p" classNames="description"}}
+            <GhTextInput
+                @value={{this.scratchTag.slug}}
+                @id="tag-slug"
+                @name="slug"
+                @tabindex="2"
+                @focus-out={{action "setProperty" "slug" this.scratchTag.slug}}
+            />
+            <GhUrlPreview @prefix="tag" @slug={{this.scratchTag.slug}} @tagName="p" @classNames="description" />
             <GhErrorMessage @errors={{this.activeTag.errors}} @property="slug" />
-        {{/gh-form-group}}
+        </GhFormGroup>
 
-        {{#gh-form-group errors=this.tag.errors hasValidated=this.tag.hasValidated property="description"}}
+        <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="description">
             <label for="tag-description">Description</label>
-            {{gh-textarea
-                id="tag-description"
-                name="description"
-                class="gh-tag-details-textarea"
-                tabindex="3"
-                value=this.scratchTag.description
-                focus-out=(action 'setProperty' 'description' this.scratchTag.description)
-            }}
+            <GhTextarea
+                @id="tag-description"
+                @name="description"
+                @class="gh-tag-details-textarea"
+                @tabindex="3"
+                @value={{this.scratchTag.description}}
+                @focus-out={{action "setProperty" "description" this.scratchTag.description}}
+            />
             <GhErrorMessage @errors={{this.tag.errors}} @property="description" />
             <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.description 500}}</p>
-        {{/gh-form-group}}
+        </GhFormGroup>
     </div>
     <div class="order-0 mb6 mb0-ns order-2-ns w-100 w-50-m w-third-l">
         <label for="tag-image">Tag image</label>
-        {{gh-image-uploader-with-preview
-            image=this.tag.featureImage
-            text="Upload tag image"
-            class="gh-tag-image-uploader"
-            allowUnsplash=true
-            update=(action "setCoverImage")
-            remove=(action "clearCoverImage")
-        }}
+        <GhImageUploaderWithPreview
+            @image={{this.tag.featureImage}}
+            @text="Upload tag image"
+            @class="gh-tag-image-uploader"
+            @allowUnsplash={{true}}
+            @update={{action "setCoverImage"}}
+            @remove={{action "clearCoverImage"}}
+        />
     </div>
 </div>
 
 <h4 class="midlightgrey f-small fw5 ttu mt15">Meta data</h4>
 <div class="pa5 pt4 br4 shadow-1 bg-grouped-table mt2 flex flex-column flex-row-ns items-start justify-between">
     <div class="flex flex-column items-start mr5 w-100 w-50-m w-two-thirds-l">
-        {{#gh-form-group errors=this.tag.errors hasValidated=this.tag.hasValidated property="metaTitle"}}
+        <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="metaTitle">
             <label for="meta-title">Meta Title</label>
-            {{gh-text-input
-                id="meta-title"
-                name="metaTitle"
-                placeholder=this.scratchTag.name
-                tabindex="4"
-                value=this.scratchTag.metaTitle
-                focus-out=(action "setProperty" "metaTitle" this.scratchTag.metaTitle)
-            }}
+            <GhTextInput
+                @id="meta-title"
+                @name="metaTitle"
+                @placeholder={{this.scratchTag.name}}
+                @tabindex="4"
+                @value={{this.scratchTag.metaTitle}}
+                @focus-out={{action "setProperty" "metaTitle" this.scratchTag.metaTitle}}
+            />
             <GhErrorMessage @errors={{this.tag.errors}} @property="metaTitle" />
             <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.metaTitle 70}}</p>
-        {{/gh-form-group}}
+        </GhFormGroup>
 
-        {{#gh-form-group errors=this.tag.errors hasValidated=this.tag.hasValidated property="metaDescription"}}
+        <GhFormGroup @errors={{this.tag.errors}} @hasValidated={{this.tag.hasValidated}} @property="metaDescription">
             <label for="meta-description">Meta Description</label>
-            {{gh-textarea
-                id="meta-description"
-                name="metaDescription"
-                class="gh-tag-details-textarea"
-                placeholder=this.scratchTag.description
-                tabindex="5"
-                value=this.scratchTag.metaDescription
-                focus-out=(action "setProperty" "metaDescription" this.scratchTag.metaDescription)
-            }}
+            <GhTextarea
+                @id="meta-description"
+                @name="metaDescription"
+                @class="gh-tag-details-textarea"
+                @placeholder={{this.scratchTag.description}}
+                @tabindex="5"
+                @value={{this.scratchTag.metaDescription}}
+                @focus-out={{action "setProperty" "metaDescription" this.scratchTag.metaDescription}}
+            />
             <GhErrorMessage @errors={{this.tag.errors}} @property="metaDescription" />
             <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters this.scratchTag.metaDescription 156}}</p>
-        {{/gh-form-group}}
+        </GhFormGroup>
     </div>
     <div class="w-100 w-50-m w-third-l">
         <div class="form-group">

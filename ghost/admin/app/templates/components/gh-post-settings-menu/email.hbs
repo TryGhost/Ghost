@@ -91,26 +91,26 @@
         {{#if this.mailgunError}}
             <p class="gh-box gh-box-warning settings-menu-mailgun-warning">
                 {{svg-jar "info" class="w5 h5 fill-yellow nl1"}}
-                You need to configure Mailgun in {{#link-to "settings.labs" data-test-nav="labs"}}Labs → Members settings{{/link-to}} to enable email newsletters.
+                You need to configure Mailgun in <LinkTo @route="settings.labs" data-test-nav="labs">Labs → Members settings</LinkTo> to enable email newsletters.
             </p>
         {{/if}}
 
         <form {{action "discardEnter" on="submit"}}>
-            {{#gh-form-group errors=this.post.errors hasValidated=this.post.hasValidated property="emailSubject"}}
+            <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="emailSubject">
                 <label for="og-title">Subject</label>
-                {{gh-text-input
-                    class="post-setting-email-subject"
-                    id="email-subject"
-                    name="post-setting-email-subject"
-                    placeholder=(truncate this.emailSubject 40)
-                    value=(readonly this.emailSubjectScratch)
-                    input=(action (mut this.emailSubjectScratch) value="target.value")
-                    focus-out=(action "setEmailSubject" this.emailSubjectScratch)
-                    stopEnterKeyDownPropagation=true
-                    disabled=this.mailgunError
-                    data-test-field="email-subject"}}
+                <GhTextInput
+                    @class="post-setting-email-subject"
+                    @id="email-subject"
+                    @name="post-setting-email-subject"
+                    @placeholder={{truncate this.emailSubject 40}}
+                    @value={{readonly this.emailSubjectScratch}}
+                    @input={{action (mut this.emailSubjectScratch) value="target.value"}}
+                    @focus-out={{action "setEmailSubject" this.emailSubjectScratch}}
+                    @stopEnterKeyDownPropagation={{true}}
+                    @disabled={{this.mailgunError}}
+                    data-test-field="email-subject" />
                 <GhErrorMessage @errors={{this.post.errors}} @property="emailSubject" data-test-error="email-subject" />
-            {{/gh-form-group}}
+            </GhFormGroup>
 
             <div class="form-group">
                 <div class="flex">
@@ -123,28 +123,28 @@
                 </div>
 
                 <div class="{{if this.mailgunError "disabled"}}">
-                    {{gh-text-input
-                        class="post-setting-email-test"
-                        id="email-test"
-                        name="post-setting-email-test"
-                        placeholder="noreply@example.com"
-                        value=this.testEmailAddress
-                        stopEnterKeyDownPropagation=true
-                        disabled=this.mailgunError
-                        data-test-field="email-test"}}
+                    <GhTextInput
+                        @class="post-setting-email-test"
+                        @id="email-test"
+                        @name="post-setting-email-test"
+                        @placeholder="noreply@example.com"
+                        @value={{this.testEmailAddress}}
+                        @stopEnterKeyDownPropagation={{true}}
+                        @disabled={{this.mailgunError}}
+                        data-test-field="email-test" />
 
                     {{#if this.sendTestEmailError}}
                         <div class="error"><p class="response">{{this.sendTestEmailError}}</p></div>
                     {{/if}}
 
-                    {{gh-task-button "Send test email"
-                        task=this.sendTestEmail
-                        successText="Email sent"
-                        runningText="Sending..."
-                        class="gh-btn w-100 mt2 gh-btn-icon"
-                        disabled=this.mailgunError
-                        data-test-send-test-mail=true
-                    }}
+                    <GhTaskButton @buttonText="Send test email"
+                        @task={{this.sendTestEmail}}
+                        @successText="Email sent"
+                        @runningText="Sending..."
+                        @class="gh-btn w-100 mt2 gh-btn-icon"
+                        @disabled={{this.mailgunError}}
+                        data-test-send-test-mail="true"
+                    />
                 </div>
             </div>
         </form>

@@ -8,17 +8,17 @@
             </a>
         </div>
     {{else}}
-        {{gh-image-uploader
-            image=this.newUrl
-            saveButton=false
-            update=(action 'fileUploaded')
-            uploadStarted=(action 'isUploading')
-            uploadFinished=(action 'isUploading')
-            accept=this.model.accept
-            extensions=this.model.extensions
-            uploadUrl=this.model.uploadUrl
-            paramsHash=this.model.paramsHas
-        }}
+        <GhImageUploader
+            @image={{this.newUrl}}
+            @saveButton={{false}}
+            @update={{action "fileUploaded"}}
+            @uploadStarted={{action "isUploading"}}
+            @uploadFinished={{action "isUploading"}}
+            @accept={{this.model.accept}}
+            @extensions={{this.model.extensions}}
+            @uploadUrl={{this.model.uploadUrl}}
+            @paramsHash={{this.model.paramsHas}}
+        />
     {{/if}}
 </div>
 
@@ -27,6 +27,6 @@
     {{#if this._isUploading}}
         <button class="gh-btn gh-btn-blue right gh-btn-icon disabled"><span>Save</span></button>
     {{else}}
-        {{gh-task-button task=this.uploadImage class="gh-btn gh-btn-blue right gh-btn-icon" data-test-modal-accept-button=true}}
+        <GhTaskButton @task={{this.uploadImage}} @class="gh-btn gh-btn-blue right gh-btn-icon" data-test-modal-accept-button={{true}} />
     {{/if}}
 </div>

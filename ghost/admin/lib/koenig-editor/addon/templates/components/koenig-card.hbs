@@ -1,26 +1,26 @@
-{{#if icon}}
-    {{#sticky-element top=iconTop bottom=36}}
-        {{svg-jar icon class=iconClass}}
-    {{/sticky-element}}
+{{#if this.icon}}
+    <StickyElement @top={{this.iconTop}} @bottom={{36}}>
+        {{svg-jar this.icon class=this.iconClass}}
+    </StickyElement>
 {{/if}}
 
 {{yield (hash
-    captionInput=(component "koenig-caption-input"
-        captureInput=isSelected
-        addParagraphAfterCard=addParagraphAfterCard
-        moveCursorToPrevSection=moveCursorToPrevSection
-        moveCursorToNextSection=moveCursorToNextSection
+    CaptionInput=(component "koenig-caption-input"
+        captureInput=this.isSelected
+        addParagraphAfterCard=this.addParagraphAfterCard
+        moveCursorToPrevSection=this.moveCursorToPrevSection
+        moveCursorToNextSection=this.moveCursorToNextSection
     )
-    altInput=(component "koenig-alt-input"
-        addParagraphAfterCard=addParagraphAfterCard
-        moveCursorToPrevSection=moveCursorToPrevSection
-        moveCursorToNextSection=moveCursorToNextSection
+    AltInput=(component "koenig-alt-input"
+        addParagraphAfterCard=this.addParagraphAfterCard
+        moveCursorToPrevSection=this.moveCursorToPrevSection
+        moveCursorToNextSection=this.moveCursorToNextSection
     )
 )}}
 
-{{#if toolbar}}
-    {{#kg-action-bar class="absolute" style=toolbarStyle isVisible=shouldShowToolbar}}
-        {{#each toolbar.items as |item|}}
+{{#if this.toolbar}}
+    <KgActionBar @class="absolute" @style={{this.toolbarStyle}} @isVisible={{this.shouldShowToolbar}}>
+        {{#each this.toolbar.items as |item|}}
             {{#if item.divider}}
                 <li class="ma0 kg-action-bar-divider bg-darkgrey-d2 h5"></li>
             {{else}}
@@ -36,5 +36,5 @@
                 </li>
             {{/if}}
         {{/each}}
-    {{/kg-action-bar}}
+    </KgActionBar>
 {{/if}}

@@ -1,4 +1,4 @@
-{{#liquid-wormhole class="unsplash"}}
+<LiquidWormhole @class="unsplash">
     {{!-- TODO: why does this modal background not cover the PSM without style override? --}}
     <div class="fullscreen-modal-background" {{action "close"}} style="z-index: 999"></div>
     <div class="absolute top-8 right-8 bottom-8 left-8 br4 overflow-hidden bg-white z-9999" data-unsplash>
@@ -16,18 +16,18 @@
                 </h1>
                 <span class="gh-input-icon mw88-l flex-auto w-100 mt3 mt0-l">
                     {{svg-jar "search"}}
-                    {{gh-text-input
-                        class="gh-unsplash-search"
-                        name="searchKeyword"
-                        placeholder="Search free high-resolution photos"
-                        tabindex="1"
-                        shouldFocus=true
-                        autocorrect="off"
-                        value=(readonly this.unsplash.searchTerm)
-                        input=(action "search" value="target.value")
-                        focusIn=(action "setKeyScope")
-                        focus-out=(action "resetKeyScope")
-                    }}
+                    <GhTextInput
+                        @class="gh-unsplash-search"
+                        @name="searchKeyword"
+                        @placeholder="Search free high-resolution photos"
+                        @tabindex="1"
+                        @shouldFocus={{true}}
+                        @autocorrect="off"
+                        @value={{readonly this.unsplash.searchTerm}}
+                        @input={{action "search" value="target.value"}}
+                        @focusIn={{action "setKeyScope"}}
+                        @focus-out={{action "resetKeyScope"}}
+                    />
                 </span>
             </header>
 
@@ -40,7 +40,7 @@
                             {{#each this.unsplash.columns as |photos|}}
                                 <div class="gh-unsplash-grid-column">
                                     {{#each photos as |photo|}}
-                                        {{gh-unsplash-photo photo=photo zoom=(action "zoomPhoto") select=(action "select")}}
+                                        <GhUnsplashPhoto @photo={{photo}} @zoom={{action "zoomPhoto"}} @select={{action "select"}} />
                                     {{/each}}
                                 </div>
                             {{/each}}
@@ -70,23 +70,23 @@
                         </div>
                     {{/if}}
 
-                    {{gh-scroll-trigger
-                        enter=(action "loadNextPage")
-                        triggerOffset=1000}}
+                    <GhScrollTrigger
+                        @enter={{action "loadNextPage"}}
+                        @triggerOffset={{1000}} />
                 </div>
 
                 {{!-- zoomed image overlay --}}
                 {{#if this.zoomedPhoto}}
                     <div class="absolute flex justify-center top-0 right-0 bottom-0 left-0 pr20 pb10 pl20 bg-white overflow-hidden" {{action "closeZoom"}}>
-                        {{gh-unsplash-photo
-                            photo=this.zoomedPhoto
-                            zoomed=true
-                            zoom=(action "closeZoom")
-                            select=(action "select")}}
+                        <GhUnsplashPhoto
+                            @photo={{this.zoomedPhoto}}
+                            @zoomed={{true}}
+                            @zoom={{action "closeZoom"}}
+                            @select={{action "select"}} />
                     </div>
                 {{/if}}
             </div>
         </div>
     </div>
 
-{{/liquid-wormhole}}
+</LiquidWormhole>

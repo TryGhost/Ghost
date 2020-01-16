@@ -8,7 +8,7 @@
 
 <div class="modal-body">
     <fieldset>
-        {{#gh-form-group errors=this.integration.errors hasValidated=this.integration.hasValidated property="name"}}
+        <GhFormGroup @errors={{this.integration.errors}} @hasValidated={{this.integration.hasValidated}} @property="name">
             <label for="new-integration-name" class="fw6">Name</label>
             <input type="text"
                 value={{this.integration.name}}
@@ -22,7 +22,7 @@
                 autocorrect="off"
                 data-test-input="new-integration-name">
             <GhErrorMessage @errors={{this.integration.errors}} @property="name" data-test-error="new-integration-name" />
-        {{/gh-form-group}}
+        </GhFormGroup>
     </fieldset>
 </div>
 
@@ -36,9 +36,9 @@
     >
         <span>Cancel</span>
     </button>
-    {{gh-task-button "Create"
-        successText="Created"
-        task=this.createIntegration
-        class="gh-btn gh-btn-green gh-btn-icon"
-        data-test-button="create-integration"}}
+    <GhTaskButton @buttonText="Create"
+        @successText="Created"
+        @task={{this.createIntegration}}
+        @class="gh-btn gh-btn-green gh-btn-icon"
+        data-test-button="create-integration" />
 </div>

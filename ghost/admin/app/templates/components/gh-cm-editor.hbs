@@ -1,5 +1,6 @@
 {{!-- display a standard textarea whilst waiting for CodeMirror to load/initialize --}}
-{{gh-textarea
-    class=(concat "gh-cm-editor-textarea " this.textareaClass)
-    value=(readonly this._value)
-    input=(action "updateFromTextarea" value="target.value")}}
+<GhTextarea
+    @class={{concat "gh-cm-editor-textarea " this.textareaClass}}
+    @value={{readonly this._value}}
+    @input={{action "updateFromTextarea" value="target.value"}}
+/>

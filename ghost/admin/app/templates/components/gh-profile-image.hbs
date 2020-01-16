@@ -16,10 +16,10 @@
         <span class="sr-only">Upload an image</span>
     </span>
 
-    {{gh-file-input
-        alt=null
-        name="uploadimage"
-        multiple=false
-        action=(action "imageSelected")
-        accept=this.imageMimeTypes}}
+    <GhFileInput
+        @alt={{null}}
+        @name="uploadimage"
+        @multiple={{false}}
+        @action={{action "imageSelected"}}
+        @accept={{this.imageMimeTypes}} />
 </figure>

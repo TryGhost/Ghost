@@ -17,7 +17,7 @@
                 @onOrderChange={{action "changeOrder"}}
             />
 
-            {{#link-to "editor.new" "post" class="gh-btn gh-btn-green" data-test-new-post-button=true}}<span>New post</span>{{/link-to}}
+            <LinkTo @route="editor.new" @model="post" class="gh-btn gh-btn-green" data-test-new-post-button={{true}}><span>New post</span></LinkTo>
         </section>
     </GhCanvasHeader>
 
@@ -33,33 +33,33 @@
             {{/if}}
 
             {{#each this.postsInfinityModel as |post|}}
-                {{gh-posts-list-item
-                    post=post
-                    data-test-post-id=post.id}}
+                <GhPostsListItem
+                    @post={{post}}
+                    data-test-post-id={{post.id}} />
             {{else}}
             <li class="no-posts-box">
                 <div class="no-posts">
                     {{#if this.showingAll}}
                         {{svg-jar "posts-placeholder" class="gh-posts-placeholder"}}
                         <h3>You haven't written any posts yet!</h3>
-                        {{#link-to "editor.new" "post" class="gh-btn gh-btn-green gh-btn-lg"}}
+                        <LinkTo @route="editor.new" @model="post" class="gh-btn gh-btn-green gh-btn-lg">
                             <span>Write a new post</span>
-                        {{/link-to}}
+                        </LinkTo>
                     {{else}}
                         <h3>No posts match the current filter</h3>
-                        {{#link-to "posts" (query-params type=null author=null tag=null) class="gh-btn gh-btn-lg"}}
+                        <LinkTo @route="posts" @query={{hash type=null author=null tag=null}} class="gh-btn gh-btn-lg">
                             <span>Show all posts</span>
-                        {{/link-to}}
+                        </LinkTo>
                     {{/if}}
                 </div>
             </li>
             {{/each}}
         </ol>
 
-        {{gh-infinity-loader
-            infinityModel=this.postsInfinityModel
-            scrollable=".gh-main"
-            triggerOffset=1000}}
+        <GhInfinityLoader
+            @infinityModel={{this.postsInfinityModel}}
+            @scrollable=".gh-main"
+            @triggerOffset={{1000}} />
     </section>
 
     {{outlet}}

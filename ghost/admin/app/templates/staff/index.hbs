@@ -10,9 +10,9 @@
     </GhCanvasHeader>
 
     {{#if this.showInviteUserModal}}
-        {{gh-fullscreen-modal "invite-new-user"
-                              close=(action "toggleInviteUserModal")
-                              modifier="action wide"}}
+        <GhFullscreenModal @modal="invite-new-user"
+            @close={{action "toggleInviteUserModal"}}
+            @modifier="action wide" />
     {{/if}}
 
     <section class="view-container gh-team">
@@ -24,7 +24,7 @@
             <div class="apps-grid">
 
                 {{#each this.sortedInvites as |invite|}}
-                    {{#gh-user-invited invite=invite reload=(route-action "reload") as |component|}}
+                    <GhUserInvited @invite={{invite}} @reload={{route-action "reload"}} as |component|>
                         <div class="apps-grid-cell" data-test-invite-id="{{invite.id}}">
                             <article class="apps-card-app">
                                 <div class="apps-card-left">
@@ -63,7 +63,7 @@
                                 </div>
                             </article>
                         </div>
-                    {{/gh-user-invited}}
+                    </GhUserInvited>
                 {{/each}}
 
             </div>
@@ -76,9 +76,9 @@
         <div class="apps-grid">
             {{!-- For authors/contributors, only show their own user --}}
             {{#if this.currentUser.isAuthorOrContributor}}
-                {{#gh-user-active user=this.currentUser as |component|}}
-                    {{gh-user-list-item user=this.currentUser component=component}}
-                {{/gh-user-active}}
+                <GhUserActive @user={{this.currentUser}} as |component|>
+                    <GhUserListItem @user={{this.currentUser}} @component={{component}} />
+                </GhUserActive>
             {{else}}
                 {{#vertical-collection this.sortedActiveUsers
                     key="id"
@@ -86,9 +86,9 @@
                     estimateHeight=75
                     as |user|
                 }}
-                    {{#gh-user-active user=user as |component|}}
-                        {{gh-user-list-item user=user component=component}}
-                    {{/gh-user-active}}
+                    <GhUserActive @user={{user}} as |component|>
+                        <GhUserListItem @user={{user}} @component={{component}} />
+                    </GhUserActive>
                 {{/vertical-collection}}
             {{/if}}
         </div>
@@ -101,9 +101,9 @@
         <span class="apps-grid-title">Suspended users</span>
         <div class="apps-grid">
             {{#each this.sortedSuspendedUsers key="id" as |user|}}
-                {{#gh-user-active user=user as |component|}}
-                    {{gh-user-list-item user=user component=component}}
-                {{/gh-user-active}}
+                <GhUserActive @user={{user}} as |component|>
+                    <GhUserListItem @user={{user}} @component={{component}} />
+                </GhUserActive>
             {{/each}}
         </div>
     </section>

@@ -1,7 +1,7 @@
-{{gh-fullscreen-modal "upload-theme"
-    model=(hash
+<GhFullscreenModal @modal="upload-theme"
+    @model={{hash
         themes=themes
         activate=(route-action 'activateTheme')
-    )
-    close=(route-action "cancel")
-    modifier="action wide"}}
+    }}
+    @close={{route-action "cancel"}}
+    @modifier="action wide" />

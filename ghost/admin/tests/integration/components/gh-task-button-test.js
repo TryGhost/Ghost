@@ -12,28 +12,28 @@ describe('Integration: Component: gh-task-button', function () {
 
     it('renders', async function () {
         // sets button text using positional param
-        await render(hbs`{{gh-task-button "Test"}}`);
+        await render(hbs`<GhTaskButton @buttonText="Test" />`);
         expect(find('button')).to.exist;
         expect(find('button')).to.contain.text('Test');
         expect(find('button').disabled).to.be.false;
 
-        await render(hbs`{{gh-task-button class="testing"}}`);
+        await render(hbs`<GhTaskButton @class="testing" />`);
         expect(find('button')).to.have.class('testing');
         // default button text is "Save"
         expect(find('button')).to.contain.text('Save');
 
         // passes disabled attr
-        await render(hbs`{{gh-task-button disabled=true buttonText="Test"}}`);
+        await render(hbs`<GhTaskButton @disabled={{true}} @buttonText="Test" />`);
         expect(find('button').disabled).to.be.true;
         // allows button text to be set via hash param
         expect(find('button')).to.contain.text('Test');
 
         // passes type attr
-        await render(hbs`{{gh-task-button type="submit"}}`);
+        await render(hbs`<GhTaskButton @type="submit" />`);
         expect(find('button')).to.have.attr('type', 'submit');
 
         // passes tabindex attr
-        await render(hbs`{{gh-task-button tabindex="-1"}}`);
+        await render(hbs`<GhTaskButton @tabindex="-1" />`);
         expect(find('button')).to.have.attr('tabindex', '-1');
     });
 
@@ -42,7 +42,7 @@ describe('Integration: Component: gh-task-button', function () {
             yield timeout(50);
         }));
 
-        await render(hbs`{{gh-task-button task=myTask}}`);
+        await render(hbs`<GhTaskButton @task={{myTask}} />`);
 
         this.myTask.perform();
 
@@ -55,7 +55,7 @@ describe('Integration: Component: gh-task-button', function () {
             yield timeout(50);
         }));
 
-        await render(hbs`{{gh-task-button task=myTask runningText="Running"}}`);
+        await render(hbs`<GhTaskButton @task={{myTask}} @runningText="Running" />`);
 
         this.myTask.perform();
 
@@ -70,7 +70,7 @@ describe('Integration: Component: gh-task-button', function () {
             yield timeout(50);
         }));
 
-        await render(hbs`{{gh-task-button task=myTask}}`);
+        await render(hbs`<GhTaskButton @task={{myTask}} />`);
         expect(find('button'), 'initial class').to.not.have.class('appear-disabled');
 
         this.myTask.perform();
@@ -87,7 +87,7 @@ describe('Integration: Component: gh-task-button', function () {
             return true;
         }));
 
-        await render(hbs`{{gh-task-button task=myTask}}`);
+        await render(hbs`<GhTaskButton @task={{myTask}} />`);
 
         await this.myTask.perform();
 
@@ -101,7 +101,7 @@ describe('Integration: Component: gh-task-button', function () {
             return true;
         }));
 
-        await render(hbs`{{gh-task-button task=myTask successClass="im-a-success"}}`);
+        await render(hbs`<GhTaskButton @task={{myTask}} @successClass="im-a-success" />`);
 
         await this.myTask.perform();
 
@@ -120,7 +120,7 @@ describe('Integration: Component: gh-task-button', function () {
             }
         }));
 
-        await render(hbs`{{gh-task-button task=myTask failureClass="is-failed"}}`);
+        await render(hbs`<GhTaskButton @task={{myTask}} @failureClass="is-failed" />`);
 
         this.myTask.perform();
         await waitFor('button.is-failed');
@@ -136,7 +136,7 @@ describe('Integration: Component: gh-task-button', function () {
             return false;
         }));
 
-        await render(hbs`{{gh-task-button task=myTask}}`);
+        await render(hbs`<GhTaskButton @task={{myTask}} />`);
 
         this.myTask.perform();
         await waitFor('button.gh-btn-red', {timeout: 50});
@@ -152,7 +152,7 @@ describe('Integration: Component: gh-task-button', function () {
             return false;
         }));
 
-        await render(hbs`{{gh-task-button task=myTask failureClass="im-a-failure"}}`);
+        await render(hbs`<GhTaskButton @task={{myTask}} @failureClass="im-a-failure" />`);
 
         this.myTask.perform();
 
@@ -172,7 +172,7 @@ describe('Integration: Component: gh-task-button', function () {
             taskCount = taskCount + 1;
         }));
 
-        await render(hbs`{{gh-task-button task=myTask}}`);
+        await render(hbs`<GhTaskButton @task={{myTask}} />`);
         await click('button');
         await settled();
 
@@ -184,7 +184,7 @@ describe('Integration: Component: gh-task-button', function () {
             yield timeout(50);
         }));
 
-        await render(hbs`{{gh-task-button task=myTask}}`);
+        await render(hbs`<GhTaskButton @task={{myTask}} />`);
         let width = find('button').clientWidth;
         let height = find('button').clientHeight;
         expect(find('button')).to.not.have.attr('style');

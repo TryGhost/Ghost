@@ -6,17 +6,17 @@
 <div class="modal-body {{if this.authenticationError 'error'}}">
 
     <form id="login" class="login-form" method="post" novalidate="novalidate" {{action "confirm" on="submit"}}>
-        {{#gh-validation-status-container class="password-wrap" errors=this.errors property="password" hasValidated=this.hasValidated}}
-            {{gh-text-input
-                class="password"
-                type="password"
-                placeholder="Password"
-                name="password"
-                value=(readonly this.password)
-                input=(action (mut this.password) value="target.value")}}
-        {{/gh-validation-status-container}}
+        <GhValidationStatusContainer @class="password-wrap" @errors={{this.errors}} @property="password" @hasValidated={{this.hasValidated}}>
+            <GhTextInput
+                @class="password"
+                @type="password"
+                @placeholder="Password"
+                @name="password"
+                @value={{readonly this.password}}
+                @input={{action (mut this.password) value="target.value"}} />
+        </GhValidationStatusContainer>
         <div>
-            {{gh-task-button "Log in" task=this.reauthenticate class="gh-btn gh-btn-blue gh-btn-icon" type="submit"}}
+            <GhTaskButton @buttonText="Log in" @task={{this.reauthenticate}} @class="gh-btn gh-btn-blue gh-btn-icon" @type="submit" />
         </div>
     </form>
 

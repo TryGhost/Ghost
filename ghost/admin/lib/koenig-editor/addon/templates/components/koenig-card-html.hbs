@@ -1,27 +1,27 @@
-{{#koenig-card
-    icon="koenig/card-indicator-html"
-    class=(concat (kg-style "container-card") " mih10 miw-100 relative")
-    headerOffset=headerOffset
-    toolbar=toolbar
-    payload=payload
-    isSelected=isSelected
-    isEditing=isEditing
-    selectCard=(action selectCard)
-    deselectCard=(action deselectCard)
-    editCard=(action editCard)
-    saveCard=(action saveCard)
-    onLeaveEdit=(action "leaveEditMode")
-    editor=editor
-}}
-    {{#if isEditing}}
-        {{gh-cm-editor payload.html
-            class="koenig-card-html--editor"
-            autofocus=true
-            lineWrapping=true
-            update=(action "updateHtml")
-        }}
+<KoenigCard
+    @icon="koenig/card-indicator-html"
+    @class={{concat (kg-style "container-card") " mih10 miw-100 relative"}}
+    @headerOffset={{this.headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{this.payload}}
+    @isSelected={{this.isSelected}}
+    @isEditing={{this.isEditing}}
+    @selectCard={{action this.selectCard}}
+    @deselectCard={{action this.deselectCard}}
+    @editCard={{action this.editCard}}
+    @saveCard={{action this.saveCard}}
+    @onLeaveEdit={{action "leaveEditMode"}}
+    @editor={{this.editor}}
+>
+    {{#if this.isEditing}}
+        <GhCmEditor @value={{this.payload.html}}
+            @class="koenig-card-html--editor"
+            @autofocus=true
+            @lineWrapping=true
+            @update={{action "updateHtml"}}
+        />
     {{else}}
-        <div class="koenig-card-html-rendered">{{{sanitize-html payload.html}}}</div>
+        <div class="koenig-card-html-rendered">{{{sanitize-html this.payload.html}}}</div>
         <div class="koenig-card-click-overlay"></div>
     {{/if}}
-{{/koenig-card}}
+</KoenigCard>

@@ -1,11 +1,11 @@
-{{koenig-basic-html-input
-    html=caption
-    placeholder=(if isFocused "" placeholder)
-    class="miw-100 tc bn form-text bg-transparent"
-    name="caption"
-    onChange=(action update)
-    onFocus=(action (mut isFocused) true)
-    onBlur=(action (mut isFocused) false)
-    onNewline=(action "handleEnter")
-    didCreateEditor=(action "registerEditor")
-}}
+<KoenigBasicHtmlInput
+    @html={{this.caption}}
+    @placeholder={{if this.isFocused "" this.placeholder}}
+    @class="miw-100 tc bn form-text bg-transparent"
+    @name="caption"
+    @onChange={{action this.update}}
+    @onFocus={{action (mut this.isFocused) true}}
+    @onBlur={{action (mut this.isFocused) false}}
+    @onNewline={{action "handleEnter"}}
+    @didCreateEditor={{action "registerEditor"}}
+/>

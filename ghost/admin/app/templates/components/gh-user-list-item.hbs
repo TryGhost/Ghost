@@ -1,5 +1,5 @@
 <div class="apps-grid-cell">
-    {{#link-to 'staff.user' user.slug data-test-user-id=user.id}}
+    <LinkTo @route="staff.user" @model={{user.slug}} data-test-user-id={{user.id}}>
     <article class="apps-card-app">
         <div class="apps-card-left">
             <span class="user-list-item-figure" style={{background-image-style user.profileImageUrl}}>
@@ -24,5 +24,5 @@
             </div>
         </div>
     </article>
-    {{/link-to}}
+    </LinkTo>
 </div>

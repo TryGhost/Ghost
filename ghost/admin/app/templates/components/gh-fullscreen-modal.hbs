@@ -1,4 +1,4 @@
-{{#liquid-wormhole class="fullscreen-modal-container"}}
+<LiquidWormhole @class="fullscreen-modal-container">
     <div class="fullscreen-modal-background" {{action "clickOverlay"}}></div>
     <div class={{this.modalClasses}}>
         {{#if hasBlock}}
@@ -10,4 +10,4 @@
                       closeModal=(action 'close')}}
         {{/if}}
     </div>
-{{/liquid-wormhole}}
+</LiquidWormhole>

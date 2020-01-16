@@ -16,21 +16,21 @@
                 <div class="w-100 w-50-l">
                     <div class="mb4">
                         <label class="fw6 f8">Stripe Publishable key</label>
-                        {{gh-text-input
-                            type="password"
-                            value=(readonly this.subscriptionSettings.stripeConfig.public_token)
-                            input=(action "setSubscriptionSettings" "public_token")
-                            class="mt1 password"
-                        }}
+                        <GhTextInput
+                            @type="password"
+                            @value={{readonly this.subscriptionSettings.stripeConfig.public_token}}
+                            @input={{action "setSubscriptionSettings" "public_token"}}
+                            @class="mt1 password"
+                        />
                     </div>
                     <div class="nudge-top--3">
                         <label class="fw6 f8 mt4">Stripe Secret key</label>
-                        {{gh-text-input
-                            type="password"
-                            value=(readonly this.subscriptionSettings.stripeConfig.secret_token)
-                            input=(action "setSubscriptionSettings" "secret_token")
-                            class="mt1 password"
-                        }}
+                        <GhTextInput
+                            @type="password"
+                            @value={{readonly this.subscriptionSettings.stripeConfig.secret_token}}
+                            @input={{action "setSubscriptionSettings" "secret_token"}}
+                            @class="mt1 password"
+                        />
                         <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 fw4 f8">
                             Find your Stripe API keys here &raquo;
                         </a>
@@ -66,31 +66,31 @@
         {{#liquid-if this.membersPricingOpen}}
             <div class="w-100 w-50-l flex flex-column flex-row-ns mt8">
                 <div class="w-100 w-50-ns mr3-ns">
-                    {{#gh-form-group}}
+                    <GhFormGroup>
                     <label class="fw6 f8">Monthly price</label>
 
                     <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
-                        {{gh-text-input
-                            value=(readonly this.subscriptionSettings.stripeConfig.plans.monthly.dollarAmount)
-                            type="number"
-                            input=(action "setSubscriptionSettings" "month")
-                        }}
+                        <GhTextInput
+                            @value={{readonly this.subscriptionSettings.stripeConfig.plans.monthly.dollarAmount}}
+                            @type="number"
+                            @input={{action "setSubscriptionSettings" "month"}}
+                        />
                         <span class="gh-input-append">USD/month</span>
                     </div>
-                    {{/gh-form-group}}
+                    </GhFormGroup>
                 </div>
                 <div class="w-100 w-50-ns ml2-ns">
-                    {{#gh-form-group class="description-container"}}
+                    <GhFormGroup @class="description-container">
                     <label class="fw6 f8">Yearly price</label>
                     <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
-                        {{gh-text-input
-                                value=(readonly this.subscriptionSettings.stripeConfig.plans.yearly.dollarAmount)
-                                type="number"
-                                input=(action "setSubscriptionSettings" "year")
-                            }}
+                        <GhTextInput
+                            @value={{readonly this.subscriptionSettings.stripeConfig.plans.yearly.dollarAmount}}
+                            @type="number"
+                            @input={{action "setSubscriptionSettings" "year"}}
+                        />
                         <span class="gh-input-append">USD/year</span>
                     </div>
-                    {{/gh-form-group}}
+                    </GhFormGroup>
                 </div>
             </div>
             <div class="f8 fw4 midgrey">Currently only USD is supported, more currencies <a href="https://ghost.org/docs/members/" target="_blank" rel="noopener">coming soon</a></div>
@@ -170,62 +170,61 @@
 
         {{#liquid-if this.membersEmailOpen}}
         <div class="flex flex-column w-100 w-50-l flex mt8">
-            {{#gh-form-group}}
-            <label class="fw6 f8">From Address</label>
-            <div class="flex items-center justify-center mt1 gh-input-group">
-                {{gh-text-input
-                    value=(readonly this.subscriptionSettings.fromAddress)
-                    input=(action "setSubscriptionSettings" "fromAddress")
-                    class="w20"
-                }}
-                <span class="gh-input-append"> @{{this.blogDomain}}</span>
-            </div>
-            <div class="f8 fw4 midgrey mt1">Your members will receive system emails from this address</div>
-            {{/gh-form-group}}
+            <GhFormGroup>
+                <label class="fw6 f8">From Address</label>
+                <div class="flex items-center justify-center mt1 gh-input-group">
+                    <GhTextInput
+                        @value={{readonly this.subscriptionSettings.fromAddress}}
+                        @input={{action "setSubscriptionSettings" "fromAddress"}}
+                        @class="w20"
+                    />
+                    <span class="gh-input-append"> @{{this.blogDomain}}</span>
+                </div>
+                <div class="f8 fw4 midgrey mt1">Your members will receive system emails from this address</div>
+            </GhFormGroup>
 
             {{#unless this.hasBulkEmailConfig}}
                 <div class="flex items-center">
-                    {{#gh-form-group class="gh-labs-mailgun-region"}}
-                    <label class="fw6 f8">Mailgun region</label>
-                    <div class="mt1">
-                        <PowerSelect
-                            @options={{this.mailgunRegions}}
-                            @selected={{this.mailgunRegion}}
-                            @onChange={{action "setBulkEmailRegion"}}
-                            @searchEnabled={{false}}
-                            as |region|
-                        >
-                            {{region.flag}} {{region.name}}
-                        </PowerSelect>
-                    </div>
-                    {{/gh-form-group}}
-                    {{#gh-form-group}}
-                    <label class="fw6 f8">Mailgun domain</label>
-                    {{gh-text-input
-                                            value=(readonly this.bulkEmailSettings.domain)
-                                            input=(action "setBulkEmailSettings" "domain")
-                                            class="mt1"
-                                        }}
-                    {{/gh-form-group}}
+                    <GhFormGroup @class="gh-labs-mailgun-region">
+                        <label class="fw6 f8">Mailgun region</label>
+                        <div class="mt1">
+                            <PowerSelect
+                                @options={{this.mailgunRegions}}
+                                @selected={{this.mailgunRegion}}
+                                @onChange={{action "setBulkEmailRegion"}}
+                                @searchEnabled={{false}}
+                                as |region|
+                            >
+                                {{region.flag}} {{region.name}}
+                            </PowerSelect>
+                        </div>
+                    </GhFormGroup>
+                    <GhFormGroup>
+                        <label class="fw6 f8">Mailgun domain</label>
+                        <GhTextInput
+                            @value={{readonly this.bulkEmailSettings.domain}}
+                            @input={{action "setBulkEmailSettings" "domain"}}
+                            @class="mt1"
+                        />
+                    </GhFormGroup>
                 </div>
                 <div class="nt5 mb5">
                     <a href="https://app.mailgun.com/app/sending/domains" target="_blank" class="mt1 fw4 f8">
                         Find your Mailgun region and domain here &raquo;
                     </a>
                 </div>
-                {{#gh-form-group}}
+                <GhFormGroup>
                     <label class="fw6 f8">Mailgun API key</label>
-                    {{gh-text-input
-                        type="password"
-                        value=(readonly this.bulkEmailSettings.apiKey)
-                        input=(action "setBulkEmailSettings" "apiKey")
-                        class="mt1 password"
-                        autocomplete="new-password"
-                    }}
+                    <GhTextInput
+                        @type="password"
+                        @value={{readonly this.bulkEmailSettings.apiKey}}
+                        @input={{action "setBulkEmailSettings" "apiKey"}}
+                        @class="mt1 password" @autocomplete="new-password"
+                    />
                     <a href="https://app.mailgun.com/app/account/security/api_keys" target="_blank" class="mt1 fw4 f8">
                         Find your Mailgun API keys here &raquo;
                     </a>
-                {{/gh-form-group}}
+                </GhFormGroup>
             {{/unless}}
         </div>
         {{/liquid-if}}

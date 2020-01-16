@@ -1,20 +1,20 @@
 <section class="gh-canvas">
     <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
-            {{#link-to "settings.integrations" data-test-link="integrations-back"}}Integrations{{/link-to}}
+            <LinkTo @route="settings.integrations" data-test-link="integrations-back">Integrations</LinkTo>
             <span>{{svg-jar "arrow-right"}}</span>
             Unsplash
         </h2>
         <section class="view-actions">
-            {{gh-task-button task=this.save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
+            <GhTaskButton @task={{this.save}} @class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button={{true}} />
         </section>
     </GhCanvasHeader>
 
     {{#if this.showLeaveSettingsModal}}
-        {{gh-fullscreen-modal "leave-settings"
-            confirm=(action "leaveSettings")
-            close=(action "toggleLeaveSettingsModal")
-            modifier="action wide"}}
+        <GhFullscreenModal @modal="leave-settings"
+            @confirm={{action "leaveSettings"}}
+            @close={{action "toggleLeaveSettingsModal"}}
+            @modifier="action wide" />
     {{/if}}
 
     <section class="view-container bt b--lightgrey-d1 pt5">

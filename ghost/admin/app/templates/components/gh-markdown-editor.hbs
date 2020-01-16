@@ -14,20 +14,20 @@
 )}}
 
 <div style="display:none">
-    {{gh-file-input
-        multiple=true
-        action=(action this.onImageFilesSelected)
-        accept=this.imageMimeTypes}}
+    <GhFileInput
+        @multiple={{true}}
+        @action={{action this.onImageFilesSelected}}
+        @accept={{this.imageMimeTypes}} />
 </div>
 
 {{#if this._showUnsplash}}
-    {{gh-unsplash
-        select=(action "insertUnsplashPhoto")
-        close=(action "toggleUnsplash")}}
+    <GhUnsplash
+        @select={{action "insertUnsplashPhoto"}}
+        @close={{action "toggleUnsplash"}} />
 {{/if}}
 
 {{#if this.showMarkdownHelp}}
-    {{gh-fullscreen-modal "markdown-help"
-        close=(action "toggleMarkdownHelp")
-        modifier="wide"}}
+    <GhFullscreenModal @modal="markdown-help"
+        @close={{action "toggleMarkdownHelp"}}
+        @modifier="wide" />
 {{/if}}

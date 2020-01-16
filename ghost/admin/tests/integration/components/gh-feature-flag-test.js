@@ -17,12 +17,12 @@ describe('Integration: Component: gh-feature-flag', function () {
     });
 
     it('renders properties correctly', async function () {
-        await render(hbs`{{gh-feature-flag "testFlag"}}`);
+        await render(hbs`<GhFeatureFlag @flag="testFlag" />`);
         expect(find('label').getAttribute('for')).to.equal(find('input[type="checkbox"]').id);
     });
 
     it('renders correctly when flag is set to true', async function () {
-        await render(hbs`{{gh-feature-flag "testFlag"}}`);
+        await render(hbs`<GhFeatureFlag @flag="testFlag" />`);
         expect(find('label input[type="checkbox"]').checked).to.be.true;
     });
 
@@ -30,12 +30,12 @@ describe('Integration: Component: gh-feature-flag', function () {
         let feature = this.owner.lookup('service:feature');
         feature.set('testFlag', false);
 
-        await render(hbs`{{gh-feature-flag "testFlag"}}`);
+        await render(hbs`<GhFeatureFlag @flag="testFlag" />`);
         expect(find('label input[type="checkbox"]').checked).to.be.false;
     });
 
     it('updates to reflect changes in flag property', async function () {
-        await render(hbs`{{gh-feature-flag "testFlag"}}`);
+        await render(hbs`<GhFeatureFlag @flag="testFlag" />`);
         expect(find('label input[type="checkbox"]').checked).to.be.true;
 
         await click('label');

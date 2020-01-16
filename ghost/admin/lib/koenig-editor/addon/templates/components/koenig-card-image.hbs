@@ -1,32 +1,32 @@
-{{#koenig-card
-    tagName="figure"
-    class=(concat (kg-style "media-card") " " (kg-style "breakout" size=payload.cardWidth) " flex flex-column")
-    isSelected=isSelected
-    isEditing=isEditing
-    selectCard=(action selectCard)
-    deselectCard=(action deselectCard)
-    editCard=(action editCard)
-    toolbar=toolbar
-    hasEditMode=false
-    addParagraphAfterCard=addParagraphAfterCard
-    moveCursorToPrevSection=moveCursorToPrevSection
-    moveCursorToNextSection=moveCursorToNextSection
-    editor=editor
+<KoenigCard
+    @tagName="figure"
+    @class={{concat (kg-style "media-card") " " (kg-style "breakout" size=this.payload.cardWidth) " flex flex-column"}}
+    @isSelected={{this.isSelected}}
+    @isEditing={{this.isEditing}}
+    @selectCard={{action this.selectCard}}
+    @deselectCard={{action this.deselectCard}}
+    @editCard={{action this.editCard}}
+    @toolbar={{this.toolbar}}
+    @hasEditMode={{false}}
+    @addParagraphAfterCard={{this.addParagraphAfterCard}}
+    @moveCursorToPrevSection={{this.moveCursorToPrevSection}}
+    @moveCursorToNextSection={{this.moveCursorToNextSection}}
+    @editor={{this.editor}}
     as |card|
-}}
-    {{#gh-uploader
-        files=files
-        accept=imageMimeTypes
-        extensions=imageExtensions
-        onStart=(action "setPreviewSrc")
-        onComplete=(action "updateSrc")
-        onFailed=(action "resetSrcs")
+>
+    <GhUploader
+        @files={{this.files}}
+        @accept={{this.imageMimeTypes}}
+        @extensions={{this.imageExtensions}}
+        @onStart={{action "setPreviewSrc"}}
+        @onComplete={{action "updateSrc"}}
+        @onFailed={{action "resetSrcs"}}
         as |uploader|
-    }}
-        <div class="relative{{unless (or previewSrc payload.src) " bg-whitegrey-l2"}}">
-            {{#if (or previewSrc payload.src)}}
-                <img src={{or previewSrc payload.src}} class="{{kg-style kgImgStyle sidebar=ui.hasSideNav}}" alt={{payload.alt}}>
-                {{#if isDraggedOver}}
+    >
+        <div class="relative{{unless (or this.previewSrc this.payload.src) " bg-whitegrey-l2"}}">
+            {{#if (or this.previewSrc this.payload.src)}}
+                <img src={{or this.previewSrc this.payload.src}} class="{{kg-style this.kgImgStyle sidebar=this.ui.hasSideNav}}" alt={{this.payload.alt}}>
+                {{#if this.isDraggedOver}}
                     <div class="absolute absolute--fill flex items-center bg-black-60 pe-none">
                         <span class="db center sans-serif fw7 f7 white">
                             Drop to replace image
@@ -35,21 +35,21 @@
                 {{/if}}
             {{/if}}
 
-            {{#if (or uploader.errors uploader.isUploading (not payload.src))}}
-                <div class="relative miw-100 flex items-center {{if (not previewSrc payload.src) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
+            {{#if (or uploader.errors uploader.isUploading (not this.payload.src))}}
+                <div class="relative miw-100 flex items-center {{if (not this.previewSrc this.payload.src) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
                     {{#if uploader.errors}}
                         <span class="db absolute top-0 right-0 left-0 pl2 pr2 bg-red white sans-serif f7">
                             {{uploader.errors.firstObject.message}}
                         </span>
                     {{/if}}
 
-                    {{#if isDraggedOver}}
+                    {{#if this.isDraggedOver}}
                         <span class="db center sans-serif fw7 f7 middarkgrey">
                             Drop it like it's hot 🔥
                         </span>
                     {{else if uploader.isUploading}}
                         {{uploader.progressBar}}
-                    {{else if (not previewSrc payload.src)}}
+                    {{else if (not this.previewSrc this.payload.src)}}
                         <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey pa16 pt14 pb14 kg-image-button" onclick={{action "triggerFileDialog"}}>
                             {{svg-jar this.placeholder class="kg-placeholder-image"}}
                             <span class="mt2 midgrey">Click to select an image</span>
@@ -60,24 +60,24 @@
         </div>
 
         <div style="display:none">
-            {{gh-file-input multiple=false action=uploader.setFiles accept=imageMimeTypes}}
+            <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} />
         </div>
-    {{/gh-uploader}}
+    </GhUploader>
 
-    {{#if (or isSelected (clean-basic-html payload.caption))}}
+    {{#if (or this.isSelected (clean-basic-html this.payload.caption))}}
         {{#if this.isEditingAlt}}
-            <card.altInput
+            <card.AltInput
                 @alt={{this.payload.alt}}
                 @update={{this.updateAlt}}
                 @placeholder="Type alt text for image (optional)" />
         {{else}}
-            <card.captionInput
-                @caption={{payload.caption}}
+            <card.CaptionInput
+                @caption={{this.payload.caption}}
                 @update={{this.updateCaption}}
                 @placeholder="Type caption for image (optional)" />
         {{/if}}
 
-        {{#if isSelected}}
+        {{#if this.isSelected}}
             <button
                 title="Toggle between editing alt text and caption"
                 class="absolute right-0 bottom-0 ma2 pl1 pr1 ba br3 f8 sans-serif fw4 lh-title tracked-2 bg-white {{if this.isEditingAlt "bg-blue b--blue white" "b--midlightgrey midlightgrey"}}"
@@ -88,10 +88,10 @@
         {{/if}}
     {{/if}}
 
-    {{#if imageSelector}}
-        {{component imageSelector
-            searchTerm=payload.searchTerm
+    {{#if this.imageSelector}}
+        {{component this.imageSelector
+            searchTerm=this.payload.searchTerm
             select=(action "selectFromImageSelector")
             close=(action "closeImageSelector")}}
     {{/if}}
-{{/koenig-card}}
+</KoenigCard>

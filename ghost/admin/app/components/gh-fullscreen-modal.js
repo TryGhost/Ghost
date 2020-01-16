@@ -56,8 +56,4 @@ const FullScreenModalComponent = Component.extend({
     confirm: () => RSVP.resolve()
 });
 
-FullScreenModalComponent.reopenClass({
-    positionalParams: ['modal']
-});
-
 export default FullScreenModalComponent;

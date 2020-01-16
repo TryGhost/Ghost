@@ -41,8 +41,4 @@ const FeatureFlagComponent = Component.extend({
     }
 });
 
-FeatureFlagComponent.reopenClass({
-    positionalParams: ['flag', '_disabled']
-});
-
 export default FeatureFlagComponent;

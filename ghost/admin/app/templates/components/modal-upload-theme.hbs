@@ -36,7 +36,7 @@
                     <ul class="pa0">
                     {{#each this.validationErrors as |error|}}
                         <li class="theme-validation-item theme-error">
-                            {{gh-theme-error-li error=error}}
+                            <GhThemeErrorLi @error={{error}} />
                         </li>
                     {{/each}}
                     </ul>
@@ -49,7 +49,7 @@
                     <ul class="pa0">
                     {{#each this.validationWarnings as |error|}}
                         <li class="theme-validation-item theme-warning">
-                            {{gh-theme-error-li error=error}}
+                            <GhThemeErrorLi @error={{error}} />
                         </li>
                     {{/each}}
                     </ul>
@@ -79,7 +79,7 @@
                 <ul class="pa0">
                 {{#each this.fatalValidationErrors as |error|}}
                     <li class="theme-validation-item theme-fatal-error">
-                        {{gh-theme-error-li error=error}}
+                        <GhThemeErrorLi @error={{error}} />
                     </li>
                 {{/each}}
                 </ul>
@@ -93,23 +93,23 @@
                 <ul class="pa0">
                 {{#each this.validationErrors as |error|}}
                     <li class="theme-validation-item theme-error">
-                        {{gh-theme-error-li error=error}}
+                        <GhThemeErrorLi @error={{error}} />
                     </li>
                 {{/each}}
                 </ul>
             {{/if}}
         {{else}}
-            {{gh-file-uploader
-                url=this.uploadUrl
-                paramName="file"
-                accept=this.accept
-                labelText="Click to select or drag-and-drop your theme zip file here."
-                validate=(action "validateTheme")
-                uploadStarted=(action "uploadStarted")
-                uploadFinished=(action "uploadFinished")
-                uploadSuccess=(action "uploadSuccess")
-                uploadFailed=(action "uploadFailed")
-                listenTo="themeUploader"}}
+            <GhFileUploader
+                @url={{this.uploadUrl}}
+                @paramName="file"
+                @accept={{this.accept}}
+                @labelText="Click to select or drag-and-drop your theme zip file here."
+                @validate={{action "validateTheme"}}
+                @uploadStarted={{action "uploadStarted"}}
+                @uploadFinished={{action "uploadFinished"}}
+                @uploadSuccess={{action "uploadSuccess"}}
+                @uploadFailed={{action "uploadFailed"}}
+                @listenTo="themeUploader" />
         {{/if}}
     </div>
 </div>

@@ -47,7 +47,7 @@
         {{#if filteredMembers}}
             {{#unless this.searchText}}
                 <section>
-                    {{gh-members-chart members=members}}
+                    <GhMembersChart @members={{members}} />
                 </section>
             {{/unless}}
         {{/if}}

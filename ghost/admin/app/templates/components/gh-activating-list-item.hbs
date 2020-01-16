@@ -1,1 +1,1 @@
-{{#link-to this.route alternateActive=(action "setActive") classNameBindings="linkClasses"}}{{title}}{{yield}}{{/link-to}}
+<LinkTo @route={{this.route}} @alternateActive={{action "setActive"}} @class={{@linkClasses}}>{{this.title}}{{yield}}</LinkTo>
