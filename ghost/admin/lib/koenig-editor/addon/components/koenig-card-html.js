@@ -72,9 +72,7 @@ export default Component.extend({
             if (isBlank(this.payload.html)) {
                 // afterRender is required to avoid double modification of `isSelected`
                 // TODO: see if there's a way to avoid afterRender
-                run.scheduleOnce('afterRender', this, function () {
-                    this.deleteCard();
-                });
+                run.scheduleOnce('afterRender', this, this.deleteCard);
             }
         }
     },

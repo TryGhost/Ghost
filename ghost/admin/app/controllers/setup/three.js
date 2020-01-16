@@ -1,5 +1,7 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller, {inject as controller} from '@ember/controller';
+// TODO: remove usage of Ember Data's private `Errors` class when refactoring validations
+// eslint-disable-next-line
 import DS from 'ember-data';
 import Ember from 'ember';
 import RSVP from 'rsvp';

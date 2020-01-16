@@ -1,4 +1,4 @@
-import RESTSerializer from 'ember-data/serializers/rest';
+import RESTSerializer from '@ember-data/serializer/rest';
 import {camelize, decamelize, underscore} from '@ember/string';
 import {pluralize} from 'ember-inflector';
 
