@@ -6,29 +6,41 @@
 {{/unless}}
 
 <div class="gh-blognav-line">
-    {{#gh-validation-status-container tagName="span" class="gh-blognav-label" errors=this.navItem.errors property="label" hasValidated=this.navItem.hasValidated}}
-        {{gh-trim-focus-input
-            shouldFocus=this.navItem.last
-            placeholder="Label"
-            value=(readonly this.navItem.label)
-            input=(action (mut this.navItem.label) value="target.value")
-            keyPress=(action "clearLabelErrors")
-            focus-out=(action "updateLabel" this.navItem.label)
-            data-test-input="label"
-        }}
-        <GhErrorMessage @errors={{this.navItem.errors}} @property="label" data-test-error="label" />
-    {{/gh-validation-status-container}}
-    {{#gh-validation-status-container tagName="span" class="gh-blognav-url" errors=this.navItem.errors property="url" hasValidated=this.navItem.hasValidated}}
-        {{gh-navitem-url-input
-            baseUrl=this.baseUrl
-            isNew=this.navItem.isNew
-            url=(readonly this.navItem.url)
-            update=(action "updateUrl")
-            clearErrors=(action "clearUrlErrors")
-            data-test-input="url"
-        }}
-        <GhErrorMessage @errors={{this.navItem.errors}} @property="url" data-test-error="url" />
-    {{/gh-validation-status-container}}
+    <GhValidationStatusContainer
+        @tagName="span"
+        @class="gh-blognav-label"
+        @errors={{this.navItem.errors}}
+        @property="label"
+        @hasValidated={{this.navItem.hasValidated}}
+    >
+        <GhTrimFocusInput
+            @shouldFocus={{this.navItem.last}}
+            @placeholder="Label"
+            @value={{readonly this.navItem.label}}
+            @input={{action (mut this.navItem.label) value="target.value"}}
+            @keyPress={{action "clearLabelErrors"}}
+            @focus-out={{action "updateLabel" this.navItem.label}} data-test-input="label" />
+        <GhErrorMessage
+            @errors={{this.navItem.errors}}
+            @property="label" data-test-error="label" />
+    </GhValidationStatusContainer>
+    <GhValidationStatusContainer
+        @tagName="span"
+        @class="gh-blognav-url"
+        @errors={{this.navItem.errors}}
+        @property="url"
+        @hasValidated={{this.navItem.hasValidated}}
+    >
+        <GhNavitemUrlInput
+            @baseUrl={{this.baseUrl}}
+            @isNew={{this.navItem.isNew}}
+            @url={{readonly this.navItem.url}}
+            @update={{action "updateUrl"}}
+            @clearErrors={{action "clearUrlErrors"}} data-test-input="url" />
+        <GhErrorMessage
+            @errors={{this.navItem.errors}}
+            @property="url" data-test-error="url" />
+    </GhValidationStatusContainer>
 </div>
 
 {{#if this.navItem.isNew}}

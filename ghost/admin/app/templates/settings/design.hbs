@@ -4,67 +4,67 @@
             Design
         </h2>
         <section class="view-actions">
-            {{gh-task-button task=this.save class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button=true}}
+            <GhTaskButton @task={{this.save}} @class="gh-btn gh-btn-blue gh-btn-icon" data-test-save-button={{true}} />
         </section>
     </GhCanvasHeader>
 
     {{#if this.showLeaveSettingsModal}}
-        {{gh-fullscreen-modal "leave-settings"
-            confirm=(action "leaveSettings")
-            close=(action "toggleLeaveSettingsModal")
-            modifier="action wide"}}
+        <GhFullscreenModal @modal="leave-settings"
+            @confirm={{action "leaveSettings"}}
+            @close={{action "toggleLeaveSettingsModal"}}
+            @modifier="action wide" />
     {{/if}}
 
     <section class="view-container">
         <div class="gh-setting-header gh-first-header">Navigation</div>
         <div class="gh-blognav-container pa5 pt6 bg-grouped-table shadow-1 br3">
             <form id="settings-navigation" class="gh-blognav" novalidate="novalidate">
-                {{#sortable-objects sortableObjectList=this.settings.navigation useSwap=false}}
+                <SortableObjects @sortableObjectList={{this.settings.navigation}} @useSwap={{false}}>
                     {{#each this.settings.navigation as |navItem index|}}
-                        {{#draggable-object content=navItem dragHandle=".gh-blognav-grab" isSortable=true}}
-                            {{gh-navitem
-                                navItem=navItem
-                                baseUrl=this.blogUrl
-                                addItem=(action "addNavItem")
-                                deleteItem=(action "deleteNavItem")
-                                updateUrl=(action "updateUrl")
-                                updateLabel=(action "updateLabel")
-                                data-test-navitem=index}}
-                        {{/draggable-object}}
+                        <DraggableObject @content={{navItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
+                            <GhNavitem
+                                @navItem={{navItem}}
+                                @baseUrl={{this.blogUrl}}
+                                @addItem={{action "addNavItem"}}
+                                @deleteItem={{action "deleteNavItem"}}
+                                @updateUrl={{action "updateUrl"}}
+                                @updateLabel={{action "updateLabel"}}
+                                data-test-navitem={{index}} />
+                        </DraggableObject>
                     {{/each}}
-                {{/sortable-objects}}
-                {{gh-navitem
-                    navItem=this.newNavItem
-                    baseUrl=this.blogUrl
-                    addItem=(action "addNavItem")
-                    updateUrl=(action "updateUrl")
-                    data-test-navitem="new"}}
+                </SortableObjects>
+                <GhNavitem
+                    @navItem={{this.newNavItem}}
+                    @baseUrl={{this.blogUrl}}
+                    @addItem={{action "addNavItem"}}
+                    @updateUrl={{action "updateUrl"}}
+                    data-test-navitem="new" />
             </form>
         </div>
 
         <div class="gh-setting-header">Secondary Navigation</div>
         <div class="gh-blognav-container pa5 pt6 bg-grouped-table shadow-1 br3">
             <form id="secondary-navigation" class="gh-blognav" novalidate="novalidate">
-                {{#sortable-objects sortableObjectList=this.settings.secondaryNavigation useSwap=false}}
+                <SortableObjects @sortableObjectList={{this.settings.secondaryNavigation}} @useSwap={{false}}>
                     {{#each this.settings.secondaryNavigation as |navItem index|}}
-                        {{#draggable-object content=navItem dragHandle=".gh-blognav-grab" isSortable=true}}
-                            {{gh-navitem
-                                navItem=navItem
-                                baseUrl=this.blogUrl
-                                addItem=(action "addNavItem")
-                                deleteItem=(action "deleteNavItem")
-                                updateUrl=(action "updateUrl")
-                                updateLabel=(action "updateLabel")
-                                data-test-navitem=index}}
-                        {{/draggable-object}}
+                        <DraggableObject @content={{navItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
+                            <GhNavitem
+                                @navItem={{navItem}}
+                                @baseUrl={{this.blogUrl}}
+                                @addItem={{action "addNavItem"}}
+                                @deleteItem={{action "deleteNavItem"}}
+                                @updateUrl={{action "updateUrl"}}
+                                @updateLabel={{action "updateLabel"}}
+                                data-test-navitem={{index}} />
+                        </DraggableObject>
                     {{/each}}
-                {{/sortable-objects}}
-                {{gh-navitem
-                    navItem=this.newSecondaryNavItem
-                    baseUrl=this.blogUrl
-                    addItem=(action "addNavItem")
-                    updateUrl=(action "updateUrl")
-                    data-test-navitem="new"}}
+                </SortableObjects>
+                <GhNavitem
+                    @navItem={{this.newSecondaryNavItem}}
+                    @baseUrl={{this.blogUrl}}
+                    @addItem={{action "addNavItem"}}
+                    @updateUrl={{action "updateUrl"}}
+                    data-test-navitem="new" />
             </form>
         </div>
 
@@ -152,50 +152,50 @@
         <div class="gh-setting-header">Installed Themes</div>
         <div class="gh-themes-container">
 
-            {{gh-theme-table
-                themes=this.themes
-                activateTheme=(action "activateTheme")
-                downloadTheme=(action "downloadTheme")
-                deleteTheme=(action "deleteTheme")}}
+            <GhThemeTable
+                @themes={{this.themes}}
+                @activateTheme={{action "activateTheme"}}
+                @downloadTheme={{action "downloadTheme"}}
+                @deleteTheme={{action "deleteTheme"}} />
 
-            {{#link-to "settings.design.uploadtheme" class="gh-btn gh-btn-green gh-themes-uploadbtn" data-test-upload-theme-button=true}}
+            <LinkTo @route="settings.design.uploadtheme" class="gh-btn gh-btn-green gh-themes-uploadbtn" data-test-upload-theme-button={{true}}>
                 <span>Upload a theme</span>
-            {{/link-to}}
+            </LinkTo>
 
 
             {{#if this.showDeleteThemeModal}}
-                {{gh-fullscreen-modal "delete-theme"
-                    model=(hash
+                <GhFullscreenModal @modal="delete-theme"
+                    @model={{hash
                         theme=this.themeToDelete
                         download=(action "downloadTheme" this.themeToDelete)
-                    )
-                    close=(action "hideDeleteThemeModal")
-                    confirm=(action "deleteTheme")
-                    modifier="action wide"}}
+                    }}
+                    @close={{action "hideDeleteThemeModal"}}
+                    @confirm={{action "deleteTheme"}}
+                    @modifier="action wide" />
             {{/if}}
 
             {{#if this.showThemeWarningsModal}}
-                {{gh-fullscreen-modal "theme-warnings"
-                    model=(hash
+                <GhFullscreenModal @modal="theme-warnings"
+                    @model={{hash
                         title="Activation successful"
                         warnings=this.themeWarnings
                         errors=this.themeErrors
                         canActivate=true
-                    )
-                    close=(action "hideThemeWarningsModal")
-                    modifier="action wide"}}
+                    }}
+                    @close={{action "hideThemeWarningsModal"}}
+                    @modifier="action wide" />
             {{/if}}
 
             {{#if this.showThemeErrorsModal}}
-                {{gh-fullscreen-modal "theme-warnings"
-                    model=(hash
+                <GhFullscreenModal @modal="theme-warnings"
+                    @model={{hash
                         title="Activation failed"
                         errors=this.themeErrors
                         fatalErrors=this.themeFatalErrors
                         canActivate=false
-                    )
-                    close=(action "hideThemeWarningsModal")
-                    modifier="action wide"}}
+                    }}
+                    @close={{action "hideThemeWarningsModal"}}
+                    @modifier="action wide" />
             {{/if}}
         </div>
 
@@ -204,8 +204,8 @@
 
 {{outlet}}
 
-{{gh-tour-item "upload-a-theme"
-    target=".gh-themes-uploadbtn"
-    throbberAttachment="top middle"
-    popoverTriangleClass="bottom"
-}}
+<GhTourItem @throbberId="upload-a-theme"
+    @target=".gh-themes-uploadbtn"
+    @throbberAttachment="top middle"
+    @popoverTriangleClass="bottom"
+/>

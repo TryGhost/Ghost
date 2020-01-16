@@ -19,7 +19,7 @@
             <ul class="pa0" data-test-theme-fatal-errors>
             {{#each this.fatalErrors as |error|}}
                 <li class="theme-validation-item theme-fatal-error">
-                    {{gh-theme-error-li error=error}}
+                    <GhThemeErrorLi @error={{error}} />
                 </li>
             {{/each}}
             </ul>
@@ -34,7 +34,7 @@
             <ul class="pa0" data-test-theme-errors>
             {{#each this.errors as |error|}}
                 <li class="theme-validation-item theme-error">
-                    {{gh-theme-error-li error=error}}
+                    <GhThemeErrorLi @error={{error}} />
                 </li>
             {{/each}}
             </ul>
@@ -49,7 +49,7 @@
             <ul class="pa0" data-test-theme-warnings>
             {{#each this.warnings as |error|}}
                 <li class="theme-validation-item theme-warning">
-                    {{gh-theme-error-li error=error}}
+                    <GhThemeErrorLi @error={{error}} />
                 </li>
             {{/each}}
             </ul>

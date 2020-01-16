@@ -19,23 +19,23 @@
                             <div class="gh-setting-desc pl5 pb5">Create registered members and take subscription payments — <a href="https://ghost.org/docs/members/" target="_blank" rel="noopener">Find out more</a></div>
                         </div>
                         <div class="gh-setting-action">
-                            <div class="for-switch pa5">{{gh-feature-flag "members"}}</div>
+                            <div class="for-switch pa5"><GhFeatureFlag @flag="members" /></div>
                         </div>
                     </div>
                     {{#liquid-if this.feature.labs.members}}
-                    {{gh-members-lab-setting
-                        settings=this.settings
-                        setDefaultContentVisibility=(action "setDefaultContentVisibility")
-                        setMembersSubscriptionSettings=(action "setMembersSubscriptionSettings")
-                        setBulkEmailSettings=(action "setBulkEmailSettings")
-                    }}
+                    <GhMembersLabSetting
+                        @settings={{this.settings}}
+                        @setDefaultContentVisibility={{action "setDefaultContentVisibility"}}
+                        @setMembersSubscriptionSettings={{action "setMembersSubscriptionSettings"}}
+                        @setBulkEmailSettings={{action "setBulkEmailSettings"}}
+                    />
                     <div class="mt5 pl5 pr5 pb5">
-                        {{gh-task-button "Save members settings"
-                            task=this.saveSettings
-                            successText="Saved"
-                            runningText="Saving"
-                            class="gh-btn gh-btn-blue gh-btn-icon"
-                        }}
+                        <GhTaskButton @buttonText="Save members settings"
+                            @task={{this.saveSettings}}
+                            @successText="Saved"
+                            @runningText="Saving"
+                            @class="gh-btn gh-btn-blue gh-btn-icon"
+                        />
                     </div>
                     {{/liquid-if}}
                 </div>
@@ -51,13 +51,14 @@
                 </div>
                 <div class="gh-setting-action">
                     <form id="settings-import" enctype="multipart/form-data">
-                        {{gh-file-upload
-                            id="importfile"
-                            classNames="flex"
-                            uploadButtonText=this.uploadButtonText
-                            onUpload=(action "onUpload")
-                            acceptEncoding=this.importMimeType
-                            data-test-file-input="import"}}
+                        <GhFileUpload
+                            @id="importfile"
+                            @classNames="flex"
+                            @uploadButtonText={{this.uploadButtonText}}
+                            @onUpload={{action "onUpload"}}
+                            @acceptEncoding={{this.importMimeType}}
+                            data-test-file-input="import"
+                        />
                     </form>
                 </div>
             </div>
@@ -116,18 +117,18 @@
                     <div class="gh-setting-desc">Swap Ghost admin's colours to a dark background which is easy on the eyes</div>
                 </div>
                 <div class="gh-setting-action">
-                    <div class="for-switch">{{gh-feature-flag "nightShift"}}</div>
+                    <div class="for-switch"><GhFeatureFlag @flag="nightShift" /></div>
                 </div>
             </div>
             <div class="gh-setting">
-                {{#gh-uploader
-                    extensions=this.jsonExtension
-                    uploadUrl="/redirects/json/"
-                    paramName="redirects"
-                    onUploadSuccess=(perform this.redirectUploadResult true)
-                    onUploadFailure=(perform this.redirectUploadResult false)
+                <GhUploader
+                    @extensions={{this.jsonExtension}}
+                    @uploadUrl="/redirects/json/"
+                    @paramName="redirects"
+                    @onUploadSuccess={{perform this.redirectUploadResult true}}
+                    @onUploadFailure={{perform this.redirectUploadResult false}}
                     as |uploader|
-                }}
+                >
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Redirects</div>
                     <div class="gh-setting-desc">Configure redirects for old or moved content, more info in <a href="https://ghost.org/tutorials/implementing-redirects/">the docs</a></div>
@@ -159,20 +160,20 @@
                     {{/if}}
 
                     <div style="display:none">
-                        {{gh-file-input multiple=false action=uploader.setFiles accept=this.jsonMimeType data-test-file-input="redirects"}}
+                        <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.jsonMimeType}} data-test-file-input="redirects" />
                     </div>
                 </div>
-                {{/gh-uploader}}
+                </GhUploader>
             </div>
             <div class="gh-setting-last">
-                {{#gh-uploader
-                    extensions=this.yamlExtension
-                    uploadUrl="/settings/routes/yaml/"
-                    paramName="routes"
-                    onUploadSuccess=(perform this.routesUploadResult true)
-                    onUploadFailure=(perform this.routesUploadResult false)
+                <GhUploader
+                    @extensions={{this.yamlExtension}}
+                    @uploadUrl="/settings/routes/yaml/"
+                    @paramName="routes"
+                    @onUploadSuccess={{perform this.routesUploadResult true}}
+                    @onUploadFailure={{perform this.routesUploadResult false}}
                     as |uploader|
-                }}
+                >
                 <div class="gh-setting-content">
                     <div class="gh-setting-title">Routes</div>
                     <div class="gh-setting-desc">Configure dynamic routing by modifying the routes.yaml file</div>
@@ -204,10 +205,10 @@
                     {{/if}}
 
                     <div style="display:none">
-                        {{gh-file-input multiple=false action=uploader.setFiles accept=this.yamlMimeType data-test-file-input="routes"}}
+                        <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.yamlMimeType}} data-test-file-input="routes" />
                     </div>
                 </div>
-                {{/gh-uploader}}
+                </GhUploader>
             </div>
         </div>
 
@@ -219,7 +220,7 @@
                     <div class="gh-setting-desc">Send yourself a test email to make sure everything is working</div>
                 </div>
                 <div class="gh-setting-action">
-                    {{gh-task-button "Send" successText="Sent" task=this.sendTestEmail class="gh-btn gh-btn-hover-blue gh-btn-icon"}}
+                    <GhTaskButton @buttonText="Send" @successText="Sent" @task={{this.sendTestEmail}} @class="gh-btn gh-btn-hover-blue gh-btn-icon" />
                 </div>
             </div>
         </div>
@@ -228,7 +229,7 @@
 </section>
 
 {{#if this.showDeleteAllModal}}
-    {{gh-fullscreen-modal "delete-all"
-                          close=(action "toggleDeleteAllModal")
-                          modifier="action wide"}}
+    <GhFullscreenModal @modal="delete-all"
+        @close={{action "toggleDeleteAllModal"}}
+        @modifier="action wide" />
 {{/if}}

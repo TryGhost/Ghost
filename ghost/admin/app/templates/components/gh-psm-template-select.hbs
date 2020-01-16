@@ -4,13 +4,13 @@
         <span class="gh-input-icon gh-icon-user">
             {{svg-jar "file-text-document"}}
             <span class="gh-select {{if this.matchedSlugTemplate "disabled"}}">
-                {{one-way-select this.selectedTemplate
-                    options=this.customTemplates
-                    optionValuePath="filename"
-                    optionLabelPath="name"
-                    update=(action "selectTemplate")
-                    disabled=this.matchedSlugTemplate
-                    data-test-select="custom-template"}}
+                <OneWaySelect @value={{this.selectedTemplate}}
+                    @options={{this.customTemplates}}
+                    @optionValuePath="filename"
+                    @optionLabelPath="name"
+                    @update={{action "selectTemplate"}}
+                    @disabled={{this.matchedSlugTemplate}}
+                    data-test-select="custom-template" />
                 {{svg-jar "arrow-down-small"}}
             </span>
         </span>

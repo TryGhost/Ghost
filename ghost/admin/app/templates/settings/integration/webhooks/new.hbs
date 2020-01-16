@@ -1,5 +1,5 @@
-{{gh-fullscreen-modal "webhook-form"
-    model=this.webhook
-    confirm=(action "save")
-    close=(action "cancel")
-    modifier="action wide"}}
+<GhFullscreenModal @modal="webhook-form"
+    @model={{this.webhook}}
+    @confirm={{action "save"}}
+    @close={{action "cancel"}}
+    @modifier="action wide" />

@@ -3,99 +3,93 @@
 </header>
 
 <form id="setup" class="gh-flow-create">
-    {{gh-profile-image email=this.email setImage=(action "setImage")}}
+    <GhProfileImage @email={{this.email}} @setImage={{action "setImage"}} />
 
-    {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="blogTitle"}}
+    <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="blogTitle">
         <label for="blog-title">Site title</label>
         <span class="gh-input-icon gh-icon-content">
             {{svg-jar "content"}}
-            {{gh-trim-focus-input
-                tabindex="1"
-                type="text"
-                id="blog-title"
-                name="blog-title"
-                placeholder="Eg. The Daily Awesome"
-                autocorrect="off"
-                value=(readonly this.blogTitle)
-                input=(action (mut this.blogTitle) value="target.value")
-                focus-out=(action "preValidate" "blogTitle")
-                data-test-blog-title-input=true}}
+            <GhTrimFocusInput
+                @tabindex="1"
+                @type="text"
+                @id="blog-title"
+                @name="blog-title"
+                @placeholder="Eg. The Daily Awesome"
+                @autocorrect="off"
+                @value={{readonly this.blogTitle}}
+                @input={{action (mut this.blogTitle) value="target.value"}}
+                @focus-out={{action "preValidate" "blogTitle"}}
+                data-test-blog-title-input={{true}} />
         </span>
         <GhErrorMessage @errors={{this.errors}} @property="blogTitle" />
-    {{/gh-form-group}}
+    </GhFormGroup>
 
-    {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="name"}}
+    <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="name">
         <label for="name">Full name</label>
         <span class="gh-input-icon gh-icon-user">
             {{svg-jar "user-circle"}}
-            {{gh-text-input
-                tabindex="2"
-                id="name"
-                name="name"
-                placeholder="Eg. John H. Watson"
-                autocorrect="off"
-                autocomplete="name"
-                value=(readonly this.name)
-                input=(action (mut this.name) value="target.value")
-                focus-out=(action "preValidate" "name")
-                data-test-name-input=true}}
+            <GhTextInput
+                @tabindex="2"
+                @id="name"
+                @name="name"
+                @placeholder="Eg. John H. Watson"
+                @autocorrect="off"
+                @autocomplete="name"
+                @value={{readonly this.name}}
+                @input={{action (mut this.name) value="target.value"}}
+                @focus-out={{action "preValidate" "name"}}
+                data-test-name-input={{true}} />
         </span>
         <GhErrorMessage @errors={{this.errors}} @property="name" />
-    {{/gh-form-group}}
+    </GhFormGroup>
 
-    {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="email"}}
+    <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="email">
         <label for="email">Email address</label>
         <span class="gh-input-icon gh-icon-mail">
             {{svg-jar "email"}}
-            {{gh-text-input
-                tabindex="3"
-                type="email"
-                id="email"
-                name="email"
-                placeholder="Eg. john@example.com"
-                autocorrect="off"
-                autocomplete="username email"
-                value=(readonly this.email)
-                input=(action (mut this.email) value="target.value")
-                focus-out=(action "preValidate" "email")
-                data-test-email-input=true}}
+            <GhTextInput
+                @tabindex="3"
+                @type="email"
+                @id="email"
+                @name="email"
+                @placeholder="Eg. john@example.com"
+                @autocorrect="off"
+                @autocomplete="username email"
+                @value={{readonly this.email}}
+                @input={{action (mut this.email) value="target.value"}}
+                @focus-out={{action "preValidate" "email"}}
+                data-test-email-input={{true}} />
         </span>
         <GhErrorMessage @errors={{this.errors}} @property="email" />
-    {{/gh-form-group}}
+    </GhFormGroup>
 
-    {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="password"}}
+    <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="password">
         <label for="password">Password</label>
         <span class="gh-input-icon gh-icon-lock">
             {{svg-jar "lock"}}
-            {{gh-text-input
-                tabindex="4"
-                type="password"
-                id="password"
-                name="password"
-                placeholder="At least 10 characters"
-                autocorrect="off"
-                autocomplete="new-password"
-                value=(readonly this.password)
-                input=(action (mut this.password) value="target.value")
-                focus-out=(action "preValidate" "password")
-                data-test-password-input=true}}
+            <GhTextInput
+                @tabindex="4"
+                @type="password"
+                @id="password"
+                @name="password"
+                @placeholder="At least 10 characters"
+                @autocorrect="off"
+                @autocomplete="new-password"
+                @value={{readonly this.password}}
+                @input={{action (mut this.password) value="target.value"}}
+                @focus-out={{action "preValidate" "password"}}
+                data-test-password-input={{true}} />
         </span>
         <GhErrorMessage @errors={{this.errors}} @property="password" />
-    {{/gh-form-group}}
+    </GhFormGroup>
 
-    {{#gh-task-button
-        task=this.setup
-        type="submit"
-        tabindex="5"
-        class="gh-btn gh-btn-green gh-btn-lg gh-btn-block gh-btn-icon"
-        as |task|
-    }}
+    <GhTaskButton @task={{this.setup}} @type="submit" @tabindex="5" @class="gh-btn gh-btn-green gh-btn-lg gh-btn-block gh-btn-icon" as |task|>
         {{#if task.isRunning}}
             <span>{{svg-jar "spinner" class="gh-icon-spinner gh-btn-icon-no-margin"}}</span>
         {{else}}
             <span>Last step: Invite staff users {{svg-jar "arrow-right-small" class="gh-btn-icon-right"}}</span>
         {{/if}}
-    {{/gh-task-button}}
+    </GhTaskButton>
 </form>
 
 <p class="main-error">{{this.flowErrors}}&nbsp;</p>

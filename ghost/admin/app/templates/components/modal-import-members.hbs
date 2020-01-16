@@ -30,13 +30,13 @@
             {{/if}}
         </table>
     {{else}}
-        {{gh-file-uploader
-            url=this.uploadUrl
-            paramName="membersfile"
-            labelText="Select or drag-and-drop a CSV file."
-            uploadStarted=(action "uploadStarted")
-            uploadFinished=(action "uploadFinished")
-            uploadSuccess=(action "uploadSuccess")}}
+        <GhFileUploader
+            @url={{this.uploadUrl}}
+            @paramName="membersfile"
+            @labelText="Select or drag-and-drop a CSV file."
+            @uploadStarted={{action "uploadStarted"}}
+            @uploadFinished={{action "uploadFinished"}}
+            @uploadSuccess={{action "uploadSuccess"}} />
     {{/if}}
 </div>
 

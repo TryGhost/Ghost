@@ -4,11 +4,11 @@
             General settings
         </h2>
         <section class="view-actions">
-            {{gh-task-button "Save settings" task=save class="gh-btn gh-btn-blue gh-btn-icon" disabled=true data-test-save-button=true}}
+            <GhTaskButton @buttonText="Save settings" @task={{this.save}} @class="gh-btn gh-btn-blue gh-btn-icon" @disabled={{true}} data-test-save-button="true" />
         </section>
     </header>
 
     <section class="gh-content">
-        {{gh-loading-spinner}}
+        <GhLoadingSpinner />
     </section>
 </section>

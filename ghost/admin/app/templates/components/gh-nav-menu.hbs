@@ -9,9 +9,9 @@
 </header>
 
 {{#if this.showSearchModal}}
-    {{gh-fullscreen-modal "search"
-        close=(action "toggleSearchModal")
-        modifier="action wide"}}
+    <GhFullscreenModal @modal="search"
+        @close={{action "toggleSearchModal"}}
+        @modifier="action wide" />
 {{/if}}
 
 <section class="gh-nav-body">
@@ -19,9 +19,9 @@
         <ul class="gh-nav-list gh-nav-main">
             <li class="relative">
                 <span {{action "transitionToOrRefreshSite" on="click"}}>
-                    {{#link-to "site" data-test-nav="site" current-when=this.isOnSite preventDefault=false}}
+                    <LinkTo @route="site" data-test-nav="site" @current-when={{this.isOnSite}} @preventDefault={{false}}>
                         {{svg-jar "house"}} View site
-                    {{/link-to}}
+                    </LinkTo>
                 </span>
                 <a href="{{this.config.blogUrl}}/" class="gh-secondary-action" title="Open site in new tab" target="_blank">
                     <span>{{svg-jar "expand"}}</span>
@@ -33,42 +33,42 @@
             <li class="gh-nav-list-new relative">
                 {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
                 {{#if (eq this.router.currentRouteName "posts")}}
-                    {{#link-to "posts" (query-params type=null author=null tag=null order=null) classNames="active" data-test-nav="posts"}}{{svg-jar "content"}}Posts{{/link-to}}
+                    <LinkTo @route="posts" @query={{hash type=null author=null tag=null order=null}} @classNames="active" data-test-nav="posts">{{svg-jar "content"}}Posts</LinkTo>
                 {{else}}
-                    {{#link-to "posts" data-test-nav="posts"}}{{svg-jar "content"}}Posts{{/link-to}}
+                    <LinkTo @route="posts" data-test-nav="posts">{{svg-jar "content"}}Posts</LinkTo>
                 {{/if}}
-                {{#link-to "editor.new" "post" classNames="gh-secondary-action gh-nav-new-post" alt="New story" data-test-nav="new-story"}}<span>{{svg-jar "add-stroke"}}</span>{{/link-to}}
+                <LinkTo @route="editor.new" @model="post" @classNames="gh-secondary-action gh-nav-new-post" @alt="New story" data-test-nav="new-story"><span>{{svg-jar "add-stroke"}}</span></LinkTo>
             </li>
             <li>
                 {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
                 {{#if (eq this.router.currentRouteName "pages")}}
-                    {{#link-to "pages" (query-params type=null author=null tag=null order=null) classNames="active" data-test-nav="pages"}}{{svg-jar "page"}}Pages{{/link-to}}
+                    <LinkTo @route="pages" @query={{hash type=null author=null tag=null order=null}} @classNames="active" data-test-nav="pages">{{svg-jar "page"}}Pages</LinkTo>
                 {{else}}
-                    {{#link-to "pages" data-test-nav="pages"}}{{svg-jar "page"}}Pages{{/link-to}}
+                    <LinkTo @route="pages" data-test-nav="pages">{{svg-jar "page"}}Pages</LinkTo>
                 {{/if}}
             </li>
             {{#if (gh-user-can-admin this.session.user)}}
-                <li>{{#link-to "tags" data-test-nav="tags"}}{{svg-jar "tag"}}Tags{{/link-to}}</li>
+                <li><LinkTo @route="tags" data-test-nav="tags">{{svg-jar "tag"}}Tags</LinkTo></li>
             {{/if}}
             {{#if (and this.feature.members (gh-user-can-admin this.session.user))}}
                 <li>
-                    {{#link-to "members" current-when="members member" data-test-nav="members"}}{{svg-jar "members"}}Members{{/link-to}}
+                    <LinkTo @route="members" @current-when="members member" data-test-nav="members">{{svg-jar "members"}}Members</LinkTo>
                 </li>
             {{/if}}
-            <li>{{#link-to "staff" data-test-nav="staff"}}{{svg-jar "staff"}}Staff{{/link-to}}</li>
+            <li><LinkTo @route="staff" data-test-nav="staff">{{svg-jar "staff"}}Staff</LinkTo></li>
         </ul>
         {{#if (gh-user-can-admin this.session.user)}}
             <ul class="gh-nav-list gh-nav-settings">
                 <li class="gh-nav-list-h">Settings</li>
-                <li>{{#link-to "settings.general" data-test-nav="settings"}}{{svg-jar "settings"}}General{{/link-to}}</li>
-                <li>{{#link-to "settings.design" data-test-nav="design"}}{{svg-jar "paintbrush"}}Design{{/link-to}}</li>
-                <li>{{#link-to "settings.code-injection" data-test-nav="code-injection"}}{{svg-jar "brackets"}}Code injection{{/link-to}}</li>
-                <li>{{#link-to "settings.integrations" current-when=this.isIntegrationRoute data-test-nav="integrations"}}{{svg-jar "modules"}}Integrations{{/link-to}}</li>
+                <li><LinkTo @route="settings.general" data-test-nav="settings">{{svg-jar "settings"}}General</LinkTo></li>
+                <li><LinkTo @route="settings.design" data-test-nav="design">{{svg-jar "paintbrush"}}Design</LinkTo></li>
+                <li><LinkTo @route="settings.code-injection" data-test-nav="code-injection">{{svg-jar "brackets"}}Code injection</LinkTo></li>
+                <li><LinkTo @route="settings.integrations" @current-when={{this.isIntegrationRoute}} data-test-nav="integrations">{{svg-jar "modules"}}Integrations</LinkTo></li>
                 <li class="relative">
                     <button class="gh-secondary-action" title="Toggle Night shift" {{action (toggle "nightShift" this.feature)}}>
                         <span>{{svg-jar "nightshift"}}</span>
                     </button>
-                    {{#link-to "settings.labs" data-test-nav="labs"}}{{svg-jar "labs"}}Labs{{/link-to}}
+                    <LinkTo @route="settings.labs" data-test-nav="labs">{{svg-jar "labs"}}Labs</LinkTo>
                 </li>
             </ul>
         {{/if}}
@@ -109,9 +109,9 @@
             <dropdown.Content class="gh-nav-menu-dropdown">
                 <ul class="dropdown-menu dropdown-triangle-top" role="menu" {{action dropdown.actions.close on="click" preventDefault=false}}>
                     <li role="presentation">
-                        {{#link-to "about" classNames="dropdown-item" role="menuitem" tabindex="-1" data-test-nav="about"}}
+                        <LinkTo @route="about" @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="about">
                             {{svg-jar "store"}} About Ghost
-                        {{/link-to}}
+                        </LinkTo>
                     </li>
                     <li role="presentation">
                         <button class="dropdown-item" role="menuitem" tabindex="-1" {{on "click" this.whatsNew.showModal}}>
@@ -123,9 +123,9 @@
                     </li>
                     <li class="divider"></li>
                     <li role="presentation">
-                        {{#link-to "staff.user" this.session.user.slug classNames="dropdown-item" role="menuitem" tabindex="-1" data-test-nav="user-profile"}}
+                        <LinkTo @route="staff.user" @model={{this.session.user.slug}} @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="user-profile">
                             {{svg-jar "user-circle"}} Your Profile
-                        {{/link-to}}
+                        </LinkTo>
                     </li>
                     <li role="presentation">
                         <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/docs/" target="_blank">
@@ -162,9 +162,9 @@
                     {{/if}}
 
                     <li role="presentation">
-                        {{#link-to "signout" classNames="dropdown-item user-menu-signout" role="menuitem" tabindex="-1"}}
+                        <LinkTo @route="signout" @classNames="dropdown-item user-menu-signout" @role="menuitem" @tabindex="-1">
                             {{svg-jar "signout"}} Sign Out
-                        {{/link-to}}
+                        </LinkTo>
                     </li>
                 </ul>
             </dropdown.Content>
@@ -172,9 +172,9 @@
     </div>
 </section>
 
-{{gh-tour-item "getting-started"
-    target=".gh-nav-main"
-    throbberAttachment="middle right"
-    popoverTriangleClass="left-top"
-    throbberOffset="0px 0px"
-}}
+<GhTourItem @throbberId="getting-started"
+    @target=".gh-nav-main"
+    @throbberAttachment="middle right"
+    @popoverTriangleClass="left-top"
+    @throbberOffset="0px 0px"
+/>

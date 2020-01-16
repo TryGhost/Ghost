@@ -3,65 +3,65 @@
 </div>
 
 {{!-- pop-up markup toolbar is shown when there's a selection --}}
-{{koenig-toolbar
-    editor=editor
-    editorRange=selectedRange
-    activeMarkupTagNames=activeMarkupTagNames
-    activeSectionTagNames=activeSectionTagNames
-    toggleMarkup=(action "toggleMarkup")
-    toggleSection=(action "toggleSection")
-    toggleHeaderSection=(action "toggleHeaderSection")
-    editLink=(action "editLink")
-}}
+<KoenigToolbar
+    @editor={{this.editor}}
+    @editorRange={{this.selectedRange}}
+    @activeMarkupTagNames={{this.activeMarkupTagNames}}
+    @activeSectionTagNames={{this.activeSectionTagNames}}
+    @toggleMarkup={{action "toggleMarkup"}}
+    @toggleSection={{action "toggleSection"}}
+    @toggleHeaderSection={{action "toggleHeaderSection"}}
+    @editLink={{action "editLink"}}
+/>
 
 {{!-- pop-up link hover toolbar --}}
-{{koenig-link-toolbar
-    editor=editor
-    container=element
-    linkRange=linkRange
-    selectedRange=selectedRange
-    editLink=(action "editLink")
-}}
+<KoenigLinkToolbar
+    @editor={{this.editor}}
+    @container={{this.element}}
+    @linkRange={{this.linkRange}}
+    @selectedRange={{this.selectedRange}}
+    @editLink={{action "editLink"}}
+/>
 
 {{!-- pop-up link editing toolbar --}}
-{{#if linkRange}}
-    {{koenig-link-input
-        editor=editor
-        linkRange=linkRange
-        selectedRange=selectedRange
-        cancel=(action "cancelEditLink")
-    }}
+{{#if this.linkRange}}
+    <KoenigLinkInput
+        @editor={{this.editor}}
+        @linkRange={{this.linkRange}}
+        @selectedRange={{this.selectedRange}}
+        @cancel={{action "cancelEditLink"}}
+    />
 {{/if}}
 
 {{!-- (+) icon and pop-up menu --}}
-{{koenig-plus-menu
-    editor=editor
-    editorRange=selectedRange
-    replaceWithCardSection=(action "replaceWithCardSection")
-}}
+<KoenigPlusMenu
+    @editor={{this.editor}}
+    @editorRange={{this.selectedRange}}
+    @replaceWithCardSection={{action "replaceWithCardSection"}}
+/>
 
 {{!-- slash menu popup --}}
-{{koenig-slash-menu
-    editor=editor
-    editorRange=selectedRange
-    replaceWithCardSection=(action "replaceWithCardSection")
-}}
+<KoenigSlashMenu
+    @editor={{this.editor}}
+    @editorRange={{this.selectedRange}}
+    @replaceWithCardSection={{action "replaceWithCardSection"}}
+/>
 
 {{!-- all component cards wormholed into the editor canvas --}}
-{{#each componentCards as |card|}}
+{{#each this.componentCards as |card|}}
     {{!--
         TODO: move to the public {{in-element}} API when it's available
         https://github.com/cibernox/rfcs/blob/make-in-element-public/text/0000-promote-in-element-to-public-api.md
     --}}
     {{#-in-element card.destinationElement}}
         {{component card.componentName
-            editor=editor
+            editor=this.editor
             postModel=card.postModel
             cardName=card.cardName
             payload=card.payload
             env=card.env
             options=card.options
-            headerOffset=headerOffset
+            headerOffset=this.headerOffset
             saveCard=(action card.env.save)
             cancelCard=(action card.env.cancel)
             removeCard=(action card.env.remove)
