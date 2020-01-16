@@ -20,5 +20,11 @@
       "validator",
       "simple-dom"
     ],
-  "ignorePaths": ["core/test"]
+  "ignorePaths": ["core/test"],
+  "packageRules": [
+    {
+      "packagePatterns": [ "metascraper" ],
+      "groupName": "metascraper"
+    }
+  ]
 }
