@@ -1,10 +1,10 @@
-{{#link-to "editor.edit" this.post.displayName this.post.id class="permalink gh-list-data gh-post-list-featured" title="Edit this post"}}
+<LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-featured" @title="Edit this post">
     {{#if this.isFeatured}}
         <span data-tooltip="Featured" class="dib pl1 pr1 nr1 nl1">{{svg-jar "star-filled" class="fill-blue w3 h3"}}</span>
     {{/if}}
-{{/link-to}}
+</LinkTo>
 
-{{#link-to "editor.edit" this.post.displayName this.post.id class="permalink gh-list-data gh-post-list-title" title="Edit this post"}}
+<LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-title" @title="Edit this post">
     <h3 class="gh-content-entry-title">
         {{this.post.title}}
     </h3>
@@ -21,9 +21,9 @@
             {{/if}}
         </span>
     </p>
-{{/link-to}}
+</LinkTo>
 
-{{#link-to "editor.edit" this.post.displayName this.post.id class="permalink gh-list-data gh-post-list-status" title="Edit this post"}}
+<LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-status" @title="Edit this post">
     <div class="flex items-center">
         {{#if this.isScheduled}}
         <span class="gh-content-status-draft gh-badge nowrap">
@@ -63,8 +63,8 @@
             {{/if}}
         {{/if}}
     </div>
-{{/link-to}}
+</LinkTo>
 
-{{#link-to "editor.edit" this.post.displayName this.post.id class="permalink gh-list-data gh-post-list-updated" title="Edit this post"}}
+<LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-updated" @title="Edit this post">
     <span class="nowrap">{{gh-format-post-time this.post.updatedAtUTC draft=true}}</span>
-{{/link-to}}
+</LinkTo>

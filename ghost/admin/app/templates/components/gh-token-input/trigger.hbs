@@ -1,11 +1,12 @@
-{{#sortable-objects tagName="ul"
-    id=(concat "ember-power-select-multiple-options-" select.uniqueId)
-    class="ember-power-select-multiple-options"
-    sortableObjectList=select.selected
-    enableSort=true
-    useSwap=false
-    sortEndAction=(action "reorderItems")
-}}
+<SortableObjects
+    @tagName="ul"
+    @id={{concat "ember-power-select-multiple-options-" select.uniqueId}}
+    @class="ember-power-select-multiple-options"
+    @sortableObjectList={{select.selected}}
+    @enableSort={{true}}
+    @useSwap={{false}}
+    @sortEndAction={{action "reorderItems"}}
+>
     {{#each select.selected as |opt idx|}}
         {{#component (or this.extra.tokenComponent "draggable-object")
             tagName="li"
@@ -60,5 +61,5 @@
             {{did-insert this.storeInputStyles}}
         >
     {{/if}}
-{{/sortable-objects}}
+</SortableObjects>
 <span class="ember-power-select-status-icon"></span>

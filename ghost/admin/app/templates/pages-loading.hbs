@@ -17,11 +17,11 @@
                 @onOrderChange={{action (mut k)}}
             />
 
-            {{#link-to "editor.new" "page" class="gh-btn gh-btn-green" data-test-new-page-button=true}}<span>New page</span>{{/link-to}}
+            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-green" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
         </section>
     </header>
 
     <div class="gh-content">
-        {{gh-loading-list}}
+        <GhLoadingList />
     </div>
 </section>

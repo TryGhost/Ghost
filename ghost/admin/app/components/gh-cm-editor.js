@@ -119,8 +119,4 @@ const CmEditorComponent = Component.extend({
     }
 });
 
-CmEditorComponent.reopenClass({
-    positionalParams: ['value']
-});
-
 export default CmEditorComponent;

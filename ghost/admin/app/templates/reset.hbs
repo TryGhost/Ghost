@@ -2,36 +2,36 @@
     <div class="gh-flow-content-wrap">
         <section class="gh-flow-content fade-in">
             <form id="reset" class="gh-signin" method="post" novalidate="novalidate" {{action "submit" on="submit"}}>
-                {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="newPassword"}}
+                <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="newPassword">
                     <span class="gh-input-icon gh-icon-lock">
                         {{svg-jar "lock"}}
-                        {{gh-text-input
-                            type="password"
-                            name="newpassword"
-                            placeholder="Password"
-                            class="password"
-                            autocorrect="off"
-                            shouldFocus=true
-                            value=(readonly this.newPassword)
-                            input=(action (mut this.newPassword) value="target.value")}}
+                        <GhTextInput
+                            @type="password"
+                            @name="newpassword"
+                            @placeholder="Password"
+                            @class="password"
+                            @autocorrect="off"
+                            @shouldFocus={{true}}
+                            @value={{readonly this.newPassword}}
+                            @input={{action (mut this.newPassword) value="target.value"}} />
                     </span>
-                {{/gh-form-group}}
-                {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="ne2Password"}}
+                </GhFormGroup>
+                <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="ne2Password">
                     <span class="gh-input-icon gh-icon-lock">
                         {{svg-jar "lock"}}
-                        {{gh-text-input
-                            type="password"
-                            name="ne2password"
-                            placeholder="Confirm Password"
-                            class="password"
-                            autocorrect="off"
-                            shouldFocus=true
-                            value=(readonly this.ne2Password)
-                            input=(action (mut this.ne2Password) value="target.value")}}
+                        <GhTextInput
+                            @type="password"
+                            @name="ne2password"
+                            @placeholder="Confirm Password"
+                            @class="password"
+                            @autocorrect="off"
+                            @shouldFocus={{true}}
+                            @value={{readonly this.ne2Password}}
+                            @input={{action (mut this.ne2Password) value="target.value"}} />
                     </span>
-                {{/gh-form-group}}
+                </GhFormGroup>
 
-                {{gh-task-button "Reset Password" task=this.resetPassword class="gh-btn gh-btn-blue gh-btn-block gh-btn-icon" type="submit" autoWidth="false"}}
+                <GhTaskButton @buttonText="Reset Password" @task={{this.resetPassword}} @class="gh-btn gh-btn-blue gh-btn-block gh-btn-icon" @type="submit" @autoWidth="false" />
             </form>
 
             <p class="main-error">{{this.flowErrors}}&nbsp;</p>

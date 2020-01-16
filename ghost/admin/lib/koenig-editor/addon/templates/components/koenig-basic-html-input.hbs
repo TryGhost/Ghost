@@ -4,34 +4,34 @@
         data-gramm="false"
         data-kg="editor"
         data-kg-allow-clickthrough
-        data-placeholder={{placeholder}}
+        data-placeholder={{this.placeholder}}
     ></div>
 </div>
 
-{{koenig-toolbar
-    basicOnly=true
-    editor=editor
-    editorRange=selectedRange
-    activeMarkupTagNames=activeMarkupTagNames
-    toggleMarkup=(action "toggleMarkup")
-    editLink=(action "editLink")
-}}
+<KoenigToolbar
+    @basicOnly={{true}}
+    @editor={{this.editor}}
+    @editorRange={{this.selectedRange}}
+    @activeMarkupTagNames={{this.activeMarkupTagNames}}
+    @toggleMarkup={{action "toggleMarkup"}}
+    @editLink={{action "editLink"}}
+/>
 
 {{!-- pop-up link hover toolbar --}}
-{{koenig-link-toolbar
-    editor=editor
-    container=element
-    linkRange=linkRange
-    selectedRange=selectedRange
-    editLink=(action "editLink")
-}}
+<KoenigLinkToolbar
+    @editor={{this.editor}}
+    @container={{this.element}}
+    @linkRange={{this.linkRange}}
+    @selectedRange={{this.selectedRange}}
+    @editLink={{action "editLink"}}
+/>
 
 {{!-- pop-up link editing toolbar --}}
-{{#if linkRange}}
-    {{koenig-link-input
-        editor=editor
-        linkRange=linkRange
-        selectedRange=selectedRange
-        cancel=(action "cancelEditLink")
-    }}
+{{#if this.linkRange}}
+    <KoenigLinkInput
+        @editor={{this.editor}}
+        @linkRange={{this.linkRange}}
+        @selectedRange={{this.selectedRange}}
+        @cancel={{action "cancelEditLink"}}
+    />
 {{/if}}

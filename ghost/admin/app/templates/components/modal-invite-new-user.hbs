@@ -8,52 +8,52 @@
 
 <div class="modal-body">
     <fieldset>
-        {{#gh-form-group errors=this.errors hasValidated=this.hasValidated property="email"}}
+        <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="email">
             <label for="new-user-email">Email Address</label>
-            {{gh-text-input
-                class="email"
-                id="new-user-email"
-                type="email"
-                placeholder="Email Address"
-                name="email"
-                shouldFocus=true
-                autocapitalize="off"
-                autocorrect="off"
-                value=(readonly email)
-                input=(action (mut email) value="target.value")
-                keyEvents=(hash
+            <GhTextInput
+                @class="email"
+                @id="new-user-email"
+                @type="email"
+                @placeholder="Email Address"
+                @name="email"
+                @shouldFocus={{true}}
+                @autocapitalize="off"
+                @autocorrect="off"
+                @value={{readonly email}}
+                @input={{action (mut email) value="target.value"}}
+                @keyEvents={{hash
                     Enter=(action "confirm")
-                )
-                focus-out=(action "validate" "email")
-            }}
+                }}
+                @focus-out={{action "validate" "email"}}
+            />
             <GhErrorMessage @errors={{this.errors}} @property="email" />
-        {{/gh-form-group}}
+        </GhFormGroup>
 
 
-        {{#gh-form-group class="for-select" errors=this.errors hasValidated=this.hasValidated property="role"}}
+        <GhFormGroup @class="for-select" @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="role">
             <label for="new-user-role">Role</label>
             <span class="gh-select">
-                {{one-way-select
-                    id="new-user-role"
-                    name="role"
-                    options=(readonly this.roles)
-                    optionValuePath="id"
-                    optionLabelPath="name"
-                    value=this.role
-                    update=(action "setRole")
-                }}
+                <OneWaySelect
+                    @id="new-user-role"
+                    @name="role"
+                    @options={{readonly this.roles}}
+                    @optionValuePath="id"
+                    @optionLabelPath="name"
+                    @value={{this.role}}
+                    @update={{action "setRole"}}
+                />
                 {{svg-jar "arrow-down-small"}}
             </span>
             <GhErrorMessage @errors={{this.errors}} @property="role" />
-        {{/gh-form-group}}
+        </GhFormGroup>
     </fieldset>
 </div>
 
 <div class="modal-footer">
-    {{gh-task-button "Send invitation now"
-        successText="Sent"
-        task=this.sendInvitation
-        class="gh-btn gh-btn-green gh-btn-icon"
-        disabled=this.fetchRoles.isRunning
-        disableMouseDown=true}}
+    <GhTaskButton @buttonText="Send invitation now"
+        @successText="Sent"
+        @task={{this.sendInvitation}}
+        @class="gh-btn gh-btn-green gh-btn-icon"
+        @disabled={{this.fetchRoles.isRunning}}
+        @disableMouseDown="true" />
 </div>

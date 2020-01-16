@@ -1,12 +1,12 @@
 <header>
     <h1>Welcome to <strong>Ghost</strong>!</h1>
-    <p>All over the world, people have started <em>{{gh-download-count}}</em> incredible sites with Ghost. Today, we’re starting yours.</p>
+    <p>All over the world, people have started <em><GhDownloadCount /></em> incredible sites with Ghost. Today, we’re starting yours.</p>
 </header>
 
 <figure class="gh-flow-screenshot">
     <img src="assets/img/install-welcome.png" alt="Ghost screenshot" />
 </figure>
 
-{{#link-to "setup.two" classNames="gh-btn gh-btn-green gh-btn-lg gh-btn-icon gh-btn-icon-right"}}
+<LinkTo @route="setup.two" @classNames="gh-btn gh-btn-green gh-btn-lg gh-btn-icon gh-btn-icon-right">
     <span>Create your account {{svg-jar "arrow-right-small"}}</span>
-{{/link-to}}
+</LinkTo>

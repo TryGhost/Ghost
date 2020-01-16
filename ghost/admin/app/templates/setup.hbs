@@ -2,20 +2,20 @@
     <header class="gh-flow-head">
         <nav class="gh-flow-nav">
             {{#if this.showBackLink}}
-                {{#link-to this.backRoute classNames="gh-flow-back"}}{{svg-jar "arrow-left-small"}} Back{{/link-to}}
+                <LinkTo @route={{this.backRoute}} @classNames="gh-flow-back">{{svg-jar "arrow-left-small"}} Back</LinkTo>
             {{/if}}
             <ol>
-                {{#gh-activating-list-item route="setup.one" linkClasses="step"}}
+                <GhActivatingListItem @route="setup.one" @linkClasses="step">
                     {{svg-jar "check-circle"}}<span class="num">1</span>
-                {{/gh-activating-list-item}}
+                </GhActivatingListItem>
                 <li class="divider"></li>
-                {{#gh-activating-list-item route="setup.two" linkClasses="step"}}
+                <GhActivatingListItem @route="setup.two" @linkClasses="step">
                     {{svg-jar "check-circle"}}<span class="num">2</span>
-                {{/gh-activating-list-item}}
+                </GhActivatingListItem>
                 <li class="divider"></li>
-                {{#gh-activating-list-item route="setup.three" linkClasses="step"}}
+                <GhActivatingListItem @route="setup.three" @linkClasses="step">
                     {{svg-jar "check-circle"}}<span class="num">3</span>
-                {{/gh-activating-list-item}}
+                </GhActivatingListItem>
             </ol>
         </nav>
     </header>

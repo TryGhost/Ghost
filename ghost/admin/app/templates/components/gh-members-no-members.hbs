@@ -5,12 +5,12 @@
     </button>
     
     <div class="flex flex-column items-stretch mt8 pt8 pb10 bt b--lightgrey-d1">
-        {{#link-to "member.new" class="gh-btn gh-btn-outline mb3"}}
+        <LinkTo @route="member.new" class="gh-btn gh-btn-outline mb3">
             <span>Manually add a member</span>
-        {{/link-to}}
+        </LinkTo>
         
-        {{#link-to "members.import" class="gh-btn gh-btn-outline"}}
+        <LinkTo @route="members.import" class="gh-btn gh-btn-outline">
             <span>Import members from CSV</span>
-        {{/link-to}}
+        </LinkTo>
     </div>
 </div>

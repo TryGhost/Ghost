@@ -4,32 +4,31 @@
     onmousedown={{action "trackMousedown"}}
     onmouseup={{action "focusEditor"}}
 >
-    {{gh-textarea
-        class="gh-editor-title"
-        placeholder=this.titlePlaceholder
-        tabindex="1"
-        autoExpand=".gh-koenig-editor"
-        value=(readonly this.title)
-        input=(action "onTitleChange" value="target.value")
-        focus-out=(action "onTitleFocusOut")
-        keyDown=(action "onTitleKeydown")
-        didCreateTextarea=(action "onTitleCreated")
-        data-test-editor-title-input=true
-    }}
+    <GhTextarea
+        @class="gh-editor-title"
+        @placeholder={{this.titlePlaceholder}}
+        @tabindex="1"
+        @autoExpand=".gh-koenig-editor"
+        @value={{readonly this.title}}
+        @input={{action "onTitleChange" value="target.value"}}
+        @focus-out={{action "onTitleFocusOut"}}
+        @keyDown={{action "onTitleKeydown"}}
+        @didCreateTextarea={{action "onTitleCreated"}} data-test-editor-title-input={{true}}
+    />
 
-    {{koenig-editor
-        mobiledoc=this.body
-        placeholder=this.bodyPlaceholder
-        autofocus=this.bodyAutofocus
-        spellcheck=true
-        onChange=(action "onBodyChange")
-        didCreateEditor=(action "onEditorCreated")
-        cursorDidExitAtTop=(action "focusTitle")
-        headerOffset=this.headerOffset
-        dropTargetSelector=".gh-koenig-editor-pane"
-        scrollContainerSelector=this.scrollContainerSelector
-        scrollOffsetTopSelector=this.scrollOffsetTopSelector
-        scrollOffsetBottomSelector=this.scrollOffsetBottomSelector
-        wordCountDidChange=(action this.onWordCountChange)
-    }}
+    <KoenigEditor
+        @mobiledoc={{this.body}}
+        @placeholder={{this.bodyPlaceholder}}
+        @autofocus={{this.bodyAutofocus}}
+        @spellcheck={{true}}
+        @onChange={{action "onBodyChange"}}
+        @didCreateEditor={{action "onEditorCreated"}}
+        @cursorDidExitAtTop={{action "focusTitle"}}
+        @headerOffset={{this.headerOffset}}
+        @dropTargetSelector=".gh-koenig-editor-pane"
+        @scrollContainerSelector={{this.scrollContainerSelector}}
+        @scrollOffsetTopSelector={{this.scrollOffsetTopSelector}}
+        @scrollOffsetBottomSelector={{this.scrollOffsetBottomSelector}}
+        @wordCountDidChange={{action this.onWordCountChange}}
+    />
 </div>

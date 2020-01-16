@@ -1,18 +1,18 @@
-{{#if image}}
+{{#if this.image}}
     <div class="gh-image-uploader -with-image">
-        <div><img src={{image}}></div>
+        <div><img src={{this.image}}></div>
         <a class="image-cancel" title="Delete" {{action "remove"}}>
             {{svg-jar "trash"}}
             <span class="hidden">Delete</span>
         </a>
     </div>
 {{else}}
-    {{gh-image-uploader
-        text=text
-        altText=this.altText
-        allowUnsplash=this.allowUnsplash
-        update=(action 'update')
-        uploadStarted=(action 'uploadStarted')
-        uploadFinished=(action 'uploadFinished')
-    }}
+    <GhImageUploader
+        @text={{this.text}}
+        @altText={{this.altText}}
+        @allowUnsplash={{this.allowUnsplash}}
+        @update={{action "update"}}
+        @uploadStarted={{action "uploadStarted"}}
+        @uploadFinished={{action "uploadFinished"}}
+    />
 {{/if}}

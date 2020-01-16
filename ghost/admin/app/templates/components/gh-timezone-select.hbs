@@ -1,13 +1,13 @@
 <span class="gh-select" data-select-text="{{this.selectedTimezone.label}}" tabindex="0">
-    {{one-way-select
-        id="activeTimezone"
-        name="general[activeTimezone]"
-        options=this.selectableTimezones
-        optionValuePath="name"
-        optionLabelPath="label"
-        value=this.selectedTimezone
-        update=(action "setTimezone")
-    }}
+    <OneWaySelect
+        @id="activeTimezone"
+        @name="general[activeTimezone]"
+        @options={{this.selectableTimezones}}
+        @optionValuePath="name"
+        @optionLabelPath="label"
+        @value={{this.selectedTimezone}}
+        @update={{action "setTimezone"}}
+    />
     {{svg-jar "arrow-down-small"}}
 </span>
 {{#if this.hasTimezoneOverride}}

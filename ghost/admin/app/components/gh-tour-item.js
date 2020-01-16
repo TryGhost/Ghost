@@ -165,8 +165,4 @@ const GhTourItemComponent = Component.extend({
     }
 });
 
-GhTourItemComponent.reopenClass({
-    positionalParams: ['throbberId']
-});
-
 export default GhTourItemComponent;
