@@ -171,6 +171,10 @@ class LocalFileStore extends StorageBase {
                         }));
                     }
 
+                    if (err.code === 'ENAMETOOLONG') {
+                        return reject(new common.errors.BadRequestError({err: err}));
+                    }
+
                     return reject(new common.errors.GhostError({
                         err: err,
                         message: common.i18n.t('errors.errors.cannotReadImage', {img: options.path})
