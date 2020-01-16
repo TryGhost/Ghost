@@ -1,4 +1,4 @@
-import Transform from 'ember-data/transform';
+import Transform from '@ember-data/serializer/transform';
 import moment from 'moment';
 
 export default Transform.extend({

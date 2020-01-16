@@ -1,9 +1,9 @@
 import $ from 'jquery';
 import ModalComponent from 'ghost-admin/components/modal-base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -16,9 +16,7 @@ export default ModalComponent.extend(ValidationEngine, {
 
     authenticationError: null,
 
-    identification: computed('session.user.email', function () {
-        return this.get('session.user.email');
-    }),
+    identification: reads('session.user.email'),
 
     actions: {
         confirm() {

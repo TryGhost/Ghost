@@ -52,9 +52,7 @@ export default Component.extend(ValidationState, {
         // enter key
         if (event.keyCode === 13 && this.get('navItem.isNew')) {
             event.preventDefault();
-            run.scheduleOnce('actions', this, function () {
-                this.send('addItem', this.get('navItem'));
-            });
+            run.scheduleOnce('actions', this, this.send, 'addItem', this.navItem);
         }
     }
 });

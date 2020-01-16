@@ -212,11 +212,8 @@ export default Component.extend(ShortcutsMixin, {
         if (!isEmpty(uploadedImageUrls) && uploadedImageUrls !== this._uploadedImageUrls) {
             this._uploadedImageUrls = uploadedImageUrls;
 
-            // must be done afterRender to avoid double modify of mobiledoc in
-            // a single render
-            run.scheduleOnce('afterRender', this, () => {
-                this._insertImages(uploadedImageUrls);
-            });
+            // must be done afterRender to avoid double modify of mobiledoc in a single render
+            run.scheduleOnce('afterRender', this, this._insertImages, uploadedImageUrls);
         }
 
         // focus the editor when the markdown value changes, this is necessary

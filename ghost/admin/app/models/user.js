@@ -1,10 +1,8 @@
 /* eslint-disable camelcase */
-import Model from 'ember-data/model';
+import Model, {attr, hasMany} from '@ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import attr from 'ember-data/attr';
 import {computed} from '@ember/object';
 import {equal, or} from '@ember/object/computed';
-import {hasMany} from 'ember-data/relationships';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 

@@ -207,9 +207,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         if (transition) {
             transition.send('authorizationFailed');
         } else {
-            run.scheduleOnce('routerTransitions', this, function () {
-                this.send('authorizationFailed');
-            });
+            run.scheduleOnce('routerTransitions', this, 'send', 'authorizationFailed');
         }
     }
 });

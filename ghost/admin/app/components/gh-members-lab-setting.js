@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import {computed} from '@ember/object';
+import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
 
@@ -10,6 +11,8 @@ export default Component.extend({
     feature: service(),
     config: service(),
     mediaQueries: service(),
+
+    defaultContentVisibility: reads('settings.defaultContentVisibility'),
 
     mailgunRegion: computed('settings.bulkEmailSettings.baseUrl', function () {
         if (!this.settings.get('bulkEmailSettings.baseUrl')) {
@@ -56,10 +59,6 @@ export default Component.extend({
     hasBulkEmailConfig: computed('settings.bulkEmailSettings', function () {
         let bulkEmailSettings = this.get('settings.bulkEmailSettings');
         return !!bulkEmailSettings.isConfig;
-    }),
-
-    defaultContentVisibility: computed('settings.defaultContentVisibility', function () {
-        return this.get('settings.defaultContentVisibility');
     }),
 
     init() {
