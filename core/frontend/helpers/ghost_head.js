@@ -44,10 +44,17 @@ function finaliseStructuredData(metaData) {
 }
 
 function getMembersHelper() {
-    return `
-        <script src="https://js.stripe.com/v3/"></script>
-        <script defer src="${getAssetUrl('public/members.js')}"></script>
-    `;
+    const stripePaymentProcessor = settingsCache.get('members_subscription_settings').paymentProcessors.find(
+        paymentProcessor => paymentProcessor.adapter === 'stripe'
+    );
+    const stripeSecretToken = stripePaymentProcessor.config.secret_token;
+    const stripePublicToken = stripePaymentProcessor.config.public_token;
+
+    var membersHelper = `<script defer src="${getAssetUrl('public/members.js')}"></script>`;
+    if (!!stripeSecretToken && stripeSecretToken !== '' && !!stripePublicToken && stripePublicToken !== '') {
+        membersHelper += '<script src="https://js.stripe.com/v3/"></script>';
+    }
+    return membersHelper;
 }
 
 /**
