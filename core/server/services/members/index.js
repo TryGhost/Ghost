@@ -23,11 +23,6 @@ common.events.on('settings.edited', function updateSettingFromModel(settingModel
 });
 
 const membersService = {
-    isPaymentConfigured() {
-        const settings = settingsCache.get('members_subscription_settings');
-        return !!settings && settings.isPaid && settings.paymentProcessors.length !== 0;
-    },
-
     contentGating: require('./content-gating'),
 
     config: require('./config'),

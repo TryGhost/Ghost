@@ -50,7 +50,7 @@ function getMembersHelper() {
     const stripeSecretToken = stripePaymentProcessor.config.secret_token;
     const stripePublicToken = stripePaymentProcessor.config.public_token;
 
-    var membersHelper = `<script defer src="${getAssetUrl('public/members.js')}"></script>`;
+    let membersHelper = `<script defer src="${getAssetUrl('public/members.js')}"></script>`;
     if (!!stripeSecretToken && stripeSecretToken !== '' && !!stripePublicToken && stripePublicToken !== '') {
         membersHelper += '<script src="https://js.stripe.com/v3/"></script>';
     }
