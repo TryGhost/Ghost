@@ -4,9 +4,14 @@ const storage = require('../../../../adapters/storage');
 const activeTheme = require('../../../../../frontend/services/themes/active');
 
 const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;
+const NO_TRAILING_SLASH_REGEX = /\/+$/;
 
 module.exports = function (req, res, next) {
     if (!SIZE_PATH_REGEX.test(req.url)) {
+        return next();
+    }
+
+    if (NO_TRAILING_SLASH_REGEX.test(req.url)) {
         return next();
     }
 
