@@ -417,6 +417,11 @@
                     "name": "Read member signin urls",
                     "action_type": "read",
                     "object_type": "member_signin_url"
+                },
+                {
+                    "name": "Read identities",
+                    "action_type": "read",
+                    "object_type": "identity"
                 }
             ]
         },

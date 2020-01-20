@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const proxyquire = require('proxyquire');
+const proxyquire = require('proxyquire').noCallThru();
 const configUtils = require('../../utils/configUtils');
 
 describe('parent app', function () {
@@ -10,6 +10,7 @@ describe('parent app', function () {
     let apiSpy;
     let parentApp;
     let adminSpy;
+    let wellKnownSpy;
     let siteSpy;
     let gatewaySpy;
     let authPagesSpy;
@@ -24,6 +25,7 @@ describe('parent app', function () {
         vhostSpy = sinon.spy();
         apiSpy = sinon.spy();
         adminSpy = sinon.spy();
+        wellKnownSpy = sinon.spy();
         siteSpy = sinon.spy();
         gatewaySpy = sinon.spy();
         authPagesSpy = sinon.spy();
@@ -33,6 +35,7 @@ describe('parent app', function () {
             '@tryghost/vhost-middleware': vhostSpy,
             './api': apiSpy,
             './admin': adminSpy,
+            './well-known': wellKnownSpy,
             './site': siteSpy,
             '../services/members': {
                 gateway: gatewaySpy,
@@ -54,10 +57,12 @@ describe('parent app', function () {
             parentApp();
 
             use.calledWith('/ghost/api').should.be.true();
+            use.calledWith('/ghost/.well-known').should.be.true();
             use.calledWith('/ghost').should.be.true();
             use.calledWith('/content/images').should.be.false();
 
             apiSpy.called.should.be.true();
+            wellKnownSpy.called.should.be.true();
             adminSpy.called.should.be.true();
             siteSpy.called.should.be.true();
 
