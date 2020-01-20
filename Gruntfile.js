@@ -168,8 +168,22 @@ const configureGrunt = function (grunt) {
                     }
                 },
                 stderr: function (chunk) {
-                    hasBuiltClient = true;
-                    grunt.log.error(chunk);
+                    const skipFilter = grunt.option('client') ? false : [
+                        /- building/
+                    ].some(function (regexp) {
+                        return regexp.test(chunk);
+                    });
+
+                    const errorFilter = grunt.option('client') ? false : [
+                        /^>>/
+                    ].some(function (regexp) {
+                        return regexp.test(chunk);
+                    });
+
+                    if (!skipFilter) {
+                        hasBuiltClient = errorFilter ? hasBuiltClient : true;
+                        grunt.log.error(chunk);
+                    }
                 }
             }
         },
