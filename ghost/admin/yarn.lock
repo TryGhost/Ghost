@@ -5868,10 +5868,10 @@ ember-rfc176-data@^0.3.1, ember-rfc176-data@^0.3.12:
   resolved "https://registry.yarnpkg.com/ember-rfc176-data/-/ember-rfc176-data-0.3.12.tgz#90d82878e69e2ac9a5438e8ce14d12c6031c5bd2"
   integrity sha512-g9HeZj/gU5bfIIrGXkP7MhS2b3Vu5DfNUrYr14hy99TgIvtZETO+96QF4WOEUXGjIJdfTRjerVnQlqngPQSv1g==
 
-ember-route-action-helper@2.0.7:
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/ember-route-action-helper/-/ember-route-action-helper-2.0.7.tgz#3b946a613c88bb82a039c974f64f5b6f56d5e0bf"
-  integrity sha512-8GEnB9hfPdh5U19ubmojVZQBu6aUIfQuiv6xnsdss7V3TMspjI1Ak8lqoqEzww8Dv+sxv8YWma0IhKPFxrVJag==
+ember-route-action-helper@2.0.8:
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/ember-route-action-helper/-/ember-route-action-helper-2.0.8.tgz#f227fcccb73e839b65e9b814e241b322fe8c02fc"
+  integrity sha512-V+4uKwqaYveriVt2rl4e+9mzHJiQOr1B8dCPQQ2TS3iAcmi5RD2giRDFGtCK9d2XY9Arb/f9hJh0obP20iyt3A==
   dependencies:
     ember-cli-babel "^6.8.1"
     ember-getowner-polyfill "^2.0.0"
