@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const {Router} = require('express');
 const body = require('body-parser');
 const MagicLink = require('@tryghost/magic-link');
@@ -219,6 +220,12 @@ module.exports = function MembersApi({
 
                 const member = await users.get({email: customer.email}) || await users.create({email: customer.email});
                 await stripe.handleCheckoutSessionCompletedWebhook(member, customer);
+
+                const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
+
+                if (payerName && member.name === '') {
+                    await users.update({name: payerName}, {id: member.id});
+                }
 
                 const emailType = 'signup';
                 await sendEmailWithMagicLink(customer.email, emailType, {forceEmailType: true});
