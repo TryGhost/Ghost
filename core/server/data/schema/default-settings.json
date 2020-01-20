@@ -14,6 +14,12 @@
         },
         "theme_session_secret": {
             "defaultValue": null
+        },
+        "ghost_public_key": {
+            "defaultValue": null
+        },
+        "ghost_private_key": {
+            "defaultValue": null
         }
     },
     "blog": {

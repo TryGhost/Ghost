@@ -177,6 +177,9 @@ module.exports = function apiRoutes() {
     );
     router.del('/session', mw.authAdminApi, http(apiCanary.session.delete));
 
+    // ## Identity
+    router.get('/identities', mw.authAdminApi, http(apiCanary.identities.read));
+
     // ## Authentication
     router.post('/authentication/passwordreset',
         shared.middlewares.brute.globalReset,

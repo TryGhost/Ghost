@@ -14,8 +14,12 @@ const common = require('../../../lib/common');
 const nonePublicAuth = (apiConfig, frame) => {
     debug('check admin permissions');
 
-    const singular = apiConfig.docName.replace(/s$/, '');
-
+    let singular;
+    if (apiConfig.docName.match(/ies$/)) {
+        singular = apiConfig.docName.replace(/ies$/, 'y');
+    } else {
+        singular = apiConfig.docName.replace(/s$/, '');
+    }
     let permissionIdentifier = frame.options.id;
 
     // CASE: Target ctrl can override the identifier. The identifier is the unique identifier of the target resource
