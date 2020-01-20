@@ -63,7 +63,7 @@ module.exports = function ({
 
     async function getStripeSubscriptions(member) {
         if (!stripe) {
-            return {subscriptions: []};
+            return [];
         }
 
         return await stripe.getActiveSubscriptions(member);
