@@ -13,7 +13,7 @@
         data-test-type-select="true"
         as |type|
     >
-        {{type.name}}
+        {{#if type.name}}{{type.name}}{{else}}<span class="red">Unknown type</span>{{/if}}
     </PowerSelect>
     {{/unless}}
 
@@ -32,7 +32,7 @@
         data-test-author-select="true"
         as |author|
     >
-        {{author.name}}
+        {{#if author.name}}{{author.name}}{{else}}<span class="red">Unknown author</span>{{/if}}
     </PowerSelect>
     {{/unless}}
 
@@ -52,7 +52,7 @@
         data-test-tag-select="true"
         as |tag|
     >
-        {{tag.name}}
+        {{#if tag.name}}{{tag.name}}{{else}}<span class="red">Unknown tag</span>{{/if}}
     </PowerSelect>
     {{/unless}}
 
@@ -69,6 +69,6 @@
         @data-test-order-select="true"
         as |order|
     >
-        {{order.name}}
+        {{#if order.name}}{{order.name}}{{else}}<span class="red">Unknown</span>{{/if}}
     </PowerSelect>
 </div>
