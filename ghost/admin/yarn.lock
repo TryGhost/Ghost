@@ -5077,13 +5077,14 @@ ember-cli-chai@0.5.0:
     rollup-plugin-commonjs "^8.0.2"
     rollup-plugin-node-resolve "^3.0.0"
 
-ember-cli-chart@3.5.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/ember-cli-chart/-/ember-cli-chart-3.5.0.tgz#c20df59413cd3473d17a39b40db810ebb2b45544"
-  integrity sha512-L7HWIOGXKEV/UKR9cioKQXlsDmx2DPAScirx6tQXB5aBx5hOYGSx6QHG2dSzMimI86hD5JstbuqeTyTfmRv+RA==
+ember-cli-chart@3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-chart/-/ember-cli-chart-3.6.0.tgz#adb48132809090c2e1bb948e9faa2f02940cd41f"
+  integrity sha512-56eIlWybo0wifDbUeQCxH9M22Zwz61ua5FwUqR5nKdA16q+2kAyz6tfYbYvdBjc0lIRFmSZ3FD67YIpUe5P8jg==
   dependencies:
     chart.js "^2.8.0"
-    ember-cli-babel "^7.7.3"
+    ember-cli-babel "^7.11.1"
+    ember-cli-htmlbars "^4.0.0"
     ember-cli-node-assets "^0.2.2"
     fastboot-transform "^0.1.2"
 
@@ -5145,7 +5146,7 @@ ember-cli-htmlbars-inline-precompile@^2.1.0:
     heimdalljs-logger "^0.1.9"
     silent-error "^1.1.0"
 
-ember-cli-htmlbars@4.2.2:
+ember-cli-htmlbars@4.2.2, ember-cli-htmlbars@^4.0.0:
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-4.2.2.tgz#3db341a0c866b6e16919db071be9592b9702f014"
   integrity sha512-xhVYhdbS2H+XNHzSYfOZKRFIpZ8zOrNGMuAc7vJd6oUE8Aad2r5xjncIVQDioPp8sQfUpXt0uvkUZaOll/thXw==
