@@ -223,7 +223,7 @@ module.exports = function MembersApi({
 
                 const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
 
-                if (payerName && member.name === '') {
+                if (payerName && !member.name) {
                     await users.update({name: payerName}, {id: member.id});
                 }
 
