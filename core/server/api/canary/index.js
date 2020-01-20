@@ -14,6 +14,10 @@ module.exports = {
         return shared.pipeline(require('./db'), localUtils);
     },
 
+    get identities() {
+        return shared.pipeline(require('./identities'), localUtils);
+    },
+
     get integrations() {
         return shared.pipeline(require('./integrations'), localUtils);
     },
