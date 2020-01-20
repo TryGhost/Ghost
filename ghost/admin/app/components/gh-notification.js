@@ -34,7 +34,7 @@ export default Component.extend({
         this._super(...arguments);
 
         this._animationEndHandler = run.bind(this, function () {
-            if (event.originalEvent.animationName === 'fade-out') {
+            if (event.animationName === 'fade-out') {
                 this.notifications.closeNotification(this.message);
             }
         });
