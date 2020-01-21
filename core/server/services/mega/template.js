@@ -241,6 +241,7 @@ figcaption {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     font-size: 14px;
     padding-top: 5px;
+    line-height: 1.5em;
 }
 
 code {
@@ -362,6 +363,11 @@ figure blockquote p {
 
 .kg-card + .kg-bookmark-card {
     margin-top: 0;
+}
+
+.kg-image-card img {
+    display: block;
+    margin: 0 auto;
 }
 
 .kg-bookmark-container {
