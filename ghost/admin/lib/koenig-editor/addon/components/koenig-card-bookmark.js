@@ -4,7 +4,6 @@ import {NO_CURSOR_MOVEMENT} from './koenig-editor';
 import {computed} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {isBlank} from '@ember/utils';
-import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
 import {task} from 'ember-concurrency';
