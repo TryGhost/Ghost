@@ -265,6 +265,11 @@
     box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.1);
 }
 
+.gh-flow-create .gh-btn-create-account span {
+    height: 37px;
+    line-height: 37px;
+}
+
 .gh-flow-content .account-image {
     position: absolute;
     top: -50px;
