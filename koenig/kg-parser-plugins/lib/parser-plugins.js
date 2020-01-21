@@ -78,27 +78,50 @@ export function createParserPlugins(_options = {}) {
             return;
         }
 
-        let anchor = node.querySelector('.markup--mixtapeEmbed-anchor').href;
-        let title = node.querySelector('.markup--mixtapeEmbed-strong');
-        let desc = node.querySelector('.markup--mixtapeEmbed-em');
-        let img = node.querySelector('.mixtapeImage');
-        let imgSrc = false;
+        // Grab the relevant elements - Anchor wraps most of the data
+        let anchorElement = node.querySelector('.markup--mixtapeEmbed-anchor');
+        let titleElement = anchorElement.querySelector('.markup--mixtapeEmbed-strong');
+        let descElement = anchorElement.querySelector('.markup--mixtapeEmbed-em');
+        // Image is a top level field inside it's own a tag
+        let imgElement = node.querySelector('.mixtapeImage');
+
+        // Grab individual values from the elements
+        let url = anchorElement.href;
+        let title = '';
+        let description = '';
+
+        if (titleElement && titleElement.innerHTML) {
+            title = cleanBasicHtml(titleElement.innerHTML, options);
+            // Cleanup anchor so we can see what's left now that we've processed title
+            anchorElement.removeChild(titleElement);
+        }
+
+        if (descElement && descElement.innerHTML) {
+            description = cleanBasicHtml(descElement.innerHTML, options);
+            // Cleanup anchor so we can see what's left now that we've processed description
+            anchorElement.removeChild(descElement);
+        }
+
+        // // Format our preferred structure.
+        let metadata = {
+            url,
+            title,
+            description
+        };
+
+        // Publisher is the remaining text in the anchor, once title & desc are removed
+        let publisher = cleanBasicHtml(anchorElement.innerHTML, options);
+        if (publisher) {
+            metadata.publisher = publisher;
+        }
 
         // Image is optional,
         // The element usually still exists with an additional has.mixtapeImage--empty class and has no background image
-        if (img && img.style['background-image']) {
-            imgSrc = img.style['background-image'].match(/url\(([^)]*?)\)/)[1];
+        if (imgElement && imgElement.style['background-image']) {
+            metadata.thumbnail = imgElement.style['background-image'].match(/url\(([^)]*?)\)/)[1];
         }
 
-        // Format our preferred structure.
-        let metadata = {
-            url: anchor,
-            title: title,
-            description: desc,
-            thumbnail: imgSrc
-        };
-
-        let payload = {metadata, url: metadata.url, type: 'bookmark'};
+        let payload = {url, metadata};
         let cardSection = builder.createCardSection('bookmark', payload);
         addSection(cardSection);
         nodeFinished();

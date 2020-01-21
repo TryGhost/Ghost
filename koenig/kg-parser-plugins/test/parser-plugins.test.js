@@ -482,6 +482,99 @@ describe('parser-plugins', function () {
         });
     });
 
+    describe('mixtapeEmbed', function () {
+        // Mobiledoc {\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[[\"bookmark\",{\"url\":\"https://slack.engineering/typescript-at-slack-a81307fa288d\",\"metadata\":{\"url\":\"https://slack.engineering/typescript-at-slack-a81307fa288d\",\"title\":\"TypeScript at Slack\",\"description\":\"When Brendan Eich created the very first version of JavaScript for Netscape Navigator 2.0 in merely ten days, it’s likely that he did not expect how far the Slack Desktop App would take his…\",\"author\":\"Felix Rieseberg\",\"publisher\":\"Several People Are Coding\",\"thumbnail\":\"https://miro.medium.com/max/1200/1*-h1bH8gB3I7gPh5AG1HmsQ.png\",\"icon\":\"https://cdn-images-1.medium.com/fit/c/152/152/1*8I-HPL0bfoIzGied-dzOvA.png\"},\"type\":\"bookmark\"}]],\"markups\":[],\"sections\":[[10,0],[1,\"p\",[]]]}
+        // Ghost HTML <figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://slack.engineering/typescript-at-slack-a81307fa288d"><div class="kg-bookmark-content"><div class="kg-bookmark-title">TypeScript at Slack</div><div class="kg-bookmark-description">When Brendan Eich created the very first version of JavaScript for Netscape Navigator 2.0 in merely ten days, it’s likely that he did not expect how far the Slack Desktop App would take his…</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="https://cdn-images-1.medium.com/fit/c/152/152/1*8I-HPL0bfoIzGied-dzOvA.png"><span class="kg-bookmark-author">Felix Rieseberg</span><span class="kg-bookmark-publisher">Several People Are Coding</span></div></div><div class="kg-bookmark-thumbnail"><img src="https://miro.medium.com/max/1200/1*-h1bH8gB3I7gPh5AG1HmsQ.png"></div></a></figure>
+        // Medium Export HTML <div class="graf graf--mixtapeEmbed graf-after--p"><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" data-href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="markup--anchor markup--mixtapeEmbed-anchor" title="https://slack.engineering/typescript-at-slack-a81307fa288d"><strong class="markup--strong markup--mixtapeEmbed-strong">TypeScript at Slack</strong><br><em class="markup--em markup--mixtapeEmbed-em">Or, How I Learned to Stop Worrying &amp; Trust the Compiler</em>slack.engineering</a><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="js-mixtapeImage mixtapeImage u-ignoreBlock" data-media-id="abc123" data-thumbnail-img-id="1*-h1bH8gB3I7gPh5AG1HmsQ.png" style="background-image: url(https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png);"></a></div>
+        it('parses mixtape block with all data', function () {
+            const dom = buildDOM('<div class="graf graf--mixtapeEmbed graf-after--p"><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" data-href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="markup--anchor markup--mixtapeEmbed-anchor" title="https://slack.engineering/typescript-at-slack-a81307fa288d"><strong class="markup--strong markup--mixtapeEmbed-strong">TypeScript at Slack</strong><br><em class="markup--em markup--mixtapeEmbed-em">Or, How I Learned to Stop Worrying &amp; Trust the Compiler</em>slack.engineering</a><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="js-mixtapeImage mixtapeImage u-ignoreBlock" data-media-id="abc123" data-thumbnail-img-id="1*-h1bH8gB3I7gPh5AG1HmsQ.png" style="background-image: url(https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png);"></a></div>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('bookmark');
+            section.payload.should.be.an.Object().with.properties('url', 'metadata');
+            section.payload.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
+            section.payload.metadata.should.be.an.Object().with.properties('url', 'title', 'description', 'publisher', 'thumbnail');
+
+            let metadata = section.payload.metadata;
+            metadata.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
+            metadata.title.should.eql('TypeScript at Slack');
+            metadata.description.should.eql('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
+            metadata.publisher.should.eql('slack.engineering');
+            metadata.thumbnail.should.eql('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+        });
+
+        it('parses mixtape block with missing title', function () {
+            const dom = buildDOM('<div class="graf graf--mixtapeEmbed graf-after--mixtapeEmbed"><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" data-href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="markup--anchor markup--mixtapeEmbed-anchor" title="https://slack.engineering/typescript-at-slack-a81307fa288d"><br><em class="markup--em markup--mixtapeEmbed-em">Or, How I Learned to Stop Worrying &amp; Trust the Compiler</em>slack.engineering</a><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="js-mixtapeImage mixtapeImage u-ignoreBlock" data-media-id="abc123" data-thumbnail-img-id="1*-h1bH8gB3I7gPh5AG1HmsQ.png" style="background-image: url(https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png);"></a></div>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('bookmark');
+            section.payload.should.be.an.Object().with.properties('url', 'metadata');
+            section.payload.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
+            section.payload.metadata.should.be.an.Object().with.properties('url', 'title', 'description', 'publisher', 'thumbnail');
+
+            let metadata = section.payload.metadata;
+            metadata.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
+            metadata.title.should.eql('');
+            metadata.description.should.eql('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
+            metadata.publisher.should.eql('slack.engineering');
+            metadata.thumbnail.should.eql('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+        });
+
+        it('parses mixtape block with missing description', function () {
+            const dom = buildDOM('<div class="graf graf--mixtapeEmbed graf-after--mixtapeEmbed"><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" data-href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="markup--anchor markup--mixtapeEmbed-anchor" title="https://slack.engineering/typescript-at-slack-a81307fa288d"><strong class="markup--strong markup--mixtapeEmbed-strong">TypeScript at Slack</strong><br>slack.engineering</a><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="js-mixtapeImage mixtapeImage u-ignoreBlock" data-media-id="abc123" data-thumbnail-img-id="1*-h1bH8gB3I7gPh5AG1HmsQ.png" style="background-image: url(https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png);"></a></div>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('bookmark');
+            section.payload.should.be.an.Object().with.properties('url', 'metadata');
+            section.payload.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
+            section.payload.metadata.should.be.an.Object().with.properties('url', 'title', 'description', 'publisher', 'thumbnail');
+
+            let metadata = section.payload.metadata;
+            metadata.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
+            metadata.title.should.eql('TypeScript at Slack');
+            metadata.description.should.eql('');
+            metadata.publisher.should.eql('slack.engineering');
+            metadata.thumbnail.should.eql('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+        });
+
+        it('parses mixtape block with missing publisher, but BR is present', function () {
+            const dom = buildDOM('<div class="graf graf--mixtapeEmbed graf-after--p"><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" data-href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="markup--anchor markup--mixtapeEmbed-anchor" title="https://slack.engineering/typescript-at-slack-a81307fa288d"><strong class="markup--strong markup--mixtapeEmbed-strong">TypeScript at Slack</strong><br><em class="markup--em markup--mixtapeEmbed-em">Or, How I Learned to Stop Worrying &amp; Trust the Compiler</em></a><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="js-mixtapeImage mixtapeImage u-ignoreBlock" data-media-id="abc123" data-thumbnail-img-id="1*-h1bH8gB3I7gPh5AG1HmsQ.png" style="background-image: url(https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png);"></a></div>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('bookmark');
+            section.payload.should.be.an.Object().with.properties('url', 'metadata');
+            section.payload.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
+            section.payload.metadata.should.be.an.Object().with.properties('url', 'title', 'description', 'thumbnail');
+
+            let metadata = section.payload.metadata;
+            metadata.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
+            metadata.title.should.eql('TypeScript at Slack');
+            metadata.description.should.eql('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
+            metadata.thumbnail.should.eql('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+        });
+
+        it('parses mixtape block with missing publisher + no additional br', function () {
+            const dom = buildDOM('<div class="graf graf--mixtapeEmbed graf-after--p"><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" data-href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="markup--anchor markup--mixtapeEmbed-anchor" title="https://slack.engineering/typescript-at-slack-a81307fa288d"><strong class="markup--strong markup--mixtapeEmbed-strong">TypeScript at Slack</strong><em class="markup--em markup--mixtapeEmbed-em">Or, How I Learned to Stop Worrying &amp; Trust the Compiler</em></a><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="js-mixtapeImage mixtapeImage u-ignoreBlock" data-media-id="abc123" data-thumbnail-img-id="1*-h1bH8gB3I7gPh5AG1HmsQ.png" style="background-image: url(https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png);"></a></div>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('bookmark');
+            section.payload.should.be.an.Object().with.properties('url', 'metadata');
+            section.payload.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
+            section.payload.metadata.should.be.an.Object().with.properties('url', 'title', 'description', 'thumbnail');
+
+            let metadata = section.payload.metadata;
+            metadata.url.should.eql('https://slack.engineering/typescript-at-slack-a81307fa288d');
+            metadata.title.should.eql('TypeScript at Slack');
+            metadata.description.should.eql('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
+            metadata.thumbnail.should.eql('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+        });
+    });
+
     describe('figureScriptToHtmlCard', function () {
         // Gist
         // mobiledoc {"version":"0.3.1","atoms":[],"cards":[["html",{"html":"<script src=\"https://gist.github.com/ErisDS/3a9132089955b2698135257a72fa30cb.js\"></script>"}]],"markups":[],"sections":[[10,0],[1,"p",[]]]}
