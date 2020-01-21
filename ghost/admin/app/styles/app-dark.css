@@ -487,8 +487,14 @@ input:focus,
     background-color: transparent;
 }
 
-/* Dark style Lists */
 
+/* Koenig styles */
+.kg-link-input {
+    border-color: var(--blue) !important;
+}
+
+
+/* Dark style Lists */
 .gh-list {
     background: #212A2E;
 }
@@ -499,6 +505,7 @@ input:focus,
 .apps-grid-cell:hover {
     background: color-mod(var(--lightgrey) l(-9%));
 }
+
 
 /* Members */
 .gh-members-chart-header {
