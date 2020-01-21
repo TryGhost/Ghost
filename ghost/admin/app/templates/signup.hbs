@@ -71,16 +71,10 @@
                     </span>
                     <GhErrorMessage @errors={{this.signupDetails.errors}} @property="password" />
                 </GhFormGroup>
-            </form>
 
-            <GhTaskButton @buttonText="Create Account"
-                @type="submit"
-                @form="signup"
-                @defaultClick={{true}}
-                @runningText="Creating"
-                @task={{this.signup}}
-                @class="gh-btn gh-btn-green gh-btn-lg gh-btn-block gh-btn-icon"
-                @tabindex="3" />
+                <GhTaskButton @buttonText="Create Account" @type="submit" @form="signup" @defaultClick={{true}} @runningText="Creating"
+                    @task={{this.signup}} @class="gh-btn-create-account gh-btn gh-btn-green gh-btn-lg gh-btn-block gh-btn-icon" @tabindex="3" />
+            </form>
 
             <p class="main-error">{{if this.flowErrors this.flowErrors}}&nbsp;</p>
         </section>
