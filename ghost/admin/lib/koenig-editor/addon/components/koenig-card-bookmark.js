@@ -65,18 +65,6 @@ export default Component.extend({
         this._focusInput();
     },
 
-    willDestroyElement() {
-        this._super(...arguments);
-
-        run.cancel(this._resizeDebounce);
-
-        if (this._iframeMutationObserver) {
-            this._iframeMutationObserver.disconnect();
-        }
-
-        window.removeEventListener('resize', this._windowResizeHandler);
-    },
-
     actions: {
         onDeselect() {
             if (this.payload.url && !this.payload.metadata && !this.hasError) {
@@ -162,7 +150,6 @@ export default Component.extend({
 
             set(this.payload, 'linkOnError', undefined);
             set(this.payload, 'metadata', response.metadata);
-            set(this.payload, 'type', response.type);
             this.saveCard(this.payload, false);
         } catch (err) {
             if (this.payload.linkOnError) {
