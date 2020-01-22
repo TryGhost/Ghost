@@ -1,7 +1,7 @@
 let urlUtils;
 
 module.exports = function createCard(card) {
-    const defaultTransformer = function (payload) {
+    const defaultTransformer = function (urlUtils, payload) {
         return payload;
     };
 
