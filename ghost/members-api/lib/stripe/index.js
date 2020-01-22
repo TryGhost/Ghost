@@ -262,7 +262,7 @@ module.exports = class StripePaymentProcessor {
     async _customerForMemberCheckoutSession(member) {
         const metadata = await this.storage.get(member);
 
-        for (const data in metadata.customers) {
+        for (const data of metadata.customers) {
             try {
                 const customer = await this.getCustomer(data.customer_id);
                 if (!customer.deleted) {
