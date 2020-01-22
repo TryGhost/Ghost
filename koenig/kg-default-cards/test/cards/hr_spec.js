@@ -13,4 +13,16 @@ describe('HR card', function () {
 
         serializer.serialize(card.render(opts)).should.match('<hr>');
     });
+
+    it('transforms urls absolute to relative', function () {
+        let payload = {};
+        const transformed = card.absoluteToRelative(payload, {});
+        transformed.should.deepEqual({});
+    });
+
+    it('transforms urls relative to absolute', function () {
+        let payload = {};
+        const transformed = card.relativeToAbsolute(payload, {});
+        transformed.should.deepEqual({});
+    });
 });
