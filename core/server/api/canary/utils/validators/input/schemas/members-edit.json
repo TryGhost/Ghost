@@ -37,6 +37,9 @@
                 "email": {
                     "strip": true
                 },
+                "labels": {
+                    "$ref": "members#/definitions/member-labels"
+                },
                 "created_at": {
                     "strip": true
                 },
@@ -49,7 +52,6 @@
                 "updated_by": {
                     "strip": true
                 }
-            }
             }
         }
     },

@@ -913,6 +913,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 data: data,
                 meta: {pagination: response.pagination}
             };
+        }).catch((err) => {
+            console.log('Error');
+            console.log(err);
+            throw err;
         });
     },
 
