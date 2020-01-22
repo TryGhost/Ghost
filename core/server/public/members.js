@@ -119,6 +119,60 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
     el.addEventListener('click', clickHandler);
 });
 
+Array.prototype.forEach.call(document.querySelectorAll('[data-members-edit-billing]'), function (el) {
+    var errorEl = el.querySelector('[data-members-error]');
+    function clickHandler(event) {
+        el.removeEventListener('click', clickHandler);
+        event.preventDefault();
+
+        if (errorEl) {
+            errorEl.innerText = '';
+        }
+        el.classList.add('loading');
+        fetch('{{blog-url}}/members/ssr', {
+            credentials: 'same-origin'
+        }).then(function (res) {
+            if (!res.ok) {
+                return null;
+            }
+            return res.text();
+        }).then(function (identity) {
+            return fetch('{{admin-url}}/api/canary/members/create-stripe-setup-session/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    identity: identity
+                })
+            }).then(function (res) {
+                if (!res.ok) {
+                    throw new Error('Could not create stripe checkout session');
+                }
+                return res.json();
+            });
+        }).then(function (result) {
+            var stripe = Stripe(result.publicKey);
+            return stripe.redirectToCheckout({
+                sessionId: result.sessionId
+            });
+        }).then(function (result) {
+            if (result.error) {
+                throw new Error(result.error.message);
+            }
+        }).catch(function (err) {
+            console.error(err);
+            el.addEventListener('click', clickHandler);
+            el.classList.remove('loading');
+            if (errorEl) {
+                errorEl.innerText = err.message;
+            }
+            el.classList.add('error');
+        });
+    }
+    el.addEventListener('click', clickHandler);
+});
+
 Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]'), function (el) {
     function clickHandler(event) {
         el.removeEventListener('click', clickHandler);
