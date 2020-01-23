@@ -45,7 +45,7 @@ Label = ghostBookshelf.Model.extend({
     },
 
     members: function members() {
-        return this.belongsToMany('Member');
+        return this.belongsToMany('Member', 'members_labels', 'label_id', 'member_id');
     },
 
     toJSON: function toJSON(unfilteredOptions) {
