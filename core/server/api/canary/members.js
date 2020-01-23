@@ -6,20 +6,24 @@ const membersService = require('../../services/members');
 const common = require('../../lib/common');
 const fsLib = require('../../lib/fs');
 
+const decorateWithSubscriptions = async function (member) {
+    // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
+    //       are in place
+    const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
+
+    return Object.assign(member, {
+        stripe: {
+            subscriptions
+        }
+    });
+};
+
 const listMembers = async function (options) {
     const res = (await models.Member.findPage(options));
     const members = res.data.map(model => model.toJSON(options));
 
-    // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
-    //       are in place
     const membersWithSubscriptions = await Promise.all(members.map(async function (member) {
-        const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
-
-        return Object.assign(member, {
-            stripe: {
-                subscriptions
-            }
-        });
+        decorateWithSubscriptions(member);
     }));
 
     return {
