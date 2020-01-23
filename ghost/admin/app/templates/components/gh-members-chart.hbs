@@ -9,13 +9,13 @@
                     <PowerSelect
                         @selected={{this.selectedRange}}
                         @options={{this.availableRange}}
-                        @searchEnabled=false
+                        @searchEnabled={{false}}
                         @onChange={{action "changeDateRange"}}
                         @tagName="div"
                         @classNames="gh-contentfilter-menu gh-contentfilter-type"
                         @triggerClass="gh-contentfilter-menu-trigger"
                         @dropdownClass="gh-contentfilter-menu-dropdown gh-members-chart-dropdown"
-                        @matchTriggerWidth=false
+                        @matchTriggerWidth={{false}}
                         data-test-type-select="true"
                         as |range|
                     >
