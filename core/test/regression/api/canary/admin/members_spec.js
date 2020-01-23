@@ -166,7 +166,7 @@ describe('Members API', function () {
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.members);
                         jsonResponse.members.should.have.length(1);
-                        localUtils.API.checkResponse(jsonResponse.members[0], 'member');
+                        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
                         jsonResponse.members[0].name.should.equal(memberChanged.name);
                         jsonResponse.members[0].email.should.not.equal(memberChanged.email);
                         jsonResponse.members[0].email.should.equal(memberToChange.email);
@@ -175,7 +175,7 @@ describe('Members API', function () {
     });
 
     // NOTE: this test should be enabled and expanded once test suite fully supports Stripe mocking
-    it.skp('Can set a "Complimentary" subscription', function () {
+    it.skip('Can set a "Complimentary" subscription', function () {
         const memberToChange = {
             name: 'Comped Member',
             email: 'member2comp@test.com'
@@ -217,7 +217,7 @@ describe('Members API', function () {
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.members);
                         jsonResponse.members.should.have.length(1);
-                        localUtils.API.checkResponse(jsonResponse.members[0], 'member');
+                        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
                         jsonResponse.members[0].name.should.equal(memberToChange.name);
                         jsonResponse.members[0].email.should.equal(memberToChange.email);
                         jsonResponse.members[0].comped.should.equal(memberToChange.comped);
