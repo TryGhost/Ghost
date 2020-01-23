@@ -131,6 +131,19 @@ const members = {
         async query(frame) {
             const member = await models.Member.edit(frame.data.members[0], frame.options);
 
+            const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
+            const compedSubscriptions = subscriptions.filter(sub => (sub.plan.nickname === 'Complimentary'));
+
+            if (frame.data.members[0].comped !== undefined && (frame.data.members[0].comped !== compedSubscriptions)) {
+                const hasCompedSubscription = !!(compedSubscriptions.length);
+
+                if (frame.data.members[0].comped && !hasCompedSubscription) {
+                    await membersService.api.members.setComplimentarySubscription(member);
+                } else if (!(frame.data.members[0].comped) && hasCompedSubscription) {
+                    await membersService.api.members.cancelComplimentarySubscription(member);
+                }
+            }
+
             return member;
         }
     },
