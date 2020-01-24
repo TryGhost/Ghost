@@ -13,7 +13,20 @@ module.exports = function readCSV(options) {
         readFile.on('err', function (err) {
             reject(err);
         })
-            .pipe(csvParser())
+            .pipe(csvParser({
+                mapHeaders: ({header}) => {
+                    // NOTE: temporary hack to allow this column to be later mapped to 'subscribed'
+                    //       these mappings should go away in favor of custom tool that transforms
+                    //       csv files into correct format
+                    if (header === 'email_disabled') {
+                        return 'subscribed';
+                    } else if (header === 'stripe_connected_customer_id') {
+                        return 'stripe_customer_id';
+                    }
+
+                    return header;
+                }
+            }))
             .on('data', function (row) {
                 rows.push(row);
             })
