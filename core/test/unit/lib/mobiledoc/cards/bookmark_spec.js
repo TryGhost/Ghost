@@ -17,6 +17,7 @@ describe('Bookmark card', function () {
                     author: 'Author',
                     publisher: 'Publisher'
                 },
+                url: 'http://example.com',
                 caption: 'Caption'
             }
         };
@@ -38,6 +39,7 @@ describe('Bookmark card', function () {
                     author: 'Author',
                     publisher: 'Publisher'
                 },
+                url: 'http://example.com',
                 caption: 'Caption'
             }
         };
@@ -59,6 +61,7 @@ describe('Bookmark card', function () {
                     author: 'Author',
                     publisher: 'Publisher'
                 },
+                url: 'http://example.com',
                 caption: 'Caption'
             }
         };
@@ -80,6 +83,7 @@ describe('Bookmark card', function () {
                     author: null,
                     publisher: 'Publisher'
                 },
+                url: 'http://example.com',
                 caption: 'Caption'
             }
         };
@@ -101,6 +105,7 @@ describe('Bookmark card', function () {
                     author: 'Author',
                     publisher: null
                 },
+                url: 'http://example.com',
                 caption: 'Caption'
             }
         };
@@ -122,6 +127,7 @@ describe('Bookmark card', function () {
                     author: 'Author',
                     publisher: 'Publisher'
                 },
+                url: 'http://example.com',
                 caption: ''
             }
         };
@@ -134,7 +140,8 @@ describe('Bookmark card', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
-                metadata: undefined
+                metadata: undefined,
+                url: 'http://example.com'
             }
         };
 
@@ -146,7 +153,8 @@ describe('Bookmark card', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
-                metadata: {}
+                metadata: {},
+                url: 'http://example.com'
             }
         };
 
@@ -159,10 +167,10 @@ describe('Bookmark card', function () {
             env: {dom: new SimpleDom.Document()},
             payload: {
                 metadata: {
-                    url: null,
                     title: 'Test bookmark',
                     description: 'This is just a test'
-                }
+                },
+                url: null
             }
         };
 
@@ -178,7 +186,9 @@ describe('Bookmark card', function () {
                     url: 'http://example.com',
                     title: null,
                     description: 'This is just a test'
-                }
+                },
+                url: 'http://example.com'
+
             }
         };
 
@@ -194,7 +204,8 @@ describe('Bookmark card', function () {
                     url: 'http://example.com',
                     title: 'Test bookmark',
                     description: null
-                }
+                },
+                url: 'http://example.com'
             }
         };
 
@@ -207,12 +218,13 @@ describe('Bookmark card', function () {
             metadata: {
                 url: 'http://127.0.0.1:2369/post'
             },
+            url: 'http://127.0.0.1:2369/post',
             caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
         const transformed = card.absoluteToRelative(payload, {});
 
-        transformed.metadata.url
+        transformed.url
             .should.equal('/post');
 
         transformed.caption
@@ -224,12 +236,13 @@ describe('Bookmark card', function () {
             metadata: {
                 url: '/post'
             },
+            url: '/post',
             caption: 'A link to <a href="/post">an internal post</a>'
         };
 
         const transformed = card.relativeToAbsolute(payload, {});
 
-        transformed.metadata.url
+        transformed.url
             .should.equal('http://127.0.0.1:2369/post');
 
         transformed.caption

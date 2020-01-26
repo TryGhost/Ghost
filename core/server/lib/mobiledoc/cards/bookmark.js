@@ -39,14 +39,14 @@ module.exports = createCard({
     render(opts) {
         let {payload, env: {dom}} = opts;
 
-        if (!payload.metadata || !payload.metadata.url || !payload.metadata.title || !payload.metadata.description) {
+        if (!payload.metadata || !payload.url || !payload.metadata.title || !payload.metadata.description) {
             return '';
         }
 
         let figure = createElement(dom, 'figure', 'kg-card kg-bookmark-card');
         let linkTag = createElement(dom, 'a', 'kg-bookmark-container', [{
             key: 'href',
-            value: payload.metadata.url
+            value: payload.url
         }]);
         let contentDiv = createElement(dom, 'div', 'kg-bookmark-content');
         let titleDiv = createElement(dom, 'div', 'kg-bookmark-title', [] , payload.metadata.title);
@@ -94,7 +94,7 @@ module.exports = createCard({
 
     absoluteToRelative(urlUtils, payload, options) {
         if (payload.metadata) {
-            payload.metadata.url = payload.metadata.url && urlUtils.absoluteToRelative(payload.metadata.url, options);
+            payload.url = payload.url && urlUtils.absoluteToRelative(payload.url, options);
         }
         payload.caption = payload.caption && urlUtils.htmlAbsoluteToRelative(payload.caption, options);
         return payload;
@@ -102,7 +102,7 @@ module.exports = createCard({
 
     relativeToAbsolute(urlUtils, payload, options) {
         if (payload.metadata) {
-            payload.metadata.url = payload.metadata.url && urlUtils.relativeToAbsolute(payload.metadata.url, options);
+            payload.url = payload.url && urlUtils.relativeToAbsolute(payload.url, options);
         }
         payload.caption = payload.caption && urlUtils.htmlRelativeToAbsolute(payload.caption, options);
         return payload;
