@@ -5,6 +5,7 @@ const models = require('../../models');
 const membersService = require('../../services/members');
 const common = require('../../lib/common');
 const fsLib = require('../../lib/fs');
+const csvUtils = require('../../data/csv-utils');
 
 const decorateWithSubscriptions = async function (member) {
     // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
@@ -94,6 +95,10 @@ const members = {
         async query(frame) {
             try {
                 const model = await models.Member.add(frame.data.members[0], frame.options);
+
+                if (frame.data.members[0].stripe_customer_id) {
+                    await membersService.api.members.linkStripeCustomer(frame.data.members[0].stripe_customer_id, member);
+                }
 
                 if (frame.options.send_email) {
                     await membersService.api.sendEmailWithMagicLink(model.get('email'), frame.options.email_type);
@@ -227,6 +232,33 @@ const members = {
                 invalid = 0,
                 duplicates = 0;
 
+            // This normalization step doesnt belong here. Should be extracted into SDK and performed by the user
+            await csvUtils.normalizeMembersCSV({
+                path: filePath,
+                columnsToMap: [{
+                    email_disabled: 'subscribed',
+                    negate: true
+                }, {
+                    stripe_connected_customer_id: 'stripe_customer_id'
+                }],
+                columnsToExtract: [{
+                    name: 'email',
+                    lookup: /email/i
+                }, {
+                    name: 'name',
+                    lookup: /name/i
+                }, {
+                    name: 'note',
+                    lookup: /note/i
+                }, {
+                    name: 'subscribed',
+                    lookup: /subscribed/i
+                }, {
+                    name: 'stripe_customer_id',
+                    lookup: /stripe_customer_id/i
+                }]
+            });
+
             return fsLib.readCSV({
                 path: filePath,
                 columnsToExtract: [{
@@ -254,7 +286,9 @@ const members = {
                             members: [{
                                 email: entry.email,
                                 name: entry.name,
-                                note: entry.note
+                                note: entry.note,
+                                subscribed: entry.subscribed,
+                                stripe_customer_id: entry.stripe_customer_id
                             }]
                         },
                         options: {

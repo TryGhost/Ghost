@@ -1,6 +1,7 @@
 const common = require('../../../../../lib/common');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:members');
 const mapper = require('./utils/mapper');
+const {formatCSV} = require('../../../../../lib/fs');
 
 module.exports = {
     browse(data, apiConfig, frame) {
@@ -47,30 +48,7 @@ module.exports = {
 
         const fields = ['id', 'email', 'name', 'note', 'created_at', 'deleted_at'];
 
-        function formatCSV(data) {
-            let csv = `${fields.join(',')}\r\n`,
-                entry,
-                field,
-                j,
-                i;
-
-            for (j = 0; j < data.length; j = j + 1) {
-                entry = data[j];
-
-                for (i = 0; i < fields.length; i = i + 1) {
-                    field = fields[i];
-                    csv += entry[field] !== null ? entry[field] : '';
-                    if (i !== fields.length - 1) {
-                        csv += ',';
-                    }
-                }
-                csv += '\r\n';
-            }
-
-            return csv;
-        }
-
-        frame.response = formatCSV(models.members);
+        frame.response = formatCSV(models.members, fields);
     },
 
     importCSV(data, apiConfig, frame) {
