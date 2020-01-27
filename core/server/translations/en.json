@@ -607,6 +607,10 @@
             "plural": {
                 "valuesMustBeDefined": "All values must be defined for empty, singular and plural"
             },
+            "price": {
+                "attrIsRequired": "Attribute is required e.g. \\{\\{price plan.amount\\}\\}",
+                "attrMustBeNumeric": "Attribute value should be a number"
+            },
             "img_url": {
                 "attrIsRequired": "Attribute is required e.g. \\{\\{img_url feature_image\\}\\}",
                 "attrIsUnknown": "Attribute passed to \\{\\{img_url\\}\\} is unknown"
