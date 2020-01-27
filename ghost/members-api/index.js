@@ -154,6 +154,12 @@ module.exports = function MembersApi({
             return res.end('Bad Request.');
         }
 
+        // NOTE: never allow "Complimenatry" plan to be subscribed to from the client
+        if (plan.toLowerCase() === 'complimentary') {
+            res.writeHead(400);
+            return res.end('Bad Request.');
+        }
+
         let email;
         try {
             if (!identity) {
@@ -274,6 +280,11 @@ module.exports = function MembersApi({
         if (!subscription) {
             res.writeHead(403);
             return res.end('No permission');
+        }
+
+        if (subscription.plan.nickname === 'Complimentary') {
+            res.writeHead(400);
+            return res.end('Bad request');
         }
 
         if (cancelAtPeriodEnd === undefined) {
