@@ -73,10 +73,6 @@ describe('Acceptance: Setup', function () {
             expect(stepIcons[1], 'second step').to.not.have.class('active');
             expect(stepIcons[2], 'third step').to.not.have.class('active');
 
-            // it displays download count (count increments for each ajax call
-            // and polling is disabled in testing so our count should be "1"
-            expect(find('.gh-flow-content em').textContent.trim()).to.equal('1');
-
             await click('.gh-btn-green');
 
             // it transitions to step two
