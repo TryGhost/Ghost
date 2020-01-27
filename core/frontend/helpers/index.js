@@ -36,6 +36,7 @@ coreHelpers.pagination = require('./pagination');
 coreHelpers.plural = require('./plural');
 coreHelpers.post_class = require('./post_class');
 coreHelpers.prev_post = require('./prev_next');
+coreHelpers.price = require('./price');
 coreHelpers.next_post = require('./prev_next');
 coreHelpers.reading_time = require('./reading_time');
 coreHelpers.t = require('./t');
@@ -84,6 +85,7 @@ registerAllCoreHelpers = function registerAllCoreHelpers() {
     registerThemeHelper('pagination', coreHelpers.pagination);
     registerThemeHelper('plural', coreHelpers.plural);
     registerThemeHelper('post_class', coreHelpers.post_class);
+    registerThemeHelper('price', coreHelpers.price);
     registerThemeHelper('reading_time', coreHelpers.reading_time);
     registerThemeHelper('t', coreHelpers.t);
     registerThemeHelper('tags', coreHelpers.tags);
