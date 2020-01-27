@@ -128,9 +128,10 @@ module.exports = class StripePaymentProcessor {
             return subscription.status !== 'canceled';
         });
 
-        await Promise.all(activeSubscriptions.map((subscription) => {
-            return del(this._stripe, 'subscriptions', subscription.id);
-        }));
+        for (const subscription of activeSubscriptions) {
+            const updatedSubscription = await del(this._stripe, 'subscriptions', subscription.id);
+            await this._updateSubscription(updatedSubscription);
+        }
 
         return true;
     }
@@ -175,6 +176,40 @@ module.exports = class StripePaymentProcessor {
                 current_period_end: subscription.current_period_end
             };
         });
+    }
+
+    async setComplimentarySubscription(member) {
+        const subscriptions = await this.getActiveSubscriptions(member);
+        const complimentaryPlan = this._plans.find(plan => (plan.nickname === 'Complimentary'));
+
+        const customer = await this._customerForMemberCheckoutSession(member);
+
+        if (!subscriptions.length) {
+            const subscription = await create(this._stripe, 'subscriptions', {
+                customer: customer.id,
+                items: [{
+                    plan: complimentaryPlan.id
+                }]
+            });
+
+            await this._updateSubscription(subscription);
+        } else {
+            // NOTE: we should only ever have 1 active subscription, but just in case there is more update is done on all of them
+            for (const subscription of subscriptions) {
+                const updatedSubscription = await update(this._stripe, 'subscriptions', subscription.id, {
+                    proration_behavior: 'none',
+                    plan: complimentaryPlan.id
+                });
+
+                await this._updateSubscription(updatedSubscription);
+            }
+        }
+    }
+
+    async cancelComplimentarySubscription(member) {
+        // NOTE: a more explicit way would be cancelling just the "Complimentary" subscription, but doing it
+        //       through existing method achieves the same as there should be only one subscription at a time
+        await this.cancelAllSubscriptions(member);
     }
 
     async getActiveSubscriptions(member) {

@@ -75,6 +75,18 @@ module.exports = function ({
         }
     }
 
+    async function setComplimentarySubscription(member) {
+        if (stripe) {
+            await stripe.setComplimentarySubscription(member);
+        }
+    }
+
+    async function cancelComplimentarySubscription(member) {
+        if (stripe) {
+            await stripe.cancelComplimentarySubscription(member);
+        }
+    }
+
     async function get(data, options) {
         debug(`get id:${data.id} email:${data.email}`);
         const member = await getMember(data, options);
@@ -146,6 +158,8 @@ module.exports = function ({
         get,
         destroy,
         getStripeSubscriptions,
+        setComplimentarySubscription,
+        cancelComplimentarySubscription,
         destroyStripeSubscriptions
     };
 };
