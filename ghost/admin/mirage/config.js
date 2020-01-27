@@ -39,7 +39,6 @@ export default function () {
     this.passthrough();
 
     // add any external domains to make sure those get passed through too
-    this.passthrough('https://count.ghost.org/');
     this.passthrough('http://www.gravatar.com/**');
     this.passthrough('https://cdn.jsdelivr.net/**');
     this.passthrough('https://api.unsplash.com/**');
@@ -83,14 +82,6 @@ export function testConfig() {
     });
 
     /* External sites ------------------------------------------------------- */
-
-    let downloadCount = 0;
-    this.get('https://count.ghost.org/', function () {
-        downloadCount += 1;
-        return {
-            count: downloadCount
-        };
-    });
 
     this.head('http://www.gravatar.com/avatar/:md5', function () {
         return '';
