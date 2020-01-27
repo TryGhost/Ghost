@@ -28,6 +28,9 @@
                 "subscribed": {
                     "type": "boolean"
                 },
+                "comped": {
+                    "strip": "true"
+                },
                 "id": {
                     "strip": true
                 },
