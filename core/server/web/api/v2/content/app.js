@@ -4,12 +4,10 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const shared = require('../../../shared');
 const routes = require('./routes');
-const sentry = require('../../../../sentry');
 
 module.exports = function setupApiApp() {
     debug('Content API v2 setup start');
     const apiApp = express();
-    apiApp.use(sentry.requestHandler);
 
     // API middleware
 
@@ -29,7 +27,6 @@ module.exports = function setupApiApp() {
     apiApp.use(routes());
 
     // API error handling
-    apiApp.use(sentry.errorHandler);
     apiApp.use(shared.middlewares.errorHandler.resourceNotFound);
     apiApp.use(shared.middlewares.errorHandler.handleJSONResponse);
 
