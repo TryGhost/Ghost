@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const common = require('../../../../../lib/common');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:members');
 const mapper = require('./utils/mapper');
@@ -46,7 +47,25 @@ module.exports = {
     exportCSV(models, apiConfig, frame) {
         debug('exportCSV');
 
-        const fields = ['id', 'email', 'name', 'note', 'created_at', 'deleted_at'];
+        const fields = ['id', 'email', 'name', 'note', 'subscribed', 'stripe_customer_id', 'created_at', 'deleted_at'];
+
+        models.members = models.members.map((member) => {
+            let stripeCustomerId;
+
+            if (member.stripe) {
+                stripeCustomerId = _.get(member, 'stripe.subscriptions[0].customer.id');
+            }
+            return {
+                id: member.id,
+                email: member.email,
+                name: member.name,
+                note: member.note,
+                subscribed: member.subscribed,
+                stripe_customer_id: stripeCustomerId,
+                created_at: member.created_at,
+                deleted_at: member.deleted_at
+            };
+        });
 
         frame.response = formatCSV(models.members, fields);
     },
