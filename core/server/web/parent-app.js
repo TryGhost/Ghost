@@ -9,14 +9,12 @@ const escapeRegExp = require('lodash.escaperegexp');
 const {URL} = require('url');
 const urlUtils = require('../lib/url-utils');
 const storage = require('../adapters/storage');
-const sentry = require('../sentry');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
     const parentApp = express();
-    parentApp.use(sentry.requestHandler);
 
     // ## Global settings
 
@@ -55,7 +53,6 @@ module.exports = function setupParentApp(options = {}) {
 
     // Wrap the admin and API apps into a single express app for use with vhost
     const adminApp = express();
-    adminApp.use(sentry.requestHandler);
     adminApp.enable('trust proxy'); // required to respect x-forwarded-proto in admin requests
     adminApp.use('/ghost/api', require('./api')());
     adminApp.use('/ghost', require('./admin')());

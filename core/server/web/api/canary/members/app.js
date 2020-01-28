@@ -6,12 +6,10 @@ const membersService = require('../../../../services/members');
 const urlUtils = require('../../../../lib/url-utils');
 const labs = require('../../../shared/middlewares/labs');
 const shared = require('../../../shared');
-const sentry = require('../../../../sentry');
 
 module.exports = function setupMembersApiApp() {
     debug('Members API canary setup start');
     const apiApp = express();
-    apiApp.use(sentry.requestHandler);
 
     // Entire app is behind labs flag
     apiApp.use(labs.members);
@@ -26,7 +24,6 @@ module.exports = function setupMembersApiApp() {
     apiApp.put('/subscriptions/:id', (req, res, next) => membersService.api.middleware.updateSubscription(req, res, next));
 
     // API error handling
-    apiApp.use(sentry.errorHandler);
     apiApp.use(shared.middlewares.errorHandler.resourceNotFound);
     apiApp.use(shared.middlewares.errorHandler.handleJSONResponseV2);
 
