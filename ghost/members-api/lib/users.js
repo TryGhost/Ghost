@@ -87,6 +87,12 @@ module.exports = function ({
         }
     }
 
+    async function linkStripeCustomer(id, member) {
+        if (stripe) {
+            await stripe.linkStripeCustomer(id, member);
+        }
+    }
+
     async function get(data, options) {
         debug(`get id:${data.id} email:${data.email}`);
         const member = await getMember(data, options);
@@ -160,6 +166,7 @@ module.exports = function ({
         getStripeSubscriptions,
         setComplimentarySubscription,
         cancelComplimentarySubscription,
-        destroyStripeSubscriptions
+        destroyStripeSubscriptions,
+        linkStripeCustomer
     };
 };

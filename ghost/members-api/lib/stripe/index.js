@@ -121,6 +121,20 @@ module.exports = class StripePaymentProcessor {
         };
     }
 
+    async linkStripeCustomer(id, member) {
+        const customer = await retrieve(this._stripe, 'customers', id);
+
+        await this._updateCustomer(member, customer);
+
+        if (customer.subscriptions && customer.subscriptions.data) {
+            for (const subscription of customer.subscriptions.data) {
+                await this._updateSubscription(subscription);
+            }
+        }
+
+        return customer;
+    }
+
     async cancelAllSubscriptions(member) {
         const subscriptions = await this.getSubscriptions(member);
 
