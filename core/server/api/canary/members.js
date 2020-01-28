@@ -236,10 +236,12 @@ const members = {
             await csvUtils.normalizeMembersCSV({
                 path: filePath,
                 columnsToMap: [{
-                    email_disabled: 'subscribed',
+                    from: 'email_disabled',
+                    to: 'subscribed',
                     negate: true
                 }, {
-                    stripe_connected_customer_id: 'stripe_customer_id'
+                    from: 'stripe_connected_customer_id',
+                    to: 'stripe_customer_id'
                 }],
                 columnsToExtract: [{
                     name: 'email',
