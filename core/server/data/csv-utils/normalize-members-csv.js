@@ -9,6 +9,11 @@ const readNormalizedJSON = async (options) => {
     const columnsToMap = options.columnsToMap || [];
     let results = [];
     const rows = [];
+    // NOTE: this variable is a mega hack, but it's the easiest way to determine if
+    //       the file we are trying to normalize has the fields to be normalized
+    //       ideally if extracted to SDK and performance doesn't matter, can read
+    //       the headers of CSV as separate operation and determine based on that
+    let usedNormalizationMapping = 0;
 
     return new Promise(function (resolve, reject) {
         let readFile = fs.createReadStream(options.path);
@@ -20,6 +25,7 @@ const readNormalizedJSON = async (options) => {
                 mapHeaders: ({header}) => {
                     let mapping = columnsToMap.find(column => (column.from === header));
                     if (mapping) {
+                        usedNormalizationMapping += 1;
                         return mapping.to;
                     }
 
@@ -65,15 +71,21 @@ const readNormalizedJSON = async (options) => {
                         return result;
                     });
                 }
-                resolve(results);
+
+                resolve({results, usedNormalizationMapping});
             });
     });
 };
 
 // NOTE: this whole module belongs in the SDK and ideally should not be used from within Ghost
 module.exports = async function normalizeMembersCSV(options) {
-    // TODO: do not do anything if there are no email_disabled/stripe_connected_customer_id columns
-    const normalizedJSON = await readNormalizedJSON(options);
+    const {normalizedJSON, usedNormalizationMapping} = await readNormalizedJSON(options);
+
+    // NOTE: if the normalized file didn't use any of the mappings it's a native Ghost export file
+    //       in which case, no file modification should be done
+    if (usedNormalizationMapping < 2) {
+        return;
+    }
 
     let fields = ['email', 'name', 'note', 'subscribed', 'stripe_customer_id'];
 
