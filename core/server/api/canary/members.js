@@ -19,6 +19,14 @@ const decorateWithSubscriptions = async function (member) {
     });
 };
 
+const cleanupUndefined = (obj) => {
+    for (let key in obj) {
+        if (obj[key] === 'undefined') {
+            delete obj[key];
+        }
+    }
+};
+
 const listMembers = async function (options) {
     const res = (await models.Member.findPage(options));
     const memberModels = res.data.map(model => model.toJSON(options));
@@ -100,6 +108,10 @@ const members = {
 
                 if (frame.data.members[0].stripe_customer_id) {
                     await membersService.api.members.linkStripeCustomer(frame.data.members[0].stripe_customer_id, member);
+                }
+
+                if (frame.data.members[0].complimentary_plan) {
+                    await membersService.api.members.setComplimentarySubscription(member);
                 }
 
                 if (frame.data.members[0].comped) {
@@ -262,6 +274,9 @@ const members = {
                 }, {
                     name: 'stripe_customer_id',
                     lookup: /stripe_customer_id/i
+                }, {
+                    name: 'complimentary_plan',
+                    lookup: /complimentary_plan/i
                 }]
             });
 
@@ -282,11 +297,15 @@ const members = {
                 }, {
                     name: 'stripe_customer_id',
                     lookup: /stripe_customer_id/i
+                }, {
+                    name: 'complimentary_plan',
+                    lookup: /complimentary_plan/i
                 }]
             }).then((result) => {
                 return Promise.all(result.map((entry) => {
                     const api = require('./index');
 
+                    cleanupUndefined(entry);
                     return Promise.resolve(api.members.add.query({
                         data: {
                             members: [{
@@ -294,7 +313,8 @@ const members = {
                                 name: entry.name,
                                 note: entry.note,
                                 subscribed: entry.subscribed,
-                                stripe_customer_id: entry.stripe_customer_id
+                                stripe_customer_id: entry.stripe_customer_id,
+                                complimentary_plan: entry.complimentary_plan
                             }]
                         },
                         options: {
