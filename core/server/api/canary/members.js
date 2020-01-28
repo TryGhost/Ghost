@@ -232,7 +232,7 @@ const members = {
                 invalid = 0,
                 duplicates = 0;
 
-            // This normalization step doesnt belong here. Should be extracted into SDK and performed by the user
+            // NOTE: normalization step doesn't belong here. Should be extracted into SDK and performed by the user
             await csvUtils.normalizeMembersCSV({
                 path: filePath,
                 columnsToMap: [{
