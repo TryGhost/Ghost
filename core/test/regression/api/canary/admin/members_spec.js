@@ -166,10 +166,61 @@ describe('Members API', function () {
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.members);
                         jsonResponse.members.should.have.length(1);
-                        localUtils.API.checkResponse(jsonResponse.members[0], 'member');
+                        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
                         jsonResponse.members[0].name.should.equal(memberChanged.name);
                         jsonResponse.members[0].email.should.not.equal(memberChanged.email);
                         jsonResponse.members[0].email.should.equal(memberToChange.email);
+                    });
+            });
+    });
+
+    // NOTE: this test should be enabled and expanded once test suite fully supports Stripe mocking
+    it.skip('Can set a "Complimentary" subscription', function () {
+        const memberToChange = {
+            name: 'Comped Member',
+            email: 'member2comp@test.com'
+        };
+
+        const memberChanged = {
+            comped: true
+        };
+
+        return request
+            .post(localUtils.API.getApiQuery(`members/`))
+            .send({members: [memberToChange]})
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.members);
+                jsonResponse.members.should.have.length(1);
+
+                return jsonResponse.members[0];
+            })
+            .then((newMember) => {
+                return request
+                    .put(localUtils.API.getApiQuery(`members/${newMember.id}/`))
+                    .send({members: [memberChanged]})
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200)
+                    .then((res) => {
+                        should.not.exist(res.headers['x-cache-invalidate']);
+
+                        const jsonResponse = res.body;
+
+                        should.exist(jsonResponse);
+                        should.exist(jsonResponse.members);
+                        jsonResponse.members.should.have.length(1);
+                        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+                        jsonResponse.members[0].name.should.equal(memberToChange.name);
+                        jsonResponse.members[0].email.should.equal(memberToChange.email);
+                        jsonResponse.members[0].comped.should.equal(memberToChange.comped);
                     });
             });
     });

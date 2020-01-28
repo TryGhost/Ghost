@@ -6,24 +6,28 @@ const membersService = require('../../services/members');
 const common = require('../../lib/common');
 const fsLib = require('../../lib/fs');
 
-const listMembers = async function (options) {
-    const res = (await models.Member.findPage(options));
-    const members = res.data.map(model => model.toJSON(options));
-
+const decorateWithSubscriptions = async function (member) {
     // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
     //       are in place
-    const membersWithSubscriptions = await Promise.all(members.map(async function (member) {
-        const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
+    const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
 
-        return Object.assign(member, {
-            stripe: {
-                subscriptions
-            }
-        });
+    return Object.assign(member, {
+        stripe: {
+            subscriptions
+        }
+    });
+};
+
+const listMembers = async function (options) {
+    const res = (await models.Member.findPage(options));
+    const memberModels = res.data.map(model => model.toJSON(options));
+
+    const members = await Promise.all(memberModels.map(async function (member) {
+        return decorateWithSubscriptions(member);
     }));
 
     return {
-        members: membersWithSubscriptions,
+        members: members,
         meta: res.meta
     };
 };
@@ -55,25 +59,17 @@ const members = {
         validation: {},
         permissions: true,
         async query(frame) {
-            let member = await models.Member.findOne(frame.data, frame.options);
+            let model = await models.Member.findOne(frame.data, frame.options);
 
-            if (!member) {
+            if (!model) {
                 throw new common.errors.NotFoundError({
                     message: common.i18n.t('errors.api.members.memberNotFound')
                 });
             }
 
-            // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
-            //       are in place
-            const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
-            member = member.toJSON(frame.options);
-            Object.assign(member, {
-                stripe: {
-                    subscriptions
-                }
-            });
+            const member = model.toJSON(frame.options);
 
-            return member;
+            return decorateWithSubscriptions(member);
         }
     },
 
@@ -97,13 +93,15 @@ const members = {
         permissions: true,
         async query(frame) {
             try {
-                const member = await models.Member.add(frame.data.members[0], frame.options);
+                const model = await models.Member.add(frame.data.members[0], frame.options);
 
                 if (frame.options.send_email) {
-                    await membersService.api.sendEmailWithMagicLink(member.get('email'), frame.options.email_type);
+                    await membersService.api.sendEmailWithMagicLink(model.get('email'), frame.options.email_type);
                 }
 
-                return member;
+                const member = model.toJSON(frame.options);
+
+                return decorateWithSubscriptions(member);
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                     throw new common.errors.ValidationError({message: common.i18n.t('errors.api.members.memberAlreadyExists')});
@@ -129,9 +127,24 @@ const members = {
         },
         permissions: true,
         async query(frame) {
-            const member = await models.Member.edit(frame.data.members[0], frame.options);
+            const model = await models.Member.edit(frame.data.members[0], frame.options);
 
-            return member;
+            const member = model.toJSON(frame.options);
+
+            const subscriptions = await membersService.api.members.getStripeSubscriptions(member);
+            const compedSubscriptions = subscriptions.filter(sub => (sub.plan.nickname === 'Complimentary'));
+
+            if (frame.data.members[0].comped !== undefined && (frame.data.members[0].comped !== compedSubscriptions)) {
+                const hasCompedSubscription = !!(compedSubscriptions.length);
+
+                if (frame.data.members[0].comped && !hasCompedSubscription) {
+                    await membersService.api.members.setComplimentarySubscription(member);
+                } else if (!(frame.data.members[0].comped) && hasCompedSubscription) {
+                    await membersService.api.members.cancelComplimentarySubscription(member);
+                }
+            }
+
+            return decorateWithSubscriptions(member);
         }
     },
 

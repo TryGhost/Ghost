@@ -6,7 +6,10 @@ module.exports = {
     browse(data, apiConfig, frame) {
         debug('browse');
 
-        frame.response = mapper.mapMember(data, frame);
+        frame.response = {
+            members: data.members.map(member => mapper.mapMember(member, frame)),
+            meta: data.meta
+        };
     },
 
     add(data, apiConfig, frame) {
