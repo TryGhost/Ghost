@@ -5,6 +5,13 @@ const crypto = require('crypto');
 const common = require('../../lib/common');
 const urlUtils = require('../../lib/url-utils');
 
+const COMPLIMENTARY_PLAN = {
+    name: 'Complimentary',
+    currency: 'usd',
+    interval: 'year',
+    amount: '0'
+};
+
 // NOTE: the function is an exact duplicate of one in GhostMailer should be extracted
 //       into a common lib once it needs to be reused anywhere else again
 function getDomain() {
@@ -43,6 +50,8 @@ function getStripePaymentConfig() {
     if (!stripePaymentProcessor.config.public_token || !stripePaymentProcessor.config.secret_token) {
         return null;
     }
+
+    stripePaymentProcessor.config.plans.push(COMPLIMENTARY_PLAN);
 
     const webhookHandlerUrl = new URL('/members/webhooks/stripe', siteUrl);
 
