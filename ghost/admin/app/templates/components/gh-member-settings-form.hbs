@@ -67,6 +67,7 @@
     </div>
 </div>
 
+{{#unless this.member.isNew}}
 <h4 class="midlightgrey f-small fw5 ttu mt12">Stripe info</h4>
 
 {{#if this.isLoading}}
@@ -76,8 +77,8 @@
         </div>
     </div>
 {{else}}
-    {{#if this.subscriptions}}
-        <div class="br4 shadow-1 bg-grouped-table mt2">
+    <div class="br4 shadow-1 bg-grouped-table mt2">
+        {{#if this.subscriptions}}
             {{#if this.hasMultipleSubscriptions}}
                 <div class="pa2 flex flex-column flex-row-ns items-center justify-center f7 fw5 bg-whitegrey-l2 bb b--whitegrey br4 br--top">
                     {{svg-jar "info" class="gh-member-info-icon mr2 fill-darkgrey"}} Member has multiple Stripe subscriptions
@@ -176,10 +177,27 @@
                     </div>
                 </section>
             {{/each}}
+        {{else}}
+            <div class="pa20">
+                <p class="ma0 pa0 tc midgrey">Member doesn't have an active Stripe subscription</p>
+            </div>
+        {{/if}}
+        <div class="pa5 pb0 pt4 flex flex-column justify-between bt b--whitegrey">
+            <GhFormGroup @classNames="gh-members-comped-checkbox">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h4 class="gh-setting-title">Complimentary premium plan</h4>
+                        <p class="gh-setting-desc">If enabled, member will be placed onto a free of charge premium subscription</p>
+                    </div>
+                    <div class="for-switch">
+                        <label class="switch" for="comped-checkbox">
+                            <Input @checked={{this.member.comped}} @type="checkbox" @id="comped-checkbox" @name="comped" />
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
+                </div>
+            </GhFormGroup>
         </div>
-    {{else}}
-        <div class="pa20 br4 shadow-1 bg-grouped-table mt2">
-            <p class="ma0 pa0 tc midgrey">Member doesn't have an active Stripe subscription</p>
-        </div>
-    {{/if}}
+    </div>
 {{/if}}
+{{/unless}}

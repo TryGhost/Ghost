@@ -162,19 +162,19 @@ p.gh-members-list-email {
     .gh-members-chart-summary {
         flex-direction: row;
     }
-    
+
     .gh-members-chart-summary div {
         flex-basis: 33%;
         border-bottom: none;
         justify-content: flex-start;
     }
-    
+
     .gh-members-chart-summary > div:nth-of-type(1),
     .gh-members-chart-summary > div:nth-of-type(2) {
         border-right: 1px solid var(--whitegrey);
     }
 }
-    
+
 @media (max-width: 900px) {
     .members-list .gh-list-header, .gh-list-hidecell-m {
         display: none;
@@ -306,7 +306,8 @@ textarea.gh-member-details-textarea {
     width: 200px;
 }
 
-.gh-members-subscribed-checkbox {
+.gh-members-subscribed-checkbox,
+.gh-members-comped-checkbox {
     max-width: 100%;
 }
 
