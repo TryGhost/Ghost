@@ -96,15 +96,19 @@ const members = {
             try {
                 const model = await models.Member.add(frame.data.members[0], frame.options);
 
+                const member = model.toJSON(frame.options);
+
                 if (frame.data.members[0].stripe_customer_id) {
+                    await membersService.api.members.linkStripeCustomer(frame.data.members[0].stripe_customer_id, member);
+                }
+
+                if (frame.data.members[0].comped) {
                     await membersService.api.members.linkStripeCustomer(frame.data.members[0].stripe_customer_id, member);
                 }
 
                 if (frame.options.send_email) {
                     await membersService.api.sendEmailWithMagicLink(model.get('email'), frame.options.email_type);
                 }
-
-                const member = model.toJSON(frame.options);
 
                 return decorateWithSubscriptions(member);
             } catch (error) {
