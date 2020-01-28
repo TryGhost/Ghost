@@ -13,6 +13,7 @@ module.exports = function readCSV(options) {
         readFile.on('err', function (err) {
             reject(err);
         })
+            .pipe(csvParser())
             .on('data', function (row) {
                 rows.push(row);
             })
