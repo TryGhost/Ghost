@@ -128,6 +128,18 @@ const members = {
                     throw new common.errors.ValidationError({message: common.i18n.t('errors.api.members.memberAlreadyExists')});
                 }
 
+                // NOTE: failed to link Stripe customer/plan/subscription
+                if (model && error.message && (error.message.indexOf('customer') || error.message.indexOf('plan') || error.message.indexOf('subscription'))) {
+                    const api = require('./index');
+
+                    await api.members.destroy.query({
+                        options: {
+                            context: frame.options.context,
+                            id: model.id
+                        }
+                    });
+                }
+
                 throw error;
             }
         }
