@@ -47,20 +47,23 @@ module.exports = {
     exportCSV(models, apiConfig, frame) {
         debug('exportCSV');
 
-        const fields = ['id', 'email', 'name', 'note', 'subscribed', 'stripe_customer_id', 'created_at', 'deleted_at'];
+        const fields = ['id', 'email', 'name', 'note', 'subscribed', 'complimentary_plan', 'stripe_customer_id', 'created_at', 'deleted_at'];
 
         models.members = models.members.map((member) => {
+            member = mapper.mapMember(member);
             let stripeCustomerId;
 
             if (member.stripe) {
                 stripeCustomerId = _.get(member, 'stripe.subscriptions[0].customer.id');
             }
+
             return {
                 id: member.id,
                 email: member.email,
                 name: member.name,
                 note: member.note,
                 subscribed: member.subscribed,
+                complimentary_plan: member.comped,
                 stripe_customer_id: stripeCustomerId,
                 created_at: member.created_at,
                 deleted_at: member.deleted_at
