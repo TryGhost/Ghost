@@ -276,7 +276,7 @@ describe('Members API', function () {
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 res.headers['content-disposition'].should.match(/Attachment;\sfilename="members/);
-                res.text.should.match(/id,email,name,note,subscribed,stripe_customer_id,created_at,deleted_at/);
+                res.text.should.match(/id,email,name,note,subscribed,complimentary_plan,stripe_customer_id,created_at,deleted_at/);
                 res.text.should.match(/member1@test.com/);
                 res.text.should.match(/Mr Egg/);
             });
@@ -323,6 +323,28 @@ describe('Members API', function () {
                 jsonResponse.meta.stats.imported.should.equal(2);
                 jsonResponse.meta.stats.duplicates.should.equal(0);
                 jsonResponse.meta.stats.invalid.should.equal(0);
+            });
+    });
+
+    it('Can import file with duplicate stripe customer ids', function () {
+        return request
+            .post(localUtils.API.getApiQuery(`members/csv/`))
+            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-with-duplicate-stripe-ids.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.meta);
+                should.exist(jsonResponse.meta.stats);
+
+                jsonResponse.meta.stats.imported.should.equal(1);
+                jsonResponse.meta.stats.duplicates.should.equal(0);
+                jsonResponse.meta.stats.invalid.should.equal(2);
             });
     });
 });

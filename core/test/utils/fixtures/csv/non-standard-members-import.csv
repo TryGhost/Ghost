@@ -1,3 +1,3 @@
 email,email_disabled,stripe_connected_customer_id
-test+member1@example.com,true,cus_GbbIQRd8TnFqHq
-test+member2@example.com,false,
+member+non_standard_1@example.com,true,cus_GbbIQRd8TnFqHq
+member+non_standard_2@example.com,false
