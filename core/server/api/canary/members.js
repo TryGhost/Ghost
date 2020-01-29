@@ -306,9 +306,9 @@ const members = {
                                 email: entry.email,
                                 name: entry.name,
                                 note: entry.note,
-                                subscribed: entry.subscribed,
+                                subscribed: (String(entry.subscribed).toLowerCase() === 'true'),
                                 stripe_customer_id: entry.stripe_customer_id,
-                                comped: entry.complimentary_plan
+                                comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true')
                             }]
                         },
                         options: {
