@@ -79,7 +79,7 @@ const readNormalizedJSON = async (options) => {
 
 // NOTE: this whole module belongs in the SDK and ideally should not be used from within Ghost
 module.exports = async function normalizeMembersCSV(options) {
-    const {normalizedJSON, usedNormalizationMapping} = await readNormalizedJSON(options);
+    const {results, usedNormalizationMapping} = await readNormalizedJSON(options);
 
     // NOTE: if the normalized file didn't use any of the mappings it's a native Ghost export file
     //       in which case, no file modification should be done
@@ -89,11 +89,11 @@ module.exports = async function normalizeMembersCSV(options) {
 
     let fields = ['email', 'name', 'note', 'subscribed', 'stripe_customer_id'];
 
-    if (normalizedJSON.length) {
-        fields = Object.keys(normalizedJSON[0]);
+    if (results && results.length) {
+        fields = Object.keys(results[0]);
     }
 
-    const normalizedCSV = formatCSV(normalizedJSON, fields);
+    const normalizedCSV = formatCSV(results, fields);
 
     return fs.writeFile(options.path, normalizedCSV);
 };
