@@ -117,6 +117,7 @@ const configureGrunt = function (grunt) {
                 timeout: '30000',
                 save: grunt.option('reporter-output'),
                 require: ['core/server/overrides'],
+                retries: '3',
                 exit: true
             },
 
