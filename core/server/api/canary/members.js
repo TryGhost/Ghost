@@ -101,8 +101,10 @@ const members = {
         },
         permissions: true,
         async query(frame) {
+            let model;
+
             try {
-                const model = await models.Member.add(frame.data.members[0], frame.options);
+                model = await models.Member.add(frame.data.members[0], frame.options);
 
                 const member = model.toJSON(frame.options);
 
@@ -110,12 +112,8 @@ const members = {
                     await membersService.api.members.linkStripeCustomer(frame.data.members[0].stripe_customer_id, member);
                 }
 
-                if (frame.data.members[0].complimentary_plan) {
-                    await membersService.api.members.setComplimentarySubscription(member);
-                }
-
                 if (frame.data.members[0].comped) {
-                    await membersService.api.members.linkStripeCustomer(frame.data.members[0].stripe_customer_id, member);
+                    await membersService.api.members.setComplimentarySubscription(member);
                 }
 
                 if (frame.options.send_email) {
@@ -260,6 +258,26 @@ const members = {
                 invalid = 0,
                 duplicates = 0;
 
+            const columnsToExtract = [{
+                name: 'email',
+                lookup: /email/i
+            }, {
+                name: 'name',
+                lookup: /name/i
+            }, {
+                name: 'note',
+                lookup: /note/i
+            }, {
+                name: 'subscribed',
+                lookup: /subscribed/i
+            }, {
+                name: 'stripe_customer_id',
+                lookup: /stripe_customer_id/i
+            }, {
+                name: 'complimentary_plan',
+                lookup: /complimentary_plan/i
+            }];
+
             // NOTE: normalization step doesn't belong here. Should be extracted into SDK and performed by the user
             await csvUtils.normalizeMembersCSV({
                 path: filePath,
@@ -271,48 +289,12 @@ const members = {
                     from: 'stripe_connected_customer_id',
                     to: 'stripe_customer_id'
                 }],
-                columnsToExtract: [{
-                    name: 'email',
-                    lookup: /email/i
-                }, {
-                    name: 'name',
-                    lookup: /name/i
-                }, {
-                    name: 'note',
-                    lookup: /note/i
-                }, {
-                    name: 'subscribed',
-                    lookup: /subscribed/i
-                }, {
-                    name: 'stripe_customer_id',
-                    lookup: /stripe_customer_id/i
-                }, {
-                    name: 'complimentary_plan',
-                    lookup: /complimentary_plan/i
-                }]
+                columnsToExtract: columnsToExtract
             });
 
             return fsLib.readCSV({
                 path: filePath,
-                columnsToExtract: [{
-                    name: 'email',
-                    lookup: /email/i
-                }, {
-                    name: 'name',
-                    lookup: /name/i
-                }, {
-                    name: 'note',
-                    lookup: /note/i
-                }, {
-                    name: 'subscribed',
-                    lookup: /subscribed/i
-                }, {
-                    name: 'stripe_customer_id',
-                    lookup: /stripe_customer_id/i
-                }, {
-                    name: 'complimentary_plan',
-                    lookup: /complimentary_plan/i
-                }]
+                columnsToExtract: columnsToExtract
             }).then((result) => {
                 return Promise.all(result.map((entry) => {
                     const api = require('./index');
@@ -326,7 +308,7 @@ const members = {
                                 note: entry.note,
                                 subscribed: entry.subscribed,
                                 stripe_customer_id: entry.stripe_customer_id,
-                                complimentary_plan: entry.complimentary_plan
+                                comped: entry.complimentary_plan
                             }]
                         },
                         options: {
