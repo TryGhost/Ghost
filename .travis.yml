@@ -13,19 +13,13 @@ env:
   matrix:
   - DB=sqlite3 NODE_ENV=testing
   - DB=mysql NODE_ENV=testing-mysql
-matrix:
-  include:
-  - node_js: '10'
-    env: TEST_SUITE=lint
 install:
 - yarn
 before_script:
 - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
 - if [ "$DB" == "sqlite3" ]; then yarn add --force sqlite3; fi
 script: |
-  if [ "$TEST_SUITE" == "lint" ]; then
-    yarn lint
-  elif [[ "$TRAVIS_PULL_REQUEST_BRANCH" =~ ^renovate || "$TRAVIS_EVENT_TYPE" == "cron" ]]; then
+  if [[ "$TRAVIS_PULL_REQUEST_BRANCH" =~ ^renovate || "$TRAVIS_EVENT_TYPE" == "cron" ]]; then
     yarn ci:regression
   else
     yarn ci
