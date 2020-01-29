@@ -1,0 +1,20 @@
+name: Ghost-CLI
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10'
+      - run: npm install -g ghost-cli@latest
+      - run: zip -r ghost.zip .
+      - run: mkdir test
+      - run: ghost install local --zip ../ghost.zip
+        working-directory: test
