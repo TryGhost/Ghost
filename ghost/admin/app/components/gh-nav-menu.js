@@ -9,8 +9,10 @@ import {inject as service} from '@ember/service';
 
 export default Component.extend(ShortcutsMixin, {
     config: service(),
+    customViews: service(),
     feature: service(),
     ghostPaths: service(),
+    navigation: service(),
     router: service(),
     session: service(),
     ui: service(),

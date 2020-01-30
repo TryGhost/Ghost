@@ -1,7 +1,7 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
+import {click, currentURL, fillIn, find, findAll, visit} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
-import {currentURL, find, findAll, visit} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -114,6 +114,88 @@ describe('Acceptance: Content', function () {
             expect(options[1].textContent.trim()).to.equal('A - First');
             expect(options[2].textContent.trim()).to.equal('B - Second');
             expect(options[3].textContent.trim()).to.equal('Z - Last');
+        });
+
+        it('can add and edit custom views', async function () {
+            // actions are not visible when there's no filter
+            await visit('/posts');
+            expect(find('[data-test-button="edit-view"]')).to.not.exist;
+            expect(find('[data-test-button="add-view"]')).to.not.exist;
+
+            // add action is visible after filtering to a non-default filter
+            await selectChoose('[data-test-author-select]', admin.name);
+            expect(find('[data-test-button="add-view"]')).to.exist;
+
+            // adding view shows it in the sidebar
+            await click('[data-test-button="add-view"]');
+            expect(find('[data-test-modal="custom-view-form"]')).to.exist;
+            expect(find('[data-test-modal="custom-view-form"] h1').textContent.trim()).to.equal('New view');
+            await fillIn('[data-test-input="custom-view-name"]', 'Test view');
+            await click('[data-test-button="save-custom-view"]');
+            // modal closes on save
+            expect(find('[data-test-modal="custom-view-form"]')).to.not.exist;
+            // UI updates
+            expect(find('[data-test-nav-custom="posts-Test view"]')).to.exist;
+            expect(find('[data-test-nav-custom="posts-Test view"]').textContent.trim()).to.equal('Test view');
+            expect(find('[data-test-button="add-view"]')).to.not.exist;
+            expect(find('[data-test-button="edit-view"]')).to.exist;
+
+            // editing view
+            await click('[data-test-button="edit-view"]');
+            expect(find('[data-test-modal="custom-view-form"]')).to.exist;
+            expect(find('[data-test-modal="custom-view-form"] h1').textContent.trim()).to.equal('Edit view');
+            await fillIn('[data-test-input="custom-view-name"]', 'Updated view');
+            await click('[data-test-button="save-custom-view"]');
+            // modal closes on save
+            expect(find('[data-test-modal="custom-view-form"]')).to.not.exist;
+            // UI updates
+            expect(find('[data-test-nav-custom="posts-Updated view"]')).to.exist;
+            expect(find('[data-test-nav-custom="posts-Updated view"]').textContent.trim()).to.equal('Updated view');
+            expect(find('[data-test-button="add-view"]')).to.not.exist;
+            expect(find('[data-test-button="edit-view"]')).to.exist;
+        });
+
+        it('can navigate to custom views', async function () {
+            admin.accessibility = JSON.stringify({
+                views: [{
+                    route: 'posts',
+                    name: 'My posts',
+                    filter: {
+                        author: admin.slug
+                    }
+                }]
+            });
+            admin.save();
+
+            await visit('/posts');
+
+            // nav bar contains default + custom views
+            expect(find('[data-test-nav-custom="posts-Drafts"')).to.exist;
+            expect(find('[data-test-nav-custom="posts-Scheduled"')).to.exist;
+            expect(find('[data-test-nav-custom="posts-Published"')).to.exist;
+            expect(find('[data-test-nav-custom="posts-My posts"')).to.exist;
+
+            // screen has default title and sidebar is showing inactive custom view
+            expect(find('[data-test-screen-title]').textContent.trim()).to.equal('Posts');
+            expect(find('[data-test-nav="posts"')).to.have.class('active');
+
+            // clicking sidebar custom view link works
+            await click('[data-test-nav-custom="posts-Scheduled"]');
+            expect(currentURL()).to.equal('/posts?type=scheduled');
+            expect(find('[data-test-screen-title]').textContent.trim()).to.match(/Posts[ \n]+Scheduled/);
+            expect(find('[data-test-nav-custom="posts-Scheduled"]')).to.have.class('active');
+
+            // clicking the main posts link resets
+            await click('[data-test-nav="posts"]');
+            expect(currentURL()).to.equal('/posts');
+            expect(find('[data-test-screen-title]').textContent.trim()).to.equal('Posts');
+            expect(find('[data-test-nav-custom="posts-Scheduled"]')).to.not.have.class('active');
+
+            // changing a filter to match a custom view shows custom view
+            await selectChoose('[data-test-type-select]', 'Scheduled posts');
+            expect(currentURL()).to.equal('/posts?type=scheduled');
+            expect(find('[data-test-nav-custom="posts-Scheduled"]')).to.have.class('active');
+            expect(find('[data-test-screen-title]').textContent.trim()).to.match(/Posts[ \n]+Scheduled/);
         });
     });
 

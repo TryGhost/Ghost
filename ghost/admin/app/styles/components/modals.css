@@ -60,6 +60,11 @@
     max-width: 550px;
 }
 
+.fullscreen-modal-narrow {
+    width: 100%;
+    max-width: 420px;
+}
+
 .fullscreen-modal-full-overlay {
     width: 100%;
     max-width: 90%;
@@ -175,6 +180,10 @@
 
 .modal-body .login-form .gh-btn span {
     height: 38px;
+}
+
+.modal-body .form-group p {
+    font-size: 1.3rem;
 }
 
 @media (max-width: 900px) {

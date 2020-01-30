@@ -27,7 +27,7 @@ const GhTaskButton = Component.extend({
     attributeBindings: ['disabled', 'form', 'type', 'tabindex'],
 
     task: null,
-    taskParams: null,
+    taskArgs: undefined,
     disabled: false,
     defaultClick: false,
     buttonText: 'Save',

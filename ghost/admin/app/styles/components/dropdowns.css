@@ -20,7 +20,7 @@
     left: 0;
     float: left;
     margin: 2px 0 0;
-    padding: 6px;
+    padding: 6px 0;
     min-width: 200px;
     background-color: #fff;
     background-clip: padding-box;
@@ -54,13 +54,13 @@
     display: flex;
     align-items: center;
     clear: both;
-    padding: 6px 10px;
+    padding: 6px 14px;
     width: 100%;
     color: var(--middarkgrey);
     text-align: left;
     white-space: nowrap;
     font-size: 1.3rem;
-    line-height: 1em;
+    line-height: 1.4em;
     font-weight: normal;
     transition: none;
 }

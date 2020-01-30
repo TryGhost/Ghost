@@ -350,6 +350,85 @@ textarea {
 }
 
 
+.gh-radio-color {
+    position: relative;
+}
+
+.gh-radio-color > input[type="radio"] {
+    -moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
+	background: none;
+	opacity: .00001;
+	z-index: 2;
+}
+
+.gh-radio-color > label {
+    position: relative;
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+}
+
+.gh-radio-color label span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    transition: transform .2s ease-in-out;
+}
+
+.gh-radio-color input[type="radio"]:checked + label:after {
+    position: absolute;
+    content: "";
+    display: block;
+    top: -4px;
+    right: -4px;
+    bottom: -4px;
+    left: -4px;
+    border-radius: 999px;
+    border: 2px solid var(--blue);
+}
+
+.gh-radio-color label span.gh-radio-color-blue {
+    background-color: var(--blue);
+}
+
+.gh-radio-color label span.gh-radio-color-green {
+    background-color: var(--green);
+}
+
+.gh-radio-color label span.gh-radio-color-purple {
+    background-color: var(--purple);
+}
+
+.gh-radio-color label span.gh-radio-color-yellow {
+    background-color: var(--yellow);
+}
+
+.gh-radio-color label span.gh-radio-color-red {
+    background-color: var(--red);
+}
+
+.gh-radio-color label span.gh-radio-color-pink {
+    background-color: var(--pink);
+}
+
+.gh-radio-color label span.gh-radio-color-midgrey {
+    background-color: var(--midgrey);
+}
+
+.gh-radio-color label span.gh-radio-color-teal {
+    background-color: #4dcddc;
+}
+
+.gh-radio-color label span.gh-radio-color-orange {
+    background-color: #fe8b05;
+}
+
+
+
 /* Switch
 /* ---------------------------------------------------------- */
 .for-switch label,
