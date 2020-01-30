@@ -31,13 +31,26 @@
         <ul class="gh-nav-list gh-nav-manage">
             <li class="gh-nav-list-h">Manage</li>
             <li class="gh-nav-list-new relative">
-                {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
-                {{#if (eq this.router.currentRouteName "posts")}}
-                    <LinkTo @route="posts" @query={{hash type=null author=null tag=null order=null}} @classNames="active" data-test-nav="posts">{{svg-jar "content"}}Posts</LinkTo>
-                {{else}}
-                    <LinkTo @route="posts" data-test-nav="posts">{{svg-jar "content"}}Posts</LinkTo>
+                <GhLinkToCustomViewsIndex @route="posts" @query={{reset-posts-query}} data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
+                <LinkTo @route="editor.new" @model="post" @classNames="gh-secondary-action gh-nav-new-post" @alt="New post" @title="New post" data-test-nav="new-story"><span>{{svg-jar "add-stroke"}}</span></LinkTo>
+                {{#if this.customViews.forPosts}}
+                    <button type="button" class="absolute left-3 top-2 z-9999 flex items-align pl2 h4 gh-nav-button-expand {{if this.navigation.settings.expanded.posts "expanded"}}" {{on "click" (fn this.navigation.toggleExpansion "posts")}}>
+                        {{svg-jar (if this.navigation.settings.expanded.posts "arrow-down-stroke" "arrow-right-stroke")}}
+                    </button>
+                    {{#liquid-if this.navigation.settings.expanded.posts}}
+                        <ul class="gh-nav-view-list">
+                            {{#each this.customViews.forPosts as |view|}}
+                                <li>
+                                    <LinkTo @route="posts" @query={{reset-posts-query view.filter}} data-test-nav-custom="{{view.route}}-{{view.name}}" title="{{view.name}}">
+                                        {{!-- <div class="dib w4 h4 mr2 bg-{{view.color}} br-100"></div> --}}
+                                        <span class="flex items-center svg-{{view.color}}">{{svg-jar (or view.icon "post")}}</span>
+                                        <span class="gh-nav-viewname">{{view.name}}</span>
+                                    </LinkTo>
+                                </li>
+                            {{/each}}
+                        </ul>
+                    {{/liquid-if}}
                 {{/if}}
-                <LinkTo @route="editor.new" @model="post" @classNames="gh-secondary-action gh-nav-new-post" @alt="New story" data-test-nav="new-story"><span>{{svg-jar "add-stroke"}}</span></LinkTo>
             </li>
             <li>
                 {{!-- clicking the Content link whilst on the content screen should reset the filter --}}

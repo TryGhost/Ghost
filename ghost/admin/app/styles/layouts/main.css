@@ -360,6 +360,25 @@
     stroke: var(--active-menu-color);
 }
 
+.gh-nav-button-expand.expanded {
+    padding-left: 9px;
+}
+
+.gh-nav-button-expand svg {
+    width: 9px;
+    height: 9px;
+    margin-bottom: 1px;
+}
+
+.gh-nav-button-expand svg path {
+    stroke-width: 2.0px;
+    stroke: var(--midgrey);
+}
+
+.gh-nav-button-expand:hover svg path {
+    stroke: color-mod(var(--darkgrey) l(-5%));
+}
+
 .gh-nav-list .gh-secondary-action {
     position: absolute;
     z-index: 999;
@@ -438,6 +457,108 @@
 .gh-nav-pro .gh-btn-green {
     margin: 7px 10px 7px 20px !important;
     width: calc(100% - 40px) !important;
+}
+
+.gh-nav-view-list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    font-size: 1.4rem;
+    line-height: 1.6em;
+}
+
+.gh-nav-view-list a {
+    padding-left: 58px;
+    padding-right: 12px;
+}
+
+.gh-nav-viewname {
+    display: inline-block;
+    max-width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gh-nav-view-list a .svg-blue svg {
+    fill: var(--blue);
+}
+
+.gh-nav-view-list a:hover .svg-blue svg,
+.gh-nav-view-list .active .svg-blue svg {
+    fill: color-mod(var(--blue) l(-8%));
+}
+
+.gh-nav-view-list a .svg-green svg {
+    fill: var(--green);
+}
+
+.gh-nav-view-list a:hover .svg-green svg,
+.gh-nav-view-list .active .svg-green svg {
+    fill: color-mod(var(--green) l(-8%));
+}
+
+.gh-nav-view-list a .svg-purple svg {
+    fill: var(--purple);
+}
+
+.gh-nav-view-list a:hover .svg-purple svg,
+.gh-nav-view-list .active .svg-purple svg {
+    fill: color-mod(var(--purple) l(-8%));
+}
+
+.gh-nav-view-list a .svg-yellow svg {
+    fill: color-mod(var(--yellow) l(-5%));
+}
+
+.gh-nav-view-list a:hover .svg-yellow svg,
+.gh-nav-view-list .active .svg-yellow svg {
+    fill: color-mod(var(--yellow) l(-12%));
+}
+
+.gh-nav-view-list a .svg-red svg {
+    fill: var(--red);
+}
+
+.gh-nav-view-list a:hover .svg-red svg,
+.gh-nav-view-list .active .svg-red svg {
+    fill: color-mod(var(--red) l(-8%));
+}
+
+.gh-nav-view-list a .svg-pink svg {
+    fill: var(--pink);
+}
+
+.gh-nav-view-list a:hover .svg-pink svg,
+.gh-nav-view-list .active .svg-pink svg {
+    fill: color-mod(var(--pink) l(-8%));
+}
+
+.gh-nav-view-list a .svg-midgrey svg {
+    fill: var(--midgrey);
+}
+
+.gh-nav-view-list a:hover .svg-midgrey svg,
+.gh-nav-view-list .active .svg-midgrey svg {
+    fill: var(--darkgrey);
+}
+
+.gh-nav-view-list a .svg-teal svg {
+    fill: #4dcddc;
+}
+
+.gh-nav-view-list a:hover .svg-teal svg,
+.gh-nav-view-list .active .svg-teal svg {
+    fill: color-mod(#4dcddc l(-8%));
+}
+
+.gh-nav-view-list a .svg-orange svg {
+    fill: #fe8b05;
+}
+
+.gh-nav-view-list a:hover .svg-orange svg,
+.gh-nav-view-list .active .svg-orange svg {
+    fill: color-mod(#fe8b05 l(-8%));
 }
 
 /* Mobile Nav Menu (Slides out)
@@ -655,10 +776,9 @@
     display: flex;
     align-items: center;
     overflow: hidden;
-    margin: -3px 0 0 1px;
+    margin: -3px 0 0 0;
     padding: 0;
     text-overflow: ellipsis;
-    text-indent: -1px;
     white-space: nowrap;
     font-size: 2.8rem;
     line-height: 1.2em;
@@ -688,6 +808,15 @@
     width: 0.6em;
     height: 0.6em;
     margin: 0 10px;
+}
+
+.gh-btn-edit-view {
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+}
+
+.gh-canvas-title:hover .gh-btn-edit-view {
+    opacity: 1.0;
 }
 
 /* What's new badges
