@@ -280,10 +280,10 @@ const members = {
             method: 'add'
         },
         async query(frame) {
-            let filePath = frame.file.path,
-                fulfilled = 0,
-                invalid = 0,
-                duplicates = 0;
+            let filePath = frame.file.path;
+            let fulfilled = 0;
+            let invalid = 0;
+            let duplicates = 0;
 
             const columnsToExtract = [{
                 name: 'email',
