@@ -20,6 +20,14 @@
 
         <GhWhatsNew />
     </div>{{!gh-viewport}}
+
+    {{#if this.customViews.showFormModal}}
+        <GhFullscreenModal
+            @modal="custom-view-form"
+            @close={{this.customViews.toggleFormModal}}
+            @modifier="action narrow"
+        />
+    {{/if}}
 </GhApp>
 
 <EmberLoadRemover />
