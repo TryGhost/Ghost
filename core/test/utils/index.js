@@ -931,6 +931,13 @@ startGhost = function startGhost(options) {
             settingsCache.reset();
             return knexMigrator.init();
         })
+        .then(function setPragma() {
+            if (config.get('database:client') === 'sqlite3') {
+                return db.knex.raw('PRAGMA journal_mode = TRUNCATE;');
+            } else {
+                return Promise.resolve();
+            }
+        })
         .then(function initializeGhost() {
             urlService.resetGenerators();
 
