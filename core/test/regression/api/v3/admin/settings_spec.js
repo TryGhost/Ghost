@@ -20,10 +20,6 @@ describe('Settings API', function () {
             });
     });
 
-    after(function () {
-        return ghostServer.stop();
-    });
-
     it('Can\'t read core setting', function () {
         return request
             .get(localUtils.API.getApiQuery('settings/db_hash/'))
