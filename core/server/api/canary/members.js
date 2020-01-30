@@ -27,6 +27,34 @@ const cleanupUndefined = (obj) => {
     }
 };
 
+// NOTE: this method can be removed once unique constraints are introduced ref.: https://github.com/TryGhost/Ghost/blob/e277c6b/core/server/data/schema/schema.js#L339
+const sanitizeInput = (members) => {
+    const customersMap = members.reduce((acc, member) => {
+        if (member.stripe_customer_id) {
+            if (acc[member.stripe_customer_id]) {
+                acc[member.stripe_customer_id] += 1;
+            } else {
+                acc[member.stripe_customer_id] = 1;
+            }
+        }
+
+        return acc;
+    }, {});
+
+    const toRemove = [];
+    for (const key in customersMap) {
+        if (customersMap[key] > 1) {
+            toRemove.push(key);
+        }
+    }
+
+    let sanitized = members.filter((member) => {
+        return !(toRemove.includes(member.stripe_customer_id));
+    });
+
+    return sanitized;
+};
+
 const listMembers = async function (options) {
     const res = (await models.Member.findPage(options));
     const memberModels = res.data.map(model => model.toJSON(options));
@@ -296,7 +324,10 @@ const members = {
                 path: filePath,
                 columnsToExtract: columnsToExtract
             }).then((result) => {
-                return Promise.all(result.map((entry) => {
+                const sanitized = sanitizeInput(result);
+                invalid += result.length - sanitized.length;
+
+                return Promise.all(sanitized.map((entry) => {
                     const api = require('./index');
 
                     cleanupUndefined(entry);
