@@ -5,7 +5,6 @@ const models = require('../../models');
 const membersService = require('../../services/members');
 const common = require('../../lib/common');
 const fsLib = require('../../lib/fs');
-const csvUtils = require('../../data/csv-utils');
 
 const decorateWithSubscriptions = async function (member) {
     // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
@@ -305,20 +304,6 @@ const members = {
                 name: 'complimentary_plan',
                 lookup: /complimentary_plan/i
             }];
-
-            // NOTE: normalization step doesn't belong here. Should be extracted into SDK and performed by the user
-            await csvUtils.normalizeMembersCSV({
-                path: filePath,
-                columnsToMap: [{
-                    from: 'email_disabled',
-                    to: 'subscribed',
-                    negate: true
-                }, {
-                    from: 'stripe_connected_customer_id',
-                    to: 'stripe_customer_id'
-                }],
-                columnsToExtract: columnsToExtract
-            });
 
             return fsLib.readCSV({
                 path: filePath,

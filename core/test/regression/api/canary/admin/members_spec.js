@@ -304,28 +304,6 @@ describe('Members API', function () {
             });
     });
 
-    it('Can import non standard CSV', function () {
-        return request
-            .post(localUtils.API.getApiQuery(`members/csv/`))
-            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/non-standard-members-import.csv'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.meta);
-                should.exist(jsonResponse.meta.stats);
-
-                jsonResponse.meta.stats.imported.should.equal(2);
-                jsonResponse.meta.stats.duplicates.should.equal(0);
-                jsonResponse.meta.stats.invalid.should.equal(0);
-            });
-    });
-
     it('Can import file with duplicate stripe customer ids', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/csv/`))
