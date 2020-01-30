@@ -53,6 +53,7 @@
                     "strip": true
                 }
             }
+            }
         }
     },
     "required": ["members"]
