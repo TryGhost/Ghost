@@ -84,6 +84,7 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
 
     // Frontend
     const frontendSettings = require('../frontend/services/settings');
+    const frontendRedirects = require('../frontend/services/redirects');
 
     let ghostServer;
 
@@ -97,11 +98,14 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
     return settings.init()
         .then(() => {
             debug('Settings done');
-
             return frontendSettings.init();
         })
         .then(() => {
             debug('Frontend settings done');
+            return frontendRedirects.init();
+        })
+        .then(() => {
+            debug('Frontend redirects done');
             return themeService.init();
         })
         .then(() => {
