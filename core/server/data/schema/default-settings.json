@@ -101,7 +101,7 @@
             "defaultValue": "[]"
         },
         "redirects": {
-            "defaultValue": null
+            "defaultValue": "[]"
         },
         "slack": {
             "defaultValue": "[{\"url\":\"\", \"username\":\"Ghost\"}]"
