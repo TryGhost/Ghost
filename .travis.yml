@@ -9,6 +9,10 @@ services:
 - mysql
 # Don't run builds for renovate PRs
 if: NOT head_branch =~ ^renovate
+branches:
+  only:
+    - master
+    - 2.x
 env:
   matrix:
   - DB=sqlite3 NODE_ENV=testing
