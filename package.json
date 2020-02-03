@@ -131,7 +131,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "0.6.1",
+    "@tryghost/html-to-mobiledoc": "0.6.3",
     "sharp": "0.23.4",
     "sqlite3": "4.1.1"
   },
