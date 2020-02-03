@@ -21,7 +21,6 @@ var Promise = require('bluebird'),
     urlService = require('../../frontend/services/url'),
     routingService = require('../../frontend/services/routing'),
     settingsService = require('../../server/services/settings'),
-    frontendSettingsService = require('../../frontend/services/settings'),
     settingsCache = require('../../server/services/settings/cache'),
     imageLib = require('../../server/lib/image'),
     web = require('../../server/web'),
@@ -817,7 +816,6 @@ startGhost = function startGhost(options) {
         redirectsFile: true,
         forceStart: false,
         copyThemes: true,
-        copySettings: true,
         contentFolder: path.join(os.tmpdir(), uuid.v4(), 'ghost-test'),
         subdir: false
     }, options);
@@ -848,10 +846,6 @@ startGhost = function startGhost(options) {
         fs.copySync(path.join(__dirname, 'fixtures', 'data', 'redirects.json'), path.join(contentFolderForTests, 'data', 'redirects.json'));
     }
 
-    if (options.copySettings) {
-        fs.copySync(path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'), path.join(contentFolderForTests, 'settings', 'routes.yaml'));
-    }
-
     // truncate database and re-run fixtures
     // we have to ensure that some components in Ghost are reloaded
     if (ghostServer && ghostServer.httpServer && !options.forceStart) {
@@ -862,9 +856,6 @@ startGhost = function startGhost(options) {
             .then(function () {
                 settingsCache.shutdown();
                 return settingsService.init();
-            })
-            .then(function () {
-                return frontendSettingsService.init();
             })
             .then(function () {
                 return themes.init();
@@ -1077,18 +1068,6 @@ module.exports = {
                         timeout = setTimeout(retry, 50);
                     })();
                 });
-            },
-
-            init: function () {
-                const routes = frontendSettingsService.get('routes');
-
-                const collectionRouter = new routingService.CollectionRouter('/', routes.collections['/']);
-                const tagRouter = new routingService.TaxonomyRouter('tag', routes.taxonomies.tag);
-                const authorRouter = new routingService.TaxonomyRouter('author', routes.taxonomies.author);
-
-                common.events.emit('db.ready');
-
-                return this.waitTillFinished();
             },
 
             reset: function () {

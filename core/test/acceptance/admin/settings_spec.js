@@ -237,7 +237,7 @@ describe('Settings API', function () {
             .then((res) => {
                 res.headers['content-disposition'].should.eql('Attachment; filename="routes.yaml"');
                 res.headers['content-type'].should.eql('application/yaml; charset=utf-8');
-                res.headers['content-length'].should.eql('138');
+                res.headers['content-length'].should.eql('140');
             });
     });
 

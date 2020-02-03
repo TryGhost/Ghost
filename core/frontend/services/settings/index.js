@@ -1,20 +1,9 @@
 const _ = require('lodash');
-const debug = require('ghost-ignition').debug('frontend:services:settings:index');
 const SettingsLoader = require('./loader');
-const ensureSettingsFiles = require('./ensure-settings');
 
 const common = require('../../../server/lib/common');
 
 module.exports = {
-    init: function () {
-        const knownSettings = this.knownSettings();
-
-        debug('init settings service for:', knownSettings);
-
-        // Make sure that supported settings files are available
-        // inside of the `content/setting` directory
-        return ensureSettingsFiles(knownSettings);
-    },
 
     /**
     * Global place to switch on more available settings.

@@ -21,7 +21,7 @@ describe('UNIT > Settings Service yaml parser:', function () {
         it('parses correct yaml file', function () {
             const file = fs.readFileSync(path.join(__dirname, '../../../utils/fixtures/settings/', 'goodroutes.yaml'), 'utf8');
 
-            const result = yamlParser(file, 'goodroutes.yaml');
+            const result = yamlParser(file, 'goodroutes');
             should.exist(result);
             result.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
             yamlSpy.calledOnce.should.be.true();
@@ -31,7 +31,7 @@ describe('UNIT > Settings Service yaml parser:', function () {
             const file = fs.readFileSync(path.join(__dirname, '../../../utils/fixtures/settings/', 'badroutes.yaml'), 'utf8');
 
             try {
-                const result = yamlParser(file, 'badroutes.yaml');
+                const result = yamlParser(file, 'badroutes');
                 should.not.exist(result);
             } catch (error) {
                 should.exist(error);

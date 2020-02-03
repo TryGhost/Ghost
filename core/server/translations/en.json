@@ -519,8 +519,8 @@
                     "help": "Check your {file} file for typos and fix the named issues.",
                     "validate": "The following definition \"{at}\" is invalid: {reason}"
                 },
-                "loader": "Error trying to load YAML setting for {setting} from '{path}'.",
-                "ensureSettings": "Error trying to access settings files in {path}."
+                "loader": "Error trying to load YAML setting for {setting} from setting '{key}'.",
+                "ensureSettings": "Error trying to access settings in {key}."
             },
             "mega": {
                 "requestFailed": {

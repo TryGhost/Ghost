@@ -31,29 +31,32 @@ describe('UNIT > Settings Service loader:', function () {
 
         let yamlParserStub;
         let validateStub;
+        let settingsCacheStub;
+        let routesString;
 
         beforeEach(function () {
             yamlParserStub = sinon.stub();
             validateStub = sinon.stub();
+            settingsCacheStub = sinon.stub();
+            settingsCacheStub.get = sinon.stub();
+
+            const routesPath = path.join(__dirname, '../../../utils/fixtures/settings/goodroutes.yaml');
+            routesString = fs.readFileSync(routesPath, 'utf8');
+            settingsCacheStub.get.withArgs('routes_yaml').returns(routesString);
+            
+            loadSettings.__set__('settingsCache', settingsCacheStub);
         });
 
-        it('can find yaml settings file and returns a settings object', function () {
-            const fsReadFileSpy = sinon.spy(fs, 'readFileSync');
-            const expectedSettingsFile = path.join(__dirname, '../../../utils/fixtures/settings/goodroutes.yaml');
-
+        it('returns a settings object', function () {
             yamlParserStub.returns(yamlStubFile);
             validateStub.returns({routes: {}, collections: {}, taxonomies: {}});
 
             loadSettings.__set__('yamlParser', yamlParserStub);
             loadSettings.__set__('validate', validateStub);
 
-            const setting = loadSettings('goodroutes');
+            const setting = loadSettings('routes');
             should.exist(setting);
             setting.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
-            // There are 4 files in the fixtures folder, but only 1 supported and valid yaml files
-            fsReadFileSpy.calledOnce.should.be.true();
-            fsReadFileSpy.calledWith(expectedSettingsFile).should.be.true();
-            yamlParserStub.callCount.should.be.eql(1);
         });
 
         it('can handle errors from YAML parser', function (done) {
@@ -65,7 +68,7 @@ describe('UNIT > Settings Service loader:', function () {
             loadSettings.__set__('yamlParser', yamlParserStub);
 
             try {
-                loadSettings('goodroutes');
+                loadSettings('routes');
                 done(new Error('Loader should fail'));
             } catch (err) {
                 should.exist(err);
@@ -76,30 +79,16 @@ describe('UNIT > Settings Service loader:', function () {
             }
         });
 
-        it('throws error if file can\'t be accessed', function (done) {
-            const expectedSettingsFile = path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml');
-            const fsError = new Error('no permission');
-            fsError.code = 'EPERM';
-
-            const originalFn = fs.readFileSync;
-            const fsReadFileStub = sinon.stub(fs, 'readFileSync').callsFake(function (filePath, options) {
-                if (filePath.match(/routes\.yaml/)) {
-                    throw fsError;
-                }
-
-                return originalFn(filePath, options);
-            });
-
-            yamlParserStub = sinon.spy();
+        it('throws error if setting can\'t be parsed', function (done) {
+            yamlParserStub = sinon.stub().throws();
             loadSettings.__set__('yamlParser', yamlParserStub);
 
             try {
                 loadSettings('routes');
                 done(new Error('Loader should fail'));
             } catch (err) {
-                err.message.should.match(/Error trying to load YAML setting for routes from/);
-                fsReadFileStub.calledWith(expectedSettingsFile).should.be.true();
-                yamlParserStub.calledOnce.should.be.false();
+                err.message.should.match(/Error trying to load YAML setting for/);
+                yamlParserStub.calledWith(routesString, 'routes').should.be.true();
                 done();
             }
         });

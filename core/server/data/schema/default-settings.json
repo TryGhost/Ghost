@@ -169,6 +169,12 @@
                     "max": 300
                 }
             }
+        },
+        "routes_yaml": {
+            "defaultValue": "routes:\r\n\r\ncollections:\r\n  \/:\r\n    permalink: \/{slug}\/\r\n    template: index\r\n\r\ntaxonomies:\r\n  tag: \/tag\/{slug}\/\r\n  author: \/author\/{slug}\/\r\n"
+        },
+        "routes_yaml_backup": {
+            "defaultValue": null
         }
     },
     "theme": {

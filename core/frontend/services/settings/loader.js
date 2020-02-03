@@ -1,10 +1,7 @@
-const fs = require('fs-extra'),
-    path = require('path'),
-    debug = require('ghost-ignition').debug('frontend:services:settings:settings-loader'),
-    common = require('../../../server/lib/common'),
-    config = require('../../../server/config'),
-    yamlParser = require('./yaml-parser'),
-    validate = require('./validate');
+const common = require('../../../server/lib/common');
+const settingsCache = require('../../../server/services/settings/cache');
+const yamlParser = require('./yaml-parser');
+const validate = require('./validate');
 
 /**
  * Reads the desired settings YAML file and passes the
@@ -13,16 +10,11 @@ const fs = require('fs-extra'),
  * @returns {Object} settingsFile
  */
 module.exports = function loadSettings(setting) {
-    // we only support the `yaml` file extension. `yml` will be ignored.
-    const fileName = `${setting}.yaml`;
-    const contentPath = config.getContentPath('settings');
-    const filePath = path.join(contentPath, fileName);
+    const key = `${setting}_yaml`;
+    const value = settingsCache.get(key);
 
     try {
-        const file = fs.readFileSync(filePath, 'utf8');
-        debug('settings file found for', setting);
-
-        const object = yamlParser(file, fileName);
+        const object = yamlParser(value, setting);
         return validate(object);
     } catch (err) {
         if (common.errors.utils.isIgnitionError(err)) {
@@ -30,8 +22,8 @@ module.exports = function loadSettings(setting) {
         }
 
         throw new common.errors.GhostError({
-            message: common.i18n.t('errors.services.settings.loader', {setting: setting, path: contentPath}),
-            context: filePath,
+            message: common.i18n.t('errors.services.settings.loader', {setting: setting, key: key}),
+            context: key,
             err: err
         });
     }

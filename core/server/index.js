@@ -82,9 +82,6 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
     const models = require('./models');
     const GhostServer = require('./ghost-server');
 
-    // Frontend
-    const frontendSettings = require('../frontend/services/settings');
-
     let ghostServer;
 
     // Initialize Ghost core internationalization
@@ -97,11 +94,6 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
     return settings.init()
         .then(() => {
             debug('Settings done');
-
-            return frontendSettings.init();
-        })
-        .then(() => {
-            debug('Frontend settings done');
             return themeService.init();
         })
         .then(() => {

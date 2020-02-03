@@ -1,10 +1,9 @@
-const moment = require('moment-timezone');
 const fs = require('fs-extra');
-const path = require('path');
 const urlService = require('../url');
 
 const common = require('../../../server/lib/common');
-const config = require('../../../server/config');
+const models = require('../../../server/models');
+const settingsCache = require('../../../server/services/settings/cache');
 
 /**
  * The `routes.yaml` file offers a way to configure your Ghost blog. It's currently a setting feature
@@ -18,15 +17,16 @@ const config = require('../../../server/config');
  * - then we reload the whole site app, which will reset all routers and re-create the url generators
  */
 const setFromFilePath = (filePath) => {
-    const settingsPath = config.getContentPath('settings');
-    const backupRoutesPath = path.join(settingsPath, `routes-${moment().format('YYYY-MM-DD-HH-mm-ss')}.yaml`);
-
-    return fs.copy(`${settingsPath}/routes.yaml`, backupRoutesPath)
+    const currentRoutesValue = JSON.stringify(settingsCache.get('routes_yaml'));
+    return models.Settings.edit({key: 'routes_yaml_backup', value: currentRoutesValue})
         .then(() => {
-            return fs.copy(filePath, `${settingsPath}/routes.yaml`);
+            return fs.readFile(filePath, 'utf8');
         })
-        .then(() => {
-            urlService.resetGenerators({releaseResourcesOnly: true});
+        .then((newRoutesYaml) => {
+            return models.Settings.edit({
+                key: 'routes_yaml',
+                value: JSON.stringify(newRoutesYaml)
+            });
         })
         .then(() => {
             const siteApp = require('../../../server/web/site/app');
@@ -34,7 +34,13 @@ const setFromFilePath = (filePath) => {
             const bringBackValidRoutes = () => {
                 urlService.resetGenerators({releaseResourcesOnly: true});
 
-                return fs.copy(backupRoutesPath, `${settingsPath}/routes.yaml`)
+                return models.Settings.findOne({key: 'routes_yaml_backup'})
+                    .then((backupRoutes) => {
+                        return models.Settings.edit({
+                            key: 'routes_yaml',
+                            value: backupRoutes.value
+                        });
+                    })
                     .then(() => {
                         return siteApp.reload();
                     });
@@ -78,22 +84,7 @@ const setFromFilePath = (filePath) => {
 };
 
 const get = () => {
-    const routesPath = path.join(config.getContentPath('settings'), 'routes.yaml');
-
-    return fs.readFile(routesPath, 'utf-8')
-        .catch((err) => {
-            if (err.code === 'ENOENT') {
-                return Promise.resolve([]);
-            }
-
-            if (common.errors.utils.isIgnitionError(err)) {
-                throw err;
-            }
-
-            throw new common.errors.NotFoundError({
-                err: err
-            });
-        });
+    return settingsCache.get('routes_yaml');
 };
 
 module.exports.setFromFilePath = setFromFilePath;
