@@ -615,6 +615,12 @@
         text-align: center;
         font-size: 17px;
     }
+
+    .gh-nav-button-expand svg {
+        width: 9px;
+        height: 9px;
+        margin-bottom: 1px;
+    }
 }
 
 /* Mobile Nav Bar (Sits at bottom of screen)
