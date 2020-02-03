@@ -1,6 +1,6 @@
 <section class="gh-canvas" {{did-insert (action "setMainClass" "gh-main-primarybg" target=this.ui)}}>
     <header class="gh-canvas-header post-header">
-        <GhCustomViewTitle @title="Posts" @query={{reset-posts-query}} />
+        <GhCustomViewTitle @title="Posts" @query={{reset-query-params "posts"}} />
         <section class="view-actions">
             <GhContentfilter
                 @selectedType={{this.selectedType}}

@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import {DEFAULT_QUERY_PARAMS} from 'ghost-admin/helpers/reset-query-params';
 import {alias} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {get} from '@ember/object';
@@ -36,12 +37,8 @@ export default Controller.extend({
 
     store: service(),
 
+    // default values for these are set in `init` and defined in `helpers/reset-query-params`
     queryParams: ['type', 'author', 'tag', 'order'],
-
-    type: null,
-    author: null,
-    tag: null,
-    order: null,
 
     _hasLoadedTags: false,
     _hasLoadedAuthors: false,
@@ -53,6 +50,7 @@ export default Controller.extend({
         this._super(...arguments);
         this.availableTypes = TYPES;
         this.availableOrders = ORDERS;
+        this.setProperties(DEFAULT_QUERY_PARAMS.posts);
     },
 
     postsInfinityModel: alias('model'),
