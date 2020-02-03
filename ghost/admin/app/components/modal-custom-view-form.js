@@ -1,9 +1,11 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
+import {resetQueryParams} from 'ghost-admin/helpers/reset-query-params';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 export default ModalComponent.extend({
     customViews: service(),
+    router: service(),
 
     delayedModelColor: '',
 
@@ -35,7 +37,9 @@ export default ModalComponent.extend({
 
     deleteTask: task(function* () {
         let view = yield this.customViews.deleteViewTask.perform(this.model);
+        let routeName = this.router.currentRouteName;
         this.send('closeModal');
+        this.router.transitionTo(routeName, {queryParams: resetQueryParams(routeName)});
         return view;
     }),
 
