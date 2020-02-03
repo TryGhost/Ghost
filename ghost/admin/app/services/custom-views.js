@@ -124,13 +124,7 @@ export default class CustomViewsService extends Service {
         }
 
         let user = await this.session.user;
-        let userSettings = user.get('accessibility');
-
-        if (!userSettings) {
-            return this.viewList = [];
-        }
-
-        let views = JSON.parse(user.get('accessibility')).views;
+        let views = JSON.parse(user.get('accessibility') || '{}').views;
         views = isArray(views) ? views : [];
 
         let viewList = [];
