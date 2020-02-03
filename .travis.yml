@@ -7,8 +7,6 @@ node_js:
 cache: yarn
 services:
 - mysql
-# Don't run builds for renovate PRs
-if: NOT head_branch =~ ^renovate
 branches:
   only:
     - master
