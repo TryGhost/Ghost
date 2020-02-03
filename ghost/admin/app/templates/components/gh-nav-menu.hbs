@@ -43,7 +43,13 @@
                                 <li>
                                     <LinkTo @route="posts" @query={{reset-posts-query view.filter}} data-test-nav-custom="{{view.route}}-{{view.name}}" title="{{view.name}}">
                                         {{!-- <div class="dib w4 h4 mr2 bg-{{view.color}} br-100"></div> --}}
-                                        <span class="flex items-center svg-{{view.color}}">{{svg-jar (or view.icon "post")}}</span>
+                                        <span class="flex items-center svg-{{view.color}}">
+                                            {{#if view.icon}}
+                                                {{svg-jar (or view.icon "post")}}
+                                            {{else}}
+                                                <span class="circle"></span>
+                                            {{/if}}
+                                        </span>
                                         <span class="gh-nav-viewname">{{view.name}}</span>
                                     </LinkTo>
                                 </li>
