@@ -175,3 +175,22 @@
     border-top: 1px solid var(--whitegrey);
     justify-content: space-between;
 }
+
+.gh-wn-footer {
+    position: relative;
+    margin-top: 14px;
+    margin-bottom: -13px;
+}
+
+.gh-wn-footer:before {
+    position: absolute;
+    content: "";
+    top: -14px;
+    left: -32px;
+    right: -32px;
+    height: 6px;
+    background: rgba(255,255,255,0);
+    box-shadow:
+        0 -0.3px 1px rgba(0, 0, 0, 0.03),
+        0 -4px 7px rgba(0, 0, 0, 0.06);
+}
