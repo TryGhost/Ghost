@@ -22,8 +22,14 @@ export default class NavigationService extends Service {
     }
 
     // eslint-disable-next-line ghost/ember/no-observers
-    @observes('session.user.accessibility')
+    @observes('session.isAuthenticated', 'session.user.accessibility')
     async updateSettings() {
+        // avoid fetching user before authenticated otherwise the 403 can fire
+        // during authentication and cause errors during setup/signin
+        if (!this.session.isAuthenticated) {
+            return;
+        }
+
         let user = await this.session.user;
         let userSettings = JSON.parse(user.get('accessibility')) || {};
         this.settings = userSettings.navigation || Object.assign({}, DEFAULT_SETTINGS);

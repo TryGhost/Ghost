@@ -115,8 +115,14 @@ export default class CustomViewsService extends Service {
     }
 
     // eslint-disable-next-line ghost/ember/no-observers
-    @observes('session.user.accessibility')
+    @observes('session.isAuthenticated', 'session.user.accessibility')
     async updateViewList() {
+        // avoid fetching user before authenticated otherwise the 403 can fire
+        // during authentication and cause errors during setup/signin
+        if (!this.session.isAuthenticated) {
+            return;
+        }
+
         let user = await this.session.user;
         let userSettings = user.get('accessibility');
 
