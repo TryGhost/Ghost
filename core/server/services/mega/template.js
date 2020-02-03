@@ -834,19 +834,15 @@ figure blockquote p {
                                                     </td>
                                                 </tr>
                                             </table>
-                                            
                                         </td>
                                     </tr>
-                                    ${
-                                        post.feature_image ? `
-                                        <tr>
-                                            <td class="feature-image"><img src="${post.feature_image}"></td>
-                                        </tr>
-                                        ` : ``
-                                    }
+                                    ${post.feature_image ? `
+                                    <tr>
+                                        <td class="feature-image"><img src="${post.feature_image}"></td>
+                                    </tr>
+                                    ` : ``}
                                     <tr>
                                         <td class="post-content">
-                                            
                                             <!-- POST CONTENT START -->
                                             ${post.html}
                                             <!-- POST CONTENT END -->
@@ -863,7 +859,7 @@ figure blockquote p {
                             <td class="wrapper" align="center">
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                     <tr>
-                                        <td class="footer">${site.title} &copy; ${date.getFullYear()} – <a href="%recipient.unsubscribe_url%">Unsubscribe</a></td>
+                                        <td class="footer">${site.title} &copy; ${date.getFullYear()} – <a href="%recipient.unsubscribe_url%">Unsubscribe</a></td>
                                     </tr>
                                 </table>
                             </td>
