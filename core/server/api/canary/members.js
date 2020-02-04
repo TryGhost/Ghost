@@ -287,7 +287,7 @@ const members = {
 
             const columnsToExtract = [{
                 name: 'email',
-                lookup: /email/i
+                lookup: /^email/i
             }, {
                 name: 'name',
                 lookup: /name/i
@@ -295,8 +295,8 @@ const members = {
                 name: 'note',
                 lookup: /note/i
             }, {
-                name: 'subscribed',
-                lookup: /subscribed/i
+                name: 'subscribed_to_emails',
+                lookup: /subscribed_to_emails/i
             }, {
                 name: 'stripe_customer_id',
                 lookup: /stripe_customer_id/i
@@ -322,7 +322,7 @@ const members = {
                                 email: entry.email,
                                 name: entry.name,
                                 note: entry.note,
-                                subscribed: (String(entry.subscribed).toLowerCase() === 'true'),
+                                subscribed: (String(entry.subscribed_to_emails).toLowerCase() === 'true'),
                                 stripe_customer_id: entry.stripe_customer_id,
                                 comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true')
                             }]
