@@ -1,0 +1,37 @@
+{
+  "name": "@tryghost/substack-ghost-csv-converter",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Members/tree/master/packages/substack-ghost-csv-converter",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "bin": {
+    "subghost": "./bin/index.js"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "bin"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "mocha": "7.0.1",
+    "should": "13.2.3",
+    "sinon": "8.1.1"
+  },
+  "dependencies": {
+    "@tryghost/pretty-cli": "1.2.2",
+    "bluebird": "3.7.2",
+    "csv-parser": "2.3.2",
+    "ghost-ignition": "4.0.0",
+    "lodash": "4.17.15"
+  }
+}
