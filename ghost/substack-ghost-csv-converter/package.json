@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/substack-ghost-csv-converter",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "repository": "https://github.com/TryGhost/Members/tree/master/packages/substack-ghost-csv-converter",
   "author": "Ghost Foundation",
   "license": "MIT",
