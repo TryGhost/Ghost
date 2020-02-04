@@ -21,8 +21,14 @@ module.exports = function (req, res, next) {
         return res.redirect(url);
     };
 
-    // CASE: image manipulator is uncapable of transforming file (e.g. .gif)
     const requestUrlFileExtension = path.parse(req.url).ext;
+
+    // CASE: no file extension was given
+    if (requestUrlFileExtension === '') {
+        return next();
+    }
+
+    // CASE: image manipulator is uncapable of transforming file (e.g. .gif)
     if (!image.manipulator.canTransformFileExtension(requestUrlFileExtension)) {
         return redirectToOriginal();
     }
