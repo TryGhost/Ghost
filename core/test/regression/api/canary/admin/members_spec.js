@@ -276,7 +276,7 @@ describe('Members API', function () {
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 res.headers['content-disposition'].should.match(/Attachment;\sfilename="members/);
-                res.text.should.match(/id,email,name,note,subscribed,complimentary_plan,stripe_customer_id,created_at,deleted_at/);
+                res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at/);
                 res.text.should.match(/member1@test.com/);
                 res.text.should.match(/Mr Egg/);
             });
