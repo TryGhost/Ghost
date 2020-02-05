@@ -110,6 +110,9 @@ const members = {
 
     read: {
         headers: {},
+        options: [
+            'magic_link'
+        ],
         data: [
             'id',
             'email'

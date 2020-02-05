@@ -74,6 +74,23 @@ describe('Members API', function () {
             });
     });
 
+    it('Can read with a magic_link', function () {
+        return request
+            .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/?magic_link=true`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.members);
+                jsonResponse.members.should.have.length(1);
+                localUtils.API.checkResponse(jsonResponse.members[0], 'member', ['stripe', 'magic_link']);
+            });
+    });
+
     it('Can add', function () {
         const member = {
             name: 'test',

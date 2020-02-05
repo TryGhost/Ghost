@@ -154,6 +154,15 @@ const mapMember = (model, frame) => {
         });
     }
 
+    if (frame.options && frame.options.magic_link) {
+        const membersService = require('../../../../../../services/members');
+
+        const magicLink = membersService.api.getMagicLink(jsonModel.email);
+        Object.assign(jsonModel, {
+            magic_link: magicLink
+        });
+    }
+
     return jsonModel;
 };
 
