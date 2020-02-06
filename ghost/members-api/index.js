@@ -85,6 +85,10 @@ module.exports = function MembersApi({
         }
     }
 
+    function getMagicLink(email) {
+        return magicLinkService.getMagicLink({email, subject: email, type: 'signin'});
+    }
+
     const users = Users({
         stripe,
         memberModel
@@ -329,6 +333,7 @@ module.exports = function MembersApi({
         getPublicConfig,
         bus,
         sendEmailWithMagicLink,
+        getMagicLink,
         members: users
     };
 };
