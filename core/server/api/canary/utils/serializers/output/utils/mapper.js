@@ -154,7 +154,7 @@ const mapMember = (model, frame) => {
         });
     }
 
-    if (frame.options && frame.options.magic_link) {
+    if (!utils.isContentAPI(frame)) {
         const membersService = require('../../../../../../services/members');
 
         const magicLink = membersService.api.getMagicLink(jsonModel.email);
