@@ -34,6 +34,9 @@
                 "comped": {
                     "strip": "true"
                 },
+                "magic_link": {
+                    "strip": "true"
+                },
                 "id": {
                     "strip": true
                 },

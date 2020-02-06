@@ -40,6 +40,9 @@
                 "labels": {
                     "$ref": "members#/definitions/member-labels"
                 },
+                "magic_link": {
+                    "strip": "true"
+                },
                 "created_at": {
                     "strip": true
                 },
