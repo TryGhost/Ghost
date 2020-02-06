@@ -58,6 +58,7 @@ const expectedProperties = {
         .concat('avatar_image')
         .concat('comped')
         .concat('labels')
+        .concat('magic_link')
     ,
     role: _(schema.roles)
         .keys()
