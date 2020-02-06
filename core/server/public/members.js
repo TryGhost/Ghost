@@ -10,9 +10,14 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
         var input = event.target.querySelector('input[data-members-email]');
         var email = input.value;
         var emailType = undefined;
+        var labels = undefined;
 
         if (form.dataset.membersForm) {
             emailType = form.dataset.membersForm;
+        }
+
+        if (form.dataset.membersLabel) {
+            labels = form.dataset.membersLabel;
         }
 
         form.classList.add('loading');
@@ -23,7 +28,8 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
             },
             body: JSON.stringify({
                 email: email,
-                emailType: emailType
+                emailType: emailType,
+                labels: labels
             })
         }).then(function (res) {
             form.addEventListener('submit', submitHandler);
