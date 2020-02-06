@@ -149,7 +149,7 @@ const members = {
                 }
 
                 if (frame.options.send_email) {
-                    await membersService.api.sendEmailWithMagicLink(model.get('email'), frame.options.email_type);
+                    await membersService.api.sendEmailWithMagicLink({email: model.get('email'), requestedType: frame.options.email_type});
                 }
 
                 return decorateWithSubscriptions(member);
