@@ -8,15 +8,15 @@
     {{#if this.user.count.posts}}
         <ul>
             <li>The user will not have access to this site anymore</li>
-            <li><strong data-test-text="user-post-count">{{pluralize this.user.count.posts 'post'}}</strong> created by this user will be deleted</li>
+            <li><strong data-test-text="user-post-count">{{pluralize this.user.count.posts 'post'}}</strong> by this user will be deleted</li>
             <li>All other user data will be deleted</li>
-            <li>A backup of the site contents will be automatically downloaded to your computer before deletion</li>
+            <li>A backup of the site will be automatically downloaded to your computer before deletion</li>
         </ul>
     {{else}}
         <ul>
-            <li>User will not have access to this site anymore</li>
+            <li>The user will not have access to this site anymore</li>
             <li>All user data will be deleted</li>
-            <li>A backup of the site contents will be automatically downloaded to your computer before deletion</li>
+            <li>A backup of the site will be automatically downloaded to your computer before deletion</li>
         </ul>
     {{/if}}
 </div>
