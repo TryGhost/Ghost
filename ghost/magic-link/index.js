@@ -107,6 +107,25 @@ MagicLink.prototype.sendMagicLink = async function sendMagicLink(options) {
 
     return {token, info};
 };
+/**
+ * getMagicLink
+ *
+ * @param {object} options
+ * @param {object} options.subject - The subject to associate with the magic link (user id, or email)
+ * @param {string=} [options.type='signin'] - The type to be passed to the url and content generator functions
+ * @returns {string} - signin URL
+ */
+MagicLink.prototype.getMagicLink = function getMagicLink(options) {
+    const token = jwt.sign({}, this.secret, {
+        algorithm: 'HS256',
+        subject: options.subject,
+        expiresIn: '10m'
+    });
+
+    const type = options.type || 'signin';
+
+    return this.getSigninURL(token, type);
+};
 
 /**
  * getUserFromToken
