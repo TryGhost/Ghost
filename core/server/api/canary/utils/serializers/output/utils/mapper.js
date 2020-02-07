@@ -159,7 +159,7 @@ const mapMember = (model, frame) => {
 
         const magicLink = membersService.api.getMagicLink(jsonModel.email);
         Object.assign(jsonModel, {
-            magic_link: magicLink
+            signin_url: magicLink
         });
     }
 
