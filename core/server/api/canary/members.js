@@ -339,6 +339,9 @@ const members = {
                         if (inspection.reason() instanceof common.errors.ValidationError) {
                             duplicates = duplicates + 1;
                         } else {
+                            // NOTE: if the error happens as a result of pure API call it doesn't get logged anywhere
+                            //       for this reason we have to make sure any unexpected errors are logged here
+                            common.logging.error(inspection.reason());
                             invalid = invalid + 1;
                         }
                     }
