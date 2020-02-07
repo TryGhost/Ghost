@@ -40,7 +40,7 @@
                 "labels": {
                     "$ref": "members#/definitions/member-labels"
                 },
-                "magic_link": {
+                "signin_url": {
                     "strip": "true"
                 },
                 "created_at": {

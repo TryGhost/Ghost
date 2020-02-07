@@ -34,7 +34,7 @@
                 "comped": {
                     "strip": "true"
                 },
-                "magic_link": {
+                "signin_url": {
                     "strip": "true"
                 },
                 "id": {
