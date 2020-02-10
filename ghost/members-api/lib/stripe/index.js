@@ -126,6 +126,8 @@ module.exports = class StripePaymentProcessor {
 
         await this._updateCustomer(member, customer);
 
+        debug(`Linking customer:${id} subscriptions`, JSON.stringify(customer.subscriptions));
+
         if (customer.subscriptions && customer.subscriptions.data) {
             for (const subscription of customer.subscriptions.data) {
                 await this._updateSubscription(subscription);
@@ -287,24 +289,29 @@ module.exports = class StripePaymentProcessor {
             });
             return this._updateSubscription(subscriptionWithPayment);
         }
+
+        const mappedSubscription = {
+            customer_id: subscription.customer,
+
+            subscription_id: subscription.id,
+            status: subscription.status,
+            cancel_at_period_end: subscription.cancel_at_period_end,
+            current_period_end: new Date(subscription.current_period_end * 1000),
+            start_date: new Date(subscription.start_date * 1000),
+            default_payment_card_last4: payment && payment.card && payment.card.last4 || null,
+
+            plan_id: subscription.plan.id,
+            plan_nickname: subscription.plan.nickname || '', // NOTE: defaulting to empty string here as migration to nullable field turned to be too much bigger problem
+            plan_interval: subscription.plan.interval,
+            plan_amount: subscription.plan.amount,
+            plan_currency: subscription.plan.currency
+        };
+
         debug(`Attaching subscription to customer ${subscription.customer} ${subscription.id}`);
+        debug(`Subscription details`, JSON.stringify(mappedSubscription));
+
         await this.storage.set({
-            subscription: {
-                customer_id: subscription.customer,
-
-                subscription_id: subscription.id,
-                status: subscription.status,
-                cancel_at_period_end: subscription.cancel_at_period_end,
-                current_period_end: new Date(subscription.current_period_end * 1000),
-                start_date: new Date(subscription.start_date * 1000),
-                default_payment_card_last4: payment && payment.card && payment.card.last4 || null,
-
-                plan_id: subscription.plan.id,
-                plan_nickname: subscription.plan.nickname,
-                plan_interval: subscription.plan.interval,
-                plan_amount: subscription.plan.amount,
-                plan_currency: subscription.plan.currency
-            }
+            subscription: mappedSubscription
         });
     }
 
