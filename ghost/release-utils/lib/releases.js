@@ -22,6 +22,7 @@ function getFinalChangelog(options) {
 
     if (filterEmojiCommits) {
         changelog = localUtils.filterEmojiCommits(changelog);
+        changelog.sortByEmoji();
     }
 
     finalChangelog = finalChangelog.concat(changelog);

@@ -12,6 +12,8 @@ const getCommitMessageFromLine = line => line
     .replace(hash, '')
     .replace(url, '');
 
+const emojiOrder = ['💡', '🐛', '🎨', '💄', '✨'];
+
 module.exports.filterEmojiCommits = (content) => {
     if (!_.isArray(content)) {
         throw new Error('Expected array of strings.');
@@ -19,7 +21,6 @@ module.exports.filterEmojiCommits = (content) => {
 
     return content.reduce((emojiLines, currentLine) => {
         const commitMessage = getCommitMessageFromLine(currentLine);
-
         const match = emojiRegex().exec(commitMessage);
 
         if (match && match.index === 0) {
@@ -28,6 +29,22 @@ module.exports.filterEmojiCommits = (content) => {
 
         return emojiLines;
     }, []);
+};
+
+module.exports.sortByEmoji = (content) => {
+    if (!_.isArray(content)) {
+        throw new Error('Expected array of strings.');
+    }
+
+    content.sort((a, b) => {
+        let firstEmoji = [...a][2];
+        let secondEmoji = [...b][2];
+
+        let firstEmojiIndex = _.indexOf(emojiOrder, firstEmoji);
+        let secondEmojiIndex = _.indexOf(emojiOrder, secondEmoji);
+
+        return secondEmojiIndex - firstEmojiIndex;
+    });
 };
 
 module.exports.checkMissingOptions = (options = {}, ...requiredFields) => {
