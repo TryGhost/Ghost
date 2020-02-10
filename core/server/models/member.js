@@ -161,19 +161,15 @@ const Member = ghostBookshelf.Model.extend({
 
         // inject a computed avatar url
         //
-        // uses gravatar's default ?d= query param to enable a redirect to one
-        // of our own images if there is no gravatar for the member's email
+        // uses gravatar's default ?d= query param to enable serving our own
+        // image if there is no gravatar for the member's email
         //
-        // we have an image "api" endpoint {siteUrl}/images/member/{uuid}/
+        // /assets/default-member-avatar.png will resolve to either the theme
+        // asset or our core public asset
+        //
         // fallback = gravatar -> theme default avatar -> ghost default avatar
         //
-        // if gravatar is disabled in privacy config then we'll return our member avatar url directly
-        const absolute = true;
-        attrs.avatar_image = urlUtils.urlJoin(
-            urlUtils.getSiteUrl(absolute),
-            urlUtils.STATIC_IMAGE_URL_PREFIX,
-            `members/avatar/default/`
-        );
+        // if gravatar is disabled in privacy config then we'll return our avatar url directly
 
         // Ensure we have an assetHash
         // @TODO rework this! Code is shared with asset_url helper
@@ -181,7 +177,11 @@ const Member = ghostBookshelf.Model.extend({
             config.set('assetHash', (crypto.createHash('md5').update(Date.now().toString()).digest('hex')).substring(0, 10));
         }
 
-        // Finally add the asset hash to the output URL
+        const absolute = true;
+        attrs.avatar_image = urlUtils.urlJoin(
+            urlUtils.getSiteUrl(absolute),
+            `assets/default-member-avatar.png`
+        );
         attrs.avatar_image += '?v=' + config.get('assetHash');
 
         if (attrs.email && !config.isPrivacyDisabled('useGravatar')) {
