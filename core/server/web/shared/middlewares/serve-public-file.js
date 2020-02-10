@@ -3,6 +3,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const config = require('../../../config');
 const urlUtils = require('../../../lib/url-utils');
+const common = require('../../../lib/common');
 
 function createPublicFileMiddleware(file, type, maxAge) {
     let content;
@@ -16,6 +17,24 @@ function createPublicFileMiddleware(file, type, maxAge) {
             res.writeHead(200, content.headers);
             return res.end(content.body);
         }
+
+        // send image files directly and let express handle content-length, etag, etc
+        if (type.match(/^image/)) {
+            return res.sendFile(filePath, (err) => {
+                if (err && err.status === 404) {
+                    // ensure we're triggering basic asset 404 and not a templated 404
+                    return next(new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.errors.imageNotFound'),
+                        code: 'STATIC_FILE_NOT_FOUND',
+                        property: err.path
+                    }));
+                }
+
+                return next(err);
+            });
+        }
+
+        // modify text files before caching+serving to ensure URL placeholders are transformed
         fs.readFile(filePath, (err, buf) => {
             if (err) {
                 return next(err);

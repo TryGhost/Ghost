@@ -118,8 +118,8 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(shared.middlewares.servePublicFile('public/ghost.min.css', 'text/css', constants.ONE_YEAR_S));
 
     // Serve images for default templates
-    siteApp.use(shared.middlewares.servePublicFile('public/404-ghost@2x.png', 'png', constants.ONE_HOUR_S));
-    siteApp.use(shared.middlewares.servePublicFile('public/404-ghost.png', 'png', constants.ONE_HOUR_S));
+    siteApp.use(shared.middlewares.servePublicFile('public/404-ghost@2x.png', 'image/png', constants.ONE_HOUR_S));
+    siteApp.use(shared.middlewares.servePublicFile('public/404-ghost.png', 'image/png', constants.ONE_HOUR_S));
 
     // Serve blog images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, shared.middlewares.image.handleImageSizes, storage.getStorage().serve());
