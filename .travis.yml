@@ -23,6 +23,8 @@ before_script:
 script: |
   if [[ "$TRAVIS_PULL_REQUEST_BRANCH" =~ ^renovate || "$TRAVIS_EVENT_TYPE" == "cron" ]]; then
     yarn ci:regression
+  elif [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
+    grunt test-all --verbose
   else
     yarn ci
   fi
