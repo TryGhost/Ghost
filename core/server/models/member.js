@@ -2,6 +2,9 @@ const ghostBookshelf = require('./base');
 const uuid = require('uuid');
 const _ = require('lodash');
 const sequence = require('../lib/promise/sequence');
+const config = require('../config');
+const crypto = require('crypto');
+const urlUtils = require('../lib/url-utils');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
@@ -47,11 +50,13 @@ const Member = ghostBookshelf.Model.extend({
 
         model.emitChange('deleted', options);
     },
+
     onDestroying: function onDestroyed(model) {
         ghostBookshelf.Model.prototype.onDestroying.apply(this, arguments);
 
         this.handleAttachedModels(model);
     },
+
     onSaving: function onSaving(model, attr, options) {
         let labelsToSave = [];
         let ops = [];
@@ -148,6 +153,44 @@ const Member = ghostBookshelf.Model.extend({
         }
 
         return options;
+    },
+
+    toJSON(unfilteredOptions) {
+        const options = Member.filterOptions(unfilteredOptions, 'toJSON');
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+
+        // inject a computed avatar url
+        //
+        // uses gravatar's default ?d= query param to enable a redirect to one
+        // of our own images if there is no gravatar for the member's email
+        //
+        // we have an image "api" endpoint {siteUrl}/images/member/{uuid}/
+        // fallback = gravatar -> theme default avatar -> ghost default avatar
+        //
+        // if gravatar is disabled in privacy config then we'll return our member avatar url directly
+        const absolute = true;
+        attrs.avatar_image = urlUtils.urlJoin(
+            urlUtils.getSiteUrl(absolute),
+            urlUtils.STATIC_IMAGE_URL_PREFIX,
+            `members/avatar/default/`
+        );
+
+        // Ensure we have an assetHash
+        // @TODO rework this! Code is shared with asset_url helper
+        if (!config.get('assetHash')) {
+            config.set('assetHash', (crypto.createHash('md5').update(Date.now().toString()).digest('hex')).substring(0, 10));
+        }
+
+        // Finally add the asset hash to the output URL
+        attrs.avatar_image += '?v=' + config.get('assetHash');
+
+        if (attrs.email && !config.isPrivacyDisabled('useGravatar')) {
+            const emailHash = crypto.createHash('md5').update(attrs.email.toLowerCase().trim()).digest('hex');
+            const encodedImageUrl = encodeURIComponent(attrs.avatar_image);
+            attrs.avatar_image = `https://gravatar.com/avatar/${emailHash}?s=250&d=${encodedImageUrl}`;
+        }
+
+        return attrs;
     }
 });
 

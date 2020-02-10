@@ -11,7 +11,8 @@
  * No properties marked with an _ should be used directly.
  *
  */
-var join = require('path').join,
+var fs = require('fs'),
+    join = require('path').join,
     _ = require('lodash'),
     themeConfig = require('./config'),
     themeEngines = require('./engines'),
@@ -33,6 +34,7 @@ class ActiveTheme {
         this._path = loadedTheme.path;
         this._mounted = false;
         this._error = error;
+        this._filePresence = {};
 
         // @TODO: get gscan to return validated, useful package.json fields for us!
         this._packageInfo = loadedTheme['package.json'];
@@ -77,6 +79,24 @@ class ActiveTheme {
 
     hasTemplate(templateName) {
         return this._templates.indexOf(templateName) > -1;
+    }
+
+    hasFile(fileName) {
+        // avoid I/O if we've already checked this file
+        if (this._filePresence[fileName] !== undefined) {
+            return this._filePresence[fileName];
+        }
+
+        try {
+            const exists = fs.existsSync(join(this.path, fileName));
+            this._filePresence[fileName] = exists;
+            return exists;
+        } catch (error) {
+            // TODO: log error?
+            // this shouldn't be a "halt the world" error, let the caller handle
+            // it as if the file doesn't exist (eg, revert to fallback file)
+            return false;
+        }
     }
 
     updateTemplateOptions(options) {
