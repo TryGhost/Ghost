@@ -25,6 +25,10 @@ function getFinalChangelog(options) {
         changelog.sortByEmoji();
     }
 
+    if (_.isEmpty(changelog)) {
+        changelog = ['No user-visible changes in this release.'];
+    }
+
     finalChangelog = finalChangelog.concat(changelog);
     return finalChangelog;
 }
