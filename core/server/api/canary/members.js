@@ -342,7 +342,12 @@ const members = {
                             } else {
                                 // NOTE: if the error happens as a result of pure API call it doesn't get logged anywhere
                                 //       for this reason we have to make sure any unexpected errors are logged here
-                                common.logging.error(inspection.reason());
+                                if (Array.isArray(inspection.reason())) {
+                                    common.logging.error(inspection.reason()[0]);
+                                } else {
+                                    common.logging.error(inspection.reason());
+                                }
+
                                 invalid = invalid + 1;
                             }
                         }
