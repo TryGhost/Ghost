@@ -312,7 +312,7 @@ const members = {
                 const sanitized = sanitizeInput(result);
                 invalid += result.length - sanitized.length;
 
-                return Promise.all(sanitized.map((entry) => {
+                return Promise.map(sanitized, ((entry) => {
                     const api = require('./index');
 
                     cleanupUndefined(entry);
@@ -332,20 +332,21 @@ const members = {
                             options: {send_email: false}
                         }
                     })).reflect();
-                })).each((inspection) => {
-                    if (inspection.isFulfilled()) {
-                        fulfilled = fulfilled + 1;
-                    } else {
-                        if (inspection.reason() instanceof common.errors.ValidationError) {
-                            duplicates = duplicates + 1;
+                }), {concurrency: 10})
+                    .each((inspection) => {
+                        if (inspection.isFulfilled()) {
+                            fulfilled = fulfilled + 1;
                         } else {
-                            // NOTE: if the error happens as a result of pure API call it doesn't get logged anywhere
-                            //       for this reason we have to make sure any unexpected errors are logged here
-                            common.logging.error(inspection.reason());
-                            invalid = invalid + 1;
+                            if (inspection.reason() instanceof common.errors.ValidationError) {
+                                duplicates = duplicates + 1;
+                            } else {
+                                // NOTE: if the error happens as a result of pure API call it doesn't get logged anywhere
+                                //       for this reason we have to make sure any unexpected errors are logged here
+                                common.logging.error(inspection.reason());
+                                invalid = invalid + 1;
+                            }
                         }
-                    }
-                });
+                    });
             }).then(() => {
                 return {
                     meta: {
