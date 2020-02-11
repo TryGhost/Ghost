@@ -18,6 +18,8 @@ const decorateWithSubscriptions = async function (member) {
     });
 };
 
+// NOTE: this method should not exist at all and needs to be cleaned up
+//       it was created due to a bug in how CSV is currently created for exports
 const cleanupUndefined = (obj) => {
     for (let key in obj) {
         if (obj[key] === 'undefined') {
