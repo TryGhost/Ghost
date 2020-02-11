@@ -223,7 +223,7 @@ const members = {
         async query(frame) {
             frame.options.require = true;
 
-            let member = await models.Member.findOne(frame.data, frame.options);
+            let member = await models.Member.findOne(frame.options);
 
             if (!member) {
                 throw new common.errors.NotFoundError({
