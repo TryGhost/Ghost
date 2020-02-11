@@ -5,6 +5,7 @@ const models = require('../../models');
 const membersService = require('../../services/members');
 const common = require('../../lib/common');
 const fsLib = require('../../lib/fs');
+const _ = require('lodash');
 
 const decorateWithSubscriptions = async function (member) {
     // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
@@ -58,6 +59,20 @@ const sanitizeInput = (members) => {
 
     return sanitized;
 };
+
+function serializeMemberLabels(labels) {
+    if (labels) {
+        return labels.map((label) => {
+            if (_.isString(label)) {
+                return {
+                    name: label.trim()
+                };
+            }
+            return label;
+        });
+    }
+    return [];
+}
 
 const listMembers = async function (options) {
     const res = (await models.Member.findPage(options));
@@ -275,6 +290,7 @@ const members = {
         },
         validation: {},
         async query(frame) {
+            frame.options.withRelated = ['labels'];
             return listMembers(frame.options);
         }
     },
@@ -308,6 +324,9 @@ const members = {
             }, {
                 name: 'complimentary_plan',
                 lookup: /complimentary_plan/i
+            }, {
+                name: 'labels',
+                lookup: /labels/i
             }];
 
             return fsLib.readCSV({
@@ -319,7 +338,8 @@ const members = {
 
                 return Promise.map(sanitized, ((entry) => {
                     const api = require('./index');
-
+                    entry.labels = entry.labels || '';
+                    const entryLabels = serializeMemberLabels(entry.labels.split(','));
                     cleanupUndefined(entry);
                     return Promise.resolve(api.members.add.query({
                         data: {
@@ -329,7 +349,8 @@ const members = {
                                 note: entry.note,
                                 subscribed: (String(entry.subscribed_to_emails).toLowerCase() === 'true'),
                                 stripe_customer_id: entry.stripe_customer_id,
-                                comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true')
+                                comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
+                                labels: entryLabels
                             }]
                         },
                         options: {
