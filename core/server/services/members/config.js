@@ -51,7 +51,8 @@ function getStripePaymentConfig() {
         return null;
     }
 
-    stripePaymentProcessor.config.plans.push(COMPLIMENTARY_PLAN);
+    // NOTE: "Complimentary" plan has to be first in the queue so it is created even if regular plans are not configured
+    stripePaymentProcessor.config.plans.unshift(COMPLIMENTARY_PLAN);
 
     const webhookHandlerUrl = new URL('/members/webhooks/stripe', siteUrl);
 
