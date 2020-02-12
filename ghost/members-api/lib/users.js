@@ -1,13 +1,15 @@
+const _ = require('lodash');
 const debug = require('ghost-ignition').debug('users');
 const common = require('./common');
 
 let Member;
 
-async function createMember({email, name, note}) {
+async function createMember({email, name, note, labels}) {
     const model = await Member.add({
         email,
         name,
-        note
+        note,
+        labels
     });
     const member = model.toJSON();
     return member;
@@ -153,6 +155,16 @@ module.exports = function ({
 
     async function create(data) {
         debug(`create email:${data.email}`);
+
+        /** Member.add model method expects label object array*/
+        if (data.labels) {
+            data.labels.forEach((label, index) => {
+                if (_.isString(label)) {
+                    data.labels[index] = {name: label};
+                }
+            });
+        }
+
         const member = await createMember(data);
         return member;
     }
