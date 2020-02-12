@@ -62,7 +62,9 @@ const sanitizeInput = (members) => {
 
 function serializeMemberLabels(labels) {
     if (labels) {
-        return labels.map((label) => {
+        return labels.filter((label) => {
+            return !!label;
+        }).map((label) => {
             if (_.isString(label)) {
                 return {
                     name: label.trim()
@@ -338,8 +340,8 @@ const members = {
 
                 return Promise.map(sanitized, ((entry) => {
                     const api = require('./index');
-                    entry.labels = entry.labels || '';
-                    const entryLabels = serializeMemberLabels(entry.labels.split(','));
+                    entry.labels = (entry.labels && entry.labels.split(',')) || [];
+                    const entryLabels = serializeMemberLabels(entry.labels);
                     cleanupUndefined(entry);
                     return Promise.resolve(api.members.add.query({
                         data: {
