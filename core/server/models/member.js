@@ -1,6 +1,7 @@
 const ghostBookshelf = require('./base');
 const uuid = require('uuid');
 const _ = require('lodash');
+const sequence = require('../lib/promise/sequence');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
@@ -51,8 +52,9 @@ const Member = ghostBookshelf.Model.extend({
 
         this.handleAttachedModels(model);
     },
-    onSaving: function onSaving(model) {
+    onSaving: function onSaving(model, attr, options) {
         let labelsToSave;
+        let ops = [];
 
         // CASE: detect lowercase/uppercase label slugs
         if (!_.isUndefined(this.get('labels')) && !_.isNull(this.get('labels'))) {
@@ -60,6 +62,7 @@ const Member = ghostBookshelf.Model.extend({
 
             //  and deduplicate upper/lowercase tags
             _.each(this.get('labels'), function each(item) {
+                item.name = item.name && item.name.trim();
                 for (let i = 0; i < labelsToSave.length; i = i + 1) {
                     if (labelsToSave[i].name && item.name && labelsToSave[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
                         return;
@@ -71,7 +74,27 @@ const Member = ghostBookshelf.Model.extend({
 
             this.set('labels', labelsToSave);
         }
+
+        // CASE: Detect existing labels with same case-insensitive name and replace
+        ops.push(function updateLabels() {
+            return ghostBookshelf.model('Label')
+                .findAll(Object.assign({
+                    columns: ['id', 'name']
+                }, _.pick(options, 'transacting')))
+                .then((labels) => {
+                    labelsToSave.forEach((label) => {
+                        let existingLabel = labels.find((lab) => {
+                            return label.name.toLowerCase() === lab.get('name').toLowerCase();
+                        });
+                        label.name = (existingLabel && existingLabel.get('name')) || label.name;
+                    });
+
+                    model.set('labels', labelsToSave);
+                });
+        });
+
         this.handleAttachedModels(model);
+        return sequence(ops);
     },
 
     handleAttachedModels: function handleAttachedModels(model) {

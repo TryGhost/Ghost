@@ -33,7 +33,9 @@ Label = ghostBookshelf.Model.extend({
         var self = this;
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
-
+        // Make sure name is trimmed of extra spaces
+        let name = this.get('name') && this.get('name').trim();
+        this.set('name', name);
         if (this.hasChanged('slug') || (!this.get('slug') && this.get('name'))) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
             return ghostBookshelf.Model.generateSlug(Label, this.get('slug') || this.get('name'),
