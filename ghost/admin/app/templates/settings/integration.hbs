@@ -17,7 +17,7 @@
                 <div class="flex flex-column items-start">
                     <label class="mb1">Icon</label>
                     <figure class="relative flex items-center h-100 ma0 br4 hide-child ba b--whitegrey-d2 pa8 bg-white" style={{this.iconImageStyle}}>
-                        <AspectRatioBox @class="flex items-center h-100" @ratio="1/1" @base="height">
+                        <AspectRatioBox @class="flex items-center h-100 justify-center" @ratio="1/1" @base="height">
                             {{#unless this.integration.iconImage}}
                                 {{svg-jar "integration" class="w11 h11"}}
                             {{/unless}}
@@ -51,7 +51,7 @@
                         </GhUploader>
                     </figure>
                 </div>
-                <div class="flex-auto ml12">
+                <div class="flex-auto ml6">
                     <GhValidationStatusContainer
                         @class="flex flex-column w-100 mr3"
                         @errors={{this.integration.errors}}
@@ -104,7 +104,7 @@
                                     <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
                                         <button type="button" {{action (perform this.copyContentKey)}} class="white fw4 flex items-center">
                                             {{#if this.copyContentKey.isRunning}}
-                                            {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
+                                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
                                             {{else}}
                                             Copy
                                             {{/if}}
@@ -125,7 +125,7 @@
                                     <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
                                         <button type="button" {{action (perform this.copyAdminKey)}} class="white fw4 flex items-center">
                                             {{#if this.copyAdminKey.isRunning}}
-                                            {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
+                                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
                                             {{else}}
                                             Copy
                                             {{/if}}
@@ -146,7 +146,7 @@
                                     <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
                                         <button type="button" {{action (perform this.copyApiUrl)}} class="white fw4 flex items-center">
                                             {{#if this.copyApiUrl.isRunning}}
-                                            {{svg-jar "check-circle" class="w3 v-mid mr2"}} Copied
+                                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
                                             {{else}}
                                             Copy
                                             {{/if}}
