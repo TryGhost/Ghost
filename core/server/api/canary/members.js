@@ -18,8 +18,11 @@ const decorateWithSubscriptions = async function (member) {
     });
 };
 
-// NOTE: this method should not exist at all and needs to be cleaned up
-//       it was created due to a bug in how CSV is currently created for exports
+/** NOTE: this method should not exist at all and needs to be cleaned up
+    it was created due to a bug in how CSV is currently created for exports
+    Export bug was fixed in 3.6 but method exists to handle older csv exports with undefined
+**/
+
 const cleanupUndefined = (obj) => {
     for (let key in obj) {
         if (obj[key] === 'undefined') {
@@ -31,7 +34,7 @@ const cleanupUndefined = (obj) => {
 // NOTE: this method can be removed once unique constraints are introduced ref.: https://github.com/TryGhost/Ghost/blob/e277c6b/core/server/data/schema/schema.js#L339
 const sanitizeInput = (members) => {
     const customersMap = members.reduce((acc, member) => {
-        if (member.stripe_customer_id) {
+        if (member.stripe_customer_id && member.stripe_customer_id !== 'undefined') {
             if (acc[member.stripe_customer_id]) {
                 acc[member.stripe_customer_id] += 1;
             } else {

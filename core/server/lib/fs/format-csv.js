@@ -10,7 +10,7 @@ module.exports = function formatCSV(data, fields) {
 
         for (i = 0; i < fields.length; i = i + 1) {
             field = fields[i];
-            csv += entry[field] !== null ? entry[field] : '';
+            csv += (entry[field] !== null && entry[field] !== undefined) ? entry[field] : '';
             if (i !== fields.length - 1) {
                 csv += ',';
             }
