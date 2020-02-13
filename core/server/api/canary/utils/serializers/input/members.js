@@ -17,10 +17,7 @@ function defaultRelations(frame) {
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
-
-        if (!utils.isContentAPI(frame)) {
-            defaultRelations(frame);
-        }
+        defaultRelations(frame);
     },
 
     read() {
