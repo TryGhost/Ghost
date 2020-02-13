@@ -14,8 +14,7 @@ module.exports = {
             'fields',
             'limit',
             'order',
-            'page',
-            'debug'
+            'page'
         ],
         validation: {
             options: {
@@ -34,8 +33,7 @@ module.exports = {
         options: [
             'include',
             'filter',
-            'fields',
-            'debug'
+            'fields'
         ],
         data: [
             'id',
