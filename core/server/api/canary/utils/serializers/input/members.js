@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:input:members');
-const utils = require('../../index');
 
 function defaultRelations(frame) {
     if (frame.options.withRelated) {
