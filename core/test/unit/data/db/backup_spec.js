@@ -4,7 +4,7 @@ var should = require('should'),
     fs = require('fs-extra'),
     models = require('../../../../server/models'),
     exporter = require('../../../../server/data/exporter'),
-    backupDatabase = require('../../../../server/data/db/backup');
+    dbBackup = require('../../../../server/data/db/backup');
 
 describe('Backup', function () {
     var exportStub, filenameStub, fsStub;
@@ -24,7 +24,7 @@ describe('Backup', function () {
     });
 
     it('should create a backup JSON file', function (done) {
-        backupDatabase.backup().then(function () {
+        dbBackup.backup().then(function () {
             exportStub.calledOnce.should.be.true();
             filenameStub.calledOnce.should.be.true();
             fsStub.calledOnce.should.be.true();

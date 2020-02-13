@@ -1,7 +1,7 @@
-var backup = require('../../../db/backup'),
+var dbBackup = require('../../../db/backup'),
     models = require('../../../../models');
 
 module.exports = function before() {
     models.init();
-    return backup();
+    return dbBackup.backup();
 };
