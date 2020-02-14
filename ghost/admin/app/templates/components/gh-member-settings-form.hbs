@@ -1,69 +1,58 @@
-<h4 class="midlightgrey f-small fw5 ttu">Basic info</h4>
-<div class="br4 shadow-1 bg-grouped-table mt2 flex flex-column items-stretch gh-member-basic-settings-form">
-    <div class="pa5 pb0 pt4 flex flex-column flex-row-ns justify-between">
-        <div class="flex flex-column items-start mr8 w-100 w-50-ns">
-            <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="name">
+<div class="flex items-stretch mt2">
+    <div class="flex-auto br4 shadow-1 bg-grouped-table mt2 flex flex-column justify-between items-stretch gh-member-settings-primary mr6">
+        <div class="pa5 pb0 pt4">
+            <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="name" @classNames="max-width">
                 <label for="member-name">Name</label>
-                <GhTextInput
-                    @id="member-name"
-                    @name="name"
-                    @value={{this.scratchMember.name}}
-                    @tabindex="1"
+                <GhTextInput @id="member-name" @name="name" @value={{this.scratchMember.name}} @tabindex="1"
                     @focus-out={{action "setProperty" "name" this.scratchMember.name}} />
                 <GhErrorMessage @errors={{member.errors}} @property="name" />
             </GhFormGroup>
 
-            <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="email">
+            <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="email" @classNames="max-width">
                 <label for="member-email">Email</label>
                 {{#if this.canEditEmail}}
-                    <GhTextInput
-                        @value={{this.scratchMember.email}}
-                        @id="member-email"
-                        @name="email"
-                        @tabindex="2"
-                        @autocapitalize="off"
-                        @autocorrect="off"
-                        @autocomplete="off"
-                        @focus-out={{action "setProperty" "email" this.scratchMember.email}} />
-                    <GhErrorMessage @errors={{this.member.errors}} @property="email" />
+                <GhTextInput @value={{this.scratchMember.email}} @id="member-email" @name="email" @tabindex="2"
+                    @autocapitalize="off" @autocorrect="off" @autocomplete="off"
+                    @focus-out={{action "setProperty" "email" this.scratchMember.email}} />
+                <GhErrorMessage @errors={{this.member.errors}} @property="email" />
                 {{else}}
-                    <GhTextInput
-                        @name="email-disabled"
-                        @disabled={{true}}
-                        @value={{this.scratchMember.email}} />
+                <GhTextInput @name="email-disabled" @disabled={{true}} @value={{this.scratchMember.email}} />
                 {{/if}}
             </GhFormGroup>
         </div>
-        <div class="mb6 mb0-ns w-100 w-50-ns">
-            <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="note">
-                <label for="member-note">Note</label>
-                <GhTextarea
-                    @id="member-note"
-                    @name="note"
-                    @class="gh-member-details-textarea"
-                    @tabindex="3"
-                    @value={{this.scratchMember.note}}
-                    @focus-out={{action "setProperty" "note" this.scratchMember.note}} />
-                <GhErrorMessage @errors={{this.member.errors}} @property="note" />
-                <p>Not visible to member. Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters this.scratchMember.note 500}}</p>
+        <div class="pa5 pt5 pb6 bt b--whitegrey">
+            <GhFormGroup @classNames="gh-members-subscribed-checkbox mb0">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h4 class="gh-setting-title">Subscribed to newsletter</h4>
+                        <p class="gh-setting-desc">If disabled, member will <em>not</em> receive newsletter emails</p>
+                    </div>
+                    <div class="for-switch">
+                        <label class="switch" for="subscribed-checkbox">
+                            <Input @checked={{this.member.subscribed}} @type="checkbox" @id="subscribed-checkbox"
+                                @name="subscribed" />
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
+                </div>
             </GhFormGroup>
         </div>
     </div>
-    <div class="pa5 pb0 pt4 flex flex-column justify-between bt b--whitegrey">
-        <GhFormGroup @classNames="gh-members-subscribed-checkbox">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h4 class="gh-setting-title">Subscribed to emails</h4>
-                    <p class="gh-setting-desc">If disabled, member will <em>not</em> receive newsletter emails</p>
-                </div>
-                <div class="for-switch">
-                    <label class="switch" for="subscribed-checkbox">
-                        <Input @checked={{this.member.subscribed}} @type="checkbox" @id="subscribed-checkbox" @name="subscribed" />
-                        <span class="input-toggle-component"></span>
-                    </label>
-                </div>
-            </div>
-        </GhFormGroup>
+    <div class="flex-auto br4 shadow-1 bg-grouped-table mt2 flex flex-column items-stretch gh-member-settings-secondary">
+        <div class="pa5 pt4">
+            <GhFormGroup>
+                <label for="label-input">Labels</label>
+                <GhMemberLabelInput @member={{this.member}} @triggerId="label-input" />
+            </GhFormGroup>
+            <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="note" @classNames="mb0">
+                <label for="member-note">Note <span class="midgrey-l2 fw4">(not visible to member)</span></label>
+                <GhTextarea @id="member-note" @name="note" @class="gh-member-details-textarea" @tabindex="3"
+                    @value={{this.scratchMember.note}} @focus-out={{action "setProperty" "note" this.scratchMember.note}} />
+                <GhErrorMessage @errors={{this.member.errors}} @property="note" />
+                <p> Maximum: <b>500</b> characters. You’ve used
+                    {{gh-count-down-characters this.scratchMember.note 500}}</p>
+            </GhFormGroup>
+        </div>
     </div>
 </div>
 
