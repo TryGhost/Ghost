@@ -528,6 +528,38 @@ describe('{{#has}} helper', function () {
         });
     });
 
+    describe('visibility match', function () {
+        it('matches on an exact visibility (pass)', function () {
+            thisCtx = {visibility: 'paid'};
+
+            // {{#has visibility="paid"}}
+            callHasHelper(thisCtx, {visibility: 'paid'});
+
+            fn.called.should.be.true();
+            inverse.called.should.be.false();
+        });
+
+        it('matches on an exact visibility (fail)', function () {
+            thisCtx = {visibility: 'paid'};
+
+            // {{#has visibility="members"}}
+            callHasHelper(thisCtx, {visibility: 'members'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+
+        it('fails gracefully if there is no visibility (fail)', function () {
+            thisCtx = {};
+
+            // {{#has visibility="welcome-to-ghost"}}
+            callHasHelper(thisCtx, {visibility: 'paid'});
+
+            fn.called.should.be.false();
+            inverse.called.should.be.true();
+        });
+    });
+
     describe('id match', function () {
         it('matches on an exact id (pass)', function () {
             thisCtx = {id: '5981fbed98141579627e9a5a'};
