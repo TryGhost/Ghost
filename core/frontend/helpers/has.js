@@ -8,7 +8,7 @@ const proxy = require('./proxy');
 const _ = require('lodash');
 const logging = proxy.logging;
 const i18n = proxy.i18n;
-const validAttrs = ['tag', 'author', 'slug', 'id', 'number', 'index', 'any', 'all'];
+const validAttrs = ['tag', 'author', 'slug','visibility', 'id', 'number', 'index', 'any', 'all'];
 
 function handleCount(ctxAttr, data) {
     if (!data || !_.isFinite(data.length)) {
@@ -135,6 +135,9 @@ module.exports = function has(options) {
             },
             index: function () {
                 return attrs.index && evaluateIntegerMatch(attrs.index, options.data.index) || false;
+            },
+            visibility: function () {
+                return attrs.visibility && evaluateStringMatch(attrs.visibility, self.visibility, true) || false;
             },
             slug: function () {
                 return attrs.slug && evaluateStringMatch(attrs.slug, self.slug, true) || false;
