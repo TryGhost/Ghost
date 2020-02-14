@@ -183,9 +183,9 @@
 }
 
 .dropdown-action .dropdown-content {
-    width: 240px;
+    flex-grow: 1;
     max-height: 50vh;
-    overflow-y: scroll;
+    overflow-y: auto;
     overflow-x: hidden;
     list-style: none;
     padding: 0;
@@ -193,9 +193,8 @@
 }
 
 .dropdown-action .dropdown-label {
-    flex-grow: 1;
     padding: 6px 14px;
-    width: 185px;
+    width: 184px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -218,7 +217,7 @@
     padding: 4px;
     margin-top: -2px;
     margin-bottom: -2px;
-    margin-right: 20px;
+    margin-right: 4px;
     border-radius: 3px;
 }
 
