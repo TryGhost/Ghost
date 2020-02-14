@@ -11123,6 +11123,15 @@ pretender@3.2.0:
     route-recognizer "^0.3.3"
     whatwg-fetch "^3.0.0"
 
+pretender@3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/pretender/-/pretender-3.3.1.tgz#74a188b0786601959ee8ffaefc9230d24fa7fa5b"
+  integrity sha512-fFtl0bfW1ay6zMGqok2Lkhpz8yjm8Pdk+fsQAX+Aeqw0LKZNaDs2VQt8qEKTNWvs5UKVUwNfcuHjVmuG7rZKhQ==
+  dependencies:
+    fake-xml-http-request "^2.1.1"
+    route-recognizer "^0.3.3"
+    whatwg-fetch "^3.0.0"
+
 pretty-ms@^3.1.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/pretty-ms/-/pretty-ms-3.2.0.tgz#87a8feaf27fc18414d75441467d411d6e6098a25"
