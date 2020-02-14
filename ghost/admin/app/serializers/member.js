@@ -1,9 +1,11 @@
 /* eslint-disable camelcase */
-import ApplicationSerializer from 'ghost-admin/serializers/application';
+import ApplicationSerializer from './application';
+import {EmbeddedRecordsMixin} from '@ember-data/serializer/rest';
 
-export default ApplicationSerializer.extend({
+export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
     attrs: {
-        createdAtUTC: {key: 'created_at'}
+        createdAtUTC: {key: 'created_at'},
+        labels: {embedded: 'always'}
     },
 
     serialize(/*snapshot, options*/) {

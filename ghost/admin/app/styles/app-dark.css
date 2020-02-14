@@ -240,13 +240,13 @@ input:focus,
     stroke-width: 2px;
 }
 
-.dropdown-menu > li > a,
-.dropdown-menu > li > button {
+.dropdown-menu li > a,
+.dropdown-menu li > button {
     color: color-mod(var(--lightgrey) lightness(+20%));
 }
 
-.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus,
-.dropdown-menu > li > button:hover, .dropdown-menu > li > button:focus {
+.dropdown-menu li > a:hover, .dropdown-menu li > a:focus,
+.dropdown-menu li > button:hover, .dropdown-menu li > button:focus {
     color: var(--lightgrey);
     background: color-mod(var(--dark-main-bg-color) l(-2%));
 }
@@ -303,12 +303,12 @@ input:focus,
     background: var(--lightgrey);
 }
 
-.dropdown-menu > li > a, .dropdown-menu > li > button {
+.dropdown-menu li > a, .dropdown-menu li > button {
     color: var(--darkgrey);
 }
 
-.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus,
-.dropdown-menu > li > button:hover, .dropdown-menu > li > button:focus {
+.dropdown-menu li > a:hover, .dropdown-menu li > a:focus,
+.dropdown-menu li > button:hover, .dropdown-menu li > button:focus {
     color: #fff;
 }
 

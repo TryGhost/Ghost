@@ -1,0 +1,35 @@
+<span class="dropdown dropdown-topmenu">
+    <GhDropdownButton @dropdownName="members-label-menu"
+        @classNames="gh-btn gh-btn-white gh-btn-filter first" @title="Member Labels"
+        @data-test-user-actions="true">
+        <span class="nudge-bottom--1 {{if @selectedLabel.slug "blue fw6"}}">
+            {{@selectedLabel.name}}
+            {{svg-jar "arrow-down-stroke" class="w2 h2 stroke-midgrey ml1"}}
+        </span>
+    </GhDropdownButton>
+    <GhDropdown @name="members-label-menu" @tagName="div"
+        @classNames="dropdown-menu dropdown-triangle-top-right dropdown-action">
+        <ul class="dropdown-content">
+            {{#each @availableLabels as |label|}}
+                <li class="{{if (eq @selectedLabel.name label.name) "selected"}}">
+                    <a>
+                        <span class="dropdown-label" title="{{label.name}}" {{on "click" (fn @onLabelChange label)}}>{{label.name}} </span>
+                        {{#if label.slug}}
+                            <span class="dropdown-action-icon" {{on "click" (fn @onLabelEdit label.slug)}}> {{svg-jar "pen"}} </span>
+                        {{/if}}
+                    </a>
+                </li>
+            {{/each}}
+        </ul>
+        <ul class="dropdown-footer">
+            <li>
+                <a {{on "click" (fn @onLabelAdd)}}>
+                    <span>
+                        {{svg-jar "add"}}
+                        Add Label
+                    </span>
+                </a>
+            </li>
+        </ul>
+    </GhDropdown>
+</span>

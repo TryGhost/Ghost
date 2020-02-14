@@ -13,6 +13,7 @@
     height: 4px;
     width: 6.11px;
     margin-left: 2px;
+    margin-top: -2px;
     vertical-align: middle;
 }
 
@@ -181,7 +182,7 @@
 /* Multiple */
 .ember-power-select-multiple-trigger {
     background: #fff;
-    padding: 5px;
+    padding: 4px;
     border: rgb(214, 227, 235) 1px solid;
     border-radius: 3px;
     outline: none;
@@ -193,6 +194,7 @@
     border: 1px solid #3fb0ef;
     border-radius: 3px;
     font-size: 0.93em;
+    font-weight: 500;
     color: white;
     background: #3fb0ef;
 }
@@ -206,8 +208,8 @@
 }
 
 .ember-power-select-multiple-remove-btn svg {
-    width: 0.6em;
-    height: auto;
+    width: 9px;
+    height: 9px;
 }
 
 .ember-power-select-multiple-remove-btn svg path {
@@ -221,7 +223,16 @@
 }
 
 .ember-power-select-status-icon {
-    right: 10px;
+    top: -4px;
+    right: 13px;
+    border: solid var(--midlightgrey);
+    border-width: 0 1px 1px 0;
+    padding: 3px;
+    transform: rotate(45deg);
+}
+
+.ember-basic-dropdown-trigger[aria-expanded="true"] .ember-power-select-status-icon {
+    transform: rotate(45deg);
 }
 
 /* Token input */

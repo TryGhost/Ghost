@@ -349,6 +349,10 @@ svg.gh-btn-icon-right {
     font-weight: 300;
 }
 
+.gh-btn-text.inline {
+    display: inline-flex;
+}
+
 .gh-btn-text span {
     height: unset;
     line-height: unset;
@@ -465,4 +469,23 @@ Usage: CTA buttons grouped together horizontally.
     height: 4px;
     background: rgba(0,0,0,0.6);
     border-radius: 100px;
+}
+
+/* Filter buttons
+/* ---------------------------------------------------------- */
+.gh-btn-filter {
+    height: 33px;
+    line-height: 33px;
+    border-radius: 0px;
+    color: var(--darkgrey);
+}
+
+.gh-btn-filter.first {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.gh-btn-filter.last {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
 }

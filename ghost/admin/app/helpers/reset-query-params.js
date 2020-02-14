@@ -6,6 +6,9 @@ export const DEFAULT_QUERY_PARAMS = {
         author: null,
         tag: null,
         order: null
+    },
+    'members.index': {
+        label: null
     }
 };
 

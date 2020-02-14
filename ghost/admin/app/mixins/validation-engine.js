@@ -4,6 +4,7 @@ import CustomViewValidator from 'ghost-admin/validators/custom-view';
 import DS from 'ember-data'; // eslint-disable-line
 import IntegrationValidator from 'ghost-admin/validators/integration';
 import InviteUserValidator from 'ghost-admin/validators/invite-user';
+import LabelValidator from 'ghost-admin/validators/label';
 import MemberValidator from 'ghost-admin/validators/member';
 import Mixin from '@ember/object/mixin';
 import Model from '@ember-data/model';
@@ -50,7 +51,8 @@ export default Mixin.create({
         user: UserValidator,
         member: MemberValidator,
         integration: IntegrationValidator,
-        webhook: WebhookValidator
+        webhook: WebhookValidator,
+        label: LabelValidator
     },
 
     // This adds the Errors object to the validation engine, and shouldn't affect
