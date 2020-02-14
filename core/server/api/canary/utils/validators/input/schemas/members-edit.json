@@ -37,6 +37,9 @@
                 "email": {
                     "strip": true
                 },
+                "labels": {
+                    "$ref": "members#/definitions/member-labels"
+                },
                 "created_at": {
                     "strip": true
                 },
@@ -54,4 +57,4 @@
         }
     },
     "required": ["members"]
-  }
+}

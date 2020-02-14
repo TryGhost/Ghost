@@ -34,6 +34,9 @@
                 "id": {
                     "strip": true
                 },
+                "labels": {
+                    "$ref": "#/definitions/member-labels"
+                },
                 "created_at": {
                     "strip": true
                 },
@@ -46,6 +49,40 @@
                 "updated_by": {
                     "strip": true
                 }
+            }
+        },
+        "member-labels": {
+            "description": "Labels of the member",
+            "type": "array",
+            "items": {
+                "anyOf": [{
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string",
+                            "maxLength": 24
+                        },
+                        "name": {
+                            "type": "string",
+                            "maxLength": 191
+                        },
+                        "slug": {
+                            "type": ["string", "null"],
+                            "maxLength": 191
+                        },
+                        "members": {
+                            "strip": true
+                        }
+                    },
+                    "anyOf": [
+                        {"required": ["id"]},
+                        {"required": ["name"]},
+                        {"required": ["slug"]}
+                    ]
+                }, {
+                    "type": "string",
+                    "maxLength": 191
+                }]
             }
         }
     }

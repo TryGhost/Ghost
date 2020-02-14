@@ -35,6 +35,10 @@ module.exports = {
         return require('./tags');
     },
 
+    get labels() {
+        return require('./labels');
+    },
+
     get users() {
         return require('./users');
     },

@@ -384,6 +384,9 @@
             "tags": {
                 "tagNotFound": "Tag not found."
             },
+            "labels": {
+                "labelNotFound": "Label not found."
+            },
             "themes": {
                 "noPermissionToBrowseThemes": "You do not have permission to browse themes.",
                 "noPermissionToEditThemes": "You do not have permission to edit themes.",
