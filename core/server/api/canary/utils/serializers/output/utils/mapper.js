@@ -157,10 +157,16 @@ const mapMember = (model, frame) => {
     return jsonModel;
 };
 
+const mapLabel = (model, frame) => {
+    const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
+    return jsonModel;
+};
+
 module.exports.mapPost = mapPost;
 module.exports.mapPage = mapPage;
 module.exports.mapUser = mapUser;
 module.exports.mapTag = mapTag;
+module.exports.mapLabel = mapLabel;
 module.exports.mapIntegration = mapIntegration;
 module.exports.mapSettings = mapSettings;
 module.exports.mapImage = mapImage;

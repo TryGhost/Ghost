@@ -37,7 +37,8 @@ models = [
     'posts-meta',
     'member-stripe-customer',
     'stripe-customer-subscription',
-    'email'
+    'email',
+    'label'
 ];
 
 function init() {
