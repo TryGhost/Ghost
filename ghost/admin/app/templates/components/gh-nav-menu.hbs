@@ -71,7 +71,7 @@
             {{/if}}
             {{#if (and this.feature.members (gh-user-can-admin this.session.user))}}
                 <li>
-                    <LinkTo @route="members" @current-when="members member" data-test-nav="members">{{svg-jar "members"}}Members</LinkTo>
+                    <LinkTo @route="members" @current-when="members member" @query={{hash label=null}} data-test-nav="members">{{svg-jar "members"}}Members</LinkTo>
                 </li>
             {{/if}}
             <li><LinkTo @route="staff" data-test-nav="staff">{{svg-jar "staff"}}Staff</LinkTo></li>

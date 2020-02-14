@@ -1,0 +1,12 @@
+<GhTokenInput
+    @extra={{hash
+        tokenComponent="gh-token-input/label-token"
+    }}
+    @onChange={{action "updateLabels"}}
+    @onCreate={{action "createLabel"}}
+    @options={{this.availableLabels}}
+    @renderInPlace={{true}}
+    @selected={{selectedLabels}}
+    @showCreateWhen={{action "hideCreateOptionOnMatchingLabel"}}
+    @triggerId={{this.triggerId}}
+/>

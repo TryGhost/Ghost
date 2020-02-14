@@ -10,6 +10,10 @@
     z-index: 1100;
 }
 
+.dropdown-topmenu {
+    height: 33px;
+}
+
 .dropdown-toggle:focus {
     outline: 0;
 }
@@ -49,8 +53,8 @@
     margin: 0;
 }
 
-.dropdown-menu > li > a,
-.dropdown-menu > li > button {
+.dropdown-menu li > a,
+.dropdown-menu li > button {
     display: flex;
     align-items: center;
     clear: both;
@@ -74,8 +78,8 @@
 }
 
 @media (max-width: 500px) {
-    .dropdown-menu > li > a,
-    .dropdown-menu > li > button {
+    .dropdown-menu li > a,
+    .dropdown-menu li > button {
         padding: 7px 8px;
         font-size: 1.5rem;
     }
@@ -89,19 +93,19 @@
 /* ---------------------------------------------------------- */
 
 /* Hover/Focus */
-.dropdown-menu > li > a:hover,
-.dropdown-menu > li > a:focus,
-.dropdown-menu > li > button:hover,
-.dropdown-menu > li > button:focus {
+.dropdown-menu li > a:hover,
+.dropdown-menu li > a:focus,
+.dropdown-menu li > button:hover,
+.dropdown-menu li > button:focus {
     background: color-mod(var(--whitegrey) a(60%) s(-12%));
     color: var(--darkgrey);
     text-decoration: none;
 }
 
-.dropdown-menu > li > a:hover svg,
-.dropdown-menu > li > a:focus svg,
-.dropdown-menu > li > button:hover svg,
-.dropdown-menu > li > button:focus svg {
+.dropdown-menu li > a:hover svg,
+.dropdown-menu li > a:focus svg,
+.dropdown-menu li > button:hover svg,
+.dropdown-menu li > button:focus svg {
     fill: var(--darkgrey);
 }
 
@@ -152,4 +156,119 @@
 
 .closed > .dropdown-menu {
     display: none;
+}
+
+
+/* Action dropdown
+/* Dropdowns that can have secondary action button
+/* ---------------------------------------------------------- */
+.dropdown-action {
+    top: calc(100% + 6px);
+    left: auto;
+    width: 210px;
+    overflow-x: hidden;
+}
+
+.dropdown-action li {
+    cursor: pointer;
+}
+
+.dropdown-action li a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-right: 0;
+    padding: 0;
+    color: var(--darkgrey);
+}
+
+.dropdown-action .dropdown-content {
+    width: 240px;
+    max-height: 50vh;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dropdown-action .dropdown-label {
+    flex-grow: 1;
+    padding: 6px 14px;
+    width: 185px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.dropdown-action li.selected .dropdown-label {
+    font-weight: 700;
+}
+
+.dropdown-action li.selected a:hover {
+    background: none;
+}
+
+.dropdown-action .dropdown-action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity ease-in-out 0.15s;
+    padding: 4px;
+    margin-top: -2px;
+    margin-bottom: -2px;
+    margin-right: 20px;
+    border-radius: 3px;
+}
+
+.dropdown-action a:hover .dropdown-action-icon {
+    opacity: 1.0;
+}
+
+.dropdown-action .dropdown-action-icon:hover {
+    background: var(--whitegrey-d1);
+}
+
+.dropdown-action .dropdown-action-icon svg {
+    margin: 0;
+}
+
+.dropdown-action .dropdown-action-icon svg path {
+    fill: var(--midgrey);
+}
+
+.dropdown-action .dropdown-action-icon:hover svg path {
+    fill: var(--darkgrey);
+}
+
+.dropdown-action .dropdown-footer {
+    list-style: none;
+    padding: 0;
+    margin: 6px 0 0;
+    border-top: 1px solid var(--whitegrey);
+}
+
+.dropdown-action .dropdown-footer li:first-of-type {
+    margin-top: 6px;
+}
+
+.dropdown-action .dropdown-footer a {
+    padding: 6px 14px;
+}
+
+.dropdown-action .dropdown-footer a span {
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-action .dropdown-footer a span svg {
+    width: 12px;
+    height: 12px;
+    margin-right: 6px;
+}
+
+.dropdown-action.fade-out {
+    animation-duration: .001s;
+    pointer-events: none;
 }

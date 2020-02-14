@@ -91,7 +91,7 @@ export default Controller.extend({
 
         try {
             yield member.save();
-
+            member.updateLabels();
             // replace 'member.new' route with 'member' route
             this.replaceRoute('member', member);
 

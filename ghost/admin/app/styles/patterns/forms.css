@@ -81,6 +81,14 @@ input {
     margin-bottom: 4px;
 }
 
+.form-group.max-width {
+    max-width: 100%;
+}
+
+.form-group.mb0 {
+    margin-bottom: 0;
+}
+
 @media (max-width: 550px) {
     .form-group {
         max-width: 100%;
@@ -544,7 +552,7 @@ textarea {
 }
 
 .gh-select svg path {
-    stroke: var(--darkgrey);
+    stroke: var(--midlightgrey);
 }
 
 .gh-select select {
