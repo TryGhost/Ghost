@@ -1,0 +1,28 @@
+name: Test Suite
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [ 'Firefox', 'Chrome' ]
+    name: ${{ matrix.browser }}
+    env:
+      MOZ_HEADLESS: 1
+      JOBS: 1
+      CI: true
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10
+      - run: yarn
+      - run: yarn lint:js
+      - run: yarn test
+        env:
+          BROWSER: ${{ matrix.browser }}
