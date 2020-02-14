@@ -344,8 +344,8 @@ module.exports = {
     },
     members_labels: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id'},
-        label_id: {type: 'string', maxlength: 24, nullable: false, references: 'tags.id'},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id'},
+        label_id: {type: 'string', maxlength: 24, nullable: false, references: 'labels.id'},
         sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
     members_stripe_customers: {
