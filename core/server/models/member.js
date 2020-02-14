@@ -53,7 +53,7 @@ const Member = ghostBookshelf.Model.extend({
         this.handleAttachedModels(model);
     },
     onSaving: function onSaving(model, attr, options) {
-        let labelsToSave;
+        let labelsToSave = [];
         let ops = [];
 
         // CASE: detect lowercase/uppercase label slugs
