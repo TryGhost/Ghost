@@ -56,6 +56,7 @@ const expectedProperties = {
     member: _(schema.members)
         .keys()
         .concat('comped')
+        .concat('labels')
     ,
     role: _(schema.roles)
         .keys()
