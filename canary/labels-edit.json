@@ -1,0 +1,18 @@
+
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "labels.edit",
+    "title": "labels.edit",
+    "description": "Schema for labels.edit",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "labels": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "items": {"$ref": "labels#/definitions/label"}
+        }
+    },
+    "required": [ "labels" ]
+  }

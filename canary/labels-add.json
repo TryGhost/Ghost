@@ -1,0 +1,23 @@
+
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "labels.add",
+    "title": "labels.add",
+    "description": "Schema for labels.add",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "labels": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "additionalProperties": false,
+            "items": {
+                "type": "object",
+                "allOf": [{"$ref": "labels#/definitions/label"}],
+                "required": ["name"]
+            }
+        }
+    },
+    "required": [ "labels" ]
+  }
