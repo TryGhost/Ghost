@@ -25,5 +25,9 @@ module.exports = {
 
     get tags() {
         return require('./tags');
+    },
+
+    get members() {
+        return require('./members');
     }
 };
