@@ -30,7 +30,9 @@ function createPublicFileMiddleware(file, type, maxAge) {
                     }));
                 }
 
-                return next(err);
+                if (err) {
+                    return next(err);
+                }
             });
         }
 
