@@ -387,10 +387,10 @@
     remark "^11.0.1"
     unist-util-visit "^2.0.0"
 
-"@tryghost/vhost-middleware@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.0.tgz#b9318b837054e87c35b27a31961847ad8bf70868"
-  integrity sha512-F+rSk4YmquxjfSPvRc4s20NuOQfnQluK6drvttkPybKWTMoRvs5/uDfVdyil3lTVZC5COh7sSBCCM3Fin7FYGA==
+"@tryghost/vhost-middleware@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.1.tgz#7a609f9f9d0ec977144745a07633e50fc4ee0c4b"
+  integrity sha512-NLc9xqwWSJXg5GIAgb7nUBYjpGacRZITRz8EWDhJtLIGun19uIlYlau/lYF1iRL4UP3vJqEvUp4mtpYFvQX0Bg==
   dependencies:
     bluebird "^3.7.1"
     ghost-ignition "^3.1.0"
