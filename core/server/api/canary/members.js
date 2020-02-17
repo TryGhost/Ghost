@@ -133,13 +133,17 @@ const members = {
                 }
             }
         },
-        permissions: (frame) => {
-            return models.User.findOne({role: 'Owner', status: 'all'})
-                .then((owner) => {
-                    if (owner.id !== frame.options.context.user) {
-                        throw new common.errors.NoPermissionError({message: common.i18n.t('errors.api.authentication.notTheBlogOwner')});
-                    }
-                });
+        permissions: {
+            before: (frame) => {
+                if ((_.get(frame, 'original.query.include') || '').includes('signin_url')) {
+                    return models.User.findOne({role: 'Owner', status: 'all'})
+                        .then((owner) => {
+                            if (owner.id !== frame.options.context.user) {
+                                throw new common.errors.NoPermissionError({message: common.i18n.t('errors.api.authentication.notTheBlogOwner')});
+                            }
+                        });
+                }
+            }
         },
         async query(frame) {
             let model = await models.Member.findOne(frame.data, frame.options);
