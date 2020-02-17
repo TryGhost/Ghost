@@ -1,0 +1,4 @@
+# All database migrations must be reviewed by devops
+
+/core/server/data/schema/       @daniellockyer
+/core/server/data/migrations/   @daniellockyer
