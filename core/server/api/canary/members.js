@@ -7,6 +7,8 @@ const common = require('../../lib/common');
 const fsLib = require('../../lib/fs');
 const _ = require('lodash');
 
+const ALLOWED_INCLUDES = ['signin_url'];
+
 const decorateWithSubscriptions = async function (member) {
     // NOTE: this logic is here until relations between Members/MemberStripeCustomer/StripeCustomerSubscription
     //       are in place
@@ -94,6 +96,7 @@ const members = {
     docName: 'members',
     browse: {
         options: [
+            'include',
             'limit',
             'fields',
             'filter',
@@ -102,7 +105,13 @@ const members = {
             'page'
         ],
         permissions: true,
-        validation: {},
+        validation: {
+            options: {
+                include: {
+                    values: ALLOWED_INCLUDES
+                }
+            }
+        },
         async query(frame) {
             return listMembers(frame.options);
         }
@@ -110,12 +119,28 @@ const members = {
 
     read: {
         headers: {},
+        options: [
+            'include'
+        ],
         data: [
             'id',
             'email'
         ],
-        validation: {},
-        permissions: true,
+        validation: {
+            options: {
+                include: {
+                    values: ALLOWED_INCLUDES
+                }
+            }
+        },
+        permissions: (frame) => {
+            return models.User.findOne({role: 'Owner', status: 'all'})
+                .then((owner) => {
+                    if (owner.id !== frame.options.context.user) {
+                        throw new common.errors.NoPermissionError({message: common.i18n.t('errors.api.authentication.notTheBlogOwner')});
+                    }
+                });
+        },
         async query(frame) {
             let model = await models.Member.findOne(frame.data, frame.options);
 
