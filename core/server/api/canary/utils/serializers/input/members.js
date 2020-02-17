@@ -13,9 +13,19 @@ function defaultRelations(frame) {
     frame.options.withRelated = ['labels'];
 }
 
+function removeSigninLinkRelation(frame) {
+    if (!frame.options.withRelated) {
+        return;
+    }
+
+    frame.options.withRelated = frame.options.withRelated.filter(relation => (relation === 'signin_link'));
+}
+
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
+
+        removeSigninLinkRelation(frame);
         defaultRelations(frame);
     },
 
@@ -36,11 +46,13 @@ module.exports = {
                 }
             });
         }
+
+        removeSigninLinkRelation(frame);
         defaultRelations(frame);
     },
 
-    edit(apiConfig, frame) {
+    edit() {
         debug('edit');
-        this.add(apiConfig, frame);
+        this.add(...arguments);
     }
 };
