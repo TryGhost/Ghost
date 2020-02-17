@@ -4,7 +4,6 @@ const _ = require('lodash');
 const sequence = require('../lib/promise/sequence');
 const config = require('../config');
 const crypto = require('crypto');
-const urlUtils = require('../lib/url-utils');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
@@ -159,35 +158,13 @@ const Member = ghostBookshelf.Model.extend({
         const options = Member.filterOptions(unfilteredOptions, 'toJSON');
         const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
-        // inject a computed avatar url
-        //
-        // uses gravatar's default ?d= query param to enable serving our own
-        // image if there is no gravatar for the member's email
-        //
-        // /assets/default-member-avatar.png will resolve to either the theme
-        // asset or our core public asset
-        //
-        // fallback = gravatar -> theme default avatar -> ghost default avatar
-        //
-        // if gravatar is disabled in privacy config then we'll return our avatar url directly
-
-        // Ensure we have an assetHash
-        // @TODO rework this! Code is shared with asset_url helper
-        if (!config.get('assetHash')) {
-            config.set('assetHash', (crypto.createHash('md5').update(Date.now().toString()).digest('hex')).substring(0, 10));
-        }
-
-        const absolute = true;
-        attrs.avatar_image = urlUtils.urlJoin(
-            urlUtils.getSiteUrl(absolute),
-            `assets/default-member-avatar.png`
-        );
-        attrs.avatar_image += '?v=' + config.get('assetHash');
-
+        // Inject a computed avatar url. Uses gravatar's default ?d= query param
+        // to serve a blank image if there is no gravatar for the member's email.
+        // Will not use gravatar if privacy.useGravatar is false in config
+        attrs.avatar_image = null;
         if (attrs.email && !config.isPrivacyDisabled('useGravatar')) {
             const emailHash = crypto.createHash('md5').update(attrs.email.toLowerCase().trim()).digest('hex');
-            const encodedImageUrl = encodeURIComponent(attrs.avatar_image);
-            attrs.avatar_image = `https://gravatar.com/avatar/${emailHash}?s=250&d=${encodedImageUrl}`;
+            attrs.avatar_image = `https://gravatar.com/avatar/${emailHash}?s=250&d=blank`;
         }
 
         return attrs;

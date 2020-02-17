@@ -148,8 +148,6 @@ module.exports = function setupSiteApp(options = {}) {
 
     // Theme static assets/files
     siteApp.use(shared.middlewares.staticTheme());
-    // Fallback for default member avatar
-    siteApp.use(shared.middlewares.servePublicFile('assets/default-member-avatar.png', 'image/png', constants.ONE_HOUR_S));
     debug('Static content done');
 
     // Serve robots.txt if not found in theme

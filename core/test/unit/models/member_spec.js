@@ -27,7 +27,7 @@ describe('Unit: models/member', function () {
             };
         });
 
-        it('avatar_image: generates gravatar url with fallback', function () {
+        it('avatar_image: generates gravatar url', function () {
             const member = {
                 email: 'test@example.com'
             };
@@ -35,9 +35,7 @@ describe('Unit: models/member', function () {
             config.set('privacy:useGravatar', true);
             const json = toJSON(member);
 
-            should.exist(json.avatar_image);
-            const encodedFallbackImage = encodeURIComponent('https://127.0.0.1:2369/assets/default-member-avatar.png?v=1');
-            json.avatar_image.should.eql(`https://gravatar.com/avatar/55502f40dc8b7c769880b10874abc9d0?s=250&d=${encodedFallbackImage}`);
+            json.avatar_image.should.eql(`https://gravatar.com/avatar/55502f40dc8b7c769880b10874abc9d0?s=250&d=blank`);
         });
 
         it('avatar_image: skips gravatar when privacy.useGravatar=false', function () {
@@ -48,8 +46,7 @@ describe('Unit: models/member', function () {
             config.set('privacy:useGravatar', false);
             const json = toJSON(member);
 
-            should.exist(json.avatar_image);
-            json.avatar_image.should.eql('https://127.0.0.1:2369/assets/default-member-avatar.png?v=1');
+            should(json.avatar_image).eql(null);
         });
     });
 });
