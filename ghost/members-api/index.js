@@ -292,11 +292,6 @@ module.exports = function MembersApi({
             return res.end('No permission');
         }
 
-        if (subscription.plan.nickname === 'Complimentary') {
-            res.writeHead(400);
-            return res.end('Bad request');
-        }
-
         if (cancelAtPeriodEnd === undefined) {
             throw new common.errors.BadRequestError({
                 message: 'Canceling membership failed!',
