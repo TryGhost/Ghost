@@ -154,7 +154,7 @@ const mapMember = (model, frame) => {
         });
     }
 
-    if (!utils.isContentAPI(frame)) {
+    if (!utils.isContentAPI(frame) && (_.get(frame, 'original.query.include') || '').includes('signin_url')) {
         const membersService = require('../../../../../../services/members');
 
         const magicLink = membersService.api.getMagicLink(jsonModel.email);
