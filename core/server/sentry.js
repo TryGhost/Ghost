@@ -20,11 +20,13 @@ if (sentryConfig && !sentryConfig.disabled) {
                 // Only handle 500 errors for now
                 return (error.statusCode === 500);
             }
-        })
+        }),
+        captureException: Sentry.captureException
     };
 } else {
     module.exports = {
         requestHandler: expressNoop,
-        errorHandler: expressNoop
+        errorHandler: expressNoop,
+        captureException: () => {}
     };
 }
