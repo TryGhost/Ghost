@@ -304,6 +304,55 @@ describe('Members API', function () {
             });
     });
 
+    it('Can import CSV with minimum one field', function () {
+        return request
+            .post(localUtils.API.getApiQuery(`members/csv/`))
+            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-defaults.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.meta);
+                should.exist(jsonResponse.meta.stats);
+
+                jsonResponse.meta.stats.imported.should.equal(2);
+                jsonResponse.meta.stats.duplicates.should.equal(0);
+                jsonResponse.meta.stats.invalid.should.equal(0);
+            })
+            .then(() => {
+                return request
+                    .get(localUtils.API.getApiQuery(`members/`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200);
+            })
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.members);
+
+                const defaultMember1 = jsonResponse.members.find(member => (member.email === 'member+defaults_1@example.com'));
+                should(defaultMember1.name).equal(null);
+                should(defaultMember1.note).equal(null);
+                defaultMember1.subscribed.should.equal(true);
+                defaultMember1.comped.should.equal(false);
+                defaultMember1.stripe.should.not.be.undefined();
+                defaultMember1.stripe.subscriptions.length.should.equal(0);
+                defaultMember1.labels.length.should.equal(0);
+
+                const defaultMember2 = jsonResponse.members.find(member => (member.email === 'member+defaults_2@example.com'));
+                should(defaultMember2).not.be.undefined();
+            });
+    });
+
     it('Can import file with duplicate stripe customer ids', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/csv/`))
