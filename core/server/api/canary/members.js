@@ -343,13 +343,21 @@ const members = {
                     entry.labels = (entry.labels && entry.labels.split(',')) || [];
                     const entryLabels = serializeMemberLabels(entry.labels);
                     cleanupUndefined(entry);
+
+                    let subscribed;
+                    if (_.isUndefined(entry.subscribed_to_emails)) {
+                        subscribed = entry.subscribed_to_emails;
+                    } else {
+                        subscribed = (String(entry.subscribed_to_emails).toLowerCase() !== 'false');
+                    }
+
                     return Promise.resolve(api.members.add.query({
                         data: {
                             members: [{
                                 email: entry.email,
                                 name: entry.name,
                                 note: entry.note,
-                                subscribed: (String(entry.subscribed_to_emails).toLowerCase() === 'true'),
+                                subscribed: subscribed,
                                 stripe_customer_id: entry.stripe_customer_id,
                                 comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
                                 labels: entryLabels
