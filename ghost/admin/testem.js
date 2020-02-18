@@ -12,6 +12,7 @@ if (isCronBuild) {
 
 module.exports = {
     framework: 'mocha',
+    browser_disconnect_timeout: 30,
     test_page: 'tests/index.html?hidepassed',
     disable_watching: true,
     parallel: process.env.EMBER_EXAM_SPLIT_COUNT || 1,
