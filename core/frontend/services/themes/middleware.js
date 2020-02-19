@@ -117,6 +117,7 @@ function updateLocalTemplateOptions(req, res, next) {
         email: req.member.email,
         name: req.member.name,
         firstname: req.member.name && req.member.name.split(' ')[0],
+        avatar_image: req.member.avatar_image,
         subscriptions: req.member.stripe.subscriptions,
         paid: req.member.stripe.subscriptions.length !== 0
     } : null;
