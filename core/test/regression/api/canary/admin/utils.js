@@ -55,6 +55,7 @@ const expectedProperties = {
     ,
     member: _(schema.members)
         .keys()
+        .concat('avatar_image')
         .concat('comped')
         .concat('labels')
     ,
