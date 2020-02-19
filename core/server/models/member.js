@@ -2,6 +2,8 @@ const ghostBookshelf = require('./base');
 const uuid = require('uuid');
 const _ = require('lodash');
 const sequence = require('../lib/promise/sequence');
+const config = require('../config');
+const crypto = require('crypto');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
@@ -47,11 +49,13 @@ const Member = ghostBookshelf.Model.extend({
 
         model.emitChange('deleted', options);
     },
+
     onDestroying: function onDestroyed(model) {
         ghostBookshelf.Model.prototype.onDestroying.apply(this, arguments);
 
         this.handleAttachedModels(model);
     },
+
     onSaving: function onSaving(model, attr, options) {
         let labelsToSave = [];
         let ops = [];
@@ -148,6 +152,22 @@ const Member = ghostBookshelf.Model.extend({
         }
 
         return options;
+    },
+
+    toJSON(unfilteredOptions) {
+        const options = Member.filterOptions(unfilteredOptions, 'toJSON');
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+
+        // Inject a computed avatar url. Uses gravatar's default ?d= query param
+        // to serve a blank image if there is no gravatar for the member's email.
+        // Will not use gravatar if privacy.useGravatar is false in config
+        attrs.avatar_image = null;
+        if (attrs.email && !config.isPrivacyDisabled('useGravatar')) {
+            const emailHash = crypto.createHash('md5').update(attrs.email.toLowerCase().trim()).digest('hex');
+            attrs.avatar_image = `https://gravatar.com/avatar/${emailHash}?s=250&d=blank`;
+        }
+
+        return attrs;
     }
 });
 
