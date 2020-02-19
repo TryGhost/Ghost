@@ -7,7 +7,7 @@ const activeTheme = require('../../../../frontend/services/themes/active');
 const settingsCache = require('../../../../server/services/settings/cache');
 const middleware = themes.middleware;
 
-const sandbox = sinon.sandbox.create();
+const sandbox = sinon.createSandbox();
 
 function executeMiddleware(middleware, req, res, next) {
     const [current, ...rest] = middleware;
