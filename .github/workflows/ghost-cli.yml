@@ -6,39 +6,30 @@ on:
       - master
 
 jobs:
-  clean-install:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '10'
-      - run: npm install -g ghost-cli@latest
-      - run: zip -r ghost.zip .
-      - run: mkdir test
-      - run: ghost install local -d test --zip ../ghost.zip
-  latest-release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '10'
-      - run: npm install -g ghost-cli@latest
-      - run: zip -r ghost.zip .
-      - run: mkdir test
-      - run: ghost install local -d test
-      - run: ghost update -d test --zip ../ghost.zip
-#  previous-major:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v2
 #      - run: git submodule update --init --force --recursive --depth=1
-#      - uses: actions/setup-node@v1
-#        with:
-#          node-version: '10'
-#      - run: npm install -g ghost-cli@latest
-#      - run: zip -r ghost.zip .
-#      - run: mkdir test
-#      - run: ghost install v2 --local -d test
-#      - run: ghost update -f -d test --zip ../ghost.zip
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10'
+      - run: npm install -g ghost-cli@latest
+      - run: zip -r ghost.zip .
+
+      - name: Clean Install
+        run: |
+          DIR=$(mktemp -d)
+          ghost install local -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+
+      - name: Latest Release
+        run: |
+          DIR=$(mktemp -d)
+          ghost install local -d $DIR
+          ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+
+#      - name: Previous Major
+#        run: |
+#          DIR=$(mktemp -d)
+#          ghost install v2 --local -d $DIR
+#          ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
