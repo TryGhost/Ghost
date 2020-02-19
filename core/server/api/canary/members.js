@@ -329,6 +329,9 @@ const members = {
             }, {
                 name: 'labels',
                 lookup: /labels/i
+            }, {
+                name: 'created_at',
+                lookup: /created_at/i
             }];
 
             return fsLib.readCSV({
@@ -360,7 +363,8 @@ const members = {
                                 subscribed: subscribed,
                                 stripe_customer_id: entry.stripe_customer_id,
                                 comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
-                                labels: entryLabels
+                                labels: entryLabels,
+                                created_at: entry.created_at
                             }]
                         },
                         options: {
