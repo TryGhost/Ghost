@@ -66,7 +66,6 @@
     "cookie": "0.4.0",
     "cookie-session": "1.4.0",
     "cors": "2.8.5",
-    "cpy-cli": "2.0.0",
     "csv-parser": "2.3.2",
     "downsize": "0.0.8",
     "express": "4.17.1",
