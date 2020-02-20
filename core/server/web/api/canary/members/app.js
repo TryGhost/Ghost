@@ -13,6 +13,10 @@ module.exports = function setupMembersApiApp() {
     const apiApp = express();
     apiApp.use(sentry.requestHandler);
 
+    // Make sure `req.ip` is correct for proxied requests
+    // (X-Forwarded-Proto header will be checked, if present)
+    apiApp.enable('trust proxy');
+
     // Entire app is behind labs flag
     apiApp.use(labs.members);
 
