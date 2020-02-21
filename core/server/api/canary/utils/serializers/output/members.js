@@ -50,7 +50,7 @@ module.exports = {
         const fields = ['id', 'email', 'name', 'note', 'subscribed_to_emails', 'complimentary_plan', 'stripe_customer_id', 'created_at', 'deleted_at', 'labels'];
 
         models.members = models.members.map((member) => {
-            member = mapper.mapMember(member);
+            member = mapper.mapMember(member, frame);
             let stripeCustomerId;
 
             if (member.stripe) {
