@@ -26,7 +26,7 @@
                             <span class="hidden">User Settings</span>
                         </span>
                     </GhDropdownButton>
-                    <GhDropdown @name="user-actions-menu" @tagName="ul" @classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right">
+                    <GhDropdown @name="user-actions-menu" @tagName="ul" @classNames="user-actions-menu dropdown-menu dropdown-align-right">
                         {{#if this.canMakeOwner}}
                             <li>
                                 <button {{action "toggleTransferOwnerModal"}}>
