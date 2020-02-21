@@ -20,6 +20,12 @@
                     "maxLength": 191,
                     "pattern": "^([^,]|$)"
                 },
+                "email": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 191,
+                    "pattern": "^([^,]|$)"
+                },
                 "note": {
                     "type": "string",
                     "minLength": 0,
@@ -32,9 +38,6 @@
                     "type": "boolean"
                 },
                 "id": {
-                    "strip": true
-                },
-                "email": {
                     "strip": true
                 },
                 "labels": {
