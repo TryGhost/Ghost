@@ -89,8 +89,8 @@ describe('Acceptance: Members', function () {
             expect(find('.gh-member-settings-primary input[name="name"]').value, 'loads correct member into form')
                 .to.equal(member1.name);
 
-            expect(find('.gh-member-settings-primary input[name="email-disabled"]').disabled, 'makes sure email is disabled')
-                .to.equal(true);
+            expect(find('.gh-member-settings-primary input[name="email"]').value, 'loads correct email into form')
+                .to.equal(member1.email);
 
             // trigger save
             await fillIn('.gh-member-settings-primary input[name="name"]', 'New Name');
@@ -143,9 +143,6 @@ describe('Acceptance: Members', function () {
                     .to.be.empty;
             });
 
-            expect(find('.gh-member-settings-primary input[name="email"]').disabled, 'makes sure email is disabled')
-                .to.equal(false);
-
             // save new member
             await fillIn('.gh-member-settings-primary input[name="name"]', 'New Name');
             await blur('.gh-member-settings-primary input[name="name"]');
@@ -159,8 +156,9 @@ describe('Acceptance: Members', function () {
 
             expect(find('.gh-member-settings-primary input[name="name"]').value, 'name has been preserved')
                 .to.equal('New Name');
-            expect(find('.gh-member-settings-primary input[name="email-disabled"]').disabled, 'makes sure email is disabled')
-                .to.equal(true);
+
+            expect(find('.gh-member-settings-primary input[name="email"]').value, 'email has been preserved')
+                .to.equal('example@domain.com');
         });
     });
 });

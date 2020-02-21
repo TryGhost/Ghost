@@ -10,14 +10,10 @@
 
             <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="email" @classNames="max-width">
                 <label for="member-email">Email</label>
-                {{#if this.canEditEmail}}
                 <GhTextInput @value={{this.scratchMember.email}} @id="member-email" @name="email" @tabindex="2"
                     @autocapitalize="off" @autocorrect="off" @autocomplete="off"
                     @focus-out={{action "setProperty" "email" this.scratchMember.email}} />
                 <GhErrorMessage @errors={{this.member.errors}} @property="email" />
-                {{else}}
-                <GhTextInput @name="email-disabled" @disabled={{true}} @value={{this.scratchMember.email}} />
-                {{/if}}
             </GhFormGroup>
         </div>
         <div class="pa5 pt5 pb6 bt b--whitegrey">

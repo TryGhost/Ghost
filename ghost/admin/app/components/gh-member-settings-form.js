@@ -1,7 +1,7 @@
 import Component from '@ember/component';
 import moment from 'moment';
 import {computed} from '@ember/object';
-import {gt, reads} from '@ember/object/computed';
+import {gt} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
@@ -11,8 +11,6 @@ export default Component.extend({
 
     // Allowed actions
     setProperty: () => {},
-
-    canEditEmail: reads('member.isNew'),
 
     hasMultipleSubscriptions: gt('member.stripe', 1),
 
