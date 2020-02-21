@@ -168,8 +168,8 @@ describe('Members API', function () {
                         jsonResponse.members.should.have.length(1);
                         localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
                         jsonResponse.members[0].name.should.equal(memberChanged.name);
-                        jsonResponse.members[0].email.should.not.equal(memberChanged.email);
-                        jsonResponse.members[0].email.should.equal(memberToChange.email);
+                        jsonResponse.members[0].email.should.equal(memberChanged.email);
+                        jsonResponse.members[0].email.should.not.equal(memberToChange.email);
                     });
             });
     });
