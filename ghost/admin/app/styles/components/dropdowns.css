@@ -77,6 +77,12 @@
     fill: color-mod(var(--darkgrey) lightness(+20%));
 }
 
+.dropdown-align-right {
+    top: calc(100% + 6px);
+    right: 10px;
+    left: auto;
+}
+
 @media (max-width: 500px) {
     .dropdown-menu li > a,
     .dropdown-menu li > button {
