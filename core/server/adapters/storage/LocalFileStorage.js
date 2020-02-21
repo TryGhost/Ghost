@@ -164,7 +164,7 @@ class LocalFileStore extends StorageBase {
         return new Promise((resolve, reject) => {
             fs.readFile(targetPath, (err, bytes) => {
                 if (err) {
-                    if (err.code === 'ENOENT') {
+                    if (err.code === 'ENOENT' || err.code === 'ENOTDIR') {
                         return reject(new common.errors.NotFoundError({
                             err: err,
                             message: common.i18n.t('errors.errors.imageNotFoundWithRef', {img: options.path})
