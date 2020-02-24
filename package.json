@@ -121,7 +121,7 @@
     "path-match": "1.2.4",
     "probe-image-size": "5.0.0",
     "rss": "1.2.2",
-    "sanitize-html": "1.21.1",
+    "sanitize-html": "1.22.0",
     "semver": "6.3.0",
     "simple-dom": "0.3.2",
     "simple-html-tokenizer": "0.5.9",
