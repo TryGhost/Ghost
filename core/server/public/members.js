@@ -121,6 +121,19 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-members-edit-billing]'), function (el) {
     var errorEl = el.querySelector('[data-members-error]');
+    var membersSuccess = el.dataset.membersSuccess;
+    var membersCancel = el.dataset.membersCancel;
+    var successUrl;
+    var cancelUrl;
+
+    if (membersSuccess) {
+        successUrl = (new URL(membersSuccess, window.location.href)).href;
+    }
+
+    if (membersCancel) {
+        cancelUrl = (new URL(membersCancel, window.location.href)).href;
+    }
+
     function clickHandler(event) {
         el.removeEventListener('click', clickHandler);
         event.preventDefault();
@@ -143,7 +156,9 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-edit-billi
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    identity: identity
+                    identity: identity,
+                    successUrl: successUrl,
+                    cancelUrl: cancelUrl
                 })
             }).then(function (res) {
                 if (!res.ok) {
