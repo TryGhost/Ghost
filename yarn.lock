@@ -339,10 +339,10 @@
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
 
-"@tryghost/pretty-cli@1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/pretty-cli/-/pretty-cli-1.2.2.tgz#bebc31cabdba3a60c0848b9fdb39f1f4846b4017"
-  integrity sha512-3GK42+Ju7blugavxmGZoNBhkKXtd4NNcXGE9FZ99+tXLiFs+Y5psVLm9dK3DJB6lgt2Keo0GbpJxsh57ivLG2w==
+"@tryghost/pretty-cli@1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/pretty-cli/-/pretty-cli-1.2.3.tgz#06fc84e4659ffde7166ca2a9ebe17c3951438a6c"
+  integrity sha512-y6syQcWerVbsulED1PaW+YWX0HNhVUtyoyT5iU4idHCKcn2LR6iBOIQnfUDvK7FH364rpQe92FdayPfDtb+29A==
   dependencies:
     chalk "^2.4.1"
     sywac "^1.2.1"
@@ -3478,6 +3478,25 @@ ghost-ignition@4.0.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
+ghost-ignition@4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.1.0.tgz#44ac9dc8873606207f81a652a705f383714c2f07"
+  integrity sha512-d3hfUE1qey4S1sdjayWcbsYCr77joc7KcM4Zrhol0vdR/anGvR6h6Z529MI42VJHr38h6x0/PaQ/mjrlOey7XQ==
+  dependencies:
+    bunyan "1.8.12"
+    bunyan-loggly "^1.3.1"
+    caller "1.0.1"
+    debug "^4.0.0"
+    find-root "1.1.0"
+    fs-extra "^3.0.1"
+    gelf-stream "^1.1.1"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.16.4"
+    moment "^2.15.2"
+    nconf "^0.10.0"
+    prettyjson "^1.1.3"
+    uuid "^3.0.0"
+
 ghost-ignition@^2.9.6:
   version "2.9.6"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.9.6.tgz#cc8358f0a356bae490e5abeca3c3bda8383352fe"
@@ -3850,20 +3869,20 @@ grunt@1.0.4:
     path-is-absolute "~1.0.0"
     rimraf "~2.6.2"
 
-gscan@3.3.1:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-3.3.1.tgz#95463adbbc04212aa62c4f6a1a92410950e929b0"
-  integrity sha512-8Owozw0otTVQb2dL7k/niTBpLEo9al02lng3FcnLYIU0xn7vz94D0p4gRT9CuiQVO5gT/Qa/CrO5L9DIC+EZdw==
+gscan@3.3.3:
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-3.3.3.tgz#ec1192d29d288107f40af8c8ccf30d4ab824f000"
+  integrity sha512-Y0FwHq3sN3tPbyD0/NlTswax61liH80RCjJLqXzjp6aIE+R4ynrDv3Xdk5ZEjQE/4Js1B2inCgKaM7jabXCcbg==
   dependencies:
     "@tryghost/extract-zip" "1.6.6"
-    "@tryghost/pretty-cli" "1.2.2"
+    "@tryghost/pretty-cli" "1.2.3"
     bluebird "^3.4.6"
     chalk "^3.0.0"
     common-tags "^1.8.0"
     express "^4.16.2"
     express-hbs "2.3.0"
     fs-extra "^8.0.0"
-    ghost-ignition "4.0.0"
+    ghost-ignition "4.1.0"
     glob "^7.0.5"
     lodash "^4.17.12"
     multer "^1.1.0"
