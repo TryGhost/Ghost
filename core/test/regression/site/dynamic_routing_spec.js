@@ -95,7 +95,7 @@ describe('Dynamic Routing', function () {
         });
 
         describe('RSS', function () {
-            before(testUtils.teardown);
+            before(testUtils.teardownDb);
 
             before(function (done) {
                 testUtils.initData().then(function () {
@@ -105,7 +105,7 @@ describe('Dynamic Routing', function () {
                 });
             });
 
-            after(testUtils.teardown);
+            after(testUtils.teardownDb);
 
             it('should 301 redirect with CC=1year without slash', function (done) {
                 request.get('/rss')
@@ -186,7 +186,7 @@ describe('Dynamic Routing', function () {
             }).catch(done);
         });
 
-        after(testUtils.teardown);
+        after(testUtils.teardownDb);
 
         it('should return HTML for valid route', function (done) {
             request.get('/tag/getting-started/')
@@ -326,7 +326,7 @@ describe('Dynamic Routing', function () {
             // Inserting more posts takes a bit longer
             this.timeout(20000);
 
-            before(testUtils.teardown);
+            before(testUtils.teardownDb);
 
             // Add enough posts to trigger pages
             before(function (done) {
@@ -341,7 +341,7 @@ describe('Dynamic Routing', function () {
                 }).catch(done);
             });
 
-            after(testUtils.teardown);
+            after(testUtils.teardownDb);
 
             it('should redirect without slash', function (done) {
                 request.get('/tag/injection/page/2')
@@ -459,7 +459,7 @@ describe('Dynamic Routing', function () {
             }).catch(done);
         });
 
-        after(testUtils.teardown);
+        after(testUtils.teardownDb);
 
         it('should 404 for /author/ route', function (done) {
             request.get('/author/')
@@ -621,7 +621,7 @@ describe('Dynamic Routing', function () {
                 }).catch(done);
             });
 
-            after(testUtils.teardown);
+            after(testUtils.teardownDb);
 
             it('should redirect without slash', function (done) {
                 request.get('/author/ghost-owner/page/2')
@@ -703,7 +703,7 @@ describe('Dynamic Routing', function () {
             }).catch(done);
         });
 
-        after(testUtils.teardown);
+        after(testUtils.teardownDb);
         after(function () {
             return ghostServer.stop();
         });

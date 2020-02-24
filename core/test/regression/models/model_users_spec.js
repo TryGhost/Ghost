@@ -14,8 +14,8 @@ var should = require('should'),
 describe('User Model', function run() {
     var eventsTriggered = {};
 
-    before(testUtils.teardown);
-    afterEach(testUtils.teardown);
+    before(testUtils.teardownDb);
+    afterEach(testUtils.teardownDb);
     afterEach(function () {
         sinon.restore();
     });

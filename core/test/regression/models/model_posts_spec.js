@@ -25,9 +25,9 @@ var should = require('should'),
 describe('Post Model', function () {
     var eventsTriggered = {};
 
-    before(testUtils.teardown);
+    before(testUtils.teardownDb);
     before(testUtils.stopGhost);
-    after(testUtils.teardown);
+    after(testUtils.teardownDb);
 
     before(testUtils.setup('users:roles'));
 
@@ -1543,10 +1543,10 @@ describe('Post Model', function () {
     });
 
     describe('Multiauthor Posts', function () {
-        before(testUtils.teardown);
+        before(testUtils.teardownDb);
 
         after(function () {
-            return testUtils.teardown()
+            return testUtils.teardownDb()
                 .then(function () {
                     return testUtils.setup('users:roles')();
                 });

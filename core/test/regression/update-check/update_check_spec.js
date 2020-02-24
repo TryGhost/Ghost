@@ -24,14 +24,14 @@ describe('Update Check', function () {
         configUtils.restore();
     });
 
-    after(testUtils.teardown);
+    after(testUtils.teardownDb);
 
     describe('fn: updateCheck', function () {
         var updateCheckRequestSpy,
             updateCheckResponseSpy,
             updateCheckErrorSpy;
 
-        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.teardownDb);
         beforeEach(testUtils.setup('roles', 'owner'));
 
         beforeEach(function () {
@@ -117,7 +117,7 @@ describe('Update Check', function () {
             configUtils.restore();
         });
 
-        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.teardownDb);
         beforeEach(testUtils.setup('roles', 'owner', 'settings', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
 
         it('should report the correct data', function (done) {
@@ -155,7 +155,7 @@ describe('Update Check', function () {
             updateCheck.__set__('ghostVersion.original', currentVersionOrig);
         });
 
-        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.teardownDb);
         beforeEach(testUtils.setup('settings', 'roles', 'owner', 'perms:setting', 'perms:notification', 'perms:user', 'perms:init'));
 
         beforeEach(function () {
@@ -321,7 +321,7 @@ describe('Update Check', function () {
     });
 
     describe('fn: updateCheckResponse', function () {
-        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.teardownDb);
         beforeEach(testUtils.setup('roles', 'settings', 'perms:setting', 'perms:init'));
 
         it('receives a notifications with messages', function (done) {

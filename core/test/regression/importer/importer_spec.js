@@ -112,13 +112,13 @@ const exportedLegacyBody = () => {
 
 // Tests in here do an import for each test
 describe('Integration: Importer', function () {
-    before(testUtils.teardown);
+    before(testUtils.teardownDb);
 
     beforeEach(function () {
         sinon.stub(importer, 'cleanUp');
     });
 
-    afterEach(testUtils.teardown);
+    afterEach(testUtils.teardownDb);
     afterEach(function () {
         sinon.restore();
     });
@@ -1171,7 +1171,7 @@ describe('Integration: Importer', function () {
     });
 
     describe('Existing database', function () {
-        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.teardownDb);
         beforeEach(testUtils.setup('users:roles', 'posts', 'settings'));
 
         it('import multiple users, tags, posts', function () {
@@ -1279,7 +1279,7 @@ describe('Integration: Importer', function () {
 });
 
 describe('1.0', function () {
-    beforeEach(testUtils.teardown);
+    beforeEach(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
     it('ensure amp field get\'s respected', function () {
@@ -1514,7 +1514,7 @@ describe('1.0', function () {
 });
 
 describe('LTS', function () {
-    beforeEach(testUtils.teardown);
+    beforeEach(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
     it('disallows importing LTS imports', function () {
