@@ -57,7 +57,10 @@ const addEmail = async (postModel, options) => {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
 
     const {members} = await membersService.api.members.list(Object.assign(knexOptions, {filter: 'subscribed:true'}, {limit: 'all'}));
-    const {emailTmpl, emails} = await getEmailData(postModel, members);
+    const membersToSendTo = members.filter((member) => {
+        return membersService.contentGating.checkPostAccess(postModel.toJSON(), member);
+    });
+    const {emailTmpl, emails} = await getEmailData(postModel, membersToSendTo);
 
     // NOTE: don't create email object when there's nobody to send the email to
     if (!emails.length) {
