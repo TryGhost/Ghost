@@ -4,6 +4,7 @@
     "@tryghost:automergeSilentTestLintNonMajor"
   ],
   "ignoreDeps": [
+    "ember-source",
     "ember-drag-drop",
     "normalize.css",
     "validator",
