@@ -1,0 +1,44 @@
+name: Test Suite
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - 2.x
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [ 10, 12 ]
+        env:
+          - DB: sqlite3
+            NODE_ENV: testing
+          - DB: mysql
+            NODE_ENV: testing-mysql
+    env:
+      DB: ${{ matrix.env.DB }}
+      NODE_ENV: ${{ matrix.env.NODE_ENV }}
+      database__connection__password: root
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ghost_testing
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    name: Node ${{ matrix.node }} - ${{ matrix.env.DB }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - run: yarn
+
+      - run: grunt test-acceptance --verbose
+      - run: grunt test-unit --verbose
+      - run: grunt test-regression --verbose
+        if: startsWith(github.head_ref, 'renovate/') || github.event_name != 'pull_request'
