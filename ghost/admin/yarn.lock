@@ -6008,10 +6008,10 @@ ember-source-channel-url@^2.0.1:
   dependencies:
     got "^8.0.1"
 
-ember-source@3.16.2:
-  version "3.16.2"
-  resolved "https://registry.yarnpkg.com/ember-source/-/ember-source-3.16.2.tgz#bdb342445804d20b46796b98919a924e5a8eb61e"
-  integrity sha512-aRF90V88rJ6h47ootUw8oGcV7O4ulwLYNVqnokTr9RTeWjEimwMtzLLazUfDR1LZMkdMTLVLGcQkJCJVvUAg5A==
+ember-source@3.16.3:
+  version "3.16.3"
+  resolved "https://registry.yarnpkg.com/ember-source/-/ember-source-3.16.3.tgz#080ded36d6b43ed1ee8e9a13ed4cebf27a50db6a"
+  integrity sha512-A5IuTBDnxM4zK5IOaoePOchmgaKm4iYuYfQZVsvuPoczm89SBTKuQZnsXFp2ZI8Sc17ALm1Euc9Lc10TNy2KXw==
   dependencies:
     "@babel/helper-module-imports" "^7.0.0"
     "@babel/plugin-transform-block-scoping" "^7.6.2"
