@@ -3440,7 +3440,7 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-ignition@3.1.0, ghost-ignition@^3.0.0, ghost-ignition@^3.0.4, ghost-ignition@^3.1.0:
+ghost-ignition@3.1.0, ghost-ignition@^3.0.4, ghost-ignition@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.1.0.tgz#4a0d7f0a15e54fbc0e16d398da62ff68737e4e23"
   integrity sha512-ae0r/yBJDo9SkeLfy0ecrHVqO0gt9l07wiCOWmdzdvbmoU24AB881PjymnM/DLP9SY6E33mLYtT8K3ximgieLg==
@@ -3463,6 +3463,25 @@ ghost-ignition@4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.0.0.tgz#cf0dab07842c23f7e3aea38053a20b18db1eab53"
   integrity sha512-Te2Q4xYL70HEEeasJT3b/04iRy2QI/fXWlc5y+TMkfSj2x6nki76eiUKSsz3Y61zEO0BES5GxWEAZQ9KjAh35A==
+  dependencies:
+    bunyan "1.8.12"
+    bunyan-loggly "^1.3.1"
+    caller "1.0.1"
+    debug "^4.0.0"
+    find-root "1.1.0"
+    fs-extra "^3.0.1"
+    gelf-stream "^1.1.1"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.16.4"
+    moment "^2.15.2"
+    nconf "^0.10.0"
+    prettyjson "^1.1.3"
+    uuid "^3.0.0"
+
+ghost-ignition@4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.1.0.tgz#44ac9dc8873606207f81a652a705f383714c2f07"
+  integrity sha512-d3hfUE1qey4S1sdjayWcbsYCr77joc7KcM4Zrhol0vdR/anGvR6h6Z529MI42VJHr38h6x0/PaQ/mjrlOey7XQ==
   dependencies:
     bunyan "1.8.12"
     bunyan-loggly "^1.3.1"
@@ -4960,16 +4979,16 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.2.tgz#01146b36a6218e64e58f3a8d66de5d7fc6f6d051"
   integrity sha512-s5kLOcnH0XqDO+FvuaLX8DDjZ18CGFk7VygH40QoKPUQhW4e2rvM0rwUq0t8IQDOwYSeLK01U90OjzBTme2QqA==
 
-knex-migrator@3.4.1:
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.4.1.tgz#4913f01b0aca6e6e6f23429f5e9718553d0c1144"
-  integrity sha512-UYTUAk2s+omnFAlru6AQ3KBN57tGcxrPYO9FWX1Phe72AEYdjppdwsBAsb0jTSpm7nR3fRJwh8sKvryKff284g==
+knex-migrator@3.4.2:
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.4.2.tgz#1c53c5605479b676f5bfc1f68567a363e1642ef6"
+  integrity sha512-LZH+22Dml6w3yIjgo6Un1cjTYc1WXnWVNbKjhFSmLiTSN59p6VdqVq2Rl4m27jApzlGAn3IBkBNTNOF27enO8g==
   dependencies:
     bluebird "^3.5.3"
     commander "^2.19.0"
     compare-ver "^2.0.2"
     debug "^4.1.1"
-    ghost-ignition "^3.0.0"
+    ghost-ignition "4.1.0"
     knex "^0.16.3"
     lodash "^4.17.11"
     moment "^2.23.0"
