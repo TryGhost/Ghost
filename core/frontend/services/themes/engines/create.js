@@ -33,12 +33,12 @@ module.exports = (packageJson) => {
                 if (version === 'canary') {
                     availableApiVersions.canary = version;
                 } else {
-                    availableApiVersions[semver(semver.coerce(version).version).major] = version;
+                    availableApiVersions[semver.major(semver.coerce(version).version)] = version;
                 }
             });
 
             const apiVersion = packageJson.engines['ghost-api'];
-            const apiVersionMajor = apiVersion === 'canary' ? 'canary' : semver(semver.coerce(apiVersion).version).major;
+            const apiVersionMajor = apiVersion === 'canary' ? 'canary' : semver.major(semver.coerce(apiVersion).version);
 
             if (availableApiVersions[apiVersionMajor]) {
                 packageJson.engines['ghost-api'] = availableApiVersions[apiVersionMajor];
