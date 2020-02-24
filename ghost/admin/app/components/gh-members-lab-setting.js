@@ -31,7 +31,7 @@ export default Component.extend({
     }),
 
     subscriptionSettings: computed('settings.membersSubscriptionSettings', function () {
-        let subscriptionSettings = this.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
+        let subscriptionSettings = this.settings.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
         let stripeProcessor = subscriptionSettings.paymentProcessors.find((proc) => {
             return (proc.adapter === 'stripe');
         });
@@ -84,7 +84,7 @@ export default Component.extend({
             this.setBulkEmailSettings(bulkEmailSettings);
         },
         setSubscriptionSettings(key, event) {
-            let subscriptionSettings = this.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
+            let subscriptionSettings = this.settings.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
             let stripeProcessor = subscriptionSettings.paymentProcessors.find((proc) => {
                 return (proc.adapter === 'stripe');
             });
@@ -115,42 +115,5 @@ export default Component.extend({
             }
             this.setMembersSubscriptionSettings(subscriptionSettings);
         }
-    },
-
-    parseSubscriptionSettings(settingsString) {
-        try {
-            return JSON.parse(settingsString);
-        } catch (e) {
-            return {
-                isPaid: false,
-                allowSelfSignup: true,
-                fromAddress: 'noreply',
-                paymentProcessors: [{
-                    adapter: 'stripe',
-                    config: {
-                        secret_token: '',
-                        public_token: '',
-                        product: {
-                            name: this.settings.get('title')
-                        },
-                        plans: [
-                            {
-                                name: 'Monthly',
-                                currency: 'usd',
-                                interval: 'month',
-                                amount: ''
-                            },
-                            {
-                                name: 'Yearly',
-                                currency: 'usd',
-                                interval: 'year',
-                                amount: ''
-                            }
-                        ]
-                    }
-                }]
-            };
-        }
     }
-
 });
