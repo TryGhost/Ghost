@@ -43,7 +43,7 @@ var Promise = require('bluebird'),
 
     mockNotExistingModule,
     unmockNotExistingModule,
-    teardown,
+    teardownDb,
     setup,
     truncate,
     createUser,
@@ -738,7 +738,7 @@ createPost = function createPost(options) {
  * Has to run in a transaction for MySQL, otherwise the foreign key check does not work.
  * Sqlite3 has no truncate command.
  */
-teardown = function teardown() {
+teardownDb = function teardownDb() {
     debug('Database teardown');
     urlService.softReset();
 
@@ -855,7 +855,7 @@ startGhost = function startGhost(options) {
     // truncate database and re-run fixtures
     // we have to ensure that some components in Ghost are reloaded
     if (ghostServer && ghostServer.httpServer && !options.forceStart) {
-        return teardown()
+        return teardownDb()
             .then(function () {
                 return knexMigrator.init({only: 2});
             })
@@ -1101,7 +1101,7 @@ module.exports = {
             }
         }
     },
-    teardown: teardown,
+    teardownDb: teardownDb,
     truncate: truncate,
     setup: setup,
     createUser: createUser,

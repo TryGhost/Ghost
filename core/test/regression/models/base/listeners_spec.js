@@ -20,7 +20,7 @@ describe('Models: listeners', function () {
             publishedAtFutureMoment3: moment().add(10, 'hours').startOf('hour')
         };
 
-    before(testUtils.teardown);
+    before(testUtils.teardownDb);
 
     beforeEach(testUtils.setup('owner', 'settings'));
 
@@ -36,7 +36,7 @@ describe('Models: listeners', function () {
         common.events.on.restore();
         sinon.restore();
         scope.posts = [];
-        return testUtils.teardown();
+        return testUtils.teardownDb();
     });
 
     describe('on timezone changed', function () {

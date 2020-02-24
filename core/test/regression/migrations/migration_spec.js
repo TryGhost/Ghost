@@ -6,8 +6,8 @@ var should = require('should'),
     Models = require('../../../server/models');
 
 describe('Database Migration (special functions)', function () {
-    before(testUtils.teardown);
-    afterEach(testUtils.teardown);
+    before(testUtils.teardownDb);
+    afterEach(testUtils.teardownDb);
     afterEach(function () {
         sinon.restore();
     });

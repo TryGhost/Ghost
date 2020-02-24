@@ -8,8 +8,8 @@ var should = require('should'),
     ghostVersion = require('../../../server/lib/ghost-version');
 
 describe('Exporter', function () {
-    before(testUtils.teardown);
-    afterEach(testUtils.teardown);
+    before(testUtils.teardownDb);
+    afterEach(testUtils.teardownDb);
     afterEach(function () {
         sinon.restore();
     });
