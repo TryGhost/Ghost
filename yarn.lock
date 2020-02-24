@@ -973,11 +973,6 @@ bl@^3.0.0:
   dependencies:
     readable-stream "^3.0.1"
 
-bluebird@3.5.5:
-  version "3.5.5"
-  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.5.tgz#a8d0afd73251effbbd5fe384a77d73003c17a71f"
-  integrity sha512-5am6HnnfN+urzt4yfg7IgTbotDjIT/u8AJpEt0sIU9FtXfVeezXAPKswrG+xKUCOYAINpSdgZVDU6QFh+cuH3w==
-
 bluebird@3.7.2, bluebird@^3.4.3, bluebird@^3.7.0:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
@@ -1019,13 +1014,13 @@ body@^5.1.0:
     raw-body "~1.1.0"
     safe-json-parse "~1.0.1"
 
-bookshelf-relations@1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-1.3.0.tgz#0d8157ed2bf1c7b6b024d9cb6176acd7c5618f5e"
-  integrity sha512-GPftytOoLdIFUtgCwQoa1rASEd1sm39ba8asWZ/ZQ0P59SJBTsDYKgEKoSobcrlRWzo4k3Thv8y3AaxR2pGWoQ==
+bookshelf-relations@1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-1.3.1.tgz#48ab975563c16eaa59fd230879f32057358df87a"
+  integrity sha512-rWmark32KdDxD+oALyECTFc3/uJKs3sTQVlgM8eqkIuq5ylo7vMYSWhFAcLJv0bDoAeftRzGMXfPhgmBvlS3pg==
   dependencies:
-    bluebird "3.5.5"
-    ghost-ignition "3.1.0"
+    bluebird "3.7.2"
+    ghost-ignition "4.1.0"
     lodash "4.17.15"
 
 bookshelf@0.14.2:
@@ -3463,6 +3458,25 @@ ghost-ignition@4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.0.0.tgz#cf0dab07842c23f7e3aea38053a20b18db1eab53"
   integrity sha512-Te2Q4xYL70HEEeasJT3b/04iRy2QI/fXWlc5y+TMkfSj2x6nki76eiUKSsz3Y61zEO0BES5GxWEAZQ9KjAh35A==
+  dependencies:
+    bunyan "1.8.12"
+    bunyan-loggly "^1.3.1"
+    caller "1.0.1"
+    debug "^4.0.0"
+    find-root "1.1.0"
+    fs-extra "^3.0.1"
+    gelf-stream "^1.1.1"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.16.4"
+    moment "^2.15.2"
+    nconf "^0.10.0"
+    prettyjson "^1.1.3"
+    uuid "^3.0.0"
+
+ghost-ignition@4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.1.0.tgz#44ac9dc8873606207f81a652a705f383714c2f07"
+  integrity sha512-d3hfUE1qey4S1sdjayWcbsYCr77joc7KcM4Zrhol0vdR/anGvR6h6Z529MI42VJHr38h6x0/PaQ/mjrlOey7XQ==
   dependencies:
     bunyan "1.8.12"
     bunyan-loggly "^1.3.1"
