@@ -38,7 +38,7 @@
                     <div class="gh-publishmenu-email-label">
                         <label class="gh-publishmenu-radio-label pe-none midgrey"
                             for="email-when-published-checkbox">Send by email</label>
-                        {{#if this.memberCount}}
+                        {{#if (or this.memberCount this.session.user.isEditor)}}
                         <div class="gh-publishmenu-radio-desc">Deliver post to members</div>
                         {{else}}
                         <div class="gh-publishmenu-radio-desc">You haven't got any members</div>
