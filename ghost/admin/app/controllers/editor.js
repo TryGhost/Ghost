@@ -574,9 +574,7 @@ export default Controller.extend({
                 this.set('memberCount', get(membersResponse, 'meta.pagination.total'));
             }
         } catch (error) {
-            // eslint-disable-next-line
             this.set('memberCount', 0);
-            console.error(error);
         }
     }).restartable(),
 
