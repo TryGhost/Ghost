@@ -20,9 +20,9 @@ describe('Integration: services/url/UrlService', function () {
         });
     });
 
-    before(testUtils.teardown);
+    before(testUtils.teardownDb);
     before(testUtils.setup('users:roles', 'posts'));
-    after(testUtils.teardown);
+    after(testUtils.teardownDb);
 
     after(function () {
         sinon.restore();
@@ -205,7 +205,7 @@ describe('Integration: services/url/UrlService', function () {
     describe('functional: extended/modified routing set', function () {
         let router1, router2, router3, router4, router5;
 
-        before(testUtils.teardown);
+        before(testUtils.teardownDb);
         before(testUtils.setup('users:roles', 'posts'));
 
         before(function () {

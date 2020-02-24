@@ -14,7 +14,7 @@ describe('Integration - Web - Site', function () {
     let app;
 
     before(testUtils.integrationTesting.urlService.resetGenerators);
-    before(testUtils.teardown);
+    before(testUtils.teardownDb);
     before(testUtils.setup('users:roles', 'posts'));
 
     describe('v2', function () {
@@ -1223,7 +1223,7 @@ describe('Integration - Web - Site', function () {
         describe('extended routes.yaml: routes', function () {
             describe('channels', function () {
                 before(testUtils.integrationTesting.urlService.resetGenerators);
-                before(testUtils.teardown);
+                before(testUtils.teardownDb);
                 before(testUtils.setup('users:roles', 'posts'));
 
                 before(function () {
@@ -2923,7 +2923,7 @@ describe('Integration - Web - Site', function () {
         describe('extended routes.yaml: routes', function () {
             describe('channels', function () {
                 before(testUtils.integrationTesting.urlService.resetGenerators);
-                before(testUtils.teardown);
+                before(testUtils.teardownDb);
                 before(testUtils.setup('users:roles', 'posts'));
 
                 before(function () {
@@ -4623,7 +4623,7 @@ describe('Integration - Web - Site', function () {
         describe('extended routes.yaml: routes', function () {
             describe('channels', function () {
                 before(testUtils.integrationTesting.urlService.resetGenerators);
-                before(testUtils.teardown);
+                before(testUtils.teardownDb);
                 before(testUtils.setup('users:roles', 'posts'));
 
                 before(function () {
