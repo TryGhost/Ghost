@@ -2929,10 +2929,10 @@ broccoli-funnel@2.0.1:
     symlink-or-copy "^1.0.0"
     walk-sync "^0.3.1"
 
-broccoli-funnel@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/broccoli-funnel/-/broccoli-funnel-3.0.1.tgz#21b00c2bc1c0b1b4c083e24139e2b321c4cf353f"
-  integrity sha512-G1LdSYpuVU7mxVq8KlOyLztsUv+posrHbe+6n/XymZpPd2bbLmQ4HL0v6YP1wWAnfCVTcTnUTpIkw9oYwy+tTw==
+broccoli-funnel@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/broccoli-funnel/-/broccoli-funnel-3.0.2.tgz#25e1c9a512b3852d3c9dde19ebdf07880d619c73"
+  integrity sha512-yRa7f0H/BtfqXNmL4eCYtAiVAQASI5b83//17MxAYp3I+w8XzGY8Tc3mwhdUrAgh6Zhb6LZwgvUZDZPTLmkK7w==
   dependencies:
     array-equal "^1.0.0"
     blank-object "^1.0.1"
