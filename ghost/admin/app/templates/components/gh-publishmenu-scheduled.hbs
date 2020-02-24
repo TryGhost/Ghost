@@ -28,7 +28,7 @@
             </div>
         </div>
     </section>
-    {{#if this.session.user.isOwnerOrAdmin}}
+    {{#if showSendEmail}}
         {{#unless this.post.email}}
             <section class="gh-publishmenu-section">
                 <div class="gh-publishmenu-radio gh-publishmenu-email">
