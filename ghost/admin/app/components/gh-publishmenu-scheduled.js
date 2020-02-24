@@ -1,7 +1,7 @@
 import Component from '@ember/component';
 import moment from 'moment';
 import {computed} from '@ember/object';
-import {equal} from '@ember/object/computed';
+import {equal, or} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
@@ -18,6 +18,7 @@ export default Component.extend({
     'data-test-publishmenu-scheduled': true,
 
     disableEmailOption: equal('memberCount', 0),
+    showSendEmail: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
 
     timeToPublished: computed('post.publishedAtUTC', 'clock.second', function () {
         let publishedAtUTC = this.get('post.publishedAtUTC');

@@ -29,7 +29,7 @@
         </div>
     </div>
 
-    {{#if (and this.canSendEmail this.session.user.isOwnerOrAdmin)}}
+    {{#if (and this.canSendEmail showSendEmail)}}
         <div class="gh-publishmenu-section">
             <div class="gh-publishmenu-radio gh-publishmenu-email">
                 {{#if this.backgroundLoader.isRunning}}
