@@ -1,4 +1,6 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
+import {computed} from '@ember/object';
+import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -9,6 +11,19 @@ export default ModalComponent.extend({
 
     // Allowed actions
     confirm: () => {},
+
+    deliveredToMessage: computed('model.{paidOnly,memberCount}', function () {
+        const isEditor = this.get('session.user.isEditor');
+        if (this.get('model.paidOnly')) {
+            return 'all paid members';
+        }
+
+        if (isEditor) {
+            return 'all members';
+        }
+
+        return pluralize(this.get('model.memberCount'), 'member');
+    }),
 
     confirmAndCheckError: task(function* () {
         try {
