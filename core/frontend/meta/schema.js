@@ -22,6 +22,22 @@ function schemaImageObject(metaDataVal) {
     return imageObject;
 }
 
+function schemaPublisherObject(metaDataVal) {
+    var publisherObject;
+
+    publisherObject = {
+        '@type': 'Organization',
+        name: escapeExpression(metaDataVal.site.title),
+        url: metaDataVal.site.url || null,
+        logo: {
+            '@type': 'ImageObject',
+            url: schemaImageObject(metaDataVal.site.logo) || null
+        }
+    };
+
+    return publisherObject;
+}
+
 // Creates the final schema object with values that are not null
 function trimSchema(schema) {
     var schemaObject = {};
@@ -74,11 +90,7 @@ function getPostSchema(metaData, data) {
     schema = {
         '@context': 'https://schema.org',
         '@type': 'Article',
-        publisher: {
-            '@type': 'Organization',
-            name: escapeExpression(metaData.site.title),
-            logo: schemaImageObject(metaData.site.logo) || null
-        },
+        publisher: schemaPublisherObject(metaData),
         author: {
             '@type': 'Person',
             name: escapeExpression(data[context].primary_author.name),
@@ -110,11 +122,7 @@ function getHomeSchema(metaData) {
     var schema = {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        publisher: {
-            '@type': 'Organization',
-            name: escapeExpression(metaData.site.title),
-            logo: schemaImageObject(metaData.site.logo) || null
-        },
+        publisher: schemaPublisherObject(metaData),
         url: metaData.url,
         image: schemaImageObject(metaData.coverImage),
         mainEntityOfPage: {
@@ -132,11 +140,7 @@ function getTagSchema(metaData, data) {
     var schema = {
         '@context': 'https://schema.org',
         '@type': 'Series',
-        publisher: {
-            '@type': 'Organization',
-            name: escapeExpression(metaData.site.title),
-            logo: schemaImageObject(metaData.site.logo) || null
-        },
+        publisher: schemaPublisherObject(metaData),
         url: metaData.url,
         image: schemaImageObject(metaData.coverImage),
         name: data.tag.name,
