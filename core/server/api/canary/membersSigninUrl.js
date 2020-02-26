@@ -3,7 +3,7 @@ const common = require('../../lib/common');
 const membersService = require('../../services/members');
 
 module.exports = {
-    docName: 'member_signins',
+    docName: 'member_signin_urls',
     permissions: true,
     read: {
         data: [

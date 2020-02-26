@@ -414,9 +414,9 @@
                     "object_type": "label"
                 },
                 {
-                    "name": "Read member signin url",
+                    "name": "Read member signin urls",
                     "action_type": "read",
-                    "object_type": "member_signin"
+                    "object_type": "member_signin_url"
                 }
             ]
         },
