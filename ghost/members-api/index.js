@@ -122,6 +122,7 @@ module.exports = function MembersApi({
     const middleware = {
         sendMagicLink: Router(),
         createCheckoutSession: Router(),
+        createCheckoutSetupSession: Router(),
         handleStripeWebhook: Router(),
         updateSubscription: Router({mergeParams: true})
     };
@@ -203,6 +204,41 @@ module.exports = function MembersApi({
         res.end(JSON.stringify(sessionInfo));
     });
 
+    middleware.createCheckoutSetupSession.use(ensureStripe, body.json(), async function (req, res) {
+        const identity = req.body.identity;
+
+        let email;
+        try {
+            if (!identity) {
+                email = null;
+            } else {
+                const claims = await decodeToken(identity);
+                email = claims.sub;
+            }
+        } catch (err) {
+            res.writeHead(401);
+            return res.end('Unauthorized');
+        }
+
+        const member = email ? await users.get({email}) : null;
+
+        if (!member) {
+            res.writeHead(403);
+            return res.end('Bad Request.');
+        }
+
+        const sessionInfo = await stripe.createCheckoutSetupSession(member, {
+            successUrl: req.body.successUrl,
+            cancelUrl: req.body.cancelUrl
+        });
+
+        res.writeHead(200, {
+            'Content-Type': 'application/json'
+        });
+
+        res.end(JSON.stringify(sessionInfo));
+    });
+
     middleware.handleStripeWebhook.use(ensureStripe, body.raw({type: 'application/json'}), async function (req, res) {
         let event;
         try {
@@ -230,21 +266,29 @@ module.exports = function MembersApi({
             }
 
             if (event.type === 'checkout.session.completed') {
-                const customer = await stripe.getCustomer(event.data.object.customer, {
-                    expand: ['subscriptions.data.default_payment_method']
-                });
+                if (event.data.object.setup_intent) {
+                    const setupIntent = await stripe.getSetupIntent(event.data.object.setup_intent);
+                    const customer = await stripe.getCustomer(setupIntent.metadata.customer_id);
+                    const member = await users.get({email: customer.email});
 
-                const member = await users.get({email: customer.email}) || await users.create({email: customer.email});
-                await stripe.handleCheckoutSessionCompletedWebhook(member, customer);
+                    await stripe.handleCheckoutSetupSessionCompletedWebhook(setupIntent, member);
+                } else {
+                    const customer = await stripe.getCustomer(event.data.object.customer, {
+                        expand: ['subscriptions.data.default_payment_method']
+                    });
 
-                const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
+                    const member = await users.get({email: customer.email}) || await users.create({email: customer.email});
+                    await stripe.handleCheckoutSessionCompletedWebhook(member, customer);
 
-                if (payerName && !member.name) {
-                    await users.update({name: payerName}, {id: member.id});
+                    const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
+
+                    if (payerName && !member.name) {
+                        await users.update({name: payerName}, {id: member.id});
+                    }
+
+                    const emailType = 'signup';
+                    await sendEmailWithMagicLink({email: customer.email, requestedType: emailType, options: {forceEmailType: true}});
                 }
-
-                const emailType = 'signup';
-                await sendEmailWithMagicLink({email: customer.email, requestedType: emailType, options: {forceEmailType: true}});
             }
 
             res.writeHead(200);

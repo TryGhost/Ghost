@@ -27,6 +27,8 @@ module.exports = class StripePaymentProcessor {
         this._public_token = config.publicKey;
         this._checkoutSuccessUrl = config.checkoutSuccessUrl;
         this._checkoutCancelUrl = config.checkoutCancelUrl;
+        this._billingSuccessUrl = config.billingSuccessUrl;
+        this._billingCancelUrl = config.billingCancelUrl;
         this._webhookHandlerUrl = config.webhookHandlerUrl;
 
         try {
@@ -135,6 +137,28 @@ module.exports = class StripePaymentProcessor {
         }
 
         return customer;
+    }
+
+    async createCheckoutSetupSession(member, options) {
+        const customer = await this._customerForMemberCheckoutSession(member);
+
+        const session = await this._stripe.checkout.sessions.create({
+            mode: 'setup',
+            payment_method_types: ['card'],
+            success_url: options.successUrl || this._billingSuccessUrl,
+            cancel_url: options.cancelUrl || this._billingCancelUrl,
+            customer_email: member.email,
+            setup_intent_data: {
+                metadata: {
+                    customer_id: customer.id
+                }
+            }
+        });
+
+        return {
+            sessionId: session.id,
+            publicKey: this._public_token
+        };
     }
 
     async cancelAllSubscriptions(member) {
@@ -246,6 +270,30 @@ module.exports = class StripePaymentProcessor {
         }
     }
 
+    async handleCheckoutSetupSessionCompletedWebhook(setupIntent, member) {
+        const customerId = setupIntent.metadata.customer_id;
+        const paymentMethod = setupIntent.payment_method;
+
+        // NOTE: has to attach payment method before being able to use it as default in the future
+        await this._stripe.paymentMethods.attach(paymentMethod, {
+            customer: customerId
+        });
+
+        const customer = await this.getCustomer(customerId);
+        await this._updateCustomer(member, customer);
+
+        if (!customer.subscriptions || !customer.subscriptions.data) {
+            return;
+        }
+
+        for (const subscription of customer.subscriptions.data) {
+            const updatedSubscription = await update(this._stripe, 'subscriptions', subscription.id, {
+                default_payment_method: paymentMethod
+            });
+            await this._updateSubscription(updatedSubscription);
+        }
+    }
+
     async handleCustomerSubscriptionDeletedWebhook(subscription) {
         await this._updateSubscription(subscription);
     }
@@ -339,6 +387,10 @@ module.exports = class StripePaymentProcessor {
         await this._updateCustomer(member, customer);
 
         return customer;
+    }
+
+    async getSetupIntent(id, options) {
+        return retrieve(this._stripe, 'setupIntents', id, options);
     }
 
     async getCustomer(id, options) {
