@@ -59,7 +59,7 @@ const expectedProperties = {
         .concat('comped')
         .concat('labels')
     ,
-    member_signin: ['url'],
+    member_signin: ['member_id', 'url'],
     role: _(schema.roles)
         .keys()
     ,

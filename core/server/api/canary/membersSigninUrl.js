@@ -22,6 +22,7 @@ module.exports = {
             const magicLink = membersService.api.getMagicLink(model.get('email'));
 
             return {
+                member_id: model.get('id'),
                 url: magicLink
             };
         }
