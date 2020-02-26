@@ -232,7 +232,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-sub
 
             return res.text();
         }).then(function (identity)  {
-            return fetch(`{{admin-url}}/api/canary/members/subscriptions/${subscriptionId}/`, {
+            return fetch('{{admin-url}}/api/canary/members/subscriptions/' + subscriptionId + '/', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -282,7 +282,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-continue-s
 
             return res.text();
         }).then(function (identity)  {
-            return fetch(`{{admin-url}}/api/canary/members/subscriptions/${subscriptionId}/`, {
+            return fetch('{{admin-url}}/api/canary/members/subscriptions/' + subscriptionId + '/', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
