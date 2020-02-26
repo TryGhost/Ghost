@@ -264,6 +264,17 @@ const configureGrunt = function (grunt) {
             }
         },
 
+        uglify: {
+            prod: {
+                options: {
+                    sourceMap: false
+                },
+                files: {
+                    'core/server/public/members.min.js': 'core/server/public/members.js'
+                }
+            }
+        },
+
         cssnano: {
             prod: {
                 options: {
@@ -530,7 +541,7 @@ const configureGrunt = function (grunt) {
     //
     // It is otherwise the same as running `grunt`, but is only used when running Ghost in the `production` env.
     grunt.registerTask('prod', 'Build JS & templates for production',
-        ['subgrunt:prod', 'cssnano:prod', 'master-warn']);
+        ['subgrunt:prod', 'uglify:prod', 'cssnano:prod', 'master-warn']);
 
     // ### Live reload
     // `grunt dev` - build assets on the fly whilst developing

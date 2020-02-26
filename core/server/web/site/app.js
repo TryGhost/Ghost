@@ -109,6 +109,8 @@ module.exports = function setupSiteApp(options = {}) {
 
     // /public/members.js
     siteApp.get('/public/members.js', membersMiddleware.public);
+    // /public/members.min.js
+    siteApp.get('/public/members.min.js', membersMiddleware.publicMinified);
 
     // Serve sitemap.xsl file
     siteApp.use(shared.middlewares.servePublicFile('sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
