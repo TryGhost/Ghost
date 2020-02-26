@@ -271,6 +271,30 @@ const members = {
         }
     },
 
+    destroyAll: {
+        statusCode: 204,
+        headers: {},
+        permissions: {
+            method: 'destroy'
+        },
+        async query(frame) {
+            frame.options.require = true;
+
+            let members = await models.Member.findAll(frame.options);
+
+            return Promise.map(members, ((member) => {
+                const api = require('./index');
+
+                return Promise.resolve(api.members.destroy.query({
+                    options: {
+                        id: member.id,
+                        context: frame.options.context
+                    }
+                }));
+            }), {concurrency: 10});
+        }
+    },
+
     exportCSV: {
         options: [
             'limit'

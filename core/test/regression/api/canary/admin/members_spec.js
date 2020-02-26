@@ -374,4 +374,34 @@ describe('Members API', function () {
                 jsonResponse.meta.stats.invalid.should.equal(2);
             });
     });
+
+    // NOTE: anti-pattern here but the order matters and this case should be last in the suite
+    it('Can destroy all', function () {
+        return request
+            .delete(localUtils.API.getApiQuery(`members/db`))
+            .set('Origin', config.get('url'))
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(204)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+            })
+            .then(() => {
+                return request
+                    .get(localUtils.API.getApiQuery(`members/`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200);
+            })
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.members);
+
+                jsonResponse.members.length.should.equal(0);
+            });
+    });
 });
