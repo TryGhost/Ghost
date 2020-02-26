@@ -9,7 +9,8 @@ module.exports = {
     read: {
         permissions: false,
         query() {
-            return {
+            const billingUrl = config.get('host_settings:billing:enabled') ? config.get('host_settings:billing:url') : '';
+            const response = {
                 version: ghostVersion.full,
                 environment: config.get('env'),
                 database: config.get('database').client,
@@ -19,6 +20,10 @@ module.exports = {
                 clientExtensions: config.get('clientExtensions') || {},
                 enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false
             };
+            if (billingUrl) {
+                response.billingUrl = billingUrl;
+            }
+            return response;
         }
     }
 };
