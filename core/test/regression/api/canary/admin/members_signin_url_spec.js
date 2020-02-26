@@ -42,9 +42,9 @@ describe('Members Sigin URL API', function () {
                     should.not.exist(res.headers['x-cache-invalidate']);
                     const jsonResponse = res.body;
                     should.exist(jsonResponse);
-                    should.exist(jsonResponse.member_signins);
-                    jsonResponse.member_signins.should.have.length(1);
-                    localUtils.API.checkResponse(jsonResponse.member_signins[0], 'member_signin');
+                    should.exist(jsonResponse.member_signin_urls);
+                    jsonResponse.member_signin_urls.should.have.length(1);
+                    localUtils.API.checkResponse(jsonResponse.member_signin_urls[0], 'member_signin');
                 });
         });
     });
