@@ -656,6 +656,18 @@ textarea {
     background: var(--input-bg-color);
 }
 
+.gh-input-group .gh-btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.gh-input-group .gh-btn span {
+    height: 36px;
+    line-height: 36px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
 
 /* FFF: Fucking Firefox Fixes
 /* ---------------------------------------------------------- */

@@ -134,7 +134,7 @@ describe('Acceptance: Members', function () {
             // it navigates to the new member route
             expect(currentURL(), 'new member URL').to.equal('/members/new');
             // it displays the new member form
-            expect(find('.member-basic-info-form .gh-canvas-header h2').textContent, 'settings pane title')
+            expect(find('.gh-canvas-header h2').textContent, 'settings pane title')
                 .to.contain('New member');
 
             // // all fields start blank
