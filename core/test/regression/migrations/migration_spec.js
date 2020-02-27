@@ -206,6 +206,7 @@ describe('Database Migration (special functions)', function () {
             permissions[69].name.should.eql('Edit labels');
             permissions[70].name.should.eql('Add labels');
             permissions[71].name.should.eql('Delete labels');
+            permissions[72].name.should.eql('Read member signin urls');
         });
 
         describe('Populate', function () {
@@ -263,7 +264,7 @@ describe('Database Migration (special functions)', function () {
                     result.roles.at(7).get('name').should.eql('Scheduler Integration');
 
                     // Permissions
-                    result.permissions.length.should.eql(72);
+                    result.permissions.length.should.eql(73);
                     result.permissions.toJSON().should.be.CompletePermissions();
                 });
             });
