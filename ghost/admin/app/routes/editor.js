@@ -66,8 +66,8 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
             this.controller.send('toggleReAuthenticateModal');
         },
 
-        redirectToContentScreen() {
-            this.transitionTo('posts');
+        redirectToContentScreen(displayName) {
+            this.transitionTo(displayName === 'page' ? 'pages' : 'posts');
         },
 
         willTransition(transition) {
