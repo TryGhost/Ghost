@@ -284,3 +284,34 @@ Pop: Appear from bottom, disappear to bottom
     width: 6px;
     background: var(--darkgrey-l2);
 }
+
+/* Animated icons */
+.animated-icon path {
+    stroke-dashoffset: 300;
+    stroke-dasharray: 300;
+    animation: icon-dash 3s ease-out forwards;
+}
+
+@keyframes icon-dash {
+    0% {
+        stroke-dashoffset: 300;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Fade in */
+.fade-in {
+    opacity: 0;
+    animation: fade-in 3s ease-out forwards;
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1.0;
+    }
+}

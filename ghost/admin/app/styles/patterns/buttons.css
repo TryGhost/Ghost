@@ -279,6 +279,11 @@ fieldset[disabled] .gh-btn {
     background: var(--white);
 }
 
+.gh-btn-white.gh-btn-green:hover,
+.gh-btn-white.gh-btn-blue:hover {
+    border: none;
+}
+
 .gh-btn-white span {
     height: 35px;
     line-height: 35px;
