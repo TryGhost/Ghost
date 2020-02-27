@@ -1,6 +1,6 @@
-<figure class="gh-member-gravatar {{this.containerClass}}">
-    <div class="gh-member-initials flex items-center justify-center br-100 {{this.containerClass}}" style={{this.backgroundStyle}}>
-        <span class="gh-member-avatar-label {{this.initialsClass}}">{{this.initials}}</span>
+<figure class="gh-member-gravatar {{@containerClass}}">
+    <div class="gh-member-initials flex items-center justify-center br-100 {{@containerClass}}" style={{this.backgroundStyle}}>
+        <span class="gh-member-avatar-label {{or @sizeClass "gh-member-list-avatar"}}">{{this.initials}}</span>
     </div>
-    <img class="gh-member-avatar-image" src={{gravatar this.member.email size=180}} />
+    <img class="gh-member-avatar-image" src={{gravatar @member.email size=180}} />
 </figure>
