@@ -1,21 +1,23 @@
-<LinkTo @route="member" @model={{this.member}} title="Member details" class="gh-list-data gh-members-list-basic">
-    <div class="flex items-center">
-        <GhMemberAvatar @member={{member}} @containerClass="w9 h9 mr3" />
-        <div>
-            <h3 class="ma0 pa0 gh-members-list-name {{if (not member.name) "gh-members-name-noname"}}">{{this.displayName}}</h3>
-            {{#if this.name}}
-                <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{this.email}}</p>
-            {{/if}}
+<li class="gh-list-row gh-members-list-item" ...attributes>
+    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-basic">
+        <div class="flex items-center">
+            <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3" />
+            <div>
+                <h3 class="ma0 pa0 gh-members-list-name {{if (not @member.name) "gh-members-name-noname"}}">{{or @member.name @member.email}}</h3>
+                {{#if @member.name}}
+                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{@member.email}}</p>
+                {{/if}}
+            </div>
         </div>
-    </div>
-</LinkTo>
+    </LinkTo>
 
-<LinkTo @route="member" @model={{this.member}} title="Member details" class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not member.name) "gh-members-subscribed-noname"}}">
-    {{this.createdDate}} <span class="midgrey-l2">({{this.memberSince}})</span>
-</LinkTo>
+    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not @member.name) "gh-members-subscribed-noname"}}">
+        {{moment-format @member.createdAtUTC "MMM DD, YYYY"}} <span class="midgrey-l2">({{this.memberSince}})</span>
+    </LinkTo>
 
-<LinkTo @route="member" @model={{this.member}} title="Member details" class="gh-list-data gh-list-cellwidth-chevron gh-members-list-chevron">
-    <div class="flex items-center justify-end w-100 h-100">
-        <span class="nr2">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
-    </div>
-</LinkTo>
+    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-list-cellwidth-chevron gh-members-list-chevron">
+        <div class="flex items-center justify-end w-100 h-100">
+            <span class="nr2">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
+        </div>
+    </LinkTo>
+</li>
