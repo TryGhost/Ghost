@@ -71,6 +71,10 @@ module.exports = {
         return shared.pipeline(require('./members'), localUtils);
     },
 
+    get memberSigninUrls() {
+        return shared.pipeline(require('./memberSigninUrls.js'), localUtils);
+    },
+
     get labels() {
         return shared.pipeline(require('./labels'), localUtils);
     },

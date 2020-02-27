@@ -412,6 +412,11 @@
                     "name": "Delete labels",
                     "action_type": "destroy",
                     "object_type": "label"
+                },
+                {
+                    "name": "Read member signin urls",
+                    "action_type": "read",
+                    "object_type": "member_signin_url"
                 }
             ]
         },
