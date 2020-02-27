@@ -56,9 +56,8 @@
             <ol class="members-list gh-list {{unless this.filteredMembers "no-posts"}}">
                 {{#if this.filteredMembers}}
                     <li class="gh-list-row header">
-                        <div class="gh-list-header">
-                            {{listHeader}}
-                        </div>
+                        <div class="gh-list-header">{{listHeader}}</div>
+                        <div class="gh-list-header gh-list-cellwidth-20 nowrap">Location</div>
                         <div class="gh-list-header gh-list-cellwidth-20 nowrap">Created</div>
                         <div class="gh-list-header gh-list-cellwidth-chevron"></div>
                     </li>

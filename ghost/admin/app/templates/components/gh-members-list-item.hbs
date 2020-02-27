@@ -11,6 +11,18 @@
         </div>
     </LinkTo>
 
+    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-list-cellwidth-20 nowrap middarkgrey f8">
+        {{#if @member.geolocation}}
+            {{#if (eq @member.geolocation.country_code "US")
+                {{@member.geolocation.region}}, US
+            {{else}}
+                {{@member.geolocation.country}}
+            {{/if}}
+        {{else}}
+            -
+        {{/if}}
+    </LinkTo>
+
     <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not @member.name) "gh-members-subscribed-noname"}}">
         {{moment-format @member.createdAtUTC "MMM DD, YYYY"}} <span class="midgrey-l2">({{this.memberSince}})</span>
     </LinkTo>
