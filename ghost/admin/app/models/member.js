@@ -14,6 +14,7 @@ export default Model.extend(ValidationEngine, {
     subscribed: attr('boolean', {defaultValue: true}),
     labels: hasMany('label', {embedded: 'always', async: false}),
     comped: attr('boolean', {defaultValue: false}),
+    geolocation: attr('json-string'),
 
     ghostPaths: service(),
     ajax: service(),
