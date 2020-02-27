@@ -52,7 +52,10 @@ export const CARD_MENU = [
             matches: ['image', 'img'],
             type: 'card',
             replaceArg: 'image',
-            params: ['src']
+            params: ['src'],
+            payload: {
+                triggerBrowse: true
+            }
         },
         {
             label: 'Markdown',
