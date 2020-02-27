@@ -46,11 +46,21 @@
                     {{#if (and this.member.name this.member.email)}}
                         <span class="darkgrey fw5">{{this.member.email}}</span>
                     {{/if}}
-                    {{#unless this.member.isNew}}
-                        {{if (and this.member.name this.member.email) "–"}}
-                        Created on {{this.subscribedAt}}
-                    {{/unless}}
                 </p>
+                {{#unless this.member.isNew}}
+                <p class="f7 pa0 ma0 midgrey-d1 {{if this.member.name "nudge-bottom--2"}}">
+                    {{#if this.member.geolocation}}
+                        {{#if (eq this.member.geolocation.country_code "US")}}
+                            {{this.member.geolocation.region}}, US
+                        {{else}}
+                            {{this.member.geolocation.country}}
+                        {{/if}}
+                    {{else}}  
+                        Unknown location
+                    {{/if}}
+                    – Created on {{this.subscribedAt}}
+                </p>
+                {{/unless}}
             </div>
         </div>
 
