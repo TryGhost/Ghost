@@ -19,12 +19,12 @@
                 {{@member.geolocation.country}}
             {{/if}}
         {{else}}
-            -
+            <span class="midlightgrey">Unknown</span>
         {{/if}}
     </LinkTo>
 
     <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not @member.name) "gh-members-subscribed-noname"}}">
-        {{moment-format @member.createdAtUTC "MMM DD, YYYY"}} <span class="midgrey-l2">({{this.memberSince}})</span>
+        {{moment-format @member.createdAtUTC "MMM DD, YYYY"}} <span class="midlightgrey">({{this.memberSince}})</span>
     </LinkTo>
 
     <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-list-cellwidth-chevron gh-members-list-chevron">
