@@ -121,7 +121,7 @@
     "normalize.css": "3.0.3",
     "postcss-color-mod-function": "3.0.3",
     "postcss-custom-media": "7.0.8",
-    "postcss-custom-properties": "9.0.2",
+    "postcss-custom-properties": "9.1.1",
     "postcss-easy-import": "3.0.0",
     "pretender": "3.3.1",
     "reframe.js": "2.2.7",
