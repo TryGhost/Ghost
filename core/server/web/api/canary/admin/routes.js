@@ -100,6 +100,8 @@ module.exports = function apiRoutes() {
     router.put('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.edit));
     router.del('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.destroy));
 
+    router.get('/members/:id/signin_urls', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.memberSigninUrls.read));
+
     // ## Labels
     router.get('/labels', mw.authAdminApi, http(apiCanary.labels.browse));
     router.get('/labels/:id', mw.authAdminApi, http(apiCanary.labels.read));
