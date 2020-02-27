@@ -96,6 +96,10 @@ p.gh-members-list-email {
     pointer-events: none;
 }
 
+.member-link-copied svg {
+    margin-right: 4px;
+}
+
 .members-header .gh-members-header-search {
     margin-right: 12px;
     border-right: 1px solid var(--lightgrey-d2);
