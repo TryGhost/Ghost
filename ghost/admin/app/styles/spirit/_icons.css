@@ -468,6 +468,10 @@
     stroke-width: 1px;
 }
 
+.i-strokew--1-5 path {
+    stroke-width: 1.5px;
+}
+
 .i-strokew--2 path {
     stroke-width: 2px;
 }

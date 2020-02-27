@@ -67,7 +67,7 @@ describe('Unit: Service: notifications', function () {
         });
 
         expect(notifications.get('alerts'))
-            .to.deep.include({message: 'Test Alert', status: 'alert', type: 'error', key: undefined});
+            .to.deep.include({message: 'Test Alert', status: 'alert', type: 'error', key: undefined, actions: undefined, description: undefined, icon: undefined});
     });
 
     it('#showAlert adds delayed notifications', function () {
@@ -78,7 +78,7 @@ describe('Unit: Service: notifications', function () {
         });
 
         expect(notifications.get('delayedNotifications'))
-            .to.deep.include({message: 'Test Alert', status: 'notification', type: 'error', key: undefined});
+            .to.deep.include({message: 'Test Alert', status: 'notification', type: 'error', key: undefined, actions: undefined, description: undefined, icon: undefined});
     });
 
     // in order to cater for complex keys that are suitable for i18n
@@ -121,7 +121,7 @@ describe('Unit: Service: notifications', function () {
         });
 
         expect(notifications.get('notifications'))
-            .to.deep.include({message: 'Test Notification', status: 'notification', type: 'success', key: undefined});
+            .to.deep.include({message: 'Test Notification', status: 'notification', type: 'success', key: undefined, actions: undefined, description: undefined, icon: undefined});
     });
 
     it('#showNotification adds delayed notifications', function () {
@@ -132,31 +132,7 @@ describe('Unit: Service: notifications', function () {
         });
 
         expect(notifications.get('delayedNotifications'))
-            .to.deep.include({message: 'Test Notification', status: 'notification', type: undefined, key: undefined});
-    });
-
-    it('#showNotification clears existing notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        run(() => {
-            notifications.showNotification('First');
-            notifications.showNotification('Second');
-        });
-
-        expect(notifications.get('notifications.length')).to.equal(1);
-        expect(notifications.get('notifications'))
-            .to.deep.equal([{message: 'Second', status: 'notification', type: undefined, key: undefined}]);
-    });
-
-    it('#showNotification keeps existing notifications if doNotCloseNotifications option passed', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        run(() => {
-            notifications.showNotification('First');
-            notifications.showNotification('Second', {doNotCloseNotifications: true});
-        });
-
-        expect(notifications.get('notifications.length')).to.equal(2);
+            .to.deep.include({message: 'Test Notification', status: 'notification', type: undefined, key: undefined, actions: undefined, description: undefined, icon: undefined});
     });
 
     it('#showAPIError handles single json response error', function () {
@@ -187,8 +163,8 @@ describe('Unit: Service: notifications', function () {
 
         expect(notifications.get('alerts.length')).to.equal(2);
         let [alert1, alert2] = notifications.get('alerts');
-        expect(alert1).to.deep.equal({message: 'First error message', status: 'alert', type: 'error', key: 'api-error.first-error'});
-        expect(alert2).to.deep.equal({message: 'Second error message', status: 'alert', type: 'error', key: 'api-error.second-error'});
+        expect(alert1).to.deep.equal({message: 'First error message', status: 'alert', type: 'error', key: 'api-error.first-error', actions: undefined, description: undefined, icon: undefined});
+        expect(alert2).to.deep.equal({message: 'Second error message', status: 'alert', type: 'error', key: 'api-error.second-error', actions: undefined, description: undefined, icon: undefined});
     });
 
     it('#showAPIError displays default error text if response has no error/message', function () {
@@ -198,9 +174,8 @@ describe('Unit: Service: notifications', function () {
         run(() => {
             notifications.showAPIError(resp);
         });
-
         expect(notifications.get('content').toArray()).to.deep.equal([
-            {message: 'There was a problem on the server, please try again.', status: 'alert', type: 'error', key: 'api-error'}
+            {message: 'There was a problem on the server, please try again.', status: 'alert', type: 'error', key: 'api-error', actions: undefined, description: undefined, icon: undefined}
         ]);
 
         notifications.set('content', emberA());
@@ -209,7 +184,7 @@ describe('Unit: Service: notifications', function () {
             notifications.showAPIError(resp, {defaultErrorText: 'Overridden default'});
         });
         expect(notifications.get('content').toArray()).to.deep.equal([
-            {message: 'Overridden default', status: 'alert', type: 'error', key: 'api-error'}
+            {message: 'Overridden default', status: 'alert', type: 'error', key: 'api-error', actions: undefined, description: undefined, icon: undefined}
         ]);
     });
 
@@ -292,9 +267,9 @@ describe('Unit: Service: notifications', function () {
         });
 
         expect(notifications.get('notifications')).to.deep.equal([
-            {message: 'Third', status: 'notification', type: undefined, key: undefined},
-            {message: 'First', status: 'notification', type: undefined, key: undefined},
-            {message: 'Second', status: 'notification', type: undefined, key: undefined}
+            {message: 'Third', status: 'notification', type: undefined, key: undefined, actions: undefined, description: undefined, icon: undefined},
+            {message: 'First', status: 'notification', type: undefined, key: undefined, actions: undefined, description: undefined, icon: undefined},
+            {message: 'Second', status: 'notification', type: undefined, key: undefined, actions: undefined, description: undefined, icon: undefined}
         ]);
     });
 
@@ -354,7 +329,7 @@ describe('Unit: Service: notifications', function () {
         run(() => {
             notifications.showAlert('First alert');
             notifications.showNotification('First notification');
-            notifications.showNotification('Second notification', {doNotCloseNotifications: true});
+            notifications.showNotification('Second notification');
         });
 
         expect(notifications.get('alerts.length'), 'alerts count').to.equal(1);
@@ -373,9 +348,7 @@ describe('Unit: Service: notifications', function () {
 
         run(() => {
             notifications.showAlert('First alert');
-            // using handleNotification as showNotification will auto-prune
-            // duplicates and keys will be removed if doNotCloseNotifications
-            // is true
+            // using handleNotification as showNotification will auto-prune duplicates
             notifications.handleNotification({message: 'First notification', key: 'test.close', status: 'notification'});
             notifications.handleNotification({message: 'Second notification', key: 'test.keep', status: 'notification'});
             notifications.handleNotification({message: 'Third notification', key: 'test.close', status: 'notification'});

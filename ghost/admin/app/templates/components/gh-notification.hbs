@@ -1,5 +1,28 @@
+<div class="gh-notification-icon">
+    {{#if this.message.icon}}
+        {{svg-jar this.message.icon}}
+    {{else}}
+        {{#if (eq this.message.type "success")}}
+            {{svg-jar "check-circle"}}
+        {{else if (eq this.message.type "error")}}
+            {{svg-jar "warning-stroke"}}
+        {{else if (eq this.message.type "warn")}}
+            {{svg-jar "warning-stroke"}}
+        {{else}}
+            {{svg-jar "check-circle"}}
+        {{/if}}
+    {{/if}}
+</div>
 <div class="gh-notification-content" data-test-text="notification-content">
-    {{this.message.message}}
+    <span class="gh-notification-title">{{this.message.message}}</span>
+    
+    {{#if this.message.description}}
+        <p>{{this.message.description}}</p>
+    {{/if}}
+
+    {{#if this.message.actions}}
+        <span class="gh-notification-actions">{{this.message.actions}}</span>
+    {{/if}}
 </div>
 <button class="gh-notification-close" {{action "closeNotification"}} data-test-button="close-notification">
     {{svg-jar "close"}}<span class="hidden">Close</span>

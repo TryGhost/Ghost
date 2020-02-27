@@ -322,9 +322,9 @@ describe('Acceptance: Staff', function () {
 
             // notification is displayed
             expect(
-                find('.gh-notification').textContent.trim(),
+                find('.gh-notification:last-of-type').textContent.trim(),
                 'notifications contain revoke'
-            ).to.match(/Invitation revoked\. \(invite2@example\.com\)/);
+            ).to.match(/Invitation revoked\s+invite2@example\.com/);
 
             // correct invite is removed
             expect(
@@ -348,7 +348,7 @@ describe('Acceptance: Staff', function () {
 
             // notification is displayed
             expect(
-                find('.gh-notification').textContent.trim(),
+                find('.gh-notification:last-of-type').textContent.trim(),
                 'notifications contain resend'
             ).to.match(/Invitation resent! \(invite1@example\.com\)/);
 
@@ -370,9 +370,9 @@ describe('Acceptance: Staff', function () {
 
             // notification is displayed
             expect(
-                find('.gh-notification').textContent.trim(),
+                find('.gh-notification:last-of-type').textContent.trim(),
                 'notifications contain revoke after resend/revoke'
-            ).to.match(/Invitation revoked\. \(invite1@example\.com\)/);
+            ).to.match(/Invitation revoked\s+invite1@example\.com/);
         });
 
         it('can manage suspended users', async function () {

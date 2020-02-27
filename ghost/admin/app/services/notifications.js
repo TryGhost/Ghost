@@ -75,26 +75,25 @@ export default Service.extend({
         this.handleNotification({
             message,
             status: 'alert',
+            description: options.description,
+            icon: options.icon,
             type: options.type,
-            key: options.key
+            key: options.key,
+            actions: options.actions
         }, options.delayed);
     },
 
     showNotification(message, options) {
         options = options || {};
 
-        if (!options.doNotCloseNotifications) {
-            this.closeNotifications();
-        } else {
-            // TODO: this should be removed along with showErrors
-            options.key = undefined;
-        }
-
         this.handleNotification({
             message,
             status: 'notification',
+            description: options.description,
+            icon: options.icon,
             type: options.type,
-            key: options.key
+            key: options.key,
+            actions: options.actions
         }, options.delayed);
     },
 

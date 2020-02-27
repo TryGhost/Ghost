@@ -73,6 +73,7 @@ export default ModalComponent.extend({
         try {
             yield label.destroyRecord();
             let routeName = this.router.currentRouteName;
+            this.notifications.showNotification('Label deleted'.htmlSafe());
             this.send('closeModal');
             this.router.transitionTo(routeName, {queryParams: resetQueryParams(routeName)});
         } catch (error) {

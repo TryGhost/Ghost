@@ -63,19 +63,19 @@ const messageMap = {
     success: {
         post: {
             published: {
-                published: 'Updated.',
-                draft: 'Saved.',
-                scheduled: 'Scheduled.'
+                published: 'Updated',
+                draft: 'Saved',
+                scheduled: 'Scheduled'
             },
             draft: {
-                published: 'Published!',
-                draft: 'Saved.',
-                scheduled: 'Scheduled.'
+                published: 'Published',
+                draft: 'Saved',
+                scheduled: 'Scheduled'
             },
             scheduled: {
-                scheduled: 'Updated.',
-                draft: 'Unscheduled.',
-                published: 'Published!'
+                scheduled: 'Updated',
+                draft: 'Unscheduled',
+                published: 'Published'
             }
         }
     }
@@ -802,19 +802,19 @@ export default Controller.extend({
     _showSaveNotification(prevStatus, status, delay) {
         let message = messageMap.success.post[prevStatus][status];
         let notifications = this.notifications;
-        let type, path;
+        let actions, type, path;
 
-        if (status === 'published') {
+        if (status === 'published' || status === 'scheduled') {
             type = this.get('post.page') ? 'Page' : 'Post';
             path = this.get('post.url');
+            actions = `<a href="${path}" target="_blank">View ${type}</a>`;
         } else {
             type = 'Preview';
             path = this.get('post.previewUrl');
+            actions = `<a href="${path}" target="_blank">View ${type}</a>`;
         }
 
-        message += `&nbsp;<a href="${path}" target="_blank">View ${type}</a>`;
-
-        notifications.showNotification(message.htmlSafe(), {delayed: delay});
+        notifications.showNotification(message, {type: 'success', actions: actions.htmlSafe(), delayed: delay});
     },
 
     _showErrorAlert(prevStatus, status, error, delay) {
