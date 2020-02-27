@@ -244,9 +244,9 @@ p.gh-members-list-email {
 
     .gh-members-list-subscribed-at {
         display: inline-block;
-        width: unset;
-        padding: 0 0 16px 64px;
-        margin-top: -7px;
+        width: auto;
+        padding: 0 0 16px 4px;
+        margin-top: -16px;
         font-size: 1.2rem;
     }
 
@@ -264,6 +264,22 @@ p.gh-members-list-email {
 
     .gh-members-subscribed-noname {
         display: inline-block;
+        margin-top: -32px;
+        padding-bottom: 16px;
+    }
+
+    .gh-members-list-geolocation {
+        display: inline-block;
+        padding: 0 0 0 64px;
+        margin-top: -16px;
+        width: auto;
+    }
+
+    .gh-members-list-geolocation::after {
+        content: "–";
+    }
+
+    .gh-members-geolocation-noname {
         margin-top: -32px;
         padding-bottom: 16px;
     }
