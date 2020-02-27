@@ -36,11 +36,6 @@ module.exports = class StripePaymentProcessor {
 
             this._plans = [];
             for (const planSpec of config.plans) {
-                // NOTE: we have only one "Complimentary" plan throughout the system
-                if (planSpec.name === 'Complimentary' && planSpec.currency !== 'usd') {
-                    return;
-                }
-
                 const plan = await api.plans.ensure(this._stripe, planSpec, this._product);
                 this._plans.push(plan);
             }
