@@ -18,7 +18,6 @@ export default Component.extend({
         let typeMapping;
 
         typeMapping = {
-            success: 'green',
             error: 'red',
             warn: 'yellow'
         };
