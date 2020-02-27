@@ -147,6 +147,18 @@ export default Component.extend({
         }
     },
 
+    didInsertElement() {
+        if (this.payload.triggerBrowse && !this.payload.src && !this.payload.files) {
+            // we don't want to persist this in the serialized payload
+            this._updatePayloadAttr('triggerBrowse', undefined);
+
+            let fileInput = this.element.querySelector('input[type="file"]');
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+    },
+
     actions: {
         updateSrc(images) {
             let [image] = images;
