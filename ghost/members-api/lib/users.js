@@ -4,12 +4,13 @@ const common = require('./common');
 
 let Member;
 
-async function createMember({email, name, note, labels}) {
+async function createMember({email, name, note, labels, geolocation}) {
     const model = await Member.add({
         email,
         name,
         note,
-        labels
+        labels,
+        geolocation
     });
     const member = model.toJSON();
     return member;
@@ -27,7 +28,7 @@ async function getMember(data, options = {}) {
     return member;
 }
 
-async function updateMember({name, note, subscribed}, options = {}) {
+async function updateMember({name, note, subscribed, geolocation}, options = {}) {
     const attrs = {
         name,
         note
@@ -35,6 +36,10 @@ async function updateMember({name, note, subscribed}, options = {}) {
 
     if (subscribed !== undefined) {
         attrs.subscribed = subscribed;
+    }
+
+    if (geolocation !== undefined) {
+        attrs.geolocation = geolocation;
     }
 
     const model = await Member.edit(attrs, options);

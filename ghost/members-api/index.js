@@ -3,11 +3,11 @@ const {Router} = require('express');
 const body = require('body-parser');
 const MagicLink = require('@tryghost/magic-link');
 const StripePaymentProcessor = require('./lib/stripe');
-
 const Tokens = require('./lib/tokens');
 const Users = require('./lib/users');
 const Metadata = require('./lib/metadata');
 const common = require('./lib/common');
+const {getGeolocationFromIP} = require('./lib/geolocation');
 
 module.exports = function MembersApi({
     tokenConfig: {
@@ -94,18 +94,39 @@ module.exports = function MembersApi({
         memberModel
     });
 
-    async function getMemberDataFromMagicLinkToken(token){
+    async function getMemberDataFromMagicLinkToken(token) {
         const email = await magicLinkService.getUserFromToken(token);
-        const {labels = []} = await magicLinkService.getPayloadFromToken(token);
+        const {labels = [], ip} = await magicLinkService.getPayloadFromToken(token);
+
         if (!email) {
             return null;
         }
 
         const member = await getMemberIdentityData(email);
+
+        let geolocation;
+        if (ip && (!member || !member.geolocation)) {
+            try {
+                // max request time is 500ms so shouldn't slow requests down too much
+                geolocation = JSON.stringify(await getGeolocationFromIP(ip));
+            } catch (err) {
+                // no-op, we don't want to stop anything working due to
+                // geolocation lookup failing but logs can be useful
+                this.logging.warn(err);
+            }
+        }
+
         if (member) {
+            // user exists but doesn't have geolocation yet so update it
+            if (geolocation) {
+                member.geolocation = geolocation;
+                await users.update(member, {id: member.id});
+                return getMemberIdentityData(email);
+            }
             return member;
         }
-        await users.create({email, labels});
+
+        await users.create({email, labels, geolocation});
         return getMemberIdentityData(email);
     }
     async function getMemberIdentityData(email){
@@ -128,23 +149,25 @@ module.exports = function MembersApi({
     };
 
     middleware.sendMagicLink.use(body.json(), async function (req, res) {
-        const email = req.body.email;
+        const {ip, body} = req;
+        const {email, emailType} = body;
+        const payload = {ip};
+
         if (!email) {
             res.writeHead(400);
             return res.end('Bad Request.');
         }
-        const emailType = req.body.emailType;
-        const payload = {};
-        if (req.body.labels) {
-            payload.labels = req.body.labels;
-        }
+
         try {
             if (!allowSelfSignup) {
                 const member = await users.get({email});
                 if (member) {
-                    await sendEmailWithMagicLink({email, requestedType: emailType});
+                    await sendEmailWithMagicLink({email, requestedType: emailType, payload});
                 }
             } else {
+                if (body.labels) {
+                    payload.labels = body.labels;
+                }
                 await sendEmailWithMagicLink({email, requestedType: emailType, payload});
             }
             res.writeHead(201);
