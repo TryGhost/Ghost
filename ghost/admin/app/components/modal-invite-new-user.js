@@ -98,7 +98,6 @@ export default ModalComponent.extend(ValidationEngine, {
         let email = this.email;
         let role = this.role;
         let notifications = this.notifications;
-        let notificationText = `Invitation sent! (${email})`;
         let invite;
 
         try {
@@ -114,9 +113,9 @@ export default ModalComponent.extend(ValidationEngine, {
             // If sending the invitation email fails, the API will still return a status of 201
             // but the invite's status in the response object will be 'invited-pending'.
             if (invite.get('status') === 'pending') {
-                notifications.showAlert('Invitation email was not sent.  Please try resending.', {type: 'error', key: 'invite.send.failed'});
+                notifications.showAlert('Invitation email was not sent', {type: 'error', key: 'invite.send.failed', description: 'Please try resending.'});
             } else {
-                notifications.showNotification(notificationText, {key: 'invite.send.success'});
+                notifications.showNotification('Invitation sent', {icon: 'send-email', key: 'invite.send.success', description: `${email}`});
             }
 
             this.send('closeModal');

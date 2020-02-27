@@ -26,10 +26,6 @@ describe('Integration: Component: gh-notification', function () {
         await render(hbs`{{gh-notification message=message}}`);
         let notification = find('.gh-notification');
 
-        this.set('message.type', 'success');
-        expect(notification, 'success class is green')
-            .to.have.class('gh-notification-green');
-
         this.set('message.type', 'error');
         expect(notification, 'success class is red')
             .to.have.class('gh-notification-red');

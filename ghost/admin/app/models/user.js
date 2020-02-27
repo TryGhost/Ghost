@@ -124,7 +124,7 @@ export default BaseModel.extend(ValidationEngine, {
                 ne2Password: ''
             });
 
-            this.notifications.showNotification('Password updated.', {type: 'success', key: 'user.change-password.success'});
+            this.notifications.showNotification('Password updated', {type: 'success', key: 'user.change-password.success'});
 
             // clear errors manually for ne2password because validation
             // engine only clears the "validated proeprty"
