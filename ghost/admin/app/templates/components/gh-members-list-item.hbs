@@ -13,7 +13,7 @@
 
     <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-list-cellwidth-20 nowrap middarkgrey f8">
         {{#if @member.geolocation}}
-            {{#if (eq @member.geolocation.country_code "US")
+            {{#if (eq @member.geolocation.country_code "US")}}
                 {{@member.geolocation.region}}, US
             {{else}}
                 {{@member.geolocation.country}}
