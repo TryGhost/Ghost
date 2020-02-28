@@ -6,6 +6,9 @@
             "user"     : "root",
             "password" : "",
             "database" : "ghost"
+        },
+        "pool" : {
+            "min":0
         }
     },
     "paths": {
