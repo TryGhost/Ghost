@@ -399,11 +399,11 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                     // @TODO: we need a concept for making a diff between incoming authors and existing authors
                     // @TODO: for now we simply re-use the new concept of `excludedAttrs`
                     // We only check the primary author of `authors`, any other change will be ignored.
-                    if (isContributor || isAuthor) {
-                        return {
-                            excludedAttrs: ['authors'].concat(excludedAttrs)
-                        };
-                    }
+                    // if (isContributor || isAuthor) {
+                    //     return {
+                    //         excludedAttrs: ['authors'].concat(excludedAttrs)
+                    //     };
+                    // }
                     return {excludedAttrs};
                 });
             }
