@@ -89,6 +89,13 @@
                     </button>
                     <LinkTo @route="settings.labs" data-test-nav="labs">{{svg-jar "labs"}}Labs</LinkTo>
                 </li>
+                {{#if this.showBilling}}
+                    <li class="relative">
+                        <LinkTo @route="billing" data-test-nav="billing">
+                            {{svg-jar "house"}} View billing
+                        </LinkTo>
+                    </li>
+                {{/if}}
             </ul>
         {{/if}}
 
