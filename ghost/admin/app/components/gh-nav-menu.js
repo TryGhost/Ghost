@@ -3,6 +3,7 @@ import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 import calculatePosition from 'ember-basic-dropdown/utils/calculate-position';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {and, equal, match} from '@ember/object/computed';
+import {computed} from '@ember/object';
 import {getOwner} from '@ember/application';
 import {htmlSafe} from '@ember/string';
 import {inject as service} from '@ember/service';
@@ -37,6 +38,7 @@ export default Component.extend(ShortcutsMixin, {
     showMenuExtension: and('config.clientExtensions.menu', 'session.user.isOwner'),
     showDropdownExtension: and('config.clientExtensions.dropdown', 'session.user.isOwner'),
     showScriptExtension: and('config.clientExtensions.script', 'session.user.isOwner'),
+    showBilling: computed.reads('config.billingUrl'),
 
     init() {
         this._super(...arguments);
