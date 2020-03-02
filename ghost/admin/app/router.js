@@ -22,6 +22,7 @@ Router.map(function () {
     this.route('reset', {path: '/reset/:token'});
     this.route('about');
     this.route('site');
+    this.route('billing');
 
     this.route('posts');
     this.route('pages');
