@@ -16,15 +16,22 @@ async function fetchBookmarkData(url, html) {
         require('metascraper-logo')()
     ]);
 
-    if (!html) {
-        const response = await request(url, {
-            headers: {
-                'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
-            }
-        });
-        html = response.body;
+    let scraperResponse;
+
+    try {
+        if (!html) {
+            const response = await request(url, {
+                headers: {
+                    'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
+                }
+            });
+            html = response.body;
+        }
+        scraperResponse = await metascraper({html, url});
+    } catch (e) {
+        return Promise.reject();
     }
-    const scraperResponse = await metascraper({html, url});
+
     const metadata = Object.assign({}, scraperResponse, {
         thumbnail: scraperResponse.image,
         icon: scraperResponse.logo
@@ -132,7 +139,8 @@ module.exports = {
             let {url, type} = data;
 
             if (type === 'bookmark') {
-                return fetchBookmarkData(url);
+                return fetchBookmarkData(url)
+                    .catch(() => unknownProvider(url));
             }
 
             return fetchOembedData(url).then((response) => {
