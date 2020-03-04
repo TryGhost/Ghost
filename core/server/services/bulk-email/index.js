@@ -3,6 +3,7 @@ const common = require('../../lib/common');
 const mailgunProvider = require('./mailgun');
 const configService = require('../../config');
 const settingsCache = require('../settings/cache');
+const sentry = require('../../sentry');
 
 /**
  * An object representing batch request result
@@ -100,10 +101,13 @@ module.exports = {
                     if (error) {
                         // NOTE: logging an error here only but actual handling should happen in more sophisticated batch retry handler
                         // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#errors
-                        common.logging.warn(new common.errors.GhostError({
+                        let ghostError = new common.errors.GhostError({
                             err: error,
                             context: common.i18n.t('errors.services.mega.requestFailed.error')
-                        }));
+                        });
+
+                        sentry.captureException(ghostError);
+                        common.logging.warn(ghostError);
 
                         // NOTE: these are generated variables, so can be regenerated when retry is done
                         const data = _.omit(batchData, ['recipient-variables']);
