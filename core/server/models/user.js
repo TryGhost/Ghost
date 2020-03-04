@@ -870,8 +870,10 @@ User = ghostBookshelf.Model.extend({
         const userId = object.user_id;
         const oldPassword = object.oldPassword;
         const isLoggedInUser = userId === options.context.user;
+        const skipSessionID = unfilteredOptions.skipSessionID;
 
         options.require = true;
+        options.withRelated = ['sessions'];
 
         const user = await this.forge({id: userId}).fetch(options);
 
@@ -883,6 +885,13 @@ User = ghostBookshelf.Model.extend({
         }
 
         const updatedUser = await user.save({password: newPassword});
+
+        const sessions = user.related('sessions');
+        for (const session of sessions) {
+            if (session.get('session_id') !== skipSessionID) {
+                await session.destroy(options);
+            }
+        }
 
         return updatedUser;
     },
