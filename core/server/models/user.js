@@ -864,31 +864,27 @@ User = ghostBookshelf.Model.extend({
      * @param {Object} object
      * @param {Object} unfilteredOptions
      */
-    changePassword: function changePassword(object, unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'changePassword'),
-            self = this,
-            newPassword = object.newPassword,
-            userId = object.user_id,
-            oldPassword = object.oldPassword,
-            isLoggedInUser = userId === options.context.user,
-            user;
+    changePassword: async function changePassword(object, unfilteredOptions) {
+        const options = this.filterOptions(unfilteredOptions, 'changePassword');
+        const newPassword = object.newPassword;
+        const userId = object.user_id;
+        const oldPassword = object.oldPassword;
+        const isLoggedInUser = userId === options.context.user;
 
         options.require = true;
 
-        return self.forge({id: userId}).fetch(options)
-            .then(function then(_user) {
-                user = _user;
+        const user = await this.forge({id: userId}).fetch(options);
 
-                if (isLoggedInUser) {
-                    return self.isPasswordCorrect({
-                        plainPassword: oldPassword,
-                        hashedPassword: user.get('password')
-                    });
-                }
-            })
-            .then(function then() {
-                return user.save({password: newPassword});
+        if (isLoggedInUser) {
+            await this.isPasswordCorrect({
+                plainPassword: oldPassword,
+                hashedPassword: user.get('password')
             });
+        }
+
+        const updatedUser = await user.save({password: newPassword});
+
+        return updatedUser;
     },
 
     transferOwnership: function transferOwnership(object, unfilteredOptions) {
