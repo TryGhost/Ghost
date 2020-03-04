@@ -42,7 +42,7 @@
     "@nexes/nql": "0.3.0",
     "@sentry/node": "5.13.1",
     "@tryghost/helpers": "1.1.22",
-    "@tryghost/members-api": "0.17.0",
+    "@tryghost/members-api": "0.18.0",
     "@tryghost/members-ssr": "0.7.4",
     "@tryghost/social-urls": "0.1.5",
     "@tryghost/string": "^0.1.3",
