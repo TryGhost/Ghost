@@ -65,17 +65,35 @@
 
         {{#liquid-if this.membersPricingOpen}}
             <div class="w-100 w-50-l flex flex-column flex-row-ns mt8">
+                <div class="w-100">
+                    <GhFormGroup @class="for-select">
+                        <label class="fw6 f8"for="currency">Plan currency</label>
+                        <span class="gh-select mt1">
+                            {{one-way-select this.selectedCurrency
+                                id="currency"
+                                name="currency"
+                                options=(readonly this.currencies)
+                                optionValuePath="value"
+                                optionLabelPath="label"
+                                update=(action "setSubscriptionSettings" "currency")
+                            }}
+                            {{svg-jar "arrow-down-small"}}
+                        </span>
+                    </GhFormGroup>
+                </div>
+            </div>
+            <div class="w-100 w-50-l flex flex-column flex-row-ns">
                 <div class="w-100 w-50-ns mr3-ns">
                     <GhFormGroup>
                     <label class="fw6 f8">Monthly price</label>
 
                     <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
                         <GhTextInput
-                            @value={{readonly this.subscriptionSettings.stripeConfig.plans.monthly.dollarAmount}}
+                            @value={{readonly this.subscriptionSettings.stripeConfig.plans.monthly.amount}}
                             @type="number"
                             @input={{action "setSubscriptionSettings" "month"}}
                         />
-                        <span class="gh-input-append">USD/month</span>
+                        <span class="gh-input-append"><span class="ttu">{{this.subscriptionSettings.stripeConfig.plans.monthly.currency}}</span>/month</span>
                     </div>
                     </GhFormGroup>
                 </div>
@@ -84,16 +102,15 @@
                     <label class="fw6 f8">Yearly price</label>
                     <div class="flex items-center justify-center mt1 gh-input-group gh-labs-price-label">
                         <GhTextInput
-                            @value={{readonly this.subscriptionSettings.stripeConfig.plans.yearly.dollarAmount}}
+                            @value={{readonly this.subscriptionSettings.stripeConfig.plans.yearly.amount}}
                             @type="number"
                             @input={{action "setSubscriptionSettings" "year"}}
                         />
-                        <span class="gh-input-append">USD/year</span>
+                        <span class="gh-input-append"><span class="ttu">{{this.subscriptionSettings.stripeConfig.plans.yearly.currency}}</span>/year</span>
                     </div>
                     </GhFormGroup>
                 </div>
             </div>
-            <div class="f8 fw4 midgrey">Currently only USD is supported, more currencies <a href="https://ghost.org/docs/members/" target="_blank" rel="noopener">coming soon</a></div>
         {{/liquid-if}}
     </section>
 

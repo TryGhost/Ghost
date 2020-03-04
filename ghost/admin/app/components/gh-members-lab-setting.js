@@ -7,12 +7,39 @@ import {set} from '@ember/object';
 const US = {flag: '🇺🇸', name: 'US', baseUrl: 'https://api.mailgun.net/v3'};
 const EU = {flag: '🇪🇺', name: 'EU', baseUrl: 'https://api.eu.mailgun.net/v3'};
 
+const CURRENCIES = [
+    {
+        label: 'USD - US Dollar', value: 'usd'
+    },
+    {
+        label: 'AUD - Australian Dollar', value: 'aud'
+    },
+    {
+        label: 'CAD - Canadian Dollar', value: 'cad'
+    },
+    {
+        label: 'EUR - Euro', value: 'eur'
+    },
+    {
+        label: 'GBP - British Pound', value: 'gbp'
+    }
+];
+
 export default Component.extend({
     feature: service(),
     config: service(),
     mediaQueries: service(),
 
+    currencies: null,
+
+    // passed in actions
+    setMembersSubscriptionSettings() {},
+
     defaultContentVisibility: reads('settings.defaultContentVisibility'),
+
+    selectedCurrency: computed('subscriptionSettings.stripeConfig.plans.monthly.currency', function () {
+        return CURRENCIES.findBy('value', this.get('subscriptionSettings.stripeConfig.plans.monthly.currency'));
+    }),
 
     mailgunRegion: computed('settings.bulkEmailSettings.baseUrl', function () {
         if (!this.settings.get('bulkEmailSettings.baseUrl')) {
@@ -37,8 +64,12 @@ export default Component.extend({
         });
         let monthlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'month');
         let yearlyPlan = stripeProcessor.config.plans.find(plan => plan.interval === 'year');
-        monthlyPlan.dollarAmount = parseInt(monthlyPlan.amount) ? (monthlyPlan.amount / 100) : 0;
-        yearlyPlan.dollarAmount = parseInt(yearlyPlan.amount) ? (yearlyPlan.amount / 100) : 0;
+
+        // NOTE: need to be careful about division by zero if we introduce zero decimal currencies
+        //       ref.: https://stripe.com/docs/currencies#zero-decimal
+        monthlyPlan.amount = parseInt(monthlyPlan.amount) ? (monthlyPlan.amount / 100) : 0;
+        yearlyPlan.amount = parseInt(yearlyPlan.amount) ? (yearlyPlan.amount / 100) : 0;
+
         stripeProcessor.config.plans = {
             monthly: monthlyPlan,
             yearly: yearlyPlan
@@ -64,12 +95,14 @@ export default Component.extend({
     init() {
         this._super(...arguments);
         this.set('mailgunRegions', [US, EU]);
+        this.set('currencies', CURRENCIES);
     },
 
     actions: {
         setDefaultContentVisibility(value) {
             this.setDefaultContentVisibility(value);
         },
+
         setBulkEmailSettings(key, event) {
             let bulkEmailSettings = this.get('settings.bulkEmailSettings') || {};
             bulkEmailSettings[key] = event.target.value;
@@ -78,11 +111,13 @@ export default Component.extend({
             }
             this.setBulkEmailSettings(bulkEmailSettings);
         },
+
         setBulkEmailRegion(region) {
             let bulkEmailSettings = this.get('settings.bulkEmailSettings') || {};
             set(bulkEmailSettings, 'baseUrl', region.baseUrl);
             this.setBulkEmailSettings(bulkEmailSettings);
         },
+
         setSubscriptionSettings(key, event) {
             let subscriptionSettings = this.settings.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
             let stripeProcessor = subscriptionSettings.paymentProcessors.find((proc) => {
@@ -113,6 +148,27 @@ export default Component.extend({
             if (key === 'fromAddress') {
                 subscriptionSettings.fromAddress = event.target.value;
             }
+
+            if (key === 'currency') {
+                stripeProcessor.config.plans.forEach((plan) => {
+                    if (plan.name !== 'Complimentary') {
+                        plan.currency = event.value;
+                    }
+                });
+
+                // NOTE: need to keep Complimentary plans with all available currencies so they don't conflict
+                //       when applied to members with existing subscriptions in different currencies (ref. https://stripe.com/docs/billing/customer#currency)
+                let currentCurrencyComplimentary = stripeProcessor.config.plans.filter(plan => (plan.currency === event.value && plan.name === 'Complimentary'));
+
+                if (!currentCurrencyComplimentary.length) {
+                    let complimentary = stripeProcessor.config.plans.find(plan => (plan.name === 'Complimentary'));
+                    let newComplimentary = Object.assign({}, complimentary, {currency: event.value});
+                    stripeProcessor.config.plans.push(newComplimentary);
+                }
+
+                stripeProcessor.config.currency = event.value;
+            }
+
             this.setMembersSubscriptionSettings(subscriptionSettings);
         }
     }
