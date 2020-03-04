@@ -69,8 +69,8 @@ module.exports = {
                 subscribed_to_emails: member.subscribed,
                 complimentary_plan: member.comped,
                 stripe_customer_id: stripeCustomerId,
-                created_at: member.created_at,
-                deleted_at: member.deleted_at,
+                created_at: JSON.stringify(member.created_at),
+                deleted_at: JSON.stringify(member.deleted_at),
                 labels: labels
             };
         });
