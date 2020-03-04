@@ -4,6 +4,14 @@ const api = require('./api');
 
 const STRIPE_API_VERSION = '2019-09-09';
 
+const CURRENCY_SYMBOLS = {
+    usd: '$',
+    aud: '$',
+    cad: '$',
+    gbp: '£',
+    eur: '€'
+};
+
 module.exports = class StripePaymentProcessor {
     constructor(config, storage, logging) {
         this.logging = logging;
@@ -207,7 +215,8 @@ module.exports = class StripePaymentProcessor {
                     nickname: subscription.plan_nickname,
                     interval: subscription.plan_interval,
                     amount: subscription.plan_amount,
-                    currency: subscription.plan_currency
+                    currency: String.prototype.toUpperCase.call(subscription.plan_currency),
+                    currency_symbol: CURRENCY_SYMBOLS[subscription.plan_currency]
                 },
                 status: subscription.status,
                 start_date: subscription.start_date,
@@ -220,7 +229,19 @@ module.exports = class StripePaymentProcessor {
 
     async setComplimentarySubscription(member) {
         const subscriptions = await this.getActiveSubscriptions(member);
-        const complimentaryPlan = this._plans.find(plan => (plan.nickname === 'Complimentary'));
+
+        // NOTE: Because we allow for multiple Complimentary plans, need to take into account currently availalbe
+        //       plan currencies so that we don't end up giving a member complimentary subscription in wrong currency.
+        //       Giving member a subscription in different currency would prevent them from resubscribing with a regular
+        //       plan if Complimentary is cancelled (ref. https://stripe.com/docs/billing/customer#currency)
+        let complimentaryCurrency = this._plans.find(plan => plan.interval === 'month').currency.toLowerCase();
+
+        if (subscriptions.length) {
+            complimentaryCurrency = subscriptions[0].plan.currency.toLowerCase();
+        }
+
+        const complimentaryFilter = plan => (plan.nickname === 'Complimentary' && plan.currency === complimentaryCurrency);
+        const complimentaryPlan = this._plans.find(complimentaryFilter);
 
         const customer = await this._customerForMemberCheckoutSession(member);
 
