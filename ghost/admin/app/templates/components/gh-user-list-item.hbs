@@ -12,14 +12,18 @@
         </div>
         <div class="apps-card-right">
             <div class="apps-configured">
-                {{#if user.isLocked}}
-                    <span class="gh-badge author">Locked</span>
+                {{#if user.isSuspended}}
+                    <span class="gh-badge author">Suspended</span>
+                {{else}}
+                    {{#if user.isLocked}}
+                        <span class="gh-badge author">Locked</span>
+                    {{/if}}
+                    {{#unless this.session.user.isAuthorOrContributor}}
+                        {{#each user.roles as |role|}}
+                            <span class="gh-badge {{role.lowerCaseName}}" data-test-role-name>{{role.name}}</span>
+                        {{/each}}
+                    {{/unless}}
                 {{/if}}
-                {{#unless this.session.user.isAuthorOrContributor}}
-                    {{#each user.roles as |role|}}
-                        <span class="gh-badge {{role.lowerCaseName}}" data-test-role-name>{{role.name}}</span>
-                    {{/each}}
-                {{/unless}}
                 {{svg-jar "arrow-right"}}
             </div>
         </div>
