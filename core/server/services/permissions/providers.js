@@ -5,7 +5,7 @@ var _ = require('lodash'),
 
 module.exports = {
     user: function (id) {
-        return models.User.findOne({id: id, status: 'all'}, {withRelated: ['permissions', 'roles', 'roles.permissions']})
+        return models.User.findOne({id: id, status: 'active'}, {withRelated: ['permissions', 'roles', 'roles.permissions']})
             .then(function (foundUser) {
                 // CASE: {context: {user: id}} where the id is not in our database
                 if (!foundUser) {
