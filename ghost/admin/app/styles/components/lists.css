@@ -119,7 +119,7 @@
 }
 
 .gh-list-cellwidth-min {
-    max-width: 0;
+    max-width: 8px;
 }
 
 .gh-list-cellwidth-2-3 {
