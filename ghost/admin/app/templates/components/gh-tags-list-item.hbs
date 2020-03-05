@@ -1,4 +1,4 @@
-<LinkTo @route="tag" @model={{tag}} class="gh-list-data gh-tag-list-title" @title="Edit tag">
+<LinkTo @route="tag" @model={{tag}} class="gh-list-data gh-tag-list-title gh-list-cellwidth-70" @title="Edit tag">
     <h3 class="gh-tag-list-name">
         {{this.tag.name}}
     </h3>
@@ -23,7 +23,7 @@
     </LinkTo>
 {{/if}}
 
-<LinkTo @route="tag" @model={{tag}} class="gh-list-data gh-list-cellwidth-min gh-tag-list-chevron" @title="Edit tag">
+<LinkTo @route="tag" @model={{tag}} class="gh-list-data gh-list-cellwidth-10 gh-tag-list-chevron" @title="Edit tag">
     <div class="flex items-center justify-end w-100 h-100">
         <span class="nr2">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
     </div>
