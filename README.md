@@ -18,8 +18,8 @@
     <a href="https://github.com/TryGhost/Ghost/releases/">
         <img src="https://img.shields.io/github/release/TryGhost/Ghost.svg" alt="Latest release" />
     </a>
-    <a href="https://travis-ci.org/TryGhost/Ghost">
-        <img src="https://travis-ci.org/TryGhost/Ghost.svg?branch=master" alt="Build status" />
+    <a href="https://github.com/TryGhost/Ghost/actions">
+        <img src="https://github.com/TryGhost/Ghost/workflows/Test%20Suite/badge.svg?branch=master" alt="Build status" />
     </a>
     <a href="https://github.com/TryGhost/Ghost/contributors/">
         <img src="https://img.shields.io/github/contributors/TryGhost/Ghost.svg" alt="Contributors" />
