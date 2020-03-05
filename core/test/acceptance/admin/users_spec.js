@@ -310,8 +310,8 @@ describe('User API', function () {
             });
     });
 
-    it('Can change password', function () {
-        return request
+    it('Can change password and retain the session', async function () {
+        await request
             .put(localUtils.API.getApiQuery('users/password'))
             .set('Origin', config.get('url'))
             .send({
@@ -329,5 +329,10 @@ describe('User API', function () {
                 should.exist(res.body.password);
                 should.exist(res.body.password[0].message);
             });
+
+        await request
+            .get(localUtils.API.getApiQuery('session/'))
+            .set('Origin', config.get('url'))
+            .expect(200);
     });
 });

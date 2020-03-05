@@ -40,6 +40,7 @@ const http = (apiImpl) => {
             query: req.query,
             params: req.params,
             user: req.user,
+            session: req.session,
             context: {
                 api_key: apiKey,
                 user: user,

@@ -160,6 +160,7 @@ module.exports = {
             }
         },
         query(frame) {
+            frame.options.skipSessionID = frame.original.session.id;
             return models.User.changePassword(frame.data.password[0], frame.options);
         }
     },
