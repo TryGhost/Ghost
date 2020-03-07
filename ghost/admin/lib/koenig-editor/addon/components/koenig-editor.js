@@ -581,15 +581,17 @@ export default Component.extend({
         // appropriate <a> markup. If there's a selection when the link edit
         // component renders it will re-select when finished which should
         // trigger the normal toolbar
-        editLink(range) {
+        editLink(range, rect) {
             let linkMarkup = getLinkMarkupFromRange(range);
             if ((!range.isCollapsed || linkMarkup) && range.headSection.isMarkerable) {
                 this.set('linkRange', range);
+                this.set('linkRect', rect);
             }
         },
 
         cancelEditLink() {
             this.set('linkRange', null);
+            this.set('linkRect', null);
         },
 
         deleteCard(card, cursorMovement = CURSOR_AFTER) {

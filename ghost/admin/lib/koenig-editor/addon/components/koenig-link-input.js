@@ -38,6 +38,7 @@ export default Component.extend({
     // public attrs
     editor: null,
     linkRange: null,
+    linkRect: null,
     selectedRange: null,
 
     // internal properties
@@ -199,7 +200,7 @@ export default Component.extend({
     // TODO: largely shared with {{koenig-toolbar}} code - extract to a shared util?
     _positionToolbar() {
         let containerRect = this.element.offsetParent.getBoundingClientRect();
-        let rangeRect = this._windowRange.getBoundingClientRect();
+        let rangeRect = this.linkRect || this._windowRange.getBoundingClientRect();
         let {width, height} = this.element.getBoundingClientRect();
         let newPosition = {};
 
