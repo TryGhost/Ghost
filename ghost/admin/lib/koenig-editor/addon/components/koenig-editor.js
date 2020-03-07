@@ -3,6 +3,7 @@
  * https://github.com/bustle/ember-mobiledoc-editor
  */
 
+import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
 import EmberObject, {computed, get} from '@ember/object';
@@ -810,6 +811,10 @@ export default Component.extend({
     // handlers manually instead.
     //
     // Does not work on Linux but it's easier to have keymaps without dead keys there
+    //
+    // Secondarily, we also use this handler to deal with known default key combos
+    // that perform actions like DELETE, BACKSPACE, etc which can break mobiledoc
+    // if not intercepted and handled like the "normal" key events
     handleKeydown(event) {
         let key = Key.fromEvent(event);
         this._updateModifiersFromKey(key, {isDown: true});
@@ -823,6 +828,32 @@ export default Component.extend({
         // Chrome/Safari can be matched immediately on keydown unlike Firefox
         if (event.key === '`' && event.code === 'Space') {
             this._triggerTextHandlers();
+        }
+
+        // intercept and simulate keyboard events to be picked up by
+        // mobiledoc-kit's event manager
+        // https://github.com/TryGhost/Ghost/issues/10240
+        let {editor} = this;
+        if (Browser.isMac() && editor && editor.cursor && editor.cursor.isAddressable(event.target)) {
+            // ctrl+h = BACKSPACE
+            if (event.key === 'h' && event.ctrlKey) {
+                event.preventDefault();
+                let simEvent = new KeyboardEvent('keydown', {
+                    key: 'Backspace',
+                    keyCode: 8
+                });
+                event.target.dispatchEvent(simEvent);
+            }
+
+            // ctrl+d = DELETE
+            if (event.key === 'd' && event.ctrlKey) {
+                event.preventDefault();
+                let simEvent = new KeyboardEvent('keydown', {
+                    key: 'Delete',
+                    keyCode: 46
+                });
+                event.target.dispatchEvent(simEvent);
+            }
         }
     },
 
