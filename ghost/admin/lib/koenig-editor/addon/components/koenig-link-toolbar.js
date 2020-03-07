@@ -109,7 +109,7 @@ export default Component.extend({
         edit() {
             // get range that covers link
             let linkRange = this._getLinkRange();
-            this.editLink(linkRange);
+            this.editLink(linkRange, this._targetRect);
         },
 
         remove() {
@@ -132,9 +132,8 @@ export default Component.extend({
         }
 
         let editor = this.editor;
-        let rect = this._target.getBoundingClientRect();
-        let x = rect.x + rect.width / 2;
-        let y = rect.y + rect.height / 2;
+        let x = this._targetRect.x + this._targetRect.width / 2;
+        let y = this._targetRect.y + this._targetRect.height / 2;
         let position = editor.positionAtPoint(x, y);
         let linkMarkup = position.marker && position.marker.markups.findBy('tagName', 'a');
         if (linkMarkup) {
@@ -148,7 +147,7 @@ export default Component.extend({
             let target = getEventTargetMatchingTag('a', event.target, this.container);
             if (target && target.isContentEditable && target.closest('[data-kg-has-link-toolbar=true]') === this.container) {
                 this._timeout = run.later(this, function () {
-                    this._showToolbar(target);
+                    this._showToolbar(target, {x: event.clientX, y: event.clientY});
                 }, DELAY);
             }
         }
@@ -165,7 +164,7 @@ export default Component.extend({
         }
     },
 
-    _showToolbar(target) {
+    _showToolbar(target, mousePos) {
         // extract the href attribute value and convert it to absolute based
         // on the configured blog url
         this._target = target;
@@ -174,7 +173,7 @@ export default Component.extend({
         this.set('url', relativeToAbsolute(href, blogUrl));
         this.set('showToolbar', true);
         run.schedule('afterRender', this, function () {
-            this._positionToolbar(target);
+            this._positionToolbar(target, mousePos);
         });
     },
 
@@ -185,17 +184,30 @@ export default Component.extend({
         }
     },
 
-    _positionToolbar(target) {
+    _positionToolbar(target, {x, y}) {
         let containerRect = this.element.offsetParent.getBoundingClientRect();
-        let targetRect = target.getBoundingClientRect();
+
+        // wrapped links can have multiple rects, find one closest to the pointer
+        // if we have a pointer position
+        if (x && y) {
+            let rects = Array.prototype.slice.call(target.getClientRects());
+            this._targetRect = rects.find((rect) => {
+                return rect.x - TOOLBAR_MARGIN <= x && x <= rect.x + rect.width + TOOLBAR_MARGIN &&
+                       rect.y - TOOLBAR_MARGIN <= y && y <= rect.y + rect.height + TOOLBAR_MARGIN;
+            });
+        }
+        if (!this._targetRect) {
+            this._targetRect = target.getBoundingClientRect();
+        }
+
         let {width, height} = this.element.getBoundingClientRect();
         let newPosition = {};
 
         // targetRect is relative to the viewport so we need to subtract the
         // container measurements to get a position relative to the container
         newPosition = {
-            top: targetRect.top - containerRect.top - height - TOOLBAR_MARGIN + TOOLBAR_PADDING,
-            left: targetRect.left - containerRect.left + targetRect.width / 2 - width / 2,
+            top: this._targetRect.top - containerRect.top - height - TOOLBAR_MARGIN + TOOLBAR_PADDING,
+            left: this._targetRect.left - containerRect.left + this._targetRect.width / 2 - width / 2,
             right: null
         };
 
