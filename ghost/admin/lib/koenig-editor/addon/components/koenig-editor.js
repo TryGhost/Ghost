@@ -1228,6 +1228,16 @@ export default Component.extend({
             return;
         }
 
+        // start/endContainer matching editor element means the window range is
+        // outside of a text element so we don't want to scroll incorrectly
+        // (happens when replacing a selection with a link on paste)
+        if (windowRange &&
+            windowRange.startContainer === this.editor.element &&
+            windowRange.endContainer === this.editor.element
+        ) {
+            return;
+        }
+
         if (windowRange) {
             // cursorTop is relative to the window rather than document or scroll container
             let {top: cursorTop, height: cursorHeight} = windowRange.getBoundingClientRect();
