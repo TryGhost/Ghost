@@ -12,7 +12,7 @@ const getCommitMessageFromLine = line => line
     .replace(hash, '')
     .replace(url, '');
 
-const emojiOrder = ['💡', '🐛', '🎨', '💄', '✨'];
+const emojiOrder = ['💡', '🐛', '🎨', '💄', '✨', '🔒'];
 
 module.exports.filterEmojiCommits = (content) => {
     if (!_.isArray(content)) {
