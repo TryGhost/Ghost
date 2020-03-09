@@ -364,7 +364,7 @@ const members = {
                                 stripe_customer_id: entry.stripe_customer_id,
                                 comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
                                 labels: entryLabels,
-                                created_at: entry.created_at
+                                created_at: entry.created_at === '' ? undefined : entry.created_at
                             }]
                         },
                         options: {
