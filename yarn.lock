@@ -2879,6 +2879,18 @@ express-hbs@2.3.0:
     lodash "4.17.15"
     readdirp "2.2.1"
 
+express-hbs@2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-2.3.1.tgz#b25e471f9f537002dbffa4b6ab700bddd45fd1e8"
+  integrity sha512-0Qwj54EVz4DPFNVmy7oS3eeRL21UpIi9LZDak6s9cMJ2YJ4m6m9fkCM+u1QabrweYL43BaDWuOXiPL8npEA00g==
+  dependencies:
+    bluebird "^3.5.3"
+    handlebars "4.5.3"
+    lodash "4.17.15"
+    readdirp "2.2.1"
+  optionalDependencies:
+    js-beautify "1.8.8"
+
 express-jwt@5.3.1:
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-5.3.1.tgz#66f05c7dddb5409c037346a98b88965bb10ea4ae"
