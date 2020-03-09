@@ -111,9 +111,11 @@ function updateCheckData() {
             posts = descriptors.posts.value(),
             users = descriptors.users.value(),
             npm = descriptors.npm.value(),
-            blogUrl = url.parse(urlUtils.urlFor('home', true)),
-            blogId = blogUrl.hostname + blogUrl.pathname.replace(/\//, '') + hash.value;
+            blogUrl = urlUtils.urlFor('home', true),
+            parsedBlogUrl = url.parse(blogUrl),
+            blogId = parsedBlogUrl.hostname + parsedBlogUrl.pathname.replace(/\//, '') + hash.value;
 
+        data.url = blogUrl;
         data.blog_id = crypto.createHash('md5').update(blogId).digest('hex');
         data.theme = theme ? theme.value : '';
         data.post_count = posts && posts.meta && posts.meta.pagination ? posts.meta.pagination.total : 0;
