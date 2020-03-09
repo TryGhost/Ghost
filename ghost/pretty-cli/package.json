@@ -25,7 +25,7 @@
     "sinon": "7.5.0"
   },
   "dependencies": {
-    "chalk": "^2.4.1",
+    "chalk": "^3.0.0",
     "sywac": "^1.2.1"
   }
 }
