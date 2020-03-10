@@ -161,9 +161,14 @@ export default Component.extend({
                 let currentCurrencyComplimentary = stripeProcessor.config.plans.filter(plan => (plan.currency === event.value && plan.name === 'Complimentary'));
 
                 if (!currentCurrencyComplimentary.length) {
-                    let complimentary = stripeProcessor.config.plans.find(plan => (plan.name === 'Complimentary'));
-                    let newComplimentary = Object.assign({}, complimentary, {currency: event.value});
-                    stripeProcessor.config.plans.push(newComplimentary);
+                    let complimentary = {
+                        name: 'Complimentary',
+                        currency: event.value,
+                        interval: 'year',
+                        amount: '0'
+                    };
+
+                    stripeProcessor.config.plans.push(complimentary);
                 }
 
                 stripeProcessor.config.currency = event.value;
