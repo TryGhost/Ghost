@@ -127,10 +127,7 @@ export default Component.extend({
             stripeConfig.product = {
                 name: this.settings.get('title')
             };
-            // TODO: this flag has to be removed as it doesn't serve any purpose
-            if (key === 'isPaid') {
-                subscriptionSettings.isPaid = event;
-            }
+
             if (key === 'secret_token' || key === 'public_token') {
                 stripeConfig[key] = event.target.value;
             }

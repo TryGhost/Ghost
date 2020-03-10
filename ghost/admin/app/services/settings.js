@@ -79,7 +79,6 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
             return JSON.parse(settingsString);
         } catch (e) {
             return {
-                isPaid: false,
                 allowSelfSignup: true,
                 fromAddress: 'noreply',
                 paymentProcessors: [{
