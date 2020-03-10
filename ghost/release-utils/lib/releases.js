@@ -12,11 +12,11 @@ function getFinalChangelog(options) {
     let changelog = fs.readFileSync(options.changelogPath).toString('utf8').split(os.EOL);
     let finalChangelog = [];
 
-    if (options.hasOwnProperty('filterEmojiCommits')) {
+    if (Object.prototype.hasOwnProperty.call(options, 'filterEmojiCommits')) {
         filterEmojiCommits = options.filterEmojiCommits;
     }
     // @NOTE: optional array of string lines, which we pre-pend
-    if (options.hasOwnProperty('content') && _.isArray(options.content)) {
+    if (Object.prototype.hasOwnProperty.call(options, 'content') && _.isArray(options.content)) {
         finalChangelog = finalChangelog.concat(options.content);
     }
 
@@ -48,11 +48,11 @@ module.exports.create = (options = {}) => {
         'releaseName'
     );
 
-    if (options.hasOwnProperty('draft')) {
+    if (Object.prototype.hasOwnProperty.call(options, 'draft')) {
         draft = options.draft;
     }
 
-    if (options.hasOwnProperty('prerelease')) {
+    if (Object.prototype.hasOwnProperty.call(options, 'prerelease')) {
         prerelease = options.prerelease;
     }
 

@@ -16,7 +16,7 @@ module.exports.create = (options = {}) => {
         'userAgent'
     );
 
-    if (options.hasOwnProperty('isPublic')) {
+    if (Object.prototype.hasOwnProperty.call(options, 'isPublic')) {
         isPublic = options.isPublic;
     }
 
