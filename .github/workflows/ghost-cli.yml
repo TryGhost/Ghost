@@ -21,15 +21,18 @@ jobs:
         run: |
           DIR=$(mktemp -d)
           ghost install local -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+          ghost start
 
       - name: Latest Release
         run: |
           DIR=$(mktemp -d)
           ghost install local -d $DIR
           ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+          ghost start
 
 #      - name: Previous Major
 #        run: |
 #          DIR=$(mktemp -d)
 #          ghost install v2 --local -d $DIR
 #          ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+#          ghost start
