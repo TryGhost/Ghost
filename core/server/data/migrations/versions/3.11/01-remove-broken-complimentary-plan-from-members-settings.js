@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const common = require('../../../../lib/common');
+const settings = require('../../../../services/settings');
 const debug = require('ghost-ignition').debug('migrations');
 
 module.exports.config = {
@@ -56,6 +57,9 @@ module.exports.up = (options) => {
                 .update({
                     value: JSON.stringify(subscriptionSettings)
                 });
+        })
+        .then(() => {
+            return settings.init();
         });
 };
 
