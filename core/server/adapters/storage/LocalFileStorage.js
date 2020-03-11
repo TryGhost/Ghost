@@ -175,6 +175,10 @@ class LocalFileStore extends StorageBase {
                         return reject(new common.errors.BadRequestError({err: err}));
                     }
 
+                    if (err.code === 'EACCES') {
+                        return reject(new common.errors.NoPermissionError({err: err}));
+                    }
+
                     return reject(new common.errors.GhostError({
                         err: err,
                         message: common.i18n.t('errors.errors.cannotReadImage', {img: options.path})
