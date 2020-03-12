@@ -46,6 +46,25 @@ module.exports.up = (options) => {
                 stripePaymentProcessor.config.plans = stripePaymentProcessor.config.plans.filter((plan) => {
                     return plan.interval !== undefined;
                 });
+
+                const complimentaryPlan = stripePaymentProcessor.config.plans.find(plan => (plan.name === 'Complimentary' && plan.currency === stripePaymentProcessor.config.currency));
+
+                if (!complimentaryPlan && stripePaymentProcessor.config.currency) {
+                    const complimentaryInCurrentCurrency = {
+                        name: 'Complimentary',
+                        currency: stripePaymentProcessor.config.currency,
+                        interval: 'year',
+                        amount: '0'
+                    };
+
+                    debug('no complimentary plan found in plans');
+                    debug(JSON.stringify(stripePaymentProcessor.config.plans, null, 2));
+
+                    debug('inserting complimentary plan');
+                    debug(JSON.stringify(complimentaryInCurrentCurrency, null, 2));
+
+                    stripePaymentProcessor.config.plans.push(complimentaryInCurrentCurrency);
+                }
             }
 
             debug('after cleanup');
