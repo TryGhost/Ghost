@@ -8,8 +8,10 @@ const api = require('../../api');
 const {URL} = require('url');
 
 const getSite = () => {
-    return Object.assign({}, settingsCache.getPublic(), {
-        url: urlUtils.urlFor('home', true)
+    const publicSettings = settingsCache.getPublic();
+    return Object.assign({}, publicSettings, {
+        url: urlUtils.urlFor('home', true),
+        iconUrl: publicSettings.icon ? urlUtils.urlFor('image', {image: publicSettings.icon}, true) : null
     });
 };
 
