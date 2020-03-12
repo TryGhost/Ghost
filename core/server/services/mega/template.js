@@ -809,9 +809,9 @@ figure blockquote p {
                                     <tr>
                                         <td class="site-info" width="100%" align="center">
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                                ${ site.icon ? `
+                                                ${ site.iconUrl ? `
                                                 <tr>
-                                                    <td class="site-icon"><a href="${site.url}"><img src="${site.url}${site.icon}" border="0"></a></td>
+                                                    <td class="site-icon"><a href="${site.url}"><img src="${site.iconUrl}" border="0"></a></td>
                                                 </tr>
                                                 ` : ``}
                                                 <tr>
