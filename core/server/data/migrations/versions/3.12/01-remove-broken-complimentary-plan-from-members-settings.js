@@ -79,6 +79,15 @@ module.exports.up = (options) => {
                 .then(() => {
                     const settingModel = Object.assign({}, subscriptionSettingsEntry, {value: JSON.stringify(subscriptionSettings)});
                     settingsCache.set(settingsKey, settingModel);
+
+                    // need to make sure members-api gets reinitialized below is a hacky way to trigger it as we don't use model's in migration
+                    const settingsModelImitation = {
+                        get() {
+                            return settingsKey;
+                        }
+                    };
+
+                    common.events.emit('settings.edited', settingsModelImitation);
                 });
         });
 };
