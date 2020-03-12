@@ -13,9 +13,10 @@ export default Component.extend({
         let iframe = this.element.querySelector('#billing-frame');
         window.addEventListener('message', (event) => {
             if (event && event.data && event.data.request === 'token') {
-                const ghostIdentityUrl = this.get('ghostPaths.url').api('ghost-identity');
+                const ghostIdentityUrl = this.get('ghostPaths.url').api('identities');
 
-                this.ajax.post(ghostIdentityUrl).then(({token}) => {
+                this.ajax.request(ghostIdentityUrl).then((response) => {
+                    const token = response && response.identities && response.identities[0] && response.identities[0].token;
                     iframe.contentWindow.postMessage({
                         request: 'token',
                         response: token
