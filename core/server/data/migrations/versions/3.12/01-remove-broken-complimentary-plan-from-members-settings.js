@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const common = require('../../../../lib/common');
-const settingsCache = require('../../../../services/settings/cache');
 const debug = require('ghost-ignition').debug('migrations');
 
 module.exports.config = {
