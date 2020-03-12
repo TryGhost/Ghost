@@ -117,11 +117,6 @@ module.exports = {
         // First, reset the cache
         settingsCache = {};
 
-        // Remove listeners if there were any registered
-        common.events.removeListener('settings.edited', updateSettingFromModel);
-        common.events.removeListener('settings.added', updateSettingFromModel);
-        common.events.removeListener('settings.deleted', updateSettingFromModel);
-
         // // if we have been passed a collection of settings, use this to populate the cache
         if (settingsCollection && settingsCollection.models) {
             _.each(settingsCollection.models, updateSettingFromModel);
