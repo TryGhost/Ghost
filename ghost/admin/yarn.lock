@@ -1207,13 +1207,13 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^0.1.5"
 
-"@tryghost/mobiledoc-kit@0.11.2-ghost.4":
-  version "0.11.2-ghost.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.11.2-ghost.4.tgz#144189e7e62748b3c56e7b723fa18a5e8c807ccf"
-  integrity sha512-C6FHFodOgxso+pZ6ArjBDRoGuzRHg42r3JJXzUX9ursIC2QLQUPsVDG42KN25x26EzOBUi6umB1CvO5bUryNPw==
+"@tryghost/mobiledoc-kit@0.12.4-ghost.1":
+  version "0.12.4-ghost.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.12.4-ghost.1.tgz#32060242b4c7e787a9605ba856454c6a26141925"
+  integrity sha512-c4aheSWH2Y7x4uSkAx08gbtvuEgPGjlu6v+FeUdSJZ1blEd+knL3zTcUAfeSiM6rgLEHxlNWtt+KFwotdf6rTA==
   dependencies:
-    mobiledoc-dom-renderer "0.6.5"
-    mobiledoc-text-renderer "0.3.2"
+    mobiledoc-dom-renderer "0.7.0"
+    mobiledoc-text-renderer "0.4.0"
 
 "@tryghost/string@0.1.6":
   version "0.1.6"
@@ -9677,15 +9677,15 @@ mktemp@~0.4.0:
   resolved "https://registry.yarnpkg.com/mktemp/-/mktemp-0.4.0.tgz#6d0515611c8a8c84e484aa2000129b98e981ff0b"
   integrity sha1-bQUVYRyKjITkhKogABKbmOmB/ws=
 
-mobiledoc-dom-renderer@0.6.5:
-  version "0.6.5"
-  resolved "https://registry.yarnpkg.com/mobiledoc-dom-renderer/-/mobiledoc-dom-renderer-0.6.5.tgz#56c0302c4f9c30840ab5b9b20dfe905aed1e437b"
-  integrity sha1-VsAwLE+cMIQKtbmyDf6QWu0eQ3s=
+mobiledoc-dom-renderer@0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/mobiledoc-dom-renderer/-/mobiledoc-dom-renderer-0.7.0.tgz#53ab5f14dd612b16f03513390e5cbcc2b89f6979"
+  integrity sha512-A+gT6D4Ru3DKY7ZYOBRORmwhRJ7rDj2vy75D2dWuZS5NgX0mCmGs0yN7qs48YlxvfCif8RFpYsaaPg6Kc3MdJg==
 
-mobiledoc-text-renderer@0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/mobiledoc-text-renderer/-/mobiledoc-text-renderer-0.3.2.tgz#126a167a6cf8b6cd7e58c85feb18043603834580"
-  integrity sha1-EmoWemz4ts1+WMhf6xgENgODRYA=
+mobiledoc-text-renderer@0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/mobiledoc-text-renderer/-/mobiledoc-text-renderer-0.4.0.tgz#473fbe50aa6cde2c3b449752f3b984834dc824d2"
+  integrity sha512-+Tzfo0hhUFxS0n5FWZ0nf6WUrvnVmsxaIdq0CyeLYD1lk8oW2ml+6WLdeLlzKM5OYYi3PWV6NR9HCUG01cdvWQ==
 
 mocha@^2.5.3:
   version "2.5.3"
