@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const common = require('../../../../lib/common');
-const settings = require('../../../../services/settings');
+const settingsCache = require('../../../../services/settings/cache');
 const debug = require('ghost-ignition').debug('migrations');
 
 module.exports.config = {
@@ -56,10 +56,11 @@ module.exports.up = (options) => {
                 .where('key', settingsKey)
                 .update({
                     value: JSON.stringify(subscriptionSettings)
+                })
+                .then(() => {
+                    const settingModel = Object.assign({}, subscriptionSettingsEntry, {value: JSON.stringify(subscriptionSettings)});
+                    settingsCache.set(settingsKey, settingModel);
                 });
-        })
-        .then(() => {
-            return settings.init();
         });
 };
 
