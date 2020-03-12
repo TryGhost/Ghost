@@ -78,16 +78,22 @@ module.exports.up = (options) => {
                 })
                 .then(() => {
                     const settingModel = Object.assign({}, subscriptionSettingsEntry, {value: JSON.stringify(subscriptionSettings)});
-                    settingsCache.set(settingsKey, settingModel);
 
-                    // need to make sure members-api gets reinitialized below is a hacky way to trigger it as we don't use model's in migration
-                    const settingsModelImitation = {
+                    // need to make sure 2 places that depend on settings update themselves
+                    // 1. members-api gets reinitialized below is a hacky way to trigger it as we don't use model's in migration
+                    // 2. settings cache listens on changes and needs toJSON method to function
+                    const settingsModelMock = {
+                        // getter for members-api initialization
                         get() {
                             return settingsKey;
+                        },
+                        // for settings cache
+                        toJSON() {
+                            return settingModel;
                         }
                     };
 
-                    common.events.emit('settings.edited', settingsModelImitation);
+                    common.events.emit('settings.edited', settingsModelMock);
                 });
         });
 };
