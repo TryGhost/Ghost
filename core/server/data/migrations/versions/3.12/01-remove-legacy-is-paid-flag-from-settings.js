@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const common = require('../../../../lib/common');
 const debug = require('ghost-ignition').debug('migrations');
 
@@ -7,12 +6,9 @@ module.exports.config = {
 };
 
 module.exports.up = (options) => {
-    let localOptions = _.merge({
-        context: {internal: true}
-    }, options);
     const settingsKey = 'members_subscription_settings';
 
-    return localOptions
+    return options
         .transacting('settings')
         .then((response) => {
             if (!response) {
@@ -44,7 +40,7 @@ module.exports.up = (options) => {
             debug('after cleanup');
             debug(JSON.stringify(subscriptionSettings, null, 2));
 
-            return localOptions
+            return options
                 .transacting('settings')
                 .where('key', settingsKey)
                 .update({
@@ -54,12 +50,9 @@ module.exports.up = (options) => {
 };
 
 module.exports.down = (options) => {
-    let localOptions = _.merge({
-        context: {internal: true}
-    }, options);
     const settingsKey = 'members_subscription_settings';
 
-    return localOptions
+    return options
         .transacting('settings')
         .then((response) => {
             if (!response) {
@@ -96,7 +89,7 @@ module.exports.down = (options) => {
             debug('after cleanup');
             debug(JSON.stringify(subscriptionSettings, null, 2));
 
-            return localOptions
+            return options
                 .transacting('settings')
                 .where('key', settingsKey)
                 .update({
