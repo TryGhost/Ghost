@@ -10,18 +10,13 @@ module.exports.up = (options) => {
 
     return options
         .transacting('settings')
-        .then((response) => {
-            if (!response) {
-                common.logging.warn('Cannot find settings.');
-                return;
-            }
-
-            let subscriptionSettingsEntry = response.find((entry) => {
-                return entry.key === settingsKey;
-            });
-
+        .where('key', settingsKey)
+        .select('value')
+        .first()
+        .then((subscriptionSettingsEntry) => {
+            debug(subscriptionSettingsEntry);
             if (!subscriptionSettingsEntry) {
-                common.logging.warn('Cannot find members subscription settings.');
+                common.logging.warn(`Cannot find ${settingsKey} settings.`);
                 return;
             }
 
@@ -54,18 +49,13 @@ module.exports.down = (options) => {
 
     return options
         .transacting('settings')
-        .then((response) => {
-            if (!response) {
-                common.logging.warn('Cannot find settings.');
-                return;
-            }
-
-            let subscriptionSettingsEntry = response.find((entry) => {
-                return entry.key === settingsKey;
-            });
-
+        .where('key', settingsKey)
+        .select('value')
+        .first()
+        .then((subscriptionSettingsEntry) => {
+            debug(subscriptionSettingsEntry);
             if (!subscriptionSettingsEntry) {
-                common.logging.warn('Cannot find members subscription settings.');
+                common.logging.warn(`Cannot find ${settingsKey} settings.`);
                 return;
             }
 
