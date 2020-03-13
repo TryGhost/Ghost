@@ -35,17 +35,17 @@ module.exports.up = (options) => {
             if (hasIsPaid) {
                 debug('Removing legacy isPaid flag from members settings');
                 delete subscriptionSettings.isPaid;
+
+                debug('after cleanup');
+                debug(JSON.stringify(subscriptionSettings, null, 2));
+
+                return options
+                    .transacting('settings')
+                    .where('key', settingsKey)
+                    .update({
+                        value: JSON.stringify(subscriptionSettings)
+                    });
             }
-
-            debug('after cleanup');
-            debug(JSON.stringify(subscriptionSettings, null, 2));
-
-            return options
-                .transacting('settings')
-                .where('key', settingsKey)
-                .update({
-                    value: JSON.stringify(subscriptionSettings)
-                });
         });
 };
 
