@@ -21,7 +21,7 @@
   "devDependencies": {
     "@types/jsonwebtoken": "8.3.8",
     "@types/node": "12.12.30",
-    "@types/nodemailer": "6.2.2",
+    "@types/nodemailer": "6.4.0",
     "mocha": "6.2.2",
     "should": "13.2.3",
     "sinon": "7.5.0"
