@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@types/jsonwebtoken": "8.3.5",
-    "@types/node": "12.12.3",
+    "@types/node": "12.12.30",
     "@types/nodemailer": "6.2.2",
     "mocha": "6.2.2",
     "should": "13.2.3",
