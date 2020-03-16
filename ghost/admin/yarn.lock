@@ -1215,10 +1215,10 @@
     mobiledoc-dom-renderer "0.6.5"
     mobiledoc-text-renderer "0.3.2"
 
-"@tryghost/string@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.5.tgz#adc67ce449e66e61a2d14b0815a14a5174465549"
-  integrity sha512-zbD/C+I7PXZfRkki80yK+jWMyNaklKLj7wdoQd81+r5ARGGar0XtWL/T1zc6G2UI/v9UW+dLQ5mDxpsxQIEFlA==
+"@tryghost/string@0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.6.tgz#9f94d047a9ac329e8f3b80539e14e6d43fd20b92"
+  integrity sha512-nav4k1cUk0Qchf6QWt5CfPcN7uMKqMgGfHWdOASVwpD94G/7stZT1XVQ0+Ays4ac7sIfTckNBqmS3fiS9IeX/w==
   dependencies:
     unidecode "^0.1.8"
 
