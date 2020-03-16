@@ -36,8 +36,8 @@ allowedAMPTags = ['html', 'body', 'article', 'section', 'nav', 'aside', 'h1', 'h
     'table', 'caption', 'colgroup', 'col', 'tbody', 'thead', 'tfoot', 'tr', 'td',
     'th', 'button', 'noscript', 'acronym', 'center', 'dir', 'hgroup', 'listing',
     'multicol', 'nextid', 'nobr', 'spacer', 'strike', 'tt', 'xmp', 'amp-img',
-    'amp-video', 'amp-ad', 'amp-embed', 'amp-anim', 'amp-iframe', 'amp-pixel',
-    'amp-audio', 'O:P'];
+    'amp-video', 'amp-ad', 'amp-embed', 'amp-anim', 'amp-iframe', 'amp-youtube',
+    'amp-pixel', 'amp-audio', 'O:P'];
 
 allowedAMPAttributes = {
     '*': ['itemid', 'itemprop', 'itemref', 'itemscope', 'itemtype', 'accesskey', 'class', 'dir', 'draggable',
@@ -110,7 +110,8 @@ allowedAMPAttributes = {
     'amp-anim': ['media', 'noloading', 'alt', 'attribution', 'placeholder', 'src', 'srcset', 'width', 'height', 'layout'],
     'amp-audio': ['src', 'width', 'height', 'autoplay', 'loop', 'muted', 'controls'],
     'amp-iframe': ['src', 'srcdoc', 'width', 'height', 'layout', 'frameborder', 'allowfullscreen', 'allowtransparency',
-        'sandbox', 'referrerpolicy']
+        'sandbox', 'referrerpolicy'],
+    'amp-youtube': ['src', 'width', 'height', 'layout', 'frameborder', 'autoplay', 'loop', 'data-videoid', 'data-live-channelid']
 };
 
 function getAmperizeHTML(html, post) {
