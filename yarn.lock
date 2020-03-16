@@ -375,13 +375,13 @@
     chalk "^2.4.1"
     sywac "^1.2.1"
 
-"@tryghost/social-urls@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.5.tgz#01ace24fb7899ae42e97775c89012795626f2583"
-  integrity sha512-26/VTeUY0Qu9WRZz5FIjgHfvhrCM8mWrQoYZuQ+ZA0AiiodBK963jRZgS0PbJWWZ+wWuF9sfuZbxd1BzSNbKRQ==
+"@tryghost/social-urls@0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.6.tgz#5f690c55bb728101d72a3c395f5288c252f9dc7e"
+  integrity sha512-U3McQB1YYz0eZqE//RkgfGpyWt0D6NpynhBJ45vd8nMk/CxxGXxvyUl37lbUI1PNbL6k+IinfuZoDa3WovQQqA==
   dependencies:
     bluebird "3.7.2"
-    ghost-ignition "3.1.0"
+    ghost-ignition "4.1.0"
     lodash "4.17.15"
 
 "@tryghost/string@^0.1.3":
@@ -3522,25 +3522,6 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-ignition@3.1.0, ghost-ignition@^3.0.4, ghost-ignition@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.1.0.tgz#4a0d7f0a15e54fbc0e16d398da62ff68737e4e23"
-  integrity sha512-ae0r/yBJDo9SkeLfy0ecrHVqO0gt9l07wiCOWmdzdvbmoU24AB881PjymnM/DLP9SY6E33mLYtT8K3ximgieLg==
-  dependencies:
-    bunyan "1.8.12"
-    bunyan-loggly "^1.3.1"
-    caller "1.0.1"
-    debug "^4.0.0"
-    find-root "1.1.0"
-    fs-extra "^3.0.1"
-    gelf-stream "^1.1.1"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.16.4"
-    moment "^2.15.2"
-    nconf "^0.10.0"
-    prettyjson "^1.1.3"
-    uuid "^3.0.0"
-
 ghost-ignition@4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.1.0.tgz#44ac9dc8873606207f81a652a705f383714c2f07"
@@ -3571,6 +3552,25 @@ ghost-ignition@^2.9.6:
     debug "^2.6.9"
     find-root "1.1.0"
     fs-extra "^3.0.1"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.16.4"
+    moment "^2.15.2"
+    nconf "^0.10.0"
+    prettyjson "^1.1.3"
+    uuid "^3.0.0"
+
+ghost-ignition@^3.0.4, ghost-ignition@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-3.1.0.tgz#4a0d7f0a15e54fbc0e16d398da62ff68737e4e23"
+  integrity sha512-ae0r/yBJDo9SkeLfy0ecrHVqO0gt9l07wiCOWmdzdvbmoU24AB881PjymnM/DLP9SY6E33mLYtT8K3ximgieLg==
+  dependencies:
+    bunyan "1.8.12"
+    bunyan-loggly "^1.3.1"
+    caller "1.0.1"
+    debug "^4.0.0"
+    find-root "1.1.0"
+    fs-extra "^3.0.1"
+    gelf-stream "^1.1.1"
     json-stringify-safe "^5.0.1"
     lodash "^4.16.4"
     moment "^2.15.2"
