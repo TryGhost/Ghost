@@ -5,7 +5,6 @@ on:
     branches:
       - master
       - 2.x
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -37,7 +36,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: yarn
-
+      - run: yarn lint
       - run: grunt test-acceptance --verbose
       - run: grunt test-unit --verbose
       - run: grunt test-regression --verbose
