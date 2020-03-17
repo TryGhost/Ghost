@@ -341,13 +341,8 @@ describe('Dynamic Routing', function () {
                 }).catch(done);
             });
 
-<<<<<<< HEAD
-            after(testUtils.teardownDb);
-
-=======
             after(testUtils.teardown);
-            
->>>>>>> resolving file conflict
+
             it('should redirect without slash', function (done) {
                 request.get('/tag/injection/page/2')
                     .expect('Location', '/tag/injection/page/2/')

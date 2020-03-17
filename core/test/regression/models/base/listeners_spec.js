@@ -26,15 +26,6 @@ describe('Models: listeners', function () {
             publishedAtFutureMoment2: moment().add(2, 'hours').startOf('hour'),
             publishedAtFutureMoment3: moment().add(10, 'hours').startOf('hour')
         };
-<<<<<<< HEAD
-
-    before(testUtils.teardownDb);
-
-    beforeEach(testUtils.setup('owner', 'settings'));
-
-    beforeEach(function () {
-=======
->>>>>>> resolving file conflict
         sinon.stub(common.events, 'on').callsFake(function (eventName, callback) {
             eventsToRemember[eventName] = callback;
         });
