@@ -2,7 +2,7 @@ const debug = require('ghost-ignition').debug('importer:posts');
 const _ = require('lodash');
 const uuid = require('uuid');
 const BaseImporter = require('./base');
-const converters = require('../../../../lib/mobiledoc/converters');
+const renderers = require('../../../../lib/mobiledoc/renderers');
 const validation = require('../../../validation');
 const postsMetaSchema = require('../../../schema').tables.posts_meta;
 const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id']));
@@ -200,11 +200,11 @@ class PostsImporter extends BaseImporter {
                     mobiledoc = JSON.parse(model.mobiledoc);
 
                     if (!mobiledoc.cards || !_.isArray(mobiledoc.cards)) {
-                        model.mobiledoc = converters.mobiledocConverter.blankStructure();
+                        model.mobiledoc = renderers.mobiledocHtmlRenderer.blankStructure();
                         mobiledoc = model.mobiledoc;
                     }
                 } catch (err) {
-                    mobiledoc = converters.mobiledocConverter.blankStructure();
+                    mobiledoc = renderers.mobiledocHtmlRenderer.blankStructure();
                 }
 
                 mobiledoc.cards.forEach((card) => {
@@ -216,7 +216,7 @@ class PostsImporter extends BaseImporter {
                 });
 
                 model.mobiledoc = JSON.stringify(mobiledoc);
-                model.html = converters.mobiledocConverter.render(JSON.parse(model.mobiledoc));
+                model.html = renderers.mobiledocHtmlRenderer.render(JSON.parse(model.mobiledoc));
             }
             this.sanitizePostsMeta(model);
         });
