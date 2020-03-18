@@ -63,7 +63,7 @@
 }
 
 .gh-notification p {
-    margin: 10px 0 0;
+    margin: 6px 0 0;
     padding: 0;
     line-height: 1.35em;
 }
@@ -80,7 +80,8 @@
 }
 
 .gh-notification-actions {
-    margin-top: 10px;
+    margin-top: 6px;
+    margin-bottom: 2px;
     display: flex;
 }
 
