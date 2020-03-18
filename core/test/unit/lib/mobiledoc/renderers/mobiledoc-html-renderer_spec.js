@@ -1,7 +1,7 @@
 const should = require('should');
-const converter = require('../../../../../server/lib/mobiledoc/converters/mobiledoc-converter');
+const converter = require('../../../../../server/lib/mobiledoc/renderers/mobiledoc-html-renderer');
 
-describe('Mobiledoc converter', function () {
+describe('Mobiledoc HTML renderer', function () {
     describe('default', function () {
         it('renders all default cards and atoms', function () {
             let mobiledoc = {

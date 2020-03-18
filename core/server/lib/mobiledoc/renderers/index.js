@@ -1,12 +1,12 @@
 const common = require('../../common');
 
 module.exports = {
-    get mobiledocConverter() {
-        return require('./mobiledoc-converter');
+    get mobiledocHtmlRenderer() {
+        return require('./mobiledoc-html-renderer');
     },
 
-    get markdownConverter() {
-        return require('./markdown-converter');
+    get markdownHtmlRenderer() {
+        return require('./markdown-html-renderer');
     },
 
     get htmlToMobiledocConverter() {

@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const common = require('../../../../lib/common');
-const converters = require('../../../../lib/mobiledoc/converters');
+const renderers = require('../../../../lib/mobiledoc/renderers');
 const models = require('../../../../models');
 const message1 = 'Migrating Koenig beta post\'s mobiledoc/HTML to 2.0 format';
 const message2 = 'Migrated Koenig beta post\'s mobiledoc/HTML to 2.0 format';
@@ -54,7 +54,7 @@ module.exports.up = function regenerateKoenigBetaHTML(options) {
 
                     // re-render the html to remove .kg-post wrapper and adjust image classes
                     let version = 2;
-                    let html = converters.mobiledocConverter.render(mobiledoc, version);
+                    let html = renderers.mobiledocHtmlRenderer.render(mobiledoc, version);
 
                     return models.Post.edit({
                         html,
