@@ -11,7 +11,7 @@ module.exports = {
         return require('./atoms');
     },
 
-    get converters() {
-        return require('./converters');
+    get renderers() {
+        return require('./renderers');
     }
 };

@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:input:pages');
 const mapNQLKeyValues = require('../../../../../../shared/nql-map-key-values');
-const converters = require('../../../../../lib/mobiledoc/converters');
+const renderers = require('../../../../../lib/mobiledoc/renderers');
 const url = require('./utils/url');
 const localUtils = require('../../index');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
@@ -143,7 +143,7 @@ module.exports = {
             const html = frame.data.pages[0].html;
 
             if (frame.options.source === 'html' && !_.isEmpty(html)) {
-                frame.data.pages[0].mobiledoc = JSON.stringify(converters.htmlToMobiledocConverter(html));
+                frame.data.pages[0].mobiledoc = JSON.stringify(renderers.htmlToMobiledocConverter(html));
             }
         }
 
