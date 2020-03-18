@@ -193,49 +193,44 @@ I18n = {
      * Setup i18n support for themes:
      *  - Load proper language file into memory
      */
-    loadThemeTranslations: function loadThemeTranslations() {
+    loadThemeTranslations() {
         // This function is called during theme initialization, and when switching language or theme.
         currentLocale = I18n.locale();
         activeTheme = settingsCache.get('active_theme');
+        themeStrings = undefined;
+
+        const _tryGetLocale = (locale) => {
+            try {
+                const readBuffer = fs.readFileSync(
+                    path.join(config.getContentPath('themes'), activeTheme, 'locales', locale + '.json')
+                );
+                return JSON.parse(readBuffer);
+            } catch (err) {
+                if (err.code === 'ENOENT') {
+                    if (locale !== 'en') {
+                        logging.warn(`Theme's file locales/${locale}.json not found.`);
+                    }
+                } else if (err instanceof SyntaxError) {
+                    logging.error(new errors.IncorrectUsageError({
+                        err,
+                        message: `Unable to parse locales/${locale}.json. Please check that it is valid JSON.`
+                    }));
+                } else {
+                    throw err;
+                }
+            }
+        };
 
         // Reading file for current locale and active theme and keeping its content in memory
         if (activeTheme) {
             // Reading translation file for theme .hbs templates.
             // Compatibility with both old themes and i18n-capable themes.
             // Preventing missing files.
-            try {
-                themeStrings = fs.readFileSync(path.join(config.getContentPath('themes'), activeTheme, 'locales', currentLocale + '.json'));
-            } catch (err) {
-                themeStrings = undefined;
-                if (err.code === 'ENOENT') {
-                    if (currentLocale !== 'en') {
-                        logging.warn(`Theme's file locales/${currentLocale}.json not found.`);
-                    }
-                } else {
-                    throw err;
-                }
-            }
-            if (themeStrings === undefined && currentLocale !== 'en') {
+            themeStrings = _tryGetLocale(currentLocale);
+
+            if (!themeStrings && currentLocale !== 'en') {
                 logging.warn('Falling back to locales/en.json.');
-                try {
-                    themeStrings = fs.readFileSync(path.join(config.getContentPath('themes'), activeTheme, 'locales', 'en.json'));
-                } catch (err) {
-                    themeStrings = undefined;
-                    if (err.code === 'ENOENT') {
-                        logging.warn('Theme\'s file locales/en.json not found.');
-                    } else {
-                        throw err;
-                    }
-                }
-            }
-            if (themeStrings !== undefined) {
-                // if translation file is not valid, you will see an error
-                try {
-                    themeStrings = JSON.parse(themeStrings);
-                } catch (err) {
-                    themeStrings = undefined;
-                    throw err;
-                }
+                themeStrings = _tryGetLocale('en');
             }
         }
 
