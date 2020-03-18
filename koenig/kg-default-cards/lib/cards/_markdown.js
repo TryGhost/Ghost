@@ -9,11 +9,11 @@ module.exports = function markdownCardDefinition() {
         },
 
         render: function (opts) {
-            let converters = require('../converters');
+            let renderers = require('../renderers');
             let payload = opts.payload;
             let version = opts.options && opts.options.version || 2;
             // convert markdown to HTML ready for insertion into dom
-            let html = converters.markdownConverter.render(payload.markdown || '');
+            let html = renderers.markdownHtmlRenderer.render(payload.markdown || '');
 
             if (!html) {
                 return '';
