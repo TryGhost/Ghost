@@ -17,7 +17,7 @@
 </figure>
  */
 
-const createCard = require('../create-card');
+const createCard = require('./lib/create-card');
 
 function createElement(dom, elem, classNames = '', attributes = [], text) {
     let element = dom.createElement(elem);
