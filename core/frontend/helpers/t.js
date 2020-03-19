@@ -10,8 +10,7 @@
 // because often other helpers need that (t) returns a string to be able to work as subexpression; e.g.:
 // {{tags prefix=(t " on ")}}
 
-var proxy = require('./proxy'),
-    i18n = proxy.i18n;
+const {themeI18n} = require('./proxy');
 
 module.exports = function t(text, options) {
     var bindings = {},
@@ -21,6 +20,6 @@ module.exports = function t(text, options) {
             bindings[prop] = options.hash[prop];
         }
     }
-    bindings.isThemeString = true;
-    return i18n.t(text, bindings);
+
+    return themeI18n.t(text, bindings);
 };

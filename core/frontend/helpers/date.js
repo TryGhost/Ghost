@@ -3,7 +3,7 @@
 //
 // Formats a date using moment-timezone.js. Formats published_at by default but will also take a date as a parameter
 
-const {SafeString, i18n} = require('./proxy');
+const {SafeString, themeI18n} = require('./proxy');
 const moment = require('moment-timezone');
 
 module.exports = function (date, options) {
@@ -35,7 +35,7 @@ module.exports = function (date, options) {
     // Documentation: http://momentjs.com/docs/#/i18n/
     // Locales: https://github.com/moment/moment/tree/develop/locale
     const dateMoment = moment(date);
-    dateMoment.locale(i18n.locale());
+    dateMoment.locale(themeI18n.locale());
 
     if (timeago) {
         date = timezone ? dateMoment.tz(timezone).from(timeNow) : dateMoment.fromNow();
