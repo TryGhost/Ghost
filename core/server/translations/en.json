@@ -34,18 +34,6 @@
         }
     },
     "errors": {
-        "apps": {
-            "appWillNotBeLoaded": {
-                "error": "The app will not be loaded",
-                "help": "Check with the app creator, or read the app documentation for more details on app requirements"
-            },
-            "noActivateMethodLoadingApp": {
-                "error": "Error loading app named {name}; no activate() method defined."
-            },
-            "mustProvideAppName": {
-                "error": "Must provide an app name for api context"
-            }
-        },
         "middleware": {
             "api": {
                 "versionMismatch": "Client request for {clientVersion} does not match server version {serverVersion}."

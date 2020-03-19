@@ -5,7 +5,6 @@ const should = require('should'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     urlUtils = require('../../utils/urlUtils'),
-    appsService = require('../../../server/services/apps'),
     frontendSettingsService = require('../../../frontend/services/settings'),
     themeService = require('../../../frontend/services/themes'),
     siteApp = require('../../../server/web/parent-app');
@@ -23,7 +22,7 @@ describe('Integration - Web - Site', function () {
         describe('default routes.yaml', function () {
             before(function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon, {amp: true, apps: true});
+                testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
                 testUtils.integrationTesting.overrideGhostConfig(configUtils);
 
                 return testUtils.integrationTesting.initGhost()
@@ -33,9 +32,6 @@ describe('Integration - Web - Site', function () {
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
-                    })
-                    .then(() => {
-                        return appsService.init();
                     });
             });
 
@@ -1721,7 +1717,7 @@ describe('Integration - Web - Site', function () {
         describe('default routes.yaml', function () {
             before(function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon, {amp: true, apps: true});
+                testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
                 testUtils.integrationTesting.overrideGhostConfig(configUtils);
 
                 return testUtils.integrationTesting.initGhost()
@@ -1731,9 +1727,6 @@ describe('Integration - Web - Site', function () {
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
-                    })
-                    .then(() => {
-                        return appsService.init();
                     });
             });
 
@@ -3421,7 +3414,7 @@ describe('Integration - Web - Site', function () {
         describe('default routes.yaml', function () {
             before(function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon, {amp: true, apps: true});
+                testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
                 testUtils.integrationTesting.overrideGhostConfig(configUtils);
 
                 return testUtils.integrationTesting.initGhost()
@@ -3431,9 +3424,6 @@ describe('Integration - Web - Site', function () {
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
-                    })
-                    .then(() => {
-                        return appsService.init();
                     });
             });
 
@@ -5120,7 +5110,7 @@ describe('Integration - Web - Site', function () {
         describe('no separate admin', function () {
             before(function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon, {amp: true, apps: true});
+                testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
                 testUtils.integrationTesting.overrideGhostConfig(configUtils);
 
                 configUtils.set('url', 'http://example.com');
@@ -5133,9 +5123,6 @@ describe('Integration - Web - Site', function () {
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
-                    })
-                    .then(() => {
-                        return appsService.init();
                     });
             });
 
@@ -5239,7 +5226,7 @@ describe('Integration - Web - Site', function () {
         describe('separate admin host', function () {
             before(function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon, {amp: true, apps: true});
+                testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
                 testUtils.integrationTesting.overrideGhostConfig(configUtils);
 
                 configUtils.set('url', 'http://example.com');
@@ -5252,9 +5239,6 @@ describe('Integration - Web - Site', function () {
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
-                    })
-                    .then(() => {
-                        return appsService.init();
                     });
             });
 
@@ -5400,7 +5384,7 @@ describe('Integration - Web - Site', function () {
         describe('separate admin host w/ admin redirects disabled', function () {
             before(function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon, {amp: true, apps: true});
+                testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
                 testUtils.integrationTesting.overrideGhostConfig(configUtils);
 
                 configUtils.set('url', 'http://example.com');
@@ -5414,9 +5398,6 @@ describe('Integration - Web - Site', function () {
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
-                    })
-                    .then(() => {
-                        return appsService.init();
                     });
             });
 
@@ -5448,7 +5429,7 @@ describe('Integration - Web - Site', function () {
         describe('same host separate protocol', function () {
             before(function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon, {amp: true, apps: true});
+                testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
                 testUtils.integrationTesting.overrideGhostConfig(configUtils);
 
                 configUtils.set('url', 'http://example.com');
@@ -5461,9 +5442,6 @@ describe('Integration - Web - Site', function () {
 
                         app = siteApp({start: true});
                         return testUtils.integrationTesting.urlService.waitTillFinished();
-                    })
-                    .then(() => {
-                        return appsService.init();
                     });
             });
 

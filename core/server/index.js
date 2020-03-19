@@ -30,7 +30,6 @@ function initialiseServices() {
     routing.bootstrap.start(themeService.getApiVersion());
 
     const permissions = require('./services/permissions'),
-        apps = require('./services/apps'),
         xmlrpc = require('./services/xmlrpc'),
         slack = require('./services/slack'),
         {mega} = require('./services/mega'),
@@ -46,7 +45,6 @@ function initialiseServices() {
         slack.listen(),
         mega.listen(),
         webhooks.listen(),
-        apps.init(),
         scheduling.init({
             schedulerUrl: config.get('scheduling').schedulerUrl,
             active: config.get('scheduling').active,
@@ -57,7 +55,7 @@ function initialiseServices() {
             contentPath: config.getContentPath('scheduling')
         })
     ).then(function () {
-        debug('XMLRPC, Slack, MEGA, Webhooks, Apps, Scheduling, Permissions done');
+        debug('XMLRPC, Slack, MEGA, Webhooks, Scheduling, Permissions done');
 
         // Initialise analytics events
         if (config.get('segment:key')) {
