@@ -1,7 +1,7 @@
-const should = require('should'),
-    settingsCache = require('../../../server/services/settings/cache'),
-    helpers = require('../../../frontend/helpers'),
-    proxy = require('../../../frontend/helpers/proxy');
+const should = require('should');
+const settingsCache = require('../../../server/services/settings/cache');
+const helpers = require('../../../frontend/helpers');
+const proxy = require('../../../frontend/helpers/proxy');
 
 describe('{{lang}} helper', function () {
     beforeEach(function () {
@@ -13,7 +13,7 @@ describe('{{lang}} helper', function () {
     });
 
     it('returns correct language tag', function () {
-        let expected = proxy.i18n.locale(),
+        let expected = proxy.themeI18n.locale(),
             rendered = helpers.lang.call();
 
         should.exist(rendered);
