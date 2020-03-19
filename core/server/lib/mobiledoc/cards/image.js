@@ -1,4 +1,4 @@
-const createCard = require('./lib/create-cardd');
+const createCard = require('./lib/create-card');
 
 module.exports = createCard({
     name: 'image',
