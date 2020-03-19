@@ -44,17 +44,6 @@ module.exports = {
             });
     },
 
-    app: function (appName) {
-        return models.App.findOne({name: appName}, {withRelated: ['permissions']})
-            .then(function (foundApp) {
-                if (!foundApp) {
-                    return [];
-                }
-
-                return {permissions: foundApp.related('permissions').models};
-            });
-    },
-
     apiKey(id) {
         return models.ApiKey.findOne({id}, {withRelated: ['role', 'role.permissions']})
             .then((foundApiKey) => {

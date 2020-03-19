@@ -58,7 +58,7 @@ module.exports.init = (options = {start: false}) => {
  * 3. Taxonomies: Stronger than collections, because it's an inbuilt feature.
  * 4. Collections
  * 5. Static Pages: Weaker than collections, because we first try to find a post slug and fallback to lookup a static page.
- * 6. Apps: Weakest
+ * 6. Internal Apps: Weakest
  */
 module.exports.start = (apiVersion) => {
     const RESOURCE_CONFIG = require(`./config/${apiVersion}`);

@@ -7,7 +7,6 @@ const common = require('../../lib/common');
 
 // App requires
 const config = require('../../config');
-const apps = require('../../services/apps');
 const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
 const urlService = require('../../../frontend/services/url');
@@ -156,7 +155,7 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(shared.middlewares.servePublicFile('robots.txt', 'text/plain', constants.ONE_HOUR_S));
 
     // setup middleware for internal apps
-    // @TODO: refactor this to be a proper app middleware hook for internal & external apps
+    // @TODO: refactor this to be a proper app middleware hook for internal apps
     config.get('apps:internal').forEach((appName) => {
         const app = require(path.join(config.get('paths').internalAppPath, appName));
 
@@ -210,9 +209,6 @@ module.exports.reload = () => {
     // https://github.com/expressjs/express/issues/2596
     router = siteRoutes({start: themeService.getApiVersion()});
     Object.setPrototypeOf(SiteRouter, router);
-
-    // re-initialse apps (register app routers, because we have re-initialised the site routers)
-    apps.init();
 
     // connect routers and resources again
     urlService.queue.start({
