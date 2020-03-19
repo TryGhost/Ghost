@@ -57,7 +57,7 @@ function initialiseServices() {
             contentPath: config.getContentPath('scheduling')
         })
     ).then(function () {
-        debug('XMLRPC, Slack, MEGA, Webhooks, Apps, Scheduling, Permissions done');
+        debug('XMLRPC, Slack, MEGA, Webhooks, Scheduling, Permissions done');
 
         // Initialise analytics events
         if (config.get('segment:key')) {

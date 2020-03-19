@@ -15,9 +15,6 @@ require('./base/listeners');
 exports = module.exports;
 
 models = [
-    'app-field',
-    'app-setting',
-    'app',
     'permission',
     'post',
     'role',

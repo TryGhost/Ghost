@@ -331,7 +331,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             return destroyPost();
         },
 
-        permissible: function permissible(postModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, hasApiKeyPermission) {
+        permissible: function permissible(postModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
             var self = this,
                 postModel = postModelOrId,
                 origArgs, isContributor, isAuthor, isEdit, isAdd, isDestroy;
@@ -420,7 +420,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 hasUserPermission = hasUserPermission || isPrimaryAuthor();
             }
 
-            if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
+            if (hasUserPermission && hasApiKeyPermission) {
                 return Post.permissible.call(
                     this,
                     postModelOrId,
@@ -428,7 +428,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                     unsafeAttrs,
                     loadedPermissions,
                     hasUserPermission,
-                    hasAppPermission,
                     hasApiKeyPermission
                 ).then(({excludedAttrs}) => {
                     // @TODO: we need a concept for making a diff between incoming authors and existing authors

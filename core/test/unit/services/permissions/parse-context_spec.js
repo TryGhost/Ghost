@@ -9,7 +9,6 @@ describe('Permissions', function () {
                 external: false,
                 user: null,
                 api_key: null,
-                app: null,
                 public: true,
                 integration: null
             });
@@ -18,7 +17,6 @@ describe('Permissions', function () {
                 external: false,
                 user: null,
                 api_key: null,
-                app: null,
                 public: true,
                 integration: null
             });
@@ -30,7 +28,6 @@ describe('Permissions', function () {
                 external: false,
                 user: null,
                 api_key: null,
-                app: null,
                 public: true,
                 integration: null
             });
@@ -39,7 +36,6 @@ describe('Permissions', function () {
                 external: false,
                 user: null,
                 api_key: null,
-                app: null,
                 public: true,
                 integration: null
             });
@@ -51,7 +47,6 @@ describe('Permissions', function () {
                 external: false,
                 user: 1,
                 api_key: null,
-                app: null,
                 public: false,
                 integration: null
             });
@@ -69,7 +64,6 @@ describe('Permissions', function () {
                     id: 1,
                     type: 'content'
                 },
-                app: null,
                 public: true,
                 integration: {id: 2}
             });
@@ -87,21 +81,8 @@ describe('Permissions', function () {
                     id: 1,
                     type: 'admin'
                 },
-                app: null,
                 public: false,
                 integration: {id: 3}
-            });
-        });
-
-        it('should return app if app populated', function () {
-            parseContext({app: 5}).should.eql({
-                internal: false,
-                external: false,
-                user: null,
-                api_key: null,
-                app: 5,
-                public: false,
-                integration: null
             });
         });
 
@@ -111,7 +92,6 @@ describe('Permissions', function () {
                 external: false,
                 user: null,
                 api_key: null,
-                app: null,
                 public: false,
                 integration: null
             });
@@ -121,7 +101,6 @@ describe('Permissions', function () {
                 external: false,
                 user: null,
                 api_key: null,
-                app: null,
                 public: false,
                 integration: null
             });
@@ -133,7 +112,6 @@ describe('Permissions', function () {
                 external: true,
                 user: null,
                 api_key: null,
-                app: null,
                 public: false,
                 integration: null
             });
@@ -143,7 +121,6 @@ describe('Permissions', function () {
                 external: true,
                 user: null,
                 api_key: null,
-                app: null,
                 public: false,
                 integration: null
             });
