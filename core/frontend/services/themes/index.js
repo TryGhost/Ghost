@@ -5,6 +5,7 @@ const themeLoader = require('./loader');
 const active = require('./active');
 const activate = require('./activate');
 const validate = require('./validate');
+const i18n = require('./i18n');
 const list = require('./list');
 const settingsCache = require('../../../server/services/settings/cache');
 const engineDefaults = require('./engines/defaults');
@@ -14,6 +15,8 @@ module.exports = {
     // TODO: move this once we're clear what needs to happen here
     init: function initThemes() {
         var activeThemeName = settingsCache.get('active_theme');
+
+        i18n.init();
 
         debug('init themes', activeThemeName);
 
