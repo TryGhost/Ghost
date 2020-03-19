@@ -47,7 +47,7 @@ module.exports = function createCard(card) {
             // urlUtils to ensure the class has actually been instantiated
             // as cards are passed in as an arg to the class instantiation
             if (!urlUtils) {
-                urlUtils = require('../url-utils');
+                urlUtils = require('../../../url-utils');
             }
             return absoluteToRelative(urlUtils, ...arguments);
         },
@@ -57,7 +57,7 @@ module.exports = function createCard(card) {
             // urlUtils to ensure the class has actually been instantiated
             // as cards are passed in as an arg to the class instantiation
             if (!urlUtils) {
-                urlUtils = require('../url-utils');
+                urlUtils = require('../../../url-utils');
             }
             return relativeToAbsolute(urlUtils, ...arguments);
         }
