@@ -251,7 +251,7 @@ Settings = ghostBookshelf.Model.extend({
             });
     },
 
-    permissible: function permissible(modelId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, hasApiKeyPermission) {
+    permissible: function permissible(modelId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
         let isEdit = (action === 'edit');
         let isOwner;
 
@@ -271,7 +271,7 @@ Settings = ghostBookshelf.Model.extend({
             hasUserPermission = isOwner;
         }
 
-        if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
+        if (hasUserPermission && hasApiKeyPermission) {
             return Promise.resolve();
         }
 

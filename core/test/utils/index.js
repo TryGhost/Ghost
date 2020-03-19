@@ -523,21 +523,6 @@ clearData = function clearData() {
 };
 
 toDoList = {
-    app: function insertApp() {
-        return fixtures.insertOne('App', 'apps', 'createApp');
-    },
-    app_field: function insertAppField() {
-        // TODO: use the actual app ID to create the field
-        return fixtures.insertOne('App', 'apps', 'createApp').then(function () {
-            return fixtures.insertOne('AppField', 'app_fields', 'createAppField');
-        });
-    },
-    app_setting: function insertAppSetting() {
-        // TODO: use the actual app ID to create the field
-        return fixtures.insertOne('App', 'apps', 'createApp').then(function () {
-            return fixtures.insertOne('AppSetting', 'app_settings', 'createAppSetting');
-        });
-    },
     permission: function insertPermission() {
         return fixtures.insertOne('Permission', 'permissions', 'createPermission');
     },
@@ -549,9 +534,6 @@ toDoList = {
     },
     tag: function insertTag() {
         return fixtures.insertOne('Tag', 'tags', 'createTag');
-    },
-    subscriber: function insertSubscriber() {
-        return fixtures.insertOne('Subscriber', 'subscribers', 'createSubscriber');
     },
     member: function insertMember() {
         return fixtures.insertOne('Member', 'members', 'createMember');
@@ -567,9 +549,6 @@ toDoList = {
     },
     'tags:extra': function insertExtraTags() {
         return fixtures.insertExtraTags();
-    },
-    apps: function insertApps() {
-        return fixtures.insertApps();
     },
     settings: function populateSettings() {
         settingsCache.shutdown();
@@ -1032,10 +1011,6 @@ module.exports = {
 
             if (options.amp) {
                 cacheStub.withArgs('amp').returns(true);
-            }
-
-            if (options.apps) {
-                cacheStub.withArgs('active_apps').returns([]);
             }
 
             sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();

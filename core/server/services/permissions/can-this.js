@@ -50,10 +50,8 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                 // Iterate through the user permissions looking for an affirmation
                 var userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null,
                     apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null,
-                    appPermissions = loadedPermissions.app ? loadedPermissions.app.permissions : null,
                     hasUserPermission,
                     hasApiKeyPermission,
-                    hasAppPermission,
                     checkPermission = function (perm) {
                         var permObjId;
 
@@ -91,20 +89,14 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                     hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
                 }
 
-                // Check app permissions if they were passed
-                hasAppPermission = true;
-                if (!_.isNull(appPermissions)) {
-                    hasAppPermission = _.some(appPermissions, checkPermission);
-                }
-
                 // Offer a chance for the TargetModel to override the results
                 if (TargetModel && _.isFunction(TargetModel.permissible)) {
                     return TargetModel.permissible(
-                        modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission, hasApiKeyPermission
+                        modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission
                     );
                 }
 
-                if (hasUserPermission && hasApiKeyPermission && hasAppPermission) {
+                if (hasUserPermission && hasApiKeyPermission) {
                     return;
                 }
 
@@ -120,7 +112,6 @@ CanThisResult.prototype.beginCheck = function (context) {
     var self = this,
         userPermissionLoad,
         apiKeyPermissionLoad,
-        appPermissionLoad,
         permissionsLoad;
 
     // Get context.user, context.api_key and context.app
@@ -146,20 +137,11 @@ CanThisResult.prototype.beginCheck = function (context) {
         apiKeyPermissionLoad = Promise.resolve(null);
     }
 
-    // Kick off loading of app permissions if necessary
-    if (context.app) {
-        appPermissionLoad = providers.app(context.app);
-    } else {
-        // Resolve null if no context.app
-        appPermissionLoad = Promise.resolve(null);
-    }
-
     // Wait for both user and app permissions to load
-    permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad, appPermissionLoad]).then(function (result) {
+    permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad]).then(function (result) {
         return {
             user: result[0],
-            apiKey: result[1],
-            app: result[2]
+            apiKey: result[1]
         };
     });
 

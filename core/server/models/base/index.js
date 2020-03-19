@@ -3,8 +3,9 @@
 // several basic behaviours such as UUIDs, as well as a set of Data methods for accessing information from the database.
 //
 // The models are internal to Ghost, only the API and some internal functions such as migration and import/export
-// accesses the models directly. All other parts of Ghost, including the blog frontend, admin UI, and apps are only
-// allowed to access data via the API.
+// accesses the models directly.
+
+// All other parts of Ghost, including the frontend & admin UI are only allowed to access data via the API.
 const _ = require('lodash'),
     bookshelf = require('bookshelf'),
     moment = require('moment'),

@@ -296,60 +296,6 @@ DataGenerator.Content = {
         }
     ],
 
-    apps: [
-        {
-            id: ObjectId.generate(),
-            name: 'Kudos',
-            slug: 'kudos',
-            version: '0.0.1',
-            status: 'installed'
-        },
-        {
-            id: ObjectId.generate(),
-            name: 'Importer',
-            slug: 'importer',
-            version: '0.1.0',
-            status: 'inactive'
-        },
-        {
-            id: ObjectId.generate(),
-            name: 'Hemingway',
-            slug: 'hemingway',
-            version: '1.0.0',
-            status: 'installed'
-        }
-    ],
-
-    app_fields: [
-        {
-            id: ObjectId.generate(),
-            key: 'count',
-            value: '120',
-            type: 'number',
-            active: true
-        },
-        {
-            id: ObjectId.generate(),
-            key: 'words',
-            value: '512',
-            type: 'number',
-            active: true
-        }
-    ],
-
-    app_settings: [
-        {
-            id: ObjectId.generate(),
-            key: 'color',
-            value: 'ghosty'
-        },
-        {
-            id: ObjectId.generate(),
-            key: 'setting',
-            value: 'value'
-        }
-    ],
-
     subscribers: [
         {
             id: ObjectId.generate(),
@@ -619,40 +565,6 @@ DataGenerator.forKnex = (function () {
         };
     }
 
-    function createAppField(overrides) {
-        var newObj = _.cloneDeep(overrides);
-
-        return _.defaults(newObj, {
-            id: ObjectId.generate(),
-            created_by: DataGenerator.Content.users[0].id,
-            created_at: new Date(),
-            active: true,
-            app_id: DataGenerator.Content.apps[0].id,
-            relatable_id: DataGenerator.Content.posts[0].id,
-            relatable_type: 'posts'
-        });
-    }
-
-    function createAppSetting(overrides) {
-        var newObj = _.cloneDeep(overrides);
-
-        return _.defaults(newObj, {
-            id: ObjectId.generate(),
-            app_id: DataGenerator.Content.apps[0].id,
-            created_by: DataGenerator.Content.users[0].id,
-            created_at: new Date()
-        });
-    }
-
-    function createSubscriber(overrides) {
-        const newObj = _.cloneDeep(overrides);
-
-        return _.defaults(newObj, {
-            id: ObjectId.generate(),
-            email: 'subscriber@ghost.org'
-        });
-    }
-
     function createMember(overrides) {
         const newObj = _.cloneDeep(overrides);
 
@@ -899,17 +811,6 @@ DataGenerator.forKnex = (function () {
         }
     ];
 
-    const apps = [
-        createBasic(DataGenerator.Content.apps[0]),
-        createBasic(DataGenerator.Content.apps[1]),
-        createBasic(DataGenerator.Content.apps[2])
-    ];
-
-    const app_fields = [
-        createAppField(DataGenerator.Content.app_fields[0]),
-        createAppField(DataGenerator.Content.app_fields[1])
-    ];
-
     const invites = [
         createInvite({email: 'test1@ghost.org', role_id: DataGenerator.Content.roles[0].id}),
         createInvite({email: 'test2@ghost.org', role_id: DataGenerator.Content.roles[2].id})
@@ -949,12 +850,8 @@ DataGenerator.forKnex = (function () {
         createRole: createBasic,
         createPermission: createBasic,
         createPostsTags: createPostsTags,
-        createApp: createBasic,
-        createAppField: createAppField,
         createSetting: createSetting,
-        createAppSetting: createAppSetting,
         createToken: createToken,
-        createSubscriber: createSubscriber,
         createMember: createMember,
         createInvite: createInvite,
         createWebhook: createWebhook,
@@ -965,8 +862,6 @@ DataGenerator.forKnex = (function () {
         tags: tags,
         posts_tags: posts_tags,
         posts_authors: posts_authors,
-        apps: apps,
-        app_fields: app_fields,
         roles: roles,
         users: users,
         roles_users: roles_users,
