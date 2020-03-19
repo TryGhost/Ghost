@@ -28,6 +28,9 @@ module.exports = {
     i18n: require('../../server/lib/common/i18n'),
     logging: require('../../server/lib/common/logging'),
 
+    // Theme i18n is separate to common i18n
+    themeI18n: require('../services/themes/i18n'),
+
     // This is used to detect if "isPost" is true in prevNext.
     checks: require('../../server/data/schema').checks,
 
