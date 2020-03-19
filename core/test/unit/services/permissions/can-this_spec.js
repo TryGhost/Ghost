@@ -99,7 +99,7 @@ describe('Permissions', function () {
             canThisResult.destroy.user.should.be.a.Function();
         });
 
-        describe('Non user/app permissions', function () {
+        describe('Non user permissions', function () {
             // TODO change to using fake models in tests!
             // Permissions need to be NOT fundamentally baked into Ghost, but a separate module, at some point
             // It can depend on bookshelf, but should NOT use hard coded model knowledge.
@@ -448,113 +448,6 @@ describe('Permissions', function () {
                     .catch(done);
             });
         });
-
-        describe('App-based permissions (requires user as well)', function () {
-            // @TODO: revisit this - do we really need to have USER permissions AND app permissions?
-            it('No permissions: cannot edit tag with app only (no permissible function on model)', function (done) {
-                var appProviderStub = sinon.stub(providers, 'app').callsFake(function () {
-                    // Fake the response from providers.app, which contains an empty array for this case
-                    return Promise.resolve([]);
-                });
-
-                permissions
-                    .canThis({app: {}}) // app context
-                    .edit
-                    .tag({id: 1}) // tag id in model syntax
-                    .then(function () {
-                        done(new Error('was able to edit tag without permission'));
-                    })
-                    .catch(function (err) {
-                        appProviderStub.callCount.should.eql(1);
-                        err.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
-            });
-
-            it('No permissions: cannot edit tag (no permissible function on model)', function (done) {
-                var appProviderStub = sinon.stub(providers, 'app').callsFake(function () {
-                        // Fake the response from providers.app, which contains an empty array for this case
-                        return Promise.resolve([]);
-                    }),
-                    userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
-                        // Fake the response from providers.user, which contains permissions and roles
-                        return Promise.resolve({
-                            permissions: [],
-                            roles: undefined
-                        });
-                    });
-
-                permissions
-                    .canThis({app: {}, user: {}}) // app context
-                    .edit
-                    .tag({id: 1}) // tag id in model syntax
-                    .then(function () {
-                        done(new Error('was able to edit tag without permission'));
-                    })
-                    .catch(function (err) {
-                        appProviderStub.callCount.should.eql(1);
-                        userProviderStub.callCount.should.eql(1);
-                        err.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
-            });
-
-            it('With permissions: can edit specific tag (no permissible function on model)', function (done) {
-                var appProviderStub = sinon.stub(providers, 'app').callsFake(function () {
-                        // Fake the response from providers.app, which contains permissions only
-                        return Promise.resolve({
-                            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models
-                        });
-                    }),
-                    userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
-                        // Fake the response from providers.user, which contains permissions and roles
-                        return Promise.resolve({
-                            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
-                            roles: undefined
-                        });
-                    });
-
-                permissions
-                    .canThis({app: {}, user: {}}) // app context
-                    .edit
-                    .tag({id: 1}) // tag id in model syntax
-                    .then(function (res) {
-                        appProviderStub.callCount.should.eql(1);
-                        userProviderStub.callCount.should.eql(1);
-                        should.not.exist(res);
-                        done();
-                    })
-                    .catch(done);
-            });
-
-            it('With permissions: can edit non-specific tag (no permissible function on model)', function (done) {
-                var appProviderStub = sinon.stub(providers, 'app').callsFake(function () {
-                        // Fake the response from providers.app, which contains permissions only
-                        return Promise.resolve({
-                            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models
-                        });
-                    }),
-                    userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
-                        // Fake the response from providers.user, which contains permissions and roles
-                        return Promise.resolve({
-                            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
-                            roles: undefined
-                        });
-                    });
-
-                permissions
-                    .canThis({app: {}, user: {}}) // app context
-                    .edit
-                    .tag() // tag id in model syntax
-                    .then(function (res) {
-                        appProviderStub.callCount.should.eql(1);
-                        userProviderStub.callCount.should.eql(1);
-                        should.not.exist(res);
-                        done();
-                    })
-                    .catch(done);
-            });
-        });
     });
 
     describe('permissible (overridden)', function () {
@@ -579,7 +472,7 @@ describe('Permissions', function () {
                 })
                 .catch(function (err) {
                     permissibleStub.callCount.should.eql(1);
-                    permissibleStub.firstCall.args.should.have.lengthOf(8);
+                    permissibleStub.firstCall.args.should.have.lengthOf(7);
 
                     permissibleStub.firstCall.args[0].should.eql(1);
                     permissibleStub.firstCall.args[1].should.eql('edit');
@@ -588,7 +481,6 @@ describe('Permissions', function () {
                     permissibleStub.firstCall.args[4].should.be.an.Object();
                     permissibleStub.firstCall.args[5].should.be.true();
                     permissibleStub.firstCall.args[6].should.be.true();
-                    permissibleStub.firstCall.args[7].should.be.true();
 
                     userProviderStub.callCount.should.eql(1);
                     err.message.should.eql('Hello World!');
@@ -614,7 +506,7 @@ describe('Permissions', function () {
                 .post({id: 1}) // tag id in model syntax
                 .then(function (res) {
                     permissibleStub.callCount.should.eql(1);
-                    permissibleStub.firstCall.args.should.have.lengthOf(8);
+                    permissibleStub.firstCall.args.should.have.lengthOf(7);
                     permissibleStub.firstCall.args[0].should.eql(1);
                     permissibleStub.firstCall.args[1].should.eql('edit');
                     permissibleStub.firstCall.args[2].should.be.an.Object();
@@ -622,7 +514,6 @@ describe('Permissions', function () {
                     permissibleStub.firstCall.args[4].should.be.an.Object();
                     permissibleStub.firstCall.args[5].should.be.true();
                     permissibleStub.firstCall.args[6].should.be.true();
-                    permissibleStub.firstCall.args[7].should.be.true();
 
                     userProviderStub.callCount.should.eql(1);
                     should.not.exist(res);
