@@ -35,9 +35,16 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
+
+      - uses: Dreamcodeio/pr-has-label-action@master
+        id: allTestsLabel
+        if: github.event_name == 'pull_request'
+        with:
+          label: all-tests
+
       - run: yarn
       - run: yarn lint
       - run: grunt test-acceptance --verbose
       - run: grunt test-unit --verbose
       - run: grunt test-regression --verbose
-        if: startsWith(github.head_ref, 'renovate/') || github.event_name != 'pull_request'
+        if: startsWith(github.head_ref, 'renovate/') || github.event_name != 'pull_request' || steps.allTestsLabel.outputs.hasLabel
