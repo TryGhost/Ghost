@@ -15,7 +15,7 @@
  * </figure>
  */
 
-const createCard = require('../create-card');
+const createCard = require('./lib/create-card');
 
 const MAX_IMG_PER_ROW = 3;
 
