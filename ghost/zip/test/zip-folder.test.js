@@ -12,21 +12,23 @@ const {zipFolder} = require('../');
 describe('lib/fs: read csv', function () {
     let symlinkPath, folderToSymlink, zipDestination, unzipDestination;
 
+    const cleanUp = () => {
+        fs.removeSync(symlinkPath);
+        fs.removeSync(zipDestination);
+        fs.removeSync(unzipDestination);
+    };
+
     before(function () {
         symlinkPath = path.join(__dirname, 'fixtures', 'theme-symlink');
         folderToSymlink = path.join(__dirname, 'fixtures', 'test-theme');
         zipDestination = path.join(__dirname, 'fixtures', 'theme-symlink.zip');
         unzipDestination = path.join(__dirname, 'fixtures', 'theme-symlink-unzipped');
 
-        fs.removeSync(symlinkPath);
-        fs.removeSync(zipDestination);
-        fs.removeSync(unzipDestination);
+        cleanUp();
     });
 
     after(function () {
-        fs.removeSync(symlinkPath);
-        fs.removeSync(zipDestination);
-        fs.removeSync(unzipDestination);
+        cleanUp();
     });
 
     it('ensure symlinks work', function (done) {
