@@ -36,16 +36,6 @@ describe('Default Frontend routing', function () {
         };
     }
 
-    function addPosts(done) {
-        testUtils.clearData().then(function () {
-            return testUtils.initData();
-        }).then(function () {
-            return testUtils.fixtures.insertPostsAndTags();
-        }).then(function () {
-            done();
-        });
-    }
-
     afterEach(function () {
         sinon.restore();
     });
@@ -400,6 +390,42 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'text/xsl')
                 .end(function (err, res) {
                     res.text.should.match(/urlset/);
+                    doEnd(done)(err, res);
+                });
+        });
+    });
+
+    describe('Private Blogging', function () {
+        beforeEach(function () {
+            sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+                if (key === 'is_private') {
+                    return true;
+                }
+                return origCache.get(key, options);
+            });
+        });
+
+        it('/ should redirect to /private/', function (done) {
+            request.get('/')
+                .expect('Location', '/private/?r=%2F')
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('/welcome/ should redirect to /private/', function (done) {
+            request.get('/welcome/')
+                .expect('Location', '/private/?r=%2Fwelcome%2F')
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('should still serve private RSS feed', function (done) {
+            request.get(`/${settingsCache.get('public_hash')}/rss/`)
+                .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .end(function (err, res) {
+                    res.text.should.match(/<!\[CDATA\[Welcome to Ghost\]\]>/);
                     doEnd(done)(err, res);
                 });
         });
