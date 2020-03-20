@@ -28,7 +28,7 @@
     "sinon": "8.1.1"
   },
   "dependencies": {
-    "@tryghost/pretty-cli": "1.2.2",
+    "@tryghost/pretty-cli": "1.2.4",
     "bluebird": "3.7.2",
     "csv-parser": "2.3.2",
     "ghost-ignition": "4.0.0",
