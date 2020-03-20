@@ -47,7 +47,7 @@ module.exports = function setupParentApp(options = {}) {
     // This sets global res.locals which are needed everywhere
     parentApp.use(shared.middlewares.ghostLocals);
 
-    // Mount the express apps on the parentApp
+    // Mount the  apps on the parentApp
 
     const adminHost = config.get('admin:url') ? (new URL(config.get('admin:url')).hostname) : '';
     const frontendHost = new URL(config.get('url')).hostname;
