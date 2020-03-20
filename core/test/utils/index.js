@@ -792,6 +792,7 @@ var ghostServer;
  * @TODO: tidy up the tmp folders
  */
 startGhost = function startGhost(options) {
+    console.time('Start Ghost');
     options = _.merge({
         redirectsFile: true,
         forceStart: false,
@@ -894,6 +895,7 @@ startGhost = function startGhost(options) {
                     })
                     .then((keys) => {
                         module.exports.existingData.apiKeys = keys.toJSON(module.exports.context.internal);
+                        console.timeEnd('Start Ghost');
                     })
                     .return(ghostServer);
             });
@@ -975,6 +977,7 @@ startGhost = function startGhost(options) {
                 })
                 .then((keys) => {
                     module.exports.existingData.apiKeys = keys.toJSON();
+                    console.timeEnd('Start Ghost');
                 })
                 .return(ghostServer);
         });
