@@ -4,7 +4,7 @@ require('./utils');
 
 const path = require('path');
 const fs = require('fs-extra');
-const extract = require('extract-zip');
+const extract = require('@tryghost/extract-zip');
 
 // Mimic how we expect this to be required
 const {zipFolder} = require('../');
