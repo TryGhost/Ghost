@@ -5,7 +5,7 @@ var _ = require('lodash'),
     os = require('os'),
     glob = require('glob'),
     uuid = require('uuid'),
-    extract = require('extract-zip'),
+    {extract} = require('@tryghost/zip'),
     sequence = require('../../lib/promise/sequence'),
     pipeline = require('../../lib/promise/pipeline'),
     common = require('../../lib/common'),
@@ -172,7 +172,7 @@ _.extend(ImportManager.prototype, {
         const tmpDir = path.join(os.tmpdir(), uuid.v4());
         this.fileToDelete = tmpDir;
 
-        return Promise.promisify(extract)(filePath, {dir: tmpDir}).then(function () {
+        return extract(filePath, {dir: tmpDir}).then(function () {
             return tmpDir;
         });
     },
