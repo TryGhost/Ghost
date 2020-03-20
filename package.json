@@ -55,7 +55,7 @@
     "bcryptjs": "2.4.3",
     "bluebird": "3.7.2",
     "body-parser": "1.19.0",
-    "bookshelf": "0.14.2",
+    "bookshelf": "1.1.0",
     "bookshelf-relations": "1.3.1",
     "brute-knex": "4.0.0",
     "bson-objectid": "1.3.0",
