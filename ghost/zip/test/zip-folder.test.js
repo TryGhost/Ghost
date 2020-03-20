@@ -1,16 +1,23 @@
-var should = require('should'),
-    path = require('path'),
-    fs = require('fs-extra'),
-    extract = require('extract-zip'),
-    fsLib = require('../../../../server/lib/fs');
+// Switch these lines once there are useful utils
+// const testUtils = require('./utils');
+require('./utils');
+
+const path = require('path');
+const fs = require('fs-extra');
+const extract = require('extract-zip');
+
+// Mimic how we expect this to be required
+const {zipFolder} = require('../');
 
 describe('lib/fs: read csv', function () {
-    const symlinkPath = path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'theme-symlink'),
-        folderToSymlink = path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'casper'),
-        zipDestination = path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'theme-symlink.zip'),
-        unzipDestination = path.join(__dirname, '..', '..', '..', 'utils', 'fixtures', 'themes', 'theme-symlink-unzipped');
+    let symlinkPath, folderToSymlink, zipDestination, unzipDestination;
 
     before(function () {
+        symlinkPath = path.join(__dirname, 'fixtures', 'theme-symlink');
+        folderToSymlink = path.join(__dirname, 'fixtures', 'test-theme');
+        zipDestination = path.join(__dirname, 'fixtures', 'theme-symlink.zip');
+        unzipDestination = path.join(__dirname, 'fixtures', 'theme-symlink-unzipped');
+
         fs.removeSync(symlinkPath);
         fs.removeSync(zipDestination);
         fs.removeSync(unzipDestination);
@@ -25,7 +32,7 @@ describe('lib/fs: read csv', function () {
     it('ensure symlinks work', function (done) {
         fs.symlink(folderToSymlink, symlinkPath);
 
-        fsLib.zipFolder(symlinkPath, zipDestination, function (err) {
+        zipFolder(symlinkPath, zipDestination, function (err) {
             if (err) {
                 return done(err);
             }
