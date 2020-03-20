@@ -13,7 +13,7 @@ const Promise = require('bluebird'),
     logging = proxy.logging,
     i18n = proxy.i18n,
     errors = proxy.errors,
-    urlUtils = require('../../../../../server/lib/url-utils'),
+    urlUtils = proxy.urlUtils,
     amperizeCache = {};
 
 let allowedAMPTags = [],
