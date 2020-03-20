@@ -129,7 +129,8 @@ const configureGrunt = function (grunt) {
 
             acceptance: {
                 src: [
-                    'core/test/acceptance/**/*_spec.js'
+                    'core/test/api-acceptance/**/*_spec.js',
+                    'core/test/frontend-acceptance/**/*_spec.js'
                 ]
             },
 
