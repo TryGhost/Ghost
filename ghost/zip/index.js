@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const extract = require('extract-zip');
+const extract = require('@tryghost/extract-zip');
 const zipFolder = require('./lib/zip-folder');
 
 module.exports = {
