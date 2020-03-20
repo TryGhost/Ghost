@@ -2803,17 +2803,6 @@ express-brute@1.0.1, express-brute@^1.0.1:
     long-timeout "~0.1.1"
     underscore "~1.8.3"
 
-express-hbs@2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-2.3.0.tgz#ceccd1845674ad70f35d47b2130727be280af086"
-  integrity sha512-vhm9DXIPebBXnajFX5c33fMFe3Y+3Zd02BDn2uWiWVZ+A2VMErZYRLoVTx0fcldHM2wGLajjSO+dwubkklsOGA==
-  dependencies:
-    bluebird "^3.5.3"
-    handlebars "4.5.3"
-    js-beautify "1.8.8"
-    lodash "4.17.15"
-    readdirp "2.2.1"
-
 express-hbs@2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-2.3.1.tgz#b25e471f9f537002dbffa4b6ab700bddd45fd1e8"
@@ -3832,10 +3821,10 @@ grunt@1.1.0:
     path-is-absolute "~1.0.0"
     rimraf "~2.6.2"
 
-gscan@3.3.3:
-  version "3.3.3"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-3.3.3.tgz#ec1192d29d288107f40af8c8ccf30d4ab824f000"
-  integrity sha512-Y0FwHq3sN3tPbyD0/NlTswax61liH80RCjJLqXzjp6aIE+R4ynrDv3Xdk5ZEjQE/4Js1B2inCgKaM7jabXCcbg==
+gscan@3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-3.4.0.tgz#8b39d12ba4a40fabef3ff07307c3b68333e92ee1"
+  integrity sha512-3Y5E3ymn0QcnG4zD81Xl3ngNq1MEbvK0Suo2nwKYLzs1VPCrVsEmNu0zisE0AsKzJpfCEkCm2gxgkG3xBRAEPA==
   dependencies:
     "@tryghost/extract-zip" "1.6.6"
     "@tryghost/pretty-cli" "1.2.3"
@@ -3843,7 +3832,7 @@ gscan@3.3.3:
     chalk "^3.0.0"
     common-tags "^1.8.0"
     express "^4.16.2"
-    express-hbs "2.3.0"
+    express-hbs "2.3.1"
     fs-extra "^8.0.0"
     ghost-ignition "4.1.0"
     glob "^7.0.5"
@@ -3851,10 +3840,10 @@ gscan@3.3.3:
     multer "^1.1.0"
     pluralize "^8.0.0"
     require-dir "^1.0.0"
-    semver "^6.0.0"
+    semver "^7.0.0"
     upath "^1.1.0"
-    uuid "^3.0.0"
-    validator "^6.3.0"
+    uuid "7.0.2"
+    validator "12.2.0"
 
 gzip-size@^3.0.0:
   version "3.0.0"
@@ -7736,12 +7725,12 @@ secure-keys@^1.0.0:
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.7.1.tgz#a954f931aeba508d307bbf069eff0c01c96116f7"
   integrity sha512-sauaDf/PZdVgrLTNYHRtpXa1iRiKcaebiKQ1BJdpQlWH2lCvexQdX55snPFyK7QzpudqbCI0qXFfOasHdyNDGQ==
 
-semver@7.1.3, semver@^7.1.3:
+semver@7.1.3, semver@^7.0.0, semver@^7.1.3:
   version "7.1.3"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.1.3.tgz#e4345ce73071c53f336445cfc19efb1c311df2a6"
   integrity sha512-ekM0zfiA9SCBlsKa2X1hxyxiI4L3B6EbVJkkdgQXnSEEaHlGdvyodMruTiulSRWMMB4NeIuYNMC9rTKTz97GxA==
 
-semver@^6.0.0, semver@^6.1.2:
+semver@^6.1.2:
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-6.3.0.tgz#ee0a64c8af5e8ceea67687b133761e1becbd1d3d"
   integrity sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==
@@ -9033,15 +9022,15 @@ validate-npm-package-license@^3.0.1:
     spdx-correct "^3.0.0"
     spdx-expression-parse "^3.0.0"
 
-validator@6.3.0, validator@^6.3.0:
-  version "6.3.0"
-  resolved "https://registry.yarnpkg.com/validator/-/validator-6.3.0.tgz#47ce23ed8d4eaddfa9d4b8ef0071b6cf1078d7c8"
-  integrity sha1-R84j7Y1Ord+p1LjvAHG2zxB418g=
-
-validator@^12.0.0:
+validator@12.2.0, validator@^12.0.0:
   version "12.2.0"
   resolved "https://registry.yarnpkg.com/validator/-/validator-12.2.0.tgz#660d47e96267033fd070096c3b1a6f2db4380a0a"
   integrity sha512-jJfE/DW6tIK1Ek8nCfNFqt8Wb3nzMoAbocBF6/Icgg1ZFSBpObdnwVY2jQj6qUqzhx5jc71fpvBWyLGO7Xl+nQ==
+
+validator@6.3.0:
+  version "6.3.0"
+  resolved "https://registry.yarnpkg.com/validator/-/validator-6.3.0.tgz#47ce23ed8d4eaddfa9d4b8ef0071b6cf1078d7c8"
+  integrity sha1-R84j7Y1Ord+p1LjvAHG2zxB418g=
 
 vary@^1, vary@~1.1.2:
   version "1.1.2"
