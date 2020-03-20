@@ -20,21 +20,23 @@ jobs:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
       database__connection__password: root
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: ghost_testing
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     name: Node ${{ matrix.node }} - ${{ matrix.env.DB }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
+
+      - name: Shutdown MySQL
+        run: sudo service mysql stop
+        if: matrix.env.DB == 'mysql'
+
+      - uses: mirromutth/mysql-action@v1.1
+        if: matrix.env.DB == 'mysql'
+        with:
+          mysql version: '5.7'
+          mysql database: 'ghost_testing'
+          mysql root password: 'root'
 
       - uses: Dreamcodeio/pr-has-label-action@master
         id: allTestsLabel
