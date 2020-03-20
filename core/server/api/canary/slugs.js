@@ -4,7 +4,8 @@ const common = require('../../lib/common');
 const allowedTypes = {
     post: models.Post,
     tag: models.Tag,
-    user: models.User
+    user: models.User,
+    app: models.App
 };
 
 module.exports = {

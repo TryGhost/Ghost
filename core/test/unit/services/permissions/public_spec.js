@@ -13,8 +13,9 @@ describe('Permissions', function () {
         });
 
         it('should return unchanged object for non-public context', function (done) {
-            const internal = {context: 'internal'};
-            const user = {context: {user: 1}};
+            var internal = {context: 'internal'},
+                user = {context: {user: 1}},
+                app = {context: {app: 1}};
 
             applyPublicRules('posts', 'browse', _.cloneDeep(internal)).then(function (result) {
                 result.should.eql(internal);
@@ -22,6 +23,10 @@ describe('Permissions', function () {
                 return applyPublicRules('posts', 'browse', _.cloneDeep(user));
             }).then(function (result) {
                 result.should.eql(user);
+
+                return applyPublicRules('posts', 'browse', _.cloneDeep(app));
+            }).then(function (result) {
+                result.should.eql(app);
 
                 done();
             }).catch(done);
