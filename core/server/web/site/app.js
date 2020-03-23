@@ -7,12 +7,12 @@ const common = require('../../lib/common');
 
 // App requires
 const config = require('../../config');
-const apps = require('../../services/apps');
 const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
 const urlService = require('../../../frontend/services/url');
 const urlUtils = require('../../lib/url-utils');
 const sitemapHandler = require('../../../frontend/services/sitemap/handler');
+const appService = require('../../../frontend/services/apps');
 const themeService = require('../../../frontend/services/themes');
 const themeMiddleware = themeService.middleware;
 const membersService = require('../../services/members');
@@ -212,7 +212,7 @@ module.exports.reload = () => {
     Object.setPrototypeOf(SiteRouter, router);
 
     // re-initialse apps (register app routers, because we have re-initialised the site routers)
-    apps.init();
+    appService.init();
 
     // connect routers and resources again
     urlService.queue.start({
