@@ -1,7 +1,7 @@
 const should = require('should'),
     sinon = require('sinon'),
     helpers = require('../../../../frontend/helpers/register'),
-    AppProxy = require('../../../../server/services/apps/proxy'),
+    AppProxy = require('../../../../frontend/services/apps/proxy'),
     routing = require('../../../../frontend/services/routing');
 
 describe('Apps', function () {

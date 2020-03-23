@@ -1,7 +1,7 @@
 const debug = require('ghost-ignition').debug('services:apps');
 const Promise = require('bluebird');
-const common = require('../../lib/common');
-const config = require('../../config');
+const common = require('../../../server/lib/common');
+const config = require('../../../server/config');
 const loader = require('./loader');
 
 module.exports = {

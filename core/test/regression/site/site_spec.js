@@ -5,7 +5,7 @@ const should = require('should'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     urlUtils = require('../../utils/urlUtils'),
-    appsService = require('../../../server/services/apps'),
+    appService = require('../../../frontend/services/apps'),
     frontendSettingsService = require('../../../frontend/services/settings'),
     themeService = require('../../../frontend/services/themes'),
     siteApp = require('../../../server/web/parent-app');
@@ -35,7 +35,7 @@ describe('Integration - Web - Site', function () {
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     })
                     .then(() => {
-                        return appsService.init();
+                        return appService.init();
                     });
             });
 
@@ -1733,7 +1733,7 @@ describe('Integration - Web - Site', function () {
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     })
                     .then(() => {
-                        return appsService.init();
+                        return appService.init();
                     });
             });
 
@@ -3433,7 +3433,7 @@ describe('Integration - Web - Site', function () {
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     })
                     .then(() => {
-                        return appsService.init();
+                        return appService.init();
                     });
             });
 
@@ -5135,7 +5135,7 @@ describe('Integration - Web - Site', function () {
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     })
                     .then(() => {
-                        return appsService.init();
+                        return appService.init();
                     });
             });
 
@@ -5254,7 +5254,7 @@ describe('Integration - Web - Site', function () {
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     })
                     .then(() => {
-                        return appsService.init();
+                        return appService.init();
                     });
             });
 
@@ -5416,7 +5416,7 @@ describe('Integration - Web - Site', function () {
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     })
                     .then(() => {
-                        return appsService.init();
+                        return appService.init();
                     });
             });
 
@@ -5463,7 +5463,7 @@ describe('Integration - Web - Site', function () {
                         return testUtils.integrationTesting.urlService.waitTillFinished();
                     })
                     .then(() => {
-                        return appsService.init();
+                        return appService.init();
                     });
             });
 
