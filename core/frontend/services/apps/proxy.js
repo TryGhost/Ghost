@@ -1,5 +1,5 @@
-const helpers = require('../../../frontend/helpers/register');
-const routingService = require('../../../frontend/services/routing');
+const helpers = require('../../helpers/register');
+const routingService = require('../../services/routing');
 
 module.exports.getInstance = function getInstance() {
     const appRouter = routingService.registry.getRouter('appRouter');
