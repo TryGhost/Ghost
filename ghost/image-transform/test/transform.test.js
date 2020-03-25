@@ -1,38 +1,38 @@
-const should = require('should');
-const sinon = require('sinon');
+// Switch these lines once there are useful utils
+const testUtils = require('./utils');
 const fs = require('fs-extra');
 const errors = require('@tryghost/errors');
-const manipulator = require('../../../../server/lib/image/manipulator');
-const mockUtils = require('../../../utils/mocks');
 
-describe('lib/image: manipulator', function () {
+const transform = require('../');
+
+describe('Transform', function () {
     afterEach(function () {
         sinon.restore();
-        mockUtils.modules.unmockNonExistentModule();
+        testUtils.modules.unmockNonExistentModule();
     });
 
     describe('canTransformFileExtension', function () {
         it('returns false for ".gif"', function () {
             should.equal(
-                manipulator.canTransformFileExtension('.gif'),
+                transform.canTransformFileExtension('.gif'),
                 false
             );
         });
         it('returns false for ".svg"', function () {
             should.equal(
-                manipulator.canTransformFileExtension('.svg'),
+                transform.canTransformFileExtension('.svg'),
                 false
             );
         });
         it('returns false for ".svgz"', function () {
             should.equal(
-                manipulator.canTransformFileExtension('.svgz'),
+                transform.canTransformFileExtension('.svgz'),
                 false
             );
         });
         it('returns false for ".ico"', function () {
             should.equal(
-                manipulator.canTransformFileExtension('.ico'),
+                transform.canTransformFileExtension('.ico'),
                 false
             );
         });
@@ -55,13 +55,13 @@ describe('lib/image: manipulator', function () {
                 return sharpInstance;
             });
 
-            mockUtils.modules.mockNonExistentModule('sharp', sharp);
+            testUtils.modules.mockNonExistentModule('sharp', sharp);
         });
 
         it('resize image', function () {
             sharpInstance.toBuffer.resolves('manipulated');
 
-            return manipulator.process({width: 1000})
+            return transform.process({width: 1000})
                 .then(() => {
                     sharpInstance.resize.calledOnce.should.be.true();
                     sharpInstance.rotate.calledOnce.should.be.true();
@@ -74,7 +74,7 @@ describe('lib/image: manipulator', function () {
         it('skip resizing if image is too small', function () {
             sharpInstance.toBuffer.resolves('manipulated');
 
-            return manipulator.process({width: 1000})
+            return transform.process({width: 1000})
                 .then(() => {
                     sharpInstance.resize.calledOnce.should.be.true();
                     should.deepEqual(sharpInstance.resize.args[0][2], {
@@ -89,7 +89,7 @@ describe('lib/image: manipulator', function () {
         it('uses original image as an output when the size (bytes) is bigger after manipulation', function () {
             sharpInstance.toBuffer.resolves('manipulated to a very very very very very very very large size');
 
-            return manipulator.process({width: 1000})
+            return transform.process({width: 1000})
                 .then(() => {
                     sharpInstance.resize.calledOnce.should.be.true();
                     sharpInstance.rotate.calledOnce.should.be.true();
@@ -105,7 +105,7 @@ describe('lib/image: manipulator', function () {
 
             fs.writeFile.rejects(new Error('whoops'));
 
-            return manipulator.process({width: 2000})
+            return transform.process({width: 2000})
                 .then(() => {
                     '1'.should.eql(1, 'Expected to fail');
                 })
@@ -118,11 +118,11 @@ describe('lib/image: manipulator', function () {
 
     describe('installation', function () {
         beforeEach(function () {
-            mockUtils.modules.mockNonExistentModule('sharp', new Error(), true);
+            testUtils.modules.mockNonExistentModule('sharp', new Error(), true);
         });
 
         it('sharp was not installed', function () {
-            return manipulator.process()
+            return transform.process()
                 .then(() => {
                     '1'.should.eql(1, 'Expected to fail');
                 })
