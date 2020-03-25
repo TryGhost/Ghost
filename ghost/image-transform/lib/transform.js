@@ -3,16 +3,18 @@ const errors = require('@tryghost/errors');
 const fs = require('fs-extra');
 
 /**
- * @NOTE: Sharp cannot operate on the same image path, that's why we have to use in & out paths.
- *
- * We currently can't enable compression or having more config options, because of
- * https://github.com/lovell/sharp/issues/1360.
- */
-
-const unsafeProcess = (options = {}) => {
+  * @NOTE: Sharp cannot operate on the same image path, that's why we have to use in & out paths.
+  *
+  * We currently can't enable compression or having more config options, because of
+  * https://github.com/lovell/sharp/issues/1360.
+  *
+  * Resize an image referenced by the `in` path and write it to the `out` path
+  * @param {{in, out, width}} options
+  */
+const unsafeResizeFromPath = (options = {}) => {
     return fs.readFile(options.in)
         .then((data) => {
-            return unsafeResizeImage(data, {
+            return unsafeResizeFromBuffer(data, {
                 width: options.width
             });
         })
@@ -21,7 +23,14 @@ const unsafeProcess = (options = {}) => {
         });
 };
 
-const unsafeResizeImage = (originalBuffer, {width, height} = {}) => {
+/**
+ * Resize an image
+ *
+ * @param {Buffer} originalBuffer image to resize
+ * @param {{width, height}} options
+ * @returns {Buffer} the resizedBuffer
+ */
+const unsafeResizeFromBuffer = (originalBuffer, {width, height} = {}) => {
     const sharp = require('sharp');
     return sharp(originalBuffer)
         .resize(width, height, {
@@ -36,12 +45,22 @@ const unsafeResizeImage = (originalBuffer, {width, height} = {}) => {
         });
 };
 
-// NOTE: .gif optimization is currently not supported by sharp but will be soon
-//       as there has been support added in underlying libvips library https://github.com/lovell/sharp/issues/1372
-//       As for .svg files, sharp only supports conversion to png, and this does not
-//       play well with animated svg files
+/**
+ * Check if this tool can handle a particular extension
+ * NOTE: .gif optimization is currently not supported by sharp but will be soon
+ *       as there has been support added in underlying libvips library https://github.com/lovell/sharp/issues/1372
+ *       As for .svg files, sharp only supports conversion to png, and this does not
+ *       play well with animated svg files
+ * @param {String} ext the extension to check, including the leading dot
+ */
 const canTransformFileExtension = ext => !['.gif', '.svg', '.svgz', '.ico'].includes(ext);
 
+/**
+ * Internal utility to wrap all transform functions in error handling
+ * Allows us to keep Sharp as an optional dependency
+ *
+ * @param {Function} fn
+ */
 const makeSafe = fn => (...args) => {
     try {
         require('sharp');
@@ -62,5 +81,5 @@ const makeSafe = fn => (...args) => {
 };
 
 module.exports.canTransformFileExtension = canTransformFileExtension;
-module.exports.process = makeSafe(unsafeProcess);
-module.exports.resizeImage = makeSafe(unsafeResizeImage);
+module.exports.resizeFromPath = makeSafe(unsafeResizeFromPath);
+module.exports.resizeFromBuffer = makeSafe(unsafeResizeFromBuffer);
