@@ -11,7 +11,8 @@
    },
   "separateMinorPatch": true,
   "patch": {
-    "automerge": true
+    "automerge": true,
+    "automergeType": "branch"
   },
   "ignoreDeps": [
       "got",
