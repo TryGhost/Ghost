@@ -5,7 +5,7 @@ const should = require('should'),
     path = require('path'),
     configUtils = require('../../../utils/configUtils'),
     urlUtils = require('../../../../server/lib/url-utils'),
-    common = require('../../../../server/lib/common'),
+    errors = require('@tryghost/errors'),
     storage = require('../../../../server/adapters/storage');
 
 describe('lib/image: image size', function () {
@@ -508,7 +508,7 @@ describe('lib/image: image size', function () {
             imageSize.getImageSizeFromStoragePath(url)
                 .catch(function (err) {
                     should.exist(err);
-                    (err instanceof common.errors.NotFoundError).should.eql(true);
+                    (err instanceof errors.NotFoundError).should.eql(true);
                     done();
                 });
         });
