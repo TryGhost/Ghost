@@ -1,8 +1,26 @@
 const common = require('../common');
+const config = require('../../config');
+
+let cardFactory, cards;
 
 module.exports = {
     get cards() {
-        return require('./cards');
+        if (cards) {
+            return cards;
+        }
+
+        const CardFactory = require('@tryghost/kg-card-factory');
+        const defaultCards = require('@tryghost/kg-default-cards');
+
+        cardFactory = new CardFactory({
+            siteUrl: config.get('url')
+        });
+
+        cards = defaultCards.map((card) => {
+            return cardFactory.createCard(card);
+        });
+
+        return cards;
     },
 
     get atoms() {
