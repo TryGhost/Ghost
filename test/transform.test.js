@@ -61,7 +61,7 @@ describe('Transform', function () {
         it('resize image', function () {
             sharpInstance.toBuffer.resolves('manipulated');
 
-            return transform.process({width: 1000})
+            return transform.resizeFromPath({width: 1000})
                 .then(() => {
                     sharpInstance.resize.calledOnce.should.be.true();
                     sharpInstance.rotate.calledOnce.should.be.true();
@@ -74,7 +74,7 @@ describe('Transform', function () {
         it('skip resizing if image is too small', function () {
             sharpInstance.toBuffer.resolves('manipulated');
 
-            return transform.process({width: 1000})
+            return transform.resizeFromPath({width: 1000})
                 .then(() => {
                     sharpInstance.resize.calledOnce.should.be.true();
                     should.deepEqual(sharpInstance.resize.args[0][2], {
@@ -89,7 +89,7 @@ describe('Transform', function () {
         it('uses original image as an output when the size (bytes) is bigger after manipulation', function () {
             sharpInstance.toBuffer.resolves('manipulated to a very very very very very very very large size');
 
-            return transform.process({width: 1000})
+            return transform.resizeFromPath({width: 1000})
                 .then(() => {
                     sharpInstance.resize.calledOnce.should.be.true();
                     sharpInstance.rotate.calledOnce.should.be.true();
@@ -105,7 +105,7 @@ describe('Transform', function () {
 
             fs.writeFile.rejects(new Error('whoops'));
 
-            return transform.process({width: 2000})
+            return transform.resizeFromPath({width: 2000})
                 .then(() => {
                     '1'.should.eql(1, 'Expected to fail');
                 })
@@ -122,7 +122,7 @@ describe('Transform', function () {
         });
 
         it('sharp was not installed', function () {
-            return transform.process()
+            return transform.resizeFromPath()
                 .then(() => {
                     '1'.should.eql(1, 'Expected to fail');
                 })
