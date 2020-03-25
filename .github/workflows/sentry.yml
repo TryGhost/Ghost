@@ -1,0 +1,17 @@
+name: Sentry
+on:
+  release:
+    types: [published]
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: tclindner/sentry-releases-action@v1.0.0
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: TryGhost
+          SENTRY_PROJECT: Ghost
+        with:
+          tagName: ${{ github.ref }}
+          environment: general
