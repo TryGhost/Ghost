@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const common = require('../common');
+const errors = require('@tryghost/errors');
 const fs = require('fs-extra');
 
 /**
@@ -46,14 +46,14 @@ const makeSafe = fn => (...args) => {
     try {
         require('sharp');
     } catch (err) {
-        return Promise.reject(new common.errors.InternalServerError({
+        return Promise.reject(new errors.InternalServerError({
             message: 'Sharp wasn\'t installed',
             code: 'SHARP_INSTALLATION',
             err: err
         }));
     }
     return fn(...args).catch((err) => {
-        throw new common.errors.InternalServerError({
+        throw new errors.InternalServerError({
             message: 'Unable to manipulate image.',
             err: err,
             code: 'IMAGE_PROCESSING'
