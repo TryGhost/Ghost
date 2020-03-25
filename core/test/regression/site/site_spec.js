@@ -3,6 +3,7 @@ const should = require('should'),
     _ = require('lodash'),
     cheerio = require('cheerio'),
     testUtils = require('../../utils'),
+    mockUtils = require('../../utils/mocks'),
     configUtils = require('../../utils/configUtils'),
     urlUtils = require('../../utils/urlUtils'),
     appService = require('../../../frontend/services/apps'),
@@ -60,7 +61,7 @@ describe('Integration - Web - Site', function () {
             });
 
             describe('behaviour: default cases', function () {
-                it('serve post', function () {
+                it.only('serve post', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
@@ -68,7 +69,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -83,7 +84,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.match(/amp\.hbs/);
@@ -99,7 +100,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -114,7 +115,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('page');
@@ -129,7 +130,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -148,7 +149,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('tag');
@@ -167,7 +168,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -181,7 +182,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -208,7 +209,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -229,7 +230,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -245,7 +246,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('/prettify-me/');
@@ -263,7 +264,7 @@ describe('Integration - Web - Site', function () {
                             url: '/page/1/'
                         };
 
-                        return testUtils.mocks.express.invoke(app, req)
+                        return mockUtils.express.invoke(app, req)
                             .then(function (response) {
                                 response.statusCode.should.eql(301);
                                 response.headers.location.should.eql('/');
@@ -280,7 +281,7 @@ describe('Integration - Web - Site', function () {
                             url: '/feed/'
                         };
 
-                        return testUtils.mocks.express.invoke(app, req)
+                        return mockUtils.express.invoke(app, req)
                             .then(function (response) {
                                 response.statusCode.should.eql(301);
                                 response.headers.location.should.eql('/rss/');
@@ -310,7 +311,7 @@ describe('Integration - Web - Site', function () {
                         url: '/html-ipsum'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('https://example.com/html-ipsum/');
@@ -325,7 +326,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('https://example.com/html-ipsum/');
@@ -342,7 +343,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('https://example.com/favicon.png');
@@ -357,7 +358,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('https://example.com/assets/css/main.css');
@@ -426,7 +427,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('home');
@@ -441,7 +442,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -455,7 +456,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -470,7 +471,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -489,7 +490,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -543,7 +544,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('something');
@@ -604,7 +605,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             // We can't find a post with the slug "featured"
                             response.statusCode.should.eql(404);
@@ -620,7 +621,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -635,7 +636,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -650,7 +651,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -706,7 +707,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -721,7 +722,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -736,7 +737,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('page');
@@ -792,7 +793,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -807,7 +808,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -822,7 +823,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -837,7 +838,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('page');
@@ -950,7 +951,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('index');
@@ -965,7 +966,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                         });
@@ -979,7 +980,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('index');
@@ -994,7 +995,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -1008,7 +1009,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -1067,7 +1068,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('default');
@@ -1082,7 +1083,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('index');
@@ -1137,7 +1138,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('default');
@@ -1196,7 +1197,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('home');
@@ -1211,7 +1212,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('something');
@@ -1382,7 +1383,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -1401,7 +1402,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.headers['content-type'].should.eql('text/xml; charset=UTF-8');
@@ -1416,7 +1417,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -1436,7 +1437,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -1453,7 +1454,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -1472,7 +1473,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -1491,7 +1492,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -1510,7 +1511,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('/channel1/');
@@ -1525,7 +1526,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('/channel6/');
@@ -1540,7 +1541,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -1554,7 +1555,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -1632,7 +1633,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -1646,7 +1647,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                     });
@@ -1660,7 +1661,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                     });
@@ -1674,7 +1675,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -1688,7 +1689,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('podcast/rss');
@@ -1705,7 +1706,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
                         response.statusCode.should.eql(200);
@@ -1766,7 +1767,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -1781,7 +1782,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.match(/amp\.hbs/);
@@ -1797,7 +1798,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -1812,7 +1813,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('page');
@@ -1827,7 +1828,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -1846,7 +1847,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('tag');
@@ -1865,7 +1866,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -1879,7 +1880,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -1906,7 +1907,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -1927,7 +1928,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -1943,7 +1944,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('/prettify-me/');
@@ -1961,7 +1962,7 @@ describe('Integration - Web - Site', function () {
                             url: '/page/1/'
                         };
 
-                        return testUtils.mocks.express.invoke(app, req)
+                        return mockUtils.express.invoke(app, req)
                             .then(function (response) {
                                 response.statusCode.should.eql(301);
                                 response.headers.location.should.eql('/');
@@ -1978,7 +1979,7 @@ describe('Integration - Web - Site', function () {
                             url: '/feed/'
                         };
 
-                        return testUtils.mocks.express.invoke(app, req)
+                        return mockUtils.express.invoke(app, req)
                             .then(function (response) {
                                 response.statusCode.should.eql(301);
                                 response.headers.location.should.eql('/rss/');
@@ -2008,7 +2009,7 @@ describe('Integration - Web - Site', function () {
                         url: '/html-ipsum'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('https://example.com/html-ipsum/');
@@ -2023,7 +2024,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('https://example.com/html-ipsum/');
@@ -2040,7 +2041,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('https://example.com/favicon.png');
@@ -2055,7 +2056,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('https://example.com/assets/css/main.css');
@@ -2124,7 +2125,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('home');
@@ -2139,7 +2140,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -2153,7 +2154,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -2168,7 +2169,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -2187,7 +2188,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -2243,7 +2244,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('something');
@@ -2304,7 +2305,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             // We can't find a post with the slug "featured"
                             response.statusCode.should.eql(404);
@@ -2320,7 +2321,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -2335,7 +2336,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -2350,7 +2351,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -2406,7 +2407,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -2421,7 +2422,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -2436,7 +2437,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('page');
@@ -2492,7 +2493,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -2507,7 +2508,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -2522,7 +2523,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -2537,7 +2538,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('page');
@@ -2650,7 +2651,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('index');
@@ -2665,7 +2666,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                         });
@@ -2679,7 +2680,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('index');
@@ -2694,7 +2695,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -2708,7 +2709,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -2767,7 +2768,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('default');
@@ -2782,7 +2783,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('index');
@@ -2837,7 +2838,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('default');
@@ -2896,7 +2897,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('home');
@@ -2911,7 +2912,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('something');
@@ -3082,7 +3083,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -3101,7 +3102,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.headers['content-type'].should.eql('text/xml; charset=UTF-8');
@@ -3116,7 +3117,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -3136,7 +3137,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -3153,7 +3154,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -3172,7 +3173,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -3191,7 +3192,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -3210,7 +3211,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('/channel1/');
@@ -3225,7 +3226,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('/channel6/');
@@ -3240,7 +3241,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -3254,7 +3255,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -3332,7 +3333,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -3346,7 +3347,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                     });
@@ -3360,7 +3361,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                     });
@@ -3374,7 +3375,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -3388,7 +3389,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('podcast/rss');
@@ -3405,7 +3406,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
                         response.statusCode.should.eql(200);
@@ -3466,7 +3467,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -3481,7 +3482,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.match(/amp\.hbs/);
@@ -3497,7 +3498,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -3512,7 +3513,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('page');
@@ -3527,7 +3528,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -3546,7 +3547,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('tag');
@@ -3565,7 +3566,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -3579,7 +3580,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -3606,7 +3607,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -3627,7 +3628,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -3643,7 +3644,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('/prettify-me/');
@@ -3661,7 +3662,7 @@ describe('Integration - Web - Site', function () {
                             url: '/page/1/'
                         };
 
-                        return testUtils.mocks.express.invoke(app, req)
+                        return mockUtils.express.invoke(app, req)
                             .then(function (response) {
                                 response.statusCode.should.eql(301);
                                 response.headers.location.should.eql('/');
@@ -3678,7 +3679,7 @@ describe('Integration - Web - Site', function () {
                             url: '/feed/'
                         };
 
-                        return testUtils.mocks.express.invoke(app, req)
+                        return mockUtils.express.invoke(app, req)
                             .then(function (response) {
                                 response.statusCode.should.eql(301);
                                 response.headers.location.should.eql('/rss/');
@@ -3708,7 +3709,7 @@ describe('Integration - Web - Site', function () {
                         url: '/html-ipsum'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('https://example.com/html-ipsum/');
@@ -3723,7 +3724,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('https://example.com/html-ipsum/');
@@ -3740,7 +3741,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('https://example.com/favicon.png');
@@ -3755,7 +3756,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('https://example.com/assets/css/main.css');
@@ -3826,7 +3827,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('home');
@@ -3841,7 +3842,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -3855,7 +3856,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -3870,7 +3871,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -3889,7 +3890,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -3943,7 +3944,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('something');
@@ -4004,7 +4005,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             // We can't find a post with the slug "featured"
                             response.statusCode.should.eql(404);
@@ -4020,7 +4021,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -4035,7 +4036,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -4050,7 +4051,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -4106,7 +4107,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -4121,7 +4122,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -4136,7 +4137,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('page');
@@ -4192,7 +4193,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('post');
@@ -4207,7 +4208,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -4222,7 +4223,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(404);
                             response.template.should.eql('error-404');
@@ -4237,7 +4238,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('page');
@@ -4350,7 +4351,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('index');
@@ -4365,7 +4366,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                         });
@@ -4379,7 +4380,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('index');
@@ -4394,7 +4395,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -4408,7 +4409,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -4467,7 +4468,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('default');
@@ -4482,7 +4483,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('index');
@@ -4537,7 +4538,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('default');
@@ -4596,7 +4597,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('home');
@@ -4611,7 +4612,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('something');
@@ -4782,7 +4783,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -4801,7 +4802,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                             response.headers['content-type'].should.eql('text/xml; charset=UTF-8');
@@ -4816,7 +4817,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -4836,7 +4837,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -4853,7 +4854,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -4872,7 +4873,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -4891,7 +4892,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             const $ = cheerio.load(response.body);
 
@@ -4910,7 +4911,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('/channel1/');
@@ -4925,7 +4926,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('/channel6/');
@@ -4940,7 +4941,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -4954,7 +4955,7 @@ describe('Integration - Web - Site', function () {
                         host: 'example.com'
                     };
 
-                    return testUtils.mocks.express.invoke(app, req)
+                    return mockUtils.express.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(200);
                         });
@@ -5033,7 +5034,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5047,7 +5048,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                     });
@@ -5061,7 +5062,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                     });
@@ -5075,7 +5076,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5089,7 +5090,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('podcast/rss');
@@ -5106,7 +5107,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
                         response.statusCode.should.eql(200);
@@ -5159,7 +5160,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5173,7 +5174,7 @@ describe('Integration - Web - Site', function () {
                     host: 'localhost'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5187,7 +5188,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5201,7 +5202,7 @@ describe('Integration - Web - Site', function () {
                     host: 'localhost'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5215,7 +5216,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5229,7 +5230,7 @@ describe('Integration - Web - Site', function () {
                     host: 'localhost'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5276,7 +5277,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5290,7 +5291,7 @@ describe('Integration - Web - Site', function () {
                     host: 'localhost'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5304,7 +5305,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('https://admin.example.com/ghost/');
@@ -5319,7 +5320,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                     });
@@ -5333,7 +5334,7 @@ describe('Integration - Web - Site', function () {
                     host: 'localhost'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                     });
@@ -5347,7 +5348,7 @@ describe('Integration - Web - Site', function () {
                     host: 'admin.example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5361,7 +5362,7 @@ describe('Integration - Web - Site', function () {
                     host: 'admin.example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5375,7 +5376,7 @@ describe('Integration - Web - Site', function () {
                     host: 'admin.example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('https://admin.example.com/ghost/');
@@ -5390,7 +5391,7 @@ describe('Integration - Web - Site', function () {
                     host: 'admin.example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                     });
@@ -5438,7 +5439,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                     });
@@ -5479,7 +5480,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5493,7 +5494,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5507,7 +5508,7 @@ describe('Integration - Web - Site', function () {
                     host: 'localhost'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5521,7 +5522,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('https://example.com/ghost/');
@@ -5536,7 +5537,7 @@ describe('Integration - Web - Site', function () {
                     host: 'localhost'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('https://example.com/ghost/');
@@ -5551,7 +5552,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('https://example.com/ghost/api/v2/admin/site/');
@@ -5566,7 +5567,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5580,7 +5581,7 @@ describe('Integration - Web - Site', function () {
                     host: 'localhost'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('https://example.com/ghost/');
@@ -5595,7 +5596,7 @@ describe('Integration - Web - Site', function () {
                     host: 'example.com'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -5609,7 +5610,7 @@ describe('Integration - Web - Site', function () {
                     host: 'localhost'
                 };
 
-                return testUtils.mocks.express.invoke(app, req)
+                return mockUtils.express.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('https://example.com/ghost/api/v2/admin/site/');

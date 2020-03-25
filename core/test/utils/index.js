@@ -2,7 +2,6 @@ var Promise = require('bluebird'),
     _ = require('lodash'),
     fs = require('fs-extra'),
     path = require('path'),
-    Module = require('module'),
     os = require('os'),
     express = require('express'),
     debug = require('ghost-ignition').debug('test'),
@@ -32,7 +31,6 @@ var Promise = require('bluebird'),
     configUtils = require('./configUtils'),
     filterData = require('./fixtures/filter-param'),
     APIUtils = require('./api'),
-    mocks = require('./mocks'),
     config = require('../../server/config'),
     knexMigrator = new KnexMigrator(),
     fixtures,
@@ -41,8 +39,6 @@ var Promise = require('bluebird'),
     originalRequireFn,
     postsInserted = 0,
 
-    mockNotExistingModule,
-    unmockNotExistingModule,
     teardownDb,
     setup,
     truncate,
@@ -760,29 +756,6 @@ teardownDb = function teardownDb() {
     });
 };
 
-/**
- * offer helper functions for mocking
- * we start with a small function set to mock non existent modules
- */
-originalRequireFn = Module.prototype.require;
-mockNotExistingModule = function mockNotExistingModule(modulePath, module, error = false) {
-    Module.prototype.require = function (path) {
-        if (path.match(modulePath)) {
-            if (error) {
-                throw module;
-            }
-
-            return module;
-        }
-
-        return originalRequireFn.apply(this, arguments);
-    };
-};
-
-unmockNotExistingModule = function unmockNotExistingModule() {
-    Module.prototype.require = originalRequireFn;
-};
-
 var ghostServer;
 
 /**
@@ -1085,9 +1058,6 @@ module.exports = {
     createUser: createUser,
     createPost: createPost,
 
-    mockNotExistingModule: mockNotExistingModule,
-    unmockNotExistingModule: unmockNotExistingModule,
-
     /**
      * renderObject:    res.render(view, dbResponse)
      * templateOptions: hbs.updateTemplateOptions(...)
@@ -1119,8 +1089,6 @@ module.exports = {
     initData: initData,
     clearData: clearData,
     clearBruteData: clearBruteData,
-
-    mocks: mocks,
 
     fixtures: fixtures,
 

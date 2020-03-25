@@ -1,2 +1,2 @@
-exports.utils = require('./utils');
+exports.modules = require('./modules');
 exports.express = require('./express');

@@ -1,19 +1,18 @@
-const should = require('should'),
-    rewire = require('rewire'),
-    testUtils = require('../../utils');
+const should = require('should');
+const rewire = require('rewire');
+const mockUtils = require('../../utils/mocks');
 
-let ghostVersionUtils,
-    version;
+let ghostVersionUtils, version;
 
 describe('Utils: Ghost Version', function () {
     const beforeEachIt = function be() {
-        testUtils.mockNotExistingModule(/package\.json/, {version: version});
+        mockUtils.modules.mockNonExistentModule(/package\.json/, {version: version});
 
         ghostVersionUtils = rewire('../../../server/lib/ghost-version');
     };
 
     afterEach(function () {
-        testUtils.unmockNotExistingModule(/package\.json/);
+        mockUtils.modules.unmockNonExistentModule(/package\.json/);
     });
 
     it('default', function () {
