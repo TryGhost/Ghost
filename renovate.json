@@ -6,7 +6,6 @@
     "@tryghost:groupBuildTools",
     "@tryghost:automergeSilentTestLintNonMajor"
   ],
-  "travis": { "enabled": true },
   "node": {
     "supportPolicy": ["lts"]
    },
