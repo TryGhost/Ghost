@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-parser-plugins",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-parser-plugins",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -27,17 +27,17 @@
     "access": "public"
   },
   "devDependencies": {
-    "@babel/core": "7.8.7",
-    "@babel/preset-env": "7.8.7",
+    "@babel/core": "7.9.0",
+    "@babel/preset-env": "7.9.0",
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
     "jsdom": "15.2.1",
     "mocha": "6.2.0",
-    "rollup": "1.29.0",
-    "rollup-plugin-babel": "4.3.3",
+    "rollup": "1.32.1",
+    "rollup-plugin-babel": "4.4.0",
     "should": "13.2.3",
     "sinon": "7.4.1"
   },
   "dependencies": {
-    "@tryghost/kg-clean-basic-html": "^0.1.5"
+    "@tryghost/kg-clean-basic-html": "^0.1.6"
   }
 }
