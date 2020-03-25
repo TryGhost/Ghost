@@ -17,7 +17,8 @@
   },
   "separateMinorPatch": true,
   "patch": {
-    "automerge": true
+    "automerge": true,
+    "automergeType": "branch"
   },
   "packageRules": [
     {
