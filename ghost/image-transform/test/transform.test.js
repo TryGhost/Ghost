@@ -3,12 +3,12 @@ const sinon = require('sinon');
 const fs = require('fs-extra');
 const errors = require('@tryghost/errors');
 const manipulator = require('../../../../server/lib/image/manipulator');
-const testUtils = require('../../../utils');
+const mockUtils = require('../../../utils/mocks');
 
 describe('lib/image: manipulator', function () {
     afterEach(function () {
         sinon.restore();
-        testUtils.unmockNotExistingModule();
+        mockUtils.modules.unmockNonExistentModule();
     });
 
     describe('canTransformFileExtension', function () {
@@ -55,7 +55,7 @@ describe('lib/image: manipulator', function () {
                 return sharpInstance;
             });
 
-            testUtils.mockNotExistingModule('sharp', sharp);
+            mockUtils.modules.mockNonExistentModule('sharp', sharp);
         });
 
         it('resize image', function () {
@@ -118,7 +118,7 @@ describe('lib/image: manipulator', function () {
 
     describe('installation', function () {
         beforeEach(function () {
-            testUtils.mockNotExistingModule('sharp', new Error(), true);
+            mockUtils.modules.mockNonExistentModule('sharp', new Error(), true);
         });
 
         it('sharp was not installed', function () {
