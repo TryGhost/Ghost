@@ -27,9 +27,6 @@
   },
   "dependencies": {
     "@tryghost/kg-markdown-html-renderer": "^1.0.0",
-    "@tryghost/url-utils": "^0.6.14",
-    "bluebird": "^3.7.2",
-    "ghost-ignition": "^4.1.0",
-    "lodash": "^4.17.15"
+    "@tryghost/url-utils": "^0.6.14"
   }
 }
