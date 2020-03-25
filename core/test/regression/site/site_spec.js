@@ -61,7 +61,7 @@ describe('Integration - Web - Site', function () {
             });
 
             describe('behaviour: default cases', function () {
-                it.only('serve post', function () {
+                it('serve post', function () {
                     const req = {
                         secure: true,
                         method: 'GET',
