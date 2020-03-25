@@ -43,6 +43,7 @@
     "@sentry/node": "5.15.0",
     "@tryghost/errors": "^0.1.0",
     "@tryghost/helpers": "1.1.23",
+    "@tryghost/image-transform": "^0.1.0",
     "@tryghost/kg-markdown-html-renderer": "1.0.0",
     "@tryghost/members-api": "0.18.0",
     "@tryghost/members-ssr": "0.7.4",
@@ -128,7 +129,6 @@
   },
   "optionalDependencies": {
     "@tryghost/html-to-mobiledoc": "0.6.4",
-    "sharp": "0.25.2",
     "sqlite3": "4.1.1"
   },
   "devDependencies": {
