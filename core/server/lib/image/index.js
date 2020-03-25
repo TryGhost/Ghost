@@ -13,9 +13,5 @@ module.exports = {
 
     get imageSizeCache() {
         return require('./cached-image-size-from-url');
-    },
-
-    get manipulator() {
-        return require('./manipulator');
     }
 };
