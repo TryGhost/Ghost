@@ -1,13 +1,16 @@
-var should = require('should'),
-    common = require('../../../../server/lib/common');
+// Switch these lines once there are useful utils
+// const testUtils = require('./utils');
+require('./utils');
+
+const errors = require('../');
 
 describe('Errors', function () {
     it('Ensure we inherit from Error', function () {
-        var ghostError = new common.errors.GhostError();
+        var ghostError = new errors.GhostError();
         (ghostError instanceof Error).should.eql(true);
     });
 
-    describe('Inherite from other error', function () {
+    describe('Inherit from other error', function () {
         it('default', function () {
             var someError = new Error(), ghostError;
 
@@ -15,7 +18,7 @@ describe('Errors', function () {
             someError.context = 'test';
             someError.help = 'test';
 
-            ghostError = new common.errors.GhostError({err: someError});
+            ghostError = new errors.GhostError({err: someError});
             ghostError.stack.should.match(/Error: test/);
             ghostError.context.should.eql(someError.context);
             ghostError.help.should.eql(someError.help);
@@ -28,7 +31,7 @@ describe('Errors', function () {
                 a: 'b'
             };
 
-            ghostError = new common.errors.GhostError({
+            ghostError = new errors.GhostError({
                 err: someError
             });
 
@@ -40,7 +43,7 @@ describe('Errors', function () {
 
             someError.context = 'test';
 
-            ghostError = new common.errors.GhostError({
+            ghostError = new errors.GhostError({
                 err: someError,
                 context: 'context'
             });
@@ -48,10 +51,10 @@ describe('Errors', function () {
             ghostError.context.should.eql('test');
         });
 
-        it('with custom attribute', function () {
+        it('with custom message', function () {
             var someError = new Error(), ghostError;
 
-            ghostError = new common.errors.GhostError({
+            ghostError = new errors.GhostError({
                 err: someError,
                 message: 'test'
             });
@@ -60,7 +63,7 @@ describe('Errors', function () {
         });
 
         it('error is string', function () {
-            var ghostError = new common.errors.GhostError({
+            var ghostError = new errors.GhostError({
                 err: 'string'
             });
 
