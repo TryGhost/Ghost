@@ -1,3 +1,10 @@
+const {
+    absoluteToRelative,
+    relativeToAbsolute,
+    htmlAbsoluteToRelative,
+    htmlRelativeToAbsolute
+} = require('@tryghost/url-utils/lib/utils');
+
 /**
 <figure class="kg-card kg-bookmark-card">
   <a href="[URL]" class="kg-bookmark-container">
@@ -17,8 +24,6 @@
 </figure>
  */
 
-const createCard = require('./lib/create-card');
-
 function createElement(dom, elem, classNames = '', attributes = [], text) {
     let element = dom.createElement(elem);
     if (classNames) {
@@ -33,14 +38,13 @@ function createElement(dom, elem, classNames = '', attributes = [], text) {
     return element;
 }
 
-module.exports = createCard({
+module.exports = {
     name: 'bookmark',
     type: 'dom',
-    render(opts) {
-        let {payload, env: {dom}} = opts;
 
+    render({payload, env: {dom}}) {
         if (!payload.metadata || !payload.metadata.url || !payload.metadata.title || !payload.metadata.description) {
-            return '';
+            return dom.createTextNode('');
         }
 
         let figure = createElement(dom, 'figure', 'kg-card kg-bookmark-card');
@@ -92,19 +96,19 @@ module.exports = createCard({
         return figure;
     },
 
-    absoluteToRelative(urlUtils, payload, options) {
+    absoluteToRelative(payload, options) {
         if (payload.metadata) {
-            payload.metadata.url = payload.metadata.url && urlUtils.absoluteToRelative(payload.metadata.url, options);
+            payload.metadata.url = payload.metadata.url && absoluteToRelative(payload.metadata.url, options.siteUrl, options);
         }
-        payload.caption = payload.caption && urlUtils.htmlAbsoluteToRelative(payload.caption, options);
+        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
         return payload;
     },
 
-    relativeToAbsolute(urlUtils, payload, options) {
+    relativeToAbsolute(payload, options) {
         if (payload.metadata) {
-            payload.metadata.url = payload.metadata.url && urlUtils.relativeToAbsolute(payload.metadata.url, options);
+            payload.metadata.url = payload.metadata.url && relativeToAbsolute(payload.metadata.url, options.siteUrl, options.itemUrl, options);
         }
-        payload.caption = payload.caption && urlUtils.htmlRelativeToAbsolute(payload.caption, options);
+        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
         return payload;
     }
-});
+};

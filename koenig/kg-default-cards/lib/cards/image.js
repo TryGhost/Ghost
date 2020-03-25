@@ -1,15 +1,17 @@
-const createCard = require('./lib/create-card');
+const {
+    absoluteToRelative,
+    relativeToAbsolute,
+    htmlAbsoluteToRelative,
+    htmlRelativeToAbsolute
+} = require('@tryghost/url-utils/lib/utils');
 
-module.exports = createCard({
+module.exports = {
     name: 'image',
     type: 'dom',
-    render(opts) {
-        let payload = opts.payload;
-        // let version = opts.options.version;
-        let dom = opts.env.dom;
 
+    render({payload, env: {dom}}) {
         if (!payload.src) {
-            return '';
+            return dom.createTextNode('');
         }
 
         let figure = dom.createElement('figure');
@@ -41,15 +43,15 @@ module.exports = createCard({
         return figure;
     },
 
-    absoluteToRelative(urlUtils, payload, options) {
-        payload.src = payload.src && urlUtils.absoluteToRelative(payload.src, options);
-        payload.caption = payload.caption && urlUtils.htmlAbsoluteToRelative(payload.caption, options);
+    absoluteToRelative(payload, options) {
+        payload.src = payload.src && absoluteToRelative(payload.src, options.siteUrl, options);
+        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
         return payload;
     },
 
-    relativeToAbsolute(urlUtils, payload, options) {
-        payload.src = payload.src && urlUtils.relativeToAbsolute(payload.src, options);
-        payload.caption = payload.caption && urlUtils.htmlRelativeToAbsolute(payload.caption, options);
+    relativeToAbsolute(payload, options) {
+        payload.src = payload.src && relativeToAbsolute(payload.src, options.siteUrl, options.itemUrl, options);
+        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
         return payload;
     }
-});
+};

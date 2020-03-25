@@ -1,5 +1,8 @@
-const should = require('should');
-const card = require('../../../../../server/lib/mobiledoc/cards/html');
+// Switch these lines once there are useful utils
+// const testUtils = require('./utils');
+require('../utils');
+
+const card = require('../../lib/cards/html');
 const SimpleDom = require('simple-dom');
 const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 
@@ -14,7 +17,7 @@ describe('HTML card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: html--><h1>HEADING</h1><p>PARAGRAPH</p><!--kg-card-end: html-->');
+        serializer.serialize(card.render(opts)).should.eql('<h1>HEADING</h1><p>PARAGRAPH</p>');
     });
 
     it('Plain content renders', function () {
@@ -27,7 +30,7 @@ describe('HTML card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: html-->CONTENT<!--kg-card-end: html-->');
+        serializer.serialize(card.render(opts)).should.eql('CONTENT');
     });
 
     it('Invalid HTML returns', function () {
@@ -40,7 +43,7 @@ describe('HTML card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<!--kg-card-begin: html--><h1>HEADING<<!--kg-card-end: html-->');
+        serializer.serialize(card.render(opts)).should.eql('<h1>HEADING<');
     });
 
     it('Renders nothing when payload is undefined', function () {
@@ -61,7 +64,7 @@ describe('HTML card', function () {
             html: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
-        const transformed = card.absoluteToRelative(payload, {});
+        const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
         transformed.html
             .should.equal('A link to <a href="/post">an internal post</a>');
@@ -72,7 +75,7 @@ describe('HTML card', function () {
             html: 'A link to <a href="/post">an internal post</a>'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {});
+        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
 
         transformed.html
             .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');

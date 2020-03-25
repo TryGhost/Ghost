@@ -1,14 +1,15 @@
-const createCard = require('./lib/create-card');
+const {
+    htmlAbsoluteToRelative,
+    htmlRelativeToAbsolute
+} = require('@tryghost/url-utils/lib/utils');
 
-module.exports = createCard({
+module.exports = {
     name: 'code',
     type: 'dom',
-    render(opts) {
-        let payload = opts.payload;
-        let dom = opts.env.dom;
 
+    render({payload, env: {dom}}) {
         if (!payload.code) {
-            return '';
+            return dom.createTextNode('');
         }
 
         let pre = dom.createElement('pre');
@@ -36,13 +37,13 @@ module.exports = createCard({
         }
     },
 
-    absoluteToRelative(urlUtils, payload, options) {
-        payload.caption = payload.caption && urlUtils.htmlAbsoluteToRelative(payload.caption, options);
+    absoluteToRelative(payload, options) {
+        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
         return payload;
     },
 
-    relativeToAbsolute(urlUtils, payload, options) {
-        payload.caption = payload.caption && urlUtils.htmlRelativeToAbsolute(payload.caption, options);
+    relativeToAbsolute(payload, options) {
+        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
         return payload;
     }
-});
+};

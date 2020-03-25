@@ -1,5 +1,8 @@
-const should = require('should');
-const card = require('../../../../../server/lib/mobiledoc/cards/image');
+// Switch these lines once there are useful utils
+// const testUtils = require('./utils');
+require('../utils');
+
+const card = require('../../lib/cards/image');
 const SimpleDom = require('simple-dom');
 const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 
@@ -123,7 +126,7 @@ describe('Image card', function () {
             caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
-        const transformed = card.absoluteToRelative(payload, {});
+        const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
         transformed.src
             .should.equal('/content/images/2018/08/NatGeo01-9.jpg');
@@ -138,7 +141,7 @@ describe('Image card', function () {
             caption: 'A link to <a href="/post">an internal post</a>'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {});
+        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
 
         transformed.src
             .should.equal('http://127.0.0.1:2369/content/images/2018/08/NatGeo01-9.jpg');

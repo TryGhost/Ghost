@@ -1,14 +1,16 @@
-const createCard = require('./lib/create-card');
+const {
+    htmlAbsoluteToRelative,
+    htmlRelativeToAbsolute
+} = require('@tryghost/url-utils/lib/utils');
 
-module.exports = createCard({
+module.exports = {
     name: 'embed',
     type: 'dom',
-    render(opts) {
-        if (!opts.payload.html) {
-            return '';
-        }
 
-        let {payload, env: {dom}} = opts;
+    render({payload, env: {dom}}) {
+        if (!payload.html) {
+            return dom.createTextNode('');
+        }
 
         let figure = dom.createElement('figure');
         figure.setAttribute('class', 'kg-card kg-embed-card');
@@ -26,13 +28,13 @@ module.exports = createCard({
         return figure;
     },
 
-    absoluteToRelative(urlUtils, payload, options) {
-        payload.caption = payload.caption && urlUtils.htmlAbsoluteToRelative(payload.caption, options);
+    absoluteToRelative(payload, options) {
+        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
         return payload;
     },
 
-    relativeToAbsolute(urlUtils, payload, options) {
-        payload.caption = payload.caption && urlUtils.htmlRelativeToAbsolute(payload.caption, options);
+    relativeToAbsolute(payload, options) {
+        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
         return payload;
     }
-});
+};

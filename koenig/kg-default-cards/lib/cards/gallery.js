@@ -1,3 +1,10 @@
+const {
+    absoluteToRelative,
+    relativeToAbsolute,
+    htmlAbsoluteToRelative,
+    htmlRelativeToAbsolute
+} = require('@tryghost/url-utils/lib/utils');
+
 /**
  * <figure class="kg-gallery-card kg-width-wide">
  *   <div class="kg-gallery-container>
@@ -15,18 +22,13 @@
  * </figure>
  */
 
-const createCard = require('./lib/create-card');
-
 const MAX_IMG_PER_ROW = 3;
 
-module.exports = createCard({
+module.exports = {
     name: 'gallery',
     type: 'dom',
-    render(opts) {
-        let payload = opts.payload;
-        // let version = opts.options.version;
-        let dom = opts.env.dom;
 
+    render({payload, env: {dom}}) {
         let isValidImage = (image) => {
             return image.fileName
                 && image.src
@@ -41,7 +43,7 @@ module.exports = createCard({
         }
 
         if (validImages.length === 0) {
-            return '';
+            return dom.createTextNode('');
         }
 
         let figure = dom.createElement('figure');
@@ -110,29 +112,29 @@ module.exports = createCard({
         return figure;
     },
 
-    absoluteToRelative(urlUtils, payload, options) {
+    absoluteToRelative(payload, options) {
         if (payload.images) {
             payload.images.forEach((image) => {
-                image.src = image.src && urlUtils.absoluteToRelative(image.src, options);
-                image.caption = image.caption && urlUtils.htmlAbsoluteToRelative(image.caption, options);
+                image.src = image.src && absoluteToRelative(image.src, options.siteUrl, options);
+                image.caption = image.caption && htmlAbsoluteToRelative(image.caption, options.siteUrl, options);
             });
         }
 
-        payload.caption = payload.caption && urlUtils.htmlAbsoluteToRelative(payload.caption, options);
+        payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
 
         return payload;
     },
 
-    relativeToAbsolute(urlUtils, payload, options) {
+    relativeToAbsolute(payload, options) {
         if (payload.images) {
             payload.images.forEach((image) => {
-                image.src = image.src && urlUtils.relativeToAbsolute(image.src, options);
-                image.caption = image.caption && urlUtils.htmlRelativeToAbsolute(image.caption, options);
+                image.src = image.src && relativeToAbsolute(image.src, options.siteUrl, options.itemUrl, options);
+                image.caption = image.caption && htmlRelativeToAbsolute(image.caption, options.siteUrl, options.itemUrl, options);
             });
         }
 
-        payload.caption = payload.caption && urlUtils.htmlRelativeToAbsolute(payload.caption, options);
+        payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);
 
         return payload;
     }
-});
+};

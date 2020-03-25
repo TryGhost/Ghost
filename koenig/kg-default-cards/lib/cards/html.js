@@ -1,28 +1,32 @@
-const createCard = require('./lib/create-card');
+const {
+    htmlAbsoluteToRelative,
+    htmlRelativeToAbsolute
+} = require('@tryghost/url-utils/lib/utils');
 
-module.exports = createCard({
+module.exports = {
     name: 'html',
     type: 'dom',
     config: {
         commentWrapper: true
     },
-    render(opts) {
-        if (!opts.payload.html) {
-            return '';
+
+    render({payload, env: {dom}}) {
+        if (!payload.html) {
+            return dom.createTextNode('');
         }
 
         // use the SimpleDOM document to create a raw HTML section.
         // avoids parsing/rendering of potentially broken or unsupported HTML
-        return opts.env.dom.createRawHTMLSection(opts.payload.html);
+        return dom.createRawHTMLSection(payload.html);
     },
 
-    absoluteToRelative(urlUtils, payload, options) {
-        payload.html = payload.html && urlUtils.htmlAbsoluteToRelative(payload.html, options);
+    absoluteToRelative(payload, options) {
+        payload.html = payload.html && htmlAbsoluteToRelative(payload.html, options.siteUrl, options);
         return payload;
     },
 
-    relativeToAbsolute(urlUtils, payload, options) {
-        payload.html = payload.html && urlUtils.htmlRelativeToAbsolute(payload.html, options);
+    relativeToAbsolute(payload, options) {
+        payload.html = payload.html && htmlRelativeToAbsolute(payload.html, options.siteUrl, options.itemUrl, options);
         return payload;
     }
-});
+};

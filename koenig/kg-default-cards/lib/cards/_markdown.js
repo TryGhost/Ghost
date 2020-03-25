@@ -1,3 +1,9 @@
+const markdownHtmlRenderer = require('@tryghost/kg-markdown-html-renderer');
+const {
+    markdownAbsoluteToRelative,
+    markdownRelativeToAbsolute
+} = require('@tryghost/url-utils/lib/utils');
+
 // this is a function so that when it's aliased across multiple cards we do not
 // end up modifying the object by reference
 module.exports = function markdownCardDefinition() {
@@ -8,15 +14,13 @@ module.exports = function markdownCardDefinition() {
             commentWrapper: true
         },
 
-        render: function (opts) {
-            let renderers = require('../renderers');
-            let payload = opts.payload;
-            let version = opts.options && opts.options.version || 2;
+        render: function ({payload, env: {dom}, options}) {
+            let version = options && options.version || 2;
             // convert markdown to HTML ready for insertion into dom
-            let html = renderers.markdownHtmlRenderer.render(payload.markdown || '');
+            let html = markdownHtmlRenderer.render(payload.markdown || '');
 
             if (!html) {
-                return '';
+                return dom.createTextNode('');
             }
 
             /**
@@ -28,16 +32,25 @@ module.exports = function markdownCardDefinition() {
 
             // use the SimpleDOM document to create a raw HTML section.
             // avoids parsing/rendering of potentially broken or unsupported HTML
-            return opts.env.dom.createRawHTMLSection(html);
+            return dom.createRawHTMLSection(html);
         },
 
-        absoluteToRelative(urlUtils, payload, options) {
-            payload.markdown = payload.markdown && urlUtils.markdownAbsoluteToRelative(payload.markdown, options);
+        absoluteToRelative(payload, options) {
+            payload.markdown = payload.markdown && markdownAbsoluteToRelative(
+                payload.markdown,
+                options.siteUrl,
+                options
+            );
             return payload;
         },
 
-        relativeToAbsolute(urlUtils, payload, options) {
-            payload.markdown = payload.markdown && urlUtils.markdownRelativeToAbsolute(payload.markdown, options);
+        relativeToAbsolute(payload, options) {
+            payload.markdown = payload.markdown && markdownRelativeToAbsolute(
+                payload.markdown,
+                options.siteUrl,
+                options.itemUrl,
+                options
+            );
             return payload;
         }
     };

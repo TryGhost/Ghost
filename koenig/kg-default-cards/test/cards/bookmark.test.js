@@ -1,5 +1,8 @@
-const should = require('should');
-const card = require('../../../../../server/lib/mobiledoc/cards/bookmark');
+// Switch these lines once there are useful utils
+// const testUtils = require('./utils');
+require('../utils');
+
+const card = require('../../lib/cards/bookmark');
 const SimpleDom = require('simple-dom');
 const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 
@@ -210,7 +213,7 @@ describe('Bookmark card', function () {
             caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
-        const transformed = card.absoluteToRelative(payload, {});
+        const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
         transformed.metadata.url
             .should.equal('/post');
@@ -227,7 +230,7 @@ describe('Bookmark card', function () {
             caption: 'A link to <a href="/post">an internal post</a>'
         };
 
-        const transformed = card.relativeToAbsolute(payload, {});
+        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
 
         transformed.metadata.url
             .should.equal('http://127.0.0.1:2369/post');
