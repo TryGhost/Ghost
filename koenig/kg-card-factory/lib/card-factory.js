@@ -46,7 +46,7 @@ module.exports = class CardFactory {
                 if (card.absoluteToRelative) {
                     const defaultOptions = {
                         assetsOnly: false,
-                        siteUrl: this.factoryOptions.siteUrl
+                        siteUrl: factoryOptions.siteUrl
                     };
                     const options = Object.assign({}, defaultOptions, _options);
                     return card.absoluteToRelative(payload, options);
@@ -59,7 +59,7 @@ module.exports = class CardFactory {
                 if (card.relativeToAbsolute) {
                     const defaultOptions = {
                         assetsOnly: false,
-                        siteUrl: this.factoryOptions.siteUrl
+                        siteUrl: factoryOptions.siteUrl
                     };
                     const options = Object.assign({}, defaultOptions, _options);
                     return card.relativeToAbsolute(payload, options);
