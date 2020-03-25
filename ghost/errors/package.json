@@ -24,6 +24,7 @@
     "sinon": "9.0.1"
   },
   "dependencies": {
-    "ghost-ignition": "^4.1.0"
+    "ghost-ignition": "^4.1.0",
+    "lodash": "^4.17.15"
   }
 }
