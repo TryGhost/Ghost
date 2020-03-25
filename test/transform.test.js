@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
-const common = require('../../../../server/lib/common');
+const errors = require('@tryghost/errors');
 const manipulator = require('../../../../server/lib/image/manipulator');
 const testUtils = require('../../../utils');
 
@@ -110,7 +110,7 @@ describe('lib/image: manipulator', function () {
                     '1'.should.eql(1, 'Expected to fail');
                 })
                 .catch((err) => {
-                    (err instanceof common.errors.InternalServerError).should.be.true;
+                    (err instanceof errors.InternalServerError).should.be.true;
                     err.code.should.eql('IMAGE_PROCESSING');
                 });
         });
@@ -127,7 +127,7 @@ describe('lib/image: manipulator', function () {
                     '1'.should.eql(1, 'Expected to fail');
                 })
                 .catch((err) => {
-                    (err instanceof common.errors.InternalServerError).should.be.true();
+                    (err instanceof errors.InternalServerError).should.be.true();
                     err.code.should.eql('SHARP_INSTALLATION');
                 });
         });
