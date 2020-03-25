@@ -132,4 +132,13 @@ describe('Transform', function () {
                 });
         });
     });
+
+    describe('generateOriginalImageName', function () {
+        it('correctly adds suffix', function () {
+            transform.generateOriginalImageName('test.jpg').should.eql('test_o.jpg');
+            transform.generateOriginalImageName('content/images/test.jpg').should.eql('content/images/test_o.jpg');
+            transform.generateOriginalImageName('content/images/test_o.jpg').should.eql('content/images/test_o_o.jpg');
+            transform.generateOriginalImageName('content/images/test-1.jpg').should.eql('content/images/test-1_o.jpg');
+        });
+    });
 });
