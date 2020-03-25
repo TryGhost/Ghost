@@ -291,6 +291,13 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
+"@tryghost/errors@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.1.0.tgz#cbf6be79da22cf311f4506f3e6391c75984295e1"
+  integrity sha512-8C8Vqw1npMkxrIGj8zWHj2dspRlf56Ersv3efZzolxGwmUHcrkxn7MvjBevOkP9T+3XY7fTPQKhB6P3resQlAQ==
+  dependencies:
+    ghost-ignition "^4.1.0"
+
 "@tryghost/extract-zip@1.6.6", "@tryghost/extract-zip@^1.6.6":
   version "1.6.6"
   resolved "https://registry.yarnpkg.com/@tryghost/extract-zip/-/extract-zip-1.6.6.tgz#937e0e775fec6dea937ac49d73a068bcafb67f50"
@@ -3419,7 +3426,7 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-ignition@4.1.0, ghost-ignition@^4.0.0:
+ghost-ignition@4.1.0, ghost-ignition@^4.0.0, ghost-ignition@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.1.0.tgz#44ac9dc8873606207f81a652a705f383714c2f07"
   integrity sha512-d3hfUE1qey4S1sdjayWcbsYCr77joc7KcM4Zrhol0vdR/anGvR6h6Z529MI42VJHr38h6x0/PaQ/mjrlOey7XQ==
