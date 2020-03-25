@@ -1,5 +1,5 @@
 const path = require('path');
-const image = require('../../../../lib/image');
+const imageTransform = require('@tryghost/image-transform');
 const storage = require('../../../../adapters/storage');
 const activeTheme = require('../../../../../frontend/services/themes/active');
 
@@ -28,8 +28,8 @@ module.exports = function (req, res, next) {
         return next();
     }
 
-    // CASE: image manipulator is uncapable of transforming file (e.g. .gif)
-    if (!image.manipulator.canTransformFileExtension(requestUrlFileExtension)) {
+    // CASE: image transform is not capable of transforming file (e.g. .gif)
+    if (!imageTransform.canTransformFileExtension(requestUrlFileExtension)) {
         return redirectToOriginal();
     }
 
@@ -86,7 +86,7 @@ module.exports = function (req, res, next) {
                 return storageInstance.read({path});
             })
             .then((originalImageBuffer) => {
-                return image.manipulator.resizeImage(originalImageBuffer, imageDimensionConfig);
+                return imageTransform.resizeFromBuffer(originalImageBuffer, imageDimensionConfig);
             })
             .then((resizedImageBuffer) => {
                 return storageInstance.saveRaw(resizedImageBuffer, req.url);

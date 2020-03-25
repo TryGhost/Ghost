@@ -298,6 +298,14 @@
   dependencies:
     ghost-ignition "^4.1.0"
 
+"@tryghost/errors@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.1.1.tgz#c140f8558fc54cf69ac7e7ea719a189c763fea04"
+  integrity sha512-8gmWGDLbwGhrMJ6psn8uubanntfxCvywufzJyDFgB/Kjh6bjd2CYEL84nA3rzfnxLpuY7vL/i4sFjpF1MZ15KA==
+  dependencies:
+    ghost-ignition "^4.1.0"
+    lodash "^4.17.15"
+
 "@tryghost/extract-zip@1.6.6", "@tryghost/extract-zip@^1.6.6":
   version "1.6.6"
   resolved "https://registry.yarnpkg.com/@tryghost/extract-zip/-/extract-zip-1.6.6.tgz#937e0e775fec6dea937ac49d73a068bcafb67f50"
@@ -323,6 +331,17 @@
     "@tryghost/kg-parser-plugins" "0.9.0"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "16.2.0"
+
+"@tryghost/image-transform@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-0.1.0.tgz#d59c3cb41915fd5596e4d8f90f5a8bb44f19edf9"
+  integrity sha512-yqECkOUo0nnPK7jdxvRF2B12jR2YfCpAzZdreHO3HIhVMMBN6vgPVxIsTd7Kh2cXpuWpBWS+0eAQ8r6sf6vJfQ==
+  dependencies:
+    "@tryghost/errors" "^0.1.1"
+    bluebird "^3.7.2"
+    fs-extra "^9.0.0"
+  optionalDependencies:
+    sharp "^0.25.2"
 
 "@tryghost/kg-clean-basic-html@^0.1.5":
   version "0.1.5"
@@ -1513,10 +1532,15 @@ chokidar@3.3.0:
   optionalDependencies:
     fsevents "~2.1.1"
 
-chownr@^1.1.1, chownr@^1.1.3:
+chownr@^1.1.1:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/chownr/-/chownr-1.1.3.tgz#42d837d5239688d55f303003a508230fa6727142"
   integrity sha512-i70fVHhmV3DtTl6nqvZOnIjbY0Pe4kAUjwHj8z0zAdgBtYrJyYwLKCCuRBQ5ppkyL0AkN7HKRnETdmdp1zqNXw==
+
+chownr@^1.1.3:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/chownr/-/chownr-1.1.4.tgz#6fc9d7b42d32a583596337666e7d08084da2cc6b"
+  integrity sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==
 
 chrono-node@~1.4.3:
   version "1.4.3"
@@ -3292,9 +3316,9 @@ fs-minipass@^1.2.5:
     minipass "^2.6.0"
 
 fs-minipass@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/fs-minipass/-/fs-minipass-2.0.0.tgz#a6415edab02fae4b9e9230bc87ee2e4472003cd1"
-  integrity sha512-40Qz+LFXmd9tzYVnnBmZvFfvAADfUA14TXPK1s7IfElJTIZ97rA8w4Kin7Wt5JBrC3ShnnFJO/5vPjPEeJIq9A==
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/fs-minipass/-/fs-minipass-2.1.0.tgz#7f5036fdbf12c63c169190cbe4199c852271f9fb"
+  integrity sha512-V/JgOLFCS+R6Vcq0slCuaeWEdNC3ouDlJMNIsacH2VtALiu9mV4LPrHc5cDl8k5aw6J8jwgWWpiTo5RYhmIzvg==
   dependencies:
     minipass "^3.0.0"
 
@@ -7848,7 +7872,7 @@ setprototypeof@1.1.1:
   resolved "https://registry.yarnpkg.com/setprototypeof/-/setprototypeof-1.1.1.tgz#7e95acb24aa92f5885e0abef5ba131330d4ae683"
   integrity sha512-JvdAWfbXeIGaZ9cILp38HntZSFSo3mWg6xGcJJsd+d4aRMOqauag1C63dJfDw7OaMYwEbHMOxEZ1lqVRYP2OAw==
 
-sharp@0.25.2:
+sharp@^0.25.2:
   version "0.25.2"
   resolved "https://registry.yarnpkg.com/sharp/-/sharp-0.25.2.tgz#f9003d73be50e9265e98f79f04fe53d8c66a3967"
   integrity sha512-l1GN0kFNtJr3U9i9pt7a+vo2Ij0xv4tTKDIPx8W6G9WELhPwrMyZZJKAAQNBSI785XB4uZfS5Wpz8C9jWV4AFQ==

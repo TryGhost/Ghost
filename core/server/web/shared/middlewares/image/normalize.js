@@ -1,14 +1,14 @@
 const cloneDeep = require('lodash/cloneDeep');
 const path = require('path');
 const config = require('../../../../config');
-const common = require('../../../../lib/common');
-const image = require('../../../../lib/image');
+const {logging} = require('../../../../lib/common');
+const imageTransform = require('@tryghost/image-transform');
 
 module.exports = function normalize(req, res, next) {
     const imageOptimizationOptions = config.get('imageOptimization');
 
-    // CASE: image manipulator is uncapable of transforming file (e.g. .gif)
-    if (!image.manipulator.canTransformFileExtension(req.file.ext) || !imageOptimizationOptions.resize) {
+    // CASE: image transform is not capable of transforming file (e.g. .gif)
+    if (!imageTransform.canTransformFileExtension(req.file.ext) || !imageOptimizationOptions.resize) {
         return next();
     }
 
@@ -22,7 +22,7 @@ module.exports = function normalize(req, res, next) {
         width: 2000
     }, imageOptimizationOptions);
 
-    image.manipulator.process(options)
+    imageTransform.resizeFromPath(options)
         .then(() => {
             req.files = [];
 
@@ -38,7 +38,7 @@ module.exports = function normalize(req, res, next) {
         })
         .catch((err) => {
             err.context = `${req.file.name} / ${req.file.type}`;
-            common.logging.error(err);
+            logging.error(err);
             next();
         });
 };
