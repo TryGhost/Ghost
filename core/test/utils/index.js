@@ -984,6 +984,8 @@ module.exports = {
             cacheStub.withArgs('active_theme').returns(options.theme || 'casper');
             cacheStub.withArgs('active_timezone').returns('Etc/UTC');
             cacheStub.withArgs('permalinks').returns('/:slug/');
+            cacheStub.withArgs('ghost_private_key').returns('-----BEGIN RSA PRIVATE KEY-----\nMB8CAQACAgPBAgMBAAECAgMFAgEfAgEfAgEXAgEXAgEA\n-----END RSA PRIVATE KEY-----\n');
+            cacheStub.withArgs('ghost_public_key').returns('-----BEGIN RSA PUBLIC KEY-----\nMAkCAgPBAgMBAAE=\n-----END RSA PUBLIC KEY-----\n');
 
             if (options.amp) {
                 cacheStub.withArgs('amp').returns(true);
