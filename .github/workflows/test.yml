@@ -38,7 +38,7 @@ jobs:
           mysql database: 'ghost_testing'
           mysql root password: 'root'
 
-      - uses: Dreamcodeio/pr-has-label-action@master
+      - uses: Dreamcodeio/pr-has-label-action@v1.2
         id: allTestsLabel
         if: github.event_name == 'pull_request'
         with:
