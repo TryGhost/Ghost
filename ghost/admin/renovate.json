@@ -12,7 +12,6 @@
     "broccoli-concat"
   ],
   "ignorePaths": ["lib/koenig-editor/package.json"],
-  "travis": { "enabled": true },
   "node": {
     "supportPolicy": ["lts"]
   },
