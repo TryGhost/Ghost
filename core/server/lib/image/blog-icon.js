@@ -3,7 +3,8 @@ var sizeOf = require('image-size'),
     _ = require('lodash'),
     path = require('path'),
     config = require('../../config'),
-    common = require('../common'),
+    {i18n} = require('../common'),
+    errors = require('@tryghost/errors'),
     urlUtils = require('../../lib/url-utils'),
     settingsCache = require('../../services/settings/cache'),
     storageUtils = require('../../adapters/storage/utils'),
@@ -41,8 +42,8 @@ getIconDimensions = function getIconDimensions(path) {
                 height: dimensions.height
             });
         } catch (err) {
-            return reject(new common.errors.ValidationError({
-                message: common.i18n.t('errors.utils.blogIcon.error', {
+            return reject(new errors.ValidationError({
+                message: i18n.t('errors.utils.blogIcon.error', {
                     file: path,
                     error: err.message
                 })
