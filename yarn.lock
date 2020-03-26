@@ -291,14 +291,7 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tryghost/errors@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.1.0.tgz#cbf6be79da22cf311f4506f3e6391c75984295e1"
-  integrity sha512-8C8Vqw1npMkxrIGj8zWHj2dspRlf56Ersv3efZzolxGwmUHcrkxn7MvjBevOkP9T+3XY7fTPQKhB6P3resQlAQ==
-  dependencies:
-    ghost-ignition "^4.1.0"
-
-"@tryghost/errors@^0.1.1":
+"@tryghost/errors@0.1.1", "@tryghost/errors@^0.1.1":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.1.1.tgz#c140f8558fc54cf69ac7e7ea719a189c763fea04"
   integrity sha512-8gmWGDLbwGhrMJ6psn8uubanntfxCvywufzJyDFgB/Kjh6bjd2CYEL84nA3rzfnxLpuY7vL/i4sFjpF1MZ15KA==
