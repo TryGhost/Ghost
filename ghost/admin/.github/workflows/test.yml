@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - master
-
+      - 'renovate/*'
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
         browser: [ 'Firefox', 'Chrome' ]
