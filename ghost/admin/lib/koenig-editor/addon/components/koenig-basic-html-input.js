@@ -6,7 +6,6 @@ import parserPlugins from '../options/basic-html-parser-plugins';
 import registerKeyCommands, {BASIC_KEY_COMMANDS} from '../options/key-commands';
 import validator from 'validator';
 import {DRAG_DISABLED_DATA_ATTR} from '../lib/dnd/constants';
-import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {arrayToMap, toggleSpecialFormatEditState} from './koenig-editor';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
@@ -20,7 +19,7 @@ const UNDO_DEPTH = 50;
 // blank doc contains a single empty paragraph so that there's some content for
 // the cursor to start in
 const BLANK_DOC = {
-    version: MOBILEDOC_VERSION,
+    version: '0.3.1',
     markups: [],
     atoms: [],
     cards: [],
