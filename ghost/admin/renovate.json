@@ -1,7 +1,8 @@
 {
   "extends": [
     "@tryghost:base",
-    "@tryghost:automergeSilentTestLintNonMajor"
+    "@tryghost:automergeSilentTestLintNonMajor",
+    "@tryghost:automergePatchBranch",
   ],
   "ignoreDeps": [
     "ember-drag-drop",
@@ -12,14 +13,6 @@
     "broccoli-concat"
   ],
   "ignorePaths": ["lib/koenig-editor/package.json"],
-  "node": {
-    "supportPolicy": ["lts"]
-  },
-  "separateMinorPatch": true,
-  "patch": {
-    "automerge": true,
-    "automergeType": "branch"
-  },
   "packageRules": [
     {
       "groupName": "ember-basic-dropdown addons",
