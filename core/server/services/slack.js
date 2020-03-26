@@ -28,6 +28,7 @@ function ping(post) {
     let message,
         title,
         author,
+        description,
         slackData = {},
         slackSettings = getSlackSettings(),
         blogTitle = settingsCache.get('title');
@@ -37,6 +38,14 @@ function ping(post) {
         message = urlService.getUrlByResourceId(post.id, {absolute: true});
         title = post.title ? post.title : null;
         author = post.authors ? post.authors[0] : null;
+
+        if (post.custom_excerpt) {
+            description = post.custom_excerpt;
+        } else if (post.html) {
+            description = `${post.html.replace(/<[^>]+>/g, '').split('.').slice(0, 3).join('.')}.`
+        } else {
+            description = null;
+        }
     } else {
         message = post.message;
     }
@@ -77,7 +86,7 @@ function ping(post) {
                         fields: [
                             {
                                 title: 'Description',
-                                value: post.custom_excerpt ? post.custom_excerpt : `${post.html.replace(/<[^>]+>/g, '').split('.').slice(0, 3).join('.')}.`,
+                                value: description,
                                 short: false
                             }
                         ]
