@@ -291,7 +291,7 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tryghost/errors@^0.1.0":
+"@tryghost/errors@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.1.0.tgz#cbf6be79da22cf311f4506f3e6391c75984295e1"
   integrity sha512-8C8Vqw1npMkxrIGj8zWHj2dspRlf56Ersv3efZzolxGwmUHcrkxn7MvjBevOkP9T+3XY7fTPQKhB6P3resQlAQ==
@@ -332,7 +332,7 @@
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "16.2.0"
 
-"@tryghost/image-transform@^0.1.0":
+"@tryghost/image-transform@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-0.1.0.tgz#d59c3cb41915fd5596e4d8f90f5a8bb44f19edf9"
   integrity sha512-yqECkOUo0nnPK7jdxvRF2B12jR2YfCpAzZdreHO3HIhVMMBN6vgPVxIsTd7Kh2cXpuWpBWS+0eAQ8r6sf6vJfQ==
@@ -442,10 +442,10 @@
     ghost-ignition "4.1.0"
     lodash "4.17.15"
 
-"@tryghost/string@^0.1.3":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.5.tgz#adc67ce449e66e61a2d14b0815a14a5174465549"
-  integrity sha512-zbD/C+I7PXZfRkki80yK+jWMyNaklKLj7wdoQd81+r5ARGGar0XtWL/T1zc6G2UI/v9UW+dLQ5mDxpsxQIEFlA==
+"@tryghost/string@0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.3.tgz#aad595f40f984570aff042b08f407e67dc47f692"
+  integrity sha512-JPVWEyI8NJEr1h/vlV0qL/Do05m45Tex+MGR5B6rvttl8XEUE3QwCFiG6mD7Yirjkja9h8EMjpgxiwWVCzKBPA==
   dependencies:
     unidecode "^0.1.8"
 
@@ -469,7 +469,7 @@
     ghost-ignition "^4.0.0"
     lodash "^4.17.15"
 
-"@tryghost/zip@^0.1.0":
+"@tryghost/zip@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-0.1.0.tgz#2c3c3186e5f40e00197a06f3b2513a6bab14267c"
   integrity sha512-0XkzIC9w1+M2WOBhR6ohXWOe7pn6wBtXlLVnDgYbZv2sbDmbz0jDiibU/A3eC/4iXABiYA6qeOlXoH8YHR2tIg==
