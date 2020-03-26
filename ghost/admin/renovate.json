@@ -2,7 +2,7 @@
   "extends": [
     "@tryghost:base",
     "@tryghost:automergeSilentTestLintNonMajor",
-    "@tryghost:automergePatchBranch",
+    "@tryghost:automergePatchBranch"
   ],
   "ignoreDeps": [
     "ember-drag-drop",
