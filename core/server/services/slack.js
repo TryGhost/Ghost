@@ -42,7 +42,7 @@ function ping(post) {
         if (post.custom_excerpt) {
             description = post.custom_excerpt;
         } else if (post.html) {
-            description = `${post.html.replace(/<[^>]+>/g, '').split('.').slice(0, 3).join('.')}.`
+            description = `${post.html.replace(/<[^>]+>/g, '').split('.').slice(0, 3).join('.')}.`;
         } else {
             description = null;
         }
