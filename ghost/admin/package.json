@@ -65,7 +65,7 @@
     "ember-cli-mirage": "1.1.6",
     "ember-cli-moment-shim": "3.7.1",
     "ember-cli-node-assets": "0.2.2",
-    "ember-cli-postcss": "5.0.0",
+    "ember-cli-postcss": "6.0.0",
     "ember-cli-shims": "1.2.0",
     "ember-cli-string-helpers": "4.0.6",
     "ember-cli-test-loader": "3.0.0",
