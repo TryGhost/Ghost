@@ -18,7 +18,6 @@ import registerKeyCommands from '../options/key-commands';
 import registerTextExpansions from '../options/text-expansions';
 import validator from 'validator';
 import {A} from '@ember/array';
-import {MOBILEDOC_VERSION} from 'mobiledoc-kit/renderers/mobiledoc';
 import {assign} from '@ember/polyfills';
 import {camelize, capitalize} from '@ember/string';
 import {createParserPlugins} from '@tryghost/kg-parser-plugins';
@@ -45,7 +44,7 @@ export const TESTING_EXPANDO_PROPERTY = '__mobiledoc_kit_editor';
 // blank doc contains a single empty paragraph so that there's some content for
 // the cursor to start in
 export const BLANK_DOC = {
-    version: MOBILEDOC_VERSION,
+    version: '0.3.1',
     markups: [],
     atoms: [],
     cards: [],
