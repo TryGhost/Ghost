@@ -442,7 +442,18 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@0.6.14", "@tryghost/url-utils@^0.6.14":
+"@tryghost/url-utils@0.6.15":
+  version "0.6.15"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.15.tgz#44eb3bbd796cad876d80298fc089a3d12b6361a8"
+  integrity sha512-QlVBNE1Qa8M7l0Jcf4KsIiULE6KVaTvOHJpaNG19a/MiTv1LyJVtrGGo8xS+B+RDQzWcWLypovWgxxoBYGzBQQ==
+  dependencies:
+    cheerio "0.22.0"
+    moment "2.24.0"
+    moment-timezone "0.5.28"
+    remark "^11.0.1"
+    unist-util-visit "^2.0.0"
+
+"@tryghost/url-utils@^0.6.14":
   version "0.6.14"
   resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.14.tgz#aa1ef94531530635cba0cb6d75933bda1a557719"
   integrity sha512-GpEN2ZJXqESsp5lUEDEBNPm0HQholhF3pfPlOUx/r/B6YHXBHCH7blgXwDAoo+/I7mKMDCVNf+AA/FXdCrVgJQ==
