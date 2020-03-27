@@ -426,10 +426,10 @@
     chalk "^2.4.1"
     sywac "^1.2.1"
 
-"@tryghost/social-urls@0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.6.tgz#5f690c55bb728101d72a3c395f5288c252f9dc7e"
-  integrity sha512-U3McQB1YYz0eZqE//RkgfGpyWt0D6NpynhBJ45vd8nMk/CxxGXxvyUl37lbUI1PNbL6k+IinfuZoDa3WovQQqA==
+"@tryghost/social-urls@0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.7.tgz#a62b008c16e2e1f6d7519a9f36f3b2966be2bad8"
+  integrity sha512-Sj6VEfdNQsxVKVm9nnPdrjW70HB1nBKkkcyM5HEPLmBwOOgusW1c3baHNXg4Wwhs19azcjEHvlomX831dSNIZQ==
   dependencies:
     bluebird "3.7.2"
     ghost-ignition "4.1.0"
