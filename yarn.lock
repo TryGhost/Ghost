@@ -442,15 +442,16 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@0.6.15":
-  version "0.6.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.15.tgz#44eb3bbd796cad876d80298fc089a3d12b6361a8"
-  integrity sha512-QlVBNE1Qa8M7l0Jcf4KsIiULE6KVaTvOHJpaNG19a/MiTv1LyJVtrGGo8xS+B+RDQzWcWLypovWgxxoBYGzBQQ==
+"@tryghost/url-utils@0.6.16":
+  version "0.6.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.16.tgz#74e839f3db8e717359d95e79055cfd849120810d"
+  integrity sha512-NBDdzDe3XUupaqtovHZLNXGyFwmEC5JWHfUIHz8JtCK2pQtCO/Dd4jpLLHxy7EeN7YyuWk2mgCCnVeUsQCq3pw==
   dependencies:
     cheerio "0.22.0"
     moment "2.24.0"
     moment-timezone "0.5.28"
-    remark "^11.0.1"
+    remark "^11.0.2"
+    remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
 
 "@tryghost/url-utils@^0.6.14":
@@ -7543,6 +7544,11 @@ regexpp@^2.0.1:
   resolved "https://registry.yarnpkg.com/regexpp/-/regexpp-2.0.1.tgz#8d19d31cf632482b589049f8281f93dbcba4d07f"
   integrity sha512-lv0M6+TkDVniA3aD1Eg0DVpfU/booSu7Eev3TDO/mZKHBfVjgCGTV4t4buppESEYDtkArYFOxTJWv6S5C+iaNw==
 
+remark-footnotes@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/remark-footnotes/-/remark-footnotes-1.0.0.tgz#9c7a97f9a89397858a50033373020b1ea2aad011"
+  integrity sha512-X9Ncj4cj3/CIvLI2Z9IobHtVi8FVdUrdJkCNaL9kdX8ohfsi18DXHsCVd/A7ssARBdccdDb5ODnt62WuEWaM/g==
+
 remark-parse@^7.0.0:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/remark-parse/-/remark-parse-7.0.1.tgz#0c13d67e0d7b82c2ad2d8b6604ec5fae6c333c2b"
@@ -7588,6 +7594,15 @@ remark@^11.0.1:
   version "11.0.1"
   resolved "https://registry.yarnpkg.com/remark/-/remark-11.0.1.tgz#3c16e1ed84c78a661299991bb8d5fa7ee5d18e3c"
   integrity sha512-Fl2AvN+yU6sOBAjUz3xNC5iEvLkXV8PZicLOOLifjU8uKGusNvhHfGRCfETsqyvRHZ24JXqEyDY4hRLhoUd30A==
+  dependencies:
+    remark-parse "^7.0.0"
+    remark-stringify "^7.0.0"
+    unified "^8.2.0"
+
+remark@^11.0.2:
+  version "11.0.2"
+  resolved "https://registry.yarnpkg.com/remark/-/remark-11.0.2.tgz#12b90ea100ac3362b1976fa87a6e4e0ab5968202"
+  integrity sha512-bh+eJgn8wgmbHmIBOuwJFdTVRVpl3fcVP6HxmpPWO0ULGP9Qkh6INJh0N5Uy7GqlV7DQYGoqaKiEIpM5LLvJ8w==
   dependencies:
     remark-parse "^7.0.0"
     remark-stringify "^7.0.0"

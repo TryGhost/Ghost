@@ -51,7 +51,7 @@
     "@tryghost/members-ssr": "0.7.4",
     "@tryghost/social-urls": "0.1.7",
     "@tryghost/string": "0.1.7",
-    "@tryghost/url-utils": "0.6.15",
+    "@tryghost/url-utils": "0.6.16",
     "@tryghost/vhost-middleware": "1.0.2",
     "@tryghost/zip": "0.1.0",
     "ajv": "6.12.0",
