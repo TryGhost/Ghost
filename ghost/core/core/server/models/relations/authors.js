@@ -129,6 +129,11 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
         serialize: function serialize(options) {
             let attrs = proto.serialize.call(this, options);
+            if (attrs.authors) {
+                for (const author of attrs.authors) {
+                    author.email = '';
+                }
+            }
 
             // CASE: e.g. you stub model response in the test
             // CASE: you delete a model without fetching before
