@@ -76,7 +76,7 @@ b-cov
 *.out
 *.gz
 
-!core/test/utils/fixtures/**/*.csv
+!test/utils/fixtures/**/*.csv
 
 results
 
@@ -114,8 +114,8 @@ projectFilesBackup
 CHANGELOG.md
 
 # Test generated files
-/core/test/functional/*.png
-/core/test/coverage
+test/functional/*.png
+test/coverage
 
 # ignore all custom json files for config
 /config.*.json

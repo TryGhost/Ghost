@@ -123,20 +123,20 @@ const configureGrunt = function (grunt) {
 
             unit: {
                 src: [
-                    'core/test/unit/**/*_spec.js'
+                    'test/unit/**/*_spec.js'
                 ]
             },
 
             acceptance: {
                 src: [
-                    'core/test/api-acceptance/**/*_spec.js',
-                    'core/test/frontend-acceptance/**/*_spec.js'
+                    'test/api-acceptance/**/*_spec.js',
+                    'test/frontend-acceptance/**/*_spec.js'
                 ]
             },
 
             regression: {
                 src: [
-                    'core/test/regression/**/*_spec.js'
+                    'test/regression/**/*_spec.js'
                 ]
             },
 
@@ -383,17 +383,17 @@ const configureGrunt = function (grunt) {
     //
     // `grunt test:unit/apps_spec.js` will run just the tests inside the apps_spec.js file
     //
-    // It works for any path relative to the core/test folder. It will also run all the tests in a single directory
-    // You can also run a test with grunt test:core/test/unit/... to get bash autocompletion
+    // It works for any path relative to the /test/ folder. It will also run all the tests in a single directory
+    // You can also run a test with grunt test:test/unit/... to get bash autocompletion
     //
     // `grunt test:regression/api` - runs the api regression tests
-    grunt.registerTask('test', 'Run a particular spec file from the core/test directory e.g. `grunt test:unit/apps_spec.js`', function (test) {
+    grunt.registerTask('test', 'Run a particular spec file from the /test/ directory e.g. `grunt test:unit/apps_spec.js`', function (test) {
         if (!test) {
             grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `npm test` or `grunt validate`?');
         }
 
-        if (!test.match(/core\/test/) && !test.match(/core\/server/)) {
-            test = 'core/test/' + test;
+        if (!test.match(/test\//) && !test.match(/core\/server/)) {
+            test = 'test/' + test;
         }
 
         // CASE: execute folder
