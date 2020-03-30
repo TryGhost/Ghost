@@ -4,8 +4,8 @@
 // `{{page_url 2}}`
 //
 // Returns the URL for the page specified in the current object context.
-var proxy = require('./proxy'),
-    getPaginatedUrl = proxy.metaData.getPaginatedUrl;
+const {metaData} = require('./proxy');
+const getPaginatedUrl = metaData.getPaginatedUrl;
 
 // We use the name page_url to match the helper for consistency:
 module.exports = function page_url(page, options) { // eslint-disable-line camelcase
