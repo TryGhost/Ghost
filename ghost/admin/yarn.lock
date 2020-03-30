@@ -3222,14 +3222,14 @@ broccoli-concat@^3.2.2, broccoli-concat@^3.7.4:
     lodash.uniq "^4.2.0"
     walk-sync "^0.3.2"
 
-broccoli-concat@^4.2.3:
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/broccoli-concat/-/broccoli-concat-4.2.3.tgz#9f995c86e843f74b42d12f8146b9f21cd80eac64"
-  integrity sha512-K6glsSJKuoC+ubbnOZ4+g0BCFWXfjkKiEQMx2NFLYMXuBxKZnaV/Lx2aq+My57j0yUspRUXC/bJbEUIj5uPWkQ==
+broccoli-concat@^4.2.4:
+  version "4.2.4"
+  resolved "https://registry.yarnpkg.com/broccoli-concat/-/broccoli-concat-4.2.4.tgz#78e359ddc540b999d815355163bf3cfb6bd67322"
+  integrity sha512-NgdBIE57r+U/AslBohQr0mCS7PopIWL8dihMI1CzqffQkisAgqWMuddjYmizqRBQlml7crBFaBeUnPDHhf4/RQ==
   dependencies:
     broccoli-debug "^0.6.5"
     broccoli-kitchen-sink-helpers "^0.3.1"
-    broccoli-plugin "^4.0.1"
+    broccoli-plugin "^4.0.2"
     ensure-posix-path "^1.0.2"
     fast-sourcemap-concat "^2.1.0"
     find-index "^1.1.0"
@@ -3437,6 +3437,14 @@ broccoli-merge-trees@^2.0.0:
     broccoli-plugin "^1.3.0"
     merge-trees "^2.0.0"
 
+broccoli-merge-trees@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/broccoli-merge-trees/-/broccoli-merge-trees-4.2.0.tgz#692d3c163ecea08c5714a9434d664e628919f47c"
+  integrity sha512-nTrQe5AQtCrW4enLRvbD/vTLHqyW2tz+vsLXQe4IEaUhepuMGVKJJr+I8n34Vu6fPjmPLwTjzNC8izMIDMtHPw==
+  dependencies:
+    broccoli-plugin "^4.0.2"
+    merge-trees "^2.0.0"
+
 broccoli-middleware@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/broccoli-middleware/-/broccoli-middleware-2.1.1.tgz#183635bbef4dc1241533ee001a162f013d776cb9"
@@ -3469,7 +3477,7 @@ broccoli-output-wrapper@^2.0.0:
   dependencies:
     heimdalljs-logger "^0.1.10"
 
-broccoli-output-wrapper@^3.1.1:
+broccoli-output-wrapper@^3.1.1, broccoli-output-wrapper@^3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/broccoli-output-wrapper/-/broccoli-output-wrapper-3.2.1.tgz#8f9d1092afe0c1a4b7a1b6f0d2c62f1c403e82ad"
   integrity sha512-mhOTy8AyzEsqgefR2ejbv5QTy3dbY2bvDfkARo55Xml52r2MU0CehQu4T/CH6oPcAXkdVYG/hGm9UpV1vU9Ohg==
@@ -3557,6 +3565,19 @@ broccoli-plugin@^4.0.1:
   dependencies:
     broccoli-node-api "^1.6.0"
     broccoli-output-wrapper "^3.1.1"
+    fs-merger "^3.0.1"
+    promise-map-series "^0.2.1"
+    quick-temp "^0.1.3"
+    rimraf "^3.0.0"
+    symlink-or-copy "^1.3.0"
+
+broccoli-plugin@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/broccoli-plugin/-/broccoli-plugin-4.0.2.tgz#a16c1f839bc95cc9975437e58864a395e518b447"
+  integrity sha512-wMytvn+I0ELNGLmLouZ7GpiMEHZ3pqKvHOWE7AgV4vdcnXm9FKwk1N2xGrGI+lKVxdejQvjxAJ2HCQJ/STrEjg==
+  dependencies:
+    broccoli-node-api "^1.6.0"
+    broccoli-output-wrapper "^3.2.1"
     fs-merger "^3.0.1"
     promise-map-series "^0.2.1"
     quick-temp "^0.1.3"
@@ -6136,15 +6157,15 @@ ember-factory-for-polyfill@^1.3.1:
   dependencies:
     ember-cli-version-checker "^2.1.0"
 
-ember-fetch@8.0.0:
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-8.0.0.tgz#bf4fcb78c6986f96658e8ee86ca3eb72cc0bb7aa"
-  integrity sha512-uWmxGmmd8+b3h4E0LY5+y4VFobcSMxCDsXitUIGKLKM9kXTKsdrbbML6Zmlwm4++nI7an9z7GQEKEuI5Bc/BHw==
+ember-fetch@8.0.1:
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/ember-fetch/-/ember-fetch-8.0.1.tgz#dc57f3c3ba464e4a8722785f6b44265c46b38020"
+  integrity sha512-J+knuBFQJlMQUuij2tziMiVcJ+Ss0lCV2XiCQO2cHmG2PUsfvLlTGZ04uUyOXPqrJISxY2W3Et43fQBg4jy7SA==
   dependencies:
     abortcontroller-polyfill "^1.4.0"
-    broccoli-concat "^4.2.3"
+    broccoli-concat "^4.2.4"
     broccoli-debug "^0.6.5"
-    broccoli-merge-trees "^4.1.0"
+    broccoli-merge-trees "^4.2.0"
     broccoli-rollup "^2.1.1"
     broccoli-stew "^3.0.0"
     broccoli-templater "^2.0.1"
