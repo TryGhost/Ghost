@@ -4,8 +4,8 @@ const _ = require('lodash');
 const ObjectId = require('bson-objectid');
 const moment = require('moment-timezone');
 const testUtils = require('../../utils');
-const config = require('../../../server/config');
-const models = require('../../../server/models');
+const config = require('../../../core/server/config');
+const models = require('../../../core/server/models');
 const localUtils = require('./utils');
 
 const ghost = testUtils.startGhost;

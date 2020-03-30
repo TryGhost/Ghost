@@ -1,7 +1,7 @@
 var should = require('should'),
 
     // Stuff we are testing
-    helpers = require('../../../frontend/helpers');
+    helpers = require('../../../core/frontend/helpers');
 
 describe('{{plural}} helper', function () {
     it('will show no-value string', function () {

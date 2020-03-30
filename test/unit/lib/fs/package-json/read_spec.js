@@ -2,7 +2,7 @@ var should = require('should'),
     tmp = require('tmp'),
     join = require('path').join,
     fs = require('fs-extra'),
-    packageJSON = require('../../../../../server/lib/fs/package-json');
+    packageJSON = require('../../../../../core/server/lib/fs/package-json');
 
 describe('lib/fs/package-json: read', function () {
     describe('all', function () {

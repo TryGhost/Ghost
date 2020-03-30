@@ -1,7 +1,7 @@
 const should = require('should'),
 
     // Stuff we are testing
-    helpers = require('../../../frontend/helpers');
+    helpers = require('../../../core/frontend/helpers');
 
 describe('{{excerpt}} Helper', function () {
     it('renders empty string when html, excerpt, and custom_excerpt are null', function () {

@@ -4,12 +4,12 @@ const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 const testUtils = require('../../utils');
-const knex = require('../../../server/data/db').knex;
-const urlService = require('../../../frontend/services/url');
-const schema = require('../../../server/data/schema');
-const models = require('../../../server/models');
-const common = require('../../../server/lib/common');
-const security = require('../../../server/lib/security');
+const knex = require('../../../core/server/data/db').knex;
+const urlService = require('../../../core/frontend/services/url');
+const schema = require('../../../core/server/data/schema');
+const models = require('../../../core/server/models');
+const common = require('../../../core/server/lib/common');
+const security = require('../../../core/server/lib/security');
 
 describe('Unit: models/post', function () {
     const mockDb = require('mock-knex');

@@ -2,7 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
 
     // Thing we are testing
-    redirectAdminUrls = require('../../../../server/web/admin/middleware')[0];
+    redirectAdminUrls = require('../../../../core/server/web/admin/middleware')[0];
 
 describe('Admin App', function () {
     afterEach(function () {

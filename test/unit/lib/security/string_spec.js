@@ -1,5 +1,5 @@
 var should = require('should'),
-    security = require('../../../../server/lib/security');
+    security = require('../../../../core/server/lib/security');
 
 describe('Lib: Security - String', function () {
     describe('Safe String', function () {

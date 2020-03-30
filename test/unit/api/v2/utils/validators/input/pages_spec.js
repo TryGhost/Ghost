@@ -2,8 +2,8 @@ const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
-const common = require('../../../../../../../server/lib/common');
-const validators = require('../../../../../../../server/api/v2/utils/validators');
+const common = require('../../../../../../../core/server/lib/common');
+const validators = require('../../../../../../../core/server/api/v2/utils/validators');
 
 describe('Unit: v2/utils/validators/input/pages', function () {
     afterEach(function () {

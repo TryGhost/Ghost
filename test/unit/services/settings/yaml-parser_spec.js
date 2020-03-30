@@ -4,7 +4,7 @@ const sinon = require('sinon'),
     yaml = require('js-yaml'),
     path = require('path'),
 
-    yamlParser = require('../../../../frontend/services/settings/yaml-parser');
+    yamlParser = require('../../../../core/frontend/services/settings/yaml-parser');
 
 describe('UNIT > Settings Service yaml parser:', function () {
     let yamlSpy;

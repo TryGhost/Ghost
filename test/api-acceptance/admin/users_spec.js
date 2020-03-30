@@ -3,9 +3,9 @@ const _ = require('lodash');
 const supertest = require('supertest');
 const Promise = require('bluebird');
 const testUtils = require('../../utils');
-const config = require('../../../server/config');
-const db = require('../../../server/data/db');
-const models = require('../../../server/models');
+const config = require('../../../core/server/config');
+const db = require('../../../core/server/data/db');
+const models = require('../../../core/server/models');
 const localUtils = require('./utils');
 
 const ghost = testUtils.startGhost;

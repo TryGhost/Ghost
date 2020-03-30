@@ -3,8 +3,8 @@ const supertest = require('supertest');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
-const config = require('../../../../../server/config');
-const common = require('../../../../../server/lib/common');
+const config = require('../../../../../core/server/config');
+const common = require('../../../../../core/server/lib/common');
 const ghost = testUtils.startGhost;
 
 let request;

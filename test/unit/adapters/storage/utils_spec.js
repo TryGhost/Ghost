@@ -1,9 +1,9 @@
 var should = require('should'),
     sinon = require('sinon'),
-    urlUtils = require('../../../../server/lib/url-utils'),
+    urlUtils = require('../../../../core/server/lib/url-utils'),
 
     // Stuff we are testing
-    storageUtils = require('../../../../server/adapters/storage/utils');
+    storageUtils = require('../../../../core/server/adapters/storage/utils');
 
 describe('storage utils', function () {
     var urlForStub,

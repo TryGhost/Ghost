@@ -3,7 +3,7 @@ var should = require('should'),
     testUtils = require('../../utils'),
     _ = require('lodash'),
     Promise = require('bluebird'),
-    Models = require('../../../server/models');
+    Models = require('../../../core/server/models');
 
 describe('Database Migration (special functions)', function () {
     before(testUtils.teardownDb);

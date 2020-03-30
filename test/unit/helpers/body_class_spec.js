@@ -1,8 +1,8 @@
 var should = require('should'),
-    themeList = require('../../../frontend/services/themes/list'),
+    themeList = require('../../../core/frontend/services/themes/list'),
 
     // Stuff we are testing
-    helpers = require('../../../frontend/helpers');
+    helpers = require('../../../core/frontend/helpers');
 
 describe('{{body_class}} helper', function () {
     var options = {};

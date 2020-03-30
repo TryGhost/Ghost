@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
-const constants = require('../../../../server/lib/constants');
-const updateUserLastSeenMiddleware = require('../../../../server/web/shared/middlewares').updateUserLastSeen;
+const constants = require('../../../../core/server/lib/constants');
+const updateUserLastSeenMiddleware = require('../../../../core/server/web/shared/middlewares').updateUserLastSeen;
 
 describe('updateUserLastSeenMiddleware', function () {
     afterEach(function () {

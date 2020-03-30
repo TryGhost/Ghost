@@ -2,10 +2,10 @@ var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
     Promise = require('bluebird'),
-    security = require('../../../../server/lib/security'),
-    models = require('../../../../server/models'),
-    common = require('../../../../server/lib/common'),
-    urlUtils = require('../../../../server/lib/url-utils'),
+    security = require('../../../../core/server/lib/security'),
+    models = require('../../../../core/server/models'),
+    common = require('../../../../core/server/lib/common'),
+    urlUtils = require('../../../../core/server/lib/url-utils'),
     testUtils = require('../../../utils');
 
 describe('Models: base', function () {

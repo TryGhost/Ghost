@@ -3,12 +3,12 @@ const should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
     _ = require('lodash'),
-    schema = require('../../../server/data/schema'),
-    models = require('../../../server/models'),
-    permissions = require('../../../server/services/permissions'),
-    validation = require('../../../server/data/validation'),
-    common = require('../../../server/lib/common'),
-    security = require('../../../server/lib/security'),
+    schema = require('../../../core/server/data/schema'),
+    models = require('../../../core/server/models'),
+    permissions = require('../../../core/server/services/permissions'),
+    validation = require('../../../core/server/data/validation'),
+    common = require('../../../core/server/lib/common'),
+    security = require('../../../core/server/lib/security'),
     testUtils = require('../../utils');
 
 describe('Unit: models/user', function () {

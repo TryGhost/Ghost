@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
-const urlUtils = require('../../../../../../../server/lib/url-utils');
-const url = require('../../../../../../../server/api/v2/utils/serializers/input/utils/url');
+const urlUtils = require('../../../../../../../core/server/lib/url-utils');
+const url = require('../../../../../../../core/server/api/v2/utils/serializers/input/utils/url');
 
 describe('Unit: v2/utils/serializers/input/utils/url', function () {
     describe('forPost', function () {

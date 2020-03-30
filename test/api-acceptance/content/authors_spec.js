@@ -3,8 +3,8 @@ const supertest = require('supertest');
 const _ = require('lodash');
 const url = require('url');
 const configUtils = require('../../utils/configUtils');
-const config = require('../../../server/config');
-const models = require('../../../server/models');
+const config = require('../../../core/server/config');
+const models = require('../../../core/server/models');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 

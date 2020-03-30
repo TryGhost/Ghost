@@ -2,8 +2,8 @@ var should = require('should'),
     sinon = require('sinon'),
     path = require('path'),
     configUtils = require('../../../utils/configUtils'),
-    themes = require('../../../../frontend/services/themes'),
-    privateController = require('../../../../frontend/apps/private-blogging/lib/router');
+    themes = require('../../../../core/frontend/services/themes'),
+    privateController = require('../../../../core/frontend/apps/private-blogging/lib/router');
 
 describe('Private Controller', function () {
     var res, req, defaultPath, hasTemplateStub;

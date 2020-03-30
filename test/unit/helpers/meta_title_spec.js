@@ -1,8 +1,8 @@
 var should = require('should'),
     sinon = require('sinon'),
     configUtils = require('../../utils/configUtils'),
-    helpers = require('../../../frontend/helpers'),
-    settingsCache = require('../../../server/services/settings/cache');
+    helpers = require('../../../core/frontend/helpers'),
+    settingsCache = require('../../../core/server/services/settings/cache');
 
 describe('{{meta_title}} helper', function () {
     describe('no meta_title', function () {

@@ -2,8 +2,8 @@ const path = require('path');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
-const config = require('../../../server/config');
-const common = require('../../../server/lib/common');
+const config = require('../../../core/server/config');
+const common = require('../../../core/server/lib/common');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 

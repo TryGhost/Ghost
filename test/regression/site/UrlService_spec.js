@@ -4,9 +4,9 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
-const models = require('../../../server/models');
-const common = require('../../../server/lib/common');
-const themes = require('../../../frontend/services/themes');
+const models = require('../../../core/server/models');
+const common = require('../../../core/server/lib/common');
+const themes = require('../../../core/frontend/services/themes');
 const UrlService = rewire('../../../frontend/services/url/UrlService');
 
 describe('Integration: services/url/UrlService', function () {

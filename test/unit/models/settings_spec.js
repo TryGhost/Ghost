@@ -1,9 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
 const mockDb = require('mock-knex');
-const models = require('../../../server/models');
-const {knex} = require('../../../server/data/db');
-const common = require('../../../server/lib/common');
+const models = require('../../../core/server/models');
+const {knex} = require('../../../core/server/data/db');
+const common = require('../../../core/server/lib/common');
 
 describe('Unit: models/settings', function () {
     before(function () {

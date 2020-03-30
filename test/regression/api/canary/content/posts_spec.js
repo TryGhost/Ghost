@@ -3,12 +3,12 @@ const sinon = require('sinon');
 const moment = require('moment');
 const supertest = require('supertest');
 const _ = require('lodash');
-const labs = require('../../../../../server/services/labs');
+const labs = require('../../../../../core/server/services/labs');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../../../utils/configUtils');
 const urlUtils = require('../../../../utils/urlUtils');
-const config = require('../../../../../server/config');
+const config = require('../../../../../core/server/config');
 
 const ghost = testUtils.startGhost;
 let request;

@@ -1,7 +1,7 @@
 var should = require('should'),
     _ = require('lodash'),
-    common = require('../../../../server/lib/common'),
-    applyPublicRules = require('../../../../server/services/permissions/public');
+    common = require('../../../../core/server/lib/common'),
+    applyPublicRules = require('../../../../core/server/services/permissions/public');
 
 describe('Permissions', function () {
     describe('applyPublicRules', function () {

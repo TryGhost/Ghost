@@ -1,5 +1,5 @@
 var should = require('should'),
-    packageJSON = require('../../../../../server/lib/fs/package-json');
+    packageJSON = require('../../../../../core/server/lib/fs/package-json');
 
 describe('lib/fs/package-json', function () {
     // @TODO: introduce some non-theme package examples

@@ -2,7 +2,7 @@ var _ = require('lodash'),
     uuid = require('uuid'),
     ObjectId = require('bson-objectid'),
     moment = require('moment'),
-    constants = require('../../../server/lib/constants'),
+    constants = require('../../../core/server/lib/constants'),
     DataGenerator = {};
 
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {

@@ -1,9 +1,9 @@
 const should = require('should');
 const url = require('url');
 const sinon = require('sinon');
-const models = require('../../../server/models');
+const models = require('../../../core/server/models');
 const testUtils = require('../../utils');
-const {knex} = require('../../../server/data/db');
+const {knex} = require('../../../core/server/data/db');
 
 describe('Unit: models/integration', function () {
     before(function () {

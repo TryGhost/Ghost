@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
-const ghostLocals = require('../../../../server/web/shared/middlewares/ghost-locals');
-const themeService = require('../../../../frontend/services/themes');
+const ghostLocals = require('../../../../core/server/web/shared/middlewares/ghost-locals');
+const themeService = require('../../../../core/frontend/services/themes');
 
 describe('Theme Handler', function () {
     let req, res, next;

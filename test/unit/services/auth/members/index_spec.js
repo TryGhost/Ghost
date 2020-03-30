@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const should = require('should');
-const {UnauthorizedError} = require('../../../../../server/lib/common/errors');
-const members = require('../../../../../server/services/auth/members');
+const {UnauthorizedError} = require('../../../../../core/server/lib/common/errors');
+const members = require('../../../../../core/server/services/auth/members');
 
 describe.skip('Auth Service - Members', function () {
     it('exports an authenticateMembersToken method', function () {

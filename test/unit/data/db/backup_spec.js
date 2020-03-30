@@ -2,9 +2,9 @@ var should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
     fs = require('fs-extra'),
-    models = require('../../../../server/models'),
-    exporter = require('../../../../server/data/exporter'),
-    dbBackup = require('../../../../server/data/db/backup');
+    models = require('../../../../core/server/models'),
+    exporter = require('../../../../core/server/data/exporter'),
+    dbBackup = require('../../../../core/server/data/db/backup');
 
 describe('Backup', function () {
     var exportStub, filenameStub, fsStub;

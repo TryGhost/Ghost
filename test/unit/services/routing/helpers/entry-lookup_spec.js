@@ -2,8 +2,8 @@ const should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
     testUtils = require('../../../../utils'),
-    api = require('../../../../../server/api'),
-    helpers = require('../../../../../frontend/services/routing/helpers');
+    api = require('../../../../../core/server/api'),
+    helpers = require('../../../../../core/frontend/services/routing/helpers');
 
 describe('Unit - services/routing/helpers/entry-lookup', function () {
     let posts, locals;

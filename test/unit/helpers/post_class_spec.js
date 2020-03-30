@@ -1,7 +1,7 @@
 var should = require('should'),
 
     // Stuff we are testing
-    helpers = require('../../../frontend/helpers');
+    helpers = require('../../../core/frontend/helpers');
 
 describe('{{post_class}} helper', function () {
     it('can render class string', function () {

@@ -2,12 +2,12 @@ const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
 const testUtils = require('../../utils');
-const config = require('../../../server/config');
+const config = require('../../../core/server/config');
 const localUtils = require('./utils');
 
 // Values to test against
-const publicSettings = require('../../../server/services/settings/public');
-const defaultSettings = require('../../../server/data/schema').defaultSettings.blog;
+const publicSettings = require('../../../core/server/services/settings/public');
+const defaultSettings = require('../../../core/server/data/schema').defaultSettings.blog;
 
 const ghost = testUtils.startGhost;
 let request;

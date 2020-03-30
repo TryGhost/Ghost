@@ -3,8 +3,8 @@ var should = require('should'),
     _ = require('lodash'),
     testUtils = require('../../../utils'),
     urlUtils = require('../../../utils/urlUtils'),
-    urlService = require('../../../../frontend/services/url'),
-    generateFeed = require('../../../../frontend/services/rss/generate-feed');
+    urlService = require('../../../../core/frontend/services/url'),
+    generateFeed = require('../../../../core/frontend/services/rss/generate-feed');
 
 describe('RSS: Generate Feed', function () {
     var data = {},

@@ -1,7 +1,7 @@
 var should = require('should'),
     rewire = require('rewire'),
     nock = require('nock'),
-    urlUtils = require('../../../../test/utils/urlUtils'),
+    urlUtils = require('../../../utils/urlUtils'),
     ampContentHelper = rewire('../../../../frontend/apps/amp/lib/helpers/amp_content');
 
 // TODO: Amperize really needs to get stubbed, so we can test returning errors

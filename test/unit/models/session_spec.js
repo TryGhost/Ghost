@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const models = require('../../../server/models');
+const models = require('../../../core/server/models');
 
 describe('Unit: models/session', function () {
     before(function () {

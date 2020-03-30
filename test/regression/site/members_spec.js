@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
-const settingsCache = require('../../../server/services/settings/cache');
+const settingsCache = require('../../../core/server/services/settings/cache');
 
 const ghost = testUtils.startGhost;
 

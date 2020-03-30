@@ -3,8 +3,8 @@ var should = require('should'),
     urlUtils = require('../../utils/urlUtils'),
 
     // Stuff we are testing
-    helpers = require('../../../frontend/helpers'),
-    common = require('../../../server/lib/common');
+    helpers = require('../../../core/frontend/helpers'),
+    common = require('../../../core/server/lib/common');
 
 describe('{{image}} helper', function () {
     var logWarnStub;

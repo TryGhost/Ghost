@@ -4,8 +4,8 @@ var should = require('should'),
     moment = require('moment'),
     Promise = require('bluebird'),
     path = require('path'),
-    common = require('../../../../server/lib/common'),
-    LocalFileStore = require('../../../../server/adapters/storage/LocalFileStorage'),
+    common = require('../../../../core/server/lib/common'),
+    LocalFileStore = require('../../../../core/server/adapters/storage/LocalFileStorage'),
     localFileStore,
     configUtils = require('../../../utils/configUtils');
 

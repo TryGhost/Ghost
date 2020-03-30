@@ -1,12 +1,12 @@
-const sessionMiddleware = require('../../../../../server/services/auth/session/middleware');
-const models = require('../../../../../server/models');
+const sessionMiddleware = require('../../../../../core/server/services/auth/session/middleware');
+const models = require('../../../../../core/server/models');
 const sinon = require('sinon');
 const should = require('should');
 const {
     BadRequestError,
     UnauthorizedError,
     InternalServerError
-} = require('../../../../../server/lib/common/errors');
+} = require('../../../../../core/server/lib/common/errors');
 
 describe('Session Service', function () {
     before(function () {

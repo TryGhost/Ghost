@@ -1,6 +1,6 @@
 var should = require('should'),
     uuid = require('uuid'),
-    security = require('../../../../server/lib/security');
+    security = require('../../../../core/server/lib/security');
 
 describe('Utils: tokens', function () {
     it('generate', function () {

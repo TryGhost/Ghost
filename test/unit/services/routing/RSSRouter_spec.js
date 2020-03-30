@@ -1,10 +1,10 @@
 const should = require('should'),
     sinon = require('sinon'),
     configUtils = require('../../../utils/configUtils'),
-    common = require('../../../../server/lib/common'),
-    controllers = require('../../../../frontend/services/routing/controllers'),
-    RSSRouter = require('../../../../frontend/services/routing/RSSRouter'),
-    urlUtils = require('../../../../server/lib/url-utils');
+    common = require('../../../../core/server/lib/common'),
+    controllers = require('../../../../core/frontend/services/routing/controllers'),
+    RSSRouter = require('../../../../core/frontend/services/routing/RSSRouter'),
+    urlUtils = require('../../../../core/server/lib/url-utils');
 
 describe('UNIT - services/routing/RSSRouter', function () {
     describe('instantiate', function () {

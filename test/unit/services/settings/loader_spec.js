@@ -4,7 +4,7 @@ const sinon = require('sinon'),
     fs = require('fs-extra'),
     path = require('path'),
     configUtils = require('../../../utils/configUtils'),
-    common = require('../../../../server/lib/common'),
+    common = require('../../../../core/server/lib/common'),
     loadSettings = rewire('../../../../frontend/services/settings/loader');
 
 describe('UNIT > Settings Service loader:', function () {

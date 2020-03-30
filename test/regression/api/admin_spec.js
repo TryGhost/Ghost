@@ -9,8 +9,8 @@ var should = require('should'),
     configUtils = require('../../utils/configUtils'),
     urlUtils = require('../../utils/urlUtils'),
     ghost = testUtils.startGhost,
-    common = require('../../../server/lib/common/index'),
-    config = require('../../../server/config/index'),
+    common = require('../../../core/server/lib/common/index'),
+    config = require('../../../core/server/config/index'),
     request;
 
 common.i18n.init();

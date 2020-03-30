@@ -1,8 +1,8 @@
 var should = require('should'),
     _ = require('lodash'),
     crypto = require('crypto'),
-    schema = require('../../../../server/data/schema'),
-    fixtures = require('../../../../server/data/schema/fixtures');
+    schema = require('../../../../core/server/data/schema'),
+    fixtures = require('../../../../core/server/data/schema/fixtures');
 
 /**
  * @NOTE

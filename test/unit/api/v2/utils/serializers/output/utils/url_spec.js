@@ -1,9 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../../utils');
-const urlService = require('../../../../../../../../frontend/services/url');
-const urlUtils = require('../../../../../../../../server/lib/url-utils');
-const urlUtil = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/url');
+const urlService = require('../../../../../../../../core/frontend/services/url');
+const urlUtils = require('../../../../../../../../core/server/lib/url-utils');
+const urlUtil = require('../../../../../../../../core/server/api/v2/utils/serializers/output/utils/url');
 
 describe('Unit: v2/utils/serializers/output/utils/url', function () {
     beforeEach(function () {

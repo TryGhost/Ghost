@@ -2,8 +2,8 @@ var should = require('should'),
     _ = require('lodash'),
     ObjectId = require('bson-objectid'),
     testUtils = require('../../../utils'),
-    models = require('../../../../server/models'),
-    validation = require('../../../../server/data/validation');
+    models = require('../../../../core/server/models'),
+    validation = require('../../../../core/server/data/validation');
 
 // Validate our customisations
 describe('Validation', function () {

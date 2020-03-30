@@ -1,7 +1,7 @@
 var should = require('should'),
 
     // Stuff we are testing
-    helpers = require('../../../frontend/helpers');
+    helpers = require('../../../core/frontend/helpers');
 
 describe('{{facebook_url}} helper', function () {
     var options = {data: {site: {}}};

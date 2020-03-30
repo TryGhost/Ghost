@@ -1,5 +1,5 @@
-const SessionStore = require('../../../../../server/services/auth/session/store');
-const models = require('../../../../../server/models');
+const SessionStore = require('../../../../../core/server/services/auth/session/store');
+const models = require('../../../../../core/server/models');
 const EventEmitter = require('events');
 const {Store} = require('express-session');
 const sinon = require('sinon');

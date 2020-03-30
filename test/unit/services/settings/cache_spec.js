@@ -1,7 +1,7 @@
 const rewire = require('rewire');
 const should = require('should');
 const _ = require('lodash');
-const publicSettings = require('../../../../server/services/settings/public');
+const publicSettings = require('../../../../core/server/services/settings/public');
 let cache = rewire('../../../../server/services/settings/cache');
 
 should.equal(true, true);

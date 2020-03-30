@@ -2,9 +2,9 @@ var should = require('should'),
     fs = require('fs-extra'),
     StorageBase = require('ghost-storage-base'),
     configUtils = require('../../../utils/configUtils'),
-    storage = require('../../../../server/adapters/storage'),
-    common = require('../../../../server/lib/common'),
-    LocalFileStorage = require('../../../../server/adapters/storage/LocalFileStorage');
+    storage = require('../../../../core/server/adapters/storage'),
+    common = require('../../../../core/server/lib/common'),
+    LocalFileStorage = require('../../../../core/server/adapters/storage/LocalFileStorage');
 
 describe('storage: index_spec', function () {
     var scope = {adapter: null};

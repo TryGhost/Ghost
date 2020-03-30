@@ -10,9 +10,9 @@ const path = require('path');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const cheerio = require('cheerio');
-const config = require('../../../server/config');
-const api = require('../../../server/api');
-const settingsCache = require('../../../server/services/settings/cache');
+const config = require('../../../core/server/config');
+const api = require('../../../core/server/api');
+const settingsCache = require('../../../core/server/services/settings/cache');
 const ghost = testUtils.startGhost;
 
 let request;

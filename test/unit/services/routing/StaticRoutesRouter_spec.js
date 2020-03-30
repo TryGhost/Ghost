@@ -1,8 +1,8 @@
 const should = require('should'),
     sinon = require('sinon'),
-    common = require('../../../../server/lib/common'),
-    controllers = require('../../../../frontend/services/routing/controllers'),
-    StaticRoutesRouter = require('../../../../frontend/services/routing/StaticRoutesRouter'),
+    common = require('../../../../core/server/lib/common'),
+    controllers = require('../../../../core/frontend/services/routing/controllers'),
+    StaticRoutesRouter = require('../../../../core/frontend/services/routing/StaticRoutesRouter'),
     configUtils = require('../../../utils/configUtils');
 
 describe('UNIT - services/routing/StaticRoutesRouter', function () {

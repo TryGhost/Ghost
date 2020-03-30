@@ -1,9 +1,9 @@
 var should = require('should'),
     sinon = require('sinon'),
     express = require('express'),
-    serveFavicon = require('../../../../server/web/shared/middlewares/serve-favicon'),
-    settingsCache = require('../../../../server/services/settings/cache'),
-    storage = require('../../../../server/adapters/storage'),
+    serveFavicon = require('../../../../core/server/web/shared/middlewares/serve-favicon'),
+    settingsCache = require('../../../../core/server/services/settings/cache'),
+    storage = require('../../../../core/server/adapters/storage'),
     configUtils = require('../../../utils/configUtils'),
     path = require('path');
 

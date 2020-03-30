@@ -1,8 +1,8 @@
 const should = require('should');
 const Promise = require('bluebird');
 const sinon = require('sinon');
-const common = require('../../../../../server/lib/common');
-const shared = require('../../../../../server/api/shared');
+const common = require('../../../../../core/server/lib/common');
+const shared = require('../../../../../core/server/api/shared');
 
 describe('Unit: api/shared/serializers/handle', function () {
     beforeEach(function () {

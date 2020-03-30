@@ -3,11 +3,11 @@ const should = require('should'),
     Promise = require('bluebird'),
     testUtils = require('../../../../utils'),
     configUtils = require('../../../../utils/configUtils'),
-    api = require('../../../../../server/api'),
-    controllers = require('../../../../../frontend/services/routing/controllers'),
-    helpers = require('../../../../../frontend/services/routing/helpers'),
-    urlService = require('../../../../../frontend/services/url'),
-    urlUtils = require('../../../../../server/lib/url-utils'),
+    api = require('../../../../../core/server/api'),
+    controllers = require('../../../../../core/frontend/services/routing/controllers'),
+    helpers = require('../../../../../core/frontend/services/routing/helpers'),
+    urlService = require('../../../../../core/frontend/services/url'),
+    urlUtils = require('../../../../../core/server/lib/url-utils'),
 
     EDITOR_URL = '/editor/post/';
 

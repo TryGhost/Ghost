@@ -3,7 +3,7 @@ const supertest = require('supertest');
 const ObjectId = require('bson-objectid');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
-const config = require('../../../server/config');
+const config = require('../../../core/server/config');
 
 const ghost = testUtils.startGhost;
 

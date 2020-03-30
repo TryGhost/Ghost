@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
-const getTwitterImage = require('../../../../frontend/meta/twitter_image');
-const settingsCache = require('../../../../server/services/settings/cache');
+const getTwitterImage = require('../../../../core/frontend/meta/twitter_image');
+const settingsCache = require('../../../../core/server/services/settings/cache');
 
 describe('getTwitterImage', function () {
     let localSettingsCache = {};

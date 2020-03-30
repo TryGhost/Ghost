@@ -4,9 +4,9 @@ const should = require('should'),
     nock = require('nock'),
     path = require('path'),
     configUtils = require('../../../utils/configUtils'),
-    urlUtils = require('../../../../server/lib/url-utils'),
+    urlUtils = require('../../../../core/server/lib/url-utils'),
     errors = require('@tryghost/errors'),
-    storage = require('../../../../server/adapters/storage');
+    storage = require('../../../../core/server/adapters/storage');
 
 describe('lib/image: image size', function () {
     let imageSize;

@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
-const mapper = require('../../../../../../../server/api/v2/utils/serializers/output/utils/mapper');
-const serializers = require('../../../../../../../server/api/v2/utils/serializers');
+const mapper = require('../../../../../../../core/server/api/v2/utils/serializers/output/utils/mapper');
+const serializers = require('../../../../../../../core/server/api/v2/utils/serializers');
 
 describe('Unit: v2/utils/serializers/output/posts', function () {
     let postModel;

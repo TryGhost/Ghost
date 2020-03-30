@@ -3,9 +3,9 @@ var should = require('should'),
     Promise = require('bluebird'),
     markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
 
-    helpers = require('../../../frontend/helpers'),
-    api = require('../../../server/api'),
-    common = require('../../../server/lib/common');
+    helpers = require('../../../core/frontend/helpers'),
+    api = require('../../../core/server/api'),
+    common = require('../../../core/server/lib/common');
 
 describe('{{prev_post}} helper', function () {
     var browsePostsStub;

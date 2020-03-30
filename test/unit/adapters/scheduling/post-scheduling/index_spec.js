@@ -3,13 +3,13 @@ var should = require('should'),
     Promise = require('bluebird'),
     moment = require('moment'),
     testUtils = require('../../../../utils'),
-    common = require('../../../../../server/lib/common'),
-    models = require('../../../../../server/models'),
-    api = require('../../../../../server/api'),
-    schedulingUtils = require('../../../../../server/adapters/scheduling/utils'),
-    SchedulingDefault = require('../../../../../server/adapters/scheduling/SchedulingDefault'),
-    postScheduling = require('../../../../../server/adapters/scheduling/post-scheduling'),
-    urlUtils = require('../../../../../server/lib/url-utils');
+    common = require('../../../../../core/server/lib/common'),
+    models = require('../../../../../core/server/models'),
+    api = require('../../../../../core/server/api'),
+    schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils'),
+    SchedulingDefault = require('../../../../../core/server/adapters/scheduling/SchedulingDefault'),
+    postScheduling = require('../../../../../core/server/adapters/scheduling/post-scheduling'),
+    urlUtils = require('../../../../../core/server/lib/url-utils');
 
 // NOTE: to be unskiped and corrected once default scheduler code is migrated
 describe.skip('Scheduling: Post Scheduling', function () {

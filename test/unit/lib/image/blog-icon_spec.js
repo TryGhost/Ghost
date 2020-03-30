@@ -3,8 +3,8 @@ var should = require('should'),
     _ = require('lodash'),
     path = require('path'),
     rewire = require('rewire'),
-    settingsCache = require('../../../../server/services/settings/cache'),
-    storageUtils = require('../../../../server/adapters/storage/utils'),
+    settingsCache = require('../../../../core/server/services/settings/cache'),
+    storageUtils = require('../../../../core/server/adapters/storage/utils'),
     urlUtils = require('../../../utils/urlUtils'),
 
     // stuff we are testing

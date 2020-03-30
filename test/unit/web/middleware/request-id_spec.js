@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const validator = require('validator');
 
-const requestId = require('../../../../server/web/shared/middlewares/request-id');
+const requestId = require('../../../../core/server/web/shared/middlewares/request-id');
 
 describe('Request ID middleware', function () {
     var res, req, next;

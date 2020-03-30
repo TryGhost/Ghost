@@ -3,9 +3,9 @@ var should = require('should'),
     testUtils = require('../../../utils'),
     Promise = require('bluebird'),
     _ = require('lodash'),
-    models = require('../../../../server/models'),
-    actionsMap = require('../../../../server/services/permissions/actions-map-cache'),
-    permissions = require('../../../../server/services/permissions');
+    models = require('../../../../core/server/models'),
+    actionsMap = require('../../../../core/server/services/permissions/actions-map-cache'),
+    permissions = require('../../../../core/server/services/permissions');
 
 describe('Permissions', function () {
     var fakePermissions = [],

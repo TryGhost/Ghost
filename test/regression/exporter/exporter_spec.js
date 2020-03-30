@@ -4,8 +4,8 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    exporter = require('../../../server/data/exporter'),
-    ghostVersion = require('../../../server/lib/ghost-version');
+    exporter = require('../../../core/server/data/exporter'),
+    ghostVersion = require('../../../core/server/lib/ghost-version');
 
 describe('Exporter', function () {
     before(testUtils.teardownDb);

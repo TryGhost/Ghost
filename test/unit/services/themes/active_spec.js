@@ -1,10 +1,10 @@
 var should = require('should'),
     sinon = require('sinon'),
 
-    config = require('../../../../server/config'),
+    config = require('../../../../core/server/config'),
     // is only exposed via themes.getActive()
-    activeTheme = require('../../../../frontend/services/themes/active'),
-    engine = require('../../../../frontend/services/themes/engine');
+    activeTheme = require('../../../../core/frontend/services/themes/active'),
+    engine = require('../../../../core/frontend/services/themes/engine');
 
 describe('Themes', function () {
     afterEach(function () {

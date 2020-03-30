@@ -3,8 +3,8 @@
  */
 var _ = require('lodash'),
     ObjectId = require('bson-objectid'),
-    db = require('../../../../server/data/db'),
-    markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc,
+    db = require('../../../../core/server/data/db'),
+    markdownToMobiledoc = require('../data-generator').markdownToMobiledoc,
     data = {};
 
 // Password = Sl1m3rson

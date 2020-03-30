@@ -4,9 +4,9 @@ const supertest = require('supertest');
 const Promise = require('bluebird');
 const sinon = require('sinon');
 const moment = require('moment-timezone');
-const SchedulingDefault = require('../../../../../server/adapters/scheduling/SchedulingDefault');
-const models = require('../../../../../server/models/index');
-const config = require('../../../../../server/config/index');
+const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/SchedulingDefault');
+const models = require('../../../../../core/server/models/index');
+const config = require('../../../../../core/server/config/index');
 const testUtils = require('../../../../utils/index');
 const localUtils = require('./utils');
 

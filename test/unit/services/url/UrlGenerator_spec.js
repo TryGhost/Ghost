@@ -3,8 +3,8 @@ const Promise = require('bluebird');
 const should = require('should');
 const nql = require('@nexes/nql');
 const sinon = require('sinon');
-const urlUtils = require('../../../../server/lib/url-utils');
-const UrlGenerator = require('../../../../frontend/services/url/UrlGenerator');
+const urlUtils = require('../../../../core/server/lib/url-utils');
+const UrlGenerator = require('../../../../core/frontend/services/url/UrlGenerator');
 
 describe('Unit: services/url/UrlGenerator', function () {
     let queue, router, urls, resources, resource, resource2;

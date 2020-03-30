@@ -1,8 +1,8 @@
 const should = require('should'),
     sinon = require('sinon'),
-    helpers = require('../../../../frontend/helpers/register'),
-    AppProxy = require('../../../../frontend/services/apps/proxy'),
-    routing = require('../../../../frontend/services/routing');
+    helpers = require('../../../../core/frontend/helpers/register'),
+    AppProxy = require('../../../../core/frontend/services/apps/proxy'),
+    routing = require('../../../../core/frontend/services/routing');
 
 describe('Apps', function () {
     beforeEach(function () {

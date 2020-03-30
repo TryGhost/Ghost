@@ -1,9 +1,9 @@
 const should = require('should'),
     sinon = require('sinon'),
     configUtils = require('../../../utils/configUtils'),
-    common = require('../../../../server/lib/common'),
-    urlUtils = require('../../../../server/lib/url-utils'),
-    ParentRouter = require('../../../../frontend/services/routing/ParentRouter');
+    common = require('../../../../core/server/lib/common'),
+    urlUtils = require('../../../../core/server/lib/url-utils'),
+    ParentRouter = require('../../../../core/frontend/services/routing/ParentRouter');
 
 describe('UNIT - services/routing/ParentRouter', function () {
     let req, res, next;

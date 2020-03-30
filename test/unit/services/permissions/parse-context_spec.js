@@ -1,5 +1,5 @@
 var should = require('should'),
-    parseContext = require('../../../../server/services/permissions/parse-context');
+    parseContext = require('../../../../core/server/services/permissions/parse-context');
 
 describe('Permissions', function () {
     describe('parseContext', function () {

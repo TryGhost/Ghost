@@ -2,9 +2,9 @@ const jwt = require('jsonwebtoken');
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
-const apiKeyAuth = require('../../../../../server/services/auth/api-key');
-const common = require('../../../../../server/lib/common');
-const models = require('../../../../../server/models');
+const apiKeyAuth = require('../../../../../core/server/services/auth/api-key');
+const common = require('../../../../../core/server/lib/common');
+const models = require('../../../../../core/server/models');
 const testUtils = require('../../../../utils');
 
 describe('Admin API Key Auth', function () {

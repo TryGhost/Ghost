@@ -1,11 +1,11 @@
 const should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../../../utils'),
-    common = require('../../../../../server/lib/common'),
-    security = require('../../../../../server/lib/security'),
-    themeService = require('../../../../../frontend/services/themes'),
-    controllers = require('../../../../../frontend/services/routing/controllers'),
-    helpers = require('../../../../../frontend/services/routing/helpers');
+    common = require('../../../../../core/server/lib/common'),
+    security = require('../../../../../core/server/lib/security'),
+    themeService = require('../../../../../core/frontend/services/themes'),
+    controllers = require('../../../../../core/frontend/services/routing/controllers'),
+    helpers = require('../../../../../core/frontend/services/routing/helpers');
 
 function failTest(done) {
     return function (err) {

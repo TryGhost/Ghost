@@ -2,9 +2,9 @@ var should = require('should'),
     sinon = require('sinon'),
     crypto = require('crypto'),
     fs = require('fs-extra'),
-    common = require('../../../../server/lib/common'),
-    settingsCache = require('../../../../server/services/settings/cache'),
-    privateBlogging = require('../../../../frontend/apps/private-blogging/lib/middleware');
+    common = require('../../../../core/server/lib/common'),
+    settingsCache = require('../../../../core/server/services/settings/cache'),
+    privateBlogging = require('../../../../core/frontend/apps/private-blogging/lib/middleware');
 
 function hash(password, salt) {
     var hasher = crypto.createHash('sha256');

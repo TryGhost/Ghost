@@ -2,8 +2,8 @@ var should = require('should'),
     sinon = require('sinon'),
 
     express = require('express'),
-    themeUtils = require('../../../../frontend/services/themes'),
-    staticTheme = require('../../../../server/web/shared/middlewares/static-theme');
+    themeUtils = require('../../../../core/frontend/services/themes'),
+    staticTheme = require('../../../../core/server/web/shared/middlewares/static-theme');
 
 describe('staticTheme', function () {
     var expressStaticStub, activeThemeStub, req, res;

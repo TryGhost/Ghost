@@ -4,8 +4,8 @@
 var should = require('should'),
     sinon = require('sinon'),
     configUtils = require('../../utils/configUtils'),
-    helpers = require('../../../frontend/helpers'),
-    settingsCache = require('../../../server/services/settings/cache');
+    helpers = require('../../../core/frontend/helpers'),
+    settingsCache = require('../../../core/server/services/settings/cache');
 
 describe('{{asset}} helper', function () {
     var rendered, localSettingsCache = {};

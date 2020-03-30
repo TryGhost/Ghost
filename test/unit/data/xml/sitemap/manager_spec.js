@@ -2,13 +2,13 @@ const should = require('should'),
     sinon = require('sinon'),
 
     // Stuff we are testing
-    common = require('../../../../../server/lib/common'),
-    SiteMapManager = require('../../../../../frontend/services/sitemap/manager'),
-    PostGenerator = require('../../../../../frontend/services/sitemap/post-generator'),
-    PageGenerator = require('../../../../../frontend/services/sitemap/page-generator'),
-    TagGenerator = require('../../../../../frontend/services/sitemap/tag-generator'),
-    UserGenerator = require('../../../../../frontend/services/sitemap/user-generator'),
-    IndexGenerator = require('../../../../../frontend/services/sitemap/index-generator');
+    common = require('../../../../../core/server/lib/common'),
+    SiteMapManager = require('../../../../../core/frontend/services/sitemap/manager'),
+    PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator'),
+    PageGenerator = require('../../../../../core/frontend/services/sitemap/page-generator'),
+    TagGenerator = require('../../../../../core/frontend/services/sitemap/tag-generator'),
+    UserGenerator = require('../../../../../core/frontend/services/sitemap/user-generator'),
+    IndexGenerator = require('../../../../../core/frontend/services/sitemap/index-generator');
 
 describe('Unit: sitemap/manager', function () {
     let eventsToRemember;

@@ -1,8 +1,8 @@
 var should = require('should'),
     fs = require('fs-extra'),
-    config = require('../../../../server/config'),
-    common = require('../../../../server/lib/common'),
-    schedulingUtils = require('../../../../server/adapters/scheduling/utils');
+    config = require('../../../../core/server/config'),
+    common = require('../../../../core/server/lib/common'),
+    schedulingUtils = require('../../../../core/server/adapters/scheduling/utils');
 
 describe('Scheduling: utils', function () {
     describe('success', function () {

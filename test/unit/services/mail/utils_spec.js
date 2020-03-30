@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    mail = require('../../../../server/services/mail');
+    mail = require('../../../../core/server/services/mail');
 
 describe('Mail: Utils', function () {
     var scope = {ghostMailer: null};

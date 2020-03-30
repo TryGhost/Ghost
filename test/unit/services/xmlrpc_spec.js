@@ -7,7 +7,7 @@ var should = require('should'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
     xmlrpc = rewire('../../../server/services/xmlrpc'),
-    common = require('../../../server/lib/common');
+    common = require('../../../core/server/lib/common');
 
 describe('XMLRPC', function () {
     var eventStub;

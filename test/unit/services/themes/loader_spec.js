@@ -3,9 +3,9 @@ var should = require('should'),
     fs = require('fs-extra'),
     tmp = require('tmp'),
     join = require('path').join,
-    config = require('../../../../server/config'),
-    loader = require('../../../../frontend/services/themes/loader'),
-    themeList = require('../../../../frontend/services/themes/list');
+    config = require('../../../../core/server/config'),
+    loader = require('../../../../core/frontend/services/themes/loader'),
+    themeList = require('../../../../core/frontend/services/themes/list');
 
 describe('Themes', function () {
     afterEach(function () {

@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
-const settingsCache = require('../../../server/services/settings/cache');
+const settingsCache = require('../../../core/server/services/settings/cache');
 
-const labs = require('../../../server/services/labs');
+const labs = require('../../../core/server/services/labs');
 
 describe('Labs Service', function () {
     let labsCacheStub;

@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
-const labs = require('../../../../../../../../server/services/labs');
-const gating = require('../../../../../../../../server/api/v2/utils/serializers/output/utils/post-gating');
+const labs = require('../../../../../../../../core/server/services/labs');
+const gating = require('../../../../../../../../core/server/api/v2/utils/serializers/output/utils/post-gating');
 
 describe('Unit: v2/utils/serializers/output/utils/post-gating', function () {
     describe('for post', function () {

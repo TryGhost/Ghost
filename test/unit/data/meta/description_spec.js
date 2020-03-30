@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
-const getMetaDescription = require('../../../../frontend/meta/description');
-const settingsCache = require('../../../../server/services/settings/cache');
+const getMetaDescription = require('../../../../core/frontend/meta/description');
+const settingsCache = require('../../../../core/server/services/settings/cache');
 
 describe('getMetaDescription', function () {
     let localSettingsCache = {};

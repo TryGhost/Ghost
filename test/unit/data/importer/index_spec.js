@@ -6,17 +6,17 @@ var should = require('should'),
     testUtils = require('../../../utils'),
     moment = require('moment'),
     path = require('path'),
-    common = require('../../../../server/lib/common'),
+    common = require('../../../../core/server/lib/common'),
 
     // Stuff we are testing
-    ImportManager = require('../../../../server/data/importer'),
-    JSONHandler = require('../../../../server/data/importer/handlers/json'),
+    ImportManager = require('../../../../core/server/data/importer'),
+    JSONHandler = require('../../../../core/server/data/importer/handlers/json'),
     ImageHandler = rewire('../../../../server/data/importer/handlers/image'),
-    MarkdownHandler = require('../../../../server/data/importer/handlers/markdown'),
-    DataImporter = require('../../../../server/data/importer/importers/data'),
-    ImageImporter = require('../../../../server/data/importer/importers/image'),
+    MarkdownHandler = require('../../../../core/server/data/importer/handlers/markdown'),
+    DataImporter = require('../../../../core/server/data/importer/importers/data'),
+    ImageImporter = require('../../../../core/server/data/importer/importers/image'),
 
-    storage = require('../../../../server/adapters/storage'),
+    storage = require('../../../../core/server/adapters/storage'),
 
     urlUtils = require('../../../utils/urlUtils');
 

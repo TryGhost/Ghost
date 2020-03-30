@@ -4,9 +4,9 @@ const sinon = require('sinon'),
     yaml = require('js-yaml'),
     path = require('path'),
     configUtils = require('../../../utils/configUtils'),
-    common = require('../../../../server/lib/common'),
+    common = require('../../../../core/server/lib/common'),
 
-    ensureSettings = require('../../../../frontend/services/settings/ensure-settings');
+    ensureSettings = require('../../../../core/frontend/services/settings/ensure-settings');
 
 describe('UNIT > Settings Service ensure settings:', function () {
     beforeEach(function () {

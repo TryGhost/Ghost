@@ -1,7 +1,7 @@
 const sinon = require('sinon'),
     should = require('should'),
     rewire = require('rewire'),
-    common = require('../../../../server/lib/common'),
+    common = require('../../../../core/server/lib/common'),
     settings = rewire('../../../../frontend/services/settings');
 
 describe('UNIT > Settings Service:', function () {

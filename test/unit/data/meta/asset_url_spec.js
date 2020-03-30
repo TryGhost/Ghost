@@ -1,8 +1,8 @@
 var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
-    imageLib = require('../../../../server/lib/image'),
-    settingsCache = require('../../../../server/services/settings/cache'),
+    imageLib = require('../../../../core/server/lib/image'),
+    settingsCache = require('../../../../core/server/services/settings/cache'),
     configUtils = require('../../../utils/configUtils'),
     urlUtils = require('../../../utils/urlUtils'),
     config = configUtils.config;

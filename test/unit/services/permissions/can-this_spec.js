@@ -3,9 +3,9 @@ const should = require('should'),
     testUtils = require('../../../utils'),
     Promise = require('bluebird'),
     _ = require('lodash'),
-    models = require('../../../../server/models'),
-    permissions = require('../../../../server/services/permissions'),
-    providers = require('../../../../server/services/permissions/providers');
+    models = require('../../../../core/server/models'),
+    permissions = require('../../../../core/server/services/permissions'),
+    providers = require('../../../../core/server/services/permissions/providers');
 
 describe('Permissions', function () {
     var fakePermissions = [],

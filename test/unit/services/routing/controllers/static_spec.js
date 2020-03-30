@@ -1,10 +1,10 @@
 const should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../../../utils'),
-    api = require('../../../../../server/api'),
-    themeService = require('../../../../../frontend/services/themes'),
-    helpers = require('../../../../../frontend/services/routing/helpers'),
-    controllers = require('../../../../../frontend/services/routing/controllers');
+    api = require('../../../../../core/server/api'),
+    themeService = require('../../../../../core/frontend/services/themes'),
+    helpers = require('../../../../../core/frontend/services/routing/helpers'),
+    controllers = require('../../../../../core/frontend/services/routing/controllers');
 
 function failTest(done) {
     return function (err) {

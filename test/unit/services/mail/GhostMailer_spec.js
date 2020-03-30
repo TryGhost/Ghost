@@ -1,11 +1,11 @@
 var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
-    mail = require('../../../../server/services/mail'),
-    settingsCache = require('../../../../server/services/settings/cache'),
+    mail = require('../../../../core/server/services/mail'),
+    settingsCache = require('../../../../core/server/services/settings/cache'),
     configUtils = require('../../../utils/configUtils'),
-    urlUtils = require('../../../../server/lib/url-utils'),
-    common = require('../../../../server/lib/common'),
+    urlUtils = require('../../../../core/server/lib/url-utils'),
+    common = require('../../../../core/server/lib/common'),
     mailer,
 
     // Mock SMTP config

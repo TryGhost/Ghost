@@ -1,7 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
-    models = require('../../../../server/models'),
-    getKeywords = require('../../../../frontend/meta/keywords');
+    models = require('../../../../core/server/models'),
+    getKeywords = require('../../../../core/frontend/meta/keywords');
 
 describe('getKeywords', function () {
     before(function () {

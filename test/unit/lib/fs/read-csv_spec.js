@@ -1,6 +1,6 @@
 var should = require('should'),
     path = require('path'),
-    fsLib = require('../../../../server/lib/fs'),
+    fsLib = require('../../../../core/server/lib/fs'),
     csvPath = path.join(__dirname, '../../../utils/fixtures/csv/');
 
 describe('lib/fs: read csv', function () {

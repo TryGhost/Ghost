@@ -2,8 +2,8 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const should = require('should');
 const sinon = require('sinon');
-const common = require('../../../../server/lib/common');
-const Queue = require('../../../../frontend/services/url/Queue');
+const common = require('../../../../core/server/lib/common');
+const Queue = require('../../../../core/frontend/services/url/Queue');
 
 describe('Unit: services/url/Queue', function () {
     let queue;

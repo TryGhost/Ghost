@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const shared = require('../../../../server/api/shared');
+const shared = require('../../../../core/server/api/shared');
 
 describe('Unit: api/shared/http', function () {
     let req;

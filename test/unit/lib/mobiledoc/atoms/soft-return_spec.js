@@ -1,5 +1,5 @@
 const should = require('should');
-const atom = require('../../../../../server/lib/mobiledoc/atoms/soft-return');
+const atom = require('../../../../../core/server/lib/mobiledoc/atoms/soft-return');
 const SimpleDom = require('simple-dom');
 const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 

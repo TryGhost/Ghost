@@ -1,11 +1,11 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const models = require('../../../../server/models');
-const {UnauthorizedError} = require('../../../../server/lib/common/errors');
+const models = require('../../../../core/server/models');
+const {UnauthorizedError} = require('../../../../core/server/lib/common/errors');
 
-const sessionController = require('../../../../server/api/v2/session');
-const sessionServiceMiddleware = require('../../../../server/services/auth/session/middleware');
+const sessionController = require('../../../../core/server/api/v2/session');
+const sessionServiceMiddleware = require('../../../../core/server/services/auth/session/middleware');
 
 describe('v2 Session controller', function () {
     before(function () {

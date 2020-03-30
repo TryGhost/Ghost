@@ -1,10 +1,10 @@
 const should = require('should'),
     sinon = require('sinon'),
     express = require('express'),
-    settingsCache = require('../../../../server/services/settings/cache'),
-    common = require('../../../../server/lib/common'),
-    controllers = require('../../../../frontend/services/routing/controllers'),
-    CollectionRouter = require('../../../../frontend/services/routing/CollectionRouter'),
+    settingsCache = require('../../../../core/server/services/settings/cache'),
+    common = require('../../../../core/server/lib/common'),
+    controllers = require('../../../../core/frontend/services/routing/controllers'),
+    CollectionRouter = require('../../../../core/frontend/services/routing/CollectionRouter'),
     RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}};
 
 describe('UNIT - services/routing/CollectionRouter', function () {

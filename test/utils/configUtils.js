@@ -1,5 +1,5 @@
 var _ = require('lodash'),
-    config = require('../../server/config'),
+    config = require('../../core/server/config'),
     configUtils = {};
 
 configUtils.config = config;

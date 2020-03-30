@@ -1,5 +1,5 @@
 const should = require('should');
-const shared = require('../../../../server/api/shared');
+const shared = require('../../../../core/server/api/shared');
 
 describe('Unit: api/shared/frame', function () {
     it('constructor', function () {

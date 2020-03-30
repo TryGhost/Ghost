@@ -1,5 +1,5 @@
 const should = require('should');
-const optionsUtil = require('../../../../../server/api/shared/utils/options');
+const optionsUtil = require('../../../../../core/server/api/shared/utils/options');
 
 describe('Unit: api/shared/util/options', function () {
     it('returns an array with empty string when no parameters are passed', function () {

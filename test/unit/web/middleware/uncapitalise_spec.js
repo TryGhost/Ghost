@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    uncapitalise = require('../../../../server/web/shared/middlewares/uncapitalise');
+    uncapitalise = require('../../../../core/server/web/shared/middlewares/uncapitalise');
 
 // NOTE: all urls will have had trailing slashes added before uncapitalise is called
 

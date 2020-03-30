@@ -7,11 +7,11 @@ var should = require('should'),
 
     // Stuff we test
     slack = rewire('../../../server/services/slack'),
-    common = require('../../../server/lib/common'),
-    imageLib = require('../../../server/lib/image'),
-    urlService = require('../../../frontend/services/url'),
-    schema = require('../../../server/data/schema').checks,
-    settingsCache = require('../../../server/services/settings/cache'),
+    common = require('../../../core/server/lib/common'),
+    imageLib = require('../../../core/server/lib/image'),
+    urlService = require('../../../core/frontend/services/url'),
+    schema = require('../../../core/server/data/schema').checks,
+    settingsCache = require('../../../core/server/services/settings/cache'),
 
     // Test data
     slackObjNoUrl = [{url: ''}],

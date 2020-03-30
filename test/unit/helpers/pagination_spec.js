@@ -1,9 +1,9 @@
 var should = require('should'),
-    hbs = require('../../../frontend/services/themes/engine'),
+    hbs = require('../../../core/frontend/services/themes/engine'),
     configUtils = require('../../utils/configUtils'),
     path = require('path'),
 
-    helpers = require('../../../frontend/helpers');
+    helpers = require('../../../core/frontend/helpers');
 
 describe('{{pagination}} helper', function () {
     before(function (done) {

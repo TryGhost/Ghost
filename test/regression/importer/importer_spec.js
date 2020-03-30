@@ -9,9 +9,9 @@ var should = require('should'),
     validator = require('validator'),
 
     // Stuff we are testing
-    db = require('../../../server/data/db'),
-    models = require('../../../server/models'),
-    importer = require('../../../server/data/importer'),
+    db = require('../../../core/server/data/db'),
+    models = require('../../../core/server/models'),
+    importer = require('../../../core/server/data/importer'),
     dataImporter = importer.importers[1],
     importOptions = {
         returnImportedData: true

@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    versionMatch = require('../../../../../server/web/shared/middlewares/api/version-match');
+    versionMatch = require('../../../../../core/server/web/shared/middlewares/api/version-match');
 
 describe('Version Mismatch', function () {
     var req, res, getStub, nextStub;

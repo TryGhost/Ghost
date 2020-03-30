@@ -1,5 +1,5 @@
 const should = require('should');
-const converter = require('../../../../../server/lib/mobiledoc/renderers/mobiledoc-html-renderer');
+const converter = require('../../../../../core/server/lib/mobiledoc/renderers/mobiledoc-html-renderer');
 
 describe('Mobiledoc HTML renderer', function () {
     describe('default', function () {

@@ -1,6 +1,6 @@
 const should = require('should');
 const supertest = require('supertest');
-const config = require('../../../server/config');
+const config = require('../../../core/server/config');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 

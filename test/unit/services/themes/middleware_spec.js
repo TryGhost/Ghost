@@ -1,10 +1,10 @@
 const should = require('should');
 const sinon = require('sinon');
-const hbs = require('../../../../frontend/services/themes/engine');
-const themes = require('../../../../frontend/services/themes');
+const hbs = require('../../../../core/frontend/services/themes/engine');
+const themes = require('../../../../core/frontend/services/themes');
 // is only exposed via themes.getActive()
-const activeTheme = require('../../../../frontend/services/themes/active');
-const settingsCache = require('../../../../server/services/settings/cache');
+const activeTheme = require('../../../../core/frontend/services/themes/active');
+const settingsCache = require('../../../../core/server/services/settings/cache');
 const middleware = themes.middleware;
 
 const sandbox = sinon.createSandbox();

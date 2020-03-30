@@ -5,10 +5,10 @@ var should = require('should'),
     _ = require('lodash'),
 
     // Stuff we are testing
-    common = require('../../../server/lib/common'),
-    imageLib = require('../../../server/lib/image'),
-    UserModel = require('../../../server/models/user').User,
-    RoleModel = require('../../../server/models/role').Role,
+    common = require('../../../core/server/lib/common'),
+    imageLib = require('../../../core/server/lib/image'),
+    UserModel = require('../../../core/server/models/user').User,
+    RoleModel = require('../../../core/server/models/role').Role,
     context = testUtils.context.admin;
 
 describe('User Model', function run() {

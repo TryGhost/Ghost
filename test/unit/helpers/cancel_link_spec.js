@@ -1,6 +1,6 @@
 const should = require('should');
-const hbs = require('../../../frontend/services/themes/engine');
-const helpers = require('../../../frontend/helpers');
+const hbs = require('../../../core/frontend/services/themes/engine');
+const helpers = require('../../../core/frontend/helpers');
 const configUtils = require('../../utils/configUtils');
 
 describe('{{cancel_link}} helper', function () {

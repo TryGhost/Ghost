@@ -1,10 +1,10 @@
 const should = require('should'),
     sinon = require('sinon'),
     path = require('path'),
-    ampController = require('../../../../frontend/apps/amp/lib/router'),
-    urlService = require('../../../../frontend/services/url'),
-    helpers = require('../../../../frontend/services/routing/helpers'),
-    common = require('../../../../server/lib/common'),
+    ampController = require('../../../../core/frontend/apps/amp/lib/router'),
+    urlService = require('../../../../core/frontend/services/url'),
+    helpers = require('../../../../core/frontend/services/routing/helpers'),
+    common = require('../../../../core/server/lib/common'),
     testUtils = require('../../../utils'),
     configUtils = require('../../../utils/configUtils');
 

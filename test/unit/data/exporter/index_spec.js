@@ -2,11 +2,11 @@ var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
     Promise = require('bluebird'),
-    db = require('../../../../server/data/db'),
-    common = require('../../../../server/lib/common'),
+    db = require('../../../../core/server/data/db'),
+    common = require('../../../../core/server/lib/common'),
     exporter = rewire('../../../../server/data/exporter'),
-    schema = require('../../../../server/data/schema'),
-    models = require('../../../../server/models'),
+    schema = require('../../../../core/server/data/schema'),
+    models = require('../../../../core/server/models'),
     schemaTables = Object.keys(schema.tables);
 
 describe('Exporter', function () {

@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
-const settingsCache = require('../../../../../../../../server/services/settings/cache');
-const dateUtil = require('../../../../../../../../server/api/canary/utils/serializers/output/utils/date');
+const settingsCache = require('../../../../../../../../core/server/services/settings/cache');
+const dateUtil = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/date');
 
 describe('Unit: v3/utils/serializers/output/utils/date', function () {
     afterEach(function () {

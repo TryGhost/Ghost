@@ -1,7 +1,7 @@
 var should = require('should'),
     tmp = require('tmp'),
     fs = require('fs-extra'),
-    packageJSON = require('../../../../../server/lib/fs/package-json');
+    packageJSON = require('../../../../../core/server/lib/fs/package-json');
 
 describe('lib/fs/package-json: parse', function () {
     it('should parse valid package.json', function (done) {

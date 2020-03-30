@@ -2,7 +2,7 @@ const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
 const testUtils = require('../../utils');
-const config = require('../../../server/config');
+const config = require('../../../core/server/config');
 const localUtils = require('./utils');
 
 const ghost = testUtils.startGhost;

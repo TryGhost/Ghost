@@ -1,9 +1,9 @@
 const should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
-    common = require('../../../server/lib/common'),
-    models = require('../../../server/models'),
-    settingsCache = require('../../../server/services/settings/cache'),
+    common = require('../../../core/server/lib/common'),
+    models = require('../../../core/server/models'),
+    settingsCache = require('../../../core/server/services/settings/cache'),
     testUtils = require('../../utils');
 
 describe('Unit: models/invite', function () {

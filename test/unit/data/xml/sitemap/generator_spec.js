@@ -3,12 +3,12 @@ const should = require('should'),
     ObjectId = require('bson-objectid'),
     _ = require('lodash'),
     testUtils = require('../../../../utils'),
-    urlUtils = require('../../../../../server/lib/url-utils'),
-    IndexGenerator = require('../../../../../frontend/services/sitemap/index-generator'),
-    PostGenerator = require('../../../../../frontend/services/sitemap/post-generator'),
-    PageGenerator = require('../../../../../frontend/services/sitemap/page-generator'),
-    TagGenerator = require('../../../../../frontend/services/sitemap/tag-generator'),
-    UserGenerator = require('../../../../../frontend/services/sitemap/user-generator');
+    urlUtils = require('../../../../../core/server/lib/url-utils'),
+    IndexGenerator = require('../../../../../core/frontend/services/sitemap/index-generator'),
+    PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator'),
+    PageGenerator = require('../../../../../core/frontend/services/sitemap/page-generator'),
+    TagGenerator = require('../../../../../core/frontend/services/sitemap/tag-generator'),
+    UserGenerator = require('../../../../../core/frontend/services/sitemap/user-generator');
 
 should.Assertion.add('ValidUrlNode', function (options) {
     // Check urlNode looks correct

@@ -3,8 +3,8 @@ var should = require('should'),
     Promise = require('bluebird'),
     rewire = require('rewire'),
 
-    models = require('../../../../../server/models'),
-    baseUtils = require('../../../../../server/models/base/utils'),
+    models = require('../../../../../core/server/models'),
+    baseUtils = require('../../../../../core/server/models/base/utils'),
     fixtureUtils = rewire('../../../../../server/data/schema/fixtures/utils'),
     fixtures = require('../../../../../server/data/schema/fixtures/fixtures');
 

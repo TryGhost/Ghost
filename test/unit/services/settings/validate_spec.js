@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
-const common = require('../../../../server/lib/common');
-const themesService = require('../../../../frontend/services/themes');
-const validate = require('../../../../frontend/services/settings/validate');
+const common = require('../../../../core/server/lib/common');
+const themesService = require('../../../../core/frontend/services/themes');
+const validate = require('../../../../core/frontend/services/settings/validate');
 
 should.equal(true, true);
 

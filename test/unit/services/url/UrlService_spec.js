@@ -3,11 +3,11 @@ const Promise = require('bluebird');
 const rewire = require('rewire');
 const should = require('should');
 const sinon = require('sinon');
-const common = require('../../../../server/lib/common');
-const Queue = require('../../../../frontend/services/url/Queue');
-const Resources = require('../../../../frontend/services/url/Resources');
-const UrlGenerator = require('../../../../frontend/services/url/UrlGenerator');
-const Urls = require('../../../../frontend/services/url/Urls');
+const common = require('../../../../core/server/lib/common');
+const Queue = require('../../../../core/frontend/services/url/Queue');
+const Resources = require('../../../../core/frontend/services/url/Resources');
+const UrlGenerator = require('../../../../core/frontend/services/url/UrlGenerator');
+const Urls = require('../../../../core/frontend/services/url/Urls');
 const UrlService = rewire('../../../../frontend/services/url/UrlService');
 
 describe('Unit: services/url/UrlService', function () {

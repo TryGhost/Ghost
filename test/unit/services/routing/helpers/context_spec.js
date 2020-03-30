@@ -2,8 +2,8 @@ const should = require('should'),
     sinon = require('sinon'),
     _ = require('lodash'),
     testUtils = require('../../../../utils'),
-    helpers = require('../../../../../frontend/services/routing/helpers'),
-    labs = require('../../../../../server/services/labs');
+    helpers = require('../../../../../core/frontend/services/routing/helpers'),
+    labs = require('../../../../../core/server/services/labs');
 
 describe('Contexts', function () {
     let req, res, data, setupContext;

@@ -6,10 +6,10 @@ const should = require('should'),
     mockUtils = require('../../utils/mocks'),
     configUtils = require('../../utils/configUtils'),
     urlUtils = require('../../utils/urlUtils'),
-    appService = require('../../../frontend/services/apps'),
-    frontendSettingsService = require('../../../frontend/services/settings'),
-    themeService = require('../../../frontend/services/themes'),
-    siteApp = require('../../../server/web/parent-app');
+    appService = require('../../../core/frontend/services/apps'),
+    frontendSettingsService = require('../../../core/frontend/services/settings'),
+    themeService = require('../../../core/frontend/services/themes'),
+    siteApp = require('../../../core/server/web/parent-app');
 
 describe('Integration - Web - Site', function () {
     let app;
@@ -46,7 +46,7 @@ describe('Integration - Web - Site', function () {
             });
 
             beforeEach(function () {
-                const postsAPI = require('../../../server/api/v2/posts-public');
+                const postsAPI = require('../../../core/server/api/v2/posts-public');
                 postSpy = sinon.spy(postsAPI.browse, 'query');
             });
 
@@ -1744,7 +1744,7 @@ describe('Integration - Web - Site', function () {
             });
 
             beforeEach(function () {
-                const postsAPI = require('../../../server/api/canary/posts-public');
+                const postsAPI = require('../../../core/server/api/canary/posts-public');
                 postSpy = sinon.spy(postsAPI.browse, 'query');
             });
 
@@ -3444,7 +3444,7 @@ describe('Integration - Web - Site', function () {
             });
 
             beforeEach(function () {
-                const postsAPI = require('../../../server/api/canary/posts-public');
+                const postsAPI = require('../../../core/server/api/canary/posts-public');
                 postSpy = sinon.spy(postsAPI.browse, 'query');
             });
 

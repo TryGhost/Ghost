@@ -3,11 +3,11 @@ const sinon = require('sinon');
 const supertest = require('supertest');
 const localUtils = require('./utils');
 const testUtils = require('../../../../utils/index');
-const models = require('../../../../../server/models/index');
-const security = require('../../../../../server/lib/security/index');
-const settingsCache = require('../../../../../server/services/settings/cache');
-const config = require('../../../../../server/config/index');
-const mailService = require('../../../../../server/services/mail/index');
+const models = require('../../../../../core/server/models/index');
+const security = require('../../../../../core/server/lib/security/index');
+const settingsCache = require('../../../../../core/server/services/settings/cache');
+const config = require('../../../../../core/server/config/index');
+const mailService = require('../../../../../core/server/services/mail/index');
 const configUtils = require('../../../../utils/configUtils');
 
 let ghost = testUtils.startGhost;

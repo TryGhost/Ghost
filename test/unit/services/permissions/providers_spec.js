@@ -2,8 +2,8 @@ var should = require('should'),
     sinon = require('sinon'),
     testUtils = require('../../../utils'),
     Promise = require('bluebird'),
-    models = require('../../../../server/models'),
-    providers = require('../../../../server/services/permissions/providers');
+    models = require('../../../../core/server/models'),
+    providers = require('../../../../core/server/services/permissions/providers');
 
 describe('Permission Providers', function () {
     before(function () {

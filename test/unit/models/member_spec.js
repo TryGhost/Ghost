@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const models = require('../../../server/models');
+const models = require('../../../core/server/models');
 const configUtils = require('../../utils/configUtils');
 
 const config = configUtils.config;

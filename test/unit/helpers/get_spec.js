@@ -3,9 +3,9 @@ var should = require('should'),
     Promise = require('bluebird'),
 
     // Stuff we are testing
-    helpers = require('../../../frontend/helpers'),
-    models = require('../../../server/models'),
-    api = require('../../../server/api');
+    helpers = require('../../../core/frontend/helpers'),
+    models = require('../../../core/server/models'),
+    api = require('../../../core/server/api');
 
 describe('{{#get}} helper', function () {
     var fn, inverse;

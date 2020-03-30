@@ -3,7 +3,7 @@ var should = require('should'),
     Promise = require('bluebird'),
 
     // Stuff we are testing
-    pipeline = require('../../../../server/lib/promise/pipeline');
+    pipeline = require('../../../../core/server/lib/promise/pipeline');
 
 // These tests are based on the tests in https://github.com/cujojs/when/blob/3.7.4/test/pipeline-test.js
 function createTask(y) {

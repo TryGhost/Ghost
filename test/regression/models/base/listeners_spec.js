@@ -4,10 +4,10 @@ var should = require('should'),
     moment = require('moment-timezone'),
     rewire = require('rewire'),
     _ = require('lodash'),
-    common = require('../../../../server/lib/common'),
-    models = require('../../../../server/models'),
-    testUtils = require('../../../../test/utils'),
-    sequence = require('../../../../server/lib/promise/sequence');
+    common = require('../../../../core/server/lib/common'),
+    models = require('../../../../core/server/models'),
+    testUtils = require('../../../utils'),
+    sequence = require('../../../../core/server/lib/promise/sequence');
 
 describe('Models: listeners', function () {
     var eventsToRemember = {},

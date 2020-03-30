@@ -1,5 +1,5 @@
 var should = require('should'),
-    common = require('../../../../server/lib/common');
+    common = require('../../../../core/server/lib/common');
 
 describe('Errors', function () {
     it('Ensure we inherit from Error', function () {

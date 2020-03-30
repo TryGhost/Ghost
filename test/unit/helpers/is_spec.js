@@ -1,7 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
-    helpers = require('../../../frontend/helpers'),
-    common = require('../../../server/lib/common');
+    helpers = require('../../../core/frontend/helpers'),
+    common = require('../../../core/server/lib/common');
 
 describe('{{#is}} helper', function () {
     afterEach(function () {

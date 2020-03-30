@@ -4,8 +4,8 @@ const supertest = require('supertest');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
-const config = require('../../../../../server/config');
-const labs = require('../../../../../server/services/labs');
+const config = require('../../../../../core/server/config');
+const labs = require('../../../../../core/server/services/labs');
 
 const ghost = testUtils.startGhost;
 

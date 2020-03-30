@@ -1,11 +1,11 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const models = require('../../../../server/models');
-const {UnauthorizedError} = require('../../../../server/lib/common/errors');
+const models = require('../../../../core/server/models');
+const {UnauthorizedError} = require('../../../../core/server/lib/common/errors');
 
-const sessionController = require('../../../../server/api/canary/session');
-const sessionServiceMiddleware = require('../../../../server/services/auth/session/middleware');
+const sessionController = require('../../../../core/server/api/canary/session');
+const sessionServiceMiddleware = require('../../../../core/server/services/auth/session/middleware');
 
 describe('v3 Session controller', function () {
     before(function () {
