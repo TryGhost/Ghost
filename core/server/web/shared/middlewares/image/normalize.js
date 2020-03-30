@@ -1,5 +1,4 @@
 const cloneDeep = require('lodash/cloneDeep');
-const path = require('path');
 const config = require('../../../../config');
 const {logging} = require('../../../../lib/common');
 const imageTransform = require('@tryghost/image-transform');
@@ -30,8 +29,7 @@ module.exports = function normalize(req, res, next) {
             req.files.push(Object.assign(req.file, {path: out}));
 
             // CASE: push original image, we keep a copy of it
-            const parsedFileName = path.parse(req.file.name);
-            const newName = `${parsedFileName.name}_o${parsedFileName.ext}`;
+            const newName = imageTransform.generateOriginalImageName(req.file.name);
             req.files.push(Object.assign(cloneDeep(req.file), {path: originalPath, name: newName}));
 
             next();
