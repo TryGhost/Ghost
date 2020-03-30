@@ -2,15 +2,11 @@
 // `{{pagination}}`
 // Outputs previous and next buttons, along with info about the current page
 
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    errors = proxy.errors,
-    i18n = proxy.i18n,
-    createFrame = proxy.hbs.handlebars.createFrame,
-    templates = proxy.templates,
-    pagination;
+const {errors, i18n, templates, hbs} = require('./proxy');
+const _ = require('lodash');
+const createFrame = hbs.handlebars.createFrame;
 
-pagination = function (options) {
+module.exports = function pagination(options) {
     options = options || {};
     options.hash = options.hash || {};
     options.data = options.data || {};
@@ -50,5 +46,3 @@ pagination = function (options) {
 
     return templates.execute('pagination', this, {data});
 };
-
-module.exports = pagination;
