@@ -102,7 +102,7 @@ describe('Config', function () {
 
         it('should have the correct values for each key', function () {
             var pathConfig = configUtils.config.get('paths'),
-                appRoot = path.resolve(__dirname, '../../../../');
+                appRoot = path.resolve(__dirname, '../../../');
 
             pathConfig.should.have.property('appRoot', appRoot);
         });

@@ -32,7 +32,7 @@ describe('UNIT > Settings Service ensure settings:', function () {
         });
 
         it('copies default settings file if not found but does not overwrite existing files', function () {
-            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../frontend/services/settings/default-globals.yaml');
+            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../core/frontend/services/settings/default-globals.yaml');
             const expectedContentPath = path.join(__dirname, '../../../utils/fixtures/settings/globals.yaml');
             const fsError = new Error('not found');
             fsError.code = 'ENOENT';
@@ -49,7 +49,7 @@ describe('UNIT > Settings Service ensure settings:', function () {
         });
 
         it('copies default settings file if no file found', function () {
-            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../frontend/services/settings/default-routes.yaml');
+            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../core/frontend/services/settings/default-routes.yaml');
             const expectedContentPath = path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml');
             const fsError = new Error('not found');
             fsError.code = 'ENOENT';

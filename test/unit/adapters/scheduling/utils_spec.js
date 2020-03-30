@@ -8,7 +8,7 @@ describe('Scheduling: utils', function () {
     describe('success', function () {
         it('create good adapter', function (done) {
             schedulingUtils.createAdapter({
-                active: __dirname + '/../../../../server/adapters/scheduling/SchedulingDefault'
+                active: __dirname + '/../../../../core/server/adapters/scheduling/SchedulingDefault'
             }).then(function (adapter) {
                 should.exist(adapter);
                 done();
@@ -18,7 +18,7 @@ describe('Scheduling: utils', function () {
         it('create good adapter', function (done) {
             var jsFile = '' +
                 'var util = require(\'util\');' +
-                'var SchedulingBase = require(__dirname + \'/../../../../server/adapters/scheduling/SchedulingBase\');' +
+                'var SchedulingBase = require(__dirname + \'/../../../../core/server/adapters/scheduling/SchedulingBase\');' +
                 'var AnotherAdapter = function (){ SchedulingBase.call(this); };' +
                 'util.inherits(AnotherAdapter, SchedulingBase);' +
                 'AnotherAdapter.prototype.run = function (){};' +
@@ -62,7 +62,7 @@ describe('Scheduling: utils', function () {
         it('create with adapter, but missing fn\'s', function (done) {
             var jsFile = '' +
                 'var util = require(\'util\');' +
-                'var SchedulingBase = require(__dirname + \'/../../../../server/adapters/scheduling/SchedulingBase\');' +
+                'var SchedulingBase = require(__dirname + \'/../../../../core/server/adapters/scheduling/SchedulingBase\');' +
                 'var BadAdapter = function (){ SchedulingBase.call(this); };' +
                 'util.inherits(BadAdapter, SchedulingBase);' +
                 'BadAdapter.prototype.schedule = function (){};' +

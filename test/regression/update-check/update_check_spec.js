@@ -7,7 +7,7 @@ const moment = require('moment');
 const uuid = require('uuid');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
-const packageInfo = require('../../../../package');
+const packageInfo = require('../../../package.json');
 const api = require('../../../core/server/api').v2;
 
 let updateCheck = rewire('../../../core/server/update-check');

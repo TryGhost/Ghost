@@ -219,9 +219,7 @@ describe('{{navigation}} helper with custom template', function () {
     var optionsData;
 
     before(function (done) {
-        hbs.express4({
-            partialsDir: [path.resolve(configUtils.config.get('paths').corePath, 'test/unit/helpers/test_tpl')]
-        });
+        hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
 
         hbs.cachePartials(function () {
             done();

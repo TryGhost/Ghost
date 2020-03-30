@@ -322,7 +322,7 @@ describe('Dynamic Routing', function () {
             });
         });
 
-        describe.skip('Paged', function () {
+        describe('Paged', function () {
             // Inserting more posts takes a bit longer
             this.timeout(20000);
 
@@ -724,7 +724,7 @@ describe('Dynamic Routing', function () {
             return api.settings.upload.query({
                 context: testUtils.context.internal.context,
                 file: {
-                    path: path.join(config.get('paths:appRoot'), 'core', 'test', 'utils', 'fixtures', 'settings', 'newroutes.yaml')
+                    path: path.join(config.get('paths:appRoot'), 'test', 'utils', 'fixtures', 'settings', 'newroutes.yaml')
                 }
             }).then(() => {
                 return testUtils.integrationTesting.urlService.waitTillFinished({dbIsReady: true});

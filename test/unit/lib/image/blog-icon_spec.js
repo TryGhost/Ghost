@@ -90,7 +90,7 @@ describe('lib/image: blog icon', function () {
         });
 
         it('default ico blog icon', function () {
-            blogIcon.getIconPath().should.eql(path.join(__dirname, '../../../../server/public/favicon.ico'));
+            blogIcon.getIconPath().should.eql(path.join(__dirname, '../../../../core/server/public/favicon.ico'));
         });
     });
 
