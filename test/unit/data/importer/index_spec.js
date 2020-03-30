@@ -151,37 +151,37 @@ describe('Importer', function () {
 
             describe('Validate Zip', function () {
                 it('accepts a zip with a base directory', function () {
-                    var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-with-base-dir');
+                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
 
                     ImportManager.isValidZip(testDir).should.be.ok();
                 });
 
                 it('accepts a zip without a base directory', function () {
-                    var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-without-base-dir');
+                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
 
                     ImportManager.isValidZip(testDir).should.be.ok();
                 });
 
                 it('accepts a zip with an image directory', function () {
-                    var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-image-dir');
+                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
 
                     ImportManager.isValidZip(testDir).should.be.ok();
                 });
 
                 it('fails a zip with two base directories', function () {
-                    var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-with-double-base-dir');
+                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
 
                     ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(common.errors.UnsupportedMediaTypeError);
                 });
 
                 it('fails a zip with no content', function () {
-                    var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-invalid');
+                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-invalid');
 
                     ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(common.errors.UnsupportedMediaTypeError);
                 });
 
                 it('shows a special error for old Roon exports', function () {
-                    var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-old-roon-export'),
+                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-old-roon-export'),
                         msg = 'Your zip file looks like an old format Roon export, ' +
                             'please re-export your Roon blog and try again.';
 
@@ -192,13 +192,13 @@ describe('Importer', function () {
 
             describe('Get Base Dir', function () {
                 it('returns string for base directory', function () {
-                    var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-with-base-dir');
+                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
 
                     ImportManager.getBaseDirectory(testDir).should.equal('basedir');
                 });
 
                 it('returns empty for no base directory', function () {
-                    var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-without-base-dir');
+                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
 
                     should.not.exist(ImportManager.getBaseDirectory(testDir));
                 });

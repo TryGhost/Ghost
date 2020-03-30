@@ -1,6 +1,6 @@
 const should = require('should');
-const helpers = require('../../../../core/frontend/helpers');
-const handlebars = require('../../../../core/frontend/services/themes/engine').handlebars;
+const helpers = require('../../../core/frontend/helpers');
+const handlebars = require('../../../core/frontend/services/themes/engine').handlebars;
 
 function compile(templateString) {
     const template = handlebars.compile(templateString);
@@ -43,4 +43,3 @@ describe('{{price}} helper', function () {
             .should.equal('20');
     });
 });
-
