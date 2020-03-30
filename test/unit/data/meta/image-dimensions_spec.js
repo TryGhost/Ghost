@@ -1,7 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
-    getImageDimensions = rewire('../../../../frontend/meta/image-dimensions');
+    getImageDimensions = rewire('../../../../core/frontend/meta/image-dimensions');
 
 describe('getImageDimensions', function () {
     var sizeOfStub;

@@ -5,8 +5,8 @@ var should = require('should'),
 
     models = require('../../../../../core/server/models'),
     baseUtils = require('../../../../../core/server/models/base/utils'),
-    fixtureUtils = rewire('../../../../../server/data/schema/fixtures/utils'),
-    fixtures = require('../../../../../server/data/schema/fixtures/fixtures');
+    fixtureUtils = rewire('../../../../../core/server/data/schema/fixtures/utils'),
+    fixtures = require('../../../../../core/server/data/schema/fixtures/fixtures');
 
 describe('Migration Fixture Utils', function () {
     var loggerStub;

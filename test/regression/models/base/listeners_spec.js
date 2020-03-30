@@ -29,7 +29,7 @@ describe('Models: listeners', function () {
             eventsToRemember[eventName] = callback;
         });
 
-        listeners = rewire('../../../../server/models/base/listeners');
+        listeners = rewire('../../../../core/server/models/base/listeners');
     });
 
     afterEach(function () {

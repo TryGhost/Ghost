@@ -8,12 +8,12 @@ var should = require('should'),
     urlUtils = require('../../../utils/urlUtils'),
 
     // stuff we are testing
-    blogIcon = rewire('../../../../server/lib/image/blog-icon');
+    blogIcon = rewire('../../../../core/server/lib/image/blog-icon');
 
 describe('lib/image: blog icon', function () {
     afterEach(function () {
         sinon.restore();
-        rewire('../../../../server/lib/image/blog-icon');
+        rewire('../../../../core/server/lib/image/blog-icon');
     });
 
     describe('getIconUrl', function () {

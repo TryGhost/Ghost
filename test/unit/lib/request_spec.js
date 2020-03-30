@@ -1,7 +1,7 @@
 const should = require('should');
 const rewire = require('rewire');
 const nock = require('nock');
-const request = rewire('../../../server/lib/request');
+const request = rewire('../../../core/server/lib/request');
 
 describe('Request', function () {
     it('[success] should return response for http request', function () {

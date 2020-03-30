@@ -6,7 +6,7 @@ var should = require('should'),
     rewire = require('rewire'),
     testUtils = require('../../utils'),
     configUtils = require('../../utils/configUtils'),
-    xmlrpc = rewire('../../../server/services/xmlrpc'),
+    xmlrpc = rewire('../../../core/server/services/xmlrpc'),
     common = require('../../../core/server/lib/common');
 
 describe('XMLRPC', function () {

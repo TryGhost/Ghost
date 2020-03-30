@@ -2,15 +2,14 @@ var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
     Promise = require('bluebird'),
-    config = require(__dirname + '/../../../../server/config'),
-    postScheduling = require(__dirname + '/../../../../server/adapters/scheduling/post-scheduling');
+    postScheduling = require('../../../../core/server/adapters/scheduling/post-scheduling');
 
 describe('Scheduling', function () {
     var scope = {};
 
     before(function () {
         sinon.stub(postScheduling, 'init').returns(Promise.resolve());
-        scope.scheduling = rewire(config.get('paths').corePath + '/server/adapters/scheduling');
+        scope.scheduling = rewire('../../../../core/server/adapters/scheduling');
     });
 
     after(function () {

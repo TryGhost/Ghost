@@ -8,7 +8,7 @@ describe('Utils: Ghost Version', function () {
     const beforeEachIt = function be() {
         mockUtils.modules.mockNonExistentModule(/package\.json/, {version: version});
 
-        ghostVersionUtils = rewire('../../../server/lib/ghost-version');
+        ghostVersionUtils = rewire('../../../core/server/lib/ghost-version');
     };
 
     afterEach(function () {

@@ -6,7 +6,7 @@ var should = require('should'),
     configUtils = require('../../utils/configUtils'),
 
     // Stuff we test
-    slack = rewire('../../../server/services/slack'),
+    slack = rewire('../../../core/server/services/slack'),
     common = require('../../../core/server/lib/common'),
     imageLib = require('../../../core/server/lib/image'),
     urlService = require('../../../core/frontend/services/url'),

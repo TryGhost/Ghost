@@ -10,13 +10,13 @@ const configUtils = require('../../utils/configUtils');
 const packageInfo = require('../../../../package');
 const api = require('../../../core/server/api').v2;
 
-let updateCheck = rewire('../../../server/update-check');
-let NotificationsAPI = rewire('../../../server/api/v2/notifications');
+let updateCheck = rewire('../../../core/server/update-check');
+let NotificationsAPI = rewire('../../../core/server/api/v2/notifications');
 
 describe('Update Check', function () {
     beforeEach(function () {
-        updateCheck = rewire('../../../server/update-check');
-        NotificationsAPI = rewire('../../../server/api/v2/notifications');
+        updateCheck = rewire('../../../core/server/update-check');
+        NotificationsAPI = rewire('../../../core/server/api/v2/notifications');
     });
 
     afterEach(function () {
@@ -704,4 +704,3 @@ describe('Update Check', function () {
         });
     });
 });
-

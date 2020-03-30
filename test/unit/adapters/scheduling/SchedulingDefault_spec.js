@@ -1,12 +1,11 @@
 var should = require('should'),
     sinon = require('sinon'),
-    config = require(__dirname + '/../../../../server/config'),
     moment = require('moment'),
     _ = require('lodash'),
     express = require('express'),
     bodyParser = require('body-parser'),
     http = require('http'),
-    SchedulingDefault = require(config.get('paths').corePath + '/server/adapters/scheduling/SchedulingDefault');
+    SchedulingDefault = require('../../../../core/server/adapters/scheduling/SchedulingDefault');
 
 describe('Scheduling Default Adapter', function () {
     var scope = {};

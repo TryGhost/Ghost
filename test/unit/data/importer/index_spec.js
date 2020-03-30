@@ -11,7 +11,7 @@ var should = require('should'),
     // Stuff we are testing
     ImportManager = require('../../../../core/server/data/importer'),
     JSONHandler = require('../../../../core/server/data/importer/handlers/json'),
-    ImageHandler = rewire('../../../../server/data/importer/handlers/image'),
+    ImageHandler = rewire('../../../../core/server/data/importer/handlers/image'),
     MarkdownHandler = require('../../../../core/server/data/importer/handlers/markdown'),
     DataImporter = require('../../../../core/server/data/importer/importers/data'),
     ImageImporter = require('../../../../core/server/data/importer/importers/image'),
@@ -23,7 +23,7 @@ var should = require('should'),
 describe('Importer', function () {
     afterEach(function () {
         sinon.restore();
-        ImageHandler = rewire('../../../../server/data/importer/handlers/image');
+        ImageHandler = rewire('../../../../core/server/data/importer/handlers/image');
     });
 
     describe('ImportManager', function () {

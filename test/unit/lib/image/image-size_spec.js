@@ -20,7 +20,7 @@ describe('lib/image: image size', function () {
     const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
 
     beforeEach(function () {
-        imageSize = rewire('../../../../server/lib/image/image-size');
+        imageSize = rewire('../../../../core/server/lib/image/image-size');
 
         sizeOf = imageSize.__get__('sizeOf');
         sizeOfSpy = sinon.spy(sizeOf);

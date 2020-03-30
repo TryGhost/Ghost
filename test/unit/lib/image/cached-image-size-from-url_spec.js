@@ -4,7 +4,7 @@ var should = require('should'),
     rewire = require('rewire'),
 
     // Stuff we are testing
-    getCachedImageSizeFromUrl = rewire('../../../../server/lib/image/cached-image-size-from-url');
+    getCachedImageSizeFromUrl = rewire('../../../../core/server/lib/image/cached-image-size-from-url');
 
 describe('lib/image: image size cache', function () {
     var sizeOfStub,

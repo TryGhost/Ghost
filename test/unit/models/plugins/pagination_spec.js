@@ -2,7 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
     rewire = require('rewire'),
-    pagination = rewire('../../../../server/models/plugins/pagination');
+    pagination = rewire('../../../../core/server/models/plugins/pagination');
 
 describe('pagination', function () {
     var paginationUtils;

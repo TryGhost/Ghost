@@ -8,7 +8,7 @@ const Queue = require('../../../../core/frontend/services/url/Queue');
 const Resources = require('../../../../core/frontend/services/url/Resources');
 const UrlGenerator = require('../../../../core/frontend/services/url/UrlGenerator');
 const Urls = require('../../../../core/frontend/services/url/Urls');
-const UrlService = rewire('../../../../frontend/services/url/UrlService');
+const UrlService = rewire('../../../../core/frontend/services/url/UrlService');
 
 describe('Unit: services/url/UrlService', function () {
     let QueueStub, ResourcesStub, UrlsStub, UrlGeneratorStub, urlService;

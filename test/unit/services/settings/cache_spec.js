@@ -2,13 +2,13 @@ const rewire = require('rewire');
 const should = require('should');
 const _ = require('lodash');
 const publicSettings = require('../../../../core/server/services/settings/public');
-let cache = rewire('../../../../server/services/settings/cache');
+let cache = rewire('../../../../core/server/services/settings/cache');
 
 should.equal(true, true);
 
 describe('UNIT: settings cache', function () {
     beforeEach(function () {
-        cache = rewire('../../../../server/services/settings/cache');
+        cache = rewire('../../../../core/server/services/settings/cache');
     });
 
     it('does not auto convert string into number', function () {
