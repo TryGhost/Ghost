@@ -322,7 +322,7 @@ describe('Dynamic Routing', function () {
             });
         });
 
-        describe('Paged', function () {
+        describe.skip('Paged', function () {
             // Inserting more posts takes a bit longer
             this.timeout(20000);
 
