@@ -2,9 +2,7 @@
 // Usage: `{{post_class}}`
 //
 // Output classes for the body element
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    SafeString = proxy.SafeString;
+const {SafeString} = require('./proxy');
 
 // We use the name post_class to match the helper for consistency:
 module.exports = function post_class() { // eslint-disable-line camelcase
@@ -32,8 +30,9 @@ module.exports = function post_class() { // eslint-disable-line camelcase
         classes.push('page');
     }
 
-    classes = _.reduce(classes, function (memo, item) {
+    classes = classes.reduce(function (memo, item) {
         return memo + ' ' + item;
     }, '');
+
     return new SafeString(classes.trim());
 };

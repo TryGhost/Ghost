@@ -10,15 +10,12 @@
 // The 3rd argument is the string that will be output if the variable's value is 1
 // The 4th argument is the string that will be output if the variable's value is 2+
 
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    errors = proxy.errors,
-    i18n = proxy.i18n,
-    SafeString = proxy.SafeString;
+const {errors, i18n, SafeString} = require('./proxy');
+const isUndefined = require('lodash/isUndefined');
 
 module.exports = function plural(number, options) {
-    if (_.isUndefined(options.hash) || _.isUndefined(options.hash.empty) ||
-        _.isUndefined(options.hash.singular) || _.isUndefined(options.hash.plural)) {
+    if (isUndefined(options.hash) || isUndefined(options.hash.empty) ||
+        isUndefined(options.hash.singular) || isUndefined(options.hash.plural)) {
         throw new errors.IncorrectUsageError({
             message: i18n.t('warnings.helpers.plural.valuesMustBeDefined')
         });

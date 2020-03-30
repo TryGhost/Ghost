@@ -1,9 +1,9 @@
-var templates = {},
-    _ = require('lodash'),
-    proxy = require('./proxy'),
-    hbs = require('../services/themes/engine');
-
 // ## Template utils
+const templates = {};
+const _ = require('lodash');
+const errors = require('@tryghost/errors');
+const hbs = require('../services/themes/engine');
+const i18n = require('../../server/lib/common/i18n');
 
 // Execute a template helper
 // All template helpers are register as partial view.
@@ -11,8 +11,8 @@ templates.execute = function execute(name, context, data) {
     var partial = hbs.handlebars.partials[name];
 
     if (partial === undefined) {
-        throw new proxy.errors.IncorrectUsageError({
-            message: proxy.i18n.t('warnings.helpers.template.templateNotFound', {name: name})
+        throw new errors.IncorrectUsageError({
+            message: i18n.t('warnings.helpers.template.templateNotFound', {name: name})
         });
     }
 

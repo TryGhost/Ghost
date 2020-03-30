@@ -2,10 +2,8 @@
 // Usage: `{{ghost_foot}}`
 //
 // Outputs scripts and other assets at the bottom of a Ghost theme
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    SafeString = proxy.SafeString,
-    settingsCache = proxy.settingsCache;
+const {SafeString, settingsCache} = require('./proxy');
+const _ = require('lodash');
 
 // We use the name ghost_foot to match the helper for consistency:
 module.exports = function ghost_foot(options) { // eslint-disable-line camelcase

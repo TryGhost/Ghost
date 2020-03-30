@@ -2,19 +2,12 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    debug = require('ghost-ignition').debug('ghost_head'),
+const {metaData, escapeExpression, SafeString, logging, settingsCache, config, blogIcon, labs} = require('./proxy');
+const _ = require('lodash');
+const debug = require('ghost-ignition').debug('ghost_head');
 
-    getMetaData = proxy.metaData.get,
-    getAssetUrl = proxy.metaData.getAssetUrl,
-    escapeExpression = proxy.escapeExpression,
-    SafeString = proxy.SafeString,
-    logging = proxy.logging,
-    settingsCache = proxy.settingsCache,
-    config = proxy.config,
-    blogIconUtils = proxy.blogIcon,
-    labs = proxy.labs;
+const getMetaData = metaData.get;
+const getAssetUrl = metaData.getAssetUrl;
 
 function writeMetaTag(property, content, type) {
     type = type || property.substring(0, 7) === 'twitter' ? 'name' : 'property';
@@ -108,8 +101,8 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
         globalCodeinjection = settingsCache.get('ghost_head'),
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade',
-        favicon = blogIconUtils.getIconUrl(),
-        iconType = blogIconUtils.getIconType(favicon);
+        favicon = blogIcon.getIconUrl(),
+        iconType = blogIcon.getIconType(favicon);
 
     debug('preparation complete, begin fetch');
 

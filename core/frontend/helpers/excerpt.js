@@ -5,10 +5,9 @@
 //
 // Defaults to words="50"
 
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    SafeString = proxy.SafeString,
-    getMetaDataExcerpt = proxy.metaData.getMetaDataExcerpt;
+const {SafeString, metaData} = require('./proxy');
+const _ = require('lodash');
+const getMetaDataExcerpt = metaData.getMetaDataExcerpt;
 
 module.exports = function excerpt(options) {
     let truncateOptions = (options || {}).hash || {};

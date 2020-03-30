@@ -6,11 +6,7 @@
 //
 // Defaults to class="cancel-subscription-link" errorClass="cancel-subscription-error" cancelLabel="Cancel subscription" continueLabel="Continue subscription"
 
-const proxy = require('./proxy');
-
-const templates = proxy.templates;
-const errors = proxy.errors;
-const i18n = proxy.i18n;
+const {templates, errors, i18n} = require('./proxy');
 
 module.exports = function excerpt(options) {
     let truncateOptions = (options || {}).hash || {};
