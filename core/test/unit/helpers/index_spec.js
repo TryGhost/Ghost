@@ -1,9 +1,9 @@
 var should = require('should'),
     _ = require('lodash'),
-    hbs = require.main.require('core/frontend/services/themes/engine'),
+    hbs = require('../../../../core/frontend/services/themes/engine'),
 
     // Stuff we are testing
-    helpers = require.main.require('core/frontend/helpers');
+    helpers = require('../../../../core/frontend/helpers');
 
 describe('Helpers', function () {
     var hbsHelpers = ['each', 'if', 'unless', 'with', 'helperMissing', 'blockHelperMissing', 'log', 'lookup', 'block', 'contentFor'],
