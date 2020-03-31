@@ -93,14 +93,21 @@ describe('Session Service', function () {
     });
 
     describe('destroySession', function () {
-        it('calls req.session.destroy', function () {
+        it('calls req.session.destroy', function (done) {
             const req = fakeReq();
             const res = fakeRes();
-            const destroyStub = sinon.stub(req.session, 'destroy');
+            const destroyStub = sinon.stub(req.session, 'destroy')
+                .callsFake(function (fn) {
+                    fn();
+                });
+
+            sinon.stub(res, 'sendStatus')
+                .callsFake(function (statusCode) {
+                    should.equal(destroyStub.callCount, 1);
+                    done();
+                });
 
             sessionMiddleware.destroySession(req, res);
-
-            should.equal(destroyStub.callCount, 1);
         });
 
         it('calls next with InternalServerError if destroy errors', function (done) {

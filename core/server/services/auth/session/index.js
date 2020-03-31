@@ -7,6 +7,7 @@ const urlUtils = require('../../../lib/url-utils');
 const url = require('url');
 
 const SessionService = require('./service');
+const SessionMiddleware = require('./middleware');
 const SessionStore = require('./store');
 
 function getOriginOfRequest(req) {
@@ -81,18 +82,29 @@ function initSessionService() {
     }
 }
 
+let sessionMiddleware;
+function initSessionMiddleware() {
+    if (!sessionMiddleware) {
+        if (!sessionService) {
+            initSessionService();
+        }
+        sessionMiddleware = SessionMiddleware({
+            sessionService
+        });
+    }
+}
+
 module.exports = {
-    // @TODO: expose files/units and not functions of units
     get createSession() {
-        return require('./middleware').createSession;
+        return this.middleware.createSession;
     },
 
     get destroySession() {
-        return require('./middleware').destroySession;
+        return this.middleware.destroySession;
     },
 
     get authenticate() {
-        return require('./middleware').authenticate;
+        return this.middleware.authenticate;
     },
 
     get service() {
@@ -100,5 +112,12 @@ module.exports = {
             initSessionService();
         }
         return sessionService;
+    },
+
+    get middleware() {
+        if (!sessionMiddleware) {
+            initSessionMiddleware();
+        }
+        return sessionMiddleware;
     }
 };
