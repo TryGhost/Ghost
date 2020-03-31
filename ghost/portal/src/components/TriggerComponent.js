@@ -1,4 +1,5 @@
 import logo from '../logo.svg';
+import FrameComponent from './FrameComponent';
 import closeIcon from '../images/close.png';
 const React = require("react");
 const PropTypes = require("prop-types");
@@ -68,13 +69,13 @@ export default class TriggerComponent extends React.Component {
             transition: 'transform 0.16s linear 0s, opacity 0.08s linear 0s',
         };
         return (
-            <div style={hoverStyle} onClick={(e) => this.onToggle(e)}>
-                <div style={launcherStyle}>
+            <FrameComponent style={hoverStyle} title="membersjs-trigger">
+                <div style={launcherStyle} onClick={(e) => this.onToggle(e)}>
                     <div style={buttonStyle}>
                         {this.renderTriggerIcon()}
                     </div>
                 </div>
-            </div>
+            </FrameComponent>
         );
     }
 }

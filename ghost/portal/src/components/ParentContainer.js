@@ -1,4 +1,5 @@
 import TriggerComponent from './TriggerComponent';
+import FrameComponent from './FrameComponent';
 import PopupMenuComponent from './PopupMenuComponent';
 const React = require("react");
 const PropTypes = require("prop-types");

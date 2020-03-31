@@ -1,6 +1,6 @@
+import FrameComponent from './FrameComponent';
 const React = require("react");
 const PropTypes = require("prop-types");
-
 
 export default class PopupMenuComponent extends React.Component {
     static propTypes = {
@@ -44,7 +44,7 @@ export default class PopupMenuComponent extends React.Component {
             textAlign: 'left'
         };
         return (
-            <div style={hoverStyle}>
+            <FrameComponent style={hoverStyle}>
                 <div style={launcherStyle}>
                     <div style={buttonStyle}>
                         <div style={{display: 'flex', flexDirection: 'column'}}>
@@ -60,7 +60,7 @@ export default class PopupMenuComponent extends React.Component {
                         </div>
                     </div>
                 </div>
-            </div>
+            </FrameComponent>
         );
     }
 }
