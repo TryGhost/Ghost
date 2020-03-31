@@ -608,14 +608,16 @@ const configureGrunt = function (grunt) {
                     dest: 'core/server/web/admin/views/default.html'
                 }]
             });
-            if (!grunt.option('skip-tests')) {
-                grunt.task.run(['update_submodules:pinned', 'subgrunt:init', 'test-all', 'clean:built', 'clean:tmp', 'prod', 'clean:release', 'copy:admin_html', 'copy:release', 'compress:release']);
+
+            grunt.task.run(['update_submodules:pinned', 'subgrunt:init']);
+
+            if (grunt.option('skip-tests')) {
+                grunt.log.writeln(chalk.red(chalk.bold('Skipping tests...')));
             } else {
-                grunt.log.writeln(chalk.red(
-                    chalk.bold('Skipping tests...')
-                ));
-                grunt.task.run(['update_submodules:pinned', 'subgrunt:init', 'clean:built', 'clean:tmp', 'prod', 'clean:release', 'copy:admin_html', 'copy:release', 'compress:release']);
+                grunt.task.run('test-all');
             }
+
+            grunt.task.run(['clean:built', 'clean:tmp', 'prod', 'clean:release', 'copy:admin_html', 'copy:release', 'compress:release']);
         }
     );
 };
