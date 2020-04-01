@@ -10,7 +10,7 @@ describe('Releases', function () {
             try {
                 lib.releases.uploadZip();
             } catch (err) {
-                err.message.should.eql('Missing options: zipPath, github, github.username, github.token, userAgent, uri');
+                err.message.should.eql('Missing options: zipPath, github, github.token, userAgent, uri');
                 return done();
             }
 
@@ -19,7 +19,7 @@ describe('Releases', function () {
 
         it('missing options', function (done) {
             try {
-                lib.releases.uploadZip({zipPath: 'test', github: {username: 'test'}});
+                lib.releases.uploadZip({zipPath: 'test', github: {}});
             } catch (err) {
                 err.message.should.eql('Missing options: github.token, userAgent, uri');
                 return done();

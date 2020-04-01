@@ -11,7 +11,6 @@ module.exports.create = (options = {}) => {
         'gistName',
         'gistDescription',
         'github',
-        'github.username',
         'github.token',
         'userAgent'
     );
@@ -27,7 +26,7 @@ module.exports.create = (options = {}) => {
         content: content.toString('utf8')
     };
 
-    const auth = 'Basic ' + new Buffer(options.github.username + ':' + options.github.token).toString('base64');
+    const auth = 'token ' + options.github.token;
 
     const reqOptions = {
         uri: 'https://api.github.com/gists',
