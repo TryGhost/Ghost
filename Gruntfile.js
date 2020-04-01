@@ -38,6 +38,7 @@ const configureGrunt = function (grunt) {
     //
     // Find all of the task which start with `grunt-` and load them, rather than explicitly declaring them all
     require('matchdep').filterDev(['grunt-*', '!grunt-cli']).forEach(grunt.loadNpmTasks);
+    grunt.loadNpmTasks('@lodder/grunt-postcss');
 
     var cfg = {
         // #### Common paths used by tasks
@@ -276,10 +277,12 @@ const configureGrunt = function (grunt) {
             }
         },
 
-        cssnano: {
+        postcss: {
             prod: {
                 options: {
-                    sourcemap: false
+                    processors: [
+                        require('cssnano')() // minify the result
+                    ]
                 },
                 files: {
                     'core/server/public/ghost.min.css': 'core/server/public/ghost.css'
@@ -542,7 +545,7 @@ const configureGrunt = function (grunt) {
     //
     // It is otherwise the same as running `grunt`, but is only used when running Ghost in the `production` env.
     grunt.registerTask('prod', 'Build JS & templates for production',
-        ['subgrunt:prod', 'uglify:prod', 'cssnano:prod', 'master-warn']);
+        ['subgrunt:prod', 'uglify:prod', 'postcss:prod', 'master-warn']);
 
     // ### Live reload
     // `grunt dev` - build assets on the fly whilst developing
