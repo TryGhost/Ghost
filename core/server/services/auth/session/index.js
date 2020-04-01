@@ -12,7 +12,7 @@ const SessionStore = require('./store');
 
 function getOriginOfRequest(req) {
     const origin = req.get('origin');
-    const referrer = req.get('referrer');
+    const referrer = req.get('referrer') || urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
 
     if (!origin && !referrer) {
         return null;
