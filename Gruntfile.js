@@ -41,10 +41,19 @@ let gistUrl, githubUploadURL;
 // ## Grunt configuration
 const configureGrunt = function (grunt) {
     // #### Load all grunt tasks
-    //
-    // Find all of the task which start with `grunt-` and load them, rather than explicitly declaring them all
-    require('matchdep').filterDev(['grunt-*', '!grunt-cli']).forEach(grunt.loadNpmTasks);
     grunt.loadNpmTasks('@lodder/grunt-postcss');
+    grunt.loadNpmTasks('grunt-bg-shell');
+    grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-contrib-compress');
+    grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-contrib-symlink');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-express-server');
+    grunt.loadNpmTasks('grunt-mocha-cli');
+    grunt.loadNpmTasks('grunt-shell');
+    grunt.loadNpmTasks('grunt-subgrunt');
+    grunt.loadNpmTasks('grunt-update-submodules');
 
     var cfg = {
         // #### Common paths used by tasks
