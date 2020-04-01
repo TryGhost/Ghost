@@ -717,10 +717,7 @@ const configureGrunt = function (grunt) {
             .catch(done);
     });
 
-    grunt.registerTask('automated-release', function () {
-        grunt.option('skip-tests', true);
-        grunt.task.run(['release', 'changelog', 'gist', 'draftRelease', 'uploadGitHub']);
-    });
+    grunt.registerTask('automated-release', ['release', 'changelog', 'gist', 'draftRelease', 'uploadGitHub']);
 
     // ### Release
     // Run `grunt release` to create a Ghost release zip file.
@@ -730,7 +727,6 @@ const configureGrunt = function (grunt) {
     grunt.registerTask('release',
         'Release task - creates a final built zip\n' +
         ' - Do our standard build steps \n' +
-        ' - Run all tests(acceptance + regression + unit) \n' +
         ' - Copy files to release-folder/#/#{version} directory\n' +
         ' - Clean out unnecessary files (travis, .git*, etc)\n' +
         ' - Zip files in release-folder to dist-folder/#{version} directory',
@@ -755,15 +751,16 @@ const configureGrunt = function (grunt) {
                 }]
             });
 
-            grunt.task.run(['update_submodules:pinned', 'subgrunt:init']);
-
-            if (grunt.option('skip-tests')) {
-                grunt.log.writeln(chalk.red(chalk.bold('Skipping tests...')));
-            } else {
-                grunt.task.run('test-all');
-            }
-
-            grunt.task.run(['clean:built', 'clean:tmp', 'prod', 'clean:release', 'copy:admin_html', 'copy:release', 'compress:release']);
+            grunt.task
+                .run('update_submodules:pinned')
+                .run('subgrunt:init')
+                .run('clean:built')
+                .run('clean:tmp')
+                .run('prod')
+                .run('clean:release')
+                .run('copy:admin_html')
+                .run('copy:release')
+                .run('compress:release');
         }
     );
 };
