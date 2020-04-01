@@ -40,7 +40,6 @@ module.exports.create = (options = {}) => {
     localUtils.checkMissingOptions(options,
         'changelogPath',
         'github',
-        'github.username',
         'github.token',
         'userAgent',
         'uri',
@@ -77,7 +76,7 @@ module.exports.create = (options = {}) => {
         body.push('You can see the [full change log](' + options.gistUrl + ') for the details of every change included in this release.');
     }
 
-    const auth = 'Basic ' + new Buffer(options.github.username + ':' + options.github.token).toString('base64');
+    const auth = 'token ' + options.github.token;
 
     const reqOptions = {
         uri: options.uri,
@@ -112,13 +111,12 @@ module.exports.uploadZip = (options = {}) => {
     localUtils.checkMissingOptions(options,
         'zipPath',
         'github',
-        'github.username',
         'github.token',
         'userAgent',
         'uri'
     );
 
-    const auth = 'Basic ' + new Buffer(options.github.username + ':' + options.github.token).toString('base64');
+    const auth = 'token ' + options.github.token;
     const stats = fs.statSync(options.zipPath);
 
     const reqOptions = {
