@@ -494,21 +494,6 @@ const configureGrunt = function (grunt) {
         ['test-setup', 'mochacli:acceptance']
     );
 
-    // #### Master Warning *(Utility Task)*
-    // Warns git users not ot use the `master` branch in production.
-    // `master` is an unstable branch and shouldn't be used in production as you run the risk of ending up with a
-    // database in an unrecoverable state. Instead there is a branch called `stable` which is the equivalent of the
-    // release zip for git users.
-    grunt.registerTask('master-warn',
-        'Outputs a warning to runners of grunt prod, that master shouldn\'t be used for live blogs',
-        function () {
-            grunt.log.writeln(chalk.red(
-                'Use the ' + chalk.bold('stable') + ' branch for live blogs. '
-                + chalk.bold.underline('Never') + ' master!'
-            ));
-            grunt.log.writeln('>', 'Always two there are, no more, no less. A master and a ' + chalk.bold('stable') + '.');
-        });
-
     // ## Building assets
     //
     // Ghost's GitHub repository contains the un-built source code for Ghost. If you're looking for the already
@@ -560,7 +545,7 @@ const configureGrunt = function (grunt) {
     //
     // It is otherwise the same as running `grunt`, but is only used when running Ghost in the `production` env.
     grunt.registerTask('prod', 'Build JS & templates for production',
-        ['subgrunt:prod', 'uglify:prod', 'postcss:prod', 'master-warn']);
+        ['subgrunt:prod', 'uglify:prod', 'postcss:prod']);
 
     // ### Live reload
     // `grunt dev` - build assets on the fly whilst developing
