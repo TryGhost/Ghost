@@ -13,6 +13,8 @@ function initMembersJS(data) {
   );
 }
 
+initMembersJS();
+
 window.GhostMembers = {
   initMembersJS: initMembersJS
 }
