@@ -1,10 +1,11 @@
+const createSessionService = require('@tryghost/session-service');
+const createSessionMiddleware = require('./middleware');
+
+const expressSession = require('./express-session');
+
 const models = require('../../../models');
 const urlUtils = require('../../../lib/url-utils');
 const url = require('url');
-
-const SessionService = require('@tryghost/session-service');
-const SessionMiddleware = require('./middleware');
-const expressSession = require('./express-session');
 
 function getOriginOfRequest(req) {
     const origin = req.get('origin');
@@ -25,18 +26,12 @@ function getOriginOfRequest(req) {
     return null;
 }
 
-function findUserById({id}) {
-    return models.User.findOne({id});
-}
-
-const sessionService = SessionService({
+const sessionService = createSessionService({
     getOriginOfRequest,
     getSession: expressSession.getSession,
-    findUserById
+    findUserById({id}) {
+        return models.User.findOne({id});
+    }
 });
 
-const sessionMiddleware = SessionMiddleware({
-    sessionService
-});
-
-module.exports = sessionMiddleware;
+module.exports = createSessionMiddleware({sessionService});
