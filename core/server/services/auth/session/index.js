@@ -47,77 +47,29 @@ function findUserById({id}) {
     return models.User.findOne({id});
 }
 
-let expressSessionMiddleware;
-function initExpressSessionMiddleware() {
-    if (!expressSessionMiddleware) {
-        expressSessionMiddleware = session({
-            store: new SessionStore(models.Session),
-            secret: settingsCache.get('session_secret'),
-            resave: false,
-            saveUninitialized: false,
-            name: 'ghost-admin-api-session',
-            cookie: {
-                maxAge: constants.SIX_MONTH_MS,
-                httpOnly: true,
-                path: urlUtils.getSubdir() + '/ghost',
-                sameSite: 'lax',
-                secure: urlUtils.isSSL(config.get('url'))
-            }
-        });
+const expressSessionMiddleware = session({
+    store: new SessionStore(models.Session),
+    secret: settingsCache.get('session_secret'),
+    resave: false,
+    saveUninitialized: false,
+    name: 'ghost-admin-api-session',
+    cookie: {
+        maxAge: constants.SIX_MONTH_MS,
+        httpOnly: true,
+        path: urlUtils.getSubdir() + '/ghost',
+        sameSite: 'lax',
+        secure: urlUtils.isSSL(config.get('url'))
     }
-}
+});
 
-let sessionService;
-function initSessionService() {
-    if (!sessionService) {
-        if (!expressSessionMiddleware) {
-            initExpressSessionMiddleware();
-        }
+const sessionService = SessionService({
+    getOriginOfRequest,
+    getSession,
+    findUserById
+});
 
-        sessionService = SessionService({
-            getOriginOfRequest,
-            getSession,
-            findUserById
-        });
-    }
-}
+const sessionMiddleware = SessionMiddleware({
+    sessionService
+});
 
-let sessionMiddleware;
-function initSessionMiddleware() {
-    if (!sessionMiddleware) {
-        if (!sessionService) {
-            initSessionService();
-        }
-        sessionMiddleware = SessionMiddleware({
-            sessionService
-        });
-    }
-}
-
-module.exports = {
-    get createSession() {
-        return this.middleware.createSession;
-    },
-
-    get destroySession() {
-        return this.middleware.destroySession;
-    },
-
-    get authenticate() {
-        return this.middleware.authenticate;
-    },
-
-    get service() {
-        if (!sessionService) {
-            initSessionService();
-        }
-        return sessionService;
-    },
-
-    get middleware() {
-        if (!sessionMiddleware) {
-            initSessionMiddleware();
-        }
-        return sessionMiddleware;
-    }
-};
+module.exports = sessionMiddleware;
