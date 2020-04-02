@@ -1,0 +1,36 @@
+{
+  "name": "@tryghost/session-service",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost-Utils/tree/master/packages/session-service",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "types": "./types/index.d.ts",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint",
+    "pretest": "yarn types",
+    "types": "rm -r types && tsc"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.4",
+    "@types/mocha": "^7.0.2",
+    "express": "^4.17.1",
+    "mocha": "7.1.1",
+    "should": "13.2.3",
+    "sinon": "9.0.1",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@tryghost/errors": "^0.1.1"
+  }
+}
