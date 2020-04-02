@@ -6,7 +6,7 @@ const models = require('../../../models');
 const urlUtils = require('../../../lib/url-utils');
 const url = require('url');
 
-const SessionService = require('./service');
+const SessionService = require('@tryghost/session-service');
 const SessionMiddleware = require('./middleware');
 const SessionStore = require('./store');
 
