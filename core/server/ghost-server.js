@@ -25,6 +25,13 @@ function GhostServer(rootApp) {
     this.config = config;
 }
 
+const debugInfo = {
+    versions: process.versions,
+    platform: process.platform,
+    arch: process.arch,
+    release: process.release
+};
+
 /**
  * ## Public API methods
  *
@@ -333,7 +340,8 @@ module.exports.announceServerStart = function announceServerStart() {
     // CASE: IPC communication to the CLI via child process.
     if (process.send) {
         process.send({
-            started: true
+            started: true,
+            debug: debugInfo
         });
     }
 
@@ -364,7 +372,8 @@ module.exports.announceServerStopped = function announceServerStopped(error) {
     if (process.send) {
         process.send({
             started: false,
-            error: error
+            error: error,
+            debug: debugInfo
         });
     }
 
@@ -372,7 +381,8 @@ module.exports.announceServerStopped = function announceServerStopped(error) {
     if (config.get('bootstrap-socket')) {
         return connectToBootstrapSocket({
             started: false,
-            error: error
+            error: error,
+            debug: debugInfo
         });
     }
 
