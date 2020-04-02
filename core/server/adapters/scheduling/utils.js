@@ -55,11 +55,13 @@ exports.createAdapter = function (options) {
         // CASE: only throw error if module does exist
         if (err.code !== 'MODULE_NOT_FOUND') {
             return Promise.reject(new common.errors.IncorrectUsageError({err}));
-            // CASE: if module not found it can be an error within the adapter (cannot find bluebird for example)
-        } else if (err.code === 'MODULE_NOT_FOUND' && err.message.indexOf(contentPath + activeAdapter) === -1) {
+        }
+
+        // CASE: if module not found it can be an error within the adapter (cannot find bluebird for example)
+        if (err.code === 'MODULE_NOT_FOUND' && err.message.indexOf(contentPath + activeAdapter) === -1) {
             return Promise.reject(new common.errors.IncorrectUsageError({
-                err,
-                help: `Please check the imports are valid in ${contentPath}${activeAdapter}`
+                message: `You are missing dependencies required in your adapter ${contentPath}${activeAdapter}`,
+                err
             }));
         }
     }
@@ -71,13 +73,23 @@ exports.createAdapter = function (options) {
         adapter = adapter || new (require(internalPath + activeAdapter))(options);
     } catch (err) {
         // CASE: only throw error if module does exist
-        if (err.code === 'MODULE_NOT_FOUND') {
+        if (err.code !== 'MODULE_NOT_FOUND') {
+            return Promise.reject(new common.errors.IncorrectUsageError({err}));
+        }
+
+        // CASE: if module not found it can be an error within the adapter (cannot find bluebird for example)
+        if (err.code === 'MODULE_NOT_FOUND' && err.message.indexOf(internalPath + activeAdapter) === -1) {
             return Promise.reject(new common.errors.IncorrectUsageError({
-                message: `We cannot find your adapter in: ${contentPath} or: ${internalPath}`
+                message: `You are missing dependencies required in your adapter ${internalPath}${activeAdapter}`,
+                err
             }));
         }
 
-        return Promise.reject(new common.errors.IncorrectUsageError({err}));
+        // Finally, the adapter cannot be found
+        return Promise.reject(new common.errors.IncorrectUsageError({
+            message: `We cannot find your adapter '${activeAdapter}' in ${contentPath} or ${internalPath}`,
+            err
+        }));
     }
 
     if (!(adapter instanceof SchedulingBase)) {
