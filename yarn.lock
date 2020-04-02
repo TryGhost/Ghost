@@ -2805,10 +2805,10 @@ eslint-plugin-ember@7.10.1:
     ember-rfc176-data "^0.3.12"
     snake-case "^3.0.3"
 
-eslint-plugin-ghost@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-1.0.1.tgz#e617ac65a9469346cf80d74171e3f5f8a1844c44"
-  integrity sha512-5HlL5abPmOGMLnM63qtmYj4Fe5R8pysgWx40StgVTgOAJDJ6jn/jWXcSlR2vmpxPbItp0paRuA2l1wMMfYhIKQ==
+eslint-plugin-ghost@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-1.1.0.tgz#c8aba0287ea4b41e4c6ca93c6c2098f2c497e265"
+  integrity sha512-5Q/fnEQVdVvLz+Q4XVSqTBLBACMwNCxajsOnPFPsLHfcgS/m118t/p36HxvDmAge6Gc8jH7W5ouAJT8SpHWJcg==
   dependencies:
     eslint-plugin-ember "7.10.1"
     eslint-plugin-mocha "6.3.0"
