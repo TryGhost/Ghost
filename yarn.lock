@@ -448,6 +448,13 @@
     request "^2.88.0"
     request-promise "^4.2.4"
 
+"@tryghost/session-service@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.0.tgz#3e37f1047b6404cbac59de0953ef1246657e742d"
+  integrity sha512-yAnJ0Bnl5FReA8mrL+J7nc7S9QWobegaOqK0lTHQpbCHdlkXaDdkNYFniztE8BClWmHrRrtRfHLTN+eovEpenA==
+  dependencies:
+    "@tryghost/errors" "^0.1.1"
+
 "@tryghost/social-urls@0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.7.tgz#a62b008c16e2e1f6d7519a9f36f3b2966be2bad8"

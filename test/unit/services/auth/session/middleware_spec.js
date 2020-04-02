@@ -1,4 +1,4 @@
-const sessionMiddleware = require('../../../../../core/server/services/auth/session/middleware');
+const sessionMiddleware = require('../../../../../core/server/services/auth').session;
 const models = require('../../../../../core/server/models');
 const sinon = require('sinon');
 const should = require('should');
@@ -93,14 +93,21 @@ describe('Session Service', function () {
     });
 
     describe('destroySession', function () {
-        it('calls req.session.destroy', function () {
+        it('calls req.session.destroy', function (done) {
             const req = fakeReq();
             const res = fakeRes();
-            const destroyStub = sinon.stub(req.session, 'destroy');
+            const destroyStub = sinon.stub(req.session, 'destroy')
+                .callsFake(function (fn) {
+                    fn();
+                });
+
+            sinon.stub(res, 'sendStatus')
+                .callsFake(function (statusCode) {
+                    should.equal(destroyStub.callCount, 1);
+                    done();
+                });
 
             sessionMiddleware.destroySession(req, res);
-
-            should.equal(destroyStub.callCount, 1);
         });
 
         it('calls next with InternalServerError if destroy errors', function (done) {
@@ -131,42 +138,6 @@ describe('Session Service', function () {
                 });
 
             sessionMiddleware.destroySession(req, res);
-        });
-    });
-
-    describe('CSRF protection', function () {
-        it('calls next if the session is uninitialized', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-
-            sessionMiddleware.cookieCsrfProtection(req);
-            done();
-        });
-
-        it('calls next if req origin matches the session origin', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            sinon.stub(req, 'get')
-                .withArgs('origin').returns('http://host.tld');
-            req.session.origin = 'http://host.tld';
-
-            sessionMiddleware.cookieCsrfProtection(req);
-            done();
-        });
-
-        it('calls next with BadRequestError if the origin of req does not match the session', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            sinon.stub(req, 'get')
-                .withArgs('origin').returns('http://host.tld');
-            req.session.origin = 'http://different-host.tld';
-
-            try {
-                sessionMiddleware.cookieCsrfProtection(req);
-            } catch (err) {
-                should.equal(err instanceof BadRequestError, true);
-                done();
-            }
         });
     });
 });
