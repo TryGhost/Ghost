@@ -3399,12 +3399,12 @@ broccoli-lint-eslint@^5.0.0:
     lodash.defaultsdeep "^4.6.0"
     md5-hex "^2.0.0"
 
-broccoli-merge-trees@4.1.0, broccoli-merge-trees@^4.0.0, broccoli-merge-trees@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/broccoli-merge-trees/-/broccoli-merge-trees-4.1.0.tgz#a30e2e4c5bb0f5eb8981e8af33a8077714c11f1a"
-  integrity sha512-1OXsksKPFiRdiZZOfh1z1mm7ZqKezlMS+DPBpHMDLSb6AhYHvoQfjf0KuMXbY8aoYskj7+Z+EJ5SsS/OC2v5yw==
+broccoli-merge-trees@4.2.0, broccoli-merge-trees@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/broccoli-merge-trees/-/broccoli-merge-trees-4.2.0.tgz#692d3c163ecea08c5714a9434d664e628919f47c"
+  integrity sha512-nTrQe5AQtCrW4enLRvbD/vTLHqyW2tz+vsLXQe4IEaUhepuMGVKJJr+I8n34Vu6fPjmPLwTjzNC8izMIDMtHPw==
   dependencies:
-    broccoli-plugin "^3.1.0"
+    broccoli-plugin "^4.0.2"
     merge-trees "^2.0.0"
 
 broccoli-merge-trees@^1.0.0, broccoli-merge-trees@^1.1.1, broccoli-merge-trees@^1.2.4:
@@ -3437,12 +3437,12 @@ broccoli-merge-trees@^2.0.0:
     broccoli-plugin "^1.3.0"
     merge-trees "^2.0.0"
 
-broccoli-merge-trees@^4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/broccoli-merge-trees/-/broccoli-merge-trees-4.2.0.tgz#692d3c163ecea08c5714a9434d664e628919f47c"
-  integrity sha512-nTrQe5AQtCrW4enLRvbD/vTLHqyW2tz+vsLXQe4IEaUhepuMGVKJJr+I8n34Vu6fPjmPLwTjzNC8izMIDMtHPw==
+broccoli-merge-trees@^4.0.0, broccoli-merge-trees@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/broccoli-merge-trees/-/broccoli-merge-trees-4.1.0.tgz#a30e2e4c5bb0f5eb8981e8af33a8077714c11f1a"
+  integrity sha512-1OXsksKPFiRdiZZOfh1z1mm7ZqKezlMS+DPBpHMDLSb6AhYHvoQfjf0KuMXbY8aoYskj7+Z+EJ5SsS/OC2v5yw==
   dependencies:
-    broccoli-plugin "^4.0.2"
+    broccoli-plugin "^3.1.0"
     merge-trees "^2.0.0"
 
 broccoli-middleware@^2.1.1:
