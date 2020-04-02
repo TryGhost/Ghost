@@ -21,6 +21,7 @@ export default class PopupMenuComponent extends React.Component {
             height: 'calc(100% - 120px)',
             borderRadius: '8px',
             overflow: 'hidden',
+            backgroundColor: 'white'
         };
 
         const launcherStyle = {
@@ -43,6 +44,7 @@ export default class PopupMenuComponent extends React.Component {
             paddingBottom: '15px',
             textAlign: 'left'
         };
+        const memberEmail = (this.props.data && this.props.data.email) || "";
         return (
             <FrameComponent style={hoverStyle}>
                 <div style={launcherStyle}>
@@ -52,10 +54,10 @@ export default class PopupMenuComponent extends React.Component {
                                 SIGNED IN AS
                             </div>
                             <div style={{paddingLeft: '12px',paddingRight: '12px', paddingBottom: '9px'}}>
-                                rish@ghost.org
+                                {memberEmail}
                             </div>
                             <div style={{paddingLeft: '12px',paddingRight: '12px', paddingTop: '12px', borderTop: '1px solid black', cursor: 'pointer'}}>
-                                <div> Logout </div>
+                                <div data-members-signout> Logout </div>
                             </div>
                         </div>
                     </div>

@@ -2,10 +2,10 @@ import React from 'react';
 import './App.css';
 import ParentContainer from './components/ParentContainer';
 
-function App() {
+function App(props) {
   return (
     <div className="App">
-      <ParentContainer name="MembersJS" />
+      <ParentContainer name="MembersJS" data={props.data} />
     </div>
   );
 }

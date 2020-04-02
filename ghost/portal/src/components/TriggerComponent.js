@@ -1,4 +1,3 @@
-import logo from '../logo.svg';
 import FrameComponent from './FrameComponent';
 import closeIcon from '../images/close.png';
 const React = require("react");
@@ -17,15 +16,19 @@ export default class TriggerComponent extends React.Component {
     renderTriggerIcon() {
         if (this.props.isPopupOpen) {
             return (
-                <img src={closeIcon} alt="logo" style={{ width: '45px', userSelect: 'none' }} />
+                <img src={closeIcon} alt="logo" style={{ height: '30px', userSelect: 'none' }} />
             )
         }
+
+        const siteLogo = (this.props.data && this.props.data.logo) || "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1280px-React-icon.svg.png";
+
         return (
-            <img src={logo} className="App-logo" alt="logo" style={{ width: '60px', userSelect: 'none' }} />
+            <img src={siteLogo} className="App-logo" alt="logo" style={{ height: '30px', userSelect: 'none' }} />
         )
     }
 
     render() {
+        const backgroundColor = this.props.isPopupOpen ? "#ada1a1" : "rgb(245, 228, 228)";
         const hoverStyle = {
             zIndex: '2147483000',
             position: 'fixed',
@@ -35,7 +38,7 @@ export default class TriggerComponent extends React.Component {
             height: '60px',
             boxShadow: 'rgba(0, 0, 0, 0.06) 0px 1px 6px 0px, rgba(0, 0, 0, 0.16) 0px 2px 32px 0px',
             borderRadius: '50%',
-            backgroundColor: '#e53935',
+            backgroundColor: backgroundColor,
             animation: '250ms ease 0s 1 normal none running animation-bhegco',
             transition: 'opacity 0.3s ease 0s',
         };
@@ -68,9 +71,10 @@ export default class TriggerComponent extends React.Component {
             transform: 'rotate(0deg) scale(1)',
             transition: 'transform 0.16s linear 0s, opacity 0.08s linear 0s',
         };
+
         return (
             <FrameComponent style={hoverStyle} title="membersjs-trigger">
-                <div style={launcherStyle} onClick={(e) => this.onToggle(e)}>
+                <div style={launcherStyle} onClick={(e) => this.onToggle(e)} id="membersjs-trigger-component">
                     <div style={buttonStyle}>
                         {this.renderTriggerIcon()}
                     </div>
