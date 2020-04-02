@@ -42,7 +42,7 @@
     "broccoli-asset-rev": "3.0.0",
     "broccoli-concat": "4.0.0",
     "broccoli-funnel": "3.0.2",
-    "broccoli-merge-trees": "4.1.0",
+    "broccoli-merge-trees": "4.2.0",
     "broccoli-uglify-sourcemap": "3.2.0",
     "chai-dom": "1.8.1",
     "codemirror": "5.48.2",
