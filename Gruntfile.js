@@ -16,8 +16,6 @@ const KnexMigrator = require('knex-migrator');
 const knexMigrator = new KnexMigrator({
     knexMigratorFilePath: config.get('paths:appRoot')
 });
-const releaseUtils = require('@tryghost/release-utils');
-const semver = require('semver');
 
 const path = require('path');
 const escapeChar = process.platform.match(/^win/) ? '^' : '\\';
@@ -32,10 +30,6 @@ const logBuildingClient = function (grunt) {
         setTimeout(logBuildingClient, 5000, grunt);
     }
 };
-
-const ORGNAME = 'TryGhost';
-const githubRepoPathGhost = `https://github.com/${ORGNAME}/Ghost`;
-let gistUrl, githubUploadURL;
 
 // ## Grunt configuration
 const configureGrunt = function (grunt) {
@@ -577,140 +571,6 @@ const configureGrunt = function (grunt) {
     grunt.registerTask('master', 'Update your current working folder to latest master.',
         ['shell:master', 'subgrunt:init']
     );
-
-    grunt.registerTask('changelog', 'Generate changelog since version (:<version>)', function (version) {
-        let ghostPackageInfo = grunt.file.readJSON(path.join(process.cwd(), 'package.json'));
-        const done = this.async();
-
-        releaseUtils
-            .releases
-            .get({
-                userAgent: 'ghost-release',
-                uri: `https://api.github.com/repos/${ORGNAME}/Ghost/releases`
-            })
-            .then((response) => {
-                const sameMajorReleaseTags = [], otherReleaseTags = [];
-
-                response.forEach((release) => {
-                    let lastVersion = release.tag_name || release.name;
-
-                    // only compare to versions smaller than the new one
-                    if (semver.gt(ghostPackageInfo.version, lastVersion)) {
-                        // check if the majors are the same
-                        if (semver.major(lastVersion) === semver.major(ghostPackageInfo.version)) {
-                            sameMajorReleaseTags.push(lastVersion);
-                        } else {
-                            otherReleaseTags.push(lastVersion);
-                        }
-                    }
-                });
-
-                return (sameMajorReleaseTags.length !== 0) ? sameMajorReleaseTags[0] : otherReleaseTags[0];
-            })
-            .then((previousVersion) => {
-                let versionToUse = version || previousVersion;
-
-                const changelog = new releaseUtils.Changelog({
-                    changelogPath: path.join(process.cwd(), '.', 'changelog.md'),
-                    folder: process.cwd()
-                });
-
-                changelog
-                    .write({
-                        githubRepoPath: githubRepoPathGhost,
-                        lastVersion: versionToUse
-                    })
-                    .write({
-                        githubRepoPath: `https://github.com/${ORGNAME}/Ghost-Admin`,
-                        lastVersion: versionToUse,
-                        append: true,
-                        folder: path.join(process.cwd(), 'core', 'client')
-                    })
-                    .sort()
-                    .clean();
-
-                grunt.log.writeln('changelog.md generated'.cyan);
-                done();
-            })
-            .catch(done);
-    });
-
-    grunt.registerTask('gist', 'Generate a gist with the changelog', function () {
-        let ghostPackageInfo = grunt.file.readJSON(path.join(process.cwd(), 'package.json'));
-        const done = this.async();
-
-        releaseUtils
-            .gist
-            .create({
-                userAgent: 'ghost-release',
-                gistName: 'changelog-' + ghostPackageInfo.version + '.md',
-                gistDescription: 'Changelog ' + ghostPackageInfo.version,
-                changelogPath: path.join(process.cwd(), 'changelog.md'),
-                github: {
-                    token: process.env.RELEASE_TOKEN
-                },
-                isPublic: true
-            }).then((response) => {
-                gistUrl = response.gistUrl;
-                grunt.log.writeln(`Gist generated: ${gistUrl}`.cyan);
-                done();
-            }).catch(done);
-    });
-
-    grunt.registerTask('draftRelease', 'Publish a draft release on GitHub', function () {
-        let ghostPackageInfo = grunt.file.readJSON(path.join(process.cwd(), 'package.json'));
-        let changelogPaths = [{changelogPath: path.join(process.cwd(), 'changelog.md')}];
-        const done = this.async();
-
-        /*if (hasCasperChanged) {
-            changelogPaths.push({
-                changelogPath: path.join(process.cwd(), releaseDir, casperDir, 'changelog.md'),
-                content: [`\n\nCasper (the default theme) has been upgraded to ${casperNewVersion}:`]
-            });
-        }*/
-
-        releaseUtils
-            .releases
-            .create({
-                draft: true,
-                preRelease: false,
-                tagName: ghostPackageInfo.version,
-                releaseName: ghostPackageInfo.version,
-                userAgent: 'ghost-release',
-                uri: `https://api.github.com/repos/${ORGNAME}/Ghost/releases`,
-                github: {
-                    token: process.env.RELEASE_TOKEN
-                },
-                changelogPath: changelogPaths,
-                gistUrl: gistUrl
-            })
-            .then((response) => {
-                githubUploadURL = response.uploadUrl;
-                grunt.log.writeln(`Release draft generated: ${response.releaseUrl}`.cyan);
-                done();
-            }).catch(done);
-    });
-
-    grunt.registerTask('uploadGitHub', 'Upload Ghost .zip to GitHub', function () {
-        const done = this.async();
-        const ghostPackageInfo = grunt.file.readJSON(path.join(process.cwd(), 'package.json'));
-        const zipName = `Ghost-${ghostPackageInfo.version}.zip`;
-
-        releaseUtils
-            .releases
-            .uploadZip({
-                github: {
-                    token: process.env.RELEASE_TOKEN
-                },
-                zipPath: path.join(process.cwd(), '.dist', 'release', zipName),
-                uri: `${githubUploadURL.substring(0, githubUploadURL.indexOf('{'))}?name=${zipName}`,
-                userAgent: 'ghost-release'
-            })
-            .then(done)
-            .catch(done);
-    });
-
-    grunt.registerTask('automated-release', ['release', 'changelog', 'gist', 'draftRelease', 'uploadGitHub']);
 
     // ### Release
     // Run `grunt release` to create a Ghost release zip file.
