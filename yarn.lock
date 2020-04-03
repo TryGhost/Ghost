@@ -326,14 +326,14 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@0.6.5":
-  version "0.6.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.6.5.tgz#d13bfb0706755b87922a28049014f04c78b54f1d"
-  integrity sha512-tPtHtJFAZ48NK+sRRsC4wGK4x0U7wR2ip9q5m12thFpa8L9w0P2yM7cvcHS+Iztg+O1LHzxq3PRuzJfNkzScDA==
+"@tryghost/html-to-mobiledoc@0.6.6":
+  version "0.6.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.6.6.tgz#fdac23030d6838a5285e0415d65fa1c08d9f2d07"
+  integrity sha512-B9fuD51ZWDBCo7DLZTNV/ZY9DGrNP82oMs96K012IxnSFnA5wJTqCOlwOM842PZfUM51f6TTg77/nncpdcBrbA==
   dependencies:
     "@tryghost/kg-parser-plugins" "0.9.2"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
-    jsdom "16.2.1"
+    jsdom "16.2.2"
 
 "@tryghost/image-transform@0.2.0":
   version "0.2.0"
@@ -455,26 +455,26 @@
   dependencies:
     "@tryghost/errors" "^0.1.1"
 
-"@tryghost/social-urls@0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.7.tgz#a62b008c16e2e1f6d7519a9f36f3b2966be2bad8"
-  integrity sha512-Sj6VEfdNQsxVKVm9nnPdrjW70HB1nBKkkcyM5HEPLmBwOOgusW1c3baHNXg4Wwhs19azcjEHvlomX831dSNIZQ==
+"@tryghost/social-urls@0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.8.tgz#050f0225bce54948dcfa0dcbaad1a9f0a7b9d114"
+  integrity sha512-CHBBWDFmkEQ2ihU35fhIYYFejdOB7MzfhqYgTrQbXI/OTxUR/OmudecaqHNXVzAFg0f1njnrfuYOrx38UqCTIg==
   dependencies:
     bluebird "3.7.2"
     ghost-ignition "4.1.0"
     lodash "4.17.15"
 
-"@tryghost/string@0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.7.tgz#ef8b78ea0ca9dea6402db6050c7065fb0478d3f9"
-  integrity sha512-dR3F+jc8g6o7E8MtqlXRUuhzIf/bTXflRzGkdxYIZY04+SgVB6/StXjsWL0ko5Zy6X6PxlUHQMbY8UWJcPFmuQ==
+"@tryghost/string@0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.8.tgz#758ab55b944a4b9702325dd4cb796a82757d74d7"
+  integrity sha512-z14hiV3v9zRLQWY3KtgBFNHdYDQOxU3n0ny5xoA/5yPETMxFug112gr1Zmm3q/cyR0dycZK9q5MiMFvceDkW6g==
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/url-utils@0.6.16":
-  version "0.6.16"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.16.tgz#74e839f3db8e717359d95e79055cfd849120810d"
-  integrity sha512-NBDdzDe3XUupaqtovHZLNXGyFwmEC5JWHfUIHz8JtCK2pQtCO/Dd4jpLLHxy7EeN7YyuWk2mgCCnVeUsQCq3pw==
+"@tryghost/url-utils@0.6.17":
+  version "0.6.17"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-0.6.17.tgz#5ce8b22a5595a430c8836832c57946ef97cac7ad"
+  integrity sha512-Ctfvfq4hgLCmoX0ohYIPOlEN9Y1wSfoVKIIgsuIoqeoq+lC0x6oLOQrH7Ymhs9xxUegVRv+Q2OZyBkiYGJ9HlQ==
   dependencies:
     cheerio "0.22.0"
     moment "2.24.0"
@@ -4966,10 +4966,10 @@ jsbn@~0.1.0:
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
   integrity sha1-peZUwuWi3rXyAdls77yoDA7y9RM=
 
-jsdom@16.2.1:
-  version "16.2.1"
-  resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-16.2.1.tgz#df934649ab9175daeeff3e6f1e2b2268ed1470cd"
-  integrity sha512-3p0gHs5EfT7PxW9v8Phz3mrq//4Dy8MQenU/PoKxhdT+c45S7NjIjKbGT3Ph0nkICweE1r36+yaknXA5WfVNAg==
+jsdom@16.2.2:
+  version "16.2.2"
+  resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-16.2.2.tgz#76f2f7541646beb46a938f5dc476b88705bedf2b"
+  integrity sha512-pDFQbcYtKBHxRaP55zGXCJWgFHkDAYbKcsXEK/3Icu9nKYZkutUXfLBwbD+09XDutkYSHcgfQLZ0qvpAAm9mvg==
   dependencies:
     abab "^2.0.3"
     acorn "^7.1.1"
@@ -4991,11 +4991,11 @@ jsdom@16.2.1:
     tough-cookie "^3.0.1"
     w3c-hr-time "^1.0.2"
     w3c-xmlserializer "^2.0.0"
-    webidl-conversions "^5.0.0"
+    webidl-conversions "^6.0.0"
     whatwg-encoding "^1.0.5"
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
-    ws "^7.2.1"
+    ws "^7.2.3"
     xml-name-validator "^3.0.0"
 
 json-buffer@3.0.0:
@@ -9568,6 +9568,11 @@ webidl-conversions@^5.0.0:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-5.0.0.tgz#ae59c8a00b121543a2acc65c0434f57b0fc11aff"
   integrity sha512-VlZwKPCkYKxQgeSbH5EyngOmRp7Ww7I9rQLERETtf5ofd9pGeswWiOtogpEO850jziPRarreGxn5QIiTqpb2wA==
 
+webidl-conversions@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-6.0.0.tgz#ff41d921371f43e772dba311b146ab6c0ef0ead4"
+  integrity sha512-jTZAeJnc6D+yAOjygbJOs33kVQIk5H6fj9SFDOhIKjsf9HiAzL/c+tAJsc8ASWafvhNkH+wJZms47pmajkhatA==
+
 websocket-driver@>=0.5.1:
   version "0.7.3"
   resolved "https://registry.yarnpkg.com/websocket-driver/-/websocket-driver-0.7.3.tgz#a2d4e0d4f4f116f1e6297eba58b05d430100e9f9"
@@ -9698,7 +9703,7 @@ write@1.0.3:
   dependencies:
     mkdirp "^0.5.1"
 
-ws@^7.2.1:
+ws@^7.2.3:
   version "7.2.3"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.2.3.tgz#a5411e1fb04d5ed0efee76d26d5c46d830c39b46"
   integrity sha512-HTDl9G9hbkNDk98naoR/cHDws7+EyYMOdL1BmjsZXRUjf7d+MficC4B7HLUPlSiho0vg+CWKrGIt/VJBd1xunQ==
