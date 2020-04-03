@@ -2,7 +2,7 @@ name: Release
 on:
   push:
     tags:
-      - '*'
+      - '3.*'
 jobs:
   automate:
     runs-on: ubuntu-latest
