@@ -42,7 +42,7 @@
     "@nexes/nql": "0.3.0",
     "@sentry/node": "5.15.4",
     "@tryghost/errors": "0.1.1",
-    "@tryghost/helpers": "1.1.24",
+    "@tryghost/helpers": "1.1.25",
     "@tryghost/image-transform": "0.2.0",
     "@tryghost/kg-card-factory": "1.0.1",
     "@tryghost/kg-default-cards": "1.0.1",
