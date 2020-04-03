@@ -40,6 +40,7 @@ CONTRIBUTING.md
 content/themes/casper/SECURITY.md
 SECURITY.md
 .travis.yml
+renovate.json
 *.html
 !core/server/web/admin/views/**
 core/server/web/admin/views/.gitkeep
