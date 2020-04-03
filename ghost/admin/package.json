@@ -44,7 +44,7 @@
     "broccoli-funnel": "3.0.2",
     "broccoli-merge-trees": "4.2.0",
     "broccoli-uglify-sourcemap": "3.2.0",
-    "chai-dom": "1.8.1",
+    "chai-dom": "1.8.2",
     "codemirror": "5.48.2",
     "csscomb": "4.3.0",
     "cssnano": "4.1.10",
