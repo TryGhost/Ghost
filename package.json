@@ -132,7 +132,6 @@
   },
   "devDependencies": {
     "@lodder/grunt-postcss": "2.0.1",
-    "@tryghost/release-utils": "0.5.0",
     "cssnano": "4.1.10",
     "eslint": "6.8.0",
     "eslint-plugin-ghost": "1.1.0",
