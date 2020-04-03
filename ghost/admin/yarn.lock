@@ -1511,10 +1511,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.2.21":
-  version "0.2.21"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.21.tgz#bdaf41236ab0d5434394bf82f5e893d025e806ca"
-  integrity sha512-upFGabfQhCDO/iNliOi0HABXG8Bdxdn6XXZD5BBlX9ruyG+TRgTSTYuUD28oZrOODrD5Oj6vt/mL0Dh+8ltKpQ==
+"@tryghost/timezone-data@0.2.22":
+  version "0.2.22"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.22.tgz#14690a3de148b490e6903099902d184343a6002b"
+  integrity sha512-KqQTKADhKILjLPdSKUiDG55I6BKTdcj6UNlzT1ZST74uolfn0zyjRaJha6sSuSHQ43fsRq5m/x7MLkF5tIMyOw==
 
 "@types/acorn@^4.0.3":
   version "4.0.5"
