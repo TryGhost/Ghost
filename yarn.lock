@@ -436,18 +436,6 @@
     chalk "^2.4.1"
     sywac "^1.2.1"
 
-"@tryghost/release-utils@0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/release-utils/-/release-utils-0.5.0.tgz#39ec5d0095bc26f7aba7fa461047a393a196f3f8"
-  integrity sha512-HJoXlaTDFfem6ivnHMRhdpdXat9DLl4gQ22/OwseZ0ItrTDb4BNb0wes/hCafktfACPeqB5IOT0tmy6rAystgA==
-  dependencies:
-    bluebird "^3.5.3"
-    emoji-regex "^8.0.0"
-    execa "^1.0.0"
-    lodash "^4.17.11"
-    request "^2.88.0"
-    request-promise "^4.2.4"
-
 "@tryghost/session-service@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.0.tgz#3e37f1047b6404cbac59de0953ef1246657e742d"
@@ -2058,7 +2046,7 @@ cross-spawn@^5.0.1:
     shebang-command "^1.2.0"
     which "^1.2.9"
 
-cross-spawn@^6.0.0, cross-spawn@^6.0.5:
+cross-spawn@^6.0.5:
   version "6.0.5"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-6.0.5.tgz#4a5ec7c64dfae22c3a14124dbacdee846d80cbc4"
   integrity sha512-eTVLrBSt7fjbDygz805pMnstIs2VTBNkRm0qxZd+M7A5XDdxVRWO5MxGBXZhjY4cqLYLdtrGqRf8mBPmzwSpWQ==
@@ -2977,19 +2965,6 @@ execa@^0.8.0:
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
 
-execa@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/execa/-/execa-1.0.0.tgz#c6236a5bb4df6d6f15e88e7f017798216749ddd8"
-  integrity sha512-adbxcyWV46qiHyvSp50TKt05tB4tK3HcmF7/nxfAdhnox83seTDbwnaqKO4sXRy7roHAIFqJP/Rw/AuEbX61LA==
-  dependencies:
-    cross-spawn "^6.0.0"
-    get-stream "^4.0.0"
-    is-stream "^1.1.0"
-    npm-run-path "^2.0.0"
-    p-finally "^1.0.0"
-    signal-exit "^3.0.0"
-    strip-eof "^1.0.0"
-
 exit@~0.1.1:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/exit/-/exit-0.1.2.tgz#0632638f8d877cc82107d30a0fff1a17cba1cd0c"
@@ -3574,7 +3549,7 @@ get-stream@^3.0.0:
   resolved "https://registry.yarnpkg.com/get-stream/-/get-stream-3.0.0.tgz#8e943d1358dc37555054ecbe2edb05aa174ede14"
   integrity sha1-jpQ9E1jcN1VQVOy+LtsFqhdO3hQ=
 
-get-stream@^4.0.0, get-stream@^4.1.0:
+get-stream@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/get-stream/-/get-stream-4.1.0.tgz#c1b255575f3dc21d59bfc79cd3d2b46b1c3a54b5"
   integrity sha512-GMat4EJ5161kIy2HevLlr4luNjBgvmj413KaQA7jt4V8B4RDsfpHk7WQ9GVqfYyyx8OS/L66Kox+rJRNklLK7w==
