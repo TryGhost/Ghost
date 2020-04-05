@@ -127,7 +127,7 @@ exports.init = function init(options = {}) {
     return _private.getSchedulerIntegration()
         .then((_integration) => {
             integration = _integration;
-            return localUtils.createAdapter(options);
+            return localUtils.createAdapter();
         })
         .then((_adapter) => {
             adapter = _adapter;
