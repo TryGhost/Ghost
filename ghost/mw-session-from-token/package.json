@@ -1,0 +1,33 @@
+{
+  "name": "@tryghost/mw-session-from-token",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost-Utils/tree/master/packages/mw-session-from-token",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "types": "rm -r types && tsc",
+    "pretest": "yarn types",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.3",
+    "@types/mocha": "^7.0.2",
+    "express": "^4.17.1",
+    "mocha": "7.1.1",
+    "should": "13.2.3",
+    "sinon": "9.0.1",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {}
+}
