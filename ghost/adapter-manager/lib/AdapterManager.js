@@ -98,7 +98,10 @@ module.exports = class AdapterManager {
 
                 // Catch missing dependencies BUT NOT missing adapter
                 if (!err.message.includes(pathToAdapter)) {
-                    throw new errors.IncorrectUsageError({err});
+                    throw new errors.IncorrectUsageError({
+                        message: `You are missing dependencies in your adapter ${pathToAdapter}`,
+                        err
+                    });
                 }
             }
         }
