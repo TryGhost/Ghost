@@ -55,10 +55,6 @@ exports.getContentPath = function getContentPath(type) {
         return path.join(this.get('paths:contentPath'), 'themes/');
     case 'adapters':
         return path.join(this.get('paths:contentPath'), 'adapters/');
-    case 'storage':
-        return path.join(this.get('paths:contentPath'), 'adapters', 'storage/');
-    case 'scheduling':
-        return path.join(this.get('paths:contentPath'), 'adapters', 'scheduling/');
     case 'logs':
         return path.join(this.get('paths:contentPath'), 'logs/');
     case 'data':

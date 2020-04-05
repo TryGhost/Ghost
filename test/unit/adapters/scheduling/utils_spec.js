@@ -1,24 +1,48 @@
 var should = require('should'),
     fs = require('fs-extra'),
+    configUtils = require('../../../utils/configUtils'),
     config = require('../../../../core/server/config'),
-    common = require('../../../../core/server/lib/common'),
     schedulingUtils = require('../../../../core/server/adapters/scheduling/utils');
 
+const schedulingPath = configUtils.config.getContentPath('adapters') + 'scheduling/';
 describe('Scheduling: utils', function () {
+    var scope = {adapter: null};
+
+    before(function () {
+        if (!fs.existsSync(schedulingPath)) {
+            fs.mkdirSync(schedulingPath);
+        }
+    });
+
+    afterEach(function () {
+        if (scope.adapter) {
+            fs.unlinkSync(scope.adapter);
+            scope.adapter = null;
+        }
+
+        configUtils.restore();
+    });
+
     describe('success', function () {
         it('create good adapter', function (done) {
-            schedulingUtils.createAdapter({
-                active: __dirname + '/../../../../core/server/adapters/scheduling/SchedulingDefault'
-            }).then(function (adapter) {
+            schedulingUtils.createAdapter().then(function (adapter) {
                 should.exist(adapter);
                 done();
             }).catch(done);
         });
 
         it('create good adapter', function (done) {
+            scope.adapter = schedulingPath + 'another-scheduler.js';
+
+            configUtils.set({
+                scheduling: {
+                    active: 'another-scheduler'
+                }
+            });
+
             var jsFile = '' +
                 'var util = require(\'util\');' +
-                'var SchedulingBase = require(__dirname + \'/../../../../core/server/adapters/scheduling/SchedulingBase\');' +
+                'var SchedulingBase = require(\'../../../core/server/adapters/scheduling/SchedulingBase\');' +
                 'var AnotherAdapter = function (){ SchedulingBase.call(this); };' +
                 'util.inherits(AnotherAdapter, SchedulingBase);' +
                 'AnotherAdapter.prototype.run = function (){};' +
@@ -27,57 +51,37 @@ describe('Scheduling: utils', function () {
                 'AnotherAdapter.prototype.unschedule = function (){};' +
                 'module.exports = AnotherAdapter';
 
-            fs.writeFileSync(__dirname + '/another-scheduler.js', jsFile);
+            fs.writeFileSync(scope.adapter, jsFile);
 
-            schedulingUtils.createAdapter({
-                active: 'another-scheduler',
-                contentPath: __dirname + '/'
-            }).then(function (adapter) {
+            schedulingUtils.createAdapter().then(function (adapter) {
                 should.exist(adapter);
                 done();
-            }).finally(function () {
-                fs.unlinkSync(__dirname + '/another-scheduler.js');
             }).catch(done);
         });
     });
 
     describe('error', function () {
-        it('create without adapter path', function (done) {
-            schedulingUtils.createAdapter()
-                .catch(function (err) {
-                    should.exist(err);
-                    done();
-                });
-        });
-
-        it('create with unknown adapter', function (done) {
-            schedulingUtils.createAdapter({
-                active: '/follow/the/heart'
-            }).catch(function (err) {
-                should.exist(err);
-                done();
-            });
-        });
-
         it('create with adapter, but missing fn\'s', function (done) {
+            scope.adapter = schedulingPath + 'bad-adapter.js';
             var jsFile = '' +
                 'var util = require(\'util\');' +
-                'var SchedulingBase = require(__dirname + \'/../../../../core/server/adapters/scheduling/SchedulingBase\');' +
+                'var SchedulingBase = require(\'../../../core/server/adapters/scheduling/SchedulingBase\');' +
                 'var BadAdapter = function (){ SchedulingBase.call(this); };' +
                 'util.inherits(BadAdapter, SchedulingBase);' +
                 'BadAdapter.prototype.schedule = function (){};' +
                 'module.exports = BadAdapter';
 
-            fs.writeFileSync(__dirname + '/bad-adapter.js', jsFile);
+            fs.writeFileSync(scope.adapter, jsFile);
 
-            schedulingUtils.createAdapter({
-                active: __dirname + '/bad-adapter'
-            }).catch(function (err) {
+            configUtils.set({
+                scheduling: {
+                    active: 'bad-adapter'
+                }
+            });
+            schedulingUtils.createAdapter().catch(function (err) {
                 should.exist(err);
-                (err instanceof common.errors.IncorrectUsageError).should.eql(true);
+                should.equal(err.errorType, 'IncorrectUsageError');
                 done();
-            }).finally(function () {
-                fs.unlinkSync(__dirname + '/bad-adapter.js');
             });
         });
     });
