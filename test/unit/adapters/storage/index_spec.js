@@ -3,15 +3,15 @@ var should = require('should'),
     StorageBase = require('ghost-storage-base'),
     configUtils = require('../../../utils/configUtils'),
     storage = require('../../../../core/server/adapters/storage'),
-    common = require('../../../../core/server/lib/common'),
     LocalFileStorage = require('../../../../core/server/adapters/storage/LocalFileStorage');
 
+const storagePath = configUtils.config.getContentPath('adapters') + 'storage/';
 describe('storage: index_spec', function () {
     var scope = {adapter: null};
 
     before(function () {
-        if (!fs.existsSync(configUtils.config.getContentPath('storage'))) {
-            fs.mkdirSync(configUtils.config.getContentPath('storage'));
+        if (!fs.existsSync(storagePath)) {
+            fs.mkdirSync(storagePath);
         }
     });
 
@@ -31,7 +31,7 @@ describe('storage: index_spec', function () {
     });
 
     it('custom adapter', function () {
-        scope.adapter = configUtils.config.getContentPath('storage') + 'custom-adapter.js';
+        scope.adapter = storagePath + 'custom-adapter.js';
 
         configUtils.set({
             storage: {
@@ -60,7 +60,7 @@ describe('storage: index_spec', function () {
     });
 
     it('create bad adapter: exists fn is missing', function () {
-        scope.adapter = configUtils.config.getContentPath('storage') + 'broken-storage.js';
+        scope.adapter = storagePath + 'broken-storage.js';
 
         configUtils.set({
             storage: {
@@ -88,7 +88,7 @@ describe('storage: index_spec', function () {
             storage.getStorage();
         } catch (err) {
             should.exist(err);
-            (err instanceof common.errors.IncorrectUsageError).should.eql(true);
+            should.equal(err.errorType, 'IncorrectUsageError');
         }
     });
 });
