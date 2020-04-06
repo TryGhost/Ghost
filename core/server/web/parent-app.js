@@ -59,7 +59,7 @@ module.exports = function setupParentApp(options = {}) {
     adminApp.enable('trust proxy'); // required to respect x-forwarded-proto in admin requests
     adminApp.use('/ghost/api', require('./api')());
     adminApp.use('/ghost/.well-known', require('./well-known')());
-    adminApp.use('/ghost', require('./admin')());
+    adminApp.use('/ghost', require('../services/auth/session').createSessionFromToken, require('./admin')());
 
     // TODO: remove {admin url}/content/* once we're sure the API is not returning relative asset URLs anywhere
     // only register this route if the admin is separate so we're not overriding the {site}/content/* route

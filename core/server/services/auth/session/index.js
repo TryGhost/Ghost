@@ -1,18 +1,17 @@
-const session = require('express-session');
-const constants = require('../../../lib/constants');
-const config = require('../../../config');
-const settingsCache = require('../../settings/cache');
+const adapterManager = require('../../adapter-manager');
+const createSessionService = require('@tryghost/session-service');
+const sessionFromToken = require('@tryghost/mw-session-from-token');
+const createSessionMiddleware = require('./middleware');
+
+const expressSession = require('./express-session');
+
 const models = require('../../../models');
 const urlUtils = require('../../../lib/url-utils');
 const url = require('url');
 
-const SessionService = require('@tryghost/session-service');
-const SessionMiddleware = require('./middleware');
-const SessionStore = require('./store');
-
 function getOriginOfRequest(req) {
     const origin = req.get('origin');
-    const referrer = req.get('referrer');
+    const referrer = req.get('referrer') || urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
 
     if (!origin && !referrer) {
         return null;
@@ -29,95 +28,22 @@ function getOriginOfRequest(req) {
     return null;
 }
 
-async function getSession(req, res) {
-    if (req.session) {
-        return req.session;
+const sessionService = createSessionService({
+    getOriginOfRequest,
+    getSession: expressSession.getSession,
+    findUserById({id}) {
+        return models.User.findOne({id});
     }
-    return new Promise((resolve, reject) => {
-        expressSessionMiddleware(req, res, function (err) {
-            if (err) {
-                return reject(err);
-            }
-            resolve(req.session);
-        });
-    });
-}
+});
 
-function findUserById({id}) {
-    return models.User.findOne({id});
-}
+module.exports = createSessionMiddleware({sessionService});
 
-let expressSessionMiddleware;
-function initExpressSessionMiddleware() {
-    if (!expressSessionMiddleware) {
-        expressSessionMiddleware = session({
-            store: new SessionStore(models.Session),
-            secret: settingsCache.get('session_secret'),
-            resave: false,
-            saveUninitialized: false,
-            name: 'ghost-admin-api-session',
-            cookie: {
-                maxAge: constants.SIX_MONTH_MS,
-                httpOnly: true,
-                path: urlUtils.getSubdir() + '/ghost',
-                sameSite: 'lax',
-                secure: urlUtils.isSSL(config.get('url'))
-            }
-        });
-    }
-}
-
-let sessionService;
-function initSessionService() {
-    if (!sessionService) {
-        if (!expressSessionMiddleware) {
-            initExpressSessionMiddleware();
-        }
-
-        sessionService = SessionService({
-            getOriginOfRequest,
-            getSession,
-            findUserById
-        });
-    }
-}
-
-let sessionMiddleware;
-function initSessionMiddleware() {
-    if (!sessionMiddleware) {
-        if (!sessionService) {
-            initSessionService();
-        }
-        sessionMiddleware = SessionMiddleware({
-            sessionService
-        });
-    }
-}
-
-module.exports = {
-    get createSession() {
-        return this.middleware.createSession;
-    },
-
-    get destroySession() {
-        return this.middleware.destroySession;
-    },
-
-    get authenticate() {
-        return this.middleware.authenticate;
-    },
-
-    get service() {
-        if (!sessionService) {
-            initSessionService();
-        }
-        return sessionService;
-    },
-
-    get middleware() {
-        if (!sessionMiddleware) {
-            initSessionMiddleware();
-        }
-        return sessionMiddleware;
-    }
-};
+const ssoAdapter = adapterManager.getAdapter('sso');
+// Looks funky but this is a "custom" piece of middleware
+module.exports.createSessionFromToken = sessionFromToken({
+    callNextWithError: false,
+    createSession: sessionService.createSessionForUser,
+    findUserByLookup: ssoAdapter.getUserForIdentity,
+    getLookupFromToken: ssoAdapter.getIdentityFromCredentials,
+    getTokenFromRequest: ssoAdapter.getRequestCredentials
+});
