@@ -1,3 +1,11 @@
+# This test uses a single version of Node.js, the one installed by
+# default on GitHub Actions. You can see this here:
+#
+# https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md
+#
+# They may update it when a new LTS is released, so it's important
+# to keep this in mind.
+
 name: Test Suite
 on:
   pull_request:
@@ -19,9 +27,6 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10
       - run: yarn
       - run: yarn lint:js
       - run: yarn test
