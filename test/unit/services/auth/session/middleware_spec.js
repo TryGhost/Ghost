@@ -2,11 +2,6 @@ const sessionMiddleware = require('../../../../../core/server/services/auth').se
 const models = require('../../../../../core/server/models');
 const sinon = require('sinon');
 const should = require('should');
-const {
-    BadRequestError,
-    UnauthorizedError,
-    InternalServerError
-} = require('../../../../../core/server/lib/common/errors');
 
 describe('Session Service', function () {
     before(function () {
@@ -22,6 +17,7 @@ describe('Session Service', function () {
             session: {
                 destroy() {}
             },
+            user: null,
             body: {},
             get() {}
         };
@@ -34,18 +30,6 @@ describe('Session Service', function () {
     };
 
     describe('createSession', function () {
-        it('calls next with a BadRequestError if there is no Origin or Refferer', function (done) {
-            const req = fakeReq();
-            sinon.stub(req, 'get')
-                .withArgs('origin').returns('')
-                .withArgs('referrer').returns('');
-
-            sessionMiddleware.createSession(req, fakeRes(), function next(err) {
-                should.equal(err instanceof BadRequestError, true);
-                done();
-            });
-        });
-
         it('sets req.session.origin from the Referer header', function (done) {
             const req = fakeReq();
             const res = fakeRes();
@@ -59,7 +43,7 @@ describe('Session Service', function () {
             req.user = models.User.forge({id: 23});
 
             sinon.stub(res, 'sendStatus')
-                .callsFake(function (statusCode) {
+                .callsFake(function () {
                     should.equal(req.session.origin, 'http://ghost.org');
                     done();
                 });
@@ -102,7 +86,7 @@ describe('Session Service', function () {
                 });
 
             sinon.stub(res, 'sendStatus')
-                .callsFake(function (statusCode) {
+                .callsFake(function () {
                     should.equal(destroyStub.callCount, 1);
                     done();
                 });
@@ -119,7 +103,7 @@ describe('Session Service', function () {
                 });
 
             sessionMiddleware.destroySession(req, res, function next(err) {
-                should.equal(err instanceof InternalServerError, true);
+                should.equal(err.errorType, 'InternalServerError');
                 done();
             });
         });
