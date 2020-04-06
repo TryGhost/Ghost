@@ -18,17 +18,13 @@ jobs:
       - run: yarn
 
       - run: grunt release --skip-tests
+
       - uses: tryghost/action-ghost-release@master
-
-      - run: npm publish --registry https://registry.npmjs.org/
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - uses: tclindner/sentry-releases-action@v1.0.0
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ghost-foundation
           SENTRY_PROJECT: ghost
-        with:
-          tagName: ${{ github.ref }}
-          environment: general
+
+      - run: npm publish --registry https://registry.npmjs.org/
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
