@@ -1,0 +1,36 @@
+ <KoenigCard
+    @icon="koenig/card-indicator-html"
+    @class={{concat (kg-style "container-card") " kg-email-card mih10 miw-100 relative"}}
+    @style={{this.cardStyle}}
+    @headerOffset={{this.headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{this.payload}}
+    @isSelected={{this.isSelected}}
+    @isEditing={{this.isEditing}}
+    @selectCard={{action this.selectCard}}
+    @deselectCard={{action this.deselectCard}}
+    @editCard={{action this.editCard}}
+    @saveCard={{action this.saveCard}}
+    @onLeaveEdit={{action "leaveEditMode"}}
+    @addParagraphAfterCard={{this.addParagraphAfterCard}}
+    @moveCursorToPrevSection={{this.moveCursorToPrevSection}}
+    @moveCursorToNextSection={{this.moveCursorToNextSection}}
+    @editor={{this.editor}}
+    as |card|
+>
+    {{#if this.isEditing}}
+        <KoenigTextReplacementHtmlInput
+            @html={{this.payload.html}}
+            @placeholder="Email only content..."
+            @autofocus={{true}}
+            @class="miw-100 bn bg-transparent"
+            @onChange={{action "updateHtml"}}
+            @onFocus={{action (mut this.isFocused) true}}
+            @onBlur={{action (mut this.isFocused) false}}
+            @didCreateEditor={{action "registerEditor"}}
+        />
+    {{else}}
+        <p>{{{this.payload.html}}}</p>
+        <div class="koenig-card-click-overlay"></div>
+    {{/if}}
+</KoenigCard>

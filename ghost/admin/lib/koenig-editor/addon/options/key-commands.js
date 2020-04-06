@@ -419,6 +419,19 @@ export const BASIC_KEY_COMMANDS = DEFAULT_KEY_COMMANDS.filter((command) => {
     return basicCommands.includes(command.str);
 });
 
+// key commands that are used in koenig-text-replacement-html-input
+export const TEXT_REPLACEMENT_KEY_COMMANDS = DEFAULT_KEY_COMMANDS.filter((command) => {
+    let commands = [
+        'BACKSPACE',
+        'CTRL+K',
+        'META+K',
+        'CTRL+ALT+U',
+        'ENTER',
+        'SHIFT+ENTER'
+    ];
+    return commands.includes(command.str);
+});
+
 export default function registerKeyCommands(editor, koenig, commands = DEFAULT_KEY_COMMANDS) {
     commands.forEach((keyCommand) => {
         editor.registerKeyCommand({
