@@ -18,7 +18,8 @@
     -moz-font-feature-settings: "liga" on;
 }
 
-.koenig-editor__editor.__has-no-content:after {
+.koenig-editor__editor.__has-no-content:after,
+.koenig-text-replacement-html-input__editor.__has-no-content:after{
     font-family: georgia,serif;
     font-weight: 300;
     letter-spacing: .02rem;
@@ -863,7 +864,6 @@
     left: -16px;
 }
 
-
 /* Cards
 /* --------------------------------------------------------------- */
 .kg-bookmark-card {
@@ -957,6 +957,10 @@
     white-space: nowrap;
     display: block;
     line-height: 1.65em;
+}
+
+.kg-email-card p:first-of-type {
+    margin-top: 0;
 }
 
 

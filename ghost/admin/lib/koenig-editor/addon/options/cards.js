@@ -10,7 +10,8 @@ export const CARD_COMPONENT_MAP = {
     code: 'koenig-card-code',
     embed: 'koenig-card-embed',
     bookmark: 'koenig-card-bookmark',
-    gallery: 'koenig-card-gallery'
+    gallery: 'koenig-card-gallery',
+    email: 'koenig-card-email'
 };
 
 // map card names to generic icons (used for ghost elements when dragging)
@@ -23,7 +24,8 @@ export const CARD_ICON_MAP = {
     code: 'koenig/kg-card-type-gen-embed',
     embed: 'koenig/kg-card-type-gen-embed',
     bookmark: 'koenig/kg-card-type-bookmark',
-    gallery: 'koenig/kg-card-type-gallery'
+    gallery: 'koenig/kg-card-type-gallery',
+    email: 'koenig/kg-card-type-gen-embed'
 };
 
 // TODO: move koenigOptions directly into cards now that card components register
@@ -39,7 +41,8 @@ export default [
         return card.payload.imageSelector && !card.payload.src;
     }}),
     createComponentCard('markdown', {deleteIfEmpty: 'payload.markdown'}),
-    createComponentCard('gallery', {hasEditMode: false})
+    createComponentCard('gallery', {hasEditMode: false}),
+    createComponentCard('email', {deleteIfEmpty: 'payload.html'})
 ];
 
 export const CARD_MENU = [
@@ -96,6 +99,14 @@ export const CARD_MENU = [
             type: 'card',
             replaceArg: 'bookmark',
             params: ['url']
+        },
+        {
+            label: 'Email',
+            icon: 'koenig/kg-card-type-html',
+            matches: ['email'],
+            type: 'card',
+            replaceArg: 'email',
+            developerExperiment: true
         }]
     },
     {
