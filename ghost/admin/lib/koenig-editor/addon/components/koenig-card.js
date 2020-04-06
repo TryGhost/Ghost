@@ -211,8 +211,14 @@ export default Component.extend({
     },
 
     _onEnterEdit() {
-        this._onKeydownHandler = run.bind(this, this._handleKeydown);
-        window.addEventListener('keydown', this._onKeydownHandler);
+        // don't register key down handlers immediately otherwise we can interfere
+        // with keyboard events that have just put the card into edit mode
+        run.later(this, function () {
+            if (this.isEditing && !this.isDestroyed && !this.isDestroying) {
+                this._onKeydownHandler = run.bind(this, this._handleKeydown);
+                window.addEventListener('keydown', this._onKeydownHandler);
+            }
+        }, 20);
 
         // store a copy of the payload for later comparison
         this._snapshotPayload = JSON.stringify(this.payload);
