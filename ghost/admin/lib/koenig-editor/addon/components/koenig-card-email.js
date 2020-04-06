@@ -31,7 +31,6 @@ export default Component.extend({
 
     actions: {
         updateHtml(html) {
-            console.log('updateHtml', html);
             this._updatePayloadAttr('html', html);
         },
 
