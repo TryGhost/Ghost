@@ -15,16 +15,12 @@ jobs:
           fetch-depth: 0
           submodules: true
       - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12
-          registry-url: https://registry.npmjs.org/
       - run: yarn
 
       - run: grunt release --skip-tests
       - uses: tryghost/action-ghost-release@master
 
-      - run: npm publish
+      - run: npm publish --registry https://registry.npmjs.org/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
