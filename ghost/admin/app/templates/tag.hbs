@@ -7,7 +7,7 @@
                 {{if this.tag.isNew "New tag" this.tag.name}}
             </h2>
             <section class="view-actions">
-                <GhTaskButton @task={{this.save}} @type="button" @class="gh-btn gh-btn-blue gh-btn-icon" @data-test-button="save" />
+                <GhTaskButton @task={{this.saveTask}} @type="button" @class="gh-btn gh-btn-blue gh-btn-icon" @autoReset={{true}} @data-test-button="save" />
             </section>
         </GhCanvasHeader>
 

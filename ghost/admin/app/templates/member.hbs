@@ -21,7 +21,7 @@
                 {{/unless}}
             {{/if}}
 
-            <GhTaskButton @class="gh-btn gh-btn-blue gh-btn-icon" @type="button" @task={{this.save}} @data-test-button="save" />
+            <GhTaskButton @class="gh-btn gh-btn-blue gh-btn-icon" @type="button" @task={{this.saveMember}} @autoReset={{true}} @data-test-button="save" />
         </section>
     </GhCanvasHeader>
 
@@ -55,7 +55,7 @@
                         {{else}}
                             {{this.member.geolocation.country}}
                         {{/if}}
-                    {{else}}  
+                    {{else}}
                         Unknown location
                     {{/if}}
                     – Created on {{this.subscribedAt}}

@@ -134,8 +134,17 @@ export default Controller.extend({
 
     },
 
-    save: task(function* () {
+    saveIntegration: task(function* () {
         return yield this.integration.save();
+    }),
+
+    save: task(function* () {
+        yield this.saveIntegration.perform();
+        yield timeout(2500);
+        if (this.get('saveIntegration.last.isSuccessful') && this.get('saveIntegration.last.value')) {
+            // Reset last task to bring button back to idle state
+            yield this.set('saveIntegration.last', null);
+        }
     }),
 
     copyContentKey: task(function* () {

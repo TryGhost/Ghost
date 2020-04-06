@@ -1,7 +1,7 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
 export default Controller.extend({
     notifications: service(),
@@ -53,7 +53,7 @@ export default Controller.extend({
 
     },
 
-    save: task(function* () {
+    saveTask: task(function* () {
         let notifications = this.notifications;
 
         try {
@@ -61,6 +61,15 @@ export default Controller.extend({
         } catch (error) {
             notifications.showAPIError(error, {key: 'code-injection.save'});
             throw error;
+        }
+    }),
+
+    save: task(function* () {
+        yield this.saveTask.perform();
+        yield timeout(2500);
+        if (this.get('saveTask.last.isSuccessful') && this.get('saveTask.last.value')) {
+            // Reset last task to bring button back to idle state
+            yield this.set('saveTask.last', null);
         }
     })
 });

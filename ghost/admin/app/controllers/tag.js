@@ -5,7 +5,7 @@ import {alias} from '@ember/object/computed';
 import {computed, defineProperty} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {slugify} from '@tryghost/string';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
 const SCRATCH_PROPS = ['name', 'slug', 'description', 'metaTitle', 'metaDescription'];
 
@@ -74,7 +74,7 @@ export default Controller.extend({
         }
     },
 
-    save: task(function* () {
+    saveTask: task(function* () {
         let {tag, scratchTag} = this;
 
         // if Cmd+S is pressed before the field loses focus make sure we're
@@ -95,6 +95,15 @@ export default Controller.extend({
             }
         }
     }),
+
+    save: task(function* () {
+        yield this.saveTask.perform();
+        yield timeout(2500);
+        if (this.get('saveTask.last.isSuccessful') && this.get('saveTask.last.value')) {
+            // Reset last task to bring button back to idle state
+            yield this.set('saveTask.last', null);
+        }
+    }).drop(),
 
     fetchTag: task(function* (slug) {
         this.set('isLoading', true);
