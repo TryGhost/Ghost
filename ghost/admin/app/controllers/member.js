@@ -6,7 +6,7 @@ import {alias} from '@ember/object/computed';
 import {computed, defineProperty} from '@ember/object';
 import {inject as controller} from '@ember/controller';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
 const SCRATCH_PROPS = ['name', 'email', 'note'];
 
@@ -89,7 +89,7 @@ export default Controller.extend({
         }
     },
 
-    save: task(function* () {
+    saveMember: task(function* () {
         let {member, scratchMember} = this;
 
         // if Cmd+S is pressed before the field loses focus make sure we're
@@ -108,6 +108,15 @@ export default Controller.extend({
             if (error) {
                 this.notifications.showAPIError(error, {key: 'member.save'});
             }
+        }
+    }).drop(),
+
+    save: task(function* () {
+        yield this.saveMember.perform();
+        yield timeout(2500);
+        if (this.get('saveMember.last.isSuccessful') && this.get('saveMember.last.value')) {
+            // Reset last task to bring button back to idle state
+            yield this.set('saveMember.last', null);
         }
     }).drop(),
 
