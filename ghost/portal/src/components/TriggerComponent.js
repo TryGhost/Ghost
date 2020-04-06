@@ -1,5 +1,6 @@
 import FrameComponent from './FrameComponent';
-import closeIcon from '../images/close.png';
+import {ReactComponent as UserIcon} from '../images/icons/user.svg'
+import {ReactComponent as CloseIcon} from '../images/icons/close.svg'
 const React = require("react");
 const PropTypes = require("prop-types");
 
@@ -14,21 +15,33 @@ export default class TriggerComponent extends React.Component {
     }
 
     renderTriggerIcon() {
+        const userIconStyle = {
+            width: '24px',
+            height: '24px',
+            color: '#fff'
+        }
+
+        const closeIconStyle = {
+            width: '20px',
+            height: '20px',
+            color: '#fff'
+        }
+
         if (this.props.isPopupOpen) {
             return (
-                <img src={closeIcon} alt="logo" style={{ height: '30px', userSelect: 'none' }} />
+                <CloseIcon style={closeIconStyle} />
+                // <img src={closeIcon} className="trigger-icon" alt="Close" style={{ height: '30px', userSelect: 'none' }} />
             )
         }
 
-        const siteLogo = (this.props.data && this.props.data.logo) || "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1280px-React-icon.svg.png";
-
         return (
-            <img src={siteLogo} className="App-logo" alt="logo" style={{ height: '30px', userSelect: 'none' }} />
+            <UserIcon style={userIconStyle} />
+            // <img src={userIcon} className="trigger-icon" alt="Account" style={{ height: '20px', userSelect: 'none' }} />
         )
     }
 
     render() {
-        const backgroundColor = this.props.isPopupOpen ? "#ada1a1" : "rgb(245, 228, 228)";
+        const backgroundColor = this.props.isPopupOpen ? "#3EB0EF" : "#3EB0EF";
         const hoverStyle = {
             zIndex: '2147483000',
             position: 'fixed',
