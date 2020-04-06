@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container: node:${{ matrix.node }}
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
@@ -25,13 +26,6 @@ jobs:
     name: Node ${{ matrix.node }} - ${{ matrix.env.DB }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
-
-      - name: Shutdown MySQL
-        run: sudo service mysql stop
-        if: matrix.env.DB == 'mysql'
 
       - uses: mirromutth/mysql-action@v1.1
         if: matrix.env.DB == 'mysql'
@@ -42,7 +36,7 @@ jobs:
 
       - run: yarn
       - run: yarn lint
-      - run: grunt test-acceptance --verbose
-      - run: grunt test-unit --verbose
-      - run: grunt test-regression --verbose
+      - run: yarn ci:acceptance --verbose
+      - run: yarn ci:unit --verbose
+      - run: yarn ci:regression --verbose
         if: startsWith(github.head_ref, 'renovate/') || github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'all-tests')

@@ -25,6 +25,8 @@
     "dev": "DEBUG=ghost:* grunt dev",
     "test": "grunt validate",
     "ci": "grunt validate --verbose",
+    "ci:acceptance": "grunt test-acceptance --verbose",
+    "ci:unit": "grunt test-unit --verbose",
     "ci:regression": "grunt test-regression --verbose",
     "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || true",
     "lint:server": "eslint --ignore-path .eslintignore 'core/server/**/*.js' 'core/*.js' '*.js'",
