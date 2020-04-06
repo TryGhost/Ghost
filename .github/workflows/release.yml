@@ -1,8 +1,8 @@
 name: Release
-on:
-  push:
-    tags:
-      - '*'
+on: pull_request
+#  push:
+#    tags:
+#      - '*'
 jobs:
   automate:
     runs-on: ubuntu-latest
@@ -25,6 +25,6 @@ jobs:
           SENTRY_ORG: ghost-foundation
           SENTRY_PROJECT: ghost
 
-      - run: npm publish --registry https://registry.npmjs.org/
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          #- run: npm publish --registry https://registry.npmjs.org/
+          #env:
+          #NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
