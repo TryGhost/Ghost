@@ -2,7 +2,7 @@
 import Controller from '@ember/controller';
 import {alias} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
 export default Controller.extend({
     notifications: service(),
@@ -68,7 +68,7 @@ export default Controller.extend({
         }
     },
 
-    save: task(function* () {
+    saveTask: task(function* () {
         let unsplash = this.unsplashSettings;
         let settings = this.settings;
 
@@ -82,6 +82,15 @@ export default Controller.extend({
                 this.notifications.showAPIError(error);
                 throw error;
             }
+        }
+    }).drop(),
+
+    save: task(function* () {
+        yield this.saveTask.perform();
+        yield timeout(2500);
+        if (this.get('saveTask.last.isSuccessful') && this.get('saveTask.last.value')) {
+            // Reset last task to bring button back to idle state
+            yield this.set('saveTask.last', null);
         }
     }).drop()
 });
