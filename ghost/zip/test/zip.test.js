@@ -6,9 +6,9 @@ const path = require('path');
 const fs = require('fs-extra');
 
 // Mimic how we expect this to be required
-const {zipFolder, extract} = require('../');
+const {compress, extract} = require('../');
 
-describe('lib/fs: read csv', function () {
+describe('Compress and Extract should be opposite functions', function () {
     let symlinkPath, folderToSymlink, zipDestination, unzipDestination;
 
     const cleanUp = () => {
@@ -33,10 +33,17 @@ describe('lib/fs: read csv', function () {
     it('ensure symlinks work', function (done) {
         fs.symlink(folderToSymlink, symlinkPath);
 
-        zipFolder(symlinkPath, zipDestination)
-            .then(() => {
-                extract(zipDestination, {dir: unzipDestination})
-                    .then(() => {
+        compress(symlinkPath, zipDestination)
+            .then((res) => {
+                res.should.be.an.Object().with.properties('path', 'size');
+                res.path.should.eql(zipDestination);
+                res.size.should.eql(321775);
+
+                extract(zipDestination, unzipDestination)
+                    .then((res) => {
+                        res.should.be.an.Object().with.properties('path');
+                        res.path.should.eql(unzipDestination);
+
                         fs.readdir(unzipDestination, function (err, files) {
                             if (err) {
                                 return done(err);

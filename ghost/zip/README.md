@@ -11,6 +11,17 @@ or
 
 ## Usage
 
+```
+const zip = require('@tryghost/zip');
+
+// Create a zip from a folder
+
+let res = await zip.compress('path/to/a/folder', 'path/to/archive.zip', [options])
+
+// Extract a zip to a folder
+
+let res = await zip.extract('path/to/archive.zip', 'path/to/files', [options])
+```
 
 ## Develop
 
@@ -34,6 +45,6 @@ Follow the instructions for the top-level repo.
 
 
 
-# Copyright & License 
+# Copyright & License
 
 Copyright (c) 2020 Ghost Foundation - Released under the [MIT license](LICENSE).

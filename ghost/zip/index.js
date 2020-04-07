@@ -1,7 +1,4 @@
-const extract = require('extract-zip');
-const zipFolder = require('./lib/zip-folder');
-
 module.exports = {
-    extract,
-    zipFolder
+    extract: require('./lib/extract'),
+    compress: require('./lib/compress')
 };
