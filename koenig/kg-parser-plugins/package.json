@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.9.0",
-    "@babel/preset-env": "7.9.0",
+    "@babel/preset-env": "7.9.5",
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
     "jsdom": "15.2.1",
     "mocha": "6.2.0",
