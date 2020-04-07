@@ -111,7 +111,11 @@ function fetchOembedData(_url) {
             // fetch oembed response from embedded rel="alternate" url
             return request(oembedUrl, {
                 method: 'GET',
-                json: true
+                json: true,
+                timeout: 2 * 1000,
+                headers: {
+                    'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
+                }
             }).then((response) => {
                 // validate the fetched json against the oembed spec to avoid
                 // leaking non-oembed responses
