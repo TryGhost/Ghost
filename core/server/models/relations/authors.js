@@ -314,7 +314,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                         return (options.transacting || ghostBookshelf.knex)('posts_authors')
                             .where('author_id', authorId)
                             .del()
-                            .return(response);
+                            .then(() => response);
                     })
                     .catch((err) => {
                         throw new common.errors.GhostError({err: err});

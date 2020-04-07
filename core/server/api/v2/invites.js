@@ -77,7 +77,7 @@ module.exports = {
             frame.options.require = true;
 
             return models.Invite.destroy(frame.options)
-                .return(null);
+                .then(() => null);
         }
     },
 

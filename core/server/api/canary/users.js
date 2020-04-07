@@ -130,11 +130,11 @@ module.exports = {
             return models.Base.transaction((t) => {
                 frame.options.transacting = t;
 
-                return Promise.all([
-                    models.Post.destroyByAuthor(frame.options)
-                ]).then(() => {
-                    return models.User.destroy(Object.assign({status: 'all'}, frame.options));
-                }).return(filename);
+                return models.Post.destroyByAuthor(frame.options)
+                    .then(() => {
+                        return models.User.destroy(Object.assign({status: 'all'}, frame.options));
+                    })
+                    .then(() => filename);
             }).catch((err) => {
                 return Promise.reject(new common.errors.NoPermissionError({
                     err: err

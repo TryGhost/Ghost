@@ -84,7 +84,7 @@ module.exports = {
         permissions: true,
         query(frame) {
             frame.options.require = true;
-            return models.Webhook.destroy(frame.options).return(null);
+            return models.Webhook.destroy(frame.options).then(() => null);
         }
     }
 };

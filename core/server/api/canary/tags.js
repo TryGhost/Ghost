@@ -142,7 +142,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.Tag.destroy(frame.options).return(null);
+            return models.Tag.destroy(frame.options).then(() => null);
         }
     }
 };
