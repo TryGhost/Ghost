@@ -139,7 +139,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.Label.destroy(frame.options).return(null);
+            return models.Label.destroy(frame.options).then(() => null);
         }
     }
 };
