@@ -301,10 +301,10 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tryghost/adapter-manager@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.1.1.tgz#2808725cdff3fdc033c11dffef82314c4d52b8d9"
-  integrity sha512-2rc9TjK4AZnZJt00vrqzfHx2LgsrLbkkCmtgOJvnp0T39a51crnZrLQgfK0CW0zXnBH52jYC5ZSUUmIi8wTxPg==
+"@tryghost/adapter-manager@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.1.2.tgz#29bcbe220f70603b51d30a9ee734f257a4fe3dbc"
+  integrity sha512-vYG//0zXqPMzZZkw3vZXeyShsKggzPDPEaDaHwByLqbTHi8kj3bQVRq3GkmoQhx01KJB0eQwMaz8tZihU2KsyA==
   dependencies:
     "@tryghost/errors" "^0.1.1"
 
