@@ -1,0 +1,28 @@
+name: Release
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  automate:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ghost-foundation
+      SENTRY_PROJECT: ghost
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      FORCE_COLOR: 1
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: true
+      - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+      - run: yarn
+
+      - run: grunt release:2.x --skip-tests
+      - uses: tryghost/action-ghost-release@master
+
+      - run: npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN
+      - run: npm publish
