@@ -8,6 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ghost-foundation
+      SENTRY_PROJECT: ghost
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       FORCE_COLOR: 1
     steps:
       - uses: actions/checkout@v2
@@ -18,13 +22,5 @@ jobs:
       - run: yarn
 
       - run: grunt release --skip-tests
-
       - uses: tryghost/action-ghost-release@master
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ghost-foundation
-          SENTRY_PROJECT: ghost
-
       - run: npm publish --registry https://registry.npmjs.org/
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
