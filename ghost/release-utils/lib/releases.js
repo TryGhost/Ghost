@@ -76,6 +76,11 @@ module.exports.create = (options = {}) => {
         body.push('You can see the [full change log](' + options.gistUrl + ') for the details of every change included in this release.');
     }
 
+    if (options.extraText) {
+        body.push('');
+        body.push(options.extraText);
+    }
+
     const auth = 'token ' + options.github.token;
 
     const reqOptions = {
