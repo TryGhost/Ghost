@@ -5,6 +5,7 @@
 .eslintignore
 .eslintrc.json
 .npmignore
+changelog.md*
 docs/**
 _site/**
 content/adapters/**
