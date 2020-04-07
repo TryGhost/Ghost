@@ -1,6 +1,7 @@
 const fs = require('fs-extra');
+const Promise = require('bluebird');
 
-module.exports = function zipFolder(folderToZip, destination, callback) {
+const zipFolder = (folderToZip, destination, callback) => {
     var archiver = require('archiver'),
         output = fs.createWriteStream(destination),
         archive = archiver.create('zip', {});
@@ -25,3 +26,5 @@ module.exports = function zipFolder(folderToZip, destination, callback) {
     archive.pipe(output);
     archive.finalize();
 };
+
+module.exports = Promise.promisify(zipFolder);
