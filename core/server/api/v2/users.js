@@ -129,7 +129,7 @@ module.exports = {
                     models.Post.destroyByAuthor(frame.options)
                 ]).then(() => {
                     return models.User.destroy(Object.assign({status: 'all'}, frame.options));
-                }).return(null);
+                }).then(() => null);
             }).catch((err) => {
                 return Promise.reject(new common.errors.NoPermissionError({
                     err: err
