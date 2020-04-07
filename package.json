@@ -77,7 +77,7 @@
     "express": "4.17.1",
     "express-brute": "1.0.1",
     "express-hbs": "2.3.3",
-    "express-jwt": "5.3.1",
+    "express-jwt": "5.3.3",
     "express-query-boolean": "2.0.0",
     "express-session": "1.17.0",
     "fs-extra": "9.0.0",
