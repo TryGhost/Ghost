@@ -41,7 +41,7 @@
   "dependencies": {
     "@nexes/nql": "0.3.0",
     "@sentry/node": "5.15.4",
-    "@tryghost/adapter-manager": "0.1.0",
+    "@tryghost/adapter-manager": "0.1.1",
     "@tryghost/errors": "0.1.1",
     "@tryghost/helpers": "1.1.25",
     "@tryghost/image-transform": "0.2.0",
