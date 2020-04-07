@@ -3,7 +3,7 @@ var fs = require('fs-extra'),
     path = require('path'),
     config = require('../../../server/config'),
     security = require('../../../server/lib/security'),
-    {zipFolder} = require('@tryghost/zip'),
+    {compress} = require('@tryghost/zip'),
     LocalFileStorage = require('../../../server/adapters/storage/LocalFileStorage');
 
 /**
@@ -34,13 +34,13 @@ class ThemeStorage extends LocalFileStorage {
 
             fs.ensureDir(zipBasePath)
                 .then(function () {
-                    return zipFolder(themePath, zipPath);
+                    return compress(themePath, zipPath);
                 })
-                .then(function (length) {
+                .then(function (result) {
                     res.set({
                         'Content-disposition': 'attachment; filename={themeName}.zip'.replace('{themeName}', themeName),
                         'Content-Type': 'application/zip',
-                        'Content-Length': length
+                        'Content-Length': result.size
                     });
 
                     stream = fs.createReadStream(zipPath);
