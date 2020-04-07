@@ -301,7 +301,7 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tryghost/adapter-manager@^0.1.0":
+"@tryghost/adapter-manager@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.1.0.tgz#b95178b1d2f89de8b6a243ee312de61237c6a973"
   integrity sha512-Z5Pnhd/b/EBsl6mCJdwmdVEESWnurgD/GAVma0g8GMuUECg0NCynyVJtvszKFny9484OagWzrpTUi7F5l4jp3Q==
@@ -435,7 +435,7 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mw-session-from-token@^0.1.0":
+"@tryghost/mw-session-from-token@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.0.tgz#ad73da936d3cc3abdfc7753a5098e76ae5dc271e"
   integrity sha512-t6a9YMMHaQ2Uypl+WaGLc4mFKjwhfyfA+l7V9H5DwFeAFIYWcRssy/D3e+gTT3rbLC39W0vqkmZFNE2JQZuuEQ==
@@ -448,7 +448,7 @@
     chalk "^3.0.0"
     sywac "^1.2.1"
 
-"@tryghost/session-service@^0.1.0":
+"@tryghost/session-service@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.0.tgz#3e37f1047b6404cbac59de0953ef1246657e742d"
   integrity sha512-yAnJ0Bnl5FReA8mrL+J7nc7S9QWobegaOqK0lTHQpbCHdlkXaDdkNYFniztE8BClWmHrRrtRfHLTN+eovEpenA==
