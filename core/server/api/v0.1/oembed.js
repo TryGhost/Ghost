@@ -64,6 +64,11 @@ function isIpOrLocalhost(url) {
 }
 
 function fetchOembedData(_url) {
+    // always treat protocol-relative URLs as https
+    if (_url.startsWith('//')) {
+        _url = `https:${_url}`;
+    }
+
     // parse the url then validate the protocol and host to make sure it's
     // http(s) and not an IP address or localhost to avoid potential access to
     // internal network endpoints

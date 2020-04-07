@@ -109,9 +109,12 @@ describe('API: oembed', function () {
 
             const requestMock = nock('https://host.tld')
                 .intercept('/oembed', 'GET')
-                .query(true)
                 .reply(200, {
-                    html: 'test'
+                    version: '1.0',
+                    type: 'rich',
+                    html: 'test',
+                    width: 200,
+                    height: 200
                 });
 
             OembedAPI.read({url: 'https://host.tld/page'})
@@ -134,7 +137,7 @@ describe('API: oembed', function () {
                 .then(() => {
                     done(new Error('Fetch oembed with external failure should error'));
                 }).catch((err) => {
-                    (err instanceof common.errors.InternalServerError).should.eql(true);
+                    (err instanceof common.errors.ValidationError).should.eql(true);
                     done();
                 });
         });
