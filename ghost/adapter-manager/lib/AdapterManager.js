@@ -112,9 +112,11 @@ module.exports = class AdapterManager {
         const adapter = new Adapter(config);
 
         if (!(adapter instanceof this.baseClasses[adapterType])) {
-            throw new errors.IncorrectUsageError({
-                message: `${adapterType} adapter ${adapterName} does not inherit from the base class.`
-            });
+            if (Object.getPrototypeOf(Adapter).name !== this.baseClasses[adapterType].name) {
+                throw new errors.IncorrectUsageError({
+                    message: `${adapterType} adapter ${adapterName} does not inherit from the base class.`
+                });
+            }
         }
 
         if (!adapter.requiredFns) {
