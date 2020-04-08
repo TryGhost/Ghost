@@ -4,6 +4,20 @@ const config = require('../../config');
 let cardFactory, cards;
 
 module.exports = {
+    get blankDocument() {
+        return {
+            version: '0.3.1',
+            markups: [],
+            atoms: [],
+            cards: [],
+            sections: [
+                [1, 'p', [
+                    [0, [], 0, '']
+                ]]
+            ]
+        };
+    },
+
     get cards() {
         if (cards) {
             return cards;
