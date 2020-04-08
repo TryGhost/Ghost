@@ -51,26 +51,26 @@ DataImporter = {
         }
 
         if (!importData.meta) {
-            throw new common.errors.IncorrectUsageError({
+            return Promise.reject(new common.errors.IncorrectUsageError({
                 message: 'Wrong importer structure. `meta` is missing.',
                 help: 'https://ghost.org/docs/api/migration/#json-file-structure'
-            });
+            }));
         }
 
         if (!importData.meta.version) {
-            throw new common.errors.IncorrectUsageError({
+            return Promise.reject(new common.errors.IncorrectUsageError({
                 message: 'Wrong importer structure. `meta.version` is missing.',
                 help: 'https://ghost.org/docs/api/migration/#json-file-structure'
-            });
+            }));
         }
 
         // CASE: We deny LTS imports, because these are major version jumps. Only imports from v1 until the latest are supported.
         //       We can detect a wrong structure by checking the meta version field. Ghost v0 doesn't use semver compliant versions.
         if (!semver.valid(importData.meta.version)) {
-            throw new common.errors.IncorrectUsageError({
+            return Promise.reject(new common.errors.IncorrectUsageError({
                 message: 'Detected unsupported file structure.',
                 help: 'Please install Ghost 1.0, import the file and then update your blog to the latest Ghost version.\nVisit https://ghost.org/update/?v=0.1 or ask for help in our https://forum.ghost.org.'
-            });
+            }));
         }
 
         this.init(importData);
