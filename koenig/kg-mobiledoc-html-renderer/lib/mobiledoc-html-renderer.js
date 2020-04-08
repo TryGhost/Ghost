@@ -1,17 +1,5 @@
 const SimpleDom = require('simple-dom');
 const Renderer = require('mobiledoc-dom-renderer').default;
-const common = require('../../common');
-const mobiledoc = require('../');
-const options = {
-    dom: new SimpleDom.Document(),
-    cards: mobiledoc.cards,
-    atoms: mobiledoc.atoms,
-    unknownCardHandler: function (args) {
-        common.logging.error(new common.errors.InternalServerError({
-            message: 'Mobiledoc card \'' + args.env.name + '\' not found.'
-        }));
-    }
-};
 
 const walkDom = function (node, func) {
     func(node);
@@ -78,7 +66,16 @@ class DomModifier {
     }
 }
 
-module.exports = {
+class MobiledocHtmlRenderer {
+    constructor(options = {}) {
+        this.options = {
+            dom: new SimpleDom.Document(),
+            cards: options.cards || [],
+            atoms: options.atoms || [],
+            unknownCardHandler: options.unknownCardHandler || function () {}
+        };
+    }
+
     render(mobiledoc, version) {
         /**
          * @deprecated: version 1 === Ghost 1.0 markdown-only mobiledoc
@@ -88,7 +85,7 @@ module.exports = {
          */
         version = version || 2;
 
-        const versionedOptions = Object.assign({}, options, {
+        const versionedOptions = Object.assign({}, this.options, {
             cardOptions: {version}
         });
 
@@ -112,4 +109,6 @@ module.exports = {
 
         return serializer.serializeChildren(rendered.result);
     }
-};
+}
+
+module.exports = MobiledocHtmlRenderer;
