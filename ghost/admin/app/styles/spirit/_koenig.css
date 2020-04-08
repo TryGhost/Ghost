@@ -858,10 +858,11 @@
 /* Chrome has a bug with its scrollbars on this element which has been reported here: https://bugs.chromium.org/p/chromium/issues/detail?id=697381 */
 .koenig-cardmenu {
     width: 272px;
-    max-height: 500px;
+    height: 580px;
     background-clip: padding-box;
     z-index: 9999999; /* have to compete with codemirror */
     left: -16px;
+    top: -10px;
 }
 
 /* Cards
