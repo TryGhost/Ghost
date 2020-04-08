@@ -57,7 +57,7 @@
     "@tryghost/string": "0.1.8",
     "@tryghost/url-utils": "0.6.17",
     "@tryghost/vhost-middleware": "1.0.2",
-    "@tryghost/zip": "0.1.0",
+    "@tryghost/zip": "1.0.0",
     "ajv": "6.12.0",
     "amperize": "0.6.1",
     "analytics-node": "3.4.0-beta.1",
