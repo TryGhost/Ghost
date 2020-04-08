@@ -1424,7 +1424,7 @@ describe('Integration - Web - Site', function () {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('default');
 
-                            // default tempalte does not list posts
+                            // default template does not list posts
                             $('.post-card').length.should.equal(0);
                         });
                 });
@@ -3124,7 +3124,7 @@ describe('Integration - Web - Site', function () {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('default');
 
-                            // default tempalte does not list posts
+                            // default template does not list posts
                             $('.post-card').length.should.equal(0);
                         });
                 });
@@ -4824,7 +4824,7 @@ describe('Integration - Web - Site', function () {
                             response.statusCode.should.eql(200);
                             response.template.should.eql('default');
 
-                            // default tempalte does not list posts
+                            // default template does not list posts
                             $('.post-card').length.should.equal(0);
                         });
                 });
