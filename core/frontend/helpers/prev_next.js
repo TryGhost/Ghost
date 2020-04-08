@@ -3,7 +3,7 @@
 // `{{#prev_post}}<a href ="{{url}}>previous post</a>{{/prev_post}}'
 // `{{#next_post}}<a href ="{{url absolute="true">next post</a>{{/next_post}}'
 
-const {logging, i18n, api, hbs, checks} = require('./proxy');
+const {logging, i18n, api, hbs, checks} = require('../services/proxy');
 const get = require('lodash/get');
 const Promise = require('bluebird');
 const moment = require('moment');

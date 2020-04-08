@@ -5,7 +5,7 @@
 // Returns amount equal to the dominant denomintation of the currency.
 // For example, if 2100 is passed, it will return 21.
 const isNumber = require('lodash/isNumber');
-const {errors, i18n} = require('./proxy');
+const {errors, i18n} = require('../services/proxy');
 
 module.exports = function price(amount) {
     // CASE: if no amount is passed, e.g. `{{price}}` we throw an error

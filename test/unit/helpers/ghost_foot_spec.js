@@ -1,7 +1,7 @@
 var should = require('should'),
     sinon = require('sinon'),
     helpers = require('../../../core/frontend/helpers'),
-    proxy = require('../../../core/frontend/helpers/proxy'),
+    proxy = require('../../../core/frontend/services/proxy'),
     settingsCache = proxy.settingsCache;
 
 describe('{{ghost_foot}} helper', function () {

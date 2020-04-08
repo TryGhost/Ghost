@@ -1,7 +1,7 @@
 // # Is Helper
 // Usage: `{{#is "paged"}}`, `{{#is "index, paged"}}`
 // Checks whether we're in a given context.
-const {logging, i18n} = require('./proxy');
+const {logging, i18n} = require('../services/proxy');
 const _ = require('lodash');
 
 module.exports = function is(context, options) {

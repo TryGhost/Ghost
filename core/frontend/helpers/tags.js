@@ -5,7 +5,7 @@
 // By default, tags are separated by commas.
 //
 // Note that the standard {{#each tags}} implementation is unaffected by this helper
-const {urlService, SafeString, templates} = require('./proxy');
+const {urlService, SafeString, templates} = require('../services/proxy');
 const _ = require('lodash');
 const ghostHelperUtils = require('@tryghost/helpers').utils;
 

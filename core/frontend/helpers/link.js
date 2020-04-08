@@ -1,6 +1,6 @@
 // # link helper
 const _ = require('lodash');
-const {config, SafeString, errors, i18n} = require('./proxy');
+const {config, SafeString, errors, i18n} = require('../services/proxy');
 const {buildLinkClasses} = require('./utils');
 
 const managedAttributes = ['href', 'class', 'activeClass', 'parentActiveClass'];

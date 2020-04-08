@@ -9,7 +9,7 @@
 
 const url = require('url');
 const _ = require('lodash');
-const {urlUtils, logging, i18n} = require('./proxy');
+const {urlUtils, logging, i18n} = require('../services/proxy');
 
 const STATIC_IMAGE_URL_PREFIX = `${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 

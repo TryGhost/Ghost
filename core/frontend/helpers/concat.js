@@ -1,4 +1,4 @@
-const {SafeString} = require('./proxy');
+const {SafeString} = require('../services/proxy');
 
 module.exports = function concat(...args) {
     const options = args.pop();
