@@ -26,7 +26,7 @@
     "@types/sinon": "^9.0.0",
     "mocha": "7.1.1",
     "should": "13.2.3",
-    "sinon": "9.0.1",
+    "sinon": "9.0.2",
     "typescript": "^3.8.3"
   },
   "dependencies": {
