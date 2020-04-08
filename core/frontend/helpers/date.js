@@ -3,7 +3,7 @@
 //
 // Formats a date using moment-timezone.js. Formats published_at by default but will also take a date as a parameter
 
-const {SafeString, themeI18n} = require('./proxy');
+const {SafeString, themeI18n} = require('../services/proxy');
 const moment = require('moment-timezone');
 
 module.exports = function (date, options) {

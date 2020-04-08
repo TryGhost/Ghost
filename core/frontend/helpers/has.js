@@ -4,7 +4,7 @@
 //
 // Checks if a post has a particular property
 
-const {logging, i18n} = require('./proxy');
+const {logging, i18n} = require('../services/proxy');
 const _ = require('lodash');
 const validAttrs = ['tag', 'author', 'slug','visibility', 'id', 'number', 'index', 'any', 'all'];
 

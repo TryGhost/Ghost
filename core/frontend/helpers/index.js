@@ -1,4 +1,4 @@
-const proxy = require('./proxy');
+const proxy = require('../services/proxy');
 const register = require('./register');
 
 const coreHelpers = {};

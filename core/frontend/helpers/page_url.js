@@ -4,7 +4,7 @@
 // `{{page_url 2}}`
 //
 // Returns the URL for the page specified in the current object context.
-const {metaData} = require('./proxy');
+const {metaData} = require('../services/proxy');
 const getPaginatedUrl = metaData.getPaginatedUrl;
 
 // We use the name page_url to match the helper for consistency:

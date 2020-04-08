@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {metaData, escapeExpression, SafeString, logging, settingsCache, config, blogIcon, labs} = require('./proxy');
+const {metaData, escapeExpression, SafeString, logging, settingsCache, config, blogIcon, labs} = require('../services/proxy');
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('ghost_head');
 

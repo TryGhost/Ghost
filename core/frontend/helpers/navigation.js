@@ -2,7 +2,7 @@
 // `{{navigation}}`
 // Outputs navigation menu of static urls
 
-const {SafeString, i18n, errors, templates, hbs} = require('./proxy');
+const {SafeString, i18n, errors, templates, hbs} = require('../services/proxy');
 const {slugify} = require('@tryghost/string');
 const _ = require('lodash');
 const createFrame = hbs.handlebars.createFrame;

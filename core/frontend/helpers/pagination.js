@@ -2,7 +2,7 @@
 // `{{pagination}}`
 // Outputs previous and next buttons, along with info about the current page
 
-const {errors, i18n, templates, hbs} = require('./proxy');
+const {errors, i18n, templates, hbs} = require('../services/proxy');
 const _ = require('lodash');
 const createFrame = hbs.handlebars.createFrame;
 

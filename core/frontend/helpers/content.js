@@ -6,7 +6,7 @@
 //
 // Enables tag-safe truncation of content by characters or words.
 
-const {SafeString} = require('./proxy');
+const {SafeString} = require('../services/proxy');
 const downsize = require('downsize');
 
 module.exports = function content(options = {}) {

@@ -1,6 +1,6 @@
 // # link_class helper
 const _ = require('lodash');
-const {config, SafeString, errors, i18n} = require('./proxy');
+const {config, SafeString, errors, i18n} = require('../services/proxy');
 const {buildLinkClasses} = require('./utils');
 
 module.exports = function link_class(options) { // eslint-disable-line camelcase

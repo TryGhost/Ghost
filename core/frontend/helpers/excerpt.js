@@ -5,7 +5,7 @@
 //
 // Defaults to words="50"
 
-const {SafeString, metaData} = require('./proxy');
+const {SafeString, metaData} = require('../services/proxy');
 const _ = require('lodash');
 const getMetaDataExcerpt = metaData.getMetaDataExcerpt;
 

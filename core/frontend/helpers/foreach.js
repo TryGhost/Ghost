@@ -3,7 +3,7 @@
 //
 // Block helper designed for looping through posts
 const _ = require('lodash');
-const {logging, i18n, hbs} = require('./proxy');
+const {logging, i18n, hbs} = require('../services/proxy');
 const {Utils: hbsUtils, handlebars: {createFrame}} = hbs;
 const ghostHelperUtils = require('@tryghost/helpers').utils;
 

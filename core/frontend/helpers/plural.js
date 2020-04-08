@@ -10,7 +10,7 @@
 // The 3rd argument is the string that will be output if the variable's value is 1
 // The 4th argument is the string that will be output if the variable's value is 2+
 
-const {errors, i18n, SafeString} = require('./proxy');
+const {errors, i18n, SafeString} = require('../services/proxy');
 const isUndefined = require('lodash/isUndefined');
 
 module.exports = function plural(number, options) {
