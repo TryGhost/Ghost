@@ -18,6 +18,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "simple-dom": "^1.4.0"
+  },
   "dependencies": {}
 }
