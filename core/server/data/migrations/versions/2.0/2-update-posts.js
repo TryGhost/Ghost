@@ -101,7 +101,7 @@ module.exports.down = (options) => {
 
                 // CASE: revert: all new editor posts to the old editor format
                 if (mobiledoc && post.html) {
-                    html = renderers.mobiledocHtmlRenderer.render(mobiledoc, version);
+                    html = mobiledocLib.renderers.mobiledocHtmlRenderer.render(mobiledoc, version);
                 }
 
                 return localOptions
