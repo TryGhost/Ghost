@@ -24,7 +24,7 @@ module.exports = {
     },
 
     get atoms() {
-        return require('./atoms');
+        return require('@tryghost/kg-default-atoms');
     },
 
     get renderers() {
