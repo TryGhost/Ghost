@@ -1,4 +1,3 @@
-const proxy = require('../services/proxy');
 const register = require('./register');
 
 const coreHelpers = {};
@@ -46,26 +45,13 @@ coreHelpers.title = require('./title');
 coreHelpers.twitter_url = require('./twitter_url');
 coreHelpers.url = require('./url');
 
-function labsEnabledMembers() {
-    let self = this, args = arguments;
-
-    return proxy.labs.enabledHelper({
-        flagKey: 'members',
-        flagName: 'Members',
-        helperName: 'cancel_link',
-        helpUrl: 'https://ghost.org/faq/members/'
-    }, () => {
-        return coreHelpers.cancel_link.apply(self, args);
-    });
-}
-
 registerAllCoreHelpers = function registerAllCoreHelpers() {
     // Register theme helpers
     registerThemeHelper('asset', coreHelpers.asset);
     registerThemeHelper('author', coreHelpers.author);
     registerThemeHelper('authors', coreHelpers.authors);
     registerThemeHelper('body_class', coreHelpers.body_class);
-    registerThemeHelper('cancel_link', labsEnabledMembers);
+    registerThemeHelper('cancel_link', coreHelpers.cancel_link);
     registerThemeHelper('concat', coreHelpers.concat);
     registerThemeHelper('content', coreHelpers.content);
     registerThemeHelper('date', coreHelpers.date);

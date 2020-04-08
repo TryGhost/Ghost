@@ -6,9 +6,9 @@
 //
 // Defaults to class="cancel-subscription-link" errorClass="cancel-subscription-error" cancelLabel="Cancel subscription" continueLabel="Continue subscription"
 
-const {templates, errors, i18n} = require('../services/proxy');
+const {templates, errors, i18n, labs} = require('../services/proxy');
 
-module.exports = function excerpt(options) {
+function cancel_link(options) { // eslint-disable-line camelcase
     let truncateOptions = (options || {}).hash || {};
 
     if (this.id === undefined || this.cancel_at_period_end === undefined) {
@@ -25,4 +25,18 @@ module.exports = function excerpt(options) {
     };
 
     return templates.execute('cancel_link', data);
+}
+
+module.exports = function cancelLabsWrapper() {
+    let self = this;
+    let args = arguments;
+
+    return labs.enabledHelper({
+        flagKey: 'members',
+        flagName: 'Members',
+        helperName: 'cancel_link',
+        helpUrl: 'https://ghost.org/faq/members/'
+    }, () => {
+        return cancel_link.apply(self, args);
+    });
 };
