@@ -377,6 +377,11 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-0.1.7.tgz#8cebadf0189106caef61f480f16092b375b12ef4"
   integrity sha512-S7utCsbIVvDd3el2yJ81HtInVg4WiVmmNKQCq8T13KC7oU1MrxUWjRgmieoHv2P9jqCkwPJm9eLQApJj6kp4dQ==
 
+"@tryghost/kg-default-atoms@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-1.0.0.tgz#d423a0f19a6989051bd6bbc9c8f104c88bd5c738"
+  integrity sha512-f6a8zIoL2w7aeZbeBj+0UPvFzE1Dd/zf3RGO+L4j/Kb4Z/yqOtoBWQun6I2H37XXoaqiiQc6Z3eW+L4iYSw1Ow==
+
 "@tryghost/kg-default-cards@1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-1.0.1.tgz#f6855db115af0868ecbe443a46123f856e006d9a"
