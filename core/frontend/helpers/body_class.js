@@ -2,7 +2,7 @@
 // Usage: `{{body_class}}`
 //
 // Output classes for the body element
-const {SafeString} = require('./proxy');
+const {SafeString} = require('../services/proxy');
 
 // We use the name body_class to match the helper for consistency
 module.exports = function body_class(options) { // eslint-disable-line camelcase
@@ -43,4 +43,3 @@ module.exports = function body_class(options) { // eslint-disable-line camelcase
 
     return new SafeString(classes);
 };
-

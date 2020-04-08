@@ -1,7 +1,7 @@
 // This file defines everything that helpers "require"
 // With the exception of modules like lodash, Bluebird
 // We can later refactor to enforce this something like we did in apps
-var hbs = require('../services/themes/engine'),
+var hbs = require('./themes/engine'),
     settingsCache = require('../../server/services/settings/cache'),
     config = require('../../server/config');
 
@@ -29,7 +29,7 @@ module.exports = {
     logging: require('../../server/lib/common/logging'),
 
     // Theme i18n is separate to common i18n
-    themeI18n: require('../services/themes/i18n'),
+    themeI18n: require('./themes/i18n'),
 
     // This is used to detect if "isPost" is true in prevNext.
     checks: require('../../server/data/schema').checks,
@@ -57,12 +57,12 @@ module.exports = {
     },
 
     // The local template thing, should this be merged with the channels one?
-    templates: require('./template'),
+    templates: require('../helpers/template'),
 
     // Various utils, needs cleaning up / simplifying
     socialUrls: require('@tryghost/social-urls'),
     blogIcon: require('../../server/lib/image/blog-icon'),
-    urlService: require('../services/url'),
+    urlService: require('./url'),
     urlUtils: require('../../server/lib/url-utils'),
-    localUtils: require('./utils')
+    localUtils: require('../helpers/utils')
 };

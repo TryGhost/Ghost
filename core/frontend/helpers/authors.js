@@ -7,7 +7,7 @@
 //
 // Note that the standard {{#each authors}} implementation is unaffected by this helper.
 const _ = require('lodash');
-const {SafeString, templates, urlService} = require('./proxy');
+const {SafeString, templates, urlService} = require('../services/proxy');
 const ghostHelperUtils = require('@tryghost/helpers').utils;
 
 module.exports = function authors(options = {}) {

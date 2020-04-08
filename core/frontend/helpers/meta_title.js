@@ -2,7 +2,7 @@
 // Usage: `{{meta_title}}`
 //
 // Page title used for sharing and SEO
-const {metaData} = require('./proxy');
+const {metaData} = require('../services/proxy');
 const {getMetaDataTitle} = metaData;
 
 // We use the name meta_title to match the helper for consistency:

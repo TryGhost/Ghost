@@ -1,7 +1,7 @@
 const should = require('should');
 const settingsCache = require('../../../core/server/services/settings/cache');
 const helpers = require('../../../core/frontend/helpers');
-const proxy = require('../../../core/frontend/helpers/proxy');
+const proxy = require('../../../core/frontend/services/proxy');
 
 describe('{{lang}} helper', function () {
     beforeEach(function () {

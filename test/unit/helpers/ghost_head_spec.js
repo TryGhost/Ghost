@@ -12,7 +12,7 @@ const should = require('should'),
     routing = require('../../../core/frontend/services/routing'),
     urlService = require('../../../core/frontend/services/url'),
     helpers = require('../../../core/frontend/helpers'),
-    proxy = require('../../../core/frontend/helpers/proxy'),
+    proxy = require('../../../core/frontend/services/proxy'),
     settingsCache = proxy.settingsCache;
 
 describe('{{ghost_head}} helper', function () {
