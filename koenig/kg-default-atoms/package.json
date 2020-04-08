@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-default-atoms",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-default-atoms",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -20,6 +20,5 @@
   },
   "devDependencies": {
     "simple-dom": "^1.4.0"
-  },
-  "dependencies": {}
+  }
 }
