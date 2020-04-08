@@ -61,7 +61,7 @@ module.exports.up = (options) => {
                 // CASE: if mobiledoc field is null, we auto set a blank structure in the model layer
                 // CASE: if html field is null, we auto generate the html in the model layer
                 if (mobiledoc && post.html && post.html.match(/^<div class="kg-card-markdown">/)) {
-                    html = mobiledocLib.renderers.mobiledocHtmlRenderer.render(mobiledoc);
+                    html = mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc);
                 }
                 return localOptions
                     .transacting('posts')
@@ -101,7 +101,7 @@ module.exports.down = (options) => {
 
                 // CASE: revert: all new editor posts to the old editor format
                 if (mobiledoc && post.html) {
-                    html = mobiledocLib.renderers.mobiledocHtmlRenderer.render(mobiledoc, version);
+                    html = mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc, version);
                 }
 
                 return localOptions
