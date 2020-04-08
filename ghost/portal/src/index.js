@@ -13,7 +13,8 @@ function initMembersJS(data) {
   );
 }
 
-initMembersJS();
+// Uncomment for local UI testing
+// initMembersJS({site: {blogUrl: "", adminUrl: ""}});
 
 window.GhostMembers = {
   initMembersJS: initMembersJS
