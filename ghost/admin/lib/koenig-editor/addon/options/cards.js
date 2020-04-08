@@ -102,7 +102,7 @@ export const CARD_MENU = [
         },
         {
             label: 'Email',
-            icon: 'koenig/kg-card-type-html',
+            icon: 'koenig/kg-card-type-email',
             matches: ['email'],
             type: 'card',
             replaceArg: 'email',
