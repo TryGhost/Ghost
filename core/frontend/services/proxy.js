@@ -57,12 +57,12 @@ module.exports = {
     },
 
     // The local template thing, should this be merged with the channels one?
-    templates: require('../helpers/template'),
+    templates: require('./themes/handlebars/template'),
 
     // Various utils, needs cleaning up / simplifying
     socialUrls: require('@tryghost/social-urls'),
     blogIcon: require('../../server/lib/image/blog-icon'),
     urlService: require('./url'),
     urlUtils: require('../../server/lib/url-utils'),
-    localUtils: require('../helpers/utils')
+    localUtils: require('./themes/handlebars/utils')
 };

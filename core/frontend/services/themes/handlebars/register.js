@@ -1,5 +1,7 @@
 const Promise = require('bluebird');
-const {config, hbs, errors, logging} = require('../services/proxy');
+const hbs = require('../engine');
+const config = require('../../../../server/config');
+const {errors, logging} = require('../../../../server/lib/common');
 
 // Register an async handlebars helper for a given handlebars instance
 function asyncHelperWrapper(hbs, name, fn) {

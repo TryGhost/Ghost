@@ -130,7 +130,7 @@ module.exports = function setupSiteApp(options = {}) {
     // We do this here, at the top level, because helpers require so much stuff.
     // Moving this to being inside themes, where it probably should be requires the proxy to be refactored
     // Else we end up with circular dependencies
-    require('../../../frontend/helpers').loadCoreHelpers();
+    themeService.loadCoreHelpers();
     debug('Helpers done');
 
     // Members middleware
