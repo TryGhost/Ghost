@@ -398,10 +398,10 @@
   optionalDependencies:
     sharp "^0.25.2"
 
-"@tryghost/kg-card-factory@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-1.0.1.tgz#ad4973bab4f7dbc99722c739b2c520831febed54"
-  integrity sha512-qMWypZEths/F5pvbPKSlHJJ4CK4uwMaGM3jB7IdG9uw4kHPxWJFnuUn+QHvEUbcAvS484QTExVEzIc8vmSSN5A==
+"@tryghost/kg-card-factory@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-1.0.2.tgz#fd7ec000034090d95e8891de474dd71ed3431f14"
+  integrity sha512-inNg4C5C+Fa4rD7ze8/rz5qOBFrrmsnqKvp7xHe320oZIpMwUxJ/nGuzQyOY7LJl/oi4G6KDyHRSy6xFkHAtdQ==
 
 "@tryghost/kg-clean-basic-html@^0.1.7":
   version "0.1.7"
