@@ -1,15 +1,26 @@
 const should = require('should');
+const sinon = require('sinon');
 const hbs = require('../../../core/frontend/services/themes/engine');
 const helpers = require('../../../core/frontend/helpers');
+const labs = require('../../../core/server/services/labs');
 const configUtils = require('../../utils/configUtils');
 
 describe('{{cancel_link}} helper', function () {
+    let labsStub;
     before(function (done) {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
         hbs.cachePartials(function () {
             done();
         });
+    });
+
+    beforeEach(function () {
+        labsStub = sinon.stub(labs, 'isSet').returns(true);
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     const defaultLinkClass = /class="gh-subscription-cancel"/;
@@ -25,7 +36,10 @@ describe('{{cancel_link}} helper', function () {
         };
 
         runHelper('not an object').should.throw();
-        runHelper(function () {}).should.throw();
+        runHelper(function () { }).should.throw();
+        runHelper({}).should.throw();
+        runHelper({id: ''}).should.throw();
+        runHelper({cancel_at_period_end: ''}).should.throw();
     });
 
     it('can render cancel subscription link', function () {
@@ -108,5 +122,19 @@ describe('{{cancel_link}} helper', function () {
         should.exist(rendered);
 
         rendered.string.should.match(/custom continue link text/);
+    });
+
+    it('is disabled if labs flag is not set', function () {
+        labsStub.returns(false);
+
+        const rendered = helpers.cancel_link.call({
+            id: 'sub_continue',
+            cancel_at_period_end: true
+        });
+
+        should.exist(rendered);
+
+        rendered.string.should.match(/^<script/);
+        rendered.string.should.match(/helper is not available/);
     });
 });
