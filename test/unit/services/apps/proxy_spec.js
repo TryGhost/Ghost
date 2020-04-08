@@ -1,6 +1,6 @@
 const should = require('should'),
     sinon = require('sinon'),
-    helpers = require('../../../../core/frontend/helpers/register'),
+    helpers = require('../../../../core/frontend/services/themes/handlebars/register'),
     AppProxy = require('../../../../core/frontend/services/apps/proxy'),
     routing = require('../../../../core/frontend/services/routing');
 
