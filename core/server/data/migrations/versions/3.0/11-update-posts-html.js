@@ -2,7 +2,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const htmlToText = require('html-to-text');
 const common = require('../../../../lib/common');
-const renderers = require('../../../../lib/mobiledoc/renderers');
+const mobiledocLib = require('../../../../lib/mobiledoc');
 
 module.exports.config = {
     transaction: true
@@ -36,7 +36,7 @@ module.exports.up = (options) => {
                     return Promise.resolve();
                 }
 
-                const html = renderers.mobiledocHtmlRenderer.render(mobiledoc);
+                const html = mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc);
 
                 const updatedAttrs = {
                     html: html

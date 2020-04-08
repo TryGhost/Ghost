@@ -49,6 +49,7 @@
     "@tryghost/kg-default-atoms": "1.0.0",
     "@tryghost/kg-default-cards": "1.0.1",
     "@tryghost/kg-markdown-html-renderer": "1.0.2",
+    "@tryghost/kg-mobiledoc-html-renderer": "^1.0.0",
     "@tryghost/members-api": "0.18.0",
     "@tryghost/members-ssr": "0.7.4",
     "@tryghost/mw-session-from-token": "0.1.0",
@@ -109,7 +110,6 @@
     "metascraper-publisher": "5.11.8",
     "metascraper-title": "5.11.8",
     "metascraper-url": "5.11.8",
-    "mobiledoc-dom-renderer": "0.7.0",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23",
     "multer": "1.4.2",
@@ -124,7 +124,6 @@
     "rss": "1.2.2",
     "sanitize-html": "1.22.1",
     "semver": "7.2.1",
-    "simple-dom": "0.3.2",
     "uuid": "7.0.3",
     "validator": "6.3.0",
     "xml": "1.0.1"

@@ -405,7 +405,7 @@ Post = ghostBookshelf.Model.extend({
         // CASE: html is null, but mobiledoc exists (only important for migrations & importing)
         if (this.hasChanged('mobiledoc') || (!this.get('html') && (options.migrating || options.importing))) {
             try {
-                this.set('html', mobiledocLib.renderers.mobiledocHtmlRenderer.render(JSON.parse(this.get('mobiledoc'))));
+                this.set('html', mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(this.get('mobiledoc'))));
             } catch (err) {
                 throw new common.errors.ValidationError({
                     message: 'Invalid mobiledoc structure.',
