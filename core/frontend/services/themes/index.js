@@ -105,5 +105,6 @@ module.exports = {
             });
     },
     storage: require('./storage'),
-    middleware: require('./middleware')
+    middleware: require('./middleware'),
+    loadCoreHelpers: require('./handlebars/helpers').loadCoreHelpers
 };
