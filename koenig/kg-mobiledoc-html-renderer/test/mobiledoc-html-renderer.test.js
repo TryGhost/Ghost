@@ -5,7 +5,34 @@ require('./utils');
 const Renderer = require('../');
 
 describe('Mobiledoc HTML renderer', function () {
-    describe('default', function () {
+    it('passes card options through to cards when rendering', function () {
+        let mobiledoc = {
+            version: '0.3.1',
+            markups: [],
+            atoms: [],
+            cards: [['test']],
+            sections: [
+                [10, 0]
+            ]
+        };
+
+        let testCard = {
+            name: 'test',
+            type: 'dom',
+            render({env, options}) {
+                let p = env.dom.createElement('p');
+                p.appendChild(env.dom.createTextNode(options.testOption));
+                return p;
+            }
+        };
+
+        let renderer = new Renderer({cards: [testCard]});
+
+        renderer.render(mobiledoc, {testOption: 'foo'})
+            .should.equal('<p>foo</p>');
+    });
+
+    describe('default behaviour', function () {
         let renderer;
 
         before(function () {
@@ -26,7 +53,7 @@ describe('Mobiledoc HTML renderer', function () {
                 ]
             };
 
-            renderer.render(mobiledoc, 2).should.eql('<p>Test</p>');
+            renderer.render(mobiledoc).should.eql('<p>Test</p>');
         });
 
         it('removes single blank paragraph', function () {
@@ -40,7 +67,7 @@ describe('Mobiledoc HTML renderer', function () {
                 ]
             };
 
-            renderer.render(mobiledoc, 2).should.eql('');
+            renderer.render(mobiledoc).should.eql('');
         });
 
         it('removes single blank paragraph with empty content', function () {
@@ -56,7 +83,7 @@ describe('Mobiledoc HTML renderer', function () {
                 ]
             };
 
-            renderer.render(mobiledoc, 2).should.eql('');
+            renderer.render(mobiledoc).should.eql('');
         });
 
         it('doesn\'t remove last paragraph if it has markups', function () {
@@ -72,7 +99,7 @@ describe('Mobiledoc HTML renderer', function () {
                 ]
             };
 
-            renderer.render(mobiledoc, 2).should.eql('<p><em>This should be kept</em></p>');
+            renderer.render(mobiledoc).should.eql('<p><em>This should be kept</em></p>');
         });
 
         it('adds id attributes to headings', function () {
@@ -138,7 +165,7 @@ describe('Mobiledoc HTML renderer', function () {
                 ]
             };
 
-            let output = renderer.render(mobiledoc, 2);
+            let output = renderer.render(mobiledoc);
 
             // normal headings
             output.should.match(/<h1 id="heading-one">Heading One<\/h1>/);

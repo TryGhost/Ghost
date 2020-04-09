@@ -76,20 +76,15 @@ class MobiledocHtmlRenderer {
         };
     }
 
-    render(mobiledoc, version) {
+    render(mobiledoc, cardOptions = {}) {
+        const rendererOptions = Object.assign({}, this.options, {cardOptions});
         /**
-         * @deprecated: version 1 === Ghost 1.0 markdown-only mobiledoc
-         *              We keep the version 1 logic till Ghost 3.0 to be able to rollback posts.
-         *
+         * version 1 === Ghost 1.0 markdown-only mobiledoc
          * version 2 (latest) === Ghost 2.0 full mobiledoc
          */
-        version = version || 2;
+        rendererOptions.cardOptions.version = rendererOptions.cardOptions.version || 2;
 
-        const versionedOptions = Object.assign({}, this.options, {
-            cardOptions: {version}
-        });
-
-        const renderer = new Renderer(versionedOptions);
+        const renderer = new Renderer(rendererOptions);
         const rendered = renderer.render(mobiledoc);
         const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 
@@ -107,7 +102,12 @@ class MobiledocHtmlRenderer {
         const modifier = new DomModifier();
         modifier.modifyChildren(rendered.result);
 
-        return serializer.serializeChildren(rendered.result);
+        const output = serializer.serializeChildren(rendered.result);
+
+        // clean up any DOM that could be kept around in our SimpleDom instance
+        rendered.teardown();
+
+        return output;
     }
 }
 
