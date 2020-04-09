@@ -25,6 +25,7 @@ export default Component.extend(ShortcutsMixin, {
     iconStyle: '',
 
     showSearchModal: false,
+    showBillingModal: false,
 
     shortcuts: null,
 
@@ -78,6 +79,9 @@ export default Component.extend(ShortcutsMixin, {
         },
         toggleSearchModal() {
             this.toggleProperty('showSearchModal');
+        },
+        toggleBillingModal() {
+            this.toggleProperty('showBillingModal');
         }
     },
 

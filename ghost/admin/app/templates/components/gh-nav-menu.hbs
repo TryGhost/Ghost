@@ -14,6 +14,12 @@
         @modifier="action wide" />
 {{/if}}
 
+{{#if this.showBillingModal}}
+    <GhFullscreenModal @modal="billing"
+        @close={{action "toggleBillingModal"}}
+        @modifier="full-overlay billing" />
+{{/if}}
+
 <section class="gh-nav-body">
     <div class="gh-nav-top">
         <ul class="gh-nav-list gh-nav-main">
@@ -91,9 +97,9 @@
                 </li>
                 {{#if this.showBilling}}
                     <li class="relative">
-                        <LinkTo @route="billing" data-test-nav="billing">
+                        <a href="javascript:void(0)" {{action "toggleBillingModal"}} data-test-nav="billing">
                             {{svg-jar "house"}} View billing
-                        </LinkTo>
+                        </a>
                     </li>
                 {{/if}}
             </ul>
