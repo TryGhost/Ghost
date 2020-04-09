@@ -49,7 +49,7 @@
     "@tryghost/kg-default-atoms": "1.0.0",
     "@tryghost/kg-default-cards": "1.0.2",
     "@tryghost/kg-markdown-html-renderer": "1.0.3",
-    "@tryghost/kg-mobiledoc-html-renderer": "^1.0.0",
+    "@tryghost/kg-mobiledoc-html-renderer": "2.0.0",
     "@tryghost/members-api": "0.18.0",
     "@tryghost/members-ssr": "0.7.4",
     "@tryghost/mw-session-from-token": "0.1.0",
