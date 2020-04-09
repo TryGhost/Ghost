@@ -1,5 +1,5 @@
-const common = require('../common');
-const config = require('../../config');
+const common = require('./common');
+const config = require('../config');
 
 let cardFactory, cards, mobiledocHtmlRenderer;
 
