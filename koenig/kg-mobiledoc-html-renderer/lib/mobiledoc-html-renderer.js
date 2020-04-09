@@ -83,6 +83,7 @@ class MobiledocHtmlRenderer {
          * version 2 (latest) === Ghost 2.0 full mobiledoc
          */
         rendererOptions.cardOptions.version = rendererOptions.cardOptions.version || 2;
+        rendererOptions.cardOptions.target = 'html';
 
         const renderer = new Renderer(rendererOptions);
         const rendered = renderer.render(mobiledoc);
