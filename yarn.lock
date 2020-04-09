@@ -431,10 +431,10 @@
     markdown-it-lazy-headers "^0.1.3"
     markdown-it-mark "^3.0.0"
 
-"@tryghost/kg-mobiledoc-html-renderer@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-mobiledoc-html-renderer/-/kg-mobiledoc-html-renderer-1.0.0.tgz#7892ead37a7d709dd3407b32e264f76df946bd71"
-  integrity sha512-/py2bsGEM+L98Tmurbom8Hc2GbcOXd1bPx9C/7PNALlXD92RiNzzrxXnTrb8XnJKAeIF5o1XxBSsx0YvwJcxCQ==
+"@tryghost/kg-mobiledoc-html-renderer@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-mobiledoc-html-renderer/-/kg-mobiledoc-html-renderer-2.0.0.tgz#c7799110306b64858ba90c477bce117e13f59950"
+  integrity sha512-YH1VoCrPRf1Ze1CWH34FOP00e/KJ61Bf71E0SazDN92oIF2DXzBqpyycSNHin/+gOfik3wCqxJSFMbhDqGt8+A==
   dependencies:
     mobiledoc-dom-renderer "^0.7.0"
     simple-dom "^1.4.0"

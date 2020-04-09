@@ -54,7 +54,7 @@ module.exports.up = function regenerateKoenigBetaHTML(options) {
 
                     // re-render the html to remove .kg-post wrapper and adjust image classes
                     let version = 2;
-                    let html = mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc, version);
+                    let html = mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc, {version});
 
                     return models.Post.edit({
                         html,
