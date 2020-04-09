@@ -10,12 +10,34 @@ export default class ParentContainer extends React.Component {
 
     constructor(props) {
         super(props);
+        console.log("Initialized script with data", props.data);
+
+        // Setup Members API with blog/admin URLs
+        const {blogUrl, adminUrl} = props.data.site;
+        this.MembersAPI = setupMembersApi({blogUrl, adminUrl});
+
+        // Setup custom trigger button handling
+        this.customTriggerButton = document.querySelector('[data-members-trigger-button]')
+        this.setupCustomTriggerButton(this.customTriggerButton);
+
         this.state = {
             showPopup: false
         };
-        console.log("Initialized script with data", props.data);
-        const {blogUrl, adminUrl} = props.data.site;
-        this.MembersAPI = setupMembersApi({blogUrl, adminUrl});
+    }
+
+    setupCustomTriggerButton(customTriggerButton) {
+        if (customTriggerButton) {
+            const clickHandler = (event) => {
+                event.preventDefault();
+                const elAddClass = this.state.showPopup ? 'popup-close' : 'popup-open';
+                const elRemoveClass = this.state.showPopup ? 'popup-open' : 'popup-close';
+                customTriggerButton.classList.add(elAddClass);
+                customTriggerButton.classList.remove(elRemoveClass);
+                this.onTriggerToggle();
+            }
+            customTriggerButton.classList.add('popup-close');
+            customTriggerButton.addEventListener('click', clickHandler);
+        }
     }
 
     onSignout() {
@@ -48,14 +70,18 @@ export default class ParentContainer extends React.Component {
     }
 
     renderTriggerComponent() {
-        return (
-            <TriggerComponent
-                name={this.props.name}
-                onToggle= {(e) => this.onTriggerToggle()}
-                isPopupOpen={this.state.showPopup}
-                data={this.props.data}
-            />
-        )
+        if (!this.customTriggerButton) {
+            return (
+                <TriggerComponent
+                    name={this.props.name}
+                    onToggle= {(e) => this.onTriggerToggle()}
+                    isPopupOpen={this.state.showPopup}
+                    data={this.props.data}
+                />
+            )
+        }
+
+        return null;
     }
 
     render() {
