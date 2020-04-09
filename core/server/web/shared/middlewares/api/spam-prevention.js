@@ -1,8 +1,9 @@
 const moment = require('moment');
 const extend = require('lodash/extend');
 const pick = require('lodash/pick');
+const errors = require('@tryghost/errors');
 const config = require('../../../../config');
-const common = require('../../../../lib/common');
+const {logging,i18n} = require('../../../../lib/common');
 const spam = config.get('spam') || {};
 
 const spamPrivateBlog = spam.private_blog || {};
@@ -24,7 +25,7 @@ let contentApiKeyInstance;
 const spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
 
 const handleStoreError = (err) => {
-    const customError = new common.errors.InternalServerError({
+    const customError = new errors.InternalServerError({
         message: 'Unknown error',
         err: err.parent ? err.parent : err
     });
@@ -34,7 +35,7 @@ const handleStoreError = (err) => {
     // we are using reset as synchronous call, so we have to log the error if it occurs
     // there is no way to try/catch, because the reset operation happens asynchronous
     if (!err.next) {
-        common.logging.error(err);
+        logging.error(err);
         return;
     }
 
@@ -60,11 +61,11 @@ const globalBlock = () => {
         extend({
             attachResetToRequest: false,
             failCallback(req, res, next, nextValidRequestDate) {
-                return next(new common.errors.TooManyRequestsError({
+                return next(new errors.TooManyRequestsError({
                     message: `Too many attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-                    context: common.i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                    context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
                         {rfa: spamGlobalBlock.freeRetries + 1 || 5, rfp: spamGlobalBlock.lifetime || 60 * 60}),
-                    help: common.i18n.t('errors.middleware.spamprevention.tooManyAttempts')
+                    help: i18n.t('errors.middleware.spamprevention.tooManyAttempts')
                 }));
             },
             handleStoreError: handleStoreError
@@ -90,11 +91,11 @@ const globalReset = () => {
             attachResetToRequest: false,
             failCallback(req, res, next, nextValidRequestDate) {
                 // TODO use i18n again
-                return next(new common.errors.TooManyRequestsError({
+                return next(new errors.TooManyRequestsError({
                     message: `Too many attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-                    context: common.i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                    context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
                         {rfa: spamGlobalReset.freeRetries + 1 || 5, rfp: spamGlobalReset.lifetime || 60 * 60}),
-                    help: common.i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+                    help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
                 }));
             },
             handleStoreError: handleStoreError
@@ -123,11 +124,11 @@ const userLogin = () => {
         extend({
             attachResetToRequest: true,
             failCallback(req, res, next, nextValidRequestDate) {
-                return next(new common.errors.TooManyRequestsError({
+                return next(new errors.TooManyRequestsError({
                     message: `Too many sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
                     // TODO add more options to i18n
-                    context: common.i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context'),
-                    help: common.i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
+                    context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context'),
+                    help: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
                 }));
             },
             handleStoreError: handleStoreError
@@ -155,11 +156,11 @@ const userReset = function userReset() {
         extend({
             attachResetToRequest: true,
             failCallback(req, res, next, nextValidRequestDate) {
-                return next(new common.errors.TooManyRequestsError({
+                return next(new errors.TooManyRequestsError({
                     message: `Too many password reset attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-                    context: common.i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.error',
+                    context: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.error',
                         {rfa: spamUserReset.freeRetries + 1 || 5, rfp: spamUserReset.lifetime || 60 * 60}),
-                    help: common.i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.context')
+                    help: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.context')
                 }));
             },
             handleStoreError: handleStoreError
@@ -186,16 +187,16 @@ const privateBlog = () => {
         extend({
             attachResetToRequest: false,
             failCallback(req, res, next, nextValidRequestDate) {
-                common.logging.error(new common.errors.TooManyRequestsError({
-                    message: common.i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error',
+                logging.error(new errors.TooManyRequestsError({
+                    message: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error',
                         {
                             rateSigninAttempts: spamPrivateBlog.freeRetries + 1 || 5,
                             rateSigninPeriod: spamPrivateBlog.lifetime || 60 * 60
                         }),
-                    context: common.i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
+                    context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
                 }));
 
-                return next(new common.errors.TooManyRequestsError({
+                return next(new errors.TooManyRequestsError({
                     message: `Too many private sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`
                 }));
             },
@@ -215,11 +216,11 @@ const contentApiKey = () => {
         extend({
             attachResetToRequest: true,
             failCallback(req, res, next) {
-                const err = new common.errors.TooManyRequestsError({
-                    message: common.i18n.t('errors.middleware.spamprevention.tooManyAttempts')
+                const err = new errors.TooManyRequestsError({
+                    message: i18n.t('errors.middleware.spamprevention.tooManyAttempts')
                 });
 
-                common.logging.error(err);
+                logging.error(err);
                 return next(err);
             },
             handleStoreError: handleStoreError
