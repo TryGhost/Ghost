@@ -4,7 +4,8 @@ const url = require('url');
 const path = require('path');
 const debug = require('ghost-ignition').debug('web:shared:mw:custom-redirects');
 const config = require('../../../config');
-const common = require('../../../lib/common');
+const errors = require('@tryghost/errors');
+const {logging, i18n} = require('../../../lib/common');
 const redirectsService = require('../../../../frontend/services/redirects');
 
 const _private = {};
@@ -66,11 +67,11 @@ _private.registerRoutes = () => {
             });
         });
     } catch (err) {
-        if (common.errors.utils.isIgnitionError(err)) {
-            common.logging.error(err);
+        if (errors.utils.isIgnitionError(err)) {
+            logging.error(err);
         } else if (err.code !== 'ENOENT') {
-            common.logging.error(new common.errors.IncorrectUsageError({
-                message: common.i18n.t('errors.middleware.redirects.register'),
+            logging.error(new errors.IncorrectUsageError({
+                message: i18n.t('errors.middleware.redirects.register'),
                 context: err.message,
                 help: 'https://ghost.org/docs/api/handlebars-themes/routing/redirects/'
             }));
