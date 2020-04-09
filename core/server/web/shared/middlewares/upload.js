@@ -2,14 +2,14 @@ const config = require('../../../config');
 const os = require('os');
 const multer = require('multer');
 const fs = require('fs-extra');
-const common = require('../../../lib/common');
+const {logging} = require('../../../lib/common');
 
 const upload = {
     enabledClear: config.get('uploadClear') || true,
     multer: multer({dest: os.tmpdir()})
 };
 
-const deleteSingleFile = file => fs.unlink(file.path).catch(err => common.logging.error(err));
+const deleteSingleFile = file => fs.unlink(file.path).catch(err => logging.error(err));
 
 const single = name => (req, res, next) => {
     const singleUpload = upload.multer.single(name);

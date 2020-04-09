@@ -3,7 +3,7 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const {URL} = require('url');
-const common = require('../../lib/common');
+const errors = require('@tryghost/errors');
 
 // App requires
 const config = require('../../config');
@@ -40,7 +40,7 @@ const corsOptionsDelegate = function corsOptionsDelegate(req, callback) {
     try {
         originUrl = new URL(origin);
     } catch (err) {
-        return callback(new common.errors.BadRequestError({err}));
+        return callback(new errors.BadRequestError({err}));
     }
 
     // originUrl will definitely exist here because according to WHATWG URL spec

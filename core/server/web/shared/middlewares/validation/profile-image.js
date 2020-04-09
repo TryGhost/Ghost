@@ -1,4 +1,5 @@
-const common = require('../../../../lib/common');
+const errors = require('@tryghost/errors');
+const {i18n} = require('../../../../lib/common');
 const imageLib = require('../../../../lib/image');
 
 module.exports = function profileImage(req, res, next) {
@@ -9,8 +10,8 @@ module.exports = function profileImage(req, res, next) {
 
         // CASE: file needs to be a square
         if (req.file.dimensions.width !== req.file.dimensions.height) {
-            return next(new common.errors.ValidationError({
-                message: common.i18n.t('errors.api.images.isNotSquare')
+            return next(new errors.ValidationError({
+                message: i18n.t('errors.api.images.isNotSquare')
             }));
         }
 

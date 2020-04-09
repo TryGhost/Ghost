@@ -1,4 +1,5 @@
-const common = require('../../../../lib/common');
+const errors = require('@tryghost/errors');
+const {i18n} = require('../../../../lib/common');
 const auth = require('../../../../services/auth');
 const shared = require('../../../shared');
 
@@ -38,9 +39,9 @@ const notImplemented = function (req, res, next) {
         }
     }
 
-    next(new common.errors.GhostError({
+    next(new errors.GhostError({
         errorType: 'NotImplementedError',
-        message: common.i18n.t('errors.api.common.notImplemented'),
+        message: i18n.t('errors.api.common.notImplemented'),
         statusCode: '501'
     }));
 };

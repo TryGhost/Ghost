@@ -1,9 +1,10 @@
 const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
+const errors = require('@tryghost/errors');
 const config = require('../../../config');
 const urlUtils = require('../../../lib/url-utils');
-const common = require('../../../lib/common');
+const {i18n} = require('../../../lib/common');
 
 function createPublicFileMiddleware(file, type, maxAge) {
     let content;
@@ -23,8 +24,8 @@ function createPublicFileMiddleware(file, type, maxAge) {
             return res.sendFile(filePath, (err) => {
                 if (err && err.status === 404) {
                     // ensure we're triggering basic asset 404 and not a templated 404
-                    return next(new common.errors.NotFoundError({
-                        message: common.i18n.t('errors.errors.imageNotFound'),
+                    return next(new errors.NotFoundError({
+                        message: i18n.t('errors.errors.imageNotFound'),
                         code: 'STATIC_FILE_NOT_FOUND',
                         property: err.path
                     }));

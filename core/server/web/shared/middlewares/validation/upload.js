@@ -1,5 +1,6 @@
 const path = require('path');
-const common = require('../../../../lib/common');
+const errors = require('@tryghost/errors');
+const {i18n} = require('../../../../lib/common');
 const config = require('../../../../config');
 const localUtils = require('../../utils');
 
@@ -17,8 +18,8 @@ module.exports = function upload(options) {
 
         // Check if a file was provided
         if (!localUtils.checkFileExists(req.file)) {
-            return next(new common.errors.ValidationError({
-                message: common.i18n.t(`errors.api.${type}.missingFile`)
+            return next(new errors.ValidationError({
+                message: i18n.t(`errors.api.${type}.missingFile`)
             }));
         }
 
@@ -26,8 +27,8 @@ module.exports = function upload(options) {
 
         // Check if the file is valid
         if (!localUtils.checkFileIsValid(req.file, contentTypes, extensions)) {
-            return next(new common.errors.UnsupportedMediaTypeError({
-                message: common.i18n.t(`errors.api.${type}.invalidFile`, {extensions: extensions})
+            return next(new errors.UnsupportedMediaTypeError({
+                message: i18n.t(`errors.api.${type}.invalidFile`, {extensions: extensions})
             }));
         }
 
