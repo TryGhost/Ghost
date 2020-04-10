@@ -54,7 +54,7 @@
     "@tryghost/members-ssr": "0.7.4",
     "@tryghost/mw-session-from-token": "0.1.0",
     "@tryghost/session-service": "0.1.0",
-    "@tryghost/social-urls": "0.1.8",
+    "@tryghost/social-urls": "0.1.9",
     "@tryghost/string": "0.1.8",
     "@tryghost/url-utils": "0.6.17",
     "@tryghost/vhost-middleware": "1.0.2",
