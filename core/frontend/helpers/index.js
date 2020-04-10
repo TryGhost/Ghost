@@ -1,42 +1,15 @@
-const coreHelpers = {};
+const glob = require('glob');
+const path = require('path');
 
-coreHelpers.asset = require('./asset');
-coreHelpers.author = require('./author');
-coreHelpers.authors = require('./authors');
-coreHelpers.body_class = require('./body_class');
-coreHelpers.cancel_link = require('./cancel_link');
-coreHelpers.concat = require('./concat');
-coreHelpers.content = require('./content');
-coreHelpers.date = require('./date');
-coreHelpers.encode = require('./encode');
-coreHelpers.excerpt = require('./excerpt');
-coreHelpers.facebook_url = require('./facebook_url');
-coreHelpers.foreach = require('./foreach');
-coreHelpers.get = require('./get');
-coreHelpers.ghost_foot = require('./ghost_foot');
-coreHelpers.ghost_head = require('./ghost_head');
-coreHelpers.img_url = require('./img_url');
-coreHelpers.is = require('./is');
-coreHelpers.has = require('./has');
-coreHelpers.lang = require('./lang');
-coreHelpers.link = require('./link');
-coreHelpers.link_class = require('./link_class');
-coreHelpers.meta_description = require('./meta_description');
-coreHelpers.meta_title = require('./meta_title');
-coreHelpers.navigation = require('./navigation');
-coreHelpers.page_url = require('./page_url');
-coreHelpers.pagination = require('./pagination');
-coreHelpers.plural = require('./plural');
-coreHelpers.post_class = require('./post_class');
-coreHelpers.prev_post = require('./prev_next');
-coreHelpers.price = require('./price');
-coreHelpers.next_post = require('./prev_next');
-coreHelpers.raw = require('./raw');
-coreHelpers.reading_time = require('./reading_time');
-coreHelpers.t = require('./t');
-coreHelpers.tags = require('./tags');
-coreHelpers.title = require('./title');
-coreHelpers.twitter_url = require('./twitter_url');
-coreHelpers.url = require('./url');
+const helpers = {};
 
-module.exports = coreHelpers;
+// We use glob here because it's already a dependency
+// If we want to get rid of glob we could use E.g. requiredir
+// Or require('fs').readdirSync(__dirname + '/')
+let helperFiles = glob.sync('!(index).js', {cwd: __dirname});
+helperFiles.forEach((helper) => {
+    let name = helper.replace(/.js$/, '');
+    helpers[name] = require(path.join(__dirname, helper));
+});
+
+module.exports = helpers;

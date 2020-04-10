@@ -7,6 +7,9 @@ var should = require('should'),
     api = require('../../../core/server/api'),
     common = require('../../../core/server/lib/common');
 
+// These helpers are the same, their name just changes
+helpers.next_post = helpers.prev_post;
+
 describe('{{next_post}} helper', function () {
     let locals;
     var browsePostsStub;
