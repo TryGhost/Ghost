@@ -1,6 +1,6 @@
-function createSignoutApi(blogUrl) {
+function createSignoutApi(siteUrl) {
     return function () {
-        fetch(`${blogUrl}/members/ssr`, {
+        fetch(`${siteUrl}/members/ssr`, {
             method: 'DELETE'
         }).then(function (res) {
             if (res.ok) {
@@ -35,9 +35,9 @@ function createSendMagicLinkApi(adminUrl) {
     };
 }
 
-function createCheckoutPlanApi(blogUrl) {
+function createCheckoutPlanApi(siteUrl) {
     return function ({plan, checkoutCancelUrl, checkoutSuccessUrl}) {
-        fetch(`${blogUrl}/members/ssr`, {
+        fetch(`${siteUrl}/members/ssr`, {
             credentials: 'same-origin'
         }).then(function (res) {
             if (!res.ok) {
@@ -77,12 +77,12 @@ function createCheckoutPlanApi(blogUrl) {
     };
 }
 
-/** blogUrl and adminUrl are being passed by theme */
-function setupMembersApi({blogUrl, adminUrl}) {
+/** siteUrl and adminUrl are being passed by theme */
+function setupMembersApi({siteUrl, adminUrl}) {
     return {
         sendMagicLink: createSendMagicLinkApi(adminUrl),
-        signout: createSignoutApi(blogUrl),
-        checkoutPlan: createCheckoutPlanApi(blogUrl)
+        signout: createSignoutApi(siteUrl),
+        checkoutPlan: createCheckoutPlanApi(siteUrl)
     };
 }
 

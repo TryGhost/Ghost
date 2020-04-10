@@ -73,14 +73,14 @@ export default class PopupMenuComponent extends React.Component {
             marginBottom: '12px'
         };
 
-        const blogTitle = (this.props.data.site && this.props.data.site.title) || 'Site Title';
-        const blogDescription = (this.props.data.site && this.props.data.site.description) || 'Site Description';
+        const siteTitle = (this.props.data.site && this.props.data.site.title) || 'Site Title';
+        const siteDescription = (this.props.data.site && this.props.data.site.description) || 'Site Description';
         return (
             <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
                 <div style={{paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', cursor: 'pointer'}}>
                     <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px'}}>
-                        <div style={{fontSize: '18px', fontWeight: 'bold'}}> Signup/Signin to {blogTitle}</div>
-                        <div>{blogDescription} </div>
+                        <div style={{fontSize: '18px', fontWeight: 'bold'}}> Signup/Signin to {siteTitle}</div>
+                        <div>{siteDescription} </div>
                     </div>
                     <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px'}}>
                         <input

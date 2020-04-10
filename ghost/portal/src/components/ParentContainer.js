@@ -12,9 +12,9 @@ export default class ParentContainer extends React.Component {
         super(props);
         console.log('Initialized script with data', props.data);
 
-        // Setup Members API with blog/admin URLs
-        const {blogUrl, adminUrl} = props.data.site;
-        this.MembersAPI = setupMembersApi({blogUrl, adminUrl});
+        // Setup Members API with site/admin URLs
+        const {siteUrl, adminUrl} = props.data.site;
+        this.MembersAPI = setupMembersApi({siteUrl, adminUrl});
 
         // Setup custom trigger button handling
         this.customTriggerButton = document.querySelector('[data-members-trigger-button]');
