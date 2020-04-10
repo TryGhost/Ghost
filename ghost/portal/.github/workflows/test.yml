@@ -1,0 +1,25 @@
+name: Test
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        node: [ '10', '12' ]
+    env:
+      FORCE_COLOR: 1
+      CI: true
+    name: Node ${{ matrix.node }}
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - run: yarn install
+      - run: yarn build
+      - run: yarn test
