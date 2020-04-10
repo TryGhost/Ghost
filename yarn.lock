@@ -503,10 +503,10 @@
   dependencies:
     "@tryghost/errors" "^0.1.1"
 
-"@tryghost/social-urls@0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.8.tgz#050f0225bce54948dcfa0dcbaad1a9f0a7b9d114"
-  integrity sha512-CHBBWDFmkEQ2ihU35fhIYYFejdOB7MzfhqYgTrQbXI/OTxUR/OmudecaqHNXVzAFg0f1njnrfuYOrx38UqCTIg==
+"@tryghost/social-urls@0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.9.tgz#40e6f7b2bd3a037c93e6027ae1add6c4425675ba"
+  integrity sha512-mlaFhecMWvQYpeN/hCS8s2p1+hQmf0WcpYykB3mwoLf6lsypShQzheMvACeTX+S8hEwOZxFQSR8XYyMKRxQ+IA==
   dependencies:
     bluebird "3.7.2"
     ghost-ignition "4.1.0"
