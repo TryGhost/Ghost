@@ -1,10 +1,10 @@
 import FrameComponent from './FrameComponent';
-const React = require("react");
-const PropTypes = require("prop-types");
+const React = require('react');
+const PropTypes = require('prop-types');
 
 export default class PopupMenuComponent extends React.Component {
     static propTypes = {
-        name: PropTypes.string,
+        name: PropTypes.string
     };
 
     constructor(props) {
@@ -13,7 +13,7 @@ export default class PopupMenuComponent extends React.Component {
             inputVal: '',
             isLoading: false,
             showSuccess: false
-        }
+        };
     }
 
     handleSignout(e) {
@@ -33,8 +33,8 @@ export default class PopupMenuComponent extends React.Component {
             this.setState({
                 isLoading: false,
                 showSuccess: true
-            })
-        }, 3000)
+            });
+        }, 3000);
     }
 
     handleInput(e) {
@@ -42,7 +42,7 @@ export default class PopupMenuComponent extends React.Component {
             inputVal: e.target.value,
             showSuccess: false,
             isLoading: false
-        })
+        });
     }
 
     isMemberLoggedIn() {
@@ -76,18 +76,20 @@ export default class PopupMenuComponent extends React.Component {
         const blogTitle = (this.props.data.site && this.props.data.site.title) || 'Site Title';
         const blogDescription = (this.props.data.site && this.props.data.site.description) || 'Site Description';
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', color: '#313131' }}>
-                <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', cursor: 'pointer' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
+                <div style={{paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', cursor: 'pointer'}}>
+                    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px'}}>
                         <div style={{fontSize: '18px', fontWeight: 'bold'}}> Signup/Signin to {blogTitle}</div>
                         <div>{blogDescription} </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px' }}>
+                    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px'}}>
                         <input
                             type="email"
                             placeholder="Type your email..."
                             value={this.state.inputVal}
-                            onChange={(e) => { this.handleInput(e) }}
+                            onChange={(e) => {
+                                this.handleInput(e);
+                            }}
                             style={inputStyle}
                         />
                         {this.renderSubmitButton()}
@@ -103,7 +105,7 @@ export default class PopupMenuComponent extends React.Component {
         if (!this.state.isLoading && this.state.showSuccess) {
             return (
                 <div> Please check your email for magic link! </div>
-            )
+            );
         }
         return null;
     }
@@ -127,36 +129,39 @@ export default class PopupMenuComponent extends React.Component {
             backgroundColor: '#3eb0ef',
             boxShadow: 'none',
             userSelect: 'none'
-        }
+        };
         const label = this.state.isLoading ? 'Sending' : 'Continue';
         const disabled = this.state.isLoading ? true : false;
         return (
-            <button onClick={(e) => { this.handleSignin(e) }} style={buttonStyle} disabled={disabled}>
+            <button onClick={(e) => {
+                this.handleSignin(e);
+            }} style={buttonStyle} disabled={disabled}>
                 {label}
             </button>
-        )
+        );
     }
 
     renderSignedinContent() {
-        const memberEmail = (this.props.data.member && this.props.data.member.email) || "test@test.com";
+        const memberEmail = (this.props.data.member && this.props.data.member.email) || 'test@test.com';
 
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', color: '#313131' }}>
-                <div style={{ paddingLeft: '16px', paddingRight: '16px', color: '#A6A6A6', fontSize: '1.2rem', lineHeight: '1.0em' }}>
+            <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
+                <div style={{paddingLeft: '16px', paddingRight: '16px', color: '#A6A6A6', fontSize: '1.2rem', lineHeight: '1.0em'}}>
                     Signed in as
                 </div>
-                <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingBottom: '9px' }}>
+                <div style={{paddingLeft: '16px', paddingRight: '16px', paddingBottom: '9px'}}>
                     {memberEmail}
                 </div>
-                <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', borderTop: '1px solid #EFEFEF', cursor: 'pointer' }}>
-                    <div onClick={(e) => { this.handleSignout(e) }}> Logout </div>
+                <div style={{paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', borderTop: '1px solid #EFEFEF', cursor: 'pointer'}}>
+                    <div onClick={(e) => {
+                        this.handleSignout(e);
+                    }}> Logout </div>
                 </div>
             </div>
         );
     }
 
     renderPopupContent() {
-
         const launcherStyle = {
             width: '100%',
             height: '100%',
@@ -212,8 +217,8 @@ export default class PopupMenuComponent extends React.Component {
                 ...hoverStyle,
                 width: '450px',
                 minHeight: '200px',
-                maxHeight: '220px',
-            }
+                maxHeight: '220px'
+            };
         }
 
         return (

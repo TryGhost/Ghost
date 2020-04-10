@@ -1,23 +1,23 @@
 import TriggerComponent from './TriggerComponent';
 import PopupMenuComponent from './PopupMenuComponent';
 const setupMembersApi = require('../utils/api');
-const React = require("react");
-const PropTypes = require("prop-types");
+const React = require('react');
+const PropTypes = require('prop-types');
 export default class ParentContainer extends React.Component {
     static propTypes = {
-        name: PropTypes.string,
+        name: PropTypes.string
     };
 
     constructor(props) {
         super(props);
-        console.log("Initialized script with data", props.data);
+        console.log('Initialized script with data', props.data);
 
         // Setup Members API with blog/admin URLs
         const {blogUrl, adminUrl} = props.data.site;
         this.MembersAPI = setupMembersApi({blogUrl, adminUrl});
 
         // Setup custom trigger button handling
-        this.customTriggerButton = document.querySelector('[data-members-trigger-button]')
+        this.customTriggerButton = document.querySelector('[data-members-trigger-button]');
         this.setupCustomTriggerButton(this.customTriggerButton);
 
         this.state = {
@@ -34,7 +34,7 @@ export default class ParentContainer extends React.Component {
                 customTriggerButton.classList.add(elAddClass);
                 customTriggerButton.classList.remove(elRemoveClass);
                 this.onTriggerToggle();
-            }
+            };
             customTriggerButton.classList.add('popup-close');
             customTriggerButton.addEventListener('click', clickHandler);
         }
@@ -61,8 +61,8 @@ export default class ParentContainer extends React.Component {
                 <PopupMenuComponent
                     name={this.props.name}
                     data={this.props.data}
-                    onSignout={(e) => this.onSignout()}
-                    onSignin={(data) => this.onSignin(data)}
+                    onSignout={e => this.onSignout()}
+                    onSignin={data => this.onSignin(data)}
                 />
             );
         }
@@ -74,11 +74,11 @@ export default class ParentContainer extends React.Component {
             return (
                 <TriggerComponent
                     name={this.props.name}
-                    onToggle= {(e) => this.onTriggerToggle()}
+                    onToggle= {e => this.onTriggerToggle()}
                     isPopupOpen={this.state.showPopup}
                     data={this.props.data}
                 />
-            )
+            );
         }
 
         return null;

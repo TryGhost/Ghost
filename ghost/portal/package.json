@@ -24,7 +24,8 @@
     "posttest": "yarn lint"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": ["react-app", "plugin:ghost/browser"],
+    "plugins": ["ghost"]
   },
   "browserslist": {
     "production": [
@@ -39,6 +40,7 @@
     ]
   },
   "devDependencies": {
+    "eslint-plugin-ghost": "1.1.0",
     "rewire": "^5.0.0",
     "webpack-cli": "^3.3.11"
   }

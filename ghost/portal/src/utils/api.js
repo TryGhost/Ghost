@@ -1,20 +1,20 @@
 function createSignoutApi(blogUrl) {
-    return function() {
+    return function () {
         fetch(`${blogUrl}/members/ssr`, {
             method: 'DELETE'
         }).then(function (res) {
             if (res.ok) {
                 window.location.reload();
-                return "Success";
+                return 'Success';
             } else {
-                console.log("Failed to signout!", res);
+                console.log('Failed to signout!', res);
             }
         });
-    }
+    };
 }
 
 function createSendMagicLinkApi(adminUrl) {
-    return function({email, emailType = 'signup', labels = []}) {
+    return function ({email, emailType = 'signup', labels = []}) {
         fetch(`${adminUrl}/api/canary/members/send-magic-link/`, {
             method: 'POST',
             headers: {
@@ -27,16 +27,16 @@ function createSendMagicLinkApi(adminUrl) {
             })
         }).then(function (res) {
             if (res.ok) {
-                return "Success";
+                return 'Success';
             } else {
-                console.log("Failed to send magic link!", res);
+                console.log('Failed to send magic link!', res);
             }
         });
-    }
+    };
 }
 
 function createCheckoutPlanApi(blogUrl) {
-    return function({plan, checkoutCancelUrl, checkoutSuccessUrl}) {
+    return function ({plan, checkoutCancelUrl, checkoutSuccessUrl}) {
         fetch(`${blogUrl}/members/ssr`, {
             credentials: 'same-origin'
         }).then(function (res) {
@@ -74,7 +74,7 @@ function createCheckoutPlanApi(blogUrl) {
         }).catch(function (err) {
             throw err;
         });
-    }
+    };
 }
 
 /** blogUrl and adminUrl are being passed by theme */
@@ -83,7 +83,7 @@ function setupMembersApi({blogUrl, adminUrl}) {
         sendMagicLink: createSendMagicLinkApi(adminUrl),
         signout: createSignoutApi(blogUrl),
         checkoutPlan: createCheckoutPlanApi(blogUrl)
-    }
+    };
 }
 
 module.exports = setupMembersApi;

@@ -963,6 +963,11 @@
   resolved "https://registry.yarnpkg.com/@csstools/normalize.css/-/normalize.css-10.1.0.tgz#f0950bba18819512d42f7197e56c518aa491cf18"
   integrity sha512-ij4wRiunFfaJxjB0BdrYHIH8FxBJpOwNPhhAcunlmPdXudL1WQV1qoP9un6JsEBAgQH+7UXyyjh0g7jTxXK6tg==
 
+"@ember-data/rfc395-data@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@ember-data/rfc395-data/-/rfc395-data-0.0.4.tgz#ecb86efdf5d7733a76ff14ea651a1b0ed1f8a843"
+  integrity sha512-tGRdvgC9/QMQSuSuJV45xoyhI0Pzjm7A9o/MVVA3HakXIImJbbzx/k/6dO9CUEQXIyS2y0fW6C1XaYOG7rY0FQ==
+
 "@hapi/address@2.x.x":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@hapi/address/-/address-2.1.4.tgz#5d67ed43f3fd41a69d4b9ff7b56e7c0d1d0a81e5"
@@ -3716,6 +3721,11 @@ elliptic@^6.0.0:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.0"
 
+ember-rfc176-data@^0.3.12:
+  version "0.3.12"
+  resolved "https://registry.yarnpkg.com/ember-rfc176-data/-/ember-rfc176-data-0.3.12.tgz#90d82878e69e2ac9a5438e8ce14d12c6031c5bd2"
+  integrity sha512-g9HeZj/gU5bfIIrGXkP7MhS2b3Vu5DfNUrYr14hy99TgIvtZETO+96QF4WOEUXGjIJdfTRjerVnQlqngPQSv1g==
+
 emoji-regex@^7.0.1, emoji-regex@^7.0.2:
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-7.0.3.tgz#933a04052860c85e83c122479c4748a8e4c72156"
@@ -3903,12 +3913,30 @@ eslint-module-utils@^2.4.1:
     debug "^2.6.9"
     pkg-dir "^2.0.0"
 
+eslint-plugin-ember@7.10.1:
+  version "7.10.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ember/-/eslint-plugin-ember-7.10.1.tgz#9ec731f158fc76a293bfb8055eaceb6b978ae0e7"
+  integrity sha512-3iOrcUsqZXsri6krYw+8fEH20Es8A2QEkog8fCw/Ldr54SR2/IEO41F7ldOrr0X3h8w9z1W1/v97IlMiGJhXkg==
+  dependencies:
+    "@ember-data/rfc395-data" "^0.0.4"
+    ember-rfc176-data "^0.3.12"
+    snake-case "^3.0.3"
+
 eslint-plugin-flowtype@4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-flowtype/-/eslint-plugin-flowtype-4.6.0.tgz#82b2bd6f21770e0e5deede0228e456cb35308451"
   integrity sha512-W5hLjpFfZyZsXfo5anlu7HM970JBDqbEshAJUkeczP6BFCIfJXuiIBQXyberLRtOStT0OGPF8efeTbxlHk4LpQ==
   dependencies:
     lodash "^4.17.15"
+
+eslint-plugin-ghost@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-1.1.0.tgz#c8aba0287ea4b41e4c6ca93c6c2098f2c497e265"
+  integrity sha512-5Q/fnEQVdVvLz+Q4XVSqTBLBACMwNCxajsOnPFPsLHfcgS/m118t/p36HxvDmAge6Gc8jH7W5ouAJT8SpHWJcg==
+  dependencies:
+    eslint-plugin-ember "7.10.1"
+    eslint-plugin-mocha "6.3.0"
+    eslint-plugin-sort-imports-es6-autofix "0.5.0"
 
 eslint-plugin-import@2.20.1:
   version "2.20.1"
@@ -3943,6 +3971,14 @@ eslint-plugin-jsx-a11y@6.2.3:
     has "^1.0.3"
     jsx-ast-utils "^2.2.1"
 
+eslint-plugin-mocha@6.3.0:
+  version "6.3.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-mocha/-/eslint-plugin-mocha-6.3.0.tgz#72bfd06a5c4323e17e30ef41cd726030e8cdb8fd"
+  integrity sha512-Cd2roo8caAyG21oKaaNTj7cqeYRWW1I2B5SfpKRp0Ip1gkfwoR1Ow0IGlPWnNjzywdF4n+kHL8/9vM6zCJUxdg==
+  dependencies:
+    eslint-utils "^2.0.0"
+    ramda "^0.27.0"
+
 eslint-plugin-react-hooks@^1.6.1:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-react-hooks/-/eslint-plugin-react-hooks-1.7.0.tgz#6210b6d5a37205f0b92858f895a4e827020a7d04"
@@ -3965,6 +4001,13 @@ eslint-plugin-react@7.19.0:
     semver "^6.3.0"
     string.prototype.matchall "^4.0.2"
     xregexp "^4.3.0"
+
+eslint-plugin-sort-imports-es6-autofix@0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-sort-imports-es6-autofix/-/eslint-plugin-sort-imports-es6-autofix-0.5.0.tgz#dabae09a457eac6e95c52d8edd7855f576d014b6"
+  integrity sha512-KEX2Uz6bAs67jDYiH/OT1xz1E7AzIJJOIRg1F7OnFAfUVlpws3ldSZj5oZySRHfoVkWqDX9GGExYxckdLrWhwg==
+  dependencies:
+    eslint "^6.2.2"
 
 eslint-scope@^4.0.3:
   version "4.0.3"
@@ -3989,12 +4032,19 @@ eslint-utils@^1.4.3:
   dependencies:
     eslint-visitor-keys "^1.1.0"
 
+eslint-utils@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-utils/-/eslint-utils-2.0.0.tgz#7be1cc70f27a72a76cd14aa698bcabed6890e1cd"
+  integrity sha512-0HCPuJv+7Wv1bACm8y5/ECVfYdfsAm9xmVb7saeFlxjPYALefjhbYoCkBjPdPzGH8wWyTpAez82Fh3VKYEZ8OA==
+  dependencies:
+    eslint-visitor-keys "^1.1.0"
+
 eslint-visitor-keys@^1.0.0, eslint-visitor-keys@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-1.1.0.tgz#e2a82cea84ff246ad6fb57f9bde5b46621459ec2"
   integrity sha512-8y9YjtM1JBJU/A9Kc+SbaOV4y29sSWckBwMHa+FGtVj5gN/sbnKDf6xJUl+8g7FAij9LVaP8C24DUiH/f/2Z9A==
 
-eslint@^6.6.0, eslint@^6.8.0:
+eslint@^6.2.2, eslint@^6.6.0, eslint@^6.8.0:
   version "6.8.0"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-6.8.0.tgz#62262d6729739f9275723824302fb227c8c93ffb"
   integrity sha512-K+Iayyo2LtyYhDSYwz5D5QdWw0hCacNzyq1Y821Xna2xSJj7cijoLLYmLxTQgcgZ9mC61nryMy9S7GRbYpI5Ig==
@@ -8432,6 +8482,11 @@ raf@^3.4.1:
   dependencies:
     performance-now "^2.1.0"
 
+ramda@^0.27.0:
+  version "0.27.0"
+  resolved "https://registry.yarnpkg.com/ramda/-/ramda-0.27.0.tgz#915dc29865c0800bf3f69b8fd6c279898b59de43"
+  integrity sha512-pVzZdDpWwWqEVVLshWUHjNwuVP7SfcmPraYuqocJp1yo2U1R7P+5QAfDhdItkuoGqIBnBYrtPp7rEPqDn9HlZA==
+
 randombytes@^2.0.0, randombytes@^2.0.1, randombytes@^2.0.5:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/randombytes/-/randombytes-2.1.0.tgz#df6f84372f0270dc65cdf6291349ab7a473d4f2a"
@@ -9327,6 +9382,14 @@ slice-ansi@^2.1.0:
     ansi-styles "^3.2.0"
     astral-regex "^1.0.0"
     is-fullwidth-code-point "^2.0.0"
+
+snake-case@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/snake-case/-/snake-case-3.0.3.tgz#c598b822ab443fcbb145ae8a82c5e43526d5bbee"
+  integrity sha512-WM1sIXEO+rsAHBKjGf/6R1HBBcgbncKS08d2Aqec/mrDSpU80SiOU41hO7ny6DToHSyrlwTYzQBIK1FPSx4Y3Q==
+  dependencies:
+    dot-case "^3.0.3"
+    tslib "^1.10.0"
 
 snapdragon-node@^2.0.1:
   version "2.1.1"
