@@ -1,6 +1,12 @@
-# Membersjs
+# Members.js
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+## Configure for local development
+
+- Copy `.env.local.example` to `.env.local`
+- Update the values to match your local dev version of Ghost
+- Ensure your local Ghost is running
 
 ## Available Scripts
 
