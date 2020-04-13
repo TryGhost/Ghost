@@ -71,6 +71,27 @@ export function createParserPlugins(_options = {}) {
         return image;
     }
 
+    function _createPayloadForIframe(iframe) {
+        // If we don't have a src Or it's not an absolute URL, we can't handle this
+        // This regex handles http://, https:// or //
+        if (!iframe.src || !iframe.src.match(/^(https?:)?\/\//i)) {
+            return;
+        }
+
+        // if it's a schemaless URL, convert to https
+        if (iframe.src.match(/^\/\//)) {
+            iframe.src = `https:${iframe.src}`;
+        }
+
+        let payload = {
+            url: iframe.src
+        };
+
+        payload.html = iframe.outerHTML;
+
+        return payload;
+    }
+
     // PLUGINS -----------------------------------------------------------------
 
     function mixtapeEmbed(node, builder, {addSection, nodeFinished}) {
@@ -304,20 +325,29 @@ export function createParserPlugins(_options = {}) {
             return;
         }
 
-        let src = iframe.src;
+        let payload = _createPayloadForIframe(iframe);
 
-        // If we don't have a src, or it's not an absolute URL, we can't handle this
-        if (!src || !src.match(/^https?:\/\//i)) {
+        if (!payload) {
             return;
         }
 
-        let payload = {
-            url: src
-        };
-
         _readFigCaptionFromNode(node, payload);
 
-        payload.html = iframe.outerHTML;
+        let cardSection = builder.createCardSection('embed', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+
+    function iframeToEmbedCard(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 1 || node.tagName !== 'IFRAME') {
+            return;
+        }
+
+        let payload = _createPayloadForIframe(node);
+
+        if (!payload) {
+            return;
+        }
 
         let cardSection = builder.createCardSection('embed', payload);
         addSection(cardSection);
@@ -450,6 +480,7 @@ export function createParserPlugins(_options = {}) {
         figureToCodeCard,
         preCodeToCard,
         figureIframeToEmbedCard,
+        iframeToEmbedCard, // Process iFrames without figures after ones with
         figureScriptToHtmlCard
     ];
 }
