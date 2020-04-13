@@ -134,11 +134,11 @@ module.exports = {
         query({options}) {
             return models.Integration.destroy(Object.assign(options, {require: true}))
                 .catch(models.Integration.NotFoundError, () => {
-                    throw new common.errors.NotFoundError({
+                    return Promise.reject(new common.errors.NotFoundError({
                         message: common.i18n.t('errors.api.resource.resourceNotFound', {
                             resource: 'Integration'
                         })
-                    });
+                    }));
                 });
         }
     }
