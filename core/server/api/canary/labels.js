@@ -139,7 +139,13 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.Label.destroy(frame.options).then(() => null);
+            return models.Label.destroy(frame.options)
+                .then(() => null)
+                .catch(models.Label.NotFoundError, () => {
+                    return Promise.reject(new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.api.labels.labelNotFound')
+                    }));
+                });
         }
     }
 };

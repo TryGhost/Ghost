@@ -142,7 +142,13 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.Tag.destroy(frame.options).then(() => null);
+            return models.Tag.destroy(frame.options)
+                .then(() => null)
+                .catch(models.Tag.NotFoundError, () => {
+                    return Promise.reject(new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.api.tags.tagNotFound')
+                    }));
+                });
         }
     }
 };

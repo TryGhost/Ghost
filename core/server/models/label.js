@@ -107,6 +107,10 @@ Label = ghostBookshelf.Model.extend({
         return this.forge({id: options.id})
             .fetch(options)
             .then(function destroyLabelsAndMember(label) {
+                if (!label) {
+                    return Promise.reject();
+                }
+
                 return label.related('members')
                     .detach(null, options)
                     .then(function destroyLabels() {
