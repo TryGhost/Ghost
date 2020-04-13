@@ -4,7 +4,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Configure for local development
 
-- Copy `.env.local.example` to `.env.local`
+- Copy `.env.development.local.example` to `.env.development.local`
 - Update the values to match your local dev version of Ghost
 - Ensure your local Ghost is running
 
