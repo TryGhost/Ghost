@@ -84,7 +84,15 @@ module.exports = {
         permissions: true,
         query(frame) {
             frame.options.require = true;
-            return models.Webhook.destroy(frame.options).then(() => null);
+            return models.Webhook.destroy(frame.options)
+                .then(() => null)
+                .catch(models.Webhook.NotFoundError, () => {
+                    return Promise.reject(new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                            resource: 'Webhook'
+                        })
+                    }));
+                });
         }
     }
 };

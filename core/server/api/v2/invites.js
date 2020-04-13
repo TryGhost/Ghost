@@ -77,7 +77,12 @@ module.exports = {
             frame.options.require = true;
 
             return models.Invite.destroy(frame.options)
-                .then(() => null);
+                .then(() => null)
+                .catch(models.Invite.NotFoundError, () => {
+                    return Promise.reject(new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.api.invites.inviteNotFound')
+                    }));
+                });
         }
     },
 
