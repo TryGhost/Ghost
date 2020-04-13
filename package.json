@@ -43,7 +43,7 @@
     "@sentry/node": "5.15.4",
     "@tryghost/adapter-manager": "0.1.2",
     "@tryghost/errors": "0.1.1",
-    "@tryghost/helpers": "1.1.26",
+    "@tryghost/helpers": "1.1.27",
     "@tryghost/image-transform": "0.2.0",
     "@tryghost/kg-card-factory": "1.0.2",
     "@tryghost/kg-default-atoms": "1.0.0",
