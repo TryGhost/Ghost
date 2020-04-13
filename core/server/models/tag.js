@@ -117,6 +117,10 @@ Tag = ghostBookshelf.Model.extend({
         return this.forge({id: options.id})
             .fetch(options)
             .then(function destroyTagsAndPost(tag) {
+                if (!tag) {
+                    return Promise.reject();
+                }
+
                 return tag.related('posts')
                     .detach(null, options)
                     .then(function destroyTags() {
