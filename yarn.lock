@@ -1223,10 +1223,10 @@ body@^5.1.0:
     raw-body "~1.1.0"
     safe-json-parse "~1.0.1"
 
-bookshelf-relations@1.3.2:
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-1.3.2.tgz#bceb0ab3b172b01a48a81eed16cd68446975515a"
-  integrity sha512-LrsWiO3kKfYCTGWxCVzFuEi/hIfukRz6n3KIcQqCFaAO/PmYxFtxarMGeVKDpL/hm1BudksrK7S9vXmkfgv8eQ==
+bookshelf-relations@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-2.0.0.tgz#ff35a147e7a70114c75ee104df0ef50cb64882b0"
+  integrity sha512-hjtzzyKWTv4eSxIJu8wH11swImJ2m8WuD2P8oAOLWczwz5m/x/ClxB2qZJBFvhWjm25gooQNZHH44xIvCZDC5w==
   dependencies:
     bluebird "3.7.2"
     ghost-ignition "4.1.0"
