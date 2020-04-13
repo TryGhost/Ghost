@@ -512,10 +512,10 @@
     ghost-ignition "4.1.0"
     lodash "4.17.15"
 
-"@tryghost/string@0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.8.tgz#758ab55b944a4b9702325dd4cb796a82757d74d7"
-  integrity sha512-z14hiV3v9zRLQWY3KtgBFNHdYDQOxU3n0ny5xoA/5yPETMxFug112gr1Zmm3q/cyR0dycZK9q5MiMFvceDkW6g==
+"@tryghost/string@0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.9.tgz#e7519acf328840f1c549715685edabdb938d10ba"
+  integrity sha512-6asm+vTJuXLPFTil+Zh3X6AH6RBLghjc4HRXR8plJ1SF4rleg40qvTGzloTA+4eMbVzHYvVSpOQRwFkvejMlOw==
   dependencies:
     unidecode "^0.1.8"
 
