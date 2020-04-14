@@ -129,7 +129,7 @@
     "testem": "3.0.3",
     "top-gh-contribs": "2.0.4",
     "validator": "7.2.0",
-    "walk-sync": "2.0.2"
+    "walk-sync": "2.1.0"
   },
   "ember-addon": {
     "paths": [
