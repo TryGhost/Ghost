@@ -20,7 +20,13 @@ window.GhostMembers = {
 if (process.env.REACT_APP_ADMIN_URL) {
     let site = {
         adminUrl: process.env.REACT_APP_ADMIN_URL,
-        siteUrl: process.env.REACT_APP_SITE_URL || process.env.REACT_APP_ADMIN_URL
+        siteUrl: process.env.REACT_APP_SITE_URL || process.env.REACT_APP_ADMIN_URL,
+        plans: {
+            monthly: process.env.REACT_APP_SITE_MONTHLY_PLAN || '10',
+            yearly: process.env.REACT_APP_SITE_YEARLY_PLAN || '99',
+            currency: process.env.REACT_APP_SITE_PLAN_CURRENCY || 'USD',
+            currencySymbol: process.env.REACT_APP_SITE_PLAN_CURRENCY_SYMBOL || '$'
+        }
     };
     initMembersJS({site});
 }
