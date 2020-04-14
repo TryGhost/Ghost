@@ -208,6 +208,9 @@ export default class SignupPage extends React.Component {
             marginBottom: '12px'
         };
         const plans = this.props.data.site && this.props.data.site.plans;
+        if (!plans) {
+            return null;
+        }
         return (
             <div style={{width: '100%'}}>
                 <div style={{fontWeight: 'bold', marginBottom: '9px'}}>  Choose a Plan </div>
