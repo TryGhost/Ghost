@@ -8054,10 +8054,10 @@ secure-keys@^1.0.0:
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.7.1.tgz#a954f931aeba508d307bbf069eff0c01c96116f7"
   integrity sha512-sauaDf/PZdVgrLTNYHRtpXa1iRiKcaebiKQ1BJdpQlWH2lCvexQdX55snPFyK7QzpudqbCI0qXFfOasHdyNDGQ==
 
-semver@7.3.0:
-  version "7.3.0"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-7.3.0.tgz#91f7c70ec944a63e5dc7a74cde2da375d8e0853c"
-  integrity sha512-uyvgU/igkrMgNHwLgXvlpD9jEADbJhB0+JXSywoO47JgJ6c16iau9F9cjtc/E5o0PoqRYTiTIAPRKaYe84z6eQ==
+semver@7.3.1:
+  version "7.3.1"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-7.3.1.tgz#8fbf3298570e73df7733f1b89e7f08e653cf1b8f"
+  integrity sha512-r7sBEClKDfDFhPQfIk2D+EF74SS1j4uyfto50/KWQRzQj8IeKD7wqLbwkqb33289rtqQZoKzID5WOavkJ63DGg==
 
 semver@^6.1.2:
   version "6.3.0"
