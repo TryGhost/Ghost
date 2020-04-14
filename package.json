@@ -123,7 +123,7 @@
     "probe-image-size": "5.0.0",
     "rss": "1.2.2",
     "sanitize-html": "1.23.0",
-    "semver": "7.2.3",
+    "semver": "7.3.0",
     "uuid": "7.0.3",
     "validator": "6.3.0",
     "xml": "1.0.1"
