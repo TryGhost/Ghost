@@ -1,6 +1,6 @@
 function createSignoutApi(siteUrl) {
     return function () {
-        fetch(`${siteUrl}/members/ssr`, {
+        return fetch(`${siteUrl}/members/ssr`, {
             method: 'DELETE'
         }).then(function (res) {
             if (res.ok) {
@@ -15,7 +15,7 @@ function createSignoutApi(siteUrl) {
 
 function createSendMagicLinkApi(adminUrl) {
     return function ({email, emailType = 'signup', labels = []}) {
-        fetch(`${adminUrl}/api/canary/members/send-magic-link/`, {
+        return fetch(`${adminUrl}/api/canary/members/send-magic-link/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -30,22 +30,24 @@ function createSendMagicLinkApi(adminUrl) {
                 return 'Success';
             } else {
                 console.log('Failed to send magic link!', res);
+                return 'Failed to send magic link';
             }
         });
     };
 }
 
-function createCheckoutPlanApi(siteUrl) {
+function createCheckoutPlanApi(siteUrl, adminUrl) {
     return function ({plan, checkoutCancelUrl, checkoutSuccessUrl}) {
-        fetch(`${siteUrl}/members/ssr`, {
+        return fetch(`${siteUrl}/members/ssr`, {
             credentials: 'same-origin'
         }).then(function (res) {
+            console.log('Checkout Plan Response', res, res.ok);
             if (!res.ok) {
                 return null;
             }
             return res.text();
         }).then(function (identity) {
-            return fetch('{{admin-url}}/api/canary/members/create-stripe-checkout-session/', {
+            return fetch(`${adminUrl}/api/canary/members/create-stripe-checkout-session/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -82,7 +84,7 @@ function setupMembersApi({siteUrl, adminUrl}) {
     return {
         sendMagicLink: createSendMagicLinkApi(adminUrl),
         signout: createSignoutApi(siteUrl),
-        checkoutPlan: createCheckoutPlanApi(siteUrl)
+        checkoutPlan: createCheckoutPlanApi(siteUrl, adminUrl)
     };
 }
 
