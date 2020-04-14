@@ -5,7 +5,7 @@ const React = require('react');
 const PropTypes = require('prop-types');
 export default class ParentContainer extends React.Component {
     static propTypes = {
-        name: PropTypes.string
+        data: PropTypes.object.isRequired
     };
 
     constructor(props) {
@@ -19,10 +19,23 @@ export default class ParentContainer extends React.Component {
         // Setup custom trigger button handling
         this.customTriggerButton = document.querySelector('[data-members-trigger-button]');
         this.setupCustomTriggerButton(this.customTriggerButton);
+        const page = this.isMemberLoggedIn() ? 'signedin' : 'signin';
 
         this.state = {
-            showPopup: false
+            page,
+            showPopup: false,
+            action: null
         };
+    }
+
+    isMemberLoggedIn() {
+        return !!this.props.data.member;
+    }
+
+    switchPage(page) {
+        this.setState({
+            page
+        });
     }
 
     setupCustomTriggerButton(customTriggerButton) {
@@ -40,12 +53,66 @@ export default class ParentContainer extends React.Component {
         }
     }
 
-    onSignout() {
-        this.MembersAPI.signout();
+    resetAction() {
+        this.setState({
+            action: null
+        });
     }
 
-    onSignin(data) {
-        this.MembersAPI.sendMagicLink(data);
+    async onAction(action, data) {
+        this.setState({
+            action: {
+                name: action,
+                isRunning: true,
+                isSuccess: false,
+                error: null
+            }
+        });
+        try {
+            if (action === 'signout') {
+                await this.MembersAPI.signout();
+
+                this.setState({
+                    action: {
+                        name: action,
+                        isRunning: false,
+                        isSuccess: true
+                    }
+                });
+            }
+
+            if (action === 'signin') {
+                await this.MembersAPI.sendMagicLink(data);
+                this.setState({
+                    action: {
+                        name: action,
+                        isRunning: false,
+                        isSuccess: true
+                    },
+                    page: 'magiclink'
+                });
+            }
+
+            if (action === 'checkoutPlan') {
+                const checkoutSuccessUrl = (new URL('/account/?stripe=billing-update-success', window.location.href)).href;
+                const checkoutCancelUrl = (new URL('/account/?stripe=billing-update-cancel', window.location.href)).href;
+                console.log('Checkout URLs', checkoutSuccessUrl, checkoutCancelUrl);
+                const {plan} = data;
+                await this.MembersAPI.checkoutPlan({
+                    plan,
+                    checkoutSuccessUrl,
+                    checkoutCancelUrl
+                });
+            }
+        } catch (e) {
+            this.setState({
+                action: {
+                    name: action,
+                    isRunning: false,
+                    error: e
+                }
+            });
+        }
     }
 
     onTriggerToggle() {
@@ -59,10 +126,11 @@ export default class ParentContainer extends React.Component {
         if (this.state.showPopup) {
             return (
                 <PopupMenuComponent
-                    name={this.props.name}
                     data={this.props.data}
-                    onSignout={e => this.onSignout()}
-                    onSignin={data => this.onSignin(data)}
+                    action={this.state.action}
+                    page={this.state.page}
+                    switchPage={page => this.switchPage(page)}
+                    onAction={(action, data) => this.onAction(action, data)}
                 />
             );
         }
