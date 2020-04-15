@@ -203,6 +203,21 @@ describe('Importer', function () {
                     should.not.exist(ImportManager.getBaseDirectory(testDir));
                 });
             });
+
+            describe('Zip behaviour', function () {
+                it('can call extract and error correctly', function () {
+                    return ImportManager
+                        // Deliberately pass something that can't be extracted just to check this method signature is working
+                        .extractZip('test/utils/fixtures/import/zips/zip-with-base-dir')
+                        .then((res) => {
+                            throw new Error('should have failed');
+                        })
+                        .catch((err) => {
+                            err.message.should.match(/EISDIR/);
+                            err.code.should.match(/EISDIR/);
+                        });
+                });
+            });
         });
 
         // Step 2 of importing is preProcess
