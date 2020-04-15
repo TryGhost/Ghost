@@ -5223,6 +5223,27 @@ knex@0.20.14:
     uuid "^7.0.1"
     v8flags "^3.1.3"
 
+knex@0.20.15:
+  version "0.20.15"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-0.20.15.tgz#b7e9e1efd9cf35d214440d9439ed21153574679d"
+  integrity sha512-WHmvgfQfxA5v8pyb9zbskxCS1L1WmYgUbwBhHojlkmdouUOazvroUWlCr6KIKMQ8anXZh1NXOOtIUMnxENZG5Q==
+  dependencies:
+    colorette "1.1.0"
+    commander "^4.1.1"
+    debug "4.1.1"
+    esm "^3.2.25"
+    getopts "2.2.5"
+    inherits "~2.0.4"
+    interpret "^2.0.0"
+    liftoff "3.1.0"
+    lodash "^4.17.15"
+    mkdirp "^0.5.1"
+    pg-connection-string "2.1.0"
+    tarn "^2.0.0"
+    tildify "2.0.0"
+    uuid "^7.0.1"
+    v8flags "^3.1.3"
+
 knex@^0.17:
   version "0.17.6"
   resolved "https://registry.yarnpkg.com/knex/-/knex-0.17.6.tgz#80220cf159cd52768d5b29118c70b18aaf5138fe"
