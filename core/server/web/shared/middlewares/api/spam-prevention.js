@@ -6,7 +6,7 @@ const config = require('../../../../config');
 const {logging,i18n} = require('../../../../lib/common');
 const spam = config.get('spam') || {};
 
-const spamPrivateBlog = spam.private_blog || {};
+const spamPrivateBlock = spam.private_block || {};
 const spamGlobalBlock = spam.global_block || {};
 const spamGlobalReset = spam.global_reset || {};
 const spamUserReset = spam.user_reset || {};
@@ -190,8 +190,8 @@ const privateBlog = () => {
                 logging.error(new errors.TooManyRequestsError({
                     message: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error',
                         {
-                            rateSigninAttempts: spamPrivateBlog.freeRetries + 1 || 5,
-                            rateSigninPeriod: spamPrivateBlog.lifetime || 60 * 60
+                            rateSigninAttempts: spamPrivateBlock.freeRetries + 1 || 5,
+                            rateSigninPeriod: spamPrivateBlock.lifetime || 60 * 60
                         }),
                     context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
                 }));
@@ -201,7 +201,7 @@ const privateBlog = () => {
                 }));
             },
             handleStoreError: handleStoreError
-        }, pick(spamPrivateBlog, spamConfigKeys))
+        }, pick(spamPrivateBlock, spamConfigKeys))
     );
 
     return privateBlogInstance;
