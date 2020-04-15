@@ -1,4 +1,5 @@
 const ghostBookshelf = require('./base');
+const common = require('../lib/common');
 
 let Tag, Tags;
 
@@ -118,7 +119,9 @@ Tag = ghostBookshelf.Model.extend({
             .fetch(options)
             .then(function destroyTagsAndPost(tag) {
                 if (!tag) {
-                    return Promise.reject();
+                    return Promise.reject(new common.errors.NotFoundError({
+                        message: common.i18n.t('errors.api.tags.tagNotFound')
+                    }));
                 }
 
                 return tag.related('posts')
