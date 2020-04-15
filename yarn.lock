@@ -69,15 +69,15 @@
   dependencies:
     "@hapi/hoek" "8.x.x"
 
-"@lodder/grunt-postcss@2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@lodder/grunt-postcss/-/grunt-postcss-2.0.1.tgz#d294ce121d3cfcd99150a8276067ee8599fd798d"
-  integrity sha512-7ylMEhMadrLDrSbXfEDL3is2YUJ33uwKrPIkwI39Hf6G+ggyvRzLgmjNyoj/+IOPVAjCfXlNOi3R/nmnbew97Q==
+"@lodder/grunt-postcss@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@lodder/grunt-postcss/-/grunt-postcss-2.0.2.tgz#2815e178c154fc0d5597e9a1894a7f996966aab8"
+  integrity sha512-zWPI9w+6bUyVn2R3yDJhYfy19WJFNUeq4ZU4OPGdqxGkPOvkNMRLUorF9iuQXG2gKdUd3zQf78I2gnuspDDRVw==
   dependencies:
-    diff "^4.0.1"
+    diff "^4.0.2"
     kleur "^3.0.3"
     maxmin "^2.1.0"
-    postcss "^7.0.24"
+    postcss "^7.0.27"
 
 "@metascraper/helpers@^5.11.9":
   version "5.11.9"
@@ -2497,7 +2497,7 @@ diff@3.5.0:
   resolved "https://registry.yarnpkg.com/diff/-/diff-3.5.0.tgz#800c0dd1e0a8bfbc95835c202ad220fe317e5a12"
   integrity sha512-A46qtFgd+g7pDZinpnwiRJtxbC1hpgf0uzP3iG89scHk0AUC7A1TGxf5OiiOUv/JMZR8GOt8hL900hV0bOy5xA==
 
-diff@^4.0.1, diff@^4.0.2:
+diff@^4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/diff/-/diff-4.0.2.tgz#60f3aecb89d5fae520c11aa19efc2bb982aade7d"
   integrity sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==
@@ -7231,7 +7231,7 @@ postcss-value-parser@^4.0.2:
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.0.3.tgz#651ff4593aa9eda8d5d0d66593a2417aeaeb325d"
   integrity sha512-N7h4pG+Nnu5BEIzyeaaIYWs0LI5XC40OrRh5L60z0QjFsqGWcHcbkBvpe1WYpcIS9yQ8sOi/vIPt1ejQCrMVrg==
 
-postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.24, postcss@^7.0.27:
+postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.27:
   version "7.0.27"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.27.tgz#cc67cdc6b0daa375105b7c424a85567345fc54d9"
   integrity sha512-WuQETPMcW9Uf1/22HWUWP9lgsIC+KEHg2kozMflKjbeUtw9ujvFX6QmIfozaErDkmLWS9WEnEdEe6Uo9/BNTdQ==
