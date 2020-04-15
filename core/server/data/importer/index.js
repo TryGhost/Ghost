@@ -172,7 +172,7 @@ _.extend(ImportManager.prototype, {
         const tmpDir = path.join(os.tmpdir(), uuid.v4());
         this.fileToDelete = tmpDir;
 
-        return extract(filePath, {dir: tmpDir}).then(function () {
+        return extract(filePath, tmpDir).then(function () {
             return tmpDir;
         });
     },
