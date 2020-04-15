@@ -29,8 +29,8 @@ async function fetchBookmarkData(url, html) {
             html = response.body;
         }
         scraperResponse = await metascraper({html, url});
-    } catch (e) {
-        return Promise.reject();
+    } catch (err) {
+        return Promise.reject(err);
     }
 
     const metadata = Object.assign({}, scraperResponse, {
