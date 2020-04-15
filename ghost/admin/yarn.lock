@@ -13262,10 +13262,10 @@ terser@^4.1.2, terser@^4.3.9:
     source-map "~0.6.1"
     source-map-support "~0.5.12"
 
-testem@3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-3.0.3.tgz#d59f1ffbcf497909aca5580b0496e6506350d7b8"
-  integrity sha512-mdBCCn8LlTmgFDpexemyGP4cjO1V0VASs/qbPGZk8Qo05EBnmch29LIqxvWUDih/nA6eau3reXp0rNEef7qpCw==
+testem@3.0.4:
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.0.4.tgz#6fe2a22993bb400c0bad47f2318898c86562df90"
+  integrity sha512-qVvlqIaffG/7s862JmUEPPfLIvMGTTzj+3HOz7r0o6bEll+H27Oqu4I9KrZauEXQheSOOTRApTAE/6RmM7IXlw==
   dependencies:
     backbone "^1.1.2"
     bluebird "^3.4.6"
