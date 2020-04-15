@@ -43,7 +43,8 @@ const privateBlogging = {
 
         return session({
             maxAge: constants.ONE_MONTH_MS,
-            signed: false
+            signed: false,
+            sameSite: 'none'
         })(req, res, next);
     },
 
