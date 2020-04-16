@@ -43,8 +43,9 @@ export const TESTING_EXPANDO_PROPERTY = '__mobiledoc_kit_editor';
 
 // blank doc contains a single empty paragraph so that there's some content for
 // the cursor to start in
+export const MOBILEDOC_VERSION = '0.3.1';
 export const BLANK_DOC = {
-    version: '0.3.1',
+    version: MOBILEDOC_VERSION,
     markups: [],
     atoms: [],
     cards: [],
@@ -683,8 +684,7 @@ export default Component.extend({
     /* mobiledoc event handlers --------------------------------------------- */
 
     postDidChange(editor) {
-        let serializeVersion = this.serializeVersion;
-        let updatedMobiledoc = editor.serialize(serializeVersion);
+        let updatedMobiledoc = editor.serialize(MOBILEDOC_VERSION);
         this._localMobiledoc = updatedMobiledoc;
 
         // trigger closure action
