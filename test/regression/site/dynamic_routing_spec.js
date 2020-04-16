@@ -270,7 +270,7 @@ describe('Dynamic Routing', function () {
 
             it('should redirect to tag settings', function (done) {
                 request.get('/tag/getting-started/edit/')
-                    .expect('Location', 'http://127.0.0.1:2369/ghost/#/settings/tags/getting-started/')
+                    .expect('Location', 'http://127.0.0.1:2369/ghost/#/tags/getting-started/')
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(302)
                     .end(doEnd(done));
