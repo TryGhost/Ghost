@@ -5,6 +5,58 @@ require('./utils');
 const Renderer = require('../');
 
 describe('Mobiledoc HTML renderer', function () {
+    it('sets default card options', function () {
+        let mobiledoc = {
+            version: '0.3.1',
+            markups: [],
+            atoms: [],
+            cards: [['test']],
+            sections: [
+                [10, 0]
+            ]
+        };
+
+        let testCard = {
+            name: 'test',
+            type: 'dom',
+            render({env, options}) {
+                return env.dom.createTextNode(JSON.stringify(options));
+            }
+        };
+
+        let renderer = new Renderer({cards: [testCard]});
+        let result = JSON.parse(renderer.render(mobiledoc));
+
+        result.version.should.equal(2);
+        result.target.should.equal('html');
+    });
+
+    it('allows card option override', function () {
+        let mobiledoc = {
+            version: '0.3.1',
+            markups: [],
+            atoms: [],
+            cards: [['test']],
+            sections: [
+                [10, 0]
+            ]
+        };
+
+        let testCard = {
+            name: 'test',
+            type: 'dom',
+            render({env, options}) {
+                return env.dom.createTextNode(JSON.stringify(options));
+            }
+        };
+
+        let renderer = new Renderer({cards: [testCard]});
+        let result = JSON.parse(renderer.render(mobiledoc, {version: 1, target: 'email'}));
+
+        result.version.should.equal(1);
+        result.target.should.equal('email');
+    });
+
     it('passes card options through to cards when rendering', function () {
         let mobiledoc = {
             version: '0.3.1',

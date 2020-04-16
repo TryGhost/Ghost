@@ -76,15 +76,17 @@ class MobiledocHtmlRenderer {
         };
     }
 
-    render(mobiledoc, cardOptions = {}) {
-        const rendererOptions = Object.assign({}, this.options, {cardOptions});
+    render(mobiledoc, _cardOptions = {}) {
         /**
          * version 1 === Ghost 1.0 markdown-only mobiledoc
          * version 2 (latest) === Ghost 2.0 full mobiledoc
          */
-        rendererOptions.cardOptions.version = rendererOptions.cardOptions.version || 2;
-        rendererOptions.cardOptions.target = 'html';
-
+        const defaultCardOptions = {
+            version: 2,
+            target: 'html'
+        };
+        const cardOptions = Object.assign({}, defaultCardOptions, _cardOptions);
+        const rendererOptions = Object.assign({}, this.options, {cardOptions});
         const renderer = new Renderer(rendererOptions);
         const rendered = renderer.render(mobiledoc);
         const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
