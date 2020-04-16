@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/zip",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": "https://github.com/TryGhost/Ghost-Utils/tree/master/packages/zip",
   "author": "Ghost Foundation",
   "license": "MIT",
