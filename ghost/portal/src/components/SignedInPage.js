@@ -144,7 +144,7 @@ export default class SignedInPage extends React.Component {
     renderLogoutButton() {
         return (
             <div style={{paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', borderTop: '1px solid #EFEFEF', cursor: 'pointer'}}>
-                <div onClick={(e) => {
+                <div role="button" onClick={(e) => {
                     this.handleSignout(e);
                 }} style={{fontWeight: 'bold'}}> Logout </div>
             </div>
