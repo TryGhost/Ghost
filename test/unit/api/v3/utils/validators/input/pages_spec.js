@@ -140,7 +140,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
             const fieldMap = {
                 title: [123, new Date(), _.repeat('a', 2001)],
                 slug: [123, new Date(), _.repeat('a', 192)],
-                mobiledoc: [123, new Date()],
+                mobiledoc: [123, new Date(), 'a'],
                 feature_image: [123, new Date(), 'random words'],
                 featured: [123, new Date(), 'abc'],
                 status: [123, new Date(), 'abc'],

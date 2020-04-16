@@ -5,7 +5,17 @@ const common = require('../../../../../lib/common');
 
 const ajv = new Ajv({
     allErrors: true,
-    useDefaults: true
+    useDefaults: true,
+    formats: {
+        'json-string': (data) => {
+            try {
+                JSON.parse(data);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+    }
 });
 
 stripKeyword(ajv);
