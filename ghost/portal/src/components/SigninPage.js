@@ -89,12 +89,6 @@ export default class SigninPage extends React.Component {
         };
 
         const fields = {
-            name: {
-                type: 'text',
-                value: this.state.name,
-                placeholder: 'Name...',
-                label: 'name'
-            },
             email: {
                 type: 'email',
                 value: this.state.email,

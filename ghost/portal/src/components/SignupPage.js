@@ -244,12 +244,14 @@ export default class SignupPage extends React.Component {
             name: {
                 type: 'text',
                 value: this.state.name,
-                placeholder: 'Name'
+                placeholder: 'Name',
+                label: 'name'
             },
             email: {
                 type: 'email',
                 value: this.state.email,
-                placeholder: 'Email'
+                placeholder: 'Email',
+                label: 'email'
             }
         };
         const field = fields[fieldName];
@@ -262,6 +264,7 @@ export default class SignupPage extends React.Component {
                     this.handleInput(e, fieldName);
                 }}
                 style={inputStyle}
+                aria-label={field.label}
             />
         );
     }
@@ -270,7 +273,7 @@ export default class SignupPage extends React.Component {
         return (
             <div style={{display: 'flex'}}>
                 <div style={{marginRight: '6px'}}> Already a member ? </div>
-                <div style={{color: '#3db0ef', fontWeight: 'bold', cursor: 'pointer'}} onClick={() => this.props.switchPage('signin')}> Log in </div>
+                <div style={{color: '#3db0ef', fontWeight: 'bold', cursor: 'pointer'}} role="button" onClick={() => this.props.switchPage('signin')}> Log in </div>
             </div>
         );
     }
