@@ -111,7 +111,7 @@ export default class SignedInPage extends React.Component {
             marginBottom: '12px'
         };
         const siteTitle = this.props.data.site && this.props.data.site.title;
-        const plans = this.props.data.member && this.props.data.member.plans;
+        const plans = this.props.data.site && this.props.data.site.plans;
         return (
             <div style={{padding: '12px 12px'}}>
                 <div style={{marginBottom: '12px', fontSize: '14px'}}>

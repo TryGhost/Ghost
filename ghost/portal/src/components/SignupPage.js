@@ -9,7 +9,8 @@ export default class SignupPage extends React.Component {
                 description: PropTypes.string
             }).isRequired
         }).isRequired,
-        onAction: PropTypes.func.isRequired
+        onAction: PropTypes.func.isRequired,
+        switchPage: PropTypes.func.isRequired
     };
 
     constructor(props) {
@@ -243,12 +244,12 @@ export default class SignupPage extends React.Component {
             name: {
                 type: 'text',
                 value: this.state.name,
-                placeholder: 'Name...'
+                placeholder: 'Name'
             },
             email: {
                 type: 'email',
                 value: this.state.email,
-                placeholder: 'Email...'
+                placeholder: 'Email'
             }
         };
         const field = fields[fieldName];

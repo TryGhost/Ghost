@@ -3,6 +3,7 @@ import SignupPage from './SignupPage';
 import SigninPage from './SigninPage';
 import SignedInPage from './SignedInPage';
 import MagicLinkPage from './MagicLinkPage';
+
 const React = require('react');
 const PropTypes = require('prop-types');
 
@@ -123,7 +124,7 @@ export default class PopupMenuComponent extends React.Component {
         };
 
         return (
-            <FrameComponent style={frameStyle}>
+            <FrameComponent style={frameStyle} title="membersjs-popup">
                 {this.renderPopupContent()}
             </FrameComponent>
         );

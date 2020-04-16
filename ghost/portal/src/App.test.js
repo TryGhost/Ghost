@@ -1,16 +1,11 @@
 import React from 'react';
 import {render} from '@testing-library/react';
 import App from './App';
+import {site} from './test/fixtures/data';
 
 test('renders App', () => {
-    const data = {
-        site: {
-            siteUrl: '',
-            adminUrl: ''
-        }
-    };
     const {container} = render(
-        <App data={data} />
+        <App data={{site}} />
     );
 
     // dashboard component should be rendered on root route

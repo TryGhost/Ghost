@@ -4,7 +4,7 @@ export default class MagicLinkPage extends React.Component {
     renderFormHeader() {
         return (
             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px'}}>
-                <div style={{fontSize: '18px', fontWeight: 'bold'}}> Check your Inbox! </div>
+                <div style={{fontSize: '18px', fontWeight: 'bold'}}> Awesome! </div>
                 <div> We just sent you a login link, check your Inbox! </div>
             </div>
         );
