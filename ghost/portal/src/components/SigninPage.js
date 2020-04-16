@@ -57,7 +57,7 @@ export default class SigninPage extends React.Component {
             marginBottom: '12px'
         };
         const isRunning = this.props.action && this.props.action.name === 'signin' && this.props.action.isRunning;
-        const label = this.state.isLoading ? 'Sending' : 'Continue';
+        const label = this.state.isLoading ? 'Sending' : 'Send Login Link';
         const disabled = isRunning ? true : false;
         if (disabled) {
             buttonStyle.backgroundColor = 'grey';
@@ -92,12 +92,14 @@ export default class SigninPage extends React.Component {
             name: {
                 type: 'text',
                 value: this.state.name,
-                placeholder: 'Name...'
+                placeholder: 'Name...',
+                label: 'name'
             },
             email: {
                 type: 'email',
                 value: this.state.email,
-                placeholder: 'Email...'
+                placeholder: 'Email...',
+                label: 'email'
             }
         };
         const field = fields[fieldName];
@@ -109,6 +111,7 @@ export default class SigninPage extends React.Component {
                 onChange={(e) => {
                     this.handleInput(e, fieldName);
                 }}
+                aria-label={field.label}
                 style={inputStyle}
             />
         );
@@ -118,7 +121,7 @@ export default class SigninPage extends React.Component {
         return (
             <div style={{display: 'flex'}}>
                 <div style={{marginRight: '6px'}}> Not a member ? </div>
-                <div style={{color: '#3db0ef', fontWeight: 'bold', cursor: 'pointer'}} onClick={() => this.props.switchPage('signup')}> Signup </div>
+                <div style={{color: '#3db0ef', fontWeight: 'bold', cursor: 'pointer'}} role="button" onClick={() => this.props.switchPage('signup')}> Subscribe </div>
             </div>
         );
     }
