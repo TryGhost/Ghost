@@ -60,7 +60,7 @@ async function createServiceProxy(ctx, serviceName) {
     }).map(action => action.action.rawName);
 
     return serviceMethods.reduce((serviceProxy, methodName) => {
-        ctx.broker.logger.info(`Creating proxy ${serviceName}.${methodName}`);
+        ctx.broker.logger.debug(`Creating proxy ${serviceName}.${methodName}`);
         return Object.assign(serviceProxy, {
             [methodName]: proxy(ctx, serviceName, methodName)
         });
