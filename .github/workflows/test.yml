@@ -46,3 +46,34 @@ jobs:
       - run: grunt test-unit --verbose
       - run: grunt test-regression --verbose
         if: startsWith(github.head_ref, 'renovate/') || github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'all-tests')
+
+  ghost-cli:
+    name: Ghost-CLI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: true
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10'
+      - run: npm install -g ghost-cli@next
+      - run: zip -r ghost.zip .
+
+      - name: Clean Install
+        run: |
+          DIR=$(mktemp -d)
+          ghost install local -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+
+      - name: Latest Release
+        run: |
+          DIR=$(mktemp -d)
+          ghost install local -d $DIR
+          ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+
+      - name: Previous Major
+        run: |
+          DIR=$(mktemp -d)
+          ghost install v2 --local -d $DIR
+          ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
