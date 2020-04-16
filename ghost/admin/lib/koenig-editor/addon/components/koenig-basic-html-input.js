@@ -5,6 +5,7 @@ import layout from '../templates/components/koenig-basic-html-input';
 import parserPlugins from '../options/basic-html-parser-plugins';
 import registerKeyCommands, {BASIC_KEY_COMMANDS} from '../options/key-commands';
 import validator from 'validator';
+import {BLANK_DOC, MOBILEDOC_VERSION} from './koenig-editor';
 import {DRAG_DISABLED_DATA_ATTR} from '../lib/dnd/constants';
 import {arrayToMap, toggleSpecialFormatEditState} from './koenig-editor';
 import {assign} from '@ember/polyfills';
@@ -15,20 +16,6 @@ import {registerBasicTextExpansions} from '../options/text-expansions';
 import {run} from '@ember/runloop';
 
 const UNDO_DEPTH = 50;
-
-// blank doc contains a single empty paragraph so that there's some content for
-// the cursor to start in
-const BLANK_DOC = {
-    version: '0.3.1',
-    markups: [],
-    atoms: [],
-    cards: [],
-    sections: [
-        [1, 'p', [
-            [0, [], 0, '']
-        ]]
-    ]
-};
 
 // TODO: extract core to share functionality between this and `{{koenig-editor}}`
 
@@ -201,7 +188,7 @@ export default Component.extend({
         // update mobiledoc reference to match initial editor state from parsed
         // html. We use this value to compare on re-renders in case we need to
         // re-parse from html
-        this.mobiledoc = editor.serialize();
+        this.mobiledoc = editor.serialize(MOBILEDOC_VERSION);
         this._lastMobiledoc = this.mobiledoc;
 
         this.set('editor', editor);
