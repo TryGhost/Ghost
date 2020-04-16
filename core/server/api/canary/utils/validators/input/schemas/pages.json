@@ -19,6 +19,7 @@
                 },
                 "mobiledoc": {
                     "type": ["string", "null"],
+                    "format": "json-string",
                     "maxLength": 1000000000
                 },
                 "html": {
