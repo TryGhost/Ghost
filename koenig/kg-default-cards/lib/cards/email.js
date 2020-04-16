@@ -12,11 +12,10 @@ module.exports = {
             return dom.createTextNode('');
         }
 
-        // perform replacements
-        const replacementMap = options.replacementMap || {};
-        payload.html = payload.html.replace(/\{(\w*?)(?:, "(.*?)")?\}/g, (match, key, fallback) => {
-            return replacementMap[key] || fallback || '';
-        });
+        // wrap the replacement %%{replacement}%% so that when performing replacements
+        // it's less likely for code samples to be mistaken for our replacement strings
+        // NOTE: must be plain text rather than a custom element so that it's not removed by html->plaintext conversion
+        payload.html = payload.html.replace(/\{(\w*?)(?:,? *"(.*?)")?\}/g, '%%$&%%');
 
         // use the SimpleDOM document to create a raw HTML section.
         // avoids parsing/rendering of potentially broken or unsupported HTML

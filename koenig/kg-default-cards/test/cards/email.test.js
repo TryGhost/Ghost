@@ -46,97 +46,91 @@ describe.only('Email card', function () {
             .should.equal('');
     });
 
-    it('replaces {foo} with matching content', function () {
+    it('wraps {foo} in %%', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {html: '<p>Testing {foo} in {bar}</p>'},
-            options: {
-                target: 'email',
-                replacementMap: {
-                    foo: 'replacements',
-                    bar: 'email card'
-                }
-            }
+            options: {target: 'email'}
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing replacements in email card</p>');
+            .should.equal('<p>Testing %%{foo}%% in %%{bar}%%</p>');
     });
 
-    it('replaces {foo, "test"} with fallback with no matching content', function () {
+    it('wraps {foo, "test"} in %%', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {html: '<p>Testing {foo, "replacement fallbacks"} in {bar, "email card"}</p>'},
-            options: {
-                target: 'email'
-            }
+            options: {target: 'email'}
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing replacement fallbacks in email card</p>');
+            .should.equal('<p>Testing %%{foo, "replacement fallbacks"}%% in %%{bar, "email card"}%%</p>');
     });
 
-    it('removes {foo} with no matching content', function () {
+    it('wraps {foo,  "test"} (extra spaces)', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
-            payload: {html: '<p>Testing {foo} in {bar}</p>'},
-            options: {
-                target: 'email'
-            }
+            payload: {html: '<p>Testing {foo,  "valid"}</p>'},
+            options: {target: 'email'}
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing  in </p>');
+            .should.equal('<p>Testing %%{foo,  "valid"}%%</p>');
     });
 
-    it('keeps {invalid } (invalid whitespace)', function () {
+    it('wraps {foo "value"} (missing comma)', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
-            payload: {html: '<p>Testing {foo } in {bar}</p>'},
-            options: {
-                target: 'email',
-                replacementMap: {
-                    foo: 'replacements',
-                    bar: 'email card'
-                }
-            }
+            payload: {html: '<p>Testing {foo "valid"} in {bar}</p>'},
+            options: {target: 'email'}
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing {foo } in email card</p>');
+            .should.equal('<p>Testing %%{foo "valid"}%% in %%{bar}%%</p>');
     });
 
-    it('keeps {foo invalid} (missing comma and quotes)', function () {
+    it('wraps {foo  "invalid"} (missing comma, extra spaces)', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {html: '<p>Testing {foo  "valid"} in {bar}</p>'},
+            options: {target: 'email'}
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.equal('<p>Testing %%{foo  "valid"}%% in %%{bar}%%</p>');
+    });
+
+    it('does not wrap {invalid } (invalid whitespace)', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {html: '<p>Testing {invalid } in {bar}</p>'},
+            options: {target: 'email'}
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.equal('<p>Testing {invalid } in %%{bar}%%</p>');
+    });
+
+    it('does not wrap { invalid} (invalid whitespace)', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {html: '<p>Testing { invalid} in {bar}</p>'},
+            options: {target: 'email'}
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.equal('<p>Testing { invalid} in %%{bar}%%</p>');
+    });
+
+    it('does not wrap {foo invalid} (missing quotes)', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {html: '<p>Testing {foo invalid} in {bar}</p>'},
-            options: {
-                target: 'email',
-                replacementMap: {
-                    foo: 'replacements',
-                    bar: 'email card'
-                }
-            }
+            options: {target: 'email'}
         };
 
         serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing {foo invalid} in email card</p>');
-    });
-
-    it('keeps {foo "invalid"} (missing comma)', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
-            payload: {html: '<p>Testing {foo "invalid"} in {bar}</p>'},
-            options: {
-                target: 'email',
-                replacementMap: {
-                    foo: 'replacements',
-                    bar: 'email card'
-                }
-            }
-        };
-
-        serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing {foo "invalid"} in email card</p>');
+            .should.equal('<p>Testing {foo invalid} in %%{bar}%%</p>');
     });
 });
