@@ -3,6 +3,7 @@ import SignupPage from './SignupPage';
 import SigninPage from './SigninPage';
 import SignedInPage from './SignedInPage';
 import MagicLinkPage from './MagicLinkPage';
+import LoadingPage from './LoadingPage';
 
 const React = require('react');
 const PropTypes = require('prop-types');
@@ -43,6 +44,11 @@ const Styles = {
             width: '400px',
             minHeight: '130px',
             maxHeight: '130px'
+        },
+        loading: {
+            width: '250px',
+            minHeight: '130px',
+            maxHeight: '130px'
         }
     },
     popup: {
@@ -75,7 +81,8 @@ const Pages = {
     signin: SigninPage,
     signup: SignupPage,
     signedin: SignedInPage,
-    magiclink: MagicLinkPage
+    magiclink: MagicLinkPage,
+    loading: LoadingPage
 };
 
 export default class PopupMenuComponent extends React.Component {
