@@ -6,6 +6,8 @@ const moment = require('moment');
 const cheerio = require('cheerio');
 const api = require('../../api');
 const {URL} = require('url');
+const mobiledocLib = require('../../lib/mobiledoc');
+const htmlToText = require('html-to-text');
 
 const getSite = () => {
     const publicSettings = settingsCache.getPublic();
@@ -39,7 +41,8 @@ const createUnsubscribeUrl = (uuid) => {
 // NOTE: serialization is needed to make sure we are using current API and do post transformations
 //       such as image URL transformation from relative to absolute
 const serializePostModel = async (model) => {
-    const frame = {options: {context: {user: true}, formats: 'html, plaintext'}};
+    // fetch mobiledoc rather than html and plaintext so we can render email-specific contents
+    const frame = {options: {context: {user: true}, formats: 'mobiledoc'}};
     const apiVersion = model.get('api_version') || 'v3';
     const docName = 'posts';
 
@@ -53,18 +56,32 @@ const serializePostModel = async (model) => {
 
 const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     const post = await serializePostModel(postModel);
+
     post.published_at = post.published_at ? moment(post.published_at).format('DD MMM YYYY') : moment().format('DD MMM YYYY');
     post.authors = post.authors && post.authors.map(author => author.name).join(',');
-    post.html = post.html || '';
     if (post.posts_meta) {
         post.email_subject = post.posts_meta.email_subject;
     }
+    post.html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(post.mobiledoc), {target: 'email'});
+    // same options as used in Post model for generating plaintext but without `wordwrap: 80`
+    // to avoid replacement strings being split across lines and for mail clients to handle
+    // word wrapping based on user preferences
+    post.plaintext = htmlToText.fromString(post.html, {
+        ignoreImage: true,
+        hideLinkHrefIfSameAsText: true,
+        preserveNewlines: true,
+        returnDomByDefault: true,
+        uppercaseHeadings: false
+    });
+
     let htmlTemplate = template({post, site: getSite()});
     if (options.isBrowserPreview) {
         const previewUnsubscribeUrl = createUnsubscribeUrl();
         htmlTemplate = htmlTemplate.replace('%recipient.unsubscribe_url%', previewUnsubscribeUrl);
     }
+
     let juicedHtml = juice(htmlTemplate);
+
     // Force all links to open in new tab
     let _cheerio = cheerio.load(juicedHtml);
     _cheerio('a').attr('target','_blank');

@@ -8,19 +8,76 @@ const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 const config = require('../../config');
 
-const getEmailData = async (postModel, recipients = []) => {
+const getEmailData = async (postModel, members = []) => {
     const emailTmpl = await postEmailSerializer.serialize(postModel);
     emailTmpl.from = membersService.config.getEmailFromAddress();
 
-    const emails = recipients.map(recipient => recipient.email);
-    const emailData = recipients.reduce((emailData, recipient) => {
-        return Object.assign({
-            [recipient.email]: {
-                unique_id: recipient.uuid,
-                unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(recipient.uuid)
+    const EMAIL_REPLACEMENT_REGEX = /%%(\{.*?\})%%/g;
+    // the &quot; is necessary here because `juice` will convert "->&quot; for email compatibility
+    const REPLACEMENT_STRING_REGEX = /\{(?<memberProp>\w*?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?\}/;
+    const ALLOWED_REPLACEMENTS = ['subscriber_firstname'];
+
+    // extract replacements with fallbacks. We have to handle replacements here because
+    // it's the only place we have access to both member data and specified fallbacks
+    const replacements = [];
+    emailTmpl.html = emailTmpl.html.replace(EMAIL_REPLACEMENT_REGEX, (replacementMatch, replacementStr) => {
+        const match = replacementStr.match(REPLACEMENT_STRING_REGEX);
+
+        if (match) {
+            const {memberProp, fallback} = match.groups;
+
+            if (ALLOWED_REPLACEMENTS.includes(memberProp)) {
+                const varName = `replacement_${replacements.length}`;
+
+                replacements.push({
+                    varName,
+                    memberProp,
+                    fallback
+                });
+                return `%recipient.${varName}%`;
             }
-        }, emailData);
-    }, {});
+        }
+
+        // output the user-entered replacement string for unknown or invalid replacements
+        // so that it's obvious there's an error in test emails
+        return replacementStr;
+    });
+
+    // plaintext will have the same replacements so no need to add them to the list and
+    // bloat the template variables object but we still need replacements for mailgun template syntax
+    let count = 0;
+    emailTmpl.plaintext = emailTmpl.plaintext.replace(EMAIL_REPLACEMENT_REGEX, (match, replacementStr) => {
+        const {groups: {memberProp}} = replacementStr.match(REPLACEMENT_STRING_REGEX);
+        if (ALLOWED_REPLACEMENTS.includes(memberProp)) {
+            const varName = `replacement_${count}`;
+            count++;
+            return `%recipient.${varName}`;
+        }
+        return replacementStr;
+    });
+
+    const emails = [];
+    const emailData = {};
+    members.forEach((member) => {
+        emails.push(member.email);
+
+        // firstname is a computed property only used here for now
+        // TODO: move into model computed property or output serializer?
+        member.firstname = (member.name || '').split(' ')[0];
+
+        // add static data to mailgun template variables
+        const data = {
+            unique_id: member.uuid,
+            unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(member.uuid)
+        };
+
+        // add replacement data/requested fallback to mailgun template variables
+        replacements.forEach(({varName, memberProp, fallback}) => {
+            data[varName] = member[memberProp] || fallback || '';
+        });
+
+        emailData[member.email] = data;
+    });
 
     return {emailTmpl, emails, emailData};
 };
@@ -233,7 +290,9 @@ async function pendingEmailHandler(emailModel, options) {
 }
 
 const statusChangedHandler = (emailModel, options) => {
-    const emailRetried = emailModel.wasChanged() && (emailModel.get('status') === 'pending') && (emailModel.previous('status') === 'failed');
+    const emailRetried = emailModel.wasChanged()
+        && emailModel.get('status') === 'pending'
+        && emailModel.previous('status') === 'failed';
 
     if (emailRetried) {
         pendingEmailHandler(emailModel, options);
