@@ -50,7 +50,7 @@ const getEmailData = async (postModel, members = []) => {
         const {groups: {memberProp}} = replacementStr.match(REPLACEMENT_STRING_REGEX);
         if (ALLOWED_REPLACEMENTS.includes(memberProp)) {
             const varName = `replacement_${count}`;
-            count++;
+            count = count + 1;
             return `%recipient.${varName}`;
         }
         return replacementStr;
