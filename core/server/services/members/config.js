@@ -25,6 +25,47 @@ function getEmailFromAddress() {
     return `${subscriptionSettings.fromAddress || 'noreply'}@${getDomain()}`;
 }
 
+/** Copied from theme middleware, remove it there after cleanup to keep this in single place */
+function getPublicPlans() {
+    const CURRENCY_SYMBOLS = {
+        USD: '$',
+        AUD: '$',
+        CAD: '$',
+        GBP: '£',
+        EUR: '€'
+    };
+    const defaultPriceData = {
+        monthly: 0,
+        yearly: 0
+    };
+
+    try {
+        const membersSettings = settingsCache.get('members_subscription_settings');
+        const stripeProcessor = membersSettings.paymentProcessors.find(
+            processor => processor.adapter === 'stripe'
+        );
+
+        const priceData = stripeProcessor.config.plans.reduce((prices, plan) => {
+            const numberAmount = 0 + plan.amount;
+            const dollarAmount = numberAmount ? Math.round(numberAmount / 100) : 0;
+            return Object.assign(prices, {
+                [plan.name.toLowerCase()]: dollarAmount
+            });
+        }, {});
+
+        priceData.currency = String.prototype.toUpperCase.call(stripeProcessor.config.currency || 'usd');
+        priceData.currency_symbol = CURRENCY_SYMBOLS[priceData.currency];
+
+        if (Number.isInteger(priceData.monthly) && Number.isInteger(priceData.yearly)) {
+            return priceData;
+        }
+
+        return defaultPriceData;
+    } catch (err) {
+        return defaultPriceData;
+    }
+}
+
 const getApiUrl = ({version, type}) => {
     const {href} = new URL(
         urlUtils.getApiPath({version, type}),
@@ -121,6 +162,7 @@ function getSigninURL(token, type) {
 
 module.exports = {
     getEmailFromAddress,
+    getPublicPlans,
     getStripePaymentConfig,
     getAllowSelfSignup,
     getAuthSecret,
