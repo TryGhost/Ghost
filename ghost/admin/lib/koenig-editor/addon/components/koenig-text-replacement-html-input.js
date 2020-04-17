@@ -15,6 +15,10 @@ import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {registerTextReplacementTextExpansions} from '../options/text-expansions';
 import {run} from '@ember/runloop';
 
+export function formatTextReplacementHtml(html) {
+    return (html || '').replace(/\{(.*?)\}/, '<code>$&</code>');
+}
+
 // TODO: extract core to share functionality between this and `{{koenig-editor}}`
 
 const UNDO_DEPTH = 50;
@@ -35,7 +39,7 @@ const SPECIAL_MARKUPS = {
 // toggled via markdown expansions then we want to ensure that the markup is
 // removed from the edit state so that you can type without being stuck with
 // the special formatting
-export function toggleSpecialFormatEditState(editor) {
+function toggleSpecialFormatEditState(editor) {
     let {head, isCollapsed} = editor.range;
     if (isCollapsed) {
         Object.keys(SPECIAL_MARKUPS).forEach((tagName) => {
@@ -85,12 +89,12 @@ export default Component.extend({
 
     /* computed properties -------------------------------------------------- */
 
-    cleanHTML: computed('html', function () {
-        return cleanTextReplacementHtml(this.html);
+    formattedHtml: computed('html', function () {
+        return formatTextReplacementHtml(this.html);
     }),
 
     // merge in named options with any passed in `options` property data-bag
-    editorOptions: computed('cleanHTML', function () {
+    editorOptions: computed('formattedHtml', function () {
         let options = this.options || {};
         let atoms = this.atoms || [];
         let cards = this.cards || [];
@@ -101,7 +105,7 @@ export default Component.extend({
         atoms = defaultAtoms.concat(atoms);
 
         return assign({
-            html: `<p>${this.cleanHTML || ''}</p>`,
+            html: this.formattedHtml || '',
             placeholder: this.placeholder,
             spellcheck: this.spellcheck,
             autofocus: this.autofocus,
@@ -124,7 +128,7 @@ export default Component.extend({
 
         // reset local mobiledoc if html has been changed upstream so that
         // the html will be re-parsed by the mobiledoc-kit editor
-        if (this.cleanHTML !== this._getHTML()) {
+        if (this.html !== this.getCleanHTML()) {
             this.set('mobiledoc', null);
         }
     },
@@ -132,7 +136,7 @@ export default Component.extend({
     willRender() {
         let mobiledoc = this.mobiledoc;
 
-        if (!mobiledoc && !this.cleanHTML) {
+        if (!mobiledoc && !this.formattedHtml) {
             mobiledoc = BLANK_DOC;
         }
 
@@ -373,7 +377,7 @@ export default Component.extend({
 
     postDidChange() {
         // trigger closure action
-        this.onChange(this._getHTML());
+        this.onChange(this.getCleanHTML());
     },
 
     cursorDidChange(editor) {
@@ -416,7 +420,7 @@ export default Component.extend({
     // rather than parsing mobiledoc to HTML we can grab the HTML directly from
     // inside the editor element because we should only be dealing with
     // inline markup that directly maps to HTML elements
-    _getHTML() {
+    getCleanHTML() {
         if (this.editor && this.editor.element) {
             return cleanTextReplacementHtml(this.editor.element.innerHTML);
         }
