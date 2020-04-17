@@ -551,7 +551,17 @@
     ghost-ignition "^4.0.0"
     lodash "^4.17.15"
 
-"@tryghost/zip@1.0.0", "@tryghost/zip@^1.0.0":
+"@tryghost/zip@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.0.1.tgz#9943a816a26cca015fc344c32e5dd2aa7301150e"
+  integrity sha512-TfGzmTSPPcjovNr/1qihMhyAhRS1LU4f7Nf5UT99wMgUwSpHuSKldP9i37DtDOGUvw76lYK/6A7VV96b6HxUUw==
+  dependencies:
+    archiver "^3.1.1"
+    bluebird "^3.7.2"
+    extract-zip "^2.0.0"
+    fs-extra "^9.0.0"
+
+"@tryghost/zip@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.0.0.tgz#4f13e6626e963a263cc60c16f9a13ab5f3956884"
   integrity sha512-6QW7NAZzWRdjRIgG7S+gJzLVn6UkGVMmFVv4Np6AEoMhcc8aU75QvRNZK+SDWvipqmX7xijB5te9HsCONuNkdA==
