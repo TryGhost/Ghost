@@ -29,8 +29,37 @@ function createSendMagicLinkApi(adminUrl) {
             if (res.ok) {
                 return 'Success';
             } else {
-                console.log('Failed to send magic link!', res);
                 return 'Failed to send magic link';
+            }
+        });
+    };
+}
+
+function createMemberIdentityApi(siteUrl) {
+    return function () {
+        return fetch(`${siteUrl}/members/ssr`, {
+            credentials: 'same-origin'
+        }).then(function (res) {
+            if (!res.ok) {
+                return null;
+            }
+            return res.text();
+        });
+    };
+}
+
+function createSiteDataApi(adminUrl) {
+    return function () {
+        return fetch(`${adminUrl}/api/canary/admin/site/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(function (res) {
+            if (res.ok) {
+                return res.json();
+            } else {
+                return 'Failed to fetch site data';
             }
         });
     };
@@ -41,7 +70,6 @@ function createCheckoutPlanApi(siteUrl, adminUrl) {
         return fetch(`${siteUrl}/members/ssr`, {
             credentials: 'same-origin'
         }).then(function (res) {
-            console.log('Checkout Plan Response', res, res.ok);
             if (!res.ok) {
                 return null;
             }
@@ -84,7 +112,9 @@ function setupMembersApi({siteUrl, adminUrl}) {
     return {
         sendMagicLink: createSendMagicLinkApi(adminUrl),
         signout: createSignoutApi(siteUrl),
-        checkoutPlan: createCheckoutPlanApi(siteUrl, adminUrl)
+        checkoutPlan: createCheckoutPlanApi(siteUrl, adminUrl),
+        getMemberIdentity: createMemberIdentityApi(siteUrl),
+        getSiteData: createSiteDataApi(adminUrl)
     };
 }
 
