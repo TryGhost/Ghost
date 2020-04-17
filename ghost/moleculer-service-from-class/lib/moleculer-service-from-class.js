@@ -52,12 +52,18 @@ function getClassMethods(Class) {
  */
 async function createServiceProxy(ctx, serviceName) {
     await ctx.broker.waitForServices(serviceName);
-    /** @type {{name: string, action: {rawName: string}}[]} */
+    /** @type {{action: {name: string, rawName: string}}[]} */
     const actionsList = await ctx.call('$node.actions');
 
-    const serviceMethods = actionsList.filter((action) => {
-        return action.name.startsWith(`${serviceName}.`);
-    }).map(action => action.action.rawName);
+    const serviceMethods = actionsList.filter((obj) => {
+        const isValidAction = obj && obj.action;
+        if (!isValidAction) {
+            ctx.broker.logger.debug(`Recieved invalid action ${obj}`);
+        }
+        const belongsToService = obj.action.name.startsWith(`${serviceName}.`);
+
+        return isValidAction && belongsToService;
+    }).map(obj => obj.action.rawName);
 
     return serviceMethods.reduce((serviceProxy, methodName) => {
         ctx.broker.logger.debug(`Creating proxy ${serviceName}.${methodName}`);
