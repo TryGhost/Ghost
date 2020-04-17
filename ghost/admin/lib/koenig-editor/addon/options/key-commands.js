@@ -1,8 +1,7 @@
 import Browser from 'mobiledoc-kit/utils/browser';
 import {
     CURSOR_AFTER,
-    CURSOR_BEFORE,
-    SPECIAL_MARKUPS
+    CURSOR_BEFORE
 } from '../components/koenig-editor';
 
 // Key commands will run any time a particular key or key combination is pressed
@@ -179,7 +178,7 @@ export const DEFAULT_KEY_COMMANDS = [{
         // if the markup about to be deleted is a special format (code, strike)
         // then undo the text expansion to allow it to be extended
         if (isCollapsed && marker && offset !== 0) {
-            let specialMarkupTagNames = Object.keys(SPECIAL_MARKUPS);
+            let specialMarkupTagNames = Object.keys(koenig.SPECIAL_MARKUPS);
             let hasReversed = false;
             specialMarkupTagNames.forEach((tagName) => {
                 // only continue if we're about to delete a special markup
@@ -190,7 +189,7 @@ export const DEFAULT_KEY_COMMANDS = [{
                     if (!nextMarker || !nextMarker.hasMarkup(tagName)) {
                         // wrap with the text expansion, remove formatting, then delete the last char
                         editor.run((postEditor) => {
-                            let markdown = SPECIAL_MARKUPS[tagName];
+                            let markdown = koenig.SPECIAL_MARKUPS[tagName];
                             let range = editor.range.expandByMarker(marker => !!marker.markups.includes(markup));
                             postEditor.insertText(range.head, markdown);
                             range = range.extend(markdown.length);

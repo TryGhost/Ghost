@@ -7,7 +7,7 @@ import registerKeyCommands, {TEXT_REPLACEMENT_KEY_COMMANDS} from '../options/key
 import validator from 'validator';
 import {BLANK_DOC, MOBILEDOC_VERSION} from './koenig-editor';
 import {DRAG_DISABLED_DATA_ATTR} from '../lib/dnd/constants';
-import {arrayToMap, toggleSpecialFormatEditState} from './koenig-editor';
+import {arrayToMap} from './koenig-editor';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
@@ -21,12 +21,36 @@ const UNDO_DEPTH = 50;
 
 // markups that should not be continued when typing and reverted to their
 // text expansion style when backspacing over final char of markup
-export const SPECIAL_MARKUPS = {
+const SPECIAL_MARKUPS = {
     S: '~~',
     CODE: '{', // this is different because we use <code> to represent {} replacements
     SUP: '^',
     SUB: '~'
 };
+
+// if the cursor is at the end of one of our "special" markups that can only be
+// toggled via markdown expansions then we want to ensure that the markup is
+// removed from the edit state so that you can type without being stuck with
+// the special formatting
+export function toggleSpecialFormatEditState(editor) {
+    let {head, isCollapsed} = editor.range;
+    if (isCollapsed) {
+        Object.keys(SPECIAL_MARKUPS).forEach((tagName) => {
+            tagName = tagName.toLowerCase();
+            if (head.marker && head.marker.hasMarkup(tagName) && editor._editState.activeMarkups.findBy('tagName', tagName)) {
+                let nextMarker = head.markerIn(1);
+                if (!nextMarker || !nextMarker.hasMarkup(tagName)) {
+                    // there is a bug somehwhere that means after pasting
+                    // content the _editState can end up with multiple
+                    // instances of the markup so we need to toggle all of them
+                    editor._editState.activeMarkups.filterBy('tagName', tagName).forEach((markup) => {
+                        editor._editState.toggleMarkupState(markup);
+                    });
+                }
+            }
+        });
+    }
+}
 
 export default Component.extend({
     layout,
@@ -86,6 +110,11 @@ export default Component.extend({
     }),
 
     /* lifecycle hooks ------------------------------------------------------ */
+
+    init() {
+        this._super(...arguments);
+        this.SPECIAL_MARKUPS = SPECIAL_MARKUPS;
+    },
 
     didReceiveAttrs() {
         this._super(...arguments);
