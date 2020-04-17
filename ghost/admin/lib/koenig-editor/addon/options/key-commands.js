@@ -190,14 +190,30 @@ export const DEFAULT_KEY_COMMANDS = [{
                         // wrap with the text expansion, remove formatting, then delete the last char
                         editor.run((postEditor) => {
                             let markdown = koenig.SPECIAL_MARKUPS[tagName];
+                            let replace = true;
+
+                            if (typeof markdown === 'object') {
+                                replace = markdown.replace;
+                                markdown = markdown.char;
+                            }
+
                             let range = editor.range.expandByMarker(marker => !!marker.markups.includes(markup));
-                            postEditor.insertText(range.head, markdown);
-                            range = range.extend(markdown.length);
-                            let endPos = postEditor.insertText(range.tail, markdown);
-                            range = range.extend(markdown.length);
-                            postEditor.toggleMarkup(tagName, range);
-                            endPos = postEditor.deleteAtPosition(endPos, -1);
-                            postEditor.setRange(endPos);
+
+                            // replaced markdown (default) will have chars removed when formatted
+                            // and added back when the format is removed by backspace
+                            if (replace) {
+                                postEditor.insertText(range.head, markdown);
+                                range = range.extend(markdown.length);
+                                let endPos = postEditor.insertText(range.tail, markdown);
+                                range = range.extend(markdown.length);
+                                postEditor.toggleMarkup(tagName, range);
+                                endPos = postEditor.deleteAtPosition(endPos, -1);
+                                postEditor.setRange(endPos);
+                            } else {
+                                postEditor.toggleMarkup(tagName, range);
+                                let endPos = postEditor.deleteAtPosition(range.tail);
+                                postEditor.setRange(endPos);
+                            }
                         });
                         hasReversed = true;
                     }

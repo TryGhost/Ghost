@@ -76,6 +76,24 @@ function _addMarkdownMarkup(_this, editor, matches, markupStr) {
     }, 10);
 }
 
+function _addNonReplacedMarkdownMarkup(_this, editor, matches, markupStr) {
+    let {range} = editor;
+    let match = matches[0].trim();
+    range = range.extend(-(match.length));
+
+    editor.run((postEditor) => {
+        let markup = editor.builder.createMarkup(markupStr);
+        postEditor.addMarkupToRange(range, markup);
+        postEditor.setRange(range.tail.toRange());
+    });
+
+    // must be scheduled so that the toggle isn't reset automatically
+    // by mobiledoc-kit re-setting state after the range is updated
+    run.later(_this, function () {
+        editor.toggleMarkup(markupStr);
+    }, 10);
+}
+
 function _matchStrongStar(editor, text) {
     let matches = text.match(/(?:^|\s)\*\*([^\s*]+|[^\s*][^*]*[^\s])\*\*$/);
     if (matches) {
@@ -534,7 +552,7 @@ export function registerTextReplacementTextExpansions(editor, koenig) {
 
             let match = text.match(/(?:^|\s)\{([^\s{}]+|[^\s{}][^{}]*[^\s{}])\}$/);
             if (match) {
-                _addMarkdownMarkup(this, editor, match, 'code');
+                _addNonReplacedMarkdownMarkup(this, editor, match, 'code');
             }
         }
     });
