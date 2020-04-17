@@ -93,9 +93,10 @@ const sendEmail = async (postModel, members) => {
 };
 
 const sendTestEmail = async (postModel, toEmails) => {
-    const recipients = toEmails.map((email) => {
-        return {email};
-    });
+    const recipients = await Promise.all(toEmails.map(async (email) => {
+        const member = await membersService.api.members.get({email});
+        return member || {email};
+    }));
     const {emailTmpl, emails, emailData} = await getEmailData(postModel, recipients);
     emailTmpl.subject = `[Test] ${emailTmpl.subject}`;
     return bulkEmailService.send(emailTmpl, emails, emailData);
