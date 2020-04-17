@@ -238,6 +238,7 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
+        this.SPECIAL_MARKUPS = SPECIAL_MARKUPS;
 
         // set a blank mobiledoc if we didn't receive anything
         let mobiledoc = this.mobiledoc;
