@@ -74,6 +74,11 @@ export default Component.extend({
 
     /* lifecycle hooks ------------------------------------------------------ */
 
+    init() {
+        this._super(...arguments);
+        this.SPECIAL_MARKUPS = [];
+    },
+
     didReceiveAttrs() {
         this._super(...arguments);
 
