@@ -343,7 +343,7 @@ export default Component.extend({
     // - first section must be a markerable section
     // - if first section is a list, grab the content of the first list item
     didUpdatePost(postEditor) {
-        let {editor, editor: {post, range}} = postEditor;
+        let {editor, editor: {post}} = postEditor;
 
         // remove any other formatting from code formats
         let markers = [];
