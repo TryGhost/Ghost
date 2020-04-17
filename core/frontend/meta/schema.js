@@ -29,10 +29,7 @@ function schemaPublisherObject(metaDataVal) {
         '@type': 'Organization',
         name: escapeExpression(metaDataVal.site.title),
         url: metaDataVal.site.url || null,
-        logo: {
-            '@type': 'ImageObject',
-            url: schemaImageObject(metaDataVal.site.logo) || null
-        }
+        logo: schemaImageObject(metaDataVal.site.logo) || null
     };
 
     return publisherObject;
