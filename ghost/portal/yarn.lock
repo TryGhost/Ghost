@@ -3929,10 +3929,10 @@ eslint-plugin-flowtype@4.6.0:
   dependencies:
     lodash "^4.17.15"
 
-eslint-plugin-ghost@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-1.1.0.tgz#c8aba0287ea4b41e4c6ca93c6c2098f2c497e265"
-  integrity sha512-5Q/fnEQVdVvLz+Q4XVSqTBLBACMwNCxajsOnPFPsLHfcgS/m118t/p36HxvDmAge6Gc8jH7W5ouAJT8SpHWJcg==
+eslint-plugin-ghost@1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-1.2.0.tgz#fdb69f16ffba72e1f5f3a0a7b1c6719cbaea0491"
+  integrity sha512-Oeqo5SwflgGv9JkbsBwqCJTuvbnl2wSNW4FdfDMJ7b4JR+xpNo0tm+2wIDhQarzc5wXMTZd5IfaBCEySYF1+Ng==
   dependencies:
     eslint-plugin-ember "7.10.1"
     eslint-plugin-mocha "6.3.0"
