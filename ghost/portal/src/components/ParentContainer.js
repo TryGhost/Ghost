@@ -13,23 +13,50 @@ export default class ParentContainer extends React.Component {
         console.log('Initialized script with data', props.data);
 
         // Setup Members API with site/admin URLs
-        const {siteUrl, adminUrl} = props.data.site;
+        const {siteUrl, adminUrl} = props.data;
         this.MembersAPI = setupMembersApi({siteUrl, adminUrl});
 
         // Setup custom trigger button handling
         this.customTriggerButton = document.querySelector('[data-members-trigger-button]');
         this.setupCustomTriggerButton(this.customTriggerButton);
-        const page = this.isMemberLoggedIn() ? 'signedin' : 'signin';
+
+        // Initialize site and members data
+        this.initData();
+
+        const page = 'loading';
 
         this.state = {
             page,
             showPopup: false,
-            action: null
+            action: {
+                name: 'loading'
+            }
         };
     }
 
-    isMemberLoggedIn() {
-        return !!this.props.data.member;
+    async initData() {
+        try {
+            const memberIdentity = await this.MembersAPI.getMemberIdentity();
+            const {site} = await this.MembersAPI.getSiteData();
+            const isMemberLoggedIn = !!memberIdentity;
+            this.setState({
+                isMemberLoggedIn,
+                site,
+                page: isMemberLoggedIn ? 'signedin' : 'signup'
+            });
+        } catch (e) {
+            this.setState({
+                action: {
+                    name: 'loadingFailed'
+                }
+            });
+        }
+    }
+
+    getData() {
+        const member = this.props.data.member;
+        const site = this.state.site;
+        return {site, member};
     }
 
     switchPage(page) {
@@ -126,7 +153,7 @@ export default class ParentContainer extends React.Component {
         if (this.state.showPopup) {
             return (
                 <PopupMenuComponent
-                    data={this.props.data}
+                    data={this.getData()}
                     action={this.state.action}
                     page={this.state.page}
                     switchPage={page => this.switchPage(page)}
@@ -144,7 +171,7 @@ export default class ParentContainer extends React.Component {
                     name={this.props.name}
                     onToggle= {e => this.onTriggerToggle()}
                     isPopupOpen={this.state.showPopup}
-                    data={this.props.data}
+                    data={this.getData()}
                 />
             );
         }
