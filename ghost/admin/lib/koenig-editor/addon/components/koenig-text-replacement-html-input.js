@@ -343,7 +343,24 @@ export default Component.extend({
     // - first section must be a markerable section
     // - if first section is a list, grab the content of the first list item
     didUpdatePost(postEditor) {
-        let {builder, editor, editor: {post}} = postEditor;
+        let {editor, editor: {post, range}} = postEditor;
+
+        // remove any other formatting from code formats
+        let markers = [];
+        try {
+            markers = post.markersContainedByRange(post.toRange());
+        } catch (e) {
+            // post.toRange() can fail if a list item was just removed
+            // TODO: mobiledoc-kit bug?
+        }
+        markers.forEach((marker) => {
+            let {markups} = marker;
+            if (markups.length > 1 && marker.hasMarkup('code')) {
+                markups.rejectBy('tagName', 'code').forEach((markup) => {
+                    marker.removeMarkup(markup);
+                });
+            }
+        });
 
         // remove any non-markerable/non-list sections
         post.sections.forEach((section) => {
@@ -355,24 +372,6 @@ export default Component.extend({
                 }
             }
         });
-
-        // strip all sections other than the first
-        // if (post.sections.length > 1) {
-        //     while (post.sections.length > 1) {
-        //         postEditor.removeSection(post.sections.tail);
-        //     }
-        //     postEditor.setRange(post.sections.head.tailPosition());
-        // }
-
-        // convert list section to a paragraph section
-        if (post.sections.head.isListSection) {
-            let list = post.sections.head;
-            let listItem = list.items.head;
-            let newMarkers = listItem.markers.map(m => m.clone());
-            let p = builder.createMarkupSection('p', newMarkers);
-            postEditor.replaceSection(list, p);
-            postEditor.setRange(post.sections.head.tailPosition());
-        }
     },
 
     postDidChange() {
