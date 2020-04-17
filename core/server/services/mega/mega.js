@@ -31,7 +31,7 @@ const getEmailData = async (postModel, members = []) => {
 
                 replacements.push({
                     varName,
-                    memberProp,
+                    memberProp: memberProp.replace('subscriber_', ''),
                     fallback
                 });
                 return `%recipient.${varName}%`;
