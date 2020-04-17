@@ -93,12 +93,9 @@ describe('getSchema', function () {
                 url: 'http://mysite.com',
                 logo: {
                     '@type': 'ImageObject',
-                    url: {
-                        '@type': 'ImageObject',
-                        url: 'http://mysite.com/author/image/url/logo.jpg',
-                        width: 500,
-                        height: 500
-                    }
+                    url: 'http://mysite.com/author/image/url/logo.jpg',
+                    width: 500,
+                    height: 500
                 }
             },
             url: 'http://mysite.com/post/my-post-slug/'
@@ -197,12 +194,9 @@ describe('getSchema', function () {
                 url: 'http://mysite.com',
                 logo: {
                     '@type': 'ImageObject',
-                    url: {
-                        '@type': 'ImageObject',
-                        url: 'http://mysite.com/author/image/url/logo.jpg',
-                        width: 500,
-                        height: 500
-                    }
+                    url: 'http://mysite.com/author/image/url/logo.jpg',
+                    width: 500,
+                    height: 500
                 }
             },
             url: 'http://mysite.com/post/my-page-slug/'
@@ -304,12 +298,9 @@ describe('getSchema', function () {
                 url: 'http://mysite.com',
                 logo: {
                     '@type': 'ImageObject',
-                    url: {
-                        '@type': 'ImageObject',
-                        url: 'http://mysite.com/author/image/url/logo.jpg',
-                        width: 500,
-                        height: 500
-                    }
+                    url: 'http://mysite.com/author/image/url/logo.jpg',
+                    width: 500,
+                    height: 500
                 }
             },
             url: 'http://mysite.com/post/my-amp-post-slug/'
@@ -368,10 +359,7 @@ describe('getSchema', function () {
                 '@type': 'Organization',
                 name: 'Site Title',
                 url: null,
-                logo: {
-                    '@type': 'ImageObject',
-                    url: null
-                }
+                logo: null
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
@@ -446,10 +434,7 @@ describe('getSchema', function () {
                 '@type': 'Organization',
                 name: 'Site Title',
                 url: 'http://mysite.com',
-                logo: {
-                    '@type': 'ImageObject',
-                    url: 'http://mysite.com/author/image/url/logo.jpg'
-                }
+                logo: 'http://mysite.com/author/image/url/logo.jpg'
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
@@ -492,10 +477,7 @@ describe('getSchema', function () {
                 '@type': 'Organization',
                 name: 'Site Title',
                 url: null,
-                logo: {
-                    '@type': 'ImageObject',
-                    url: null
-                }
+                logo: null
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
@@ -541,10 +523,7 @@ describe('getSchema', function () {
                 '@type': 'Organization',
                 name: 'Site Title',
                 url: null,
-                logo: {
-                    '@type': 'ImageObject',
-                    url: null
-                }
+                logo: null
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
