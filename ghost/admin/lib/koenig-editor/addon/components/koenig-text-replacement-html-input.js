@@ -23,7 +23,10 @@ const UNDO_DEPTH = 50;
 // text expansion style when backspacing over final char of markup
 const SPECIAL_MARKUPS = {
     S: '~~',
-    CODE: '{', // this is different because we use <code> to represent {} replacements
+    CODE: {
+        char: '{', // this is different because we use <code> to represent {} replacements
+        replace: false
+    },
     SUP: '^',
     SUB: '~'
 };
