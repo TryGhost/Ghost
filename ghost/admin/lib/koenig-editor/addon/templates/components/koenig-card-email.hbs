@@ -30,7 +30,7 @@
             @didCreateEditor={{action "registerEditor"}}
         />
     {{else}}
-        <p>{{{this.payload.html}}}</p>
+        <p>{{{this.formattedHtml}}}</p>
         <div class="koenig-card-click-overlay"></div>
     {{/if}}
 </KoenigCard>

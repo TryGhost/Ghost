@@ -16,7 +16,7 @@ export default function cleanTextReplacementHtml(html = '', _options = {}) {
     }
 
     let cleanHtml = html
-        .replace(/(\s|&nbsp;){2,}/g, ' ')
+        .replace(/<code>({.*?})<\/code>/gi, '$1')
         .trim()
         .replace(/^&nbsp;|&nbsp$/g, '')
         .trim();
