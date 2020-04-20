@@ -26,9 +26,9 @@ const getEmailData = async (postModel, members = []) => {
     members.forEach((member) => {
         emails.push(member.email);
 
-        // firstname is a computed property only used here for now
+        // first_name is a computed property only used here for now
         // TODO: move into model computed property or output serializer?
-        member.firstname = (member.name || '').split(' ')[0];
+        member.first_name = (member.name || '').split(' ')[0];
 
         // add static data to mailgun template variables
         const data = {

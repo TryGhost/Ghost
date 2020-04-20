@@ -60,7 +60,7 @@ const _parseReplacements = (emailTmpl) => {
     const EMAIL_REPLACEMENT_REGEX = /%%(\{.*?\})%%/g;
     // the &quot; is necessary here because `juice` will convert "->&quot; for email compatibility
     const REPLACEMENT_STRING_REGEX = /\{(?<memberProp>\w*?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?\}/;
-    const ALLOWED_REPLACEMENTS = ['subscriber_firstname'];
+    const ALLOWED_REPLACEMENTS = ['first_name'];
 
     const replacements = [];
     ['html', 'plaintext'].forEach((format) => {
@@ -77,7 +77,7 @@ const _parseReplacements = (emailTmpl) => {
                         format,
                         id,
                         match: replacementMatch,
-                        memberProp: memberProp.replace('subscriber_', ''),
+                        memberProp,
                         fallback
                     });
 
