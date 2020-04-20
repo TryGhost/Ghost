@@ -139,6 +139,7 @@ module.exports = function setupSiteApp(options = {}) {
 
     // Members middleware
     // Initializes members specific routes as well as assigns members specific data to the req/res objects
+    siteApp.get('/members/ssr/member', shared.middlewares.labs.members, membersMiddleware.getMemberData);
     siteApp.get('/members/ssr', shared.middlewares.labs.members, membersMiddleware.getIdentityToken);
     siteApp.delete('/members/ssr', shared.middlewares.labs.members, membersMiddleware.deleteSession);
     siteApp.post('/members/webhooks/stripe', shared.middlewares.labs.members, membersMiddleware.stripeWebhooks);
