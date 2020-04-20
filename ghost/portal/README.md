@@ -14,7 +14,7 @@ To load members.js in any Ghost theme, below code needs to be added in theme's `
 <script>
     // Passes Admin URL
     var data = {
-        adminUrl: window.location.origin + "/ghost",
+        adminUrl: "https://youradminurl.com",
     };
     // Initializes members.js
     window.GhostMembers.initMembersJS(data);
