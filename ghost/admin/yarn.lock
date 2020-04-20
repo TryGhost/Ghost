@@ -11556,10 +11556,10 @@ pretender@3.3.1:
     route-recognizer "^0.3.3"
     whatwg-fetch "^3.0.0"
 
-pretender@3.4.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/pretender/-/pretender-3.4.0.tgz#0ccd943eccff48126bcbb912acaf9c33b0829785"
-  integrity sha512-BxmCnuVOchuP1am8p038XhSDDrRXX0bNqp6GRJPu/VcnWNFssy/BIHBefMcB535lHfMeelonkIP1ETtHEHjOVQ==
+pretender@3.4.1:
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/pretender/-/pretender-3.4.1.tgz#04345d99f0da8266f545ff377d4a9f23db9b99dd"
+  integrity sha512-qIQk0vKo739Dbx940Qq2hMZjIXHxWj9bDRQCfWSgoMWDfZTgn0bJ3lD0aJa37F5/MRzG5AtbYXf5JHzoXMsW/Q==
   dependencies:
     fake-xml-http-request "^2.1.1"
     route-recognizer "^0.3.3"
