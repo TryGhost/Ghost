@@ -54,6 +54,46 @@ const serializePostModel = async (model) => {
     return frame.response[docName][0];
 };
 
+// parses templates and extracts an array of replacements with desired fallbacks
+// removes %% wrappers from unknown replacement strings (modifies emailTmpl in place)
+const _parseReplacements = (emailTmpl) => {
+    const EMAIL_REPLACEMENT_REGEX = /%%(\{.*?\})%%/g;
+    // the &quot; is necessary here because `juice` will convert "->&quot; for email compatibility
+    const REPLACEMENT_STRING_REGEX = /\{(?<memberProp>\w*?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?\}/;
+    const ALLOWED_REPLACEMENTS = ['subscriber_firstname'];
+
+    const replacements = [];
+    ['html', 'plaintext'].forEach((format) => {
+        emailTmpl[format] = emailTmpl[format].replace(EMAIL_REPLACEMENT_REGEX, (replacementMatch, replacementStr) => {
+            const match = replacementStr.match(REPLACEMENT_STRING_REGEX);
+
+            if (match) {
+                const {memberProp, fallback} = match.groups;
+
+                if (ALLOWED_REPLACEMENTS.includes(memberProp)) {
+                    const id = `replacement_${replacements.length + 1}`;
+
+                    replacements.push({
+                        format,
+                        id,
+                        match: replacementMatch,
+                        memberProp: memberProp.replace('subscriber_', ''),
+                        fallback
+                    });
+
+                    // keeps wrapping %% for later replacement with real data
+                    return replacementMatch;
+                }
+            }
+
+            // removes %% so output matches user supplied content
+            return replacementStr;
+        });
+    });
+
+    return replacements;
+};
+
 const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     const post = await serializePostModel(postModel);
 
@@ -67,6 +107,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     // to avoid replacement strings being split across lines and for mail clients to handle
     // word wrapping based on user preferences
     post.plaintext = htmlToText.fromString(post.html, {
+        wordwrap: false,
         ignoreImage: true,
         hideLinkHrefIfSameAsText: true,
         preserveNewlines: true,
@@ -86,11 +127,17 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     let _cheerio = cheerio.load(juicedHtml);
     _cheerio('a').attr('target','_blank');
     juicedHtml = _cheerio.html();
-    return {
+
+    const emailTmpl = {
         subject: post.email_subject || post.title,
         html: juicedHtml,
         plaintext: post.plaintext
     };
+
+    // Extract known replacements and clean up unknown replacement strings
+    const replacements = _parseReplacements(emailTmpl);
+
+    return {emailTmpl, replacements};
 };
 
 module.exports = {

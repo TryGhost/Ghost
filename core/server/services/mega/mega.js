@@ -9,51 +9,16 @@ const postEmailSerializer = require('./post-email-serializer');
 const config = require('../../config');
 
 const getEmailData = async (postModel, members = []) => {
-    const emailTmpl = await postEmailSerializer.serialize(postModel);
+    const {emailTmpl, replacements} = await postEmailSerializer.serialize(postModel);
+
     emailTmpl.from = membersService.config.getEmailFromAddress();
 
-    const EMAIL_REPLACEMENT_REGEX = /%%(\{.*?\})%%/g;
-    // the &quot; is necessary here because `juice` will convert "->&quot; for email compatibility
-    const REPLACEMENT_STRING_REGEX = /\{(?<memberProp>\w*?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?\}/;
-    const ALLOWED_REPLACEMENTS = ['subscriber_firstname'];
-
-    // extract replacements with fallbacks. We have to handle replacements here because
-    // it's the only place we have access to both member data and specified fallbacks
-    const replacements = [];
-    emailTmpl.html = emailTmpl.html.replace(EMAIL_REPLACEMENT_REGEX, (replacementMatch, replacementStr) => {
-        const match = replacementStr.match(REPLACEMENT_STRING_REGEX);
-
-        if (match) {
-            const {memberProp, fallback} = match.groups;
-
-            if (ALLOWED_REPLACEMENTS.includes(memberProp)) {
-                const varName = `replacement_${replacements.length}`;
-
-                replacements.push({
-                    varName,
-                    memberProp: memberProp.replace('subscriber_', ''),
-                    fallback
-                });
-                return `%recipient.${varName}%`;
-            }
-        }
-
-        // output the user-entered replacement string for unknown or invalid replacements
-        // so that it's obvious there's an error in test emails
-        return replacementStr;
-    });
-
-    // plaintext will have the same replacements so no need to add them to the list and
-    // bloat the template variables object but we still need replacements for mailgun template syntax
-    let count = 0;
-    emailTmpl.plaintext = emailTmpl.plaintext.replace(EMAIL_REPLACEMENT_REGEX, (match, replacementStr) => {
-        const {groups: {memberProp}} = replacementStr.match(REPLACEMENT_STRING_REGEX);
-        if (ALLOWED_REPLACEMENTS.includes(memberProp)) {
-            const varName = `replacement_${count}`;
-            count = count + 1;
-            return `%recipient.${varName}`;
-        }
-        return replacementStr;
+    // update templates to use Mailgun variable syntax for replacements
+    replacements.forEach((replacement) => {
+        emailTmpl[replacement.format] = emailTmpl[replacement.format].replace(
+            replacement.match,
+            `%recipient.${replacement.id}%`
+        );
     });
 
     const emails = [];
@@ -72,8 +37,8 @@ const getEmailData = async (postModel, members = []) => {
         };
 
         // add replacement data/requested fallback to mailgun template variables
-        replacements.forEach(({varName, memberProp, fallback}) => {
-            data[varName] = member[memberProp] || fallback || '';
+        replacements.forEach(({id, memberProp, fallback}) => {
+            data[id] = member[memberProp] || fallback || '';
         });
 
         emailData[member.email] = data;
