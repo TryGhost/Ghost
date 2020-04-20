@@ -16,7 +16,7 @@ const site = {
                 brand: settingsCache.get('brand'),
                 url: urlUtils.urlFor('home', true),
                 plans: membersService.config.getPublicPlans(),
-                allowSelfSignup: membersService.config.getPublicPlans(),
+                allowSelfSignup: membersService.config.getAllowSelfSignup(),
                 version: ghostVersion.safe
             };
         }
