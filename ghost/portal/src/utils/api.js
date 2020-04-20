@@ -48,6 +48,19 @@ function createMemberIdentityApi(siteUrl) {
     };
 }
 
+function createMemberSessionDataApi(siteUrl) {
+    return function () {
+        return fetch(`${siteUrl}/members/ssr/member`, {
+            credentials: 'same-origin'
+        }).then(function (res) {
+            if (!res.ok) {
+                return null;
+            }
+            return res.json();
+        });
+    };
+}
+
 function createSiteDataApi(adminUrl) {
     return function () {
         return fetch(`${adminUrl}/api/canary/admin/site/`, {
@@ -114,6 +127,7 @@ function setupMembersApi({siteUrl, adminUrl}) {
         signout: createSignoutApi(siteUrl),
         checkoutPlan: createCheckoutPlanApi(siteUrl, adminUrl),
         getMemberIdentity: createMemberIdentityApi(siteUrl),
+        getMemberData: createMemberSessionDataApi(siteUrl),
         getSiteData: createSiteDataApi(adminUrl)
     };
 }
