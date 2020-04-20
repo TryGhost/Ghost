@@ -50,7 +50,8 @@
         </a>
         <a class="id-item" href="https://ghost.org/integrations/" target="_blank" rel="noopener noreferrer">
             <div class="id-item-logo id-more">
-                <img class="w-100 h-100" style="object-fit:contain;padding:0 8px;" src="assets/img/more.png" alt="Three dots" />
+                {{!-- <img class="w-100 h-100" style="object-fit:contain;padding:0 8px;" src="assets/img/more.png" alt="Three dots" /> --}}
+                {{svg-jar "circle-ellipsis" class="w5"}}
             </div>
             <div class="f8 mt1">More</div>
         </a>
@@ -65,7 +66,7 @@
                 <LinkTo @route="settings.integrations.zapier" data-test-link="zapier">
                 <article class="apps-card-app">
                     <div class="apps-card-left">
-                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/zapiericon.png);background-size:36px;"></figure>
+                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/zapier.svg);background-size:36px;"></figure>
                         <div class="apps-card-meta">
                             <h3 class="apps-card-app-title">Zapier</h3>
                             <p class="apps-card-app-desc">Automation for your favourite apps</p>
@@ -109,7 +110,7 @@
                 <LinkTo @route="settings.integrations.amp" data-test-link="amp">
                 <article class="apps-card-app">
                     <div class="apps-card-left">
-                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/ampicon.png); background-size: 36px;"></figure>
+                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/amp.svg); background-size: 36px;"></figure>
                         <div class="apps-card-meta">
                             <h3 class="apps-card-app-title">AMP</h3>
                             <p class="apps-card-app-desc">Google Accelerated Mobile Pages</p>
@@ -133,7 +134,7 @@
                 <LinkTo @route="settings.integrations.unsplash" data-test-link="unsplash">
                 <article class="apps-card-app">
                     <div class="apps-card-left">
-                        <figure class="apps-card-app-icon" style="background-image:url(assets/icons/unsplash.svg); background-size:30px;"></figure>
+                        <figure class="apps-card-app-icon id-unsplash" style="background-image:url(assets/icons/unsplash.svg); background-size:30px;"></figure>
                         <div class="apps-card-meta">
                             <h3 class="apps-card-app-title">Unsplash</h3>
                             <p class="apps-card-app-desc">Beautiful, free photos</p>
