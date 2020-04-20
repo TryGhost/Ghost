@@ -42,6 +42,32 @@ const getMemberDataFromSession = async function (req, res, next) {
     }
 };
 
+const getMemberData = async function (req, res) {
+    if (!labsService.isSet('members')) {
+        res.json(null);
+    }
+    try {
+        const member = await membersService.ssr.getMemberDataFromSession(req, res);
+        if (member) {
+            res.json({
+                uuid: member.uuid,
+                email: member.email,
+                name: member.name,
+                firstname: member.name && req.member.name.split(' ')[0],
+                avatar_image: member.avatar_image,
+                subscriptions: member.stripe.subscriptions,
+                paid: member.stripe.subscriptions.length !== 0
+            });
+        } else {
+            res.json(null);
+        }
+    } catch (err) {
+        common.logging.warn(err.message);
+        res.writeHead(err.statusCode);
+        res.end(err.message);
+    }
+};
+
 const exchangeTokenForSession = async function (req, res, next) {
     if (!labsService.isSet('members')) {
         return next();
@@ -76,6 +102,7 @@ module.exports = {
         decorateResponse
     ],
     getIdentityToken,
+    getMemberData,
     deleteSession,
     stripeWebhooks: (req, res, next) => membersService.api.middleware.handleStripeWebhook(req, res, next)
 };
