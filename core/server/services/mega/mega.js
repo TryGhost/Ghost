@@ -83,10 +83,9 @@ const addEmail = async (postModel, options) => {
     const membersToSendTo = members.filter((member) => {
         return membersService.contentGating.checkPostAccess(postModel.toJSON(), member);
     });
-    const {emailTmpl, emails} = await getEmailData(postModel, membersToSendTo);
 
     // NOTE: don't create email object when there's nobody to send the email to
-    if (!emails.length) {
+    if (!membersToSendTo.length) {
         return null;
     }
 
@@ -94,10 +93,20 @@ const addEmail = async (postModel, options) => {
     const existing = await models.Email.findOne({post_id: postId}, knexOptions);
 
     if (!existing) {
+        // get email contents and perform replacements using no member data so
+        // we have a decent snapshot of email content for later display
+        const {emailTmpl, replacements} = await postEmailSerializer.serialize(postModel, {isBrowserPreview: true});
+        replacements.forEach((replacement) => {
+            emailTmpl[replacement.format] = emailTmpl[replacement.format].replace(
+                replacement.match,
+                replacement.fallback || ''
+            );
+        });
+
         return models.Email.add({
             post_id: postId,
             status: 'pending',
-            email_count: emails.length,
+            email_count: membersToSendTo.length,
             subject: emailTmpl.subject,
             html: emailTmpl.html,
             plaintext: emailTmpl.plaintext,
