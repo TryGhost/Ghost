@@ -68,8 +68,9 @@ typings/
 # OSX
 .DS_Store
 
-# Membersjs Custom
-build
+# Membersjs build folders
+umd/
+build/
 
 ## config
 .env.local

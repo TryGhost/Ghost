@@ -1,9 +1,15 @@
 {
-  "name": "membersjs",
+  "name": "@tryghost/members-js",
   "version": "0.1.0",
   "license": "MIT",
   "repository": "git@github.com:TryGhost/membersjs.git",
   "author": "Ghost Foundation",
+  "unpkg": "umd/members.min.js",
+  "files": [
+    "umd/",
+    "LICENSE",
+    "README.md"
+  ],
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -21,7 +27,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
-    "posttest": "yarn lint"
+    "posttest": "yarn lint",
+    "prepublishOnly": "yarn build"
   },
   "eslintConfig": {
     "extends": ["react-app", "plugin:ghost/browser"],
