@@ -488,10 +488,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.1.tgz#c6dc0d1d8b8b26169490bad5b7264150e36938c0"
   integrity sha512-0uRnZyX32ivK4r5EriI3BQJQh++RHDc15mtXC/inQyIHv3J5n3X+hQWeOcTsI+v1ftjbgU+Im5ZOe0YTpPu7Ig==
 
-"@tryghost/pretty-cli@1.2.4":
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/pretty-cli/-/pretty-cli-1.2.4.tgz#c66d6ec5b805218bcaa0071fbc8e61416ce64747"
-  integrity sha512-zRcfYbJ2mu9gfWAgcYxKPXbolR+gznlZv5gPWB6S4/HJ499CX51GAeGSiPw8Z939Kt+KjoneZClHkXJTSq2FxQ==
+"@tryghost/pretty-cli@1.2.5":
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/pretty-cli/-/pretty-cli-1.2.5.tgz#889e355f81e9d4fb7f85004708fa5878a4663a2c"
+  integrity sha512-mWpSqrZEVxZaYJtK2okZdr4/U0mScxk1bQDqZzxQ49Pk9qoMkD6YAUX7etfkgs5iGTIcDVbOY+KrVphr1hFSew==
   dependencies:
     chalk "^3.0.0"
     sywac "^1.2.1"
@@ -4037,12 +4037,12 @@ grunt@1.1.0:
     path-is-absolute "~1.0.0"
     rimraf "~2.6.2"
 
-gscan@3.5.1:
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-3.5.1.tgz#9f78c9678d73e0c7fc6beaeedf56671807811989"
-  integrity sha512-0H6etw+GL7blKo06Gw9KDh6B+2RMriXGO1WLeBwqmOFRtQoRXPf1JHldeI78yc3wR11mqVGpxi06BgNKUdDsiQ==
+gscan@3.5.2:
+  version "3.5.2"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-3.5.2.tgz#9f696f7134c1ef8c2234b5137e15458df2872c9f"
+  integrity sha512-Ue85VySXf5k1Tqmw8Mx21VyjNAe0964eJeZmqcmkKXjySt9QVP1UTP4MWnq0/oGMmg2oPvYEIIO13FYtWWN6VA==
   dependencies:
-    "@tryghost/pretty-cli" "1.2.4"
+    "@tryghost/pretty-cli" "1.2.5"
     "@tryghost/zip" "^1.0.0"
     bluebird "^3.4.6"
     chalk "^3.0.0"
