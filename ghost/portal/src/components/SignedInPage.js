@@ -119,8 +119,8 @@ export default class SignedInPage extends React.Component {
                 </div>
                 <div style={{fontWeight: 'bold', marginBottom: '9px'}}>  Choose a Plan </div>
                 <div style={containerStyle}>
-                    {this.renderPlanBox({position: 'first', type: 'month', price: plans.monthly, currency: plans.currencySymbol, name: 'Monthly'})}
-                    {this.renderPlanBox({position: 'last', type: 'year', price: plans.yearly, currency: plans.currencySymbol, name: 'Yearly'})}
+                    {this.renderPlanBox({position: 'first', type: 'month', price: plans.monthly, currency: plans.currency_symbol, name: 'Monthly'})}
+                    {this.renderPlanBox({position: 'last', type: 'year', price: plans.yearly, currency: plans.currency_symbol, name: 'Yearly'})}
                 </div>
             </div>
         );

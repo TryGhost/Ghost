@@ -12,21 +12,10 @@ export default class ParentContainer extends React.Component {
         super(props);
         console.log('Initialized script with data', props.data);
 
-        // Setup Members API with site/admin URLs
-        const {siteUrl, adminUrl} = props.data;
-        this.MembersAPI = setupMembersApi({siteUrl, adminUrl});
-
-        // Setup custom trigger button handling
-        this.customTriggerButton = document.querySelector('[data-members-trigger-button]');
-        this.setupCustomTriggerButton(this.customTriggerButton);
-
-        // Initialize site and members data
-        this.initData();
-
-        const page = 'loading';
+        this.initialize();
 
         this.state = {
-            page,
+            page: 'loading',
             showPopup: false,
             action: {
                 name: 'loading'
@@ -34,27 +23,41 @@ export default class ParentContainer extends React.Component {
         };
     }
 
-    async initData() {
+    initialize() {
+        // Setup custom trigger button handling
+        this.setupCustomTriggerButton();
+
+        // Initialize site and members data
+        this.loadData();
+    }
+
+    async loadData() {
+        // Setup Members API with site/admin URLs
+        const {adminUrl} = this.props.data;
+        const siteUrl = window.location.origin;
+        this.MembersAPI = setupMembersApi({siteUrl, adminUrl});
         try {
-            const memberIdentity = await this.MembersAPI.getMemberIdentity();
-            const {site} = await this.MembersAPI.getSiteData();
-            const isMemberLoggedIn = !!memberIdentity;
+            // const {site} = await this.MembersAPI.getSiteData();
+            // const member = await this.MembersAPI.getMemberData();
+            const [{site}, member] = await Promise.all([this.MembersAPI.getSiteData(), this.MembersAPI.getMemberData()]);
+            console.log('Setting state with', site, member);
             this.setState({
-                isMemberLoggedIn,
                 site,
-                page: isMemberLoggedIn ? 'signedin' : 'signup'
+                member,
+                page: member ? 'signedin' : 'signup',
+                action: 'init:success'
             });
         } catch (e) {
             this.setState({
                 action: {
-                    name: 'loadingFailed'
+                    name: 'init:failed'
                 }
             });
         }
     }
 
     getData() {
-        const member = this.props.data.member;
+        const member = this.state.member;
         const site = this.state.site;
         return {site, member};
     }
@@ -65,18 +68,20 @@ export default class ParentContainer extends React.Component {
         });
     }
 
-    setupCustomTriggerButton(customTriggerButton) {
-        if (customTriggerButton) {
+    setupCustomTriggerButton() {
+        this.customTriggerButton = document.querySelector('[data-members-trigger-button]');
+
+        if (this.customTriggerButton) {
             const clickHandler = (event) => {
                 event.preventDefault();
                 const elAddClass = this.state.showPopup ? 'popup-close' : 'popup-open';
                 const elRemoveClass = this.state.showPopup ? 'popup-open' : 'popup-close';
-                customTriggerButton.classList.add(elAddClass);
-                customTriggerButton.classList.remove(elRemoveClass);
+                this.customTriggerButton.classList.add(elAddClass);
+                this.customTriggerButton.classList.remove(elRemoveClass);
                 this.onTriggerToggle();
             };
-            customTriggerButton.classList.add('popup-close');
-            customTriggerButton.addEventListener('click', clickHandler);
+            this.customTriggerButton.classList.add('popup-close');
+            this.customTriggerButton.addEventListener('click', clickHandler);
         }
     }
 
