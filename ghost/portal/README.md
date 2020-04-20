@@ -1,5 +1,8 @@
 # Members.js
 
+[![CI Status](https://github.com/TryGhost/members.js/workflows/Test/badge.svg?branch=master)](https://github.com/TryGhost/Ghost-CLI/actions)
+[![npm version](https://badge.fury.io/js/%40tryghost%2Fmembers-js.svg)](https://badge.fury.io/js/%40tryghost%2Fmembers-js)
+
 Drop-in script to make the bulk of members work on any theme
 
 ## Basic Setup
