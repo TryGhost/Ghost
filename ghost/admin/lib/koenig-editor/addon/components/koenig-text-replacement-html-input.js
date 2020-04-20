@@ -16,7 +16,7 @@ import {registerTextReplacementTextExpansions} from '../options/text-expansions'
 import {run} from '@ember/runloop';
 
 export function formatTextReplacementHtml(html) {
-    return (html || '').replace(/\{(.*?)\}/, '<code>$&</code>');
+    return (html || '').replace(/\{(.*?)\}/g, '<code>$&</code>');
 }
 
 // TODO: extract core to share functionality between this and `{{koenig-editor}}`
