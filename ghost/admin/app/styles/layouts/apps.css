@@ -53,6 +53,10 @@
     margin-top: 4px;
 }
 
+.id-more svg circle {
+    stroke: var(--midlightgrey);
+}
+
 @media (max-width: 1320px) {
     .integrations-directory {
         grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;

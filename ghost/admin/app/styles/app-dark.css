@@ -438,8 +438,13 @@ input:focus,
 .id-mailchimp img,
 .id-typeform img,
 .id-buffer img,
+.id-unsplash,
 .id-more img {
     filter: invert(100%);
+}
+
+.dark-no-shadow {
+    box-shadow: none;
 }
 
 .gh-nav {
