@@ -30,7 +30,17 @@ module.exports = {
                         });
                     }
 
-                    return mega.postEmailSerializer.serialize(model, {isBrowserPreview: true});
+                    return mega.postEmailSerializer.serialize(model, {isBrowserPreview: true}).then(({emailTmpl, replacements}) => {
+                        // perform replacements using no member data
+                        replacements.forEach((replacement) => {
+                            emailTmpl[replacement.format] = emailTmpl[replacement.format].replace(
+                                replacement.match,
+                                replacement.fallback || ''
+                            );
+                        });
+
+                        return emailTmpl;
+                    });
                 });
         }
     },
