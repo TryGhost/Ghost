@@ -61,19 +61,6 @@ module.exports = function setupParentApp(options = {}) {
     adminApp.use('/ghost/.well-known', require('./well-known')());
     adminApp.use('/ghost', require('../services/auth/session').createSessionFromToken, require('./admin')());
 
-    // TODO: remove {admin url}/content/* once we're sure the API is not returning relative asset URLs anywhere
-    // only register this route if the admin is separate so we're not overriding the {site}/content/* route
-    if (hasSeparateAdmin) {
-        adminApp.use(
-            STATIC_IMAGE_URL_PREFIX,
-            [
-                shared.middlewares.image.handleImageSizes,
-                storage.getStorage().serve(),
-                shared.middlewares.errorHandler.handleThemeResponse
-            ]
-        );
-    }
-
     // ADMIN + API
     // with a separate admin url only serve on that host, otherwise serve on all hosts
     const adminVhostArg = hasSeparateAdmin && adminHost ? adminHost : /.*/;
