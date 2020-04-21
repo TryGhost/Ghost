@@ -1,13 +1,13 @@
 const debug = require('ghost-ignition').debug('web:parent');
 const express = require('express');
 const vhost = require('@tryghost/vhost-middleware');
-const config = require('../config');
+const config = require('../../config');
 const compress = require('compression');
 const netjet = require('netjet');
-const shared = require('./shared');
+const shared = require('../shared');
 const escapeRegExp = require('lodash.escaperegexp');
 const {URL} = require('url');
-const sentry = require('../sentry');
+const sentry = require('../../sentry');
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
@@ -53,9 +53,9 @@ module.exports = function setupParentApp(options = {}) {
     const adminApp = express();
     adminApp.use(sentry.requestHandler);
     adminApp.enable('trust proxy'); // required to respect x-forwarded-proto in admin requests
-    adminApp.use('/ghost/api', require('./api')());
-    adminApp.use('/ghost/.well-known', require('./well-known')());
-    adminApp.use('/ghost', require('../services/auth/session').createSessionFromToken, require('./admin')());
+    adminApp.use('/ghost/api', require('../api')());
+    adminApp.use('/ghost/.well-known', require('../well-known')());
+    adminApp.use('/ghost', require('../../services/auth/session').createSessionFromToken, require('../admin')());
 
     // ADMIN + API
     // with a separate admin url only serve on that host, otherwise serve on all hosts
@@ -67,7 +67,7 @@ module.exports = function setupParentApp(options = {}) {
     const frontendVhostArg = (hasSeparateAdmin && adminHost) ?
         new RegExp(`^(?!${escapeRegExp(adminHost)}).*`) : /.*/;
 
-    parentApp.use(vhost(frontendVhostArg, require('./site')(options)));
+    parentApp.use(vhost(frontendVhostArg, require('../site')(options)));
 
     debug('ParentApp setup end');
 

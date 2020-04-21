@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../../utils/configUtils');
 
 describe('parent app', function () {
     let expressStub;
@@ -30,17 +30,13 @@ describe('parent app', function () {
         gatewaySpy = sinon.spy();
         authPagesSpy = sinon.spy();
 
-        parentApp = proxyquire('../../../core/server/web/parent-app', {
+        parentApp = proxyquire('../../../../core/server/web/parent/app', {
             express: expressStub,
             '@tryghost/vhost-middleware': vhostSpy,
-            './api': apiSpy,
-            './admin': adminSpy,
-            './well-known': wellKnownSpy,
-            './site': siteSpy,
-            '../services/members': {
-                gateway: gatewaySpy,
-                authPages: authPagesSpy
-            }
+            '../api': apiSpy,
+            '../admin': adminSpy,
+            '../well-known': wellKnownSpy,
+            '../site': siteSpy
         });
 
         configUtils.set('url', 'http://ghost.blog');
