@@ -55,10 +55,6 @@ module.exports = {
         return require('./request-id');
     },
 
-    get serveFavicon() {
-        return require('./serve-favicon');
-    },
-
     get servePublicFile() {
         return require('./serve-public-file');
     },
