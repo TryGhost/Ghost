@@ -19,6 +19,8 @@ To load members.js in any Ghost theme, add below code in theme's `default.hbs` b
 </script>
 ```
 
+Temp Note: You'll need [local Ghost setup](https://github.com/TryGhost/members.js#in-your-local-ghost-setup) on `membersjs` branch for member APIs to work at the moment.
+
 ## Basic Setup
 
 1. Clone this repository:
@@ -50,7 +52,7 @@ git fetch rish-upstream membersjs && git checkout membersjs
 ```
 - Ensure your local Ghost is running
 
-### In this repo(Members.js):
+#### In this repo(Members.js):
 
 - Run `yarn build` to create the minified bundle with your changes at `umd/members.min.js`
 
@@ -61,12 +63,10 @@ git fetch rish-upstream membersjs && git checkout membersjs
 ```html
 <script src="{{asset "built/members.min.js"}}"></script>
 <script>
-    // Pass Admin URL
-    var data = {
-        adminUrl: window.location.origin + "/ghost",
-    };
     // Initialize members.js
-    window.GhostMembers.initMembersJS(data);
+    window.GhostMembers.initMembersJS({
+        adminUrl: 'youradminurl.com'
+    });
 </script>
 ```
 
