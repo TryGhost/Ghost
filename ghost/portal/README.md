@@ -13,7 +13,7 @@ To load members.js in any Ghost theme, add below code in theme's `default.hbs` b
 <script src="https://unpkg.com/@tryghost/members-js"></script>
 <script>
     // Initializes members.js
-    window.GhostMembers.init({
+    window.GhostMembers.initMembersJS({
       adminUrl: 'https://youradminurl.com'
     });
 </script>
