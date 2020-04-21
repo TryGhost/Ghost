@@ -39,10 +39,6 @@ module.exports = {
         return require('./labs');
     },
 
-    get logRequest() {
-        return require('./log-request');
-    },
-
     get maintenance() {
         return require('./maintenance');
     },
