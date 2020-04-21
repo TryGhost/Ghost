@@ -110,22 +110,22 @@ module.exports = function setupSiteApp(options = {}) {
 
     // /public/members.js
     siteApp.get('/public/members.js', shared.middlewares.labs.members,
-        shared.middlewares.servePublicFile('public/members.js', 'application/javascript', constants.ONE_YEAR_S));
+        mw.servePublicFile('public/members.js', 'application/javascript', constants.ONE_YEAR_S));
 
     // /public/members.min.js
     siteApp.get('/public/members.min.js', shared.middlewares.labs.members,
-        shared.middlewares.servePublicFile('public/members.min.js', 'application/javascript', constants.ONE_YEAR_S));
+        mw.servePublicFile('public/members.min.js', 'application/javascript', constants.ONE_YEAR_S));
 
     // Serve sitemap.xsl file
-    siteApp.use(shared.middlewares.servePublicFile('sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
+    siteApp.use(mw.servePublicFile('sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
 
     // Serve stylesheets for default templates
-    siteApp.use(shared.middlewares.servePublicFile('public/ghost.css', 'text/css', constants.ONE_HOUR_S));
-    siteApp.use(shared.middlewares.servePublicFile('public/ghost.min.css', 'text/css', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('public/ghost.css', 'text/css', constants.ONE_HOUR_S));
+    siteApp.use(mw.servePublicFile('public/ghost.min.css', 'text/css', constants.ONE_YEAR_S));
 
     // Serve images for default templates
-    siteApp.use(shared.middlewares.servePublicFile('public/404-ghost@2x.png', 'image/png', constants.ONE_HOUR_S));
-    siteApp.use(shared.middlewares.servePublicFile('public/404-ghost.png', 'image/png', constants.ONE_HOUR_S));
+    siteApp.use(mw.servePublicFile('public/404-ghost@2x.png', 'image/png', constants.ONE_HOUR_S));
+    siteApp.use(mw.servePublicFile('public/404-ghost.png', 'image/png', constants.ONE_HOUR_S));
 
     // Serve blog images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage().serve());
@@ -158,7 +158,7 @@ module.exports = function setupSiteApp(options = {}) {
     debug('Static content done');
 
     // Serve robots.txt if not found in theme
-    siteApp.use(shared.middlewares.servePublicFile('robots.txt', 'text/plain', constants.ONE_HOUR_S));
+    siteApp.use(mw.servePublicFile('robots.txt', 'text/plain', constants.ONE_HOUR_S));
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal apps

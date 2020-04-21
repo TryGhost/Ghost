@@ -55,10 +55,6 @@ module.exports = {
         return require('./request-id');
     },
 
-    get servePublicFile() {
-        return require('./serve-public-file');
-    },
-
     get uncapitalise() {
         return require('./uncapitalise');
     },
