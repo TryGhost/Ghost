@@ -35,3 +35,10 @@
     transition: all 0.2s ease-in-out;
     top: 25px;
 }
+
+#billing-frame-global {
+    visibility: hidden;
+    height:0;
+    width:0;
+    border:none;
+}
