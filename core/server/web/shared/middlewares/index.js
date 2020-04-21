@@ -31,10 +31,6 @@ module.exports = {
         return require('./error-handler');
     },
 
-    get ghostLocals() {
-        return require('./ghost-locals');
-    },
-
     get labs() {
         return require('./labs');
     },
