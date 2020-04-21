@@ -7,11 +7,7 @@ const netjet = require('netjet');
 const shared = require('./shared');
 const escapeRegExp = require('lodash.escaperegexp');
 const {URL} = require('url');
-const urlUtils = require('../lib/url-utils');
-const storage = require('../adapters/storage');
 const sentry = require('../sentry');
-
-const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
