@@ -106,7 +106,7 @@ module.exports = function setupSiteApp(options = {}) {
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
     // Favicon
-    siteApp.use(shared.middlewares.serveFavicon());
+    siteApp.use(mw.serveFavicon());
 
     // /public/members.js
     siteApp.get('/public/members.js', membersMiddleware.public);

@@ -1,10 +1,10 @@
 var should = require('should'),
     sinon = require('sinon'),
     express = require('express'),
-    serveFavicon = require('../../../../core/server/web/shared/middlewares/serve-favicon'),
-    settingsCache = require('../../../../core/server/services/settings/cache'),
-    storage = require('../../../../core/server/adapters/storage'),
-    configUtils = require('../../../utils/configUtils'),
+    serveFavicon = require('../../../../../core/server/web/site/middleware/serve-favicon'),
+    settingsCache = require('../../../../../core/server/services/settings/cache'),
+    storage = require('../../../../../core/server/adapters/storage'),
+    configUtils = require('../../../../utils/configUtils'),
     path = require('path');
 
 describe('Serve Favicon', function () {
@@ -50,7 +50,7 @@ describe('Serve Favicon', function () {
                 var middleware = serveFavicon();
                 req.path = '/favicon.png';
 
-                storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
+                storage.getStorage().storagePath = path.join(__dirname, '../../../../../test/utils/fixtures/images/');
                 localSettingsCache.icon = 'favicon.png';
 
                 res = {
@@ -70,7 +70,7 @@ describe('Serve Favicon', function () {
                 var middleware = serveFavicon();
                 req.path = '/favicon.ico';
 
-                storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
+                storage.getStorage().storagePath = path.join(__dirname, '../../../../../test/utils/fixtures/images/');
                 localSettingsCache.icon = 'favicon.ico';
 
                 res = {
@@ -90,7 +90,7 @@ describe('Serve Favicon', function () {
                 var middleware = serveFavicon();
                 req.path = '/favicon.ico';
 
-                storage.getStorage().storagePath = path.join(__dirname, '../../../../test/utils/fixtures/images/');
+                storage.getStorage().storagePath = path.join(__dirname, '../../../../../test/utils/fixtures/images/');
                 localSettingsCache.icon = 'myicon.ico';
 
                 res = {
@@ -130,7 +130,7 @@ describe('Serve Favicon', function () {
                 var middleware = serveFavicon();
                 req.path = '/favicon.png';
 
-                configUtils.set('paths:contentPath', path.join(__dirname, '../../../../test/utils/fixtures/'));
+                configUtils.set('paths:contentPath', path.join(__dirname, '../../../../../test/utils/fixtures/'));
                 localSettingsCache.icon = 'favicon.ico';
 
                 res = {
@@ -147,7 +147,7 @@ describe('Serve Favicon', function () {
                 var middleware = serveFavicon();
                 req.path = '/favicon.ico';
 
-                configUtils.set('paths:contentPath', path.join(__dirname, '../../../../test/utils/fixtures/'));
+                configUtils.set('paths:contentPath', path.join(__dirname, '../../../../../test/utils/fixtures/'));
                 localSettingsCache.icon = 'favicon.png';
 
                 res = {
@@ -164,7 +164,7 @@ describe('Serve Favicon', function () {
                 var middleware = serveFavicon();
                 req.path = '/favicon.png';
 
-                configUtils.set('paths:publicFilePath', path.join(__dirname, '../../../../test/utils/fixtures/'));
+                configUtils.set('paths:publicFilePath', path.join(__dirname, '../../../../../test/utils/fixtures/'));
                 localSettingsCache.icon = '';
 
                 res = {
