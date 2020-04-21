@@ -25,7 +25,7 @@ module.exports = function setupParentApp(options = {}) {
     parentApp.use(mw.logRequest);
 
     // Register event emmiter on req/res to trigger cache invalidation webhook event
-    parentApp.use(shared.middlewares.emitEvents);
+    parentApp.use(mw.emitEvents);
 
     // enabled gzip compression by default
     if (config.get('compress') !== false) {
