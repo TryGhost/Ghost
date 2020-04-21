@@ -12,6 +12,8 @@ const adminRedirect = (path) => {
 module.exports = function adminRedirects() {
     const router = express.Router();
 
+    console.log('loading admin redirects');
+
     if (config.get('admin:redirects')) {
         router.get(/^\/ghost\/?$/, adminRedirect('/'));
     }
