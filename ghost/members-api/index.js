@@ -112,7 +112,7 @@ module.exports = function MembersApi({
             } catch (err) {
                 // no-op, we don't want to stop anything working due to
                 // geolocation lookup failing but logs can be useful
-                this.logging.warn(err);
+                common.logging.warn(err);
             }
         }
 
