@@ -103,7 +103,7 @@ const minimalRequiredSetupToStartGhost = (dbState) => {
         .then(() => {
             debug('Themes done');
 
-            parentApp = require('./web/parent-app')();
+            parentApp = require('./web/parent/app')();
             debug('Express Apps done');
 
             return new GhostServer(parentApp);

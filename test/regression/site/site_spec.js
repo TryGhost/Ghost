@@ -9,7 +9,7 @@ const should = require('should'),
     appService = require('../../../core/frontend/services/apps'),
     frontendSettingsService = require('../../../core/frontend/services/settings'),
     themeService = require('../../../core/frontend/services/themes'),
-    siteApp = require('../../../core/server/web/parent-app');
+    siteApp = require('../../../core/server/web/parent/app');
 
 describe('Integration - Web - Site', function () {
     let app;
