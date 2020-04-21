@@ -82,8 +82,6 @@ describe('parent app', function () {
         it('should mount and assign correct routes', function () {
             parentApp();
 
-            use.calledWith('/content/images').should.be.true();
-
             vhostSpy.calledTwice.should.be.true();
             vhostSpy.firstCall.calledWith('admin.ghost.blog').should.be.true();
             vhostSpy.secondCall.calledWith(/^(?!admin\.ghost\.blog).*/).should.be.true();
