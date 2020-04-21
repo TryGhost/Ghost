@@ -51,10 +51,6 @@ module.exports = {
         return require('./pretty-urls');
     },
 
-    get requestId() {
-        return require('./request-id');
-    },
-
     get uncapitalise() {
         return require('./uncapitalise');
     },

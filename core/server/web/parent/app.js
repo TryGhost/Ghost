@@ -5,6 +5,7 @@ const config = require('../../config');
 const compress = require('compression');
 const netjet = require('netjet');
 const shared = require('../shared');
+const mw = require('./middleware');
 const escapeRegExp = require('lodash.escaperegexp');
 const {URL} = require('url');
 const sentry = require('../../sentry');
@@ -20,7 +21,7 @@ module.exports = function setupParentApp(options = {}) {
     // (X-Forwarded-Proto header will be checked, if present)
     parentApp.enable('trust proxy');
 
-    parentApp.use(shared.middlewares.requestId);
+    parentApp.use(mw.requestId);
     parentApp.use(shared.middlewares.logRequest);
 
     // Register event emmiter on req/res to trigger cache invalidation webhook event
