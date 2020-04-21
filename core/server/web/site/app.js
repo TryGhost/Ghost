@@ -150,7 +150,7 @@ module.exports = function setupSiteApp(options = {}) {
     debug('Themes done');
 
     // Theme static assets/files
-    siteApp.use(shared.middlewares.staticTheme());
+    siteApp.use(mw.staticTheme());
     debug('Static content done');
 
     // Serve robots.txt if not found in theme

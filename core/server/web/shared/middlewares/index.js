@@ -59,10 +59,6 @@ module.exports = {
         return require('./serve-public-file');
     },
 
-    get staticTheme() {
-        return require('./static-theme');
-    },
-
     get uncapitalise() {
         return require('./uncapitalise');
     },
