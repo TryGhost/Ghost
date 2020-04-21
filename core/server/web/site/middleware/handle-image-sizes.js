@@ -1,7 +1,7 @@
 const path = require('path');
 const imageTransform = require('@tryghost/image-transform');
-const storage = require('../../../../adapters/storage');
-const activeTheme = require('../../../../../frontend/services/themes/active');
+const storage = require('../../../adapters/storage');
+const activeTheme = require('../../../../frontend/services/themes/active');
 
 const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;
 const TRAILING_SLASH_REGEX = /\/+$/;

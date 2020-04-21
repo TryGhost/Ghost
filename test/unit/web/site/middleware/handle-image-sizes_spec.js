@@ -1,5 +1,5 @@
 const should = require('should');
-const handleImageSizes = require('../../../../../core/server/web/shared/middlewares/image/handle-image-sizes.js');
+const handleImageSizes = require('../../../../../core/server/web/site/middleware/handle-image-sizes.js');
 
 // @TODO make these tests lovely and non specific to implementation
 describe('handleImageSizes middleware', function () {
