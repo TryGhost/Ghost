@@ -27,6 +27,7 @@ export default Component.extend({
     _openRange: null,
     _query: '',
     _onWindowMousedownHandler: null,
+    _yOffset: 16,
 
     // closure actions
     replaceWithCardSection() {},
@@ -232,7 +233,7 @@ export default Component.extend({
             let containerRect = this.element.parentNode.getBoundingClientRect();
             let selectedElement = section.renderNode.element;
             let selectedElementRect = selectedElement.getBoundingClientRect();
-            let top = selectedElementRect.top + selectedElementRect.height - containerRect.top;
+            let top = selectedElementRect.top + selectedElementRect.height - containerRect.top + this._yOffset;
 
             this.set('top', top);
         }
