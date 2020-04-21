@@ -28,6 +28,10 @@ export default Controller.extend({
         this._availableLabels = this.store.peekAll('label');
     },
 
+    showLoader: computed('filteredMembers.length', 'fetchMembers.isRunning', function () {
+        return (!this.get('filteredMembers.length') && this.get('fetchMembers.isRunning'));
+    }),
+
     listHeader: computed('selectedLabel', 'searchText', function () {
         let {searchText, selectedLabel, filteredMembers} = this;
         if (searchText) {
