@@ -3,21 +3,19 @@
 [![CI Status](https://github.com/TryGhost/members.js/workflows/Test/badge.svg?branch=master)](https://github.com/TryGhost/Ghost-CLI/actions)
 [![npm version](https://badge.fury.io/js/%40tryghost%2Fmembers-js.svg)](https://badge.fury.io/js/%40tryghost%2Fmembers-js)
 
-Drop-in script to make the bulk of members work on any theme
+Drop-in script to make the bulk of members work on any theme.
 
-## Using in a theme
+## Usage
 
-To load members.js in any Ghost theme, below code needs to be added in theme's `default.hbs` before the end of body tag.
+To load members.js in any Ghost theme, add below code in theme's `default.hbs` before the end of body tag.
 
 ```html
 <script src="https://unpkg.com/@tryghost/members-js"></script>
 <script>
-    // Passes Admin URL
-    var data = {
-        adminUrl: "https://youradminurl.com",
-    };
     // Initializes members.js
-    window.GhostMembers.initMembersJS(data);
+    window.GhostMembers.init({
+      adminUrl: 'https://youradminurl.com'
+    });
 </script>
 ```
 
