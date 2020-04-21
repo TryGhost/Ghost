@@ -4,7 +4,6 @@ const vhost = require('@tryghost/vhost-middleware');
 const config = require('../../config');
 const compress = require('compression');
 const netjet = require('netjet');
-const shared = require('../shared');
 const mw = require('./middleware');
 const escapeRegExp = require('lodash.escaperegexp');
 const {URL} = require('url');
@@ -42,7 +41,8 @@ module.exports = function setupParentApp(options = {}) {
     }
 
     // This sets global res.locals which are needed everywhere
-    parentApp.use(shared.middlewares.ghostLocals);
+    // @TODO: figure out if this is really needed everywhere? Is it not frontend only...
+    parentApp.use(mw.ghostLocals);
 
     // Mount the express apps on the parentApp
 
