@@ -109,9 +109,12 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(mw.serveFavicon());
 
     // /public/members.js
-    siteApp.get('/public/members.js', membersMiddleware.public);
+    siteApp.get('/public/members.js', shared.middlewares.labs.members,
+        shared.middlewares.servePublicFile('public/members.js', 'application/javascript', constants.ONE_YEAR_S));
+
     // /public/members.min.js
-    siteApp.get('/public/members.min.js', membersMiddleware.publicMinified);
+    siteApp.get('/public/members.min.js', shared.middlewares.labs.members,
+        shared.middlewares.servePublicFile('public/members.min.js', 'application/javascript', constants.ONE_YEAR_S));
 
     // Serve sitemap.xsl file
     siteApp.use(shared.middlewares.servePublicFile('sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
@@ -136,10 +139,11 @@ module.exports = function setupSiteApp(options = {}) {
 
     // Members middleware
     // Initializes members specific routes as well as assigns members specific data to the req/res objects
-    siteApp.get('/members/ssr', membersMiddleware.getIdentityToken);
-    siteApp.delete('/members/ssr', membersMiddleware.deleteSession);
-    siteApp.post('/members/webhooks/stripe', membersMiddleware.stripeWebhooks);
+    siteApp.get('/members/ssr', shared.middlewares.labs.members, membersMiddleware.getIdentityToken);
+    siteApp.delete('/members/ssr', shared.middlewares.labs.members, membersMiddleware.deleteSession);
+    siteApp.post('/members/webhooks/stripe', shared.middlewares.labs.members, membersMiddleware.stripeWebhooks);
 
+    // Currently global handling for signing in with ?token=
     siteApp.use(membersMiddleware.createSessionFromToken);
 
     // Theme middleware
