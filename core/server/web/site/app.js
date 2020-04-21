@@ -19,6 +19,7 @@ const membersService = require('../../services/members');
 const membersMiddleware = membersService.middleware;
 const siteRoutes = require('./routes');
 const shared = require('../shared');
+const mw = require('./middleware');
 const sentry = require('../../sentry');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
@@ -96,7 +97,7 @@ module.exports = function setupSiteApp(options = {}) {
     shared.middlewares.customRedirects.use(siteApp);
 
     // More redirects
-    siteApp.use(shared.middlewares.adminRedirects());
+    siteApp.use(mw.adminRedirects());
 
     // force SSL if blog url is set to https. The redirects handling must happen before asset and page routing,
     // otherwise we serve assets/pages with http. This can cause mixed content warnings in the admin client.

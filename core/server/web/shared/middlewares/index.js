@@ -11,10 +11,6 @@ module.exports = {
         return require('./validation');
     },
 
-    get adminRedirects() {
-        return require('./admin-redirects');
-    },
-
     get brute() {
         return require('./brute');
     },
