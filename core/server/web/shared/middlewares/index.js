@@ -57,9 +57,5 @@ module.exports = {
 
     get updateUserLastSeen() {
         return require('./update-user-last-seen');
-    },
-
-    get emitEvents() {
-        return require('./emit-events');
     }
 };
