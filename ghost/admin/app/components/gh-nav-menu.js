@@ -9,6 +9,7 @@ import {htmlSafe} from '@ember/string';
 import {inject as service} from '@ember/service';
 
 export default Component.extend(ShortcutsMixin, {
+    billing: service(),
     config: service(),
     customViews: service(),
     feature: service(),
@@ -25,8 +26,6 @@ export default Component.extend(ShortcutsMixin, {
     iconStyle: '',
 
     showSearchModal: false,
-    showBillingModal: false,
-
     shortcuts: null,
 
     isIntegrationRoute: match('router.currentRouteName', /^settings\.integration/),
@@ -39,6 +38,7 @@ export default Component.extend(ShortcutsMixin, {
     showMenuExtension: and('config.clientExtensions.menu', 'session.user.isOwner'),
     showDropdownExtension: and('config.clientExtensions.dropdown', 'session.user.isOwner'),
     showScriptExtension: and('config.clientExtensions.script', 'session.user.isOwner'),
+    showBillingModal: computed.reads('billing.billingWindowOpen'),
     showBilling: computed.reads('config.billingUrl'),
 
     init() {
@@ -81,7 +81,8 @@ export default Component.extend(ShortcutsMixin, {
             this.toggleProperty('showSearchModal');
         },
         toggleBillingModal() {
-            this.toggleProperty('showBillingModal');
+            this.billing.set('upgrade', false);
+            this.billing.toggleProperty('billingWindowOpen');
         }
     },
 
