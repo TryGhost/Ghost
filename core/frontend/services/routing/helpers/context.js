@@ -24,7 +24,7 @@ function setResponseContext(req, res, data) {
     res.locals.context = [];
 
     // If we don't have a relativeUrl, we can't detect the context, so return
-    // See shared/middlewares/ghost-locals
+    // See web/parent/middleware/ghost-locals
     if (!res.locals.relativeUrl) {
         return;
     }
