@@ -22,7 +22,7 @@ module.exports = function setupParentApp(options = {}) {
     parentApp.enable('trust proxy');
 
     parentApp.use(mw.requestId);
-    parentApp.use(shared.middlewares.logRequest);
+    parentApp.use(mw.logRequest);
 
     // Register event emmiter on req/res to trigger cache invalidation webhook event
     parentApp.use(shared.middlewares.emitEvents);
