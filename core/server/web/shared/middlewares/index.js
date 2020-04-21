@@ -39,10 +39,6 @@ module.exports = {
         return require('./pretty-urls');
     },
 
-    get uncapitalise() {
-        return require('./uncapitalise');
-    },
-
     get urlRedirects() {
         return require('./url-redirects');
     }
