@@ -12,6 +12,7 @@
       "intl-messageformat",
       "moment-timezone",
       "nodemailer",
+      "tmp",
       "validator",
       "simple-dom"
     ],
