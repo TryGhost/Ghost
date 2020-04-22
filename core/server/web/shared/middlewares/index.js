@@ -49,9 +49,5 @@ module.exports = {
 
     get urlRedirects() {
         return require('./url-redirects');
-    },
-
-    get updateUserLastSeen() {
-        return require('./update-user-last-seen');
     }
 };
