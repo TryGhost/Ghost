@@ -15,10 +15,6 @@ module.exports = {
         return require('./brute');
     },
 
-    get upload() {
-        return require('./upload');
-    },
-
     get cacheControl() {
         return require('./cache-control');
     },
