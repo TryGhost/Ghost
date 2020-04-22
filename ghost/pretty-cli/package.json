@@ -26,6 +26,6 @@
   },
   "dependencies": {
     "chalk": "4.0.0",
-    "sywac": "1.2.1"
+    "sywac": "1.3.0"
   }
 }
