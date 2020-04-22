@@ -50,7 +50,7 @@ const notImplemented = function (req, res, next) {
 module.exports.authAdminApi = [
     auth.authenticate.authenticateAdminApi,
     auth.authorize.authorizeAdminApi,
-    shared.middlewares.updateUserLastSeen,
+    apiMw.updateUserLastSeen,
     apiMw.cors,
     shared.middlewares.urlRedirects.adminRedirect,
     shared.middlewares.prettyUrls,
@@ -64,7 +64,7 @@ module.exports.authAdminApi = [
 module.exports.authAdminApiWithUrl = [
     auth.authenticate.authenticateAdminApiWithUrl,
     auth.authorize.authorizeAdminApi,
-    shared.middlewares.updateUserLastSeen,
+    apiMw.updateUserLastSeen,
     apiMw.cors,
     shared.middlewares.urlRedirects.adminRedirect,
     shared.middlewares.prettyUrls,
