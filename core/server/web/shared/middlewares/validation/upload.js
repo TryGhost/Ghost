@@ -2,7 +2,20 @@ const path = require('path');
 const errors = require('@tryghost/errors');
 const {i18n} = require('../../../../lib/common');
 const config = require('../../../../config');
-const localUtils = require('../../utils');
+
+const checkFileExists = (fileData) => {
+    return !!(fileData.mimetype && fileData.path);
+};
+
+const checkFileIsValid = (fileData, types, extensions) => {
+    const type = fileData.mimetype;
+
+    if (types.includes(type) && extensions.includes(fileData.ext)) {
+        return true;
+    }
+
+    return false;
+};
 
 module.exports = function upload(options) {
     const type = options.type;
@@ -17,7 +30,7 @@ module.exports = function upload(options) {
         req.file.type = req.file.mimetype;
 
         // Check if a file was provided
-        if (!localUtils.checkFileExists(req.file)) {
+        if (!checkFileExists(req.file)) {
             return next(new errors.ValidationError({
                 message: i18n.t(`errors.api.${type}.missingFile`)
             }));
@@ -26,7 +39,7 @@ module.exports = function upload(options) {
         req.file.ext = path.extname(req.file.name).toLowerCase();
 
         // Check if the file is valid
-        if (!localUtils.checkFileIsValid(req.file, contentTypes, extensions)) {
+        if (!checkFileIsValid(req.file, contentTypes, extensions)) {
             return next(new errors.UnsupportedMediaTypeError({
                 message: i18n.t(`errors.api.${type}.invalidFile`, {extensions: extensions})
             }));
@@ -34,4 +47,9 @@ module.exports = function upload(options) {
 
         next();
     };
+};
+
+module.exports._test = {
+    checkFileExists,
+    checkFileIsValid
 };
