@@ -52,7 +52,7 @@ module.exports.authAdminApi = [
     auth.authorize.authorizeAdminApi,
     apiMw.updateUserLastSeen,
     apiMw.cors,
-    shared.middlewares.urlRedirects.adminRedirect,
+    shared.middlewares.urlRedirects.adminSSLAndHostRedirect,
     shared.middlewares.prettyUrls,
     notImplemented
 ];
@@ -66,7 +66,7 @@ module.exports.authAdminApiWithUrl = [
     auth.authorize.authorizeAdminApi,
     apiMw.updateUserLastSeen,
     apiMw.cors,
-    shared.middlewares.urlRedirects.adminRedirect,
+    shared.middlewares.urlRedirects.adminSSLAndHostRedirect,
     shared.middlewares.prettyUrls,
     notImplemented
 ];
@@ -76,7 +76,7 @@ module.exports.authAdminApiWithUrl = [
  */
 module.exports.publicAdminApi = [
     apiMw.cors,
-    shared.middlewares.urlRedirects.adminRedirect,
+    shared.middlewares.urlRedirects.adminSSLAndHostRedirect,
     shared.middlewares.prettyUrls,
     notImplemented
 ];
