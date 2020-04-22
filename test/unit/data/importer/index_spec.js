@@ -353,8 +353,6 @@ describe('Importer', function () {
     });
 
     describe('ImageHandler', function () {
-        var store = storage.getStorage();
-
         it('has the correct interface', function () {
             ImageHandler.type.should.eql('images');
             ImageHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(7);
@@ -380,16 +378,11 @@ describe('Importer', function () {
                 file = [{
                     path: '/my/test/' + filename,
                     name: filename
-                }],
-                storeSpy = sinon.spy(store, 'getUniqueFileName'),
-                storageSpy = sinon.spy(storage, 'getStorage');
+                }];
 
-            ImageHandler.loadFile(_.clone(file)).then(function () {
-                storageSpy.calledOnce.should.be.true();
-                storeSpy.calledOnce.should.be.true();
-                storeSpy.firstCall.args[0].originalPath.should.equal('test-image.jpeg');
-                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.firstCall.args[0].newPath.should.eql('/content/images/test-image.jpeg');
+            ImageHandler.loadFile(_.clone(file)).then(function (files) {
+                should(files[0].originalPath).equal('test-image.jpeg');
+                should(files[0].name).equal('test-image.jpeg');
 
                 done();
             }).catch(done);
@@ -400,16 +393,11 @@ describe('Importer', function () {
                 file = [{
                     path: '/my/test/' + filename,
                     name: filename
-                }],
-                storeSpy = sinon.spy(store, 'getUniqueFileName'),
-                storageSpy = sinon.spy(storage, 'getStorage');
+                }];
 
-            ImageHandler.loadFile(_.clone(file)).then(function () {
-                storageSpy.calledOnce.should.be.true();
-                storeSpy.calledOnce.should.be.true();
-                storeSpy.firstCall.args[0].originalPath.should.equal('photos/my-cat.jpeg');
-                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photos$/);
-                storeSpy.firstCall.args[0].newPath.should.eql('/content/images/photos/my-cat.jpeg');
+            ImageHandler.loadFile(_.clone(file)).then(function (files) {
+                should(files[0].originalPath).equal('photos/my-cat.jpeg');
+                should(files[0].name).equal('photos/my-cat.jpeg');
 
                 done();
             }).catch(done);
@@ -420,16 +408,11 @@ describe('Importer', function () {
                 file = [{
                     path: '/my/test/content/images/' + filename,
                     name: filename
-                }],
-                storeSpy = sinon.spy(store, 'getUniqueFileName'),
-                storageSpy = sinon.spy(storage, 'getStorage');
+                }];
 
-            ImageHandler.loadFile(_.clone(file)).then(function () {
-                storageSpy.calledOnce.should.be.true();
-                storeSpy.calledOnce.should.be.true();
-                storeSpy.firstCall.args[0].originalPath.should.equal('content/images/my-cat.jpeg');
-                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.firstCall.args[0].newPath.should.eql('/content/images/my-cat.jpeg');
+            ImageHandler.loadFile(_.clone(file)).then(function (result) {
+                should(result[0].originalPath).equal('content/images/my-cat.jpeg');
+                should(result[0].name).equal('my-cat.jpeg');
 
                 done();
             }).catch(done);
@@ -442,16 +425,11 @@ describe('Importer', function () {
                 file = [{
                     path: '/my/test/' + filename,
                     name: filename
-                }],
-                storeSpy = sinon.spy(store, 'getUniqueFileName'),
-                storageSpy = sinon.spy(storage, 'getStorage');
+                }];
 
-            ImageHandler.loadFile(_.clone(file)).then(function () {
-                storageSpy.calledOnce.should.be.true();
-                storeSpy.calledOnce.should.be.true();
-                storeSpy.firstCall.args[0].originalPath.should.equal('test-image.jpeg');
-                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.firstCall.args[0].newPath.should.eql('/subdir/content/images/test-image.jpeg');
+            ImageHandler.loadFile(_.clone(file)).then(function (files) {
+                should(files[0].originalPath).equal('test-image.jpeg');
+                should(files[0].name).equal('test-image.jpeg');
 
                 done();
             }).catch(done);
@@ -459,39 +437,31 @@ describe('Importer', function () {
 
         it('can load multiple files', function (done) {
             var files = [{
-                    path: '/my/test/testing.png',
-                    name: 'testing.png'
-                },
-                {
-                    path: '/my/test/photo/kitten.jpg',
-                    name: 'photo/kitten.jpg'
-                },
-                {
-                    path: '/my/test/content/images/animated/bunny.gif',
-                    name: 'content/images/animated/bunny.gif'
-                },
-                {
-                    path: '/my/test/images/puppy.jpg',
-                    name: 'images/puppy.jpg'
-                }],
-                storeSpy = sinon.spy(store, 'getUniqueFileName'),
-                storageSpy = sinon.spy(storage, 'getStorage');
+                path: '/my/test/testing.png',
+                name: 'testing.png'
+            },
+            {
+                path: '/my/test/photo/kitten.jpg',
+                name: 'photo/kitten.jpg'
+            },
+            {
+                path: '/my/test/content/images/animated/bunny.gif',
+                name: 'content/images/animated/bunny.gif'
+            },
+            {
+                path: '/my/test/images/puppy.jpg',
+                name: 'images/puppy.jpg'
+            }];
 
-            ImageHandler.loadFile(_.clone(files)).then(function () {
-                storageSpy.calledOnce.should.be.true();
-                storeSpy.callCount.should.eql(4);
-                storeSpy.firstCall.args[0].originalPath.should.equal('testing.png');
-                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.firstCall.args[0].newPath.should.eql('/content/images/testing.png');
-                storeSpy.secondCall.args[0].originalPath.should.equal('photo/kitten.jpg');
-                storeSpy.secondCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photo$/);
-                storeSpy.secondCall.args[0].newPath.should.eql('/content/images/photo/kitten.jpg');
-                storeSpy.thirdCall.args[0].originalPath.should.equal('content/images/animated/bunny.gif');
-                storeSpy.thirdCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)animated$/);
-                storeSpy.thirdCall.args[0].newPath.should.eql('/content/images/animated/bunny.gif');
-                storeSpy.lastCall.args[0].originalPath.should.equal('images/puppy.jpg');
-                storeSpy.lastCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.lastCall.args[0].newPath.should.eql('/content/images/puppy.jpg');
+            ImageHandler.loadFile(_.clone(files)).then(function (files) {
+                should(files[0].originalPath).equal('testing.png');
+                should(files[0].name).equal('testing.png');
+                should(files[1].originalPath).equal('photo/kitten.jpg');
+                should(files[1].name).equal('photo/kitten.jpg');
+                should(files[2].originalPath).equal('content/images/animated/bunny.gif');
+                should(files[2].name).equal('animated/bunny.gif');
+                should(files[3].originalPath).equal('images/puppy.jpg');
+                should(files[3].name).equal('puppy.jpg');
 
                 done();
             }).catch(done);
@@ -669,47 +639,71 @@ describe('Importer', function () {
             ImageImporter.doImport.should.be.instanceof(Function);
         });
 
-        it('does preprocess posts, users and tags correctly', function () {
-            var inputData = require('../../../utils/fixtures/import/import-data-1.json'),
-                outputData = ImageImporter.preProcess(_.cloneDeep(inputData));
+        it('does preprocess posts, users and tags correctly', function (done) {
+            var inputData = require('../../../utils/fixtures/import/import-data-1.json');
+            var store = storage.getStorage();
+            var storeSpy = sinon.stub(store, 'save');
+            storeSpy.withArgs(inputData.images[0]).returns(Promise.resolve('/content/images/my-image.png'));
+            storeSpy.withArgs(inputData.images[1]).returns(Promise.resolve('/content/images/photos/cat.jpg'));
 
-            inputData = inputData.data.data;
-            outputData = outputData.data.data;
-
-            inputData.posts[0].markdown.should.not.containEql('/content/images/my-image.png');
-            inputData.posts[0].html.should.not.containEql('/content/images/my-image.png');
-            outputData.posts[0].markdown.should.containEql('/content/images/my-image.png');
-            outputData.posts[0].html.should.containEql('/content/images/my-image.png');
-
-            inputData.posts[0].markdown.should.not.containEql('/content/images/photos/cat.jpg');
-            inputData.posts[0].html.should.not.containEql('/content/images/photos/cat.jpg');
-            outputData.posts[0].markdown.should.containEql('/content/images/photos/cat.jpg');
-            outputData.posts[0].html.should.containEql('/content/images/photos/cat.jpg');
-
-            inputData.posts[0].feature_image.should.eql('/images/my-image.png');
-            outputData.posts[0].feature_image.should.eql('/content/images/my-image.png');
-
-            inputData.tags[0].feature_image.should.eql('/images/my-image.png');
-            outputData.tags[0].feature_image.should.eql('/content/images/my-image.png');
-
-            inputData.users[0].profile_image.should.eql('/images/my-image.png');
-            inputData.users[0].cover_image.should.eql('/images/photos/cat.jpg');
-            outputData.users[0].profile_image.should.eql('/content/images/my-image.png');
-            outputData.users[0].cover_image.should.eql('/content/images/photos/cat.jpg');
+            ImageImporter.preProcess(_.cloneDeep(inputData)).then(function (outputData) {
+                inputData = inputData.data.data;
+                outputData = outputData.data.data;
+    
+                inputData.posts[0].markdown.should.not.containEql('/content/images/my-image.png');
+                inputData.posts[0].html.should.not.containEql('/content/images/my-image.png');
+                outputData.posts[0].markdown.should.containEql('/content/images/my-image.png');
+                outputData.posts[0].html.should.containEql('/content/images/my-image.png');
+    
+                inputData.posts[0].markdown.should.not.containEql('/content/images/photos/cat.jpg');
+                inputData.posts[0].html.should.not.containEql('/content/images/photos/cat.jpg');
+                outputData.posts[0].markdown.should.containEql('/content/images/photos/cat.jpg');
+                outputData.posts[0].html.should.containEql('/content/images/photos/cat.jpg');
+    
+                inputData.posts[0].feature_image.should.eql('/images/my-image.png');
+                outputData.posts[0].feature_image.should.eql('/content/images/my-image.png');
+    
+                inputData.tags[0].feature_image.should.eql('/images/my-image.png');
+                outputData.tags[0].feature_image.should.eql('/content/images/my-image.png');
+    
+                inputData.users[0].profile_image.should.eql('/images/my-image.png');
+                inputData.users[0].cover_image.should.eql('/images/photos/cat.jpg');
+                outputData.users[0].profile_image.should.eql('/content/images/my-image.png');
+                outputData.users[0].cover_image.should.eql('/content/images/photos/cat.jpg');
+                
+                done();
+            });
         });
 
-        it('does import the images correctly', function () {
-            var inputData = require('../../../utils/fixtures/import/import-data-1.json'),
-                storageApi = {
-                    save: sinon.stub().returns(Promise.resolve())
-                },
-                storageSpy = sinon.stub(storage, 'getStorage').callsFake(function () {
-                    return storageApi;
-                });
+        it('does preprocess posts, users and tags correctly (external host storage adapter)', function (done) {
+            var inputData = require('../../../utils/fixtures/import/import-data-1.json');
+            var store = storage.getStorage();
+            var storeSpy = sinon.stub(store, 'save');
+            storeSpy.withArgs(inputData.images[0]).returns(Promise.resolve('https://cdn.example.com/my-image.png'));
+            storeSpy.withArgs(inputData.images[1]).returns(Promise.resolve('https://cdn.example.com/photos/cat.png'));
 
-            ImageImporter.doImport(inputData.images).then(function () {
-                storageSpy.calledOnce.should.be.true();
-                storageApi.save.calledTwice.should.be.true();
+            ImageImporter.preProcess(_.cloneDeep(inputData)).then(function (outputData) {
+                inputData = inputData.data.data;
+                outputData = outputData.data.data;
+    
+                outputData.posts[0].markdown.should.containEql('https://cdn.example.com/my-image.png');
+                outputData.posts[0].html.should.containEql('https://cdn.example.com/my-image.png');
+    
+                outputData.posts[0].markdown.should.containEql('https://cdn.example.com/photos/cat.png');
+                outputData.posts[0].html.should.containEql('https://cdn.example.com/photos/cat.png');
+    
+                inputData.posts[0].feature_image.should.eql('/images/my-image.png');
+                outputData.posts[0].feature_image.should.eql('https://cdn.example.com/my-image.png');
+    
+                inputData.tags[0].feature_image.should.eql('/images/my-image.png');
+                outputData.tags[0].feature_image.should.eql('https://cdn.example.com/my-image.png');
+    
+                inputData.users[0].profile_image.should.eql('/images/my-image.png');
+                inputData.users[0].cover_image.should.eql('/images/photos/cat.jpg');
+                outputData.users[0].profile_image.should.eql('https://cdn.example.com/my-image.png');
+                outputData.users[0].cover_image.should.eql('https://cdn.example.com/photos/cat.png');
+                
+                done();
             });
         });
     });

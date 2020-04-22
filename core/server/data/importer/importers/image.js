@@ -27,6 +27,9 @@ preProcessPosts = function (data, image) {
         if (post.feature_image) {
             post.feature_image = replaceImage(post.feature_image, image);
         }
+        if (post.mobiledoc) {
+            post.mobiledoc = replaceImage(post.mobiledoc, image);
+        }
     });
 };
 
@@ -52,25 +55,35 @@ preProcessUsers = function (data, image) {
 ImageImporter = {
     type: 'images',
     preProcess: function (importData) {
-        if (importData.images && importData.data) {
-            _.each(importData.images, function (image) {
+        if (!importData.images || !importData.data) {
+            importData.preProcessedByImage = true;
+            return importData;
+        }
+
+        var store = storage.getStorage();
+        return Promise.map(importData.images, function (image) {
+            return store.save(image).then(function (result) {
+                return {
+                    originalPath: image.originalPath,
+                    newPath: result
+                };
+            }).then(function (image) {
                 preProcessPosts(importData.data.data, image);
                 preProcessTags(importData.data.data, image);
                 preProcessUsers(importData.data.data, image);
             });
-        }
-
-        importData.preProcessedByImage = true;
-        return importData;
-    },
-    doImport: function (imageData) {
-        var store = storage.getStorage();
-
-        return Promise.map(imageData, function (image) {
-            return store.save(image, image.targetDir).then(function (result) {
-                return {originalPath: image.originalPath, newPath: image.newPath, stored: result};
-            });
+        }).then(function () {
+            importData.preProcessedByImage = true;
+            return importData;
         });
+    },
+    doImport: function (/*imageData*/) {
+        // we do the actual importing in preProcess above. this is because some storage adapters
+        // use a different host entirely to serve images - and that full url is only returned
+        // by the save() API. so we must do a save to get the new image path, so that new image path
+        // will be available at preprocess time.
+
+        return Promise.resolve();
     }
 };
 

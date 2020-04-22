@@ -3,16 +3,12 @@
         {
             "name": "my-image.png",
             "path": "/tmp/test/path/images/my-image.png",
-            "originalPath": "images/my-image.png",
-            "targetDir": "/test/content/images",
-            "newPath": "/content/images/my-image.png"
+            "originalPath": "images/my-image.png"
         },
         {
             "name": "photos/cat.jpg",
             "path": "/tmp/test/path/images/photos/cat.jpg",
-            "originalPath": "images/photos/cat.jpg",
-            "targetDir": "/test/content/images/photos",
-            "newPath": "/content/images/photos/cat.jpg"
+            "originalPath": "images/photos/cat.jpg"
         }
     ],
     "data": {
