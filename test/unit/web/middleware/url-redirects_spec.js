@@ -3,7 +3,7 @@ var should = require('should'),
     rewire = require('rewire'),
     urlUtils = require('../../../utils/urlUtils'),
     urlRedirects = rewire('../../../../core/server/web/shared/middlewares/url-redirects'),
-    {adminRedirect} = urlRedirects,
+    {frontendSSLRedirect, adminSSLAndHostRedirect} = urlRedirects,
     getAdminRedirectUrl = urlRedirects.__get__('_private.getAdminRedirectUrl'),
     getBlogRedirectUrl = urlRedirects.__get__('_private.getBlogRedirectUrl'),
     redirect = urlRedirects.__get__('_private.redirect');
@@ -38,27 +38,18 @@ describe('UNIT: url redirects', function () {
             urlRedirects.__set__('_private.redirect', redirectSpy);
         });
 
-        it('urlRedirects passes getAdminRedirectUrl method when iAdmin flag is not set', function () {
+        it('frontendSSLRedirect passes getBlogRedirectUrl', function () {
             urlRedirects.__set__('urlUtils', urlUtils.getInstance({url: 'https://default.com:2368/'}));
 
-            urlRedirects(req, res, next);
+            frontendSSLRedirect(req, res, next);
 
             redirectSpy.calledWith(req, res, next, getBlogRedirectUrl).should.eql(true);
         });
 
-        it('urlRedirects passes getAdminRedirectUrl method when iAdmin flag present', function () {
-            res.isAdmin = true;
+        it('adminSSLAndHostRedirect passes getAdminRedirectUrl', function () {
             urlRedirects.__set__('urlUtils', urlUtils.getInstance({url: 'https://default.com:2368/'}));
 
-            urlRedirects(req, res, next);
-
-            redirectSpy.calledWith(req, res, next, getAdminRedirectUrl).should.eql(true);
-        });
-
-        it('adminRedirect passes getAdminRedirectUrl', function () {
-            urlRedirects.__set__('urlUtils', urlUtils.getInstance({url: 'https://default.com:2368/'}));
-
-            adminRedirect(req, res, next);
+            adminSSLAndHostRedirect(req, res, next);
 
             redirectSpy.calledWith(req, res, next, getAdminRedirectUrl).should.eql(true);
         });

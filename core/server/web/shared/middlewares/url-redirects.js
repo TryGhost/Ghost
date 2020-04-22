@@ -111,17 +111,13 @@ _private.redirect = (req, res, next, redirectFn) => {
     next();
 };
 
-/*
- * @deprecated: in favor of adminRedirect (extract public getBlogRedirectUrl method when needed)
- */
-const urlRedirects = (req, res, next) => {
-    const redirectFn = res.isAdmin ? _private.getAdminRedirectUrl : _private.getBlogRedirectUrl;
-    _private.redirect(req, res, next, redirectFn);
+const frontendRedirect = (req, res, next) => {
+    _private.redirect(req, res, next, _private.getBlogRedirectUrl);
 };
 
 const adminRedirect = (req, res, next) => {
     _private.redirect(req, res, next, _private.getAdminRedirectUrl);
 };
 
-module.exports = urlRedirects;
-module.exports.adminRedirect = adminRedirect;
+module.exports.frontendSSLRedirect = frontendRedirect;
+module.exports.adminSSLAndHostRedirect = adminRedirect;

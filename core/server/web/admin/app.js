@@ -37,7 +37,7 @@ module.exports = function setupAdminApp() {
 
     // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
-    adminApp.use(shared.middlewares.urlRedirects.adminRedirect);
+    adminApp.use(shared.middlewares.urlRedirects.adminSSLAndHostRedirect);
 
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing

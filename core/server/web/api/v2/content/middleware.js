@@ -18,6 +18,6 @@ module.exports.authenticatePublic = [
     auth.authenticate.authenticateContentApi,
     auth.authorize.authorizeContentApi,
     cors(),
-    shared.middlewares.urlRedirects.adminRedirect,
+    shared.middlewares.urlRedirects.adminSSLAndHostRedirect,
     shared.middlewares.prettyUrls
 ];

@@ -96,12 +96,12 @@ module.exports = function setupSiteApp(options = {}) {
     // see https://github.com/TryGhost/Ghost/issues/7707
     shared.middlewares.customRedirects.use(siteApp);
 
-    // More redirects
-    siteApp.use(mw.adminRedirects());
+    // (Optionally) redirect any requests to /ghost to the admin panel
+    siteApp.use(mw.redirectGhostToAdmin());
 
     // force SSL if blog url is set to https. The redirects handling must happen before asset and page routing,
     // otherwise we serve assets/pages with http. This can cause mixed content warnings in the admin client.
-    siteApp.use(shared.middlewares.urlRedirects);
+    siteApp.use(shared.middlewares.urlRedirects.frontendSSLRedirect);
 
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
