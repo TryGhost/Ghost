@@ -8,10 +8,6 @@ export default Route.extend({
         action: {refreshModel: true}
     },
 
-    init() {
-        this._super(...arguments);
-    },
-
     model(params) {
         if (params.action) {
             this.billing.set('action', params.action);
