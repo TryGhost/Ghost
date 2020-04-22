@@ -183,14 +183,12 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(shared.middlewares.prettyUrls);
 
     // ### Caching
-    // Site frontend is cacheable UNLESS request made by a member
-    const publicCacheControl = shared.middlewares.cacheControl('public');
-    const privateCacheControl = shared.middlewares.cacheControl('private');
     siteApp.use(function (req, res, next) {
-        if (req.member) {
-            return privateCacheControl(req, res, next);
+        // Site frontend is cacheable UNLESS request made by a member or blog is in private mode
+        if (req.member || res.isPrivateBlog) {
+            return shared.middlewares.cacheControl('private')(req, res, next);
         } else {
-            return publicCacheControl(req, res, next);
+            return shared.middlewares.cacheControl('public', {maxAge: config.get('caching:frontend:maxAge')})(req, res, next);
         }
     });
 
