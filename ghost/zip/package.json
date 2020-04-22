@@ -24,9 +24,9 @@
     "sinon": "9.0.2"
   },
   "dependencies": {
-    "archiver": "^3.1.1",
-    "bluebird": "^3.7.2",
-    "extract-zip": "^2.0.0",
-    "fs-extra": "^9.0.0"
+    "archiver": "3.1.1",
+    "bluebird": "3.7.2",
+    "extract-zip": "2.0.0",
+    "fs-extra": "9.0.0"
   }
 }
