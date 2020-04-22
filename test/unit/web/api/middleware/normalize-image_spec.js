@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const configUtils = require('../../../../utils/configUtils');
 const imageTransform = require('@tryghost/image-transform');
 const {logging} = require('../../../../../core/server/lib/common');
-const normalize = require('../../../../../core/server/web/shared/middlewares/image/normalize');
+const normalize = require('../../../../../core/server/web/api/middleware/normalize-image');
 
 describe('normalize', function () {
     let res, req;

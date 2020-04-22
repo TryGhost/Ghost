@@ -3,10 +3,6 @@ module.exports = {
         return require('./api');
     },
 
-    get image() {
-        return require('./image');
-    },
-
     get brute() {
         return require('./brute');
     },
