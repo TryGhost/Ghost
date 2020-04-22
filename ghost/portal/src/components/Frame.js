@@ -3,6 +3,18 @@ import {createPortal} from 'react-dom';
 
 export default class Frame extends Component {
     componentDidMount() {
+        this.node.addEventListener('load', this.handleLoad);
+    }
+
+    handleLoad = () => {
+        this.setupFrameBaseStyle();
+    };
+
+    componentWillUnmout() {
+        this.node.removeEventListener('load', this.handleLoad);
+    }
+
+    setupFrameBaseStyle() {
         this.iframeHtml = this.node.contentDocument.documentElement;
         this.iframeHtml.style.fontSize = '62.5%';
 
@@ -20,7 +32,7 @@ export default class Frame extends Component {
     render() {
         const {children, head, title = '', style = {}, ...rest} = this.props;
         return (
-            <iframe {...rest} ref={node => (this.node = node)} title={title} style={style} frameBorder="0">
+            <iframe srcDoc={`<!DOCTYPE html>`} {...rest} ref={node => (this.node = node)} title={title} style={style} frameBorder="0">
                 {this.iframeHead && createPortal(head, this.iframeHead)}
                 {this.iframeRoot && createPortal(children, this.iframeRoot)}
             </iframe>
