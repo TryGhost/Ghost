@@ -7,7 +7,7 @@ export default Service.extend({
     ghostPaths: service(),
 
     billingWindowOpen: false,
-    upgrade: true,
+    upgrade: false,
     action: null,
 
     closeBillingWindow() {
