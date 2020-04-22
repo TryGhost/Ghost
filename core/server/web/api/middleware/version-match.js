@@ -1,6 +1,6 @@
 const semver = require('semver');
 const errors = require('@tryghost/errors');
-const {i18n} = require('../../../../lib/common');
+const {i18n} = require('../../../lib/common');
 
 function checkVersionMatch(req, res, next) {
     const clientVersion = req.get('X-Ghost-Version');

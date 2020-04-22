@@ -5,9 +5,5 @@ module.exports = {
 
     get spamPrevention() {
         return require('./spam-prevention');
-    },
-
-    get versionMatch() {
-        return require('./version-match');
     }
 };
