@@ -196,7 +196,7 @@ module.exports = function apiRoutes() {
         mw.authAdminApi,
         apiMw.upload.single('file'),
         apiMw.upload.validation({type: 'images'}),
-        shared.middlewares.image.normalize,
+        apiMw.normalizeImage,
         http(apiCanary.images.upload)
     );
 
