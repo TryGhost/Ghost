@@ -6,19 +6,24 @@ export default Service.extend({
     config: service(),
     ghostPaths: service(),
 
-    init() {
-        this._super(...arguments);
-        this.billingWindowOpen = false;
-    },
-
     billingWindowOpen: false,
     upgrade: true,
+    action: null,
 
-    endpoint: computed('config.billingUrl', 'billingWindowOpen', function () {
+    closeBillingWindow() {
+        this.set('billingWindowOpen', false);
+        this.set('action', null);
+    },
+
+    endpoint: computed('config.billingUrl', 'billingWindowOpen', 'action', function () {
         let url = this.config.get('billingUrl');
 
         if (this.get('upgrade')) {
             url = this.ghostPaths.url.join(url, 'plans');
+        }
+
+        if (this.get('action')) {
+            url += `?action=${this.get('action')}`;
         }
 
         return url;
