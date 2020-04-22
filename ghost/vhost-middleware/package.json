@@ -25,8 +25,8 @@
     "supertest": "4.0.2"
   },
   "dependencies": {
-    "bluebird": "^3.7.1",
-    "ghost-ignition": "^4.0.0",
-    "lodash": "^4.17.15"
+    "bluebird": "3.7.1",
+    "ghost-ignition": "4.0.0",
+    "lodash": "4.17.15"
   }
 }
