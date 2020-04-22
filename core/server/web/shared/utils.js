@@ -29,17 +29,3 @@ module.exports.removeOpenRedirectFromUrl = function removeOpenRedirectFromUrl(ur
         (parsedUrl.hash || '')
     );
 };
-
-module.exports.checkFileExists = function checkFileExists(fileData) {
-    return !!(fileData.mimetype && fileData.path);
-};
-
-module.exports.checkFileIsValid = function checkFileIsValid(fileData, types, extensions) {
-    const type = fileData.mimetype;
-
-    if (types.includes(type) && extensions.includes(fileData.ext)) {
-        return true;
-    }
-
-    return false;
-};
