@@ -1,11 +1,11 @@
 import React from 'react';
 import {render} from '@testing-library/react';
-import TriggerComponent from './TriggerComponent';
+import TriggerButton from './TriggerButton';
 
-describe('TriggerComponentTest', () => {
+describe('Trigger Button', () => {
     test('renders', () => {
         const {getByTitle} = render(
-            <TriggerComponent />
+            <TriggerButton />
         );
         const triggerFrame = getByTitle('membersjs-trigger');
 

@@ -1,5 +1,7 @@
-import TriggerComponent from './TriggerComponent';
-import PopupMenuComponent from './PopupMenuComponent';
+import TriggerButton from './TriggerButton';
+import PopupMenu from './PopupMenu';
+import PopupModal from './PopupModal';
+import * as Fixtures from '../test/fixtures/data';
 const setupMembersApi = require('../utils/api');
 const React = require('react');
 const PropTypes = require('prop-types');
@@ -10,25 +12,27 @@ export default class ParentContainer extends React.Component {
 
     constructor(props) {
         super(props);
-        console.log('Initialized script with data', props.data);
-
-        this.initialize();
 
         this.state = {
-            page: 'loading',
+            page: 'magiclink',
             showPopup: false,
             action: {
                 name: 'loading'
             }
         };
+
+        this.initialize();
+    }
+
+    componentDidMount() {
+        // Initialize site and members data
+
+        this.loadData();
     }
 
     initialize() {
         // Setup custom trigger button handling
         this.setupCustomTriggerButton();
-
-        // Initialize site and members data
-        this.loadData();
     }
 
     async loadData() {
@@ -37,17 +41,16 @@ export default class ParentContainer extends React.Component {
         const siteUrl = window.location.origin;
         this.MembersAPI = setupMembersApi({siteUrl, adminUrl});
         try {
-            // const {site} = await this.MembersAPI.getSiteData();
-            // const member = await this.MembersAPI.getMemberData();
             const [{site}, member] = await Promise.all([this.MembersAPI.getSiteData(), this.MembersAPI.getMemberData()]);
-            console.log('Setting state with', site, member);
+            console.log('Initialized Members.js with', site, member);
             this.setState({
                 site,
                 member,
-                page: member ? 'signedin' : 'signup',
+                page: member ? 'accountHome' : 'signup',
                 action: 'init:success'
             });
         } catch (e) {
+            console.log('Failed state fetch', e);
             this.setState({
                 action: {
                     name: 'init:failed'
@@ -57,8 +60,9 @@ export default class ParentContainer extends React.Component {
     }
 
     getData() {
-        const member = this.state.member;
-        const site = this.state.site;
+        const member = process.env.REACT_APP_ADMIN_URL ? Fixtures.member.free : this.state.member;
+        const site = process.env.REACT_APP_ADMIN_URL ? Fixtures.site : this.state.site;
+
         return {site, member};
     }
 
@@ -91,6 +95,10 @@ export default class ParentContainer extends React.Component {
         });
     }
 
+    getBrandColor() {
+        return this.getData().site && this.getData().site.brand && this.getData().site.brand.primaryColor;
+    }
+
     async onAction(action, data) {
         this.setState({
             action: {
@@ -101,7 +109,11 @@ export default class ParentContainer extends React.Component {
             }
         });
         try {
-            if (action === 'signout') {
+            if (action === 'closePopup') {
+                this.setState({
+                    showPopup: false
+                });
+            } else if (action === 'signout') {
                 await this.MembersAPI.signout();
 
                 this.setState({
@@ -128,7 +140,6 @@ export default class ParentContainer extends React.Component {
             if (action === 'checkoutPlan') {
                 const checkoutSuccessUrl = (new URL('/account/?stripe=billing-update-success', window.location.href)).href;
                 const checkoutCancelUrl = (new URL('/account/?stripe=billing-update-cancel', window.location.href)).href;
-                console.log('Checkout URLs', checkoutSuccessUrl, checkoutCancelUrl);
                 const {plan} = data;
                 await this.MembersAPI.checkoutPlan({
                     plan,
@@ -156,27 +167,43 @@ export default class ParentContainer extends React.Component {
 
     renderPopupMenu() {
         if (this.state.showPopup) {
+            if (this.state.page === 'accountHome') {
+                return (
+                    <PopupMenu
+                        data={this.getData()}
+                        action={this.state.action}
+                        onToggle= {e => this.onTriggerToggle()}
+                        page={this.state.page}
+                        switchPage={page => this.switchPage(page)}
+                        onAction={(action, data) => this.onAction(action, data)}
+                        brandColor = {this.getBrandColor()}
+                    />
+                );
+            }
             return (
-                <PopupMenuComponent
+                <PopupModal
                     data={this.getData()}
                     action={this.state.action}
+                    onToggle= {e => this.onTriggerToggle()}
                     page={this.state.page}
                     switchPage={page => this.switchPage(page)}
                     onAction={(action, data) => this.onAction(action, data)}
+                    brandColor = {this.getBrandColor()}
                 />
             );
         }
         return null;
     }
 
-    renderTriggerComponent() {
+    renderTriggerButton() {
         if (!this.customTriggerButton) {
             return (
-                <TriggerComponent
+                <TriggerButton
                     name={this.props.name}
                     onToggle= {e => this.onTriggerToggle()}
                     isPopupOpen={this.state.showPopup}
                     data={this.getData()}
+                    brandColor = {this.getBrandColor()}
                 />
             );
         }
@@ -186,10 +213,10 @@ export default class ParentContainer extends React.Component {
 
     render() {
         return (
-            <div>
+            <>
                 {this.renderPopupMenu()}
-                {this.renderTriggerComponent()}
-            </div>
+                {this.renderTriggerButton()}
+            </>
         );
     }
 }

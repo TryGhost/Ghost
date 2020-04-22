@@ -50,7 +50,7 @@ export default class SigninPage extends React.Component {
             cursor: 'pointer',
             transition: '.4s ease',
             color: '#fff',
-            backgroundColor: '#3eb0ef',
+            backgroundColor: this.props.brandColor || '#3eb0ef',
             boxShadow: 'none',
             userSelect: 'none',
             width: '100%',
@@ -83,46 +83,53 @@ export default class SigninPage extends React.Component {
             color: 'inherit',
             textDecoration: 'none',
             background: '#fff',
-            borderRadius: '5px',
+            borderRadius: '9px',
             fontSize: '14px',
-            marginBottom: '12px'
+            marginBottom: '12px',
+            boxSizing: 'border-box'
         };
 
         const fields = {
             email: {
                 type: 'email',
                 value: this.state.email,
-                placeholder: 'Email...',
-                label: 'email'
+                placeholder: 'Your email address',
+                label: 'Email',
+                name: 'email'
             }
         };
         const field = fields[fieldName];
         return (
-            <input
-                type={field.type}
-                placeholder={field.placeholder}
-                value={field.value}
-                onChange={(e) => {
-                    this.handleInput(e, fieldName);
-                }}
-                aria-label={field.label}
-                style={inputStyle}
-            />
+            <>
+                <label htmlFor={field.name} style={{marginBottom: '3px', fontSize: '12px', fontWeight: '700'}}> {field.label} </label>
+                <input
+                    type={field.type}
+                    name={field.name}
+                    placeholder={field.placeholder}
+                    value={field.value}
+                    onChange={(e) => {
+                        this.handleInput(e, fieldName);
+                    }}
+                    style={inputStyle}
+                    aria-label={field.label}
+                />
+            </>
         );
     }
 
     renderSignupMessage() {
+        const color = this.props.brandColor || '#3db0ef';
         return (
-            <div style={{display: 'flex'}}>
-                <div style={{marginRight: '6px'}}> Not a member ? </div>
-                <div style={{color: '#3db0ef', fontWeight: 'bold', cursor: 'pointer'}} role="button" onClick={() => this.props.switchPage('signup')}> Subscribe </div>
+            <div style={{display: 'flex', justifyContent: 'center'}}>
+                <div style={{marginRight: '6px', color: '#929292'}}> Don't have an account ? </div>
+                <div style={{color, fontWeight: 'bold', cursor: 'pointer'}} role="button" onClick={() => this.props.switchPage('signup')}> Subscribe </div>
             </div>
         );
     }
 
     renderForm() {
         return (
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px'}}>
+            <div style={{display: 'flex', flexDirection: 'column', marginBottom: '12px', padding: '0 18px'}}>
                 {this.renderInputField('email')}
                 {this.renderSubmitButton()}
                 {this.renderSignupMessage()}
@@ -130,14 +137,37 @@ export default class SigninPage extends React.Component {
         );
     }
 
+    renderSiteLogo() {
+        const siteLogo = (this.props.data.site && this.props.data.site.logo);
+
+        const logoStyle = {
+            position: 'relative',
+            display: 'block',
+            width: '48px',
+            height: '48px',
+            marginBottom: '12px',
+            backgroundPosition: '50%',
+            backgroundSize: 'cover',
+            borderRadius: '100%',
+            boxShadow: '0 0 0 3px #fff'
+        };
+
+        if (siteLogo) {
+            logoStyle.backgroundImage = `url(${siteLogo})`;
+            return (
+                <span style={logoStyle}> </span>
+            );
+        }
+        return null;
+    }
+
     renderFormHeader() {
         const siteTitle = (this.props.data.site && this.props.data.site.title) || 'Site Title';
-        const siteDescription = (this.props.data.site && this.props.data.site.description) || 'Site Description';
 
         return (
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px'}}>
-                <div style={{fontSize: '18px', fontWeight: 'bold'}}> Signin to {siteTitle}</div>
-                <div> {siteDescription} </div>
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '18px'}}>
+                {this.renderSiteLogo()}
+                <div style={{fontSize: '21px', fontWeight: '400'}}> Sign in to {siteTitle}</div>
             </div>
         );
     }
@@ -145,7 +175,7 @@ export default class SigninPage extends React.Component {
     render() {
         return (
             <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
-                <div style={{paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px'}}>
+                <div style={{paddingLeft: '16px', paddingRight: '16px'}}>
                     {this.renderFormHeader()}
                     {this.renderForm()}
                 </div>

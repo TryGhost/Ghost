@@ -1,7 +1,7 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 
-export default class SignedInPage extends React.Component {
+export default class AccountHomePage extends React.Component {
     static propTypes = {
         data: PropTypes.shape({
             site: PropTypes.shape({
@@ -45,7 +45,7 @@ export default class SignedInPage extends React.Component {
             cursor: 'pointer',
             transition: '.4s ease',
             color: '#fff',
-            backgroundColor: '#3eb0ef',
+            backgroundColor: this.props.brandColor || '#3eb0ef',
             boxShadow: 'none',
             userSelect: 'none',
             width: '90px',
@@ -126,7 +126,7 @@ export default class SignedInPage extends React.Component {
         );
     }
 
-    renderSignedInHeader() {
+    renderHeader() {
         const memberEmail = this.getMemberEmail();
 
         return (
@@ -141,21 +141,61 @@ export default class SignedInPage extends React.Component {
         );
     }
 
+    renderUserAvatar() {
+        const avatarImg = (this.props.data.member && this.props.data.member.avatar_image);
+
+        const logoStyle = {
+            position: 'relative',
+            display: 'block',
+            width: '64px',
+            height: '64px',
+            marginBottom: '6px',
+            backgroundPosition: '50%',
+            backgroundSize: 'cover',
+            borderRadius: '100%',
+            boxShadow: '0 0 0 3px #fff',
+            border: '1px solid gray'
+        };
+
+        if (avatarImg) {
+            logoStyle.backgroundImage = `url(${avatarImg})`;
+            return (
+                <span style={logoStyle}> </span>
+            );
+        }
+        return null;
+    }
+
+    renderUserHeader() {
+        const memberEmail = this.getMemberEmail();
+        const memberName = this.props.data.member.name;
+
+        return (
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px'}}>
+                {this.renderUserAvatar()}
+                {memberName ? <div style={{fontSize: '16px', fontWeight: '400'}}> {memberName}</div> : null}
+                <div style={{fontSize: '14px', fontWeight: '400', color: '#929292', lineHeight: '12px'}}> {memberEmail}</div>
+            </div>
+        );
+    }
+
     renderLogoutButton() {
         return (
-            <div style={{paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', borderTop: '1px solid #EFEFEF', cursor: 'pointer'}}>
+            <div style={{paddingLeft: '21px', paddingRight: '16px', paddingTop: '12px', borderTop: '1px solid #EFEFEF', cursor: 'pointer'}}>
                 <div role="button" onClick={(e) => {
                     this.handleSignout(e);
-                }} style={{fontWeight: 'bold'}}> Logout </div>
+                }} style={{marginBottom: '3px'}}> Account </div>
+                <div role="button" onClick={(e) => {
+                    this.handleSignout(e);
+                }}> Log out </div>
             </div>
         );
     }
 
     render() {
         return (
-            <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
-                {this.renderSignedInHeader()}
-                {this.renderPlans()}
+            <div style={{display: 'flex', flexDirection: 'column', color: '#313131', paddingTop: '9px'}}>
+                {this.renderUserHeader()}
                 {this.renderLogoutButton()}
             </div>
         );

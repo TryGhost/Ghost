@@ -1,7 +1,7 @@
 import React from 'react';
 import {render, fireEvent} from '@testing-library/react';
 import SigninPage from './SigninPage';
-import {site} from '../test/fixtures/data';
+import {site} from '../../test/fixtures/data';
 
 const setup = (overrides) => {
     const mockOnActionFn = jest.fn();

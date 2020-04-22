@@ -1,9 +1,9 @@
-import FrameComponent from './FrameComponent';
-import SignupPage from './SignupPage';
-import SigninPage from './SigninPage';
-import SignedInPage from './SignedInPage';
-import MagicLinkPage from './MagicLinkPage';
-import LoadingPage from './LoadingPage';
+import Frame from './Frame';
+import SigninPage from './pages/SigninPage';
+import SignupPage from './pages/SignupPage';
+import AccountHomePage from './pages/AccountHomePage';
+import MagicLinkPage from './pages/MagicLinkPage';
+import LoadingPage from './pages/LoadingPage';
 
 const React = require('react');
 const PropTypes = require('prop-types');
@@ -35,10 +35,10 @@ const Styles = {
             minHeight: '400px',
             maxHeight: '460px'
         },
-        signedin: {
-            width: '380px',
-            minHeight: '350px',
-            maxHeight: '410px'
+        accountHome: {
+            width: '280px',
+            minHeight: '200px',
+            maxHeight: '240px'
         },
         magiclink: {
             width: '400px',
@@ -80,12 +80,12 @@ const Styles = {
 const Pages = {
     signin: SigninPage,
     signup: SignupPage,
-    signedin: SignedInPage,
+    accountHome: AccountHomePage,
     magiclink: MagicLinkPage,
     loading: LoadingPage
 };
 
-export default class PopupMenuComponent extends React.Component {
+export default class PopupMenu extends React.Component {
     static propTypes = {
         data: PropTypes.shape({
             site: PropTypes.shape({
@@ -103,6 +103,7 @@ export default class PopupMenuComponent extends React.Component {
 
     renderCurrentPage(page) {
         const PageComponent = Pages[page];
+
         return (
             <PageComponent
                 data={this.props.data}
@@ -131,9 +132,9 @@ export default class PopupMenuComponent extends React.Component {
         };
 
         return (
-            <FrameComponent style={frameStyle} title="membersjs-popup">
+            <Frame style={frameStyle} title="membersjs-popup">
                 {this.renderPopupContent()}
-            </FrameComponent>
+            </Frame>
         );
     }
 
