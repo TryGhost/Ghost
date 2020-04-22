@@ -1,6 +1,6 @@
 const cloneDeep = require('lodash/cloneDeep');
-const config = require('../../../../config');
-const {logging} = require('../../../../lib/common');
+const config = require('../../../config');
+const {logging} = require('../../../lib/common');
 const imageTransform = require('@tryghost/image-transform');
 
 module.exports = function normalize(req, res, next) {
