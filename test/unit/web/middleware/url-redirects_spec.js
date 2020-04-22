@@ -1,12 +1,12 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    rewire = require('rewire'),
-    urlUtils = require('../../../utils/urlUtils'),
-    urlRedirects = rewire('../../../../core/server/web/shared/middlewares/url-redirects'),
-    {frontendSSLRedirect, adminSSLAndHostRedirect} = urlRedirects,
-    getAdminRedirectUrl = urlRedirects.__get__('_private.getAdminRedirectUrl'),
-    getBlogRedirectUrl = urlRedirects.__get__('_private.getBlogRedirectUrl'),
-    redirect = urlRedirects.__get__('_private.redirect');
+const should = require('should');
+const sinon = require('sinon');
+const rewire = require('rewire');
+const urlUtils = require('../../../utils/urlUtils');
+const urlRedirects = rewire('../../../../core/server/web/shared/middlewares/url-redirects');
+const {frontendSSLRedirect, adminSSLAndHostRedirect} = urlRedirects;
+const getAdminRedirectUrl = urlRedirects.__get__('_private.getAdminRedirectUrl');
+const getFrontendRedirectUrl = urlRedirects.__get__('_private.getFrontendRedirectUrl');
+const redirect = urlRedirects.__get__('_private.redirect');
 
 describe('UNIT: url redirects', function () {
     var res, req, next, host;
@@ -38,12 +38,12 @@ describe('UNIT: url redirects', function () {
             urlRedirects.__set__('_private.redirect', redirectSpy);
         });
 
-        it('frontendSSLRedirect passes getBlogRedirectUrl', function () {
+        it('frontendSSLRedirect passes getSiteRedirectUrl', function () {
             urlRedirects.__set__('urlUtils', urlUtils.getInstance({url: 'https://default.com:2368/'}));
 
             frontendSSLRedirect(req, res, next);
 
-            redirectSpy.calledWith(req, res, next, getBlogRedirectUrl).should.eql(true);
+            redirectSpy.calledWith(req, res, next, getFrontendRedirectUrl).should.eql(true);
         });
 
         it('adminSSLAndHostRedirect passes getAdminRedirectUrl', function () {
@@ -56,7 +56,7 @@ describe('UNIT: url redirects', function () {
     });
 
     describe('expect redirect', function () {
-        it('blog is https, request is http', function (done) {
+        it('site is https, request is http', function (done) {
             urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                 url: 'https://default.com:2368/'
             }));
@@ -64,7 +64,7 @@ describe('UNIT: url redirects', function () {
             host = 'default.com:2368';
 
             req.originalUrl = '/';
-            redirect(req, res, next, getBlogRedirectUrl);
+            redirect(req, res, next, getFrontendRedirectUrl);
             next.called.should.be.false();
             res.redirect.called.should.be.true();
             res.redirect.calledWith(301, 'https://default.com:2368/').should.be.true();
@@ -72,14 +72,14 @@ describe('UNIT: url redirects', function () {
             done();
         });
 
-        it('blog host is !== request host', function (done) {
+        it('site host is !== request host', function (done) {
             urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                 url: 'https://default.com'
             }));
             host = 'localhost:2368';
 
             req.originalUrl = '/';
-            redirect(req, res, next, getBlogRedirectUrl);
+            redirect(req, res, next, getFrontendRedirectUrl);
             next.called.should.be.false();
             res.redirect.called.should.be.true();
             res.redirect.calledWith(301, 'https://localhost:2368/').should.be.true();
@@ -210,7 +210,7 @@ describe('UNIT: url redirects', function () {
     });
 
     describe('expect no redirect', function () {
-        it('blog is http, request is http', function (done) {
+        it('site is http, request is http', function (done) {
             urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                 url: 'http://default.com:2368/'
             }));
@@ -218,7 +218,7 @@ describe('UNIT: url redirects', function () {
             host = 'default.com:2368';
 
             req.originalUrl = '/';
-            redirect(req, res, next, getBlogRedirectUrl);
+            redirect(req, res, next, getFrontendRedirectUrl);
             next.called.should.be.true();
             res.redirect.called.should.be.false();
             res.set.called.should.be.false();
@@ -226,7 +226,7 @@ describe('UNIT: url redirects', function () {
             done();
         });
 
-        it('blog is http, request is https', function (done) {
+        it('site is http, request is https', function (done) {
             urlRedirects.__set__('urlUtils', urlUtils.getInstance({
                 url: 'http://default.com:2368/'
             }));
@@ -235,7 +235,7 @@ describe('UNIT: url redirects', function () {
 
             req.originalUrl = '/';
             req.secure = true;
-            redirect(req, res, next, getBlogRedirectUrl);
+            redirect(req, res, next, getFrontendRedirectUrl);
             next.called.should.be.true();
             res.redirect.called.should.be.false();
             res.set.called.should.be.false();
@@ -251,7 +251,7 @@ describe('UNIT: url redirects', function () {
 
             req.originalUrl = '/';
             req.secure = true;
-            redirect(req, res, next, getBlogRedirectUrl);
+            redirect(req, res, next, getFrontendRedirectUrl);
             next.called.should.be.true();
             res.redirect.called.should.be.false();
             res.set.called.should.be.false();
@@ -267,7 +267,7 @@ describe('UNIT: url redirects', function () {
 
             req.originalUrl = '/';
             req.secure = true;
-            redirect(req, res, next, getBlogRedirectUrl);
+            redirect(req, res, next, getFrontendRedirectUrl);
             next.called.should.be.true();
             res.redirect.called.should.be.false();
             res.set.called.should.be.false();
@@ -284,7 +284,7 @@ describe('UNIT: url redirects', function () {
 
             req.originalUrl = '/';
             req.secure = true;
-            redirect(req, res, next, getBlogRedirectUrl);
+            redirect(req, res, next, getFrontendRedirectUrl);
             next.called.should.be.true();
             res.redirect.called.should.be.false();
             res.set.called.should.be.false();
