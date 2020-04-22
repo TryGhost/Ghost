@@ -1,5 +1,6 @@
 const express = require('express');
 const apiCanary = require('../../../../api/canary');
+const apiMw = require('../../middleware');
 const mw = require('./middleware');
 
 const shared = require('../../../shared');
@@ -13,7 +14,7 @@ module.exports = function apiRoutes() {
     // alias delete with del
     router.del = router.delete;
 
-    router.use(shared.middlewares.api.cors);
+    router.use(apiMw.cors);
 
     const http = apiCanary.http;
 

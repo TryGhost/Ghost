@@ -2,7 +2,7 @@ var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
     urlUtils = require('../../../../utils/urlUtils'),
-    cors = rewire('../../../../../core/server/web/shared/middlewares/api/cors');
+    cors = rewire('../../../../../core/server/web/api/middleware/cors');
 
 describe('cors', function () {
     var res, req, next;
@@ -29,7 +29,7 @@ describe('cors', function () {
 
     afterEach(function () {
         sinon.restore();
-        cors = rewire('../../../../../core/server/web/shared/middlewares/api/cors');
+        cors = rewire('../../../../../core/server/web/api/middleware/cors');
     });
 
     it('should not be enabled without a request origin header', function (done) {
