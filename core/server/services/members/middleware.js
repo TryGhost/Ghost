@@ -53,7 +53,7 @@ const getMemberData = async function (req, res) {
                 uuid: member.uuid,
                 email: member.email,
                 name: member.name,
-                firstname: member.name && req.member.name.split(' ')[0],
+                firstname: member.name && member.name.split(' ')[0],
                 avatar_image: member.avatar_image,
                 subscriptions: member.stripe.subscriptions,
                 paid: member.stripe.subscriptions.length !== 0
