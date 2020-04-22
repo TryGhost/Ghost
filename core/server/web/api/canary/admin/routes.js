@@ -53,7 +53,7 @@ module.exports = function apiRoutes() {
     router.post('/settings/routes/yaml',
         mw.authAdminApi,
         apiMw.upload.single('routes'),
-        shared.middlewares.validation.upload({type: 'routes'}),
+        apiMw.upload.validation({type: 'routes'}),
         http(apiCanary.settings.upload)
     );
 
@@ -90,7 +90,7 @@ module.exports = function apiRoutes() {
         shared.middlewares.labs.members,
         mw.authAdminApi,
         apiMw.upload.single('membersfile'),
-        shared.middlewares.validation.upload({type: 'members'}),
+        apiMw.upload.validation({type: 'members'}),
         http(apiCanary.members.importCSV)
     );
 
@@ -125,7 +125,7 @@ module.exports = function apiRoutes() {
     router.post('/themes/upload',
         mw.authAdminApi,
         apiMw.upload.single('file'),
-        shared.middlewares.validation.upload({type: 'themes'}),
+        apiMw.upload.validation({type: 'themes'}),
         http(apiCanary.themes.upload)
     );
 
@@ -149,7 +149,7 @@ module.exports = function apiRoutes() {
     router.post('/db',
         mw.authAdminApi,
         apiMw.upload.single('importfile'),
-        shared.middlewares.validation.upload({type: 'db'}),
+        apiMw.upload.validation({type: 'db'}),
         http(apiCanary.db.importContent)
     );
     router.del('/db', mw.authAdminApi, http(apiCanary.db.deleteAllContent));
@@ -195,7 +195,7 @@ module.exports = function apiRoutes() {
     router.post('/images/upload',
         mw.authAdminApi,
         apiMw.upload.single('file'),
-        shared.middlewares.validation.upload({type: 'images'}),
+        apiMw.upload.validation({type: 'images'}),
         shared.middlewares.image.normalize,
         http(apiCanary.images.upload)
     );
@@ -211,7 +211,7 @@ module.exports = function apiRoutes() {
     router.post('/redirects/json',
         mw.authAdminApi,
         apiMw.upload.single('redirects'),
-        shared.middlewares.validation.upload({type: 'redirects'}),
+        apiMw.upload.validation({type: 'redirects'}),
         http(apiCanary.redirects.upload)
     );
 

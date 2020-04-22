@@ -53,7 +53,7 @@ module.exports = function apiRoutes() {
     router.post('/settings/routes/yaml',
         mw.authAdminApi,
         apiMw.upload.single('routes'),
-        shared.middlewares.validation.upload({type: 'routes'}),
+        apiMw.upload.validation({type: 'routes'}),
         http(apiv2.settings.upload)
     );
 
@@ -98,7 +98,7 @@ module.exports = function apiRoutes() {
     router.post('/themes/upload',
         mw.authAdminApi,
         apiMw.upload.single('file'),
-        shared.middlewares.validation.upload({type: 'themes'}),
+        apiMw.upload.validation({type: 'themes'}),
         http(apiv2.themes.upload)
     );
 
@@ -122,7 +122,7 @@ module.exports = function apiRoutes() {
     router.post('/db',
         mw.authAdminApi,
         apiMw.upload.single('importfile'),
-        shared.middlewares.validation.upload({type: 'db'}),
+        apiMw.upload.validation({type: 'db'}),
         http(apiv2.db.importContent)
     );
     router.del('/db', mw.authAdminApi, http(apiv2.db.deleteAllContent));
@@ -165,7 +165,7 @@ module.exports = function apiRoutes() {
     router.post('/images/upload',
         mw.authAdminApi,
         apiMw.upload.single('file'),
-        shared.middlewares.validation.upload({type: 'images'}),
+        apiMw.upload.validation({type: 'images'}),
         shared.middlewares.image.normalize,
         http(apiv2.images.upload)
     );
@@ -181,7 +181,7 @@ module.exports = function apiRoutes() {
     router.post('/redirects/json',
         mw.authAdminApi,
         apiMw.upload.single('redirects'),
-        shared.middlewares.validation.upload({type: 'redirects'}),
+        apiMw.upload.validation({type: 'redirects'}),
         http(apiv2.redirects.upload)
     );
 

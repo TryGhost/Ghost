@@ -7,10 +7,6 @@ module.exports = {
         return require('./image');
     },
 
-    get validation() {
-        return require('./validation');
-    },
-
     get brute() {
         return require('./brute');
     },
