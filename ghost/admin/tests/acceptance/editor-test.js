@@ -213,7 +213,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
                 'publish menu save button updated after draft is published'
-            ).to.equal('Published');
+            ).to.equal('Update');
 
             expect(
                 find('[data-test-publishmenu-published]'),
@@ -258,7 +258,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
                 'publish menu save button updated after published post is updated'
-            ).to.equal('Updated');
+            ).to.equal('Update');
 
             // go to settings to change the timezone
             await visit('/settings/general');
@@ -309,7 +309,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
                 'publish menu save button updated after published post is unpublished'
-            ).to.equal('Unpublished');
+            ).to.equal('Publish');
 
             expect(
                 find('[data-test-publishmenu-draft]'),
@@ -339,7 +339,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
                 'publish menu save button updated after draft is scheduled'
-            ).to.equal('Scheduled');
+            ).to.equal('Reschedule');
 
             await click('[data-test-publishmenu-cancel]');
 
@@ -375,7 +375,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
                 'publish menu save button text for a rescheduled post'
-            ).to.equal('Rescheduled');
+            ).to.equal('Reschedule');
 
             await click('[data-test-publishmenu-cancel]');
 
@@ -403,7 +403,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
                 'publish menu save button updated after scheduled post is unscheduled'
-            ).to.equal('Unscheduled');
+            ).to.equal('Publish');
 
             await click('[data-test-publishmenu-cancel]');
 
