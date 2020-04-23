@@ -23,7 +23,6 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderCloseButton() {
-
         const buttonStyle = {
             display: 'inline-block',
             padding: '0 1.8rem',
