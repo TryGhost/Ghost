@@ -13,8 +13,8 @@ describe('UNIT: url redirects', function () {
 
     beforeEach(function () {
         req = {
-            get hostname() {
-                return host;
+            get vhost() {
+                return {host: host};
             }
         };
         res = {
@@ -354,6 +354,25 @@ describe('UNIT: url redirects', function () {
                 res.redirect.called.should.be.false();
                 res.set.called.should.be.false();
                 next.called.should.be.true();
+                done();
+            });
+
+            it('url and admin url are different, request matches, uses a port', function (done) {
+                urlRedirects.__set__('urlUtils', urlUtils.getInstance({
+                    url: 'https://default.com:2368',
+                    adminUrl: 'https://admin.default.com:2368'
+                }));
+
+                host = 'admin.default.com:2368';
+
+                req.secure = true;
+                req.originalUrl = '/ghost';
+                redirect(req, res, next, getAdminRedirectUrl);
+
+                res.redirect.called.should.be.false();
+                res.set.called.should.be.false();
+                next.called.should.be.true();
+
                 done();
             });
         });
