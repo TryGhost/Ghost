@@ -271,6 +271,18 @@ export default Component.extend({
             return false;
         }
 
+        // validate publishedAtBlog to avoid an alert when saving for already displayed errors
+        // important to do this before opening email confirmation modal too
+        try {
+            yield post.validate({property: 'publishedAtBlog'});
+        } catch (error) {
+            // re-throw if we don't have a validation error
+            if (error) {
+                throw error;
+            }
+            return false;
+        }
+
         if (
             post.status === 'draft' &&
             !post.email && // email sent previously
@@ -290,10 +302,7 @@ export default Component.extend({
         this.setSaveType(saveType);
 
         try {
-            // validate publishedAtBlog first to avoid an alert for displayed errors
-            yield post.validate({property: 'publishedAtBlog'});
-
-            // actual save will show alert for other failed validations
+            // will show alert for non-date related failed validations
             post = yield this.saveTask.perform({sendEmailWhenPublished});
 
             // revert the email checkbox to avoid weird inbetween states
