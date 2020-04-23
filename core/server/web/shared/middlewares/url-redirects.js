@@ -33,17 +33,17 @@ _private.redirectUrl = ({redirectTo, query, pathname}) => {
 _private.getAdminRedirectUrl = ({requestedHost, requestedUrl, queryParameters, secure}) => {
     const siteUrl = urlUtils.urlFor('home', true);
     const adminUrl = urlUtils.urlFor('admin', true);
-    const adminUrlWithoutProtocol = adminUrl.replace(/(^\w+:|^)\/\//, '');
-    const siteUrlWithoutProtocol = siteUrl.replace(/(^\w+:|^)\/\//, '');
+    const siteHost = url.parse(siteUrl).host;
+    const adminHost = url.parse(adminUrl).host;
 
-    debug('getAdminRedirectUrl', requestedHost, requestedUrl, adminUrlWithoutProtocol, siteUrlWithoutProtocol, urlUtils.urlJoin(siteUrlWithoutProtocol, 'ghost/'));
+    debug('getAdminRedirectUrl', requestedHost, requestedUrl, adminHost, siteHost);
 
     // CASE: we only redirect the admin access if `admin.url` is configured
     // If url and admin.url are not equal AND the requested host does not match, redirect.
     // The first condition is the most important, because it ensures that you have a custom admin url configured,
     // because we don't force an admin redirect if you have a custom url configured, but no admin url.
-    if (adminUrlWithoutProtocol !== urlUtils.urlJoin(siteUrlWithoutProtocol, 'ghost/') &&
-        adminUrlWithoutProtocol !== urlUtils.urlJoin(requestedHost, urlUtils.getSubdir(), 'ghost/')) {
+    if (adminHost !== siteHost &&
+        adminHost !== requestedHost) {
         debug('redirect because admin host does not match');
 
         return _private.redirectUrl({
@@ -73,7 +73,7 @@ _private.getAdminRedirectUrl = ({requestedHost, requestedUrl, queryParameters, s
 _private.getFrontendRedirectUrl = ({requestedHost, requestedUrl, queryParameters, secure}) => {
     const siteUrl = urlUtils.urlFor('home', true);
 
-    debug('getsiteRedirectUrl', requestedHost, requestedUrl, siteUrl);
+    debug('getFrontendRedirectUrl', requestedHost, requestedUrl, siteUrl);
 
     // CASE: configured canonical url is HTTPS, but request is HTTP, redirect to requested host + SSL
     if (urlUtils.isSSL(siteUrl) && !secure) {
