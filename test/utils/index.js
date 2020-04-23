@@ -765,7 +765,7 @@ var ghostServer;
  * @TODO: tidy up the tmp folders
  */
 startGhost = function startGhost(options) {
-    console.time('Start Ghost');
+    console.time('Start Ghost'); // eslint-disable-line no-console
     options = _.merge({
         redirectsFile: true,
         forceStart: false,
@@ -868,7 +868,7 @@ startGhost = function startGhost(options) {
                     })
                     .then((keys) => {
                         module.exports.existingData.apiKeys = keys.toJSON(module.exports.context.internal);
-                        console.timeEnd('Start Ghost');
+                        console.timeEnd('Start Ghost'); // eslint-disable-line no-console
                     })
                     .return(ghostServer);
             });
@@ -950,7 +950,7 @@ startGhost = function startGhost(options) {
                 })
                 .then((keys) => {
                     module.exports.existingData.apiKeys = keys.toJSON();
-                    console.timeEnd('Start Ghost');
+                    console.timeEnd('Start Ghost'); // eslint-disable-line no-console
                 })
                 .return(ghostServer);
         });
