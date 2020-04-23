@@ -10,8 +10,8 @@ const setup = (overrides) => {
     const utils = render(
         <AccountHomePage data={{site, member: freeMember}} onAction={mockOnActionFn} switchPage={mockSwitchPageFn} />
     );
-    const memberEmail = utils.getByText(member.email);
-    const logoutButton = utils.queryByRole('button', {name: 'Logout'});
+    const memberEmail = utils.getByText(freeMember.email);
+    const logoutButton = utils.queryByRole('button', {name: 'Log out'});
     return {
         memberEmail,
         logoutButton,

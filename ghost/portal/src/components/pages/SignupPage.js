@@ -1,10 +1,6 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 
-const Styles = {
-
-};
-
 export default class SignupPage extends React.Component {
     static propTypes = {
         data: PropTypes.shape({

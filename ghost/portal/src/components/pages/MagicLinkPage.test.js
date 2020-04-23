@@ -8,7 +8,7 @@ describe('MagicLinkPage', () => {
             <MagicLinkPage />
         );
 
-        const inboxText = getByText(/check your inbox/i);
+        const inboxText = getByText(/check your inbox!/i);
 
         expect(inboxText).toBeInTheDocument();
     });
