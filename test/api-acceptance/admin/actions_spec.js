@@ -34,7 +34,7 @@ describe('Actions API', function () {
             })
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201)
+            .expect(200)
             .then((res) => {
                 postId = res.body.posts[0].id;
                 postUpdatedAt = res.body.posts[0].updated_at;
