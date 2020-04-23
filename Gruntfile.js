@@ -48,6 +48,10 @@ const configureGrunt = function (grunt) {
     grunt.loadNpmTasks('grunt-subgrunt');
     grunt.loadNpmTasks('grunt-update-submodules');
 
+    if (process.env.CI) {
+        grunt.option('reporter', 'mocha-github-actions-reporter');
+    }
+
     var cfg = {
         // #### Common paths used by tasks
         paths: {
