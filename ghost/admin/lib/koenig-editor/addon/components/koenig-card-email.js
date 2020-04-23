@@ -33,6 +33,10 @@ export default Component.extend({
     init() {
         this._super(...arguments);
         this.registerComponent(this);
+
+        if (!this.payload.html) {
+            this._updatePayloadAttr('html', '<p>Hey {first_name, "there"},</p>');
+        }
     },
 
     actions: {
@@ -56,6 +60,8 @@ export default Component.extend({
             });
 
             this._textReplacementEditor = textReplacementEditor;
+
+            run.scheduleOnce('afterRender', this, this._placeCursorAtEnd);
         },
 
         leaveEditMode() {
@@ -83,5 +89,15 @@ export default Component.extend({
         if (this.isEditing && (modifier === 'meta' || (modifier === 'crtl' && Browser.isWin()))) {
             this.editCard();
         }
+    },
+
+    _placeCursorAtEnd() {
+        if (!this._textReplacementEditor) {
+            return;
+        }
+
+        let tailPosition = this._textReplacementEditor.post.tailPosition();
+        let rangeToSelect = tailPosition.toRange();
+        this._textReplacementEditor.selectRange(rangeToSelect);
     }
 });

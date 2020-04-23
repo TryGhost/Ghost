@@ -867,6 +867,16 @@
 
 /* Cards
 /* --------------------------------------------------------------- */
+
+.kg-card-help p {
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 1.2rem;
+}
+.kg-card-help svg {
+    width: 1.2rem;
+}
+
 .kg-bookmark-card {
     width: 100%;
     box-sizing: border-box;
