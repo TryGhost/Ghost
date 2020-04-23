@@ -136,7 +136,7 @@
     "@lodder/grunt-postcss": "2.0.2",
     "cssnano": "4.1.10",
     "eslint": "6.8.0",
-    "eslint-plugin-ghost": "1.2.0",
+    "eslint-plugin-ghost": "1.3.0",
     "grunt": "1.1.0",
     "grunt-bg-shell": "2.3.3",
     "grunt-contrib-clean": "2.0.0",
