@@ -13,8 +13,9 @@ To load members.js in any Ghost theme, add below code in theme's `default.hbs` b
 <script type="text/javascript" src="https://unpkg.com/@tryghost/members-js@0.1.1"></script>
 <script>
     // Initializes members.js
+    // adminUrl: Your API domain, must not end in a trailing slash(Ref: https://ghost.org/docs/api/v3/javascript/admin/#authentication)
     window.GhostMembers.init({
-      adminUrl: 'https://youradminurl.com' // Ex. http://localhost:2368/ghost
+      adminUrl: 'https://youradminurl.com'
     });
 </script>
 ```
