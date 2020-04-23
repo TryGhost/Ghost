@@ -138,6 +138,18 @@ export default class ParentContainer extends React.Component {
                 });
             }
 
+            if (action === 'signup') {
+                await this.MembersAPI.member.sendMagicLink(data);
+                this.setState({
+                    action: {
+                        name: action,
+                        isRunning: false,
+                        isSuccess: true
+                    },
+                    page: 'magiclink'
+                });
+            }
+
             if (action === 'checkoutPlan') {
                 const checkoutSuccessUrl = (new URL('/account/?stripe=billing-update-success', window.location.href)).href;
                 const checkoutCancelUrl = (new URL('/account/?stripe=billing-update-cancel', window.location.href)).href;

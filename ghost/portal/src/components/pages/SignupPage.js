@@ -24,22 +24,12 @@ export default class SignupPage extends React.Component {
         };
     }
 
-    handleSignin(e) {
+    handleSignup(e) {
         e.preventDefault();
         const email = this.state.email;
         const name = this.state.name;
         const plan = this.state.plan;
         this.props.onAction('signup', {name, email, plan});
-        this.setState({
-            isLoading: true,
-            showSuccess: false
-        });
-        setTimeout(() => {
-            this.setState({
-                isLoading: false,
-                showSuccess: true
-            });
-        }, 3000);
     }
 
     handleInput(e, field) {
@@ -72,11 +62,15 @@ export default class SignupPage extends React.Component {
             width: '100%',
             marginBottom: '12px'
         };
+        const isRunning = this.props.action && this.props.action.name === 'signup' && this.props.action.isRunning;
         const label = this.state.isLoading ? 'Sending' : 'Continue';
-        const disabled = this.state.isLoading ? true : false;
+        const disabled = isRunning ? true : false;
+        if (disabled) {
+            buttonStyle.backgroundColor = 'grey';
+        }
         return (
             <button onClick={(e) => {
-                this.handleSignin(e);
+                this.handleSignup(e);
             }} style={buttonStyle} disabled={disabled}>
                 {label}
             </button>
