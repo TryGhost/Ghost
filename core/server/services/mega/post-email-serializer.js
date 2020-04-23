@@ -97,7 +97,10 @@ const _parseReplacements = (emailTmpl) => {
 const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     const post = await serializePostModel(postModel);
 
-    post.published_at = post.published_at ? moment(post.published_at).format('DD MMM YYYY') : moment().format('DD MMM YYYY');
+    const timezone = settingsCache.get('active_timezone');
+    const momentDate = post.published_at ? moment(post.published_at) : moment();
+    post.published_at = momentDate.tz(timezone).format('DD MMM YYYY');
+
     post.authors = post.authors && post.authors.map(author => author.name).join(',');
     if (post.posts_meta) {
         post.email_subject = post.posts_meta.email_subject;
