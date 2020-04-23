@@ -14,7 +14,7 @@ To load members.js in any Ghost theme, add below code in theme's `default.hbs` b
 <script>
     // Initializes members.js
     window.GhostMembers.init({
-      adminUrl: 'https://youradminurl.com' // Ex. localhost:2368/ghost
+      adminUrl: 'https://youradminurl.com' // Ex. http://localhost:2368/ghost
     });
 </script>
 ```
