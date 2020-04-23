@@ -14,7 +14,11 @@ describe('UNIT: url redirects', function () {
     beforeEach(function () {
         req = {
             get hostname() {
-                return host;
+                // This is the real behaviour of req.hostname - it removes the port
+                // https://github.com/expressjs/express/blob/b93ffd4bdc09c3af925eed80c28bd37f63bb3cfc/lib/request.js#L445-L449
+                let index = host.indexOf(':');
+                let hostname = index !== -1 ? host.substring(0, index) : host;
+                return hostname;
             }
         };
         res = {
