@@ -29,6 +29,12 @@
             @onBlur={{action (mut this.isFocused) false}}
             @didCreateEditor={{action "registerEditor"}}
         />
+        <div class="kg-card-help">
+            <p>
+                Only visible when delivered by email, this card will not be published on your site.
+                <a href="https://docs.ghost.org" target="_blank" rel="noreferer nopener">{{svg-jar "help"}}</a>
+            </p>
+        </div>
     {{else}}
         <p>{{{this.formattedHtml}}}</p>
         <div class="koenig-card-click-overlay"></div>
