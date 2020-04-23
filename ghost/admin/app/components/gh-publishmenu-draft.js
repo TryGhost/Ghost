@@ -23,6 +23,7 @@ export default Component.extend({
     disableEmailOption: computed('memberCount', function () {
         return (this.get('session.user.isOwnerOrAdmin') && this.memberCount === 0);
     }),
+
     canSendEmail: computed('feature.labs.members', 'post.{displayName,email}', function () {
         let membersEnabled = this.feature.get('labs.members');
         let mailgunIsConfigured = this.get('settings.bulkEmailSettings.isEnabled');
