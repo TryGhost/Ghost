@@ -278,7 +278,7 @@ SchedulingDefault.prototype._pingUrl = function (object) {
 
     const httpMethod = object.extra ? object.extra.httpMethod : 'PUT';
     const tries = object.tries || 0;
-    const requestTimeout = object.extra ? object.extra.timeoutInMS : 1000 * 5;
+    const requestTimeout = (object.extra && object.extra.timeoutInMS) ? object.extra.timeoutInMS : 1000 * 5;
     const maxTries = 30;
 
     const options = {
