@@ -868,13 +868,27 @@
 /* Cards
 /* --------------------------------------------------------------- */
 
+.kg-card-help {
+    background: color-mod(var(--lightgrey) l(+3%));
+    margin: 12px -13px -9px;
+    padding: 6px;
+}
+
 .kg-card-help p {
     text-align: center;
     font-family: sans-serif;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+    color: var(--midlightgrey);
 }
+
+.kg-card-help a.kg-card-help-icon-link {
+    text-decoration: none;
+    box-shadow: none;
+    padding-bottom: 2px;
+}
+
 .kg-card-help svg {
-    width: 1.2rem;
+    width: 1.4rem;
 }
 
 .kg-bookmark-card {
