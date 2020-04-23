@@ -9,7 +9,7 @@ function addRootDiv() {
     document.body.appendChild(elem);
 }
 
-function initMembersJS(data) {
+function init(data) {
     addRootDiv();
     ReactDOM.render(
         <React.StrictMode>
@@ -20,11 +20,11 @@ function initMembersJS(data) {
 }
 
 window.GhostMembers = {
-    initMembersJS: initMembersJS
+    init: init
 };
 
 // This will automatically load for local if an .env.development.local file is present
 if (process.env.REACT_APP_ADMIN_URL) {
     const adminUrl = process.env.REACT_APP_ADMIN_URL;
-    initMembersJS({adminUrl});
+    init({adminUrl});
 }

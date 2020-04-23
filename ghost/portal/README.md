@@ -13,13 +13,11 @@ To load members.js in any Ghost theme, add below code in theme's `default.hbs` b
 <script src="https://unpkg.com/@tryghost/members-js"></script>
 <script>
     // Initializes members.js
-    window.GhostMembers.initMembersJS({
-      adminUrl: 'https://youradminurl.com'
+    window.GhostMembers.init({
+      adminUrl: 'https://youradminurl.com' // Ex. localhost:2368/ghost
     });
 </script>
 ```
-
-Temp Note: You'll need [local Ghost setup](https://github.com/TryGhost/members.js#in-your-local-ghost-setup) on `membersjs` branch for member APIs to work at the moment.
 
 ## Basic Setup
 
@@ -38,19 +36,7 @@ yarn
 
 ## Configure for local development
 
-#### In your local Ghost setup:
-
-- Add `rish-upstream` as remote on your local Ghost repo -
-```
-git remote add rish-upstream git@github.com:rishabhgrg/Ghost.git
-```
-
-
-- Fetch and checkout membersjs branch from the remote -
-```
-git fetch rish-upstream membersjs && git checkout membersjs
-```
-- Ensure your local Ghost is running
+Only useful for active UI development without publishing a version on unpkg. Always use the unpkg link for testing latest released members.js.
 
 #### In this repo(Members.js):
 
@@ -64,7 +50,7 @@ git fetch rish-upstream membersjs && git checkout membersjs
 <script src="{{asset "built/members.min.js"}}"></script>
 <script>
     // Initialize members.js
-    window.GhostMembers.initMembersJS({
+    window.GhostMembers.init({
         adminUrl: 'youradminurl.com'
     });
 </script>
