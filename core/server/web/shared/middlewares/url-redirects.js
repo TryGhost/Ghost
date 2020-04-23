@@ -89,7 +89,7 @@ _private.getFrontendRedirectUrl = ({requestedHost, requestedUrl, queryParameters
 
 _private.redirect = (req, res, next, redirectFn) => {
     const redirectUrl = redirectFn({
-        requestedHost: req.hostname,
+        requestedHost: req.vhost ? req.vhost.host : req.get('host'),
         requestedUrl: url.parse(req.originalUrl || req.url).pathname,
         queryParameters: req.query,
         secure: req.secure
