@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const urlUtils = require('../../../utils/urlUtils');
-const urlRedirects = rewire('../../../../core/server/web/shared/middlewares/url-redirects');
+const urlUtils = require('../../../../utils/urlUtils');
+const urlRedirects = rewire('../../../../../core/server/web/shared/middlewares/url-redirects');
 const {frontendSSLRedirect, adminSSLAndHostRedirect} = urlRedirects;
 const getAdminRedirectUrl = urlRedirects.__get__('_private.getAdminRedirectUrl');
 const getFrontendRedirectUrl = urlRedirects.__get__('_private.getFrontendRedirectUrl');
