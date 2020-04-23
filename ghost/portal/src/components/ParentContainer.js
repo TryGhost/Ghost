@@ -2,7 +2,8 @@ import TriggerButton from './TriggerButton';
 import PopupMenu from './PopupMenu';
 import PopupModal from './PopupModal';
 import * as Fixtures from '../test/fixtures/data';
-const setupMembersApi = require('../utils/api');
+import Api from '../utils/api';
+
 const React = require('react');
 const PropTypes = require('prop-types');
 export default class ParentContainer extends React.Component {
@@ -39,9 +40,9 @@ export default class ParentContainer extends React.Component {
         // Setup Members API with site/admin URLs
         const {adminUrl} = this.props.data;
         const siteUrl = window.location.origin;
-        this.MembersAPI = setupMembersApi({siteUrl, adminUrl});
+        this.MembersAPI = Api({siteUrl, adminUrl});
         try {
-            const [{site}, member] = await Promise.all([this.MembersAPI.getSiteData(), this.MembersAPI.getMemberData()]);
+            const [{site}, member] = await Promise.all([this.MembersAPI.site.read(), this.MembersAPI.member.sessionData()]);
             console.log('Initialized Members.js with', site, member);
             this.setState({
                 site,
@@ -114,7 +115,7 @@ export default class ParentContainer extends React.Component {
                     showPopup: false
                 });
             } else if (action === 'signout') {
-                await this.MembersAPI.signout();
+                await this.MembersAPI.member.signout();
 
                 this.setState({
                     action: {
@@ -126,7 +127,7 @@ export default class ParentContainer extends React.Component {
             }
 
             if (action === 'signin') {
-                await this.MembersAPI.sendMagicLink(data);
+                await this.MembersAPI.member.sendMagicLink(data);
                 this.setState({
                     action: {
                         name: action,
@@ -141,7 +142,7 @@ export default class ParentContainer extends React.Component {
                 const checkoutSuccessUrl = (new URL('/account/?stripe=billing-update-success', window.location.href)).href;
                 const checkoutCancelUrl = (new URL('/account/?stripe=billing-update-cancel', window.location.href)).href;
                 const {plan} = data;
-                await this.MembersAPI.checkoutPlan({
+                await this.MembersAPI.member.checkoutPlan({
                     plan,
                     checkoutSuccessUrl,
                     checkoutCancelUrl

@@ -1,94 +1,120 @@
-function createSignoutApi(siteUrl) {
-    return function () {
-        return fetch(`${siteUrl}/members/ssr`, {
-            method: 'DELETE'
-        }).then(function (res) {
-            if (res.ok) {
-                window.location.reload();
-                return 'Success';
-            } else {
-                console.log('Failed to signout!', res);
-            }
-        });
-    };
-}
+function MembersAPI({adminUrl}) {
+    const ghostPath = 'ghost';
+    const ssrPath = 'members/ssr';
+    const version = 'v3';
 
-function createSendMagicLinkApi(adminUrl) {
-    return function ({email, emailType = 'signup', labels = []}) {
-        return fetch(`${adminUrl}/api/canary/members/send-magic-link/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email,
-                emailType,
-                labels
-            })
-        }).then(function (res) {
-            if (res.ok) {
-                return 'Success';
-            } else {
-                return 'Failed to send magic link';
-            }
-        });
-    };
-}
+    const siteUrl = window.location.origin;
 
-function createMemberIdentityApi(siteUrl) {
-    return function () {
-        return fetch(`${siteUrl}/members/ssr`, {
-            credentials: 'same-origin'
-        }).then(function (res) {
-            if (!res.ok) {
-                return null;
-            }
-            return res.text();
-        });
-    };
-}
+    function endpointFor({type, resource}) {
+        if (type === 'members') {
+            return `${adminUrl}/${ghostPath}/api/${version}/members/${resource}/`;
+        } else if (type === 'admin') {
+            return `${adminUrl}/${ghostPath}/api/${version}/admin/${resource}/`;
+        } else if (type === 'ssr') {
+            return resource ? `${siteUrl}/${ssrPath}/${resource}/` : `${siteUrl}/${ssrPath}/`;
+        }
+    }
 
-function createMemberSessionDataApi(siteUrl) {
-    return function () {
-        return fetch(`${siteUrl}/members/ssr/member`, {
-            credentials: 'same-origin'
-        }).then(function (res) {
-            if (!res.ok) {
-                return null;
-            }
-            return res.json();
-        });
-    };
-}
+    function makeRequest({url, method, headers = {}, credentials, body}) {
+        const options = {
+            method,
+            headers,
+            credentials,
+            body
+        };
+        return fetch(url, options);
+    }
+    const api = {};
 
-function createSiteDataApi(adminUrl) {
-    return function () {
-        return fetch(`${adminUrl}/api/canary/admin/site/`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(function (res) {
-            if (res.ok) {
+    api.site = {
+        read() {
+            const url = endpointFor({type: 'admin', resource: 'site'});
+            return makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    return 'Failed to fetch site data';
+                }
+            });
+        }
+    };
+
+    api.member = {
+        identity() {
+            const url = endpointFor({type: 'ssr'});
+            return makeRequest({
+                url,
+                credentials: 'same-origin'
+            }).then(function (res) {
+                if (!res.ok) {
+                    return null;
+                }
+                return res.text();
+            });
+        },
+
+        sessionData() {
+            const url = endpointFor({type: 'ssr', resource: 'member'});
+            return makeRequest({
+                url,
+                credentials: 'same-origin'
+            }).then(function (res) {
+                if (!res.ok) {
+                    return null;
+                }
                 return res.json();
-            } else {
-                return 'Failed to fetch site data';
-            }
-        });
-    };
-}
+            });
+        },
 
-function createCheckoutPlanApi(siteUrl, adminUrl) {
-    return function ({plan, checkoutCancelUrl, checkoutSuccessUrl}) {
-        return fetch(`${siteUrl}/members/ssr`, {
-            credentials: 'same-origin'
-        }).then(function (res) {
-            if (!res.ok) {
-                return null;
-            }
-            return res.text();
-        }).then(function (identity) {
-            return fetch(`${adminUrl}/api/canary/members/create-stripe-checkout-session/`, {
+        sendMagicLink({email, emailType, labels}) {
+            const url = endpointFor({type: 'members', resource: 'send-magic-link'});
+            return makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email,
+                    emailType,
+                    labels
+                })
+            }).then(function (res) {
+                if (res.ok) {
+                    return 'Success';
+                } else {
+                    return 'Failed to send magic link';
+                }
+            });
+        },
+
+        signout() {
+            const url = endpointFor({type: 'ssr'});
+            return makeRequest({
+                url,
+                method: 'DELETE'
+            }).then(function (res) {
+                if (res.ok) {
+                    window.location.reload();
+                    return 'Success';
+                } else {
+                    console.log('Failed to signout!', res);
+                }
+            });
+        },
+
+        async checkoutPlan({plan, checkoutCancelUrl, checkoutSuccessUrl}) {
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
+
+            return makeRequest({
+                url,
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -104,32 +130,22 @@ function createCheckoutPlanApi(siteUrl, adminUrl) {
                     throw new Error('Could not create stripe checkout session');
                 }
                 return res.json();
+            }).then(function (result) {
+                var stripe = window.Stripe(result.publicKey);
+                return stripe.redirectToCheckout({
+                    sessionId: result.sessionId
+                });
+            }).then(function (result) {
+                if (result.error) {
+                    throw new Error(result.error.message);
+                }
+            }).catch(function (err) {
+                throw err;
             });
-        }).then(function (result) {
-            var stripe = window.Stripe(result.publicKey);
-            return stripe.redirectToCheckout({
-                sessionId: result.sessionId
-            });
-        }).then(function (result) {
-            if (result.error) {
-                throw new Error(result.error.message);
-            }
-        }).catch(function (err) {
-            throw err;
-        });
+        }
     };
+
+    return api;
 }
 
-/** siteUrl and adminUrl are being passed by theme */
-function setupMembersApi({siteUrl, adminUrl}) {
-    return {
-        sendMagicLink: createSendMagicLinkApi(adminUrl),
-        signout: createSignoutApi(siteUrl),
-        checkoutPlan: createCheckoutPlanApi(siteUrl, adminUrl),
-        getMemberIdentity: createMemberIdentityApi(siteUrl),
-        getMemberData: createMemberSessionDataApi(siteUrl),
-        getSiteData: createSiteDataApi(adminUrl)
-    };
-}
-
-module.exports = setupMembersApi;
+export default MembersAPI;
