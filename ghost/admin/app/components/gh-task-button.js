@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import config from 'ghost-admin/config/environment';
 import {computed} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {reads} from '@ember/object/computed';
@@ -39,6 +40,8 @@ const GhTaskButton = Component.extend({
     successClass: 'gh-btn-green',
     failureText: 'Retry',
     failureClass: 'gh-btn-red',
+
+    isTesting: undefined,
 
     // Allowed actions
     action: () => {},
@@ -101,6 +104,9 @@ const GhTaskButton = Component.extend({
     init() {
         this._super(...arguments);
         this._initialPerformCount = this.get('task.performCount');
+        if (this.isTesting === undefined) {
+            this.isTesting = config.environment === 'test';
+        }
     },
 
     click() {
@@ -167,7 +173,7 @@ const GhTaskButton = Component.extend({
     }),
 
     _resetButtonState: task(function* () {
-        yield timeout(2500);
+        yield timeout(this.isTesting ? 50 : 2500);
         if (!this.get('task.last.isRunning')) {
             // Reset last task to bring button back to idle state
             yield this.set('task.last', null);
