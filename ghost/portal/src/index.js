@@ -9,8 +9,17 @@ function addRootDiv() {
     document.body.appendChild(elem);
 }
 
+function handleTokenUrl() {
+    const url = new URL(window.location);
+    if (url.searchParams.get('token')) {
+        url.searchParams.delete('token');
+        window.history.replaceState({}, document.title, url.href);
+    }
+}
+
 function init(data) {
     addRootDiv();
+    handleTokenUrl();
     ReactDOM.render(
         <React.StrictMode>
             <App data={data} />
