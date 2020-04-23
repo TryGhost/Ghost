@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-js",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "repository": "git@github.com:TryGhost/membersjs.git",
   "author": "Ghost Foundation",
