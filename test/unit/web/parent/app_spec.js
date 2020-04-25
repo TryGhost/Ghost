@@ -31,8 +31,8 @@ describe('parent app', function () {
         authPagesSpy = sinon.spy();
 
         parentApp = proxyquire('../../../../core/server/web/parent/app', {
-            express: expressStub,
             '@tryghost/vhost-middleware': vhostSpy,
+            '../../../shared/express': expressStub,
             '../api': apiSpy,
             '../admin': adminSpy,
             '../well-known': wellKnownSpy,

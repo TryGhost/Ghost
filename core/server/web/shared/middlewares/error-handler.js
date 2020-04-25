@@ -5,7 +5,7 @@ const errors = require('@tryghost/errors');
 const config = require('../../../config');
 const {i18n} = require('../../../lib/common');
 const helpers = require('../../../../frontend/services/routing/helpers');
-const sentry = require('../../../sentry');
+const sentry = require('../../../../shared/sentry');
 
 const escapeExpression = hbs.Utils.escapeExpression;
 const _private = {};

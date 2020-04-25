@@ -1,5 +1,5 @@
 const debug = require('ghost-ignition').debug('web:parent');
-const express = require('express');
+const express = require('../../../shared/express');
 const vhost = require('@tryghost/vhost-middleware');
 const config = require('../../config');
 const compress = require('compression');
@@ -7,18 +7,10 @@ const netjet = require('netjet');
 const mw = require('./middleware');
 const escapeRegExp = require('lodash.escaperegexp');
 const {URL} = require('url');
-const sentry = require('../../sentry');
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
     const parentApp = express();
-    parentApp.use(sentry.requestHandler);
-
-    // ## Global settings
-
-    // Make sure 'req.secure' is valid for proxied requests
-    // (X-Forwarded-Proto header will be checked, if present)
-    parentApp.enable('trust proxy');
 
     parentApp.use(mw.requestId);
     parentApp.use(mw.logRequest);
@@ -52,8 +44,6 @@ module.exports = function setupParentApp(options = {}) {
 
     // Wrap the admin and API apps into a single express app for use with vhost
     const backendApp = express();
-    backendApp.use(sentry.requestHandler);
-    backendApp.enable('trust proxy'); // required to respect x-forwarded-proto in admin requests
     backendApp.use('/ghost/api', require('../api')());
     backendApp.use('/ghost/.well-known', require('../well-known')());
     backendApp.use('/ghost', require('../../services/auth/session').createSessionFromToken, require('../admin')());
