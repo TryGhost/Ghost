@@ -105,8 +105,7 @@ export const CARD_MENU = [
             icon: 'koenig/kg-card-type-email',
             matches: ['email'],
             type: 'card',
-            replaceArg: 'email',
-            developerExperiment: true
+            replaceArg: 'email'
         }]
     },
     {
