@@ -1,9 +1,9 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    cacheControl = require('../../../../../core/server/web/shared/middlewares/cache-control');
+const should = require('should');
+const sinon = require('sinon');
+const cacheControl = require('../../../../../core/server/web/shared/middlewares/cache-control');
 
 describe('Middleware: cacheControl', function () {
-    var res;
+    let res;
 
     beforeEach(function () {
         res = {
@@ -53,8 +53,8 @@ describe('Middleware: cacheControl', function () {
     });
 
     it('will not get confused between serving public and private', function (done) {
-        var publicCC = cacheControl('public'),
-            privateCC = cacheControl('private');
+        const publicCC = cacheControl('public');
+        const privateCC = cacheControl('private');
 
         publicCC(null, res, function () {
             res.set.calledOnce.should.be.true();

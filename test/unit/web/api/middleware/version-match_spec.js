@@ -1,9 +1,10 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    versionMatch = require('../../../../../core/server/web/api/middleware/version-match');
+const should = require('should');
+const sinon = require('sinon');
+const versionMatch = require('../../../../../core/server/web/api/middleware/version-match');
 
 describe('Version Mismatch', function () {
-    var req, res, getStub, nextStub;
+    let req, res, getStub, nextStub;
+
     afterEach(function () {
         sinon.restore();
     });
@@ -33,7 +34,7 @@ describe('Version Mismatch', function () {
     }
 
     it('should call next if request does not include a version', function () {
-        var server = '1.5.1';
+        const server = '1.5.1';
 
         testVersionMatch(server);
 
@@ -42,8 +43,8 @@ describe('Version Mismatch', function () {
     });
 
     it('should call next if versions are an exact match', function () {
-        var server = '1.5.0',
-            client = '1.5';
+        const server = '1.5.0';
+        const client = '1.5';
 
         testVersionMatch(server, client);
 
@@ -52,8 +53,8 @@ describe('Version Mismatch', function () {
     });
 
     it('should call next if client version is earlier than server', function () {
-        var server = '1.5.0',
-            client = '1.3';
+        const server = '1.5.0';
+        const client = '1.3';
 
         testVersionMatch(server, client);
 
@@ -62,8 +63,8 @@ describe('Version Mismatch', function () {
     });
 
     it('should throw VersionMismatchError if client version is earlier by a major version', function () {
-        var server = '2.5.0',
-            client = '1.3';
+        const server = '2.5.0';
+        const client = '1.3';
 
         testVersionMatch(server, client);
 
@@ -74,8 +75,8 @@ describe('Version Mismatch', function () {
     });
 
     it('should throw VersionMismatchError if client version is later than server', function () {
-        var server = '1.3.0',
-            client = '1.5';
+        const server = '1.3.0';
+        const client = '1.5';
 
         testVersionMatch(server, client);
 
@@ -86,8 +87,8 @@ describe('Version Mismatch', function () {
     });
 
     it('should throw VersionMismatchError if client version is later by a major version', function () {
-        var server = '1.5.0',
-            client = '2.3';
+        const server = '1.5.0';
+        const client = '2.3';
 
         testVersionMatch(server, client);
 
@@ -98,8 +99,8 @@ describe('Version Mismatch', function () {
     });
 
     it('should call next if pre-release is allowed', function () {
-        var server = '1.5.0-pre',
-            client = '1.4';
+        const server = '1.5.0-pre';
+        const client = '1.4';
 
         testVersionMatch(server, client);
 
@@ -108,8 +109,8 @@ describe('Version Mismatch', function () {
     });
 
     it('throws error if server is a pre-release, but later by major version', function () {
-        var server = '2.0.0-alpha',
-            client = '1.5';
+        const server = '2.0.0-alpha';
+        const client = '1.5';
 
         testVersionMatch(server, client);
 

@@ -1,14 +1,14 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    express = require('express'),
-    serveFavicon = require('../../../../../core/server/web/site/middleware/serve-favicon'),
-    settingsCache = require('../../../../../core/server/services/settings/cache'),
-    storage = require('../../../../../core/server/adapters/storage'),
-    configUtils = require('../../../../utils/configUtils'),
-    path = require('path');
+const should = require('should');
+const sinon = require('sinon');
+const express = require('express');
+const serveFavicon = require('../../../../../core/server/web/site/middleware/serve-favicon');
+const settingsCache = require('../../../../../core/server/services/settings/cache');
+const storage = require('../../../../../core/server/adapters/storage');
+const configUtils = require('../../../../utils/configUtils');
+const path = require('path');
 
 describe('Serve Favicon', function () {
-    var req, res, next, blogApp, localSettingsCache = {}, originalStoragePath;
+    let req, res, next, blogApp, localSettingsCache = {}, originalStoragePath;
 
     beforeEach(function () {
         req = sinon.spy();
@@ -33,13 +33,13 @@ describe('Serve Favicon', function () {
 
     describe('serveFavicon', function () {
         it('should return a middleware', function () {
-            var middleware = serveFavicon();
+            const middleware = serveFavicon();
 
             middleware.should.be.a.Function();
         });
 
         it('should skip if the request does NOT match the file', function () {
-            var middleware = serveFavicon();
+            const middleware = serveFavicon();
             req.path = '/robots.txt';
             middleware(req, res, next);
             next.called.should.be.true();
@@ -47,7 +47,7 @@ describe('Serve Favicon', function () {
 
         describe('serves', function () {
             it('custom uploaded favicon.png', function (done) {
-                var middleware = serveFavicon();
+                const middleware = serveFavicon();
                 req.path = '/favicon.png';
 
                 storage.getStorage().storagePath = path.join(__dirname, '../../../../../test/utils/fixtures/images/');
@@ -67,7 +67,7 @@ describe('Serve Favicon', function () {
             });
 
             it('custom uploaded favicon.ico', function (done) {
-                var middleware = serveFavicon();
+                const middleware = serveFavicon();
                 req.path = '/favicon.ico';
 
                 storage.getStorage().storagePath = path.join(__dirname, '../../../../../test/utils/fixtures/images/');
@@ -87,7 +87,7 @@ describe('Serve Favicon', function () {
             });
 
             it('custom uploaded myicon.ico', function (done) {
-                var middleware = serveFavicon();
+                const middleware = serveFavicon();
                 req.path = '/favicon.ico';
 
                 storage.getStorage().storagePath = path.join(__dirname, '../../../../../test/utils/fixtures/images/');
@@ -107,7 +107,7 @@ describe('Serve Favicon', function () {
             });
 
             it('default favicon.ico', function (done) {
-                var middleware = serveFavicon();
+                const middleware = serveFavicon();
                 req.path = '/favicon.ico';
                 localSettingsCache.icon = '';
 
@@ -127,7 +127,7 @@ describe('Serve Favicon', function () {
 
         describe('redirects', function () {
             it('to custom favicon.ico when favicon.png is requested', function (done) {
-                var middleware = serveFavicon();
+                const middleware = serveFavicon();
                 req.path = '/favicon.png';
 
                 configUtils.set('paths:contentPath', path.join(__dirname, '../../../../../test/utils/fixtures/'));
@@ -144,7 +144,7 @@ describe('Serve Favicon', function () {
             });
 
             it('to custom favicon.png when favicon.ico is requested', function (done) {
-                var middleware = serveFavicon();
+                const middleware = serveFavicon();
                 req.path = '/favicon.ico';
 
                 configUtils.set('paths:contentPath', path.join(__dirname, '../../../../../test/utils/fixtures/'));
@@ -161,7 +161,7 @@ describe('Serve Favicon', function () {
             });
 
             it('to favicon.ico when favicon.png is requested', function (done) {
-                var middleware = serveFavicon();
+                const middleware = serveFavicon();
                 req.path = '/favicon.png';
 
                 configUtils.set('paths:publicFilePath', path.join(__dirname, '../../../../../test/utils/fixtures/'));
