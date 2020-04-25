@@ -1,11 +1,11 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    uncapitalise = require('../../../../../core/server/web/shared/middlewares/uncapitalise');
+const should = require('should');
+const sinon = require('sinon');
+const uncapitalise = require('../../../../../core/server/web/shared/middlewares/uncapitalise');
 
 // NOTE: all urls will have had trailing slashes added before uncapitalise is called
 
 describe('Middleware: uncapitalise', function () {
-    var res, req, next;
+    let res, req, next;
 
     beforeEach(function () {
         res = {
@@ -174,30 +174,30 @@ describe('Middleware: uncapitalise', function () {
                 });
 
                 it('does not convert any capitals after the endpoint', function (done) {
-                    var query = '?filter=mAgic';
+                    const query = '?filter=mAgic';
                     req.path = `/Ghost/API/${apiVersion}/settings/is_private/`;
-                    req.url = req.path + query;
+                    req.url = `${req.path}${query}`;
 
                     uncapitalise(req, res, next);
 
                     next.called.should.be.false();
                     res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith(301, `/ghost/api/${apiVersion}/settings/is_private/?filter=mAgic`).should.be.true();
+                    res.redirect.calledWith(301, `/ghost/api/${apiVersion}/settings/is_private/${query}`).should.be.true();
                     done();
                 });
 
                 it('does not convert any capitals after the endpoint with baseUrl', function (done) {
-                    var query = '?filter=mAgic';
+                    const query = '?filter=mAgic';
                     req.baseUrl = '/Blog';
                     req.path = `/ghost/api/${apiVersion}/mail/test@example.COM/`;
-                    req.url = req.path + query;
-                    req.originalUrl = req.baseUrl + req.path + query;
+                    req.url = `${req.path}${query}`;
+                    req.originalUrl = `${req.baseUrl}${req.path}${query}`;
 
                     uncapitalise(req, res, next);
 
                     next.called.should.be.false();
                     res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith(301, `/blog/ghost/api/${apiVersion}/mail/test@example.COM/?filter=mAgic`).should.be.true();
+                    res.redirect.calledWith(301, `/blog/ghost/api/${apiVersion}/mail/test@example.COM/${query}`).should.be.true();
                     done();
                 });
             });

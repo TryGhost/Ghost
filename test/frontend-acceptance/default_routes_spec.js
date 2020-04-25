@@ -5,21 +5,22 @@
 // As it stands, these tests depend on the database, and as such are integration tests.
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
-var should = require('should'),
-    sinon = require('sinon'),
-    supertest = require('supertest'),
-    moment = require('moment'),
-    cheerio = require('cheerio'),
-    _ = require('lodash'),
-    testUtils = require('../utils'),
-    configUtils = require('../utils/configUtils'),
-    config = require('../../core/server/config'),
-    settingsCache = require('../../core/server/services/settings/cache'),
-    origCache = _.cloneDeep(settingsCache),
-    ghost = testUtils.startGhost,
-    request;
+const should = require('should');
+const sinon = require('sinon');
+const supertest = require('supertest');
+const moment = require('moment');
+const cheerio = require('cheerio');
+const _ = require('lodash');
+const testUtils = require('../utils');
+const configUtils = require('../utils/configUtils');
+const config = require('../../core/server/config');
+const settingsCache = require('../../core/server/services/settings/cache');
+const origCache = _.cloneDeep(settingsCache);
+const ghost = testUtils.startGhost;
 
 describe('Default Frontend routing', function () {
+    let request;
+
     function doEnd(done) {
         return function (err, res) {
             if (err) {
@@ -71,7 +72,7 @@ describe('Default Frontend routing', function () {
                 .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect(200)
                 .end(function (err, res) {
-                    var $ = cheerio.load(res.text);
+                    const $ = cheerio.load(res.text);
 
                     // NOTE: "Ghost" is the title from the settings.
                     $('title').text().should.equal('Ghost');
@@ -90,7 +91,7 @@ describe('Default Frontend routing', function () {
                 .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect(200)
                 .end(function (err, res) {
-                    var $ = cheerio.load(res.text);
+                    const $ = cheerio.load(res.text);
 
                     // NOTE: "Ghost" is the title from the settings.
                     $('title').text().should.equal('Ghost - Ghost');
@@ -109,7 +110,7 @@ describe('Default Frontend routing', function () {
                 .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect(200)
                 .end(function (err, res) {
-                    var $ = cheerio.load(res.text);
+                    const $ = cheerio.load(res.text);
 
                     // NOTE: "Ghost" is the title from the settings.
                     $('title').text().should.equal('Getting Started - Ghost');
@@ -130,7 +131,7 @@ describe('Default Frontend routing', function () {
                 .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect(200)
                 .end(function (err, res) {
-                    var $ = cheerio.load(res.text);
+                    const $ = cheerio.load(res.text);
 
                     // NOTE: This is the title from the settings.
                     $('title').text().should.equal('Welcome to Ghost');
@@ -146,7 +147,7 @@ describe('Default Frontend routing', function () {
 
         it('should not work with date permalinks', function (done) {
             // get today's date
-            var date = moment().format('YYYY/MM/DD');
+            const date = moment().format('YYYY/MM/DD');
 
             request.get('/' + date + '/welcome/')
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -212,7 +213,7 @@ describe('Default Frontend routing', function () {
                         return done(err);
                     }
 
-                    var $ = cheerio.load(res.text);
+                    const $ = cheerio.load(res.text);
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     should.not.exist(res.headers['X-CSRF-Token']);
@@ -232,7 +233,7 @@ describe('Default Frontend routing', function () {
 
         it('should not work with date permalinks', function (done) {
             // get today's date
-            var date = moment().format('YYYY/MM/DD');
+            const date = moment().format('YYYY/MM/DD');
 
             request.get('/' + date + '/welcome/amp/')
                 .expect('Cache-Control', testUtils.cacheRules.private)
