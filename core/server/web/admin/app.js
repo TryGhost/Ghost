@@ -1,21 +1,15 @@
 const debug = require('ghost-ignition').debug('web:admin:app');
-const express = require('express');
+const express = require('../../../shared/express');
 const serveStatic = require('express').static;
 const config = require('../../config');
 const constants = require('../../lib/constants');
 const urlUtils = require('../../lib/url-utils');
 const shared = require('../shared');
 const adminMiddleware = require('./middleware');
-const sentry = require('../../sentry');
 
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
     const adminApp = express();
-    adminApp.use(sentry.requestHandler);
-
-    // Make sure 'req.secure' and `req.hostname` is valid for proxied requests
-    // (X-Forwarded-Proto header will be checked, if present)
-    adminApp.enable('trust proxy');
 
     // Admin assets
     // @TODO ensure this gets a local 404 error handler
@@ -52,7 +46,6 @@ module.exports = function setupAdminApp() {
     // Finally, routing
     adminApp.get('*', require('./controller'));
 
-    adminApp.use(sentry.errorHandler);
     adminApp.use(shared.middlewares.errorHandler.pageNotFound);
     adminApp.use(shared.middlewares.errorHandler.handleHTMLResponse);
 
