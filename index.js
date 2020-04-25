@@ -3,7 +3,8 @@
 
 const startTime = Date.now();
 const debug = require('ghost-ignition').debug('boot:index');
-const sentry = require('./core/server/sentry');
+// Sentry must be initialised early on
+const sentry = require('./core/shared/sentry');
 
 debug('First requires...');
 
@@ -11,11 +12,13 @@ const ghost = require('./core');
 
 debug('Required ghost');
 
-const express = require('express');
+const express = require('./core/shared/express');
 const common = require('./core/server/lib/common');
 const urlService = require('./core/frontend/services/url');
 const ghostApp = express();
 
+// Use the request handler at the top level
+// @TODO: decide if this should be here or in parent App - should it come after request id mw?
 ghostApp.use(sentry.requestHandler);
 
 debug('Initialising Ghost');

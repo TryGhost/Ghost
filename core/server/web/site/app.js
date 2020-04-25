@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('web:site:app');
 const path = require('path');
-const express = require('express');
+const express = require('../../../shared/express');
 const cors = require('cors');
 const {URL} = require('url');
 const errors = require('@tryghost/errors');
@@ -20,7 +20,6 @@ const membersMiddleware = membersService.middleware;
 const siteRoutes = require('./routes');
 const shared = require('../shared');
 const mw = require('./middleware');
-const sentry = require('../../sentry');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 
@@ -78,12 +77,6 @@ module.exports = function setupSiteApp(options = {}) {
     debug('Site setup start');
 
     const siteApp = express();
-    siteApp.use(sentry.requestHandler);
-
-    // Make sure 'req.secure' is valid for proxied requests
-    // (X-Forwarded-Proto header will be checked, if present)
-    // NB: required here because it's not passed down via vhost
-    siteApp.enable('trust proxy');
 
     // ## App - specific code
     // set the view engine
@@ -201,7 +194,6 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(SiteRouter);
 
     // ### Error handlers
-    siteApp.use(sentry.errorHandler);
     siteApp.use(shared.middlewares.errorHandler.pageNotFound);
     siteApp.use(shared.middlewares.errorHandler.handleThemeResponse);
 

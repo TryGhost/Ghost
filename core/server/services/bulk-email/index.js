@@ -3,7 +3,7 @@ const common = require('../../lib/common');
 const mailgunProvider = require('./mailgun');
 const configService = require('../../config');
 const settingsCache = require('../settings/cache');
-const sentry = require('../../sentry');
+const sentry = require('../../../shared/sentry');
 
 /**
  * An object representing batch request result
