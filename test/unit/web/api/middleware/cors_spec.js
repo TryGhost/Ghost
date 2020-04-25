@@ -1,11 +1,12 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    rewire = require('rewire'),
-    urlUtils = require('../../../../utils/urlUtils'),
-    cors = rewire('../../../../../core/server/web/api/middleware/cors');
+const should = require('should');
+const sinon = require('sinon');
+const rewire = require('rewire');
+const urlUtils = require('../../../../utils/urlUtils');
+
+let cors = rewire('../../../../../core/server/web/api/middleware/cors');
 
 describe('cors', function () {
-    var res, req, next;
+    let res, req, next;
 
     beforeEach(function () {
         req = {
@@ -44,7 +45,7 @@ describe('cors', function () {
     });
 
     it('should be enabled when origin is 127.0.0.1', function (done) {
-        var origin = 'http://127.0.0.1:2368';
+        const origin = 'http://127.0.0.1:2368';
 
         req.get = sinon.stub().withArgs('origin').returns(origin);
         res.get = sinon.stub().withArgs('origin').returns(origin);
@@ -59,7 +60,7 @@ describe('cors', function () {
     });
 
     it('should be enabled when origin is localhost', function (done) {
-        var origin = 'http://localhost:2368';
+        const origin = 'http://localhost:2368';
 
         req.get = sinon.stub().withArgs('origin').returns(origin);
         res.get = sinon.stub().withArgs('origin').returns(origin);
@@ -74,7 +75,7 @@ describe('cors', function () {
     });
 
     it('should not be enabled the if origin is not whitelisted', function (done) {
-        var origin = 'http://not-trusted.com';
+        const origin = 'http://not-trusted.com';
 
         req.get = sinon.stub().withArgs('origin').returns(origin);
         res.get = sinon.stub().withArgs('origin').returns(origin);
@@ -89,7 +90,7 @@ describe('cors', function () {
     });
 
     it('should be enabled if the origin matches config.url', function (done) {
-        var origin = 'http://my.blog';
+        const origin = 'http://my.blog';
 
         cors.__set__('urlUtils', urlUtils.getInstance({url: origin}));
 
@@ -106,7 +107,7 @@ describe('cors', function () {
     });
 
     it('should be enabled if the origin matches config.url', function (done) {
-        var origin = 'http://admin:2222';
+        const origin = 'http://admin:2222';
 
         cors.__set__('urlUtils', urlUtils.getInstance({
             url: 'https://blog',
