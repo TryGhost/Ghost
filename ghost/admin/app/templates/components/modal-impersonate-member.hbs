@@ -27,6 +27,7 @@
                 @value={{readonly signinUrl}}
             />
             <GhTaskButton
+                @autoReset={{true}}
                 @buttonText="Copy link"
                 @task={{this.copySigninUrl}}
                 @successText="Link copied"
