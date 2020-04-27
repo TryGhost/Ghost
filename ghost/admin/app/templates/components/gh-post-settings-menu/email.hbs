@@ -138,6 +138,7 @@
                     {{/if}}
 
                     <GhTaskButton @buttonText="Send test email"
+                        @autoReset={{true}}
                         @task={{this.sendTestEmail}}
                         @successText="Email sent"
                         @runningText="Sending..."
