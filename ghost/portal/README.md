@@ -7,7 +7,7 @@ Drop-in script to make the bulk of members work on any theme.
 
 ## Usage
 
-To load members.js in any Ghost theme, add below code in theme's `default.hbs` before the end of body tag.
+To load members.js in any Ghost theme, add below code in theme's `default.hbs` before the end of body tag or in code injection footer in Ghost Admin.
 
 ```html
 <script type="text/javascript" src="https://unpkg.com/@tryghost/members-js@0.2.1"></script>
