@@ -1,16 +1,16 @@
 const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
-const testUtils = require('../../utils');
-const configUtils = require('../../utils/configUtils');
-const settingsCache = require('../../../core/server/services/settings/cache');
+const testUtils = require('../utils');
+const configUtils = require('../utils/configUtils');
+const settingsCache = require('../../core/server/services/settings/cache');
 
 const ghost = testUtils.startGhost;
 
-// NOTE: if only this suite is run some of the tests will fail due to
+// @TODO: if only this suite is run some of the tests will fail due to
 //       wrong template loading issues which would need to be investigated
 //       As a workaround run it with some of other tests e.g. "frontend_spec"
-describe('Integration - Web - Members', function () {
+describe('Basic Members Routes', function () {
     let request;
 
     before(function () {
