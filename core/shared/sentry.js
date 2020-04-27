@@ -8,9 +8,11 @@ const expressNoop = function (req, res, next) {
 if (sentryConfig && !sentryConfig.disabled) {
     const Sentry = require('@sentry/node');
     const version = require('../server/lib/ghost-version').full;
+    const environment = config.get('env');
     Sentry.init({
         dsn: sentryConfig.dsn,
-        release: 'ghost@' + version
+        release: 'ghost@' + version,
+        environment: environment
     });
 
     module.exports = {
