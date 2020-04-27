@@ -27,18 +27,21 @@ const Styles = ({style = {}}) => {
     };
 };
 
-function InputField({name, label, type, value, placeholder, onChange, style}) {
+function InputField({name, id, label, type, value, placeholder, onChange, style}) {
     const Style = Styles({style});
+    id = id || `input-${name}`;
     return (
         <>
-            <label htmlFor={name} style={Style.label}> {label} </label>
+            <label htmlFor={id} style={Style.label}> {label} </label>
             <input
+                id={id}
                 type={type}
                 name={name}
                 placeholder={placeholder}
                 value={value}
                 onChange={e => onChange(e, name)}
                 style={Style.input}
+                aria-label={label}
             />
         </>
     );
