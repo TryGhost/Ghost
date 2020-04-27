@@ -179,11 +179,15 @@ export default class AccountHomePage extends React.Component {
         );
     }
 
+    handleAccountDetail(e) {
+        // No-op
+    }
+
     renderLogoutButton() {
         return (
             <div style={{paddingLeft: '21px', paddingRight: '16px', paddingTop: '12px', borderTop: '1px solid #EFEFEF', cursor: 'pointer'}}>
                 <div role="button" onClick={(e) => {
-                    this.handleSignout(e);
+                    this.handleAccountDetail(e);
                 }} style={{marginBottom: '3px'}}> Account </div>
                 <div role="button" onClick={(e) => {
                     this.handleSignout(e);
