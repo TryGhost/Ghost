@@ -1,19 +1,11 @@
 import ActionButton from '../common/ActionButton';
 import InputField from '../common/InputField';
+import {ParentContext} from '../ParentContext';
 
 const React = require('react');
-const PropTypes = require('prop-types');
 
 export default class SigninPage extends React.Component {
-    static propTypes = {
-        data: PropTypes.shape({
-            site: PropTypes.shape({
-                title: PropTypes.string,
-                description: PropTypes.string
-            }).isRequired
-        }).isRequired,
-        onAction: PropTypes.func.isRequired
-    };
+    static contextType = ParentContext;
 
     constructor(props) {
         super(props);
@@ -26,7 +18,7 @@ export default class SigninPage extends React.Component {
         e.preventDefault();
         const email = this.state.email;
 
-        this.props.onAction('signin', {email});
+        this.context.onAction('signin', {email});
     }
 
     handleInput(e, field) {
@@ -38,14 +30,14 @@ export default class SigninPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const isRunning = this.props.action && this.props.action.name === 'signin' && this.props.action.isRunning;
-        const label = this.state.isLoading ? 'Sending' : 'Send Login Link';
+        const isRunning = (this.context.action === 'signin:running');
+        const label = isRunning ? 'Sending' : 'Send Login Link';
         const disabled = isRunning ? true : false;
         return (
             <ActionButton
                 onClick={e => this.handleSignin(e)}
                 disabled={disabled}
-                brandColor={this.props.brandColor}
+                brandColor={this.context.brandColor}
                 label={label}
             />
         );
@@ -75,11 +67,11 @@ export default class SigninPage extends React.Component {
     }
 
     renderSignupMessage() {
-        const color = this.props.brandColor || '#3db0ef';
+        const brandColor = this.context.brandColor;
         return (
             <div style={{display: 'flex', justifyContent: 'center'}}>
                 <div style={{marginRight: '6px', color: '#929292'}}> Don't have an account ? </div>
-                <div style={{color, fontWeight: 'bold', cursor: 'pointer'}} role="button" onClick={() => this.props.switchPage('signup')}> Subscribe </div>
+                <div style={{color: brandColor, fontWeight: 'bold', cursor: 'pointer'}} role="button" onClick={() => this.context.onAction('switchPage', 'signup')}> Subscribe </div>
             </div>
         );
     }
@@ -95,7 +87,7 @@ export default class SigninPage extends React.Component {
     }
 
     renderSiteLogo() {
-        const siteLogo = (this.props.data.site && this.props.data.site.logo);
+        const siteLogo = this.context.site.logo;
 
         const logoStyle = {
             position: 'relative',
@@ -119,7 +111,7 @@ export default class SigninPage extends React.Component {
     }
 
     renderFormHeader() {
-        const siteTitle = (this.props.data.site && this.props.data.site.title) || 'Site Title';
+        const siteTitle = this.context.site.title || 'Site Title';
 
         return (
             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '18px'}}>

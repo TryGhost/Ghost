@@ -1,34 +1,20 @@
+import {ParentContext} from '../ParentContext';
+
 const React = require('react');
-const PropTypes = require('prop-types');
 
 export default class AccountHomePage extends React.Component {
-    static propTypes = {
-        data: PropTypes.shape({
-            site: PropTypes.shape({
-                title: PropTypes.string,
-                description: PropTypes.string
-            }).isRequired,
-            member: PropTypes.shape({
-                email: PropTypes.string
-            }).isRequired
-        }).isRequired,
-        onAction: PropTypes.func
-    };
+    static contextType = ParentContext;
 
     handleSignout(e) {
         e.preventDefault();
-        this.props.onAction('signout');
+        this.context.onAction('signout');
     }
 
     handlePlanCheckout(e) {
         e.preventDefault();
         const plan = e.target.name;
-        const email = this.getMemberEmail();
-        this.props.onAction('checkoutPlan', {email, plan});
-    }
-
-    getMemberEmail() {
-        return this.props.data.member.email;
+        const email = this.context.member.email;
+        this.context.onAction('checkoutPlan', {email, plan});
     }
 
     renderPlanSelectButton({name}) {
@@ -45,7 +31,7 @@ export default class AccountHomePage extends React.Component {
             cursor: 'pointer',
             transition: '.4s ease',
             color: '#fff',
-            backgroundColor: this.props.brandColor || '#3eb0ef',
+            backgroundColor: this.context.brandColor,
             boxShadow: 'none',
             userSelect: 'none',
             width: '90px',
@@ -110,8 +96,8 @@ export default class AccountHomePage extends React.Component {
             border: '1px solid black',
             marginBottom: '12px'
         };
-        const siteTitle = this.props.data.site && this.props.data.site.title;
-        const plans = this.props.data.site && this.props.data.site.plans;
+        const siteTitle = this.context.site.title;
+        const plans = this.context.site.plans;
         return (
             <div style={{padding: '12px 12px'}}>
                 <div style={{marginBottom: '12px', fontSize: '14px'}}>
@@ -127,7 +113,7 @@ export default class AccountHomePage extends React.Component {
     }
 
     renderHeader() {
-        const memberEmail = this.getMemberEmail();
+        const memberEmail = this.context.member.email;
 
         return (
             <>
@@ -142,7 +128,7 @@ export default class AccountHomePage extends React.Component {
     }
 
     renderUserAvatar() {
-        const avatarImg = (this.props.data.member && this.props.data.member.avatar_image);
+        const avatarImg = (this.context.member && this.context.member.avatar_image);
 
         const logoStyle = {
             position: 'relative',
@@ -167,8 +153,8 @@ export default class AccountHomePage extends React.Component {
     }
 
     renderUserHeader() {
-        const memberEmail = this.getMemberEmail();
-        const memberName = this.props.data.member.name;
+        const memberEmail = this.context.member.email;
+        const memberName = this.context.member.name;
 
         return (
             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px'}}>

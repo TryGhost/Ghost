@@ -1,14 +1,10 @@
 import React from 'react';
-import {render, fireEvent} from '@testing-library/react';
 import SignupPage from './SignupPage';
-import {site} from '../../test/fixtures/data';
+import {render, fireEvent} from '../../utils/tests';
 
 const setup = (overrides) => {
-    const mockOnActionFn = jest.fn();
-    const mockSwitchPageFn = jest.fn();
-
-    const utils = render(
-        <SignupPage data={{site}} onAction={mockOnActionFn} switchPage={mockSwitchPageFn} />
+    const {mockOnActionFn, ...utils} = render(
+        <SignupPage />
     );
     const emailInput = utils.getByLabelText(/email/i);
     const nameInput = utils.getByLabelText(/name/i);
@@ -20,7 +16,6 @@ const setup = (overrides) => {
         submitButton,
         signinButton,
         mockOnActionFn,
-        mockSwitchPageFn,
         ...utils
     };
 };
@@ -51,9 +46,9 @@ describe('SignupPage', () => {
     });
 
     test('can call swithPage for signin', () => {
-        const {signinButton, mockSwitchPageFn} = setup();
+        const {signinButton, mockOnActionFn} = setup();
 
         fireEvent.click(signinButton);
-        expect(mockSwitchPageFn).toHaveBeenCalledWith('signin');
+        expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', 'signin');
     });
 });

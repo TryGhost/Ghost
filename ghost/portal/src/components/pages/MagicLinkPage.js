@@ -1,7 +1,10 @@
 import ActionButton from '../common/ActionButton';
+import {ParentContext} from '../ParentContext';
 const React = require('react');
 
 export default class MagicLinkPage extends React.Component {
+    static contextType = ParentContext;
+
     renderFormHeader() {
         return (
             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '18px'}}>
@@ -14,13 +17,13 @@ export default class MagicLinkPage extends React.Component {
     renderLoginMessage() {
         return (
             <div style={{display: 'flex', justifyContent: 'center'}}>
-                <div style={{color: '#3db0ef', fontWeight: 'bold', cursor: 'pointer'}} onClick={() => this.props.switchPage('signin')}> Back to Log in </div>
+                <div style={{color: '#3db0ef', fontWeight: 'bold', cursor: 'pointer'}} onClick={() => this.context.onAction('switchPage', 'signin')}> Back to Log in </div>
             </div>
         );
     }
 
     handleClose(e) {
-        this.props.onAction('closePopup');
+        this.context.onAction('closePopup');
     }
 
     renderCloseButton() {
@@ -28,7 +31,7 @@ export default class MagicLinkPage extends React.Component {
         return (
             <ActionButton
                 onClick={e => this.handleSignin(e)}
-                brandColor={this.props.brandColor}
+                brandColor={this.context.brandColor}
                 label={label}
             />
         );

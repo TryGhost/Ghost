@@ -1,57 +1,46 @@
 import ActionButton from '../common/ActionButton';
 import InputField from '../common/InputField';
+import {ParentContext} from '../ParentContext';
 
 const React = require('react');
-const PropTypes = require('prop-types');
 
-export default class SignupPage extends React.Component {
-    static propTypes = {
-        data: PropTypes.shape({
-            site: PropTypes.shape({
-                title: PropTypes.string,
-                description: PropTypes.string
-            }).isRequired
-        }).isRequired,
-        onAction: PropTypes.func.isRequired,
-        switchPage: PropTypes.func.isRequired
-    };
+class SignupPage extends React.Component {
+    static contextType = ParentContext;
 
     constructor(props) {
         super(props);
         this.state = {
             name: '',
             email: '',
-            plan: 'FREE',
-            isLoading: false,
-            showSuccess: false
+            plan: 'FREE'
         };
     }
 
     handleSignup(e) {
         e.preventDefault();
+        const {onAction} = this.context;
         const email = this.state.email;
         const name = this.state.name;
         const plan = this.state.plan;
-        this.props.onAction('signup', {name, email, plan});
+        onAction('signup', {name, email, plan});
     }
 
     handleInput(e, field) {
         this.setState({
-            [field]: e.target.value,
-            showSuccess: false,
-            isLoading: false
+            [field]: e.target.value
         });
     }
 
     renderSubmitButton() {
-        const isRunning = this.props.action && this.props.action.name === 'signup' && this.props.action.isRunning;
-        const label = this.state.isLoading ? 'Sending...' : 'Continue';
-        const disabled = isRunning ? true : false;
+        const {action, brandColor} = this.context;
+
+        const label = (action === 'signup:running') ? 'Sending...' : 'Continue';
+        const disabled = (action === 'signup:running') ? true : false;
         return (
             <ActionButton
                 onClick={e => this.handleSignup(e)}
                 disabled={disabled}
-                brandColor={this.props.brandColor}
+                brandColor={brandColor}
                 label={label}
             />
         );
@@ -161,7 +150,8 @@ export default class SignupPage extends React.Component {
             borderRadius: '9px',
             marginBottom: '12px'
         };
-        const plans = this.props.data.site && this.props.data.site.plans;
+        let {site} = this.context;
+        const plans = site.plans;
         if (!plans) {
             return null;
         }
@@ -210,11 +200,11 @@ export default class SignupPage extends React.Component {
     }
 
     renderLoginMessage() {
-        const color = this.props.brandColor || '#3db0ef';
+        const {brandColor, onAction} = this.context;
         return (
             <div style={{display: 'flex', justifyContent: 'center'}}>
                 <div style={{marginRight: '6px', color: '#929292'}}> Already a member ? </div>
-                <div style={{color, fontWeight: 'bold', cursor: 'pointer'}} role="button" onClick={() => this.props.switchPage('signin')}> Log in </div>
+                <div style={{color: brandColor, fontWeight: 'bold', cursor: 'pointer'}} role="button" onClick={() => onAction('switchPage', 'signin')}> Log in </div>
             </div>
         );
     }
@@ -232,7 +222,8 @@ export default class SignupPage extends React.Component {
     }
 
     renderSiteLogo() {
-        const siteLogo = (this.props.data.site && this.props.data.site.logo);
+        const {site} = this.context;
+        const siteLogo = site.logo;
 
         const logoStyle = {
             position: 'relative',
@@ -256,7 +247,8 @@ export default class SignupPage extends React.Component {
     }
 
     renderFormHeader() {
-        const siteTitle = (this.props.data.site && this.props.data.site.title) || 'Site Title';
+        const {site} = this.context;
+        const siteTitle = site.title || 'Site Title';
 
         return (
             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '18px'}}>
@@ -277,3 +269,5 @@ export default class SignupPage extends React.Component {
         );
     }
 }
+
+export default SignupPage;

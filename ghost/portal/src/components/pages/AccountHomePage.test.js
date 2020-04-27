@@ -1,14 +1,12 @@
 import React from 'react';
-import {render, fireEvent} from '@testing-library/react';
+import {render, fireEvent} from '../../utils/tests';
 import AccountHomePage from './AccountHomePage';
-import {site, member} from '../../test/fixtures/data';
+import {member} from '../../test/fixtures/data';
 
 const setup = (overrides) => {
-    const mockOnActionFn = jest.fn();
-    const mockSwitchPageFn = jest.fn();
     const freeMember = member.free;
-    const utils = render(
-        <AccountHomePage data={{site, member: freeMember}} onAction={mockOnActionFn} switchPage={mockSwitchPageFn} />
+    const {mockOnActionFn, ...utils} = render(
+        <AccountHomePage />
     );
     const memberEmail = utils.getByText(freeMember.email);
     const logoutButton = utils.queryByRole('button', {name: 'Log out'});
@@ -16,7 +14,6 @@ const setup = (overrides) => {
         memberEmail,
         logoutButton,
         mockOnActionFn,
-        mockSwitchPageFn,
         ...utils
     };
 };

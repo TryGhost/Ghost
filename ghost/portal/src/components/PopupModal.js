@@ -5,9 +5,9 @@ import AccountHomePage from './pages/AccountHomePage';
 import MagicLinkPage from './pages/MagicLinkPage';
 import LoadingPage from './pages/LoadingPage';
 import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
+import {ParentContext} from './ParentContext';
 
 const React = require('react');
-const PropTypes = require('prop-types');
 
 const Styles = {
     modalContainer: {
@@ -35,6 +35,19 @@ const Styles = {
             height: '60%',
             backgroundColor: 'white'
         },
+        menu: {
+            position: 'fixed',
+            padding: '0',
+            outline: '0',
+            bottom: '100px',
+            right: '20px',
+            borderRadius: '8px',
+            boxShadow: 'rgba(0, 0, 0, 0.16) 0px 5px 40px',
+            opacity: '1',
+            overflow: 'hidden',
+            height: '60%',
+            backgroundColor: 'white'
+        },
         signin: {
             minHeight: '200px',
             maxHeight: '330px'
@@ -44,8 +57,9 @@ const Styles = {
             maxHeight: '620px'
         },
         accountHome: {
-            minHeight: '350px',
-            maxHeight: '510px'
+            width: '280px',
+            minHeight: '200px',
+            maxHeight: '240px'
         },
         magiclink: {
             minHeight: '230px',
@@ -94,39 +108,20 @@ const Pages = {
 };
 
 export default class PopupModal extends React.Component {
-    static propTypes = {
-        data: PropTypes.shape({
-            site: PropTypes.shape({
-                title: PropTypes.string,
-                description: PropTypes.string
-            }).isRequired,
-            member: PropTypes.shape({
-                email: PropTypes.string
-            })
-        }).isRequired,
-        action: PropTypes.object,
-        page: PropTypes.string.isRequired,
-        onAction: PropTypes.func.isRequired
-    };
+    static contextType = ParentContext;
 
     renderCurrentPage(page) {
         const PageComponent = Pages[page];
 
         return (
-            <PageComponent
-                data={this.props.data}
-                action={this.props.action}
-                onAction={(action, data) => this.props.onAction(action, data)}
-                brandColor={this.props.brandColor}
-                switchPage={page => this.props.switchPage(page)}
-            />
+            <PageComponent />
         );
     }
 
     renderPopupClose() {
         return (
             <div style={{display: 'flex', justifyContent: 'flex-end', padding: '0 20px'}}>
-                <CloseIcon style={Styles.popup.closeIcon} onClick = {() => this.props.onToggle()} />
+                <CloseIcon style={Styles.popup.closeIcon} onClick = {() => this.context.onAction('closePopup')} />
             </div>
         );
     }
@@ -135,7 +130,7 @@ export default class PopupModal extends React.Component {
         return (
             <div style={Styles.popup.container}>
                 {this.renderPopupClose()}
-                {this.renderCurrentPage(this.props.page)}
+                {this.renderCurrentPage(this.context.page)}
             </div>
         );
     }
@@ -143,14 +138,15 @@ export default class PopupModal extends React.Component {
     handlePopupClose(e) {
         e.preventDefault();
         if (e.target === e.currentTarget) {
-            this.props.onToggle();
+            this.context.onAction('closePopup');
         }
     }
 
     renderFrameContainer() {
-        const page = this.props.page;
+        const page = this.context.page;
+        const commonStyle = this.context.page === 'accountHome' ? Styles.frame.menu : Styles.frame.common;
         const frameStyle = {
-            ...Styles.frame.common,
+            ...commonStyle,
             ...Styles.frame[page]
         };
         return (

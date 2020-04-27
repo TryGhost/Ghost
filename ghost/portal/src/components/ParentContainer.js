@@ -1,11 +1,12 @@
 import TriggerButton from './TriggerButton';
-import PopupMenu from './PopupMenu';
 import PopupModal from './PopupModal';
 import * as Fixtures from '../test/fixtures/data';
-import Api from '../utils/api';
+import setupGhostApi from '../utils/api';
+import {ParentContext} from './ParentContext';
 
 const React = require('react');
 const PropTypes = require('prop-types');
+
 export default class ParentContainer extends React.Component {
     static propTypes = {
         data: PropTypes.object.isRequired
@@ -14,57 +15,64 @@ export default class ParentContainer extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {
-            page: 'magiclink',
-            showPopup: false,
-            action: {
-                name: 'loading'
-            }
-        };
+        // Setup custom trigger button handling
+        this.setupCustomTriggerButton();
 
-        this.initialize();
+        this.state = {
+            page: 'accountHome',
+            showPopup: false,
+            action: 'init:running',
+            initStatus: 'running'
+        };
     }
 
     componentDidMount() {
-        // Initialize site and members data
-
-        this.loadData();
-    }
-
-    initialize() {
-        // Setup custom trigger button handling
-        this.setupCustomTriggerButton();
-    }
-
-    async loadData() {
-        // Setup Members API with site/admin URLs
         const {adminUrl} = this.props.data;
-        const siteUrl = window.location.origin;
-        this.MembersAPI = Api({siteUrl, adminUrl});
+        if (adminUrl) {
+            this.GhostApi = setupGhostApi({adminUrl});
+            this.fetchData();
+        } else {
+            console.error(`[Members.js] Failed to initialize, pass a valid admin url.`);
+            this.setState({
+                action: 'init:failed:missingAdminUrl'
+            });
+        }
+    }
+
+    // Fetch site and member session data with Ghost Apis
+    async fetchData() {
+        const {adminUrl} = this.props.data;
+        this.GhostApi = setupGhostApi({adminUrl});
         try {
-            const [{site}, member] = await Promise.all([this.MembersAPI.site.read(), this.MembersAPI.member.sessionData()]);
-            console.log('Initialized Members.js with', site, member);
+            const {site, member} = await this.GhostApi.init();
             this.setState({
                 site,
                 member,
                 page: member ? 'accountHome' : 'signup',
-                action: 'init:success'
+                action: 'init:success',
+                initStatus: 'success'
             });
         } catch (e) {
-            console.log('Failed state fetch', e);
+            console.error(`[Members.js] Failed to fetch site data, please make sure your admin url - ${adminUrl} - is correct.`);
             this.setState({
-                action: {
-                    name: 'init:failed'
-                }
+                action: 'init:failed:incorrectAdminUrl',
+                initStatus: 'failed'
             });
         }
     }
 
     getData() {
-        const member = process.env.REACT_APP_ADMIN_URL ? Fixtures.member.free : this.state.member;
-        const site = process.env.REACT_APP_ADMIN_URL ? Fixtures.site : this.state.site;
-
-        return {site, member};
+        // Load data from fixtures for development mode
+        if (process.env.REACT_APP_ADMIN_URL) {
+            return {
+                site: Fixtures.site,
+                member: Fixtures.member.free
+            };
+        }
+        return {
+            site: this.state.site,
+            member: this.state.member
+        };
     }
 
     switchPage(page) {
@@ -74,7 +82,8 @@ export default class ParentContainer extends React.Component {
     }
 
     setupCustomTriggerButton() {
-        this.customTriggerButton = document.querySelector('[data-members-trigger-button]');
+        const customTriggerSelector = '[data-members-trigger-button]';
+        this.customTriggerButton = document.querySelector(customTriggerSelector);
 
         if (this.customTriggerButton) {
             const clickHandler = (event) => {
@@ -83,78 +92,56 @@ export default class ParentContainer extends React.Component {
                 const elRemoveClass = this.state.showPopup ? 'popup-open' : 'popup-close';
                 this.customTriggerButton.classList.add(elAddClass);
                 this.customTriggerButton.classList.remove(elRemoveClass);
-                this.onTriggerToggle();
+                this.onAction('togglePopup');
             };
             this.customTriggerButton.classList.add('popup-close');
             this.customTriggerButton.addEventListener('click', clickHandler);
         }
     }
 
-    resetAction() {
-        this.setState({
-            action: null
-        });
-    }
-
     getBrandColor() {
-        return this.getData().site && this.getData().site.brand && this.getData().site.brand.primaryColor;
+        return (this.getData().site && this.getData().site.brand && this.getData().site.brand.primaryColor) || '#3db0ef';
     }
 
     async onAction(action, data) {
         this.setState({
-            action: {
-                name: action,
-                isRunning: true,
-                isSuccess: false,
-                error: null
-            }
+            action: `${action}:running`
         });
         try {
-            if (action === 'closePopup') {
+            if (action === 'switchPage') {
+                this.setState({
+                    page: data
+                });
+            } else if (action === 'togglePopup') {
+                this.setState({
+                    showPopup: !this.state.showPopup
+                });
+            } else if (action === 'closePopup') {
                 this.setState({
                     showPopup: false
                 });
             } else if (action === 'signout') {
-                await this.MembersAPI.member.signout();
-
+                await this.GhostApi.member.signout();
                 this.setState({
-                    action: {
-                        name: action,
-                        isRunning: false,
-                        isSuccess: true
-                    }
+                    action: 'signout:success'
                 });
-            }
-
-            if (action === 'signin') {
-                await this.MembersAPI.member.sendMagicLink(data);
+            } else if (action === 'signin') {
+                await this.GhostApi.member.sendMagicLink(data);
                 this.setState({
-                    action: {
-                        name: action,
-                        isRunning: false,
-                        isSuccess: true
-                    },
+                    action: 'signin:success',
                     page: 'magiclink'
                 });
-            }
-
-            if (action === 'signup') {
-                await this.MembersAPI.member.sendMagicLink(data);
+            } else if (action === 'signup') {
+                await this.GhostApi.member.sendMagicLink(data);
                 this.setState({
-                    action: {
-                        name: action,
-                        isRunning: false,
-                        isSuccess: true
-                    },
+                    action: 'signup:success',
                     page: 'magiclink'
                 });
-            }
-
-            if (action === 'checkoutPlan') {
+            } else if (action === 'checkoutPlan') {
                 const checkoutSuccessUrl = (new URL('/account/?stripe=billing-update-success', window.location.href)).href;
                 const checkoutCancelUrl = (new URL('/account/?stripe=billing-update-cancel', window.location.href)).href;
                 const {plan} = data;
-                await this.MembersAPI.member.checkoutPlan({
+                await this.GhostApi.member.checkoutPlan({
                     plan,
                     checkoutSuccessUrl,
                     checkoutCancelUrl
@@ -162,47 +149,15 @@ export default class ParentContainer extends React.Component {
             }
         } catch (e) {
             this.setState({
-                action: {
-                    name: action,
-                    isRunning: false,
-                    error: e
-                }
+                action: `${action}:failed`
             });
         }
     }
 
-    onTriggerToggle() {
-        let showPopup = !this.state.showPopup;
-        this.setState({
-            showPopup
-        });
-    }
-
     renderPopupMenu() {
         if (this.state.showPopup) {
-            if (this.state.page === 'accountHome') {
-                return (
-                    <PopupMenu
-                        data={this.getData()}
-                        action={this.state.action}
-                        onToggle= {e => this.onTriggerToggle()}
-                        page={this.state.page}
-                        switchPage={page => this.switchPage(page)}
-                        onAction={(action, data) => this.onAction(action, data)}
-                        brandColor = {this.getBrandColor()}
-                    />
-                );
-            }
             return (
-                <PopupModal
-                    data={this.getData()}
-                    action={this.state.action}
-                    onToggle= {e => this.onTriggerToggle()}
-                    page={this.state.page}
-                    switchPage={page => this.switchPage(page)}
-                    onAction={(action, data) => this.onAction(action, data)}
-                    brandColor = {this.getBrandColor()}
-                />
+                <PopupModal />
             );
         }
         return null;
@@ -212,11 +167,7 @@ export default class ParentContainer extends React.Component {
         if (!this.customTriggerButton) {
             return (
                 <TriggerButton
-                    name={this.props.name}
-                    onToggle= {e => this.onTriggerToggle()}
                     isPopupOpen={this.state.showPopup}
-                    data={this.getData()}
-                    brandColor = {this.getBrandColor()}
                 />
             );
         }
@@ -224,12 +175,29 @@ export default class ParentContainer extends React.Component {
         return null;
     }
 
+    getActionData(action) {
+        const [type, status, reason] = action.split(':');
+        return {type, status, reason};
+    }
+
     render() {
-        return (
-            <>
-                {this.renderPopupMenu()}
-                {this.renderTriggerButton()}
-            </>
-        );
+        if (this.state.initStatus === 'success' || process.env.REACT_APP_ADMIN_URL) {
+            const {site, member} = this.getData();
+
+            return (
+                <ParentContext.Provider value={{
+                    site,
+                    member,
+                    action: this.state.action,
+                    brandColor: this.getBrandColor(),
+                    page: this.state.page,
+                    onAction: (action, data) => this.onAction(action, data)
+                }}>
+                    {this.renderPopupMenu()}
+                    {this.renderTriggerButton()}
+                </ParentContext.Provider>
+            );
+        }
+        return null;
     }
 }
