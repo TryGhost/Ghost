@@ -1,3 +1,6 @@
+import ActionButton from '../common/ActionButton';
+import InputField from '../common/InputField';
+
 const React = require('react');
 const PropTypes = require('prop-types');
 
@@ -41,39 +44,16 @@ export default class SignupPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const buttonStyle = {
-            display: 'inline-block',
-            padding: '0 1.8rem',
-            height: '44px',
-            border: '0',
-            fontSize: '1.5rem',
-            lineHeight: '42px',
-            fontWeight: '600',
-            textAlign: 'center',
-            textDecoration: 'none',
-            whiteSpace: 'nowrap',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            transition: '.4s ease',
-            color: '#fff',
-            backgroundColor: this.props.brandColor || '#3eb0ef',
-            boxShadow: 'none',
-            userSelect: 'none',
-            width: '100%',
-            marginBottom: '12px'
-        };
         const isRunning = this.props.action && this.props.action.name === 'signup' && this.props.action.isRunning;
-        const label = this.state.isLoading ? 'Sending' : 'Continue';
+        const label = this.state.isLoading ? 'Sending...' : 'Continue';
         const disabled = isRunning ? true : false;
-        if (disabled) {
-            buttonStyle.backgroundColor = 'grey';
-        }
         return (
-            <button onClick={(e) => {
-                this.handleSignup(e);
-            }} style={buttonStyle} disabled={disabled}>
-                {label}
-            </button>
+            <ActionButton
+                onClick={e => this.handleSignup(e)}
+                disabled={disabled}
+                brandColor={this.props.brandColor}
+                label={label}
+            />
         );
     }
 
@@ -200,22 +180,6 @@ export default class SignupPage extends React.Component {
     }
 
     renderInputField(fieldName) {
-        const inputStyle = {
-            display: 'block',
-            padding: '0 .6em',
-            width: '100%',
-            height: '44px',
-            outline: '0',
-            border: '1px solid #c5d2d9',
-            color: 'inherit',
-            textDecoration: 'none',
-            background: '#fff',
-            borderRadius: '9px',
-            fontSize: '14px',
-            marginBottom: '12px',
-            boxSizing: 'border-box'
-        };
-
         const fields = {
             name: {
                 type: 'text',
@@ -234,20 +198,14 @@ export default class SignupPage extends React.Component {
         };
         const field = fields[fieldName];
         return (
-            <>
-                <label htmlFor={field.name} style={{marginBottom: '3px', fontSize: '12px', fontWeight: '700'}}> {field.label} </label>
-                <input
-                    type={field.type}
-                    name={field.name}
-                    placeholder={field.placeholder}
-                    value={field.value}
-                    onChange={(e) => {
-                        this.handleInput(e, fieldName);
-                    }}
-                    style={inputStyle}
-                    aria-label={field.label}
-                />
-            </>
+            <InputField
+                label = {field.label}
+                type={field.type}
+                name={field.name}
+                placeholder={field.placeholder}
+                value={field.value}
+                onChange={(e, fieldName) => this.handleInput(e, fieldName)}
+            />
         );
     }
 

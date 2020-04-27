@@ -1,3 +1,4 @@
+import ActionButton from '../common/ActionButton';
 const React = require('react');
 
 export default class MagicLinkPage extends React.Component {
@@ -23,33 +24,13 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderCloseButton() {
-        const buttonStyle = {
-            display: 'inline-block',
-            padding: '0 1.8rem',
-            height: '44px',
-            border: '0',
-            fontSize: '1.5rem',
-            lineHeight: '42px',
-            fontWeight: '600',
-            textAlign: 'center',
-            textDecoration: 'none',
-            whiteSpace: 'nowrap',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            transition: '.4s ease',
-            color: '#fff',
-            backgroundColor: this.props.brandColor || '#3eb0ef',
-            boxShadow: 'none',
-            userSelect: 'none',
-            width: '100%',
-            marginBottom: '12px'
-        };
+        const label = 'Close';
         return (
-            <button onClick={(e) => {
-                this.handleClose(e);
-            }} style={buttonStyle}>
-                Close
-            </button>
+            <ActionButton
+                onClick={e => this.handleSignin(e)}
+                brandColor={this.props.brandColor}
+                label={label}
+            />
         );
     }
 
