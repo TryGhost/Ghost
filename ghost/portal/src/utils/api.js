@@ -1,9 +1,9 @@
-function MembersAPI({adminUrl}) {
+function setupGhostApi({adminUrl}) {
     const ghostPath = 'ghost';
     const ssrPath = 'members/ssr';
     const version = 'v3';
-
-    const siteUrl = window.location.origin;
+    adminUrl = adminUrl.replace(/\/$/, '');
+    let siteUrl = window.location.origin;
 
     function endpointFor({type, resource}) {
         if (type === 'members') {
@@ -39,7 +39,7 @@ function MembersAPI({adminUrl}) {
                 if (res.ok) {
                     return res.json();
                 } else {
-                    return 'Failed to fetch site data';
+                    throw new Error('Failed to fetch site data');
                 }
             });
         }
@@ -145,7 +145,15 @@ function MembersAPI({adminUrl}) {
         }
     };
 
+    api.init = async () => {
+        const {site} = await api.site.read();
+        // Update site url from site data instead of default window.location.origin
+        siteUrl = site.url.replace(/\/$/, '');
+        const member = await api.member.sessionData();
+        return {site, member};
+    };
+
     return api;
 }
 
-export default MembersAPI;
+export default setupGhostApi;
