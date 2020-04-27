@@ -46,27 +46,27 @@ module.exports = function setupParentApp(options = {}) {
 
     // Mount the express apps on the parentApp
 
-    const adminHost = config.get('admin:url') ? (new URL(config.get('admin:url')).hostname) : '';
+    const backendHost = config.get('admin:url') ? (new URL(config.get('admin:url')).hostname) : '';
     const frontendHost = new URL(config.get('url')).hostname;
-    const hasSeparateAdmin = adminHost && adminHost !== frontendHost;
+    const hasSeparateBackendHost = backendHost && backendHost !== frontendHost;
 
     // Wrap the admin and API apps into a single express app for use with vhost
-    const adminApp = express();
-    adminApp.use(sentry.requestHandler);
-    adminApp.enable('trust proxy'); // required to respect x-forwarded-proto in admin requests
-    adminApp.use('/ghost/api', require('../api')());
-    adminApp.use('/ghost/.well-known', require('../well-known')());
-    adminApp.use('/ghost', require('../../services/auth/session').createSessionFromToken, require('../admin')());
+    const backendApp = express();
+    backendApp.use(sentry.requestHandler);
+    backendApp.enable('trust proxy'); // required to respect x-forwarded-proto in admin requests
+    backendApp.use('/ghost/api', require('../api')());
+    backendApp.use('/ghost/.well-known', require('../well-known')());
+    backendApp.use('/ghost', require('../../services/auth/session').createSessionFromToken, require('../admin')());
 
     // ADMIN + API
     // with a separate admin url only serve on that host, otherwise serve on all hosts
-    const adminVhostArg = hasSeparateAdmin && adminHost ? adminHost : /.*/;
-    parentApp.use(vhost(adminVhostArg, adminApp));
+    const backendVhostArg = hasSeparateBackendHost && backendHost ? backendHost : /.*/;
+    parentApp.use(vhost(backendVhostArg, backendApp));
 
     // BLOG
     // with a separate admin url we adjust the frontend vhost to exclude requests to that host, otherwise serve on all hosts
-    const frontendVhostArg = (hasSeparateAdmin && adminHost) ?
-        new RegExp(`^(?!${escapeRegExp(adminHost)}).*`) : /.*/;
+    const frontendVhostArg = (hasSeparateBackendHost && backendHost) ?
+        new RegExp(`^(?!${escapeRegExp(backendHost)}).*`) : /.*/;
 
     parentApp.use(vhost(frontendVhostArg, require('../site')(options)));
 
