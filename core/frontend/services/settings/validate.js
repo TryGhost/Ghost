@@ -183,6 +183,15 @@ _private.validateData = function validateData(object) {
 };
 
 _private.validateRoutes = function validateRoutes(routes) {
+    if (routes.constructor !== Object) {
+        throw new common.errors.ValidationError({
+            message: common.i18n.t('errors.services.settings.yaml.validate', {
+                at: routes,
+                reason: '`routes` must be a YAML map.'
+            })
+        });
+    }
+
     _.each(routes, (routingTypeObject, routingTypeObjectKey) => {
         // CASE: we hard-require trailing slashes for the index route
         if (!routingTypeObjectKey.match(/\/$/)) {
@@ -223,6 +232,15 @@ _private.validateRoutes = function validateRoutes(routes) {
 };
 
 _private.validateCollections = function validateCollections(collections) {
+    if (collections.constructor !== Object) {
+        throw new common.errors.ValidationError({
+            message: common.i18n.t('errors.services.settings.yaml.validate', {
+                at: collections,
+                reason: '`collections` must be a YAML map.'
+            })
+        });
+    }
+
     _.each(collections, (routingTypeObject, routingTypeObjectKey) => {
         // CASE: we hard-require trailing slashes for the collection index route
         if (!routingTypeObjectKey.match(/\/$/)) {
@@ -310,6 +328,15 @@ _private.validateCollections = function validateCollections(collections) {
 };
 
 _private.validateTaxonomies = function validateTaxonomies(taxonomies) {
+    if (taxonomies.constructor !== Object) {
+        throw new common.errors.ValidationError({
+            message: common.i18n.t('errors.services.settings.yaml.validate', {
+                at: taxonomies,
+                reason: '`taxonomies` must be a YAML map.'
+            })
+        });
+    }
+
     const validRoutingTypeObjectKeys = Object.keys(RESOURCE_CONFIG.TAXONOMIES);
     _.each(taxonomies, (routingTypeObject, routingTypeObjectKey) => {
         if (!routingTypeObject) {
