@@ -2,7 +2,7 @@
 import React from 'react';
 import {render} from '@testing-library/react';
 import {ParentContext} from '../components/ParentContext';
-import {site, member} from '../test/fixtures/data';
+import {site, member} from './fixtures';
 
 const setupProvider = (context) => {
     return ({children}) => {

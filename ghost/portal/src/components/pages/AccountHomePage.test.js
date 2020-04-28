@@ -1,7 +1,7 @@
 import React from 'react';
 import {render, fireEvent} from '../../utils/tests';
 import AccountHomePage from './AccountHomePage';
-import {member} from '../../test/fixtures/data';
+import {member} from '../../utils/fixtures';
 
 const setup = (overrides) => {
     const freeMember = member.free;
