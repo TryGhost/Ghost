@@ -32,7 +32,9 @@ export default class ParentContainer extends React.Component {
             this.GhostApi = setupGhostApi({adminUrl});
             this.fetchData();
         } else {
+            /* eslint-disable no-console */
             console.error(`[Members.js] Failed to initialize, pass a valid admin url.`);
+            /* eslint-enable no-console */
             this.setState({
                 action: 'init:failed:missingAdminUrl'
             });
@@ -53,7 +55,9 @@ export default class ParentContainer extends React.Component {
                 initStatus: 'success'
             });
         } catch (e) {
+            /* eslint-disable no-console */
             console.error(`[Members.js] Failed to fetch site data, please make sure your admin url - ${adminUrl} - is correct.`);
+            /* eslint-enable no-console */
             this.setState({
                 action: 'init:failed:incorrectAdminUrl',
                 initStatus: 'failed'

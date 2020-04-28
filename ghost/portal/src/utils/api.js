@@ -104,7 +104,7 @@ function setupGhostApi({adminUrl}) {
                     window.location.reload();
                     return 'Success';
                 } else {
-                    console.log('Failed to signout!', res);
+                    throw new Error('Failed to signout');
                 }
             });
         },
