@@ -1,6 +1,5 @@
 import TriggerButton from './TriggerButton';
 import PopupModal from './PopupModal';
-import * as Fixtures from '../test/fixtures/data';
 import setupGhostApi from '../utils/api';
 import {ParentContext} from './ParentContext';
 
@@ -19,7 +18,7 @@ export default class ParentContainer extends React.Component {
         this.setupCustomTriggerButton();
 
         this.state = {
-            page: 'accountHome',
+            page: 'loading',
             showPopup: false,
             action: 'init:running',
             initStatus: 'running'
@@ -27,30 +26,27 @@ export default class ParentContainer extends React.Component {
     }
 
     componentDidMount() {
-        const {adminUrl} = this.props.data;
-        if (adminUrl) {
-            this.GhostApi = setupGhostApi({adminUrl});
-            this.fetchData();
-        } else {
-            /* eslint-disable no-console */
-            console.error(`[Members.js] Failed to initialize, pass a valid admin url.`);
-            /* eslint-enable no-console */
-            this.setState({
-                action: 'init:failed:missingAdminUrl'
-            });
-        }
+        this.fetchData();
     }
 
-    // Fetch site and member session data with Ghost Apis
-    async fetchData() {
-        const {adminUrl} = this.props.data;
-        this.GhostApi = setupGhostApi({adminUrl});
+    getDefaultPage(member) {
+        // Change page here for testing local UI testing
+        if (process.env.NODE_ENV === 'development') {
+            return 'accountHome';
+        }
+
+        return member ? 'accountHome' : 'signup';
+    }
+
+    async fetchApiData(adminUrl) {
         try {
-            const {site, member} = await this.GhostApi.init();
+            this.GhostApi = setupGhostApi({adminUrl});
+            let {site, member} = await this.GhostApi.init();
+
             this.setState({
                 site,
                 member,
-                page: member ? 'accountHome' : 'signup',
+                page: this.getDefaultPage(),
                 action: 'init:success',
                 initStatus: 'success'
             });
@@ -65,24 +61,20 @@ export default class ParentContainer extends React.Component {
         }
     }
 
-    getData() {
-        // Load data from fixtures for development mode
-        if (process.env.REACT_APP_ADMIN_URL) {
-            return {
-                site: Fixtures.site,
-                member: Fixtures.member.free
-            };
+    // Fetch site and member session data with Ghost Apis
+    fetchData() {
+        const {adminUrl} = this.props.data;
+        if (adminUrl) {
+            this.fetchApiData(adminUrl);
+        } else {
+            /* eslint-disable no-console */
+            console.error(`[Members.js] Failed to initialize, pass a valid admin url.`);
+            /* eslint-enable no-console */
+            this.setState({
+                action: 'init:failed:missingAdminUrl',
+                initStatus: 'failed'
+            });
         }
-        return {
-            site: this.state.site,
-            member: this.state.member
-        };
-    }
-
-    switchPage(page) {
-        this.setState({
-            page
-        });
     }
 
     setupCustomTriggerButton() {
@@ -103,8 +95,13 @@ export default class ParentContainer extends React.Component {
         }
     }
 
+    getActionData(action) {
+        const [type, status, reason] = action.split(':');
+        return {type, status, reason};
+    }
+
     getBrandColor() {
-        return (this.getData().site && this.getData().site.brand && this.getData().site.brand.primaryColor) || '#3db0ef';
+        return (this.state.site && this.state.site.brand && this.state.site.brand.primaryColor) || '#3db0ef';
     }
 
     async onAction(action, data) {
@@ -158,7 +155,7 @@ export default class ParentContainer extends React.Component {
         }
     }
 
-    renderPopupMenu() {
+    renderPopup() {
         if (this.state.showPopup) {
             return (
                 <PopupModal />
@@ -179,14 +176,9 @@ export default class ParentContainer extends React.Component {
         return null;
     }
 
-    getActionData(action) {
-        const [type, status, reason] = action.split(':');
-        return {type, status, reason};
-    }
-
     render() {
-        if (this.state.initStatus === 'success' || process.env.REACT_APP_ADMIN_URL) {
-            const {site, member} = this.getData();
+        if (this.state.initStatus === 'success') {
+            const {site, member} = this.state;
 
             return (
                 <ParentContext.Provider value={{
@@ -197,7 +189,7 @@ export default class ParentContainer extends React.Component {
                     page: this.state.page,
                     onAction: (action, data) => this.onAction(action, data)
                 }}>
-                    {this.renderPopupMenu()}
+                    {this.renderPopup()}
                     {this.renderTriggerButton()}
                 </ParentContext.Provider>
             );

@@ -33,7 +33,7 @@ window.GhostMembers = {
 };
 
 // This will automatically load for local if an .env.development.local file is present
-if (process.env.REACT_APP_ADMIN_URL) {
+if (process.env.NODE_ENV === 'development') {
     const adminUrl = process.env.REACT_APP_ADMIN_URL;
     init({adminUrl});
 }

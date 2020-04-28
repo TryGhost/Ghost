@@ -1,3 +1,5 @@
+import * as Fixtures from './fixtures';
+
 function setupGhostApi({adminUrl}) {
     const ghostPath = 'ghost';
     const ssrPath = 'members/ssr';
@@ -149,6 +151,12 @@ function setupGhostApi({adminUrl}) {
         const {site} = await api.site.read();
         // Update site url from site data instead of default window.location.origin
         siteUrl = site.url.replace(/\/$/, '');
+
+        // Load member from fixtures for local development
+        if (process.env.NODE_ENV === 'development') {
+            return {site, member: Fixtures.member.free};
+        }
+
         const member = await api.member.sessionData();
         return {site, member};
     };
