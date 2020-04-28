@@ -134,7 +134,7 @@ p.gh-members-list-email {
 .gh-members-chart-container {
     height: 186px;
     margin: 0;
-    padding: 0 7px 4px;
+    padding: 4px 7px 11px 2px;
 }
 
 .gh-members-chart-summary {
