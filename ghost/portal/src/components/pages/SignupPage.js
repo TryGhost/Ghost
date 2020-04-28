@@ -104,7 +104,7 @@ class SignupPage extends React.Component {
         };
 
         const PriceLabel = ({name, currency, price}) => {
-            if (name === 'FREE') {
+            if (name === 'Free') {
                 return (
                     <strong style={{
                         fontSize: '11px',
@@ -115,7 +115,7 @@ class SignupPage extends React.Component {
                     }}> Access free members-only posts </strong>
                 );
             }
-            const type = name === 'MONTHLY' ? 'month' : 'year';
+            const type = name === 'Monthly' ? 'month' : 'year';
             return (
                 <div style={{
                     display: 'inline',
@@ -134,7 +134,7 @@ class SignupPage extends React.Component {
             return (
                 <div style={boxStyle({isLast})} key={name} onClick={e => this.handleSelectPlan(e, name)}>
                     <div style={checkboxStyle}> {this.renderCheckbox({name, isChecked})} </div>
-                    <div style={nameStyle}> {name} </div>
+                    <div style={nameStyle}> {name.toUpperCase()} </div>
                     <div style={priceStyle}>
                         {PriceLabel({name, currency, price})}
                     </div>
@@ -160,9 +160,9 @@ class SignupPage extends React.Component {
                 <label style={{marginBottom: '3px', fontSize: '12px', fontWeight: '700'}}>  Plan </label>
                 <div style={containerStyle}>
                     {this.renderPlanOptions([
-                        {type: 'free', price: 'Decide later', name: 'FREE'},
-                        {type: 'month', price: plans.monthly, currency: plans.currency_symbol, name: 'MONTHLY'},
-                        {type: 'year', price: plans.yearly, currency: plans.currency_symbol, name: 'YEARLY'}
+                        {type: 'free', price: 'Decide later', name: 'Free'},
+                        {type: 'month', price: plans.monthly, currency: plans.currency_symbol, name: 'Monthly'},
+                        {type: 'year', price: plans.yearly, currency: plans.currency_symbol, name: 'Yearly'}
                     ])}
                 </div>
             </div>
