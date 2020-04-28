@@ -85,9 +85,8 @@ See the section about [running tests](https://facebook.github.io/create-react-ap
 
 ## Publish
 
-Before shipping, please ensure the intended version is updated in `package.json`.
-
-- Run `npm publish --access public` to ship the new version to npm and unpkg.
+- `yarn ship` is an alias for `npm publish`
+    - Before shipping, please ensure the intended version is updated in `package.json`.
     - Builds the script with latest code using `yarn build` (prePublish)
     - Publishes package on npm as `@tryghost/members-js` and creates an unpkg link for script at https://unpkg.com/@tryghost/members-js@VERSION
 

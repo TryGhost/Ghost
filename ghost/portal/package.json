@@ -10,6 +10,9 @@
     "LICENSE",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@testing-library/jest-dom": "4.2.4",
     "@testing-library/react": "9.5.0",
@@ -27,6 +30,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
+    "ship": "npm publish",
     "posttest": "yarn lint",
     "prepublishOnly": "yarn build"
   },
