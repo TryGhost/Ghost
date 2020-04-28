@@ -236,8 +236,10 @@ export default Component.extend({
                             drawBorder: false
                         },
                         ticks: {
-                            display: false,
-                            beginAtZero: true
+                            maxTicksLimit: 5,
+                            fontColor: '#9baeb8',
+                            padding: 8,
+                            precision: 0
                         }
                     }]
                 }
