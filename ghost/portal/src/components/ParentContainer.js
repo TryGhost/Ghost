@@ -46,7 +46,7 @@ export default class ParentContainer extends React.Component {
             this.setState({
                 site,
                 member,
-                page: this.getDefaultPage(),
+                page: this.getDefaultPage(member),
                 action: 'init:success',
                 initStatus: 'success'
             });
