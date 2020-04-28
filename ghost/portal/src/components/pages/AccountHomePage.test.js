@@ -1,14 +1,12 @@
 import React from 'react';
-import {render, fireEvent} from '../../utils/tests';
+import {render, fireEvent} from 'test-utils';
 import AccountHomePage from './AccountHomePage';
-import {member} from '../../utils/fixtures';
 
 const setup = (overrides) => {
-    const freeMember = member.free;
     const {mockOnActionFn, ...utils} = render(
         <AccountHomePage />
     );
-    const memberEmail = utils.getByText(freeMember.email);
+    const memberEmail = utils.getByText('member@example.com');
     const logoutButton = utils.queryByRole('button', {name: 'Log out'});
     return {
         memberEmail,
