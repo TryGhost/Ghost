@@ -37,7 +37,7 @@ describe('Dynamic Routing', function () {
 
     before(function () {
         // Default is always casper. We use the old compatible 1.4 casper theme for these tests. Available in the test content folder.
-        var originalSettingsCacheGetFn = settingsCache.get;
+        const originalSettingsCacheGetFn = settingsCache.get;
         sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
             if (key === 'active_theme') {
                 return 'casper-1.4';
@@ -68,7 +68,7 @@ describe('Dynamic Routing', function () {
                         return done(err);
                     }
 
-                    var $ = cheerio.load(res.text);
+                    const $ = cheerio.load(res.text);
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     should.not.exist(res.headers['X-CSRF-Token']);
@@ -200,7 +200,7 @@ describe('Dynamic Routing', function () {
                         return done(err);
                     }
 
-                    var $ = cheerio.load(res.text);
+                    const $ = cheerio.load(res.text);
 
                     should.not.exist(res.headers['x-cache-invalidate']);
                     should.not.exist(res.headers['X-CSRF-Token']);
@@ -412,19 +412,21 @@ describe('Dynamic Routing', function () {
     });
 
     describe('Author', function () {
-        var lockedUser = {
-                name: 'Locked so what',
-                slug: 'locked-so-what',
-                email: 'locked@example.com',
-                status: 'locked'
-            },
-            suspendedUser = {
-                name: 'Suspended meeh',
-                slug: 'suspended-meeh',
-                email: 'suspended@example.com',
-                status: 'inactive'
-            },
-            ownerSlug = 'ghost-owner';
+        const lockedUser = {
+            name: 'Locked so what',
+            slug: 'locked-so-what',
+            email: 'locked@example.com',
+            status: 'locked'
+        };
+
+        const suspendedUser = {
+            name: 'Suspended meeh',
+            slug: 'suspended-meeh',
+            email: 'suspended@example.com',
+            status: 'inactive'
+        };
+
+        const ownerSlug = 'ghost-owner';
 
         before(function (done) {
             testUtils.clearData().then(function () {

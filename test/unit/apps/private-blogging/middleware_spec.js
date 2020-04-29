@@ -1,26 +1,28 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    crypto = require('crypto'),
-    fs = require('fs-extra'),
-    common = require('../../../../core/server/lib/common'),
-    settingsCache = require('../../../../core/server/services/settings/cache'),
-    privateBlogging = require('../../../../core/frontend/apps/private-blogging/lib/middleware');
+const should = require('should');
+const sinon = require('sinon');
+const crypto = require('crypto');
+const fs = require('fs-extra');
+const common = require('../../../../core/server/lib/common');
+const settingsCache = require('../../../../core/server/services/settings/cache');
+const privateBlogging = require('../../../../core/frontend/apps/private-blogging/lib/middleware');
 
 function hash(password, salt) {
-    var hasher = crypto.createHash('sha256');
+    const hasher = crypto.createHash('sha256');
     hasher.update(password + salt, 'utf8');
     return hasher.digest('hex');
 }
 
 describe('Private Blogging', function () {
-    var settingsStub;
+    let settingsStub;
 
     afterEach(function () {
         sinon.restore();
     });
 
     describe('passProtect', function () {
-        var req, res, next;
+        let req;
+        let res;
+        let next;
 
         beforeEach(function () {
             req = {
@@ -156,7 +158,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('authenticatePrivateSession should return next if hash is verified', function () {
-                    var salt = Date.now().toString();
+                    const salt = Date.now().toString();
 
                     req.session = {
                         token: hash('rightpassword', salt),
@@ -180,7 +182,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('isPrivateSessionAuth should redirect if hash is verified', function () {
-                    var salt = Date.now().toString();
+                    const salt = Date.now().toString();
 
                     req.session = {
                         token: hash('rightpassword', salt),
@@ -233,7 +235,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('filterPrivateRoutes should 404 for /rss/ requests', function () {
-                    var salt = Date.now().toString();
+                    const salt = Date.now().toString();
                     req.url = req.path = '/rss/';
 
                     req.session = {
@@ -250,7 +252,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('filterPrivateRoutes should 404 for /rss requests', function () {
-                    var salt = Date.now().toString();
+                    const salt = Date.now().toString();
                     req.url = req.path = '/rss';
 
                     req.session = {
@@ -267,7 +269,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('filterPrivateRoutes should 404 for rss with pagination requests', function () {
-                    var salt = Date.now().toString();
+                    const salt = Date.now().toString();
                     req.url = req.path = '/rss/1';
 
                     req.session = {
@@ -284,7 +286,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('filterPrivateRoutes should 404 for tag rss requests', function () {
-                    var salt = Date.now().toString();
+                    const salt = Date.now().toString();
                     req.url = req.path = '/tag/welcome/rss/';
 
                     req.session = {
@@ -301,7 +303,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('filterPrivateRoutes should return next if tag contains rss', function () {
-                    var salt = Date.now().toString();
+                    const salt = Date.now().toString();
                     req.url = req.path = '/tag/rss-test/';
 
                     req.session = {
@@ -318,7 +320,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('filterPrivateRoutes should not 404 for very short post url', function () {
-                    var salt = Date.now().toString();
+                    const salt = Date.now().toString();
                     req.url = req.path = '/ab/';
 
                     req.session = {

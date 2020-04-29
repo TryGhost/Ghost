@@ -72,8 +72,8 @@ function fetchData(pathOptions, routerOptions, locals) {
     pathOptions = pathOptions || {};
     routerOptions = routerOptions || {};
 
-    let postQuery = _.cloneDeep(defaultPostQuery),
-        props = {};
+    let postQuery = _.cloneDeep(defaultPostQuery);
+    let props = {};
 
     if (routerOptions.filter) {
         postQuery.options.filter = routerOptions.filter;

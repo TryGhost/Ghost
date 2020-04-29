@@ -1,7 +1,7 @@
-var should = require('should'),
-    path = require('path'),
-    fsLib = require('../../../../core/server/lib/fs'),
-    csvPath = path.join(__dirname, '../../../utils/fixtures/csv/');
+const should = require('should');
+const path = require('path');
+const fsLib = require('../../../../core/server/lib/fs');
+const csvPath = path.join(__dirname, '../../../utils/fixtures/csv/');
 
 describe('lib/fs: read csv', function () {
     it('read csv: one column', function (done) {

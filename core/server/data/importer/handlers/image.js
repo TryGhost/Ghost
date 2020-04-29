@@ -1,11 +1,10 @@
-var _ = require('lodash'),
-    Promise = require('bluebird'),
-    path = require('path'),
-    config = require('../../../config'),
-    urlUtils = require('../../../lib/url-utils'),
-    storage = require('../../../adapters/storage'),
-
-    ImageHandler;
+const _ = require('lodash');
+const Promise = require('bluebird');
+const path = require('path');
+const config = require('../../../config');
+const urlUtils = require('../../../lib/url-utils');
+const storage = require('../../../adapters/storage');
+let ImageHandler;
 
 ImageHandler = {
     type: 'images',
@@ -14,16 +13,17 @@ ImageHandler = {
     directories: ['images', 'content'],
 
     loadFile: function (files, baseDir) {
-        var store = storage.getStorage(),
-            baseDirRegex = baseDir ? new RegExp('^' + baseDir + '/') : new RegExp(''),
-            imageFolderRegexes = _.map(urlUtils.STATIC_IMAGE_URL_PREFIX.split('/'), function (dir) {
-                return new RegExp('^' + dir + '/');
-            });
+        const store = storage.getStorage();
+        const baseDirRegex = baseDir ? new RegExp('^' + baseDir + '/') : new RegExp('');
+
+        const imageFolderRegexes = _.map(urlUtils.STATIC_IMAGE_URL_PREFIX.split('/'), function (dir) {
+            return new RegExp('^' + dir + '/');
+        });
 
         // normalize the directory structure
         files = _.map(files, function (file) {
-            var noBaseDir = file.name.replace(baseDirRegex, ''),
-                noGhostDirs = noBaseDir;
+            const noBaseDir = file.name.replace(baseDirRegex, '');
+            let noGhostDirs = noBaseDir;
 
             _.each(imageFolderRegexes, function (regex) {
                 noGhostDirs = noGhostDirs.replace(regex, '');

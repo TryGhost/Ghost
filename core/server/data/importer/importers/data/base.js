@@ -1,10 +1,10 @@
-const debug = require('ghost-ignition').debug('importer:base'),
-    _ = require('lodash'),
-    Promise = require('bluebird'),
-    ObjectId = require('bson-objectid'),
-    common = require('../../../../lib/common'),
-    sequence = require('../../../../lib/promise/sequence'),
-    models = require('../../../../models');
+const debug = require('ghost-ignition').debug('importer:base');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const ObjectId = require('bson-objectid');
+const common = require('../../../../lib/common');
+const sequence = require('../../../../lib/promise/sequence');
+const models = require('../../../../models');
 
 class Base {
     constructor(allDataFromFile, options) {
@@ -108,7 +108,8 @@ class Base {
     }
 
     handleError(errs, obj) {
-        let errorsToReject = [], problems = [];
+        let errorsToReject = [];
+        let problems = [];
 
         // CASE: validation errors, see models/base/events.js onValidate
         if (!_.isArray(errs)) {

@@ -1,17 +1,17 @@
-var _ = require('lodash'),
-    Promise = require('bluebird'),
-    semver = require('semver'),
-    common = require('../../../../lib/common'),
-    debug = require('ghost-ignition').debug('importer:data'),
-    sequence = require('../../../../lib/promise/sequence'),
-    models = require('../../../../models'),
-    PostsImporter = require('./posts'),
-    TagsImporter = require('./tags'),
-    SettingsImporter = require('./settings'),
-    UsersImporter = require('./users'),
-    RolesImporter = require('./roles'),
-    importers = {},
-    DataImporter;
+const _ = require('lodash');
+const Promise = require('bluebird');
+const semver = require('semver');
+const common = require('../../../../lib/common');
+const debug = require('ghost-ignition').debug('importer:data');
+const sequence = require('../../../../lib/promise/sequence');
+const models = require('../../../../models');
+const PostsImporter = require('./posts');
+const TagsImporter = require('./tags');
+const SettingsImporter = require('./settings');
+const UsersImporter = require('./users');
+const RolesImporter = require('./roles');
+let importers = {};
+let DataImporter;
 
 DataImporter = {
     type: 'data',
@@ -35,7 +35,11 @@ DataImporter = {
     doImport: function doImport(importData, importOptions) {
         importOptions = importOptions || {};
 
-        var ops = [], errors = [], results = [], modelOptions = {
+        const ops = [];
+        let errors = [];
+        let results = [];
+
+        const modelOptions = {
             importing: true,
             context: {
                 internal: true
@@ -128,7 +132,7 @@ DataImporter = {
              * originalData: data from the json file
              * problems: warnings
              */
-            var toReturn = {
+            const toReturn = {
                 data: {},
                 originalData: importData.data,
                 problems: []

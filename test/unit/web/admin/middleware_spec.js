@@ -1,8 +1,8 @@
-var should = require('should'),
-    sinon = require('sinon'),
+const should = require('should');
+const sinon = require('sinon');
 
-    // Thing we are testing
-    redirectAdminUrls = require('../../../../core/server/web/admin/middleware')[0];
+// Thing we are testing
+const redirectAdminUrls = require('../../../../core/server/web/admin/middleware')[0];
 
 describe('Admin App', function () {
     afterEach(function () {
@@ -11,7 +11,9 @@ describe('Admin App', function () {
 
     describe('middleware', function () {
         describe('redirectAdminUrls', function () {
-            var req, res, next;
+            let req;
+            let res;
+            let next;
             // Input: req.originalUrl
             // Output: either next or res.redirect are called
             beforeEach(function () {

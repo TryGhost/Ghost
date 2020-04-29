@@ -1,14 +1,14 @@
-var knex = require('knex'),
-    config = require('../../config'),
-    common = require('../../lib/common'),
-    knexInstance;
+const knex = require('knex');
+const config = require('../../config');
+const common = require('../../lib/common');
+let knexInstance;
 
 // @TODO:
 // - if you require this file before config file was loaded,
 // - then this file is cached and you have no chance to connect to the db anymore
 // - bring dynamic into this file (db.connect())
 function configure(dbConfig) {
-    var client = dbConfig.client;
+    const client = dbConfig.client;
 
     if (client === 'sqlite3') {
         dbConfig.useNullAsDefault = Object.prototype.hasOwnProperty.call(dbConfig, 'useNullAsDefault') ? dbConfig.useNullAsDefault : true;

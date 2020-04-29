@@ -162,11 +162,12 @@ module.exports = {
             const allNotifications = _private.fetchAllNotifications();
 
             const notificationToMarkAsSeen = allNotifications.find((notification) => {
-                    return notification.id === frame.options.notification_id;
-                }),
-                notificationToMarkAsSeenIndex = allNotifications.findIndex((notification) => {
-                    return notification.id === frame.options.notification_id;
-                });
+                return notification.id === frame.options.notification_id;
+            });
+
+            const notificationToMarkAsSeenIndex = allNotifications.findIndex((notification) => {
+                return notification.id === frame.options.notification_id;
+            });
 
             if (notificationToMarkAsSeenIndex > -1 && !notificationToMarkAsSeen.dismissible) {
                 return Promise.reject(new common.errors.NoPermissionError({

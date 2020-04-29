@@ -1,14 +1,16 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    express = require('express'),
-    settingsCache = require('../../../../core/server/services/settings/cache'),
-    common = require('../../../../core/server/lib/common'),
-    controllers = require('../../../../core/frontend/services/routing/controllers'),
-    CollectionRouter = require('../../../../core/frontend/services/routing/CollectionRouter'),
-    RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}};
+const should = require('should');
+const sinon = require('sinon');
+const express = require('express');
+const settingsCache = require('../../../../core/server/services/settings/cache');
+const common = require('../../../../core/server/lib/common');
+const controllers = require('../../../../core/frontend/services/routing/controllers');
+const CollectionRouter = require('../../../../core/frontend/services/routing/CollectionRouter');
+const RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}};
 
 describe('UNIT - services/routing/CollectionRouter', function () {
-    let req, res, next;
+    let req;
+    let res;
+    let next;
 
     beforeEach(function () {
         sinon.stub(common.events, 'emit');

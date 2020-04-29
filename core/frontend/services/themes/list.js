@@ -1,8 +1,9 @@
 /**
  * Store themes after loading them from the file system
  */
-var _ = require('lodash'),
-    themeListCache = {};
+const _ = require('lodash');
+
+let themeListCache = {};
 
 module.exports = {
     get: function get(key) {
@@ -23,7 +24,7 @@ module.exports = {
     },
 
     init: function init(themes) {
-        var self = this;
+        const self = this;
         // First, reset the cache
         themeListCache = {};
         // For each theme, call set. Allows us to do processing on set later.

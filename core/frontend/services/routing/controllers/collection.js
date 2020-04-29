@@ -1,10 +1,10 @@
-const _ = require('lodash'),
-    debug = require('ghost-ignition').debug('services:routing:controllers:collection'),
-    common = require('../../../../server/lib/common'),
-    security = require('../../../../server/lib/security'),
-    urlService = require('../../url'),
-    themes = require('../../themes'),
-    helpers = require('../helpers');
+const _ = require('lodash');
+const debug = require('ghost-ignition').debug('services:routing:controllers:collection');
+const common = require('../../../../server/lib/common');
+const security = require('../../../../server/lib/security');
+const urlService = require('../../url');
+const themes = require('../../themes');
+const helpers = require('../helpers');
 
 /**
  * @description Collection controller.

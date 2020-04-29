@@ -1,8 +1,8 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    models = require('../../../core/server/models'),
-    testUtils = require('../../utils'),
-    configUtils = require('../../utils/configUtils');
+const should = require('should');
+const sinon = require('sinon');
+const models = require('../../../core/server/models');
+const testUtils = require('../../utils');
+const configUtils = require('../../utils/configUtils');
 
 describe('Unit: models/permission', function () {
     before(function () {

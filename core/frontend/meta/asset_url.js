@@ -1,7 +1,7 @@
-const crypto = require('crypto'),
-    config = require('../../server/config'),
-    imageLib = require('../../server/lib/image'),
-    urlUtils = require('../../server/lib/url-utils');
+const crypto = require('crypto');
+const config = require('../../server/config');
+const imageLib = require('../../server/lib/image');
+const urlUtils = require('../../server/lib/url-utils');
 
 /**
  * Serve either uploaded favicon or default
@@ -20,7 +20,7 @@ function getAssetUrl(path, hasMinFile) {
 
     // CASE: Build the output URL
     // Add subdirectory...
-    var output = urlUtils.urlJoin(urlUtils.getSubdir(), '/');
+    let output = urlUtils.urlJoin(urlUtils.getSubdir(), '/');
 
     // Optionally add /assets/
     if (!path.match(/^public/) && !path.match(/^asset/)) {

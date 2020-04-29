@@ -1,9 +1,9 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    urlUtils = require('../../../../core/server/lib/url-utils'),
-    urlService = require('../../../../core/frontend/services/url'),
-    getUrl = require('../../../../core/frontend/meta/url'),
-    testUtils = require('../../../utils');
+const should = require('should');
+const sinon = require('sinon');
+const urlUtils = require('../../../../core/server/lib/url-utils');
+const urlService = require('../../../../core/frontend/services/url');
+const getUrl = require('../../../../core/frontend/meta/url');
+const testUtils = require('../../../utils');
 
 describe('getUrl', function () {
     beforeEach(function () {

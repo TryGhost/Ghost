@@ -111,7 +111,7 @@ Post = ghostBookshelf.Model.extend({
             return;
         }
 
-        var status = model.get('status');
+        const status = model.get('status');
 
         model.emitChange('added', options);
 
@@ -263,20 +263,22 @@ Post = ghostBookshelf.Model.extend({
     onSaving: function onSaving(model, attr, options) {
         options = options || {};
 
-        var self = this,
-            title,
-            i,
-            // Variables to make the slug checking more readable
-            newTitle = this.get('title'),
-            newStatus = this.get('status'),
-            olderStatus = this.previous('status'),
-            prevTitle = this.previous('title'),
-            prevSlug = this.previous('slug'),
-            publishedAt = this.get('published_at'),
-            publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true}),
-            generatedFields = ['html', 'plaintext'],
-            tagsToSave,
-            ops = [];
+        const self = this;
+        let title;
+        let i;
+
+        // Variables to make the slug checking more readable
+        const newTitle = this.get('title');
+
+        const newStatus = this.get('status');
+        const olderStatus = this.previous('status');
+        const prevTitle = this.previous('title');
+        const prevSlug = this.previous('slug');
+        const publishedAt = this.get('published_at');
+        const publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true});
+        const generatedFields = ['html', 'plaintext'];
+        let tagsToSave;
+        const ops = [];
 
         // CASE: disallow published -> scheduled
         // @TODO: remove when we have versioning based on updated_at
@@ -635,8 +637,8 @@ Post = ghostBookshelf.Model.extend({
      * Otherwise we return what is requested e.g. `?formats=mobiledoc,plaintext`
      */
     formatsToJSON: function formatsToJSON(attrs, options) {
-        var defaultFormats = ['html'],
-            formatsToKeep = options.formats || defaultFormats;
+        const defaultFormats = ['html'];
+        const formatsToKeep = options.formats || defaultFormats;
 
         // Iterate over all known formats, and if they are not in the keep list, remove them
         _.each(Post.allowedFormats, function (format) {
@@ -649,8 +651,8 @@ Post = ghostBookshelf.Model.extend({
     },
 
     toJSON: function toJSON(unfilteredOptions) {
-        var options = Post.filterOptions(unfilteredOptions, 'toJSON'),
-            attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        const options = Post.filterOptions(unfilteredOptions, 'toJSON');
+        let attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs = this.formatsToJSON(attrs, options);
 
@@ -769,17 +771,17 @@ Post = ghostBookshelf.Model.extend({
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName) {
-        var options = ghostBookshelf.Model.permittedOptions.call(this, methodName),
+        let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
 
-            // whitelists for the `options` hash argument on methods, by method name.
-            // these are the only options that can be passed to Bookshelf / Knex.
-            validOptions = {
-                findOne: ['columns', 'importing', 'withRelated', 'require', 'filter'],
-                findPage: ['status'],
-                findAll: ['columns', 'filter'],
-                destroy: ['destroyAll', 'destroyBy'],
-                edit: ['filter', 'send_email_when_published']
-            };
+        // whitelists for the `options` hash argument on methods, by method name.
+        // these are the only options that can be passed to Bookshelf / Knex.
+        const validOptions = {
+            findOne: ['columns', 'importing', 'withRelated', 'require', 'filter'],
+            findPage: ['status'],
+            findAll: ['columns', 'filter'],
+            destroy: ['destroyAll', 'destroyBy'],
+            edit: ['filter', 'send_email_when_published']
+        };
 
         // The post model additionally supports having a formats option
         options.push('formats');
@@ -822,8 +824,8 @@ Post = ghostBookshelf.Model.extend({
      * @return {Object} The filtered results of the passed in data, containing only what's allowed in the schema.
      */
     filterData: function filterData(data) {
-        var filteredData = ghostBookshelf.Model.filterData.apply(this, arguments),
-            extraData = _.pick(data, this.prototype.relationships);
+        const filteredData = ghostBookshelf.Model.filterData.apply(this, arguments);
+        const extraData = _.pick(data, this.prototype.relationships);
 
         _.merge(filteredData, extraData);
         return filteredData;

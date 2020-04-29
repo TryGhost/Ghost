@@ -1,8 +1,8 @@
-const _ = require('lodash'),
-    xml = require('xml'),
-    moment = require('moment'),
-    urlUtils = require('../../../server/lib/url-utils'),
-    localUtils = require('./utils');
+const _ = require('lodash');
+const xml = require('xml');
+const moment = require('moment');
+const urlUtils = require('../../../server/lib/url-utils');
+const localUtils = require('./utils');
 
 const XMLNS_DECLS = {
     _attr: {
@@ -17,11 +17,12 @@ class SiteMapIndexGenerator {
     }
 
     getXml() {
-        const urlElements = this.generateSiteMapUrlElements(),
-            data = {
-                // Concat the elements to the _attr declaration
-                sitemapindex: [XMLNS_DECLS].concat(urlElements)
-            };
+        const urlElements = this.generateSiteMapUrlElements();
+
+        const data = {
+            // Concat the elements to the _attr declaration
+            sitemapindex: [XMLNS_DECLS].concat(urlElements)
+        };
 
         // Return the xml
         return localUtils.getDeclarations() + xml(data);
@@ -29,8 +30,8 @@ class SiteMapIndexGenerator {
 
     generateSiteMapUrlElements() {
         return _.map(this.types, (resourceType) => {
-            var url = urlUtils.urlFor({relativeUrl: '/sitemap-' + resourceType.name + '.xml'}, true),
-                lastModified = resourceType.lastModified;
+            const url = urlUtils.urlFor({relativeUrl: '/sitemap-' + resourceType.name + '.xml'}, true);
+            const lastModified = resourceType.lastModified;
 
             return {
                 sitemap: [

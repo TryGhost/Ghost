@@ -1,14 +1,14 @@
-var _ = require('lodash'),
-    Analytics = require('analytics-node'),
-    config = require('./config'),
-    common = require('./lib/common'),
-    analytics;
+const _ = require('lodash');
+const Analytics = require('analytics-node');
+const config = require('./config');
+const common = require('./lib/common');
+let analytics;
 
 module.exports.init = function () {
     analytics = new Analytics(config.get('segment:key'));
-    var toTrack,
-        trackDefaults = config.get('segment:trackDefaults') || {},
-        prefix = config.get('segment:prefix') || '';
+    let toTrack;
+    const trackDefaults = config.get('segment:trackDefaults') || {};
+    const prefix = config.get('segment:prefix') || '';
 
     toTrack = [
         {

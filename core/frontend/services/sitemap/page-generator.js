@@ -1,5 +1,5 @@
-const _ = require('lodash'),
-    BaseMapGenerator = require('./base-generator');
+const _ = require('lodash');
+const BaseMapGenerator = require('./base-generator');
 
 class PageMapGenerator extends BaseMapGenerator {
     constructor(opts) {

@@ -8,7 +8,8 @@ const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
 
 describe('Oembed API (v2)', function () {
-    let ghostServer, request;
+    let ghostServer;
+    let request;
 
     before(function () {
         return ghost()

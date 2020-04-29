@@ -16,10 +16,10 @@ module.exports = function navigation(options) {
     options.hash.isSecondary = options.hash.type && options.hash.type === 'secondary';
     delete options.hash.type;
 
-    var navigationData = options.data.site[key],
-        currentUrl = options.data.root.relativeUrl,
-        self = this,
-        output;
+    const navigationData = options.data.site[key];
+    const currentUrl = options.data.root.relativeUrl;
+    const self = this;
+    let output;
 
     if (!_.isObject(navigationData) || _.isFunction(navigationData)) {
         throw new errors.IncorrectUsageError({
@@ -51,8 +51,8 @@ module.exports = function navigation(options) {
             return false;
         }
 
-        var strippedHref = href.replace(/\/+$/, ''),
-            strippedCurrentUrl = currentUrl.replace(/\/+$/, '');
+        const strippedHref = href.replace(/\/+$/, '');
+        const strippedCurrentUrl = currentUrl.replace(/\/+$/, '');
         return strippedHref === strippedCurrentUrl;
     }
 
@@ -62,7 +62,7 @@ module.exports = function navigation(options) {
     }
 
     output = navigationData.map(function (e) {
-        var out = {};
+        const out = {};
         out.current = _isCurrentUrl(e.url, currentUrl);
         out.label = e.label;
         out.slug = slugify(e.label);

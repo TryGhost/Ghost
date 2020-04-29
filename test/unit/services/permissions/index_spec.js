@@ -1,16 +1,16 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    testUtils = require('../../../utils'),
-    Promise = require('bluebird'),
-    _ = require('lodash'),
-    models = require('../../../../core/server/models'),
-    actionsMap = require('../../../../core/server/services/permissions/actions-map-cache'),
-    permissions = require('../../../../core/server/services/permissions');
+const should = require('should');
+const sinon = require('sinon');
+const testUtils = require('../../../utils');
+const Promise = require('bluebird');
+const _ = require('lodash');
+const models = require('../../../../core/server/models');
+const actionsMap = require('../../../../core/server/services/permissions/actions-map-cache');
+const permissions = require('../../../../core/server/services/permissions');
 
 describe('Permissions', function () {
-    var fakePermissions = [],
-        findPostSpy,
-        findTagSpy;
+    let fakePermissions = [];
+    let findPostSpy;
+    let findTagSpy;
 
     before(function () {
         models.init();
@@ -49,12 +49,13 @@ describe('Permissions', function () {
     function loadFakePermissions(options) {
         options = options || {};
 
-        var fixturePermissions = _.cloneDeep(testUtils.DataGenerator.Content.permissions),
-            extraPerm = {
-                name: 'test',
-                action_type: 'edit',
-                object_type: 'post'
-            };
+        const fixturePermissions = _.cloneDeep(testUtils.DataGenerator.Content.permissions);
+
+        const extraPerm = {
+            name: 'test',
+            action_type: 'edit',
+            object_type: 'post'
+        };
 
         if (options.extra) {
             fixturePermissions.push(extraPerm);

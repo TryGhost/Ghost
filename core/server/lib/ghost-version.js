@@ -1,7 +1,7 @@
-const semver = require('semver'),
-    packageInfo = require('../../../package.json'),
-    version = packageInfo.version,
-    plainVersion = version.match(/^(\d+\.)?(\d+\.)?(\d+)/)[0];
+const semver = require('semver');
+const packageInfo = require('../../../package.json');
+const version = packageInfo.version;
+const plainVersion = version.match(/^(\d+\.)?(\d+\.)?(\d+)/)[0];
 
 let _private = {};
 

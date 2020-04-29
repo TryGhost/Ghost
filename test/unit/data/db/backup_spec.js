@@ -1,13 +1,15 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    _ = require('lodash'),
-    fs = require('fs-extra'),
-    models = require('../../../../core/server/models'),
-    exporter = require('../../../../core/server/data/exporter'),
-    dbBackup = require('../../../../core/server/data/db/backup');
+const should = require('should');
+const sinon = require('sinon');
+const _ = require('lodash');
+const fs = require('fs-extra');
+const models = require('../../../../core/server/models');
+const exporter = require('../../../../core/server/data/exporter');
+const dbBackup = require('../../../../core/server/data/db/backup');
 
 describe('Backup', function () {
-    var exportStub, filenameStub, fsStub;
+    let exportStub;
+    let filenameStub;
+    let fsStub;
 
     before(function () {
         models.init();

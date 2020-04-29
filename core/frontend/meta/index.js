@@ -1,80 +1,81 @@
-var Promise = require('bluebird'),
-    settingsCache = require('../../server/services/settings/cache'),
-    urlUtils = require('../../server/lib/url-utils'),
-    common = require('../../server/lib/common'),
-    getUrl = require('./url'),
-    getImageDimensions = require('./image-dimensions'),
-    getCanonicalUrl = require('./canonical_url'),
-    getAmpUrl = require('./amp_url'),
-    getPaginatedUrl = require('./paginated_url'),
-    getAuthorUrl = require('./author_url'),
-    getBlogLogo = require('./blog_logo'),
-    getRssUrl = require('./rss_url'),
-    getTitle = require('./title'),
-    getDescription = require('./description'),
-    getCoverImage = require('./cover_image'),
-    getAuthorImage = require('./author_image'),
-    getAuthorFacebook = require('./author_fb_url'),
-    getCreatorTwitter = require('./creator_url'),
-    getKeywords = require('./keywords'),
-    getPublishedDate = require('./published_date'),
-    getModifiedDate = require('./modified_date'),
-    getOgType = require('./og_type'),
-    getOgImage = require('./og_image'),
-    getTwitterImage = require('./twitter_image'),
-    getStructuredData = require('./structured_data'),
-    getSchema = require('./schema'),
-    getExcerpt = require('./excerpt');
+const Promise = require('bluebird');
+const settingsCache = require('../../server/services/settings/cache');
+const urlUtils = require('../../server/lib/url-utils');
+const common = require('../../server/lib/common');
+const getUrl = require('./url');
+const getImageDimensions = require('./image-dimensions');
+const getCanonicalUrl = require('./canonical_url');
+const getAmpUrl = require('./amp_url');
+const getPaginatedUrl = require('./paginated_url');
+const getAuthorUrl = require('./author_url');
+const getBlogLogo = require('./blog_logo');
+const getRssUrl = require('./rss_url');
+const getTitle = require('./title');
+const getDescription = require('./description');
+const getCoverImage = require('./cover_image');
+const getAuthorImage = require('./author_image');
+const getAuthorFacebook = require('./author_fb_url');
+const getCreatorTwitter = require('./creator_url');
+const getKeywords = require('./keywords');
+const getPublishedDate = require('./published_date');
+const getModifiedDate = require('./modified_date');
+const getOgType = require('./og_type');
+const getOgImage = require('./og_image');
+const getTwitterImage = require('./twitter_image');
+const getStructuredData = require('./structured_data');
+const getSchema = require('./schema');
+const getExcerpt = require('./excerpt');
 
 function getMetaData(data, root) {
-    var metaData = {
-            url: getUrl(data, true),
-            canonicalUrl: getCanonicalUrl(data),
-            ampUrl: getAmpUrl(data),
-            previousUrl: getPaginatedUrl('prev', data, true),
-            nextUrl: getPaginatedUrl('next', data, true),
-            authorUrl: getAuthorUrl(data, true),
-            rssUrl: getRssUrl(data, true),
-            metaTitle: getTitle(data, root),
-            metaDescription: getDescription(data, root) || null,
-            coverImage: {
-                url: getCoverImage(data, true)
-            },
-            authorImage: {
-                url: getAuthorImage(data, true)
-            },
-            ogImage: {
-                url: getOgImage(data)
-            },
-            ogTitle: getTitle(data, root, {property: 'og'}),
-            ogDescription: getDescription(data, root, {property: 'og'}),
-            twitterImage: getTwitterImage(data, true),
-            twitterTitle: getTitle(data, root, {property: 'twitter'}),
-            twitterDescription: getDescription(data, root, {property: 'twitter'}),
-            authorFacebook: getAuthorFacebook(data),
-            creatorTwitter: getCreatorTwitter(data),
-            keywords: getKeywords(data),
-            publishedDate: getPublishedDate(data),
-            modifiedDate: getModifiedDate(data),
-            ogType: getOgType(data),
-            // @TODO: pass into each meta helper - wrap each helper
-            site: {
-                title: settingsCache.get('title'),
-                description: settingsCache.get('description'),
-                url: urlUtils.urlFor('home', true),
-                facebook: settingsCache.get('facebook'),
-                twitter: settingsCache.get('twitter'),
-                timezone: settingsCache.get('active_timezone'),
-                navigation: settingsCache.get('navigation'),
-                icon: settingsCache.get('icon'),
-                cover_image: settingsCache.get('cover_image'),
-                logo: getBlogLogo(),
-                amp: settingsCache.get('amp')
-            }
+    const metaData = {
+        url: getUrl(data, true),
+        canonicalUrl: getCanonicalUrl(data),
+        ampUrl: getAmpUrl(data),
+        previousUrl: getPaginatedUrl('prev', data, true),
+        nextUrl: getPaginatedUrl('next', data, true),
+        authorUrl: getAuthorUrl(data, true),
+        rssUrl: getRssUrl(data, true),
+        metaTitle: getTitle(data, root),
+        metaDescription: getDescription(data, root) || null,
+        coverImage: {
+            url: getCoverImage(data, true)
         },
-        customExcerpt,
-        metaDescription,
-        fallbackExcerpt;
+        authorImage: {
+            url: getAuthorImage(data, true)
+        },
+        ogImage: {
+            url: getOgImage(data)
+        },
+        ogTitle: getTitle(data, root, {property: 'og'}),
+        ogDescription: getDescription(data, root, {property: 'og'}),
+        twitterImage: getTwitterImage(data, true),
+        twitterTitle: getTitle(data, root, {property: 'twitter'}),
+        twitterDescription: getDescription(data, root, {property: 'twitter'}),
+        authorFacebook: getAuthorFacebook(data),
+        creatorTwitter: getCreatorTwitter(data),
+        keywords: getKeywords(data),
+        publishedDate: getPublishedDate(data),
+        modifiedDate: getModifiedDate(data),
+        ogType: getOgType(data),
+        // @TODO: pass into each meta helper - wrap each helper
+        site: {
+            title: settingsCache.get('title'),
+            description: settingsCache.get('description'),
+            url: urlUtils.urlFor('home', true),
+            facebook: settingsCache.get('facebook'),
+            twitter: settingsCache.get('twitter'),
+            timezone: settingsCache.get('active_timezone'),
+            navigation: settingsCache.get('navigation'),
+            icon: settingsCache.get('icon'),
+            cover_image: settingsCache.get('cover_image'),
+            logo: getBlogLogo(),
+            amp: settingsCache.get('amp')
+        }
+    };
+
+    let customExcerpt;
+    let metaDescription;
+    let fallbackExcerpt;
 
     // TODO: cleanup these if statements
     // NOTE: should use 'post' OR 'page' once https://github.com/TryGhost/Ghost/issues/10042 is resolved

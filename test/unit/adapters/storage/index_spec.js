@@ -1,13 +1,13 @@
-var should = require('should'),
-    fs = require('fs-extra'),
-    StorageBase = require('ghost-storage-base'),
-    configUtils = require('../../../utils/configUtils'),
-    storage = require('../../../../core/server/adapters/storage'),
-    LocalFileStorage = require('../../../../core/server/adapters/storage/LocalFileStorage');
+const should = require('should');
+const fs = require('fs-extra');
+const StorageBase = require('ghost-storage-base');
+const configUtils = require('../../../utils/configUtils');
+const storage = require('../../../../core/server/adapters/storage');
+const LocalFileStorage = require('../../../../core/server/adapters/storage/LocalFileStorage');
 
 const storagePath = configUtils.config.getContentPath('adapters') + 'storage/';
 describe('storage: index_spec', function () {
-    var scope = {adapter: null};
+    const scope = {adapter: null};
 
     before(function () {
         if (!fs.existsSync(storagePath)) {
@@ -25,7 +25,7 @@ describe('storage: index_spec', function () {
     });
 
     it('default image storage is local file storage', function () {
-        var chosenStorage = storage.getStorage();
+        const chosenStorage = storage.getStorage();
         (chosenStorage instanceof StorageBase).should.eql(true);
         (chosenStorage instanceof LocalFileStorage).should.eql(true);
     });
@@ -39,7 +39,7 @@ describe('storage: index_spec', function () {
             }
         });
 
-        var jsFile = '' +
+        const jsFile = '' +
             '\'use strict\';' +
             'var StorageBase = require(\'ghost-storage-base\');' +
             'class AnotherAdapter extends StorageBase {' +
@@ -49,7 +49,9 @@ describe('storage: index_spec', function () {
             'delete(){}' +
             'read(){}' +
             '}' +
-            'module.exports = AnotherAdapter', chosenStorage;
+            'module.exports = AnotherAdapter';
+
+        let chosenStorage;
 
         fs.writeFileSync(scope.adapter, jsFile);
 
@@ -71,7 +73,7 @@ describe('storage: index_spec', function () {
             }
         });
 
-        var jsFile = '' +
+        const jsFile = '' +
             '\'use strict\';' +
             'var StorageBase = require(\'ghost-storage-base\');' +
             'class AnotherAdapter extends StorageBase {' +

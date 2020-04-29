@@ -1,11 +1,11 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    rewire = require('rewire'),
-    Promise = require('bluebird'),
-    postScheduling = require('../../../../core/server/adapters/scheduling/post-scheduling');
+const should = require('should');
+const sinon = require('sinon');
+const rewire = require('rewire');
+const Promise = require('bluebird');
+const postScheduling = require('../../../../core/server/adapters/scheduling/post-scheduling');
 
 describe('Scheduling', function () {
-    var scope = {};
+    const scope = {};
 
     before(function () {
         sinon.stub(postScheduling, 'init').returns(Promise.resolve());

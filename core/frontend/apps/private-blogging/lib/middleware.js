@@ -91,10 +91,10 @@ const privateBlogging = {
     },
 
     authenticatePrivateSession: function authenticatePrivateSession(req, res, next) {
-        let hash = req.session.token || '',
-            salt = req.session.salt || '',
-            isVerified = verifySessionHash(salt, hash),
-            url;
+        const hash = req.session.token || '';
+        const salt = req.session.salt || '';
+        const isVerified = verifySessionHash(salt, hash);
+        let url;
 
         if (isVerified) {
             return next();
@@ -111,9 +111,9 @@ const privateBlogging = {
             return res.redirect(urlUtils.urlFor('home', true));
         }
 
-        let hash = req.session.token || '',
-            salt = req.session.salt || '',
-            isVerified = verifySessionHash(salt, hash);
+        const hash = req.session.token || '';
+        const salt = req.session.salt || '';
+        const isVerified = verifySessionHash(salt, hash);
 
         if (isVerified) {
             // redirect to home if user is already authenticated

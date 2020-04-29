@@ -1,8 +1,8 @@
-var socialUrls = require('@tryghost/social-urls');
+const socialUrls = require('@tryghost/social-urls');
 
 function getStructuredData(metaData) {
-    var structuredData,
-        card = 'summary';
+    let structuredData;
+    let card = 'summary';
 
     if (metaData.twitterImage || metaData.coverImage.url) {
         card = 'summary_large_image';
@@ -46,7 +46,7 @@ function getStructuredData(metaData) {
 
     // return structured data removing null or undefined keys
     return Object.keys(structuredData).reduce(function (data, key) {
-        var content = structuredData[key];
+        const content = structuredData[key];
         if (content !== null && typeof content !== 'undefined') {
             data[key] = content;
         }

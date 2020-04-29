@@ -22,7 +22,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns correct site description', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {},
                 {data: {root: {context: ['home', 'index']}}}
             );
@@ -32,7 +32,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns empty description on paginated page', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {},
                 {data: {root: {context: ['index', 'paged']}}}
             );
@@ -42,7 +42,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns empty description for a tag page', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {tag: {name: 'Rasper Red'}},
                 {data: {root: {context: ['tag']}}}
             );
@@ -52,7 +52,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns empty description for a paginated tag page', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {tag: {name: 'Rasper Red'}},
                 {data: {root: {context: ['tag', 'paged']}}}
             );
@@ -62,7 +62,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns tag meta_description if present for a tag page', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {tag: {name: 'Rasper Red', meta_description: 'Rasper is the Cool Red Casper'}},
                 {data: {root: {context: ['tag']}}}
             );
@@ -72,7 +72,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns empty description on paginated tag page that has meta data', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {tag: {name: 'Rasper Red', meta_description: 'Rasper is the Cool Red Casper'}},
                 {data: {root: {context: ['tag', 'paged']}}}
             );
@@ -82,7 +82,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns author bio for an author page', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {author: {bio: 'I am a Duck.'}},
                 {data: {root: {context: ['author']}}}
             );
@@ -92,7 +92,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns empty description for a paginated author page', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {author: {name: 'Donald Duck'}},
                 {data: {root: {context: ['author', 'paged']}}}
             );
@@ -102,7 +102,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns empty description when meta_description is not set', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {post: {title: 'Post Title', html: 'Very nice post indeed.'}},
                 {data: {root: {context: ['post']}}}
             );
@@ -112,7 +112,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns meta_description on post with meta_description set', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {post: {title: 'Post Title', meta_description: 'Nice post about stuff.'}},
                 {data: {root: {context: ['post']}}}
             );
@@ -122,7 +122,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns meta_description on post when used within {{#foreach posts}}', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {meta_description: 'Nice post about stuff.'},
                 {data: {root: {context: ['home']}}}
             );
@@ -138,7 +138,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns correct site description', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {},
                 {data: {root: {context: ['home', 'index']}}}
             );
@@ -148,7 +148,7 @@ describe('{{meta_description}} helper', function () {
         });
 
         it('returns tag meta_description if present for a tag page', function () {
-            var rendered = helpers.meta_description.call(
+            const rendered = helpers.meta_description.call(
                 {tag: {name: 'Rasper Red', meta_description: 'Rasper is the Cool Red Casper'}},
                 {data: {root: {context: ['tag']}}}
             );

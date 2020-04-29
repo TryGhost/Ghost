@@ -1,7 +1,8 @@
 const ghostBookshelf = require('./base');
 const common = require('../lib/common');
 
-let Label, Labels;
+let Label;
+let Labels;
 
 Label = ghostBookshelf.Model.extend({
 
@@ -31,7 +32,7 @@ Label = ghostBookshelf.Model.extend({
     },
 
     onSaving: function onSaving(newLabel, attr, options) {
-        var self = this;
+        const self = this;
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
         // Make sure name is trimmed of extra spaces
@@ -84,15 +85,15 @@ Label = ghostBookshelf.Model.extend({
     },
 
     permittedOptions: function permittedOptions(methodName) {
-        var options = ghostBookshelf.Model.permittedOptions.call(this, methodName),
+        let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
 
-            // whitelists for the `options` hash argument on methods, by method name.
-            // these are the only options that can be passed to Bookshelf / Knex.
-            validOptions = {
-                findAll: ['columns'],
-                findOne: ['columns'],
-                destroy: ['destroyAll']
-            };
+        // whitelists for the `options` hash argument on methods, by method name.
+        // these are the only options that can be passed to Bookshelf / Knex.
+        const validOptions = {
+            findAll: ['columns'],
+            findOne: ['columns'],
+            destroy: ['destroyAll']
+        };
 
         if (validOptions[methodName]) {
             options = options.concat(validOptions[methodName]);
@@ -102,7 +103,7 @@ Label = ghostBookshelf.Model.extend({
     },
 
     destroy: function destroy(unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
+        const options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
         options.withRelated = ['members'];
 
         return this.forge({id: options.id})

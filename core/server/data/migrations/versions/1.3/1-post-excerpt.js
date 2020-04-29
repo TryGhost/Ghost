@@ -1,14 +1,14 @@
-const Promise = require('bluebird'),
-    common = require('../../../../lib/common'),
-    commands = require('../../../schema').commands,
-    table = 'posts',
-    columns = ['custom_excerpt'],
-    _private = {};
+const Promise = require('bluebird');
+const common = require('../../../../lib/common');
+const commands = require('../../../schema').commands;
+const table = 'posts';
+const columns = ['custom_excerpt'];
+const _private = {};
 
 _private.handle = function handle(options) {
-    let type = options.type,
-        isAdding = type === 'Adding',
-        operation = isAdding ? commands.addColumn : commands.dropColumn;
+    let type = options.type;
+    let isAdding = type === 'Adding';
+    let operation = isAdding ? commands.addColumn : commands.dropColumn;
 
     return function (options) {
         let connection = options.connection;

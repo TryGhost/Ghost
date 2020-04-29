@@ -3,15 +3,16 @@
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
 
-var should = require('should'),
-    supertest = require('supertest'),
-    testUtils = require('../../utils/index'),
-    configUtils = require('../../utils/configUtils'),
-    urlUtils = require('../../utils/urlUtils'),
-    ghost = testUtils.startGhost,
-    common = require('../../../core/server/lib/common/index'),
-    config = require('../../../core/server/config/index'),
-    request;
+const should = require('should');
+
+const supertest = require('supertest');
+const testUtils = require('../../utils/index');
+const configUtils = require('../../utils/configUtils');
+const urlUtils = require('../../utils/urlUtils');
+const ghost = testUtils.startGhost;
+const common = require('../../../core/server/lib/common/index');
+const config = require('../../../core/server/config/index');
+let request;
 
 common.i18n.init();
 
@@ -76,7 +77,7 @@ describe('Admin Routing', function () {
 
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
     describe('Require HTTPS - redirect', function () {
-        var ghostServer;
+        let ghostServer;
 
         before(function () {
             configUtils.set('url', 'https://localhost:2390');

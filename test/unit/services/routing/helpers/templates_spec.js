@@ -1,12 +1,13 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    rewire = require('rewire'),
-    templates = rewire('../../../../../core/frontend/services/routing/helpers/templates'),
-    themes = require('../../../../../core/frontend/services/themes');
+const should = require('should');
+const sinon = require('sinon');
+const rewire = require('rewire');
+const templates = rewire('../../../../../core/frontend/services/routing/helpers/templates');
+const themes = require('../../../../../core/frontend/services/themes');
 
 describe('templates', function () {
-    let getActiveThemeStub, hasTemplateStub,
-        _private = templates.__get__('_private');
+    let getActiveThemeStub;
+    let hasTemplateStub;
+    let _private = templates.__get__('_private');
 
     afterEach(function () {
         sinon.restore();
@@ -129,7 +130,7 @@ describe('templates', function () {
         it('will fall back to post even if no index.hbs', function () {
             hasTemplateStub.returns(false);
 
-            var view = _private.getTemplateForEntry({page: 1});
+            const view = _private.getTemplateForEntry({page: 1});
             should.exist(view);
             view.should.eql('post');
         });
@@ -145,7 +146,7 @@ describe('templates', function () {
             });
 
             it('post without custom slug template', function () {
-                var view = _private.getTemplateForEntry({
+                const view = _private.getTemplateForEntry({
                     page: 0,
                     slug: 'test-post'
                 });
@@ -155,7 +156,7 @@ describe('templates', function () {
 
             it('post with custom slug template', function () {
                 hasTemplateStub.withArgs('post-welcome-to-ghost').returns(true);
-                var view = _private.getTemplateForEntry({
+                const view = _private.getTemplateForEntry({
                     page: 0,
                     slug: 'welcome-to-ghost'
                 });
@@ -164,7 +165,7 @@ describe('templates', function () {
             });
 
             it('page without custom slug template', function () {
-                var view = _private.getTemplateForEntry({
+                const view = _private.getTemplateForEntry({
                     page: 1,
                     slug: 'contact'
                 });
@@ -173,7 +174,7 @@ describe('templates', function () {
             });
 
             it('page with custom slug template', function () {
-                var view = _private.getTemplateForEntry({
+                const view = _private.getTemplateForEntry({
                     page: 1,
                     slug: 'about'
                 });
@@ -184,7 +185,7 @@ describe('templates', function () {
             it('post with custom template', function () {
                 hasTemplateStub.withArgs('custom-about').returns(true);
 
-                var view = _private.getTemplateForEntry({
+                const view = _private.getTemplateForEntry({
                     page: 0,
                     custom_template: 'custom-about'
                 });
@@ -195,7 +196,7 @@ describe('templates', function () {
             it('page with custom template', function () {
                 hasTemplateStub.withArgs('custom-about').returns(true);
 
-                var view = _private.getTemplateForEntry({
+                const view = _private.getTemplateForEntry({
                     page: 1,
                     custom_template: 'custom-about'
                 });
@@ -206,7 +207,7 @@ describe('templates', function () {
             it('post with custom template configured, but the template is missing', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
 
-                var view = _private.getTemplateForEntry({
+                const view = _private.getTemplateForEntry({
                     page: 0,
                     custom_template: 'custom-about'
                 });
@@ -217,7 +218,7 @@ describe('templates', function () {
             it('page with custom template configured, but the template is missing', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
 
-                var view = _private.getTemplateForEntry({
+                const view = _private.getTemplateForEntry({
                     page: 1,
                     custom_template: 'custom-about'
                 });
@@ -229,7 +230,7 @@ describe('templates', function () {
                 hasTemplateStub.withArgs('custom-about').returns(true);
                 hasTemplateStub.withArgs('post-about').returns(true);
 
-                var view = _private.getTemplateForEntry({
+                const view = _private.getTemplateForEntry({
                     page: 0,
                     slug: 'about',
                     custom_template: 'custom-about'
@@ -242,7 +243,7 @@ describe('templates', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
                 hasTemplateStub.withArgs('post-about').returns(false);
 
-                var view = _private.getTemplateForEntry({
+                const view = _private.getTemplateForEntry({
                     page: 0,
                     slug: 'about',
                     custom_template: 'custom-about'
@@ -269,7 +270,7 @@ describe('templates', function () {
             });
 
             it('will return correct view for a tag', function () {
-                var view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
+                const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
                 should.exist(view);
                 view.should.eql('index');
             });
@@ -284,20 +285,20 @@ describe('templates', function () {
             });
 
             it('will return correct view for a tag', function () {
-                var view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'design'});
+                const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'design'});
                 should.exist(view);
                 view.should.eql('tag-design');
             });
 
             it('will return correct view for a tag', function () {
-                var view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
+                const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
                 should.exist(view);
                 view.should.eql('tag');
             });
         });
 
         it('will fall back to index even if no index.hbs', function () {
-            var view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
+            const view = _private.getTemplateForEntries({name: 'tag', slugTemplate: true}, {slugParam: 'development'});
             should.exist(view);
             view.should.eql('index');
         });
@@ -383,7 +384,10 @@ describe('templates', function () {
     });
 
     describe('fn: setTemplate', function () {
-        var stubs = {}, req, res, data;
+        const stubs = {};
+        let req;
+        let res;
+        let data;
 
         beforeEach(function () {
             req = {};

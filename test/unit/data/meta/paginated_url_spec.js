@@ -1,10 +1,11 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    getPaginatedUrl = require('../../../../core/frontend/meta/paginated_url'),
-    urlUtils = require('../../../utils/urlUtils');
+const should = require('should');
+const sinon = require('sinon');
+const getPaginatedUrl = require('../../../../core/frontend/meta/paginated_url');
+const urlUtils = require('../../../utils/urlUtils');
 
 describe('getPaginatedUrl', function () {
-    var data, getTestUrls;
+    let data;
+    let getTestUrls;
 
     beforeEach(function () {
         data = {};
@@ -31,7 +32,7 @@ describe('getPaginatedUrl', function () {
             data.pagination = {prev: null, next: 2};
 
             // Execute test
-            var urls = getTestUrls();
+            const urls = getTestUrls();
 
             // Check results
             urls.should.have.property('next', 'http://127.0.0.1:2369/page/2/');
@@ -47,7 +48,7 @@ describe('getPaginatedUrl', function () {
             data.pagination = {prev: 1, next: 3};
 
             // Execute test
-            var urls = getTestUrls();
+            const urls = getTestUrls();
 
             // Check results
             urls.should.have.property('next', 'http://127.0.0.1:2369/page/3/');
@@ -63,7 +64,7 @@ describe('getPaginatedUrl', function () {
             data.pagination = {prev: 9, next: null};
 
             // Execute test
-            var urls = getTestUrls();
+            const urls = getTestUrls();
 
             // Check results
             urls.should.have.property('next', null);
@@ -81,7 +82,7 @@ describe('getPaginatedUrl', function () {
             data.pagination = {prev: null, next: 2};
 
             // Execute test
-            var urls = getTestUrls();
+            const urls = getTestUrls();
 
             // Check results
             urls.should.have.property('next', 'http://127.0.0.1:2369/featured/page/2/');
@@ -97,7 +98,7 @@ describe('getPaginatedUrl', function () {
             data.pagination = {prev: 1, next: 3};
 
             // Execute test
-            var urls = getTestUrls();
+            const urls = getTestUrls();
 
             // Check results
             urls.should.have.property('next', 'http://127.0.0.1:2369/featured/page/3/');
@@ -113,7 +114,7 @@ describe('getPaginatedUrl', function () {
             data.pagination = {prev: 9, next: null};
 
             // Execute test
-            var urls = getTestUrls();
+            const urls = getTestUrls();
 
             // Check results
             urls.should.have.property('next', null);
@@ -142,7 +143,7 @@ describe('getPaginatedUrl', function () {
             data.pagination = {prev: 1, next: 3};
 
             // Execute test
-            var urls = getTestUrls();
+            const urls = getTestUrls();
 
             // Check results
             urls.should.have.property('next', 'http://localhost:65535/blog/page/3/');
@@ -158,7 +159,7 @@ describe('getPaginatedUrl', function () {
             data.pagination = {prev: 1, next: 3};
 
             // Execute test
-            var urls = getTestUrls();
+            const urls = getTestUrls();
 
             // Check results
             urls.should.have.property('next', 'http://localhost:65535/blog/featured/page/3/');

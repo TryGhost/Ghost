@@ -1,9 +1,9 @@
-var should = require('should'),
+const should = require('should');
 
-    // Stuff we are testing
-    helpers = require('../../../core/frontend/helpers');
+// Stuff we are testing
+const helpers = require('../../../core/frontend/helpers');
 
-var almostOneMinute =
+const almostOneMinute =
     '<p>Ghost has a number of different user roles for your team</p>' +
     '<h3 id="authors">Authors</h3><p>The base user level in Ghost is an author. Authors can write posts,' +
     ' edit their own posts, and publish their own posts. Authors are <strong>trusted</strong> users. If you ' +
@@ -20,7 +20,7 @@ var almostOneMinute =
     ' users to fill out their user profiles, including bio and social links. These will populate rich structured data ' +
     'for posts and generally create more opportunities for themes to fully populate their design.</p>';
 
-var almostOneAndAHalfMinute = almostOneMinute +
+const almostOneAndAHalfMinute = almostOneMinute +
     '<div>' +
     '<p>Ghost has a number of different user roles for your team</p>' +
     '<h3 id="authors">Authors</h3><p>The base user level in Ghost is an author. Authors can write posts,' +
@@ -35,48 +35,52 @@ var almostOneAndAHalfMinute = almostOneMinute +
 
 describe('{{reading_time}} helper', function () {
     it('[success] renders reading time for less than one minute text as one minute', function () {
-        var data = {
-                html: almostOneMinute,
-                title: 'Test',
-                slug: 'slug'
-            },
-            result = helpers.reading_time.call(data);
+        const data = {
+            html: almostOneMinute,
+            title: 'Test',
+            slug: 'slug'
+        };
+
+        const result = helpers.reading_time.call(data);
 
         String(result).should.equal('1 min read');
     });
 
     it('[success] renders reading time for one minute text as one minute', function () {
-        var data = {
-                html: almostOneMinute +
+        const data = {
+            html: almostOneMinute +
                       'This needed about twenty-five more words before passing the one minute reading time, ' +
                       'since the word count was 250, and the average speed is 275.',
-                title: 'Test',
-                slug: 'slug'
-            },
-            result = helpers.reading_time.call(data);
+            title: 'Test',
+            slug: 'slug'
+        };
+
+        const result = helpers.reading_time.call(data);
 
         String(result).should.equal('1 min read');
     });
 
     it('[success] renders reading time for just under 1.5 minutes text as one minute', function () {
-        var data = {
-                html: almostOneAndAHalfMinute,
-                title: 'Test',
-                slug: 'slug'
-            },
-            result = helpers.reading_time.call(data);
+        const data = {
+            html: almostOneAndAHalfMinute,
+            title: 'Test',
+            slug: 'slug'
+        };
+
+        const result = helpers.reading_time.call(data);
 
         String(result).should.equal('1 min read');
     });
 
     it('[success] adds time for feature image', function () {
-        var data = {
-                html: almostOneAndAHalfMinute,
-                title: 'Test',
-                slug: 'slug',
-                feature_image: '/content/images/someimage.jpg'
-            },
-            result = helpers.reading_time.call(data);
+        const data = {
+            html: almostOneAndAHalfMinute,
+            title: 'Test',
+            slug: 'slug',
+            feature_image: '/content/images/someimage.jpg'
+        };
+
+        const result = helpers.reading_time.call(data);
 
         // The reading time for this HTML snippet would 89 seconds without the image
         // Adding the 12 additional seconds for the image results in a readng time of over 1.5 minutes, rounded to 2
@@ -84,13 +88,14 @@ describe('{{reading_time}} helper', function () {
     });
 
     it('[success] adds time for inline images', function () {
-        var data = {
-                html: almostOneAndAHalfMinute +
+        const data = {
+            html: almostOneAndAHalfMinute +
                   '<img src="test.png">',
-                title: 'Test',
-                slug: 'slug'
-            },
-            result = helpers.reading_time.call(data);
+            title: 'Test',
+            slug: 'slug'
+        };
+
+        const result = helpers.reading_time.call(data);
 
         // The reading time for this HTML snippet would 89 seconds without the image
         // Adding the 12 additional seconds for the image results in a readng time of over 1.5 minutes, rounded to 2
@@ -98,13 +103,14 @@ describe('{{reading_time}} helper', function () {
     });
 
     it('[failure] does not render reading time when not post', function () {
-        var data = {
-                author: {
-                    name: 'abc 123',
-                    slug: 'abc123'
-                }
-            },
-            result = helpers.reading_time.call(data);
+        const data = {
+            author: {
+                name: 'abc 123',
+                slug: 'abc123'
+            }
+        };
+
+        const result = helpers.reading_time.call(data);
 
         should.not.exist(result);
     });

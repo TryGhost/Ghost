@@ -1,14 +1,15 @@
-var _ = require('lodash'),
-    db = require('../../../data/db'),
+const _ = require('lodash');
+const db = require('../../../data/db');
 
-    // private
-    doRawAndFlatten,
+// private
+let doRawAndFlatten;
 
-    // public
-    getTables,
-    getIndexes,
-    getColumns,
-    checkPostTable;
+// public
+let getTables;
+
+let getIndexes;
+let getColumns;
+let checkPostTable;
 
 doRawAndFlatten = function doRaw(query, transaction, flattenFn) {
     return (transaction || db.knex).raw(query).then(function (response) {

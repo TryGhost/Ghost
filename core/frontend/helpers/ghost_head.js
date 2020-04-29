@@ -15,7 +15,7 @@ function writeMetaTag(property, content, type) {
 }
 
 function finaliseStructuredData(metaData) {
-    var head = [];
+    const head = [];
 
     _.each(metaData.structuredData, function (content, property) {
         if (property === 'article:tag') {
@@ -93,16 +93,16 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
         return;
     }
 
-    var head = [],
-        dataRoot = options.data.root,
-        context = dataRoot._locals.context ? dataRoot._locals.context : null,
-        safeVersion = dataRoot._locals.safeVersion,
-        postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null,
-        globalCodeinjection = settingsCache.get('ghost_head'),
-        useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
-        referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade',
-        favicon = blogIcon.getIconUrl(),
-        iconType = blogIcon.getIconType(favicon);
+    const head = [];
+    const dataRoot = options.data.root;
+    const context = dataRoot._locals.context ? dataRoot._locals.context : null;
+    const safeVersion = dataRoot._locals.safeVersion;
+    const postCodeInjection = dataRoot && dataRoot.post ? dataRoot.post.codeinjection_head : null;
+    const globalCodeinjection = settingsCache.get('ghost_head');
+    const useStructuredData = !config.isPrivacyDisabled('useStructuredData');
+    const referrerPolicy = config.get('referrerPolicy') ? config.get('referrerPolicy') : 'no-referrer-when-downgrade';
+    const favicon = blogIcon.getIconUrl();
+    const iconType = blogIcon.getIconType(favicon);
 
     debug('preparation complete, begin fetch');
 

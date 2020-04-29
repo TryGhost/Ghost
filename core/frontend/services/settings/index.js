@@ -68,8 +68,8 @@ module.exports = {
      * `/content/settings` directory.
      */
     getAll: function getAll() {
-        const knownSettings = this.knownSettings(),
-            settingsToReturn = {};
+        const knownSettings = this.knownSettings();
+        const settingsToReturn = {};
 
         _.each(knownSettings, function (setting) {
             settingsToReturn[setting] = SettingsLoader(setting);

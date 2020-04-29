@@ -1,14 +1,16 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
 
-    // Stuff we are testing
-    helpers = require('../../../core/frontend/helpers'),
-    models = require('../../../core/server/models'),
-    api = require('../../../core/server/api');
+// Stuff we are testing
+const helpers = require('../../../core/frontend/helpers');
+
+const models = require('../../../core/server/models');
+const api = require('../../../core/server/api');
 
 describe('{{#get}} helper', function () {
-    var fn, inverse;
+    let fn;
+    let inverse;
     let locals = {};
 
     before(function () {
@@ -164,11 +166,13 @@ describe('{{#get}} helper', function () {
     });
 
     describe('path resolution', function () {
-        var browseStub, readStub,
-            pubDate = new Date(),
-            resource = {
-                post: {id: 3, title: 'Test 3', author: {slug: 'cameron'}, tags: [{slug: 'test'}, {slug: 'magic'}], published_at: pubDate}
-            };
+        let browseStub;
+        let readStub;
+        const pubDate = new Date();
+
+        const resource = {
+            post: {id: 3, title: 'Test 3', author: {slug: 'cameron'}, tags: [{slug: 'test'}, {slug: 'magic'}], published_at: pubDate}
+        };
 
         beforeEach(function () {
             browseStub = sinon.stub().resolves();

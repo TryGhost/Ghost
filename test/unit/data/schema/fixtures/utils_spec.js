@@ -1,15 +1,14 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
-    rewire = require('rewire'),
-
-    models = require('../../../../../core/server/models'),
-    baseUtils = require('../../../../../core/server/models/base/utils'),
-    fixtureUtils = rewire('../../../../../core/server/data/schema/fixtures/utils'),
-    fixtures = require('../../../../../core/server/data/schema/fixtures/fixtures');
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const rewire = require('rewire');
+const models = require('../../../../../core/server/models');
+const baseUtils = require('../../../../../core/server/models/base/utils');
+const fixtureUtils = rewire('../../../../../core/server/data/schema/fixtures/utils');
+const fixtures = require('../../../../../core/server/data/schema/fixtures/fixtures');
 
 describe('Migration Fixture Utils', function () {
-    var loggerStub;
+    let loggerStub;
 
     beforeEach(function () {
         loggerStub = {
@@ -25,8 +24,8 @@ describe('Migration Fixture Utils', function () {
     });
 
     describe('Match Func', function () {
-        var matchFunc = fixtureUtils.__get__('matchFunc'),
-            getStub;
+        const matchFunc = fixtureUtils.__get__('matchFunc');
+        let getStub;
 
         beforeEach(function () {
             getStub = sinon.stub();
@@ -98,8 +97,8 @@ describe('Migration Fixture Utils', function () {
 
     describe('Add Fixtures For Model', function () {
         it('should call add for main post fixture', function (done) {
-            var postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve()),
-                postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
+            const postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve());
+            const postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
 
             fixtureUtils.addFixturesForModel(fixtures.models[4]).then(function (result) {
                 should.exist(result);
@@ -115,8 +114,8 @@ describe('Migration Fixture Utils', function () {
         });
 
         it('should not call add for main post fixture if it is already found', function (done) {
-            var postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve({})),
-                postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
+            const postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve({}));
+            const postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
 
             fixtureUtils.addFixturesForModel(fixtures.models[4]).then(function (result) {
                 should.exist(result);
@@ -134,18 +133,21 @@ describe('Migration Fixture Utils', function () {
 
     describe('Add Fixtures For Relation', function () {
         it('should call attach for permissions-roles', function (done) {
-            var fromItem = {
-                    related: sinon.stub().returnsThis(),
-                    findWhere: sinon.stub().returns()
-                },
-                toItem = [{get: sinon.stub()}],
-                dataMethodStub = {
-                    filter: sinon.stub().returns(toItem),
-                    find: sinon.stub().returns(fromItem)
-                },
-                baseUtilAttachStub = sinon.stub(baseUtils, 'attach').returns(Promise.resolve([{}])),
-                permsAllStub = sinon.stub(models.Permission, 'findAll').returns(Promise.resolve(dataMethodStub)),
-                rolesAllStub = sinon.stub(models.Role, 'findAll').returns(Promise.resolve(dataMethodStub));
+            const fromItem = {
+                related: sinon.stub().returnsThis(),
+                findWhere: sinon.stub().returns()
+            };
+
+            const toItem = [{get: sinon.stub()}];
+
+            const dataMethodStub = {
+                filter: sinon.stub().returns(toItem),
+                find: sinon.stub().returns(fromItem)
+            };
+
+            const baseUtilAttachStub = sinon.stub(baseUtils, 'attach').returns(Promise.resolve([{}]));
+            const permsAllStub = sinon.stub(models.Permission, 'findAll').returns(Promise.resolve(dataMethodStub));
+            const rolesAllStub = sinon.stub(models.Role, 'findAll').returns(Promise.resolve(dataMethodStub));
 
             fixtureUtils.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 should.exist(result);
@@ -169,18 +171,21 @@ describe('Migration Fixture Utils', function () {
         });
 
         it('should call attach for posts-tags', function (done) {
-            var fromItem = {
-                    related: sinon.stub().returnsThis(),
-                    findWhere: sinon.stub().returns()
-                },
-                toItem = [{get: sinon.stub()}],
-                dataMethodStub = {
-                    filter: sinon.stub().returns(toItem),
-                    find: sinon.stub().returns(fromItem)
-                },
-                baseUtilAttachStub = sinon.stub(baseUtils, 'attach').returns(Promise.resolve([{}])),
-                postsAllStub = sinon.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub)),
-                tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
+            const fromItem = {
+                related: sinon.stub().returnsThis(),
+                findWhere: sinon.stub().returns()
+            };
+
+            const toItem = [{get: sinon.stub()}];
+
+            const dataMethodStub = {
+                filter: sinon.stub().returns(toItem),
+                find: sinon.stub().returns(fromItem)
+            };
+
+            const baseUtilAttachStub = sinon.stub(baseUtils, 'attach').returns(Promise.resolve([{}]));
+            const postsAllStub = sinon.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub));
+            const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
             fixtureUtils.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 should.exist(result);
@@ -203,20 +208,22 @@ describe('Migration Fixture Utils', function () {
         });
 
         it('will not call attach for posts-tags if already present', function (done) {
-            var fromItem = {
-                    related: sinon.stub().returnsThis(),
-                    findWhere: sinon.stub().returns({}),
-                    tags: sinon.stub().returnsThis(),
-                    attach: sinon.stub().returns(Promise.resolve({}))
-                },
-                toItem = [{get: sinon.stub()}],
-                dataMethodStub = {
-                    filter: sinon.stub().returns(toItem),
-                    find: sinon.stub().returns(fromItem)
-                },
+            const fromItem = {
+                related: sinon.stub().returnsThis(),
+                findWhere: sinon.stub().returns({}),
+                tags: sinon.stub().returnsThis(),
+                attach: sinon.stub().returns(Promise.resolve({}))
+            };
 
-                postsAllStub = sinon.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub)),
-                tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
+            const toItem = [{get: sinon.stub()}];
+
+            const dataMethodStub = {
+                filter: sinon.stub().returns(toItem),
+                find: sinon.stub().returns(fromItem)
+            };
+
+            const postsAllStub = sinon.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub));
+            const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
             fixtureUtils.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 should.exist(result);
@@ -244,7 +251,7 @@ describe('Migration Fixture Utils', function () {
 
     describe('findModelFixtureEntry', function () {
         it('should fetch a single fixture entry', function () {
-            var foundFixture = fixtureUtils.findModelFixtureEntry('Integration', {slug: 'zapier'});
+            const foundFixture = fixtureUtils.findModelFixtureEntry('Integration', {slug: 'zapier'});
             foundFixture.should.be.an.Object();
             foundFixture.should.eql({
                 slug: 'zapier',
@@ -258,7 +265,7 @@ describe('Migration Fixture Utils', function () {
 
     describe('findModelFixtures', function () {
         it('should fetch a fixture with multiple entries', function () {
-            var foundFixture = fixtureUtils.findModelFixtures('Permission', {object_type: 'db'});
+            const foundFixture = fixtureUtils.findModelFixtures('Permission', {object_type: 'db'});
             foundFixture.should.be.an.Object();
             foundFixture.entries.should.be.an.Array().with.lengthOf(4);
             foundFixture.entries[0].should.eql({
@@ -276,7 +283,7 @@ describe('Migration Fixture Utils', function () {
 
     describe('findPermissionRelationsForObject', function () {
         it('should fetch a fixture with multiple entries', function () {
-            var foundFixture = fixtureUtils.findPermissionRelationsForObject('db');
+            const foundFixture = fixtureUtils.findPermissionRelationsForObject('db');
             foundFixture.should.be.an.Object();
             foundFixture.entries.should.be.an.Object();
             foundFixture.entries.should.have.property('Administrator', {db: 'all'});

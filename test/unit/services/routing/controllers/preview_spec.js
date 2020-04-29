@@ -1,19 +1,22 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
-    testUtils = require('../../../../utils'),
-    configUtils = require('../../../../utils/configUtils'),
-    api = require('../../../../../core/server/api'),
-    controllers = require('../../../../../core/frontend/services/routing/controllers'),
-    helpers = require('../../../../../core/frontend/services/routing/helpers'),
-    urlService = require('../../../../../core/frontend/services/url'),
-    urlUtils = require('../../../../../core/server/lib/url-utils'),
-
-    EDITOR_URL = '/editor/post/';
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const testUtils = require('../../../../utils');
+const configUtils = require('../../../../utils/configUtils');
+const api = require('../../../../../core/server/api');
+const controllers = require('../../../../../core/frontend/services/routing/controllers');
+const helpers = require('../../../../../core/frontend/services/routing/helpers');
+const urlService = require('../../../../../core/frontend/services/url');
+const urlUtils = require('../../../../../core/server/lib/url-utils');
+const EDITOR_URL = '/editor/post/';
 
 describe('Unit - services/routing/controllers/preview', function () {
-    let secureStub, renderStub;
-    let req, res, post, apiResponse;
+    let secureStub;
+    let renderStub;
+    let req;
+    let res;
+    let post;
+    let apiResponse;
 
     function failTest(done) {
         return function (err) {

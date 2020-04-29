@@ -6,7 +6,10 @@ const themeUtils = require('../../../../../core/frontend/services/themes');
 const staticTheme = require('../../../../../core/server/web/site/middleware/static-theme');
 
 describe('staticTheme', function () {
-    let expressStaticStub, activeThemeStub, req, res;
+    let expressStaticStub;
+    let activeThemeStub;
+    let req;
+    let res;
 
     beforeEach(function () {
         req = {};

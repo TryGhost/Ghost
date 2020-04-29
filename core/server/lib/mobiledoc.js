@@ -1,7 +1,9 @@
 const common = require('./common');
 const config = require('../config');
 
-let cardFactory, cards, mobiledocHtmlRenderer;
+let cardFactory;
+let cards;
+let mobiledocHtmlRenderer;
 
 module.exports = {
     get blankDocument() {

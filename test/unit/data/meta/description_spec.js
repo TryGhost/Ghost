@@ -627,7 +627,7 @@ describe('getMetaDescription', function () {
     });
 
     it('v3: should return data page meta description if on root context contains page', function () {
-        var description = getMetaDescription({
+        const description = getMetaDescription({
             page: {
                 meta_description: 'Best page ever!'
             }

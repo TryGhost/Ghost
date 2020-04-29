@@ -1,5 +1,5 @@
-const debug = require('ghost-ignition').debug('importer:roles'),
-    BaseImporter = require('./base');
+const debug = require('ghost-ignition').debug('importer:roles');
+const BaseImporter = require('./base');
 
 class RolesImporter extends BaseImporter {
     constructor(allDataFromFile) {

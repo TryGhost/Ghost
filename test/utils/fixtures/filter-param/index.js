@@ -1,11 +1,12 @@
 /**
  * These fixtures are just for testing the filter spec
  */
-var _ = require('lodash'),
-    ObjectId = require('bson-objectid'),
-    db = require('../../../../core/server/data/db'),
-    markdownToMobiledoc = require('../data-generator').markdownToMobiledoc,
-    data = {};
+const _ = require('lodash');
+
+const ObjectId = require('bson-objectid');
+const db = require('../../../../core/server/data/db');
+const markdownToMobiledoc = require('../data-generator').markdownToMobiledoc;
+const data = {};
 
 // Password = Sl1m3rson
 data.users = [
@@ -279,7 +280,7 @@ data.posts = [
 ];
 
 function fixDataIndexes(origData, storedData) {
-    var indexedData = {};
+    const indexedData = {};
     _.each(origData, function (orig, index) {
         indexedData[index + 1] = _.find(storedData, function (stored) {
             return stored.slug === orig.slug;
@@ -317,7 +318,8 @@ function createTags(knex, DataGenerator) {
 }
 
 function createPosts(knex, DataGenerator) {
-    var postsTags = [], postsAuthors = [];
+    const postsTags = [];
+    const postsAuthors = [];
 
     data.posts = _.map(data.posts, function (post) {
         post = DataGenerator.forKnex.createPost(post);
@@ -353,7 +355,7 @@ function createPosts(knex, DataGenerator) {
 }
 
 module.exports = function (DataGenerator) {
-    var created = {};
+    const created = {};
     // Create users first
     return createUsers(db.knex, DataGenerator).then(function () {
         // Next create tags

@@ -1,9 +1,9 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
 
-    // Stuff we are testing
-    pipeline = require('../../../../core/server/lib/promise/pipeline');
+// Stuff we are testing
+const pipeline = require('../../../../core/server/lib/promise/pipeline');
 
 // These tests are based on the tests in https://github.com/cujojs/when/blob/3.7.4/test/pipeline-test.js
 function createTask(y) {
@@ -36,8 +36,8 @@ describe('Pipeline', function () {
     });
 
     it('should pass args to initial task', function () {
-        var expected = [1, 2, 3],
-            tasks = [sinon.spy()];
+        const expected = [1, 2, 3];
+        const tasks = [sinon.spy()];
 
         return pipeline(tasks, 1, 2, 3).then(function () {
             tasks[0].calledOnce.should.be.true();
@@ -46,9 +46,9 @@ describe('Pipeline', function () {
     });
 
     it('should allow initial args to be promises', function () {
-        var expected = [1, 2, 3],
-            tasks = [sinon.spy()],
-            Resolver = Promise.resolve;
+        const expected = [1, 2, 3];
+        const tasks = [sinon.spy()];
+        const Resolver = Promise.resolve;
 
         return pipeline(tasks, new Resolver(1), new Resolver(2), new Resolver(3)).then(function () {
             tasks[0].calledOnce.should.be.true();
@@ -57,12 +57,13 @@ describe('Pipeline', function () {
     });
 
     it('should allow tasks to be promises', function () {
-        var expected = [1, 2, 3],
-            tasks = [
-                sinon.stub().returns(new Promise.resolve(4)),
-                sinon.stub().returns(new Promise.resolve(5)),
-                sinon.stub().returns(new Promise.resolve(6))
-            ];
+        const expected = [1, 2, 3];
+
+        const tasks = [
+            sinon.stub().returns(new Promise.resolve(4)),
+            sinon.stub().returns(new Promise.resolve(5)),
+            sinon.stub().returns(new Promise.resolve(6))
+        ];
 
         return pipeline(tasks, 1, 2, 3).then(function (result) {
             result.should.eql(6);
@@ -76,13 +77,15 @@ describe('Pipeline', function () {
     });
 
     it('should allow tasks and args to be promises', function () {
-        var expected = [1, 2, 3],
-            tasks = [
-                sinon.stub().returns(new Promise.resolve(4)),
-                sinon.stub().returns(new Promise.resolve(5)),
-                sinon.stub().returns(new Promise.resolve(6))
-            ],
-            Resolver = Promise.resolve;
+        const expected = [1, 2, 3];
+
+        const tasks = [
+            sinon.stub().returns(new Promise.resolve(4)),
+            sinon.stub().returns(new Promise.resolve(5)),
+            sinon.stub().returns(new Promise.resolve(6))
+        ];
+
+        const Resolver = Promise.resolve;
 
         return pipeline(tasks, new Resolver(1), new Resolver(2), new Resolver(3)).then(function (result) {
             result.should.eql(6);

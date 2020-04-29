@@ -4,7 +4,9 @@ const fs = require('fs-extra');
 const servePublicFile = require('../../../../../core/server/web/site/middleware/serve-public-file');
 
 describe('servePublicFile', function () {
-    let res, req, next;
+    let res;
+    let req;
+    let next;
 
     beforeEach(function () {
         res = sinon.spy();
@@ -30,8 +32,8 @@ describe('servePublicFile', function () {
     });
 
     it('should load the file and send it', function () {
-        const middleware = servePublicFile('robots.txt', 'text/plain', 3600),
-            body = 'User-agent: * Disallow: /';
+        const middleware = servePublicFile('robots.txt', 'text/plain', 3600);
+        const body = 'User-agent: * Disallow: /';
         req.path = '/robots.txt';
 
         sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
@@ -56,8 +58,8 @@ describe('servePublicFile', function () {
     });
 
     it('should send the correct headers', function () {
-        const middleware = servePublicFile('robots.txt', 'text/plain', 3600),
-            body = 'User-agent: * Disallow: /';
+        const middleware = servePublicFile('robots.txt', 'text/plain', 3600);
+        const body = 'User-agent: * Disallow: /';
         req.path = '/robots.txt';
 
         sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
@@ -80,8 +82,8 @@ describe('servePublicFile', function () {
     });
 
     it('should replace {{blog-url}} in text/plain', function () {
-        const middleware = servePublicFile('robots.txt', 'text/plain', 3600),
-            body = 'User-agent: {{blog-url}}';
+        const middleware = servePublicFile('robots.txt', 'text/plain', 3600);
+        const body = 'User-agent: {{blog-url}}';
         req.path = '/robots.txt';
 
         sinon.stub(fs, 'readFile').callsFake(function (file, cb) {

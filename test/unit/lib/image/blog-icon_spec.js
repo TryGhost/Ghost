@@ -1,14 +1,14 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    _ = require('lodash'),
-    path = require('path'),
-    rewire = require('rewire'),
-    settingsCache = require('../../../../core/server/services/settings/cache'),
-    storageUtils = require('../../../../core/server/adapters/storage/utils'),
-    urlUtils = require('../../../utils/urlUtils'),
+const should = require('should');
+const sinon = require('sinon');
+const _ = require('lodash');
+const path = require('path');
+const rewire = require('rewire');
+const settingsCache = require('../../../../core/server/services/settings/cache');
+const storageUtils = require('../../../../core/server/adapters/storage/utils');
+const urlUtils = require('../../../utils/urlUtils');
 
-    // stuff we are testing
-    blogIcon = rewire('../../../../core/server/lib/image/blog-icon');
+// stuff we are testing
+const blogIcon = rewire('../../../../core/server/lib/image/blog-icon');
 
 describe('lib/image: blog icon', function () {
     afterEach(function () {
@@ -152,7 +152,7 @@ describe('lib/image: blog icon', function () {
         });
 
         it('[failure] return error message', function (done) {
-            var sizeOfStub = sinon.stub();
+            const sizeOfStub = sinon.stub();
 
             sizeOfStub.throws({error: 'image-size could not find dimensions'});
 

@@ -3,7 +3,10 @@ const sinon = require('sinon');
 const versionMatch = require('../../../../../core/server/web/api/middleware/version-match');
 
 describe('Version Mismatch', function () {
-    let req, res, getStub, nextStub;
+    let req;
+    let res;
+    let getStub;
+    let nextStub;
 
     afterEach(function () {
         sinon.restore();

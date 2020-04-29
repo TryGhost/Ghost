@@ -1,44 +1,46 @@
-var should = require('should'),
-    packageJSON = require('../../../../../core/server/lib/fs/package-json');
+const should = require('should');
+const packageJSON = require('../../../../../core/server/lib/fs/package-json');
 
 describe('lib/fs/package-json', function () {
     // @TODO: introduce some non-theme package examples
-    var casper = {
+    const casper = {
+        name: 'casper',
+        path: '~/content/themes/casper',
+        'package.json': {
             name: 'casper',
-            path: '~/content/themes/casper',
-            'package.json': {
-                name: 'casper',
-                description: 'The default personal blogging theme for Ghost. Beautiful, minimal and responsive.',
-                demo: 'https://demo.ghost.io',
-                version: '1.3.5',
-                engines: {},
-                license: 'MIT',
-                screenshots: {},
-                author: {},
-                gpm: {},
-                keywords: {},
-                repository: {},
-                bugs: 'https://github.com/TryGhost/Casper/issues',
-                contributors: 'https://github.com/TryGhost/Casper/graphs/contributors'
-            }
-        },
-        simplePackage = {
+            description: 'The default personal blogging theme for Ghost. Beautiful, minimal and responsive.',
+            demo: 'https://demo.ghost.io',
+            version: '1.3.5',
+            engines: {},
+            license: 'MIT',
+            screenshots: {},
+            author: {},
+            gpm: {},
+            keywords: {},
+            repository: {},
+            bugs: 'https://github.com/TryGhost/Casper/issues',
+            contributors: 'https://github.com/TryGhost/Casper/graphs/contributors'
+        }
+    };
+
+    const simplePackage = {
+        name: 'simple',
+        path: '~/content/themes/simple',
+        'package.json': {
             name: 'simple',
-            path: '~/content/themes/simple',
-            'package.json': {
-                name: 'simple',
-                version: '0.1.0'
-            }
-        },
-        missingPackageJson = {
-            name: 'missing',
-            path: '~/content/themes/missing',
-            'package.json': null
-        };
+            version: '0.1.0'
+        }
+    };
+
+    const missingPackageJson = {
+        name: 'missing',
+        path: '~/content/themes/missing',
+        'package.json': null
+    };
 
     it('should filter packages correctly', function () {
-        var result = packageJSON.filter({casper: casper}),
-            package1;
+        const result = packageJSON.filter({casper: casper});
+        let package1;
 
         result.should.be.an.Array().with.lengthOf(1);
         package1 = result[0];
@@ -51,8 +53,9 @@ describe('lib/fs/package-json', function () {
     });
 
     it('should filter packages and handle a single active package string', function () {
-        var result = packageJSON.filter({casper: casper, simple: simplePackage}, 'casper'),
-            package1, package2;
+        const result = packageJSON.filter({casper: casper, simple: simplePackage}, 'casper');
+        let package1;
+        let package2;
 
         result.should.be.an.Array().with.lengthOf(2);
         package1 = result[0];
@@ -72,8 +75,9 @@ describe('lib/fs/package-json', function () {
     });
 
     it('should filter packages and handle an array of active packages', function () {
-        var result = packageJSON.filter({casper: casper, simple: simplePackage}, ['casper', 'simple']),
-            package1, package2;
+        const result = packageJSON.filter({casper: casper, simple: simplePackage}, ['casper', 'simple']);
+        let package1;
+        let package2;
 
         result.should.be.an.Array().with.lengthOf(2);
         package1 = result[0];
@@ -93,8 +97,9 @@ describe('lib/fs/package-json', function () {
     });
 
     it('handles packages with no package.json even though this makes us sad', function () {
-        var result = packageJSON.filter({casper: casper, missing: missingPackageJson}, ['casper']),
-            package1, package2;
+        const result = packageJSON.filter({casper: casper, missing: missingPackageJson}, ['casper']);
+        let package1;
+        let package2;
 
         result.should.be.an.Array().with.lengthOf(2);
         package1 = result[0];
@@ -114,7 +119,7 @@ describe('lib/fs/package-json', function () {
     });
 
     it('filters out things which are not packages', function () {
-        var result = packageJSON.filter({
+        const result = packageJSON.filter({
             '.git': {}, '.anything': {}, 'README.md': {}, _messages: {}
         });
         result.should.be.an.Array().with.lengthOf(0);

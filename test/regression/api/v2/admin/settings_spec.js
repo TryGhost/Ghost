@@ -58,7 +58,7 @@ describe('Settings API (v2)', function () {
                     }
 
                     should.not.exist(res.headers['x-cache-invalidate']);
-                    var jsonResponse = res.body;
+                    const jsonResponse = res.body;
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.errors);
                     testUtils.API.checkResponseValue(jsonResponse.errors[0], [
@@ -85,16 +85,17 @@ describe('Settings API (v2)', function () {
                         return done(err);
                     }
 
-                    var jsonResponse = res.body,
-                        changedValue = [],
-                        settingToChange = {
-                            settings: [
-                                {
-                                    key: 'labs',
-                                    value: '{"subscribers":false,"members":false}'
-                                }
-                            ]
-                        };
+                    const jsonResponse = res.body;
+                    const changedValue = [];
+
+                    const settingToChange = {
+                        settings: [
+                            {
+                                key: 'labs',
+                                value: '{"subscribers":false,"members":false}'
+                            }
+                        ]
+                    };
 
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.settings);
@@ -153,8 +154,8 @@ describe('Settings API (v2)', function () {
                         return done(err);
                     }
 
-                    var jsonResponse = res.body,
-                        newValue = 'new value';
+                    let jsonResponse = res.body;
+                    const newValue = 'new value';
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.settings);
                     jsonResponse.settings = [{key: 'testvalue', value: newValue}];
@@ -198,15 +199,16 @@ describe('Settings API (v2)', function () {
                         return done(err);
                     }
 
-                    const jsonResponse = res.body,
-                        settingToChange = {
-                            settings: [
-                                {
-                                    key: 'is_private',
-                                    value: '1'
-                                }
-                            ]
-                        };
+                    const jsonResponse = res.body;
+
+                    const settingToChange = {
+                        settings: [
+                            {
+                                key: 'is_private',
+                                value: '1'
+                            }
+                        ]
+                    };
 
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.settings);
@@ -320,8 +322,8 @@ describe('Settings API (v2)', function () {
                         return done(err);
                     }
 
-                    var jsonResponse = res.body,
-                        newValue = 'new value';
+                    let jsonResponse = res.body;
+                    const newValue = 'new value';
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.settings);
                     jsonResponse.settings = [{key: 'visibility', value: 'public'}];
@@ -390,8 +392,8 @@ describe('Settings API (v2)', function () {
                         return done(err);
                     }
 
-                    var jsonResponse = res.body,
-                        newValue = 'new value';
+                    let jsonResponse = res.body;
+                    const newValue = 'new value';
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.settings);
                     jsonResponse.settings = [{key: 'visibility', value: 'public'}];
