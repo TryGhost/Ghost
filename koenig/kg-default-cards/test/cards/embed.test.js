@@ -7,7 +7,7 @@ const SimpleDom = require('simple-dom');
 const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 
 describe('Embed card', function () {
-    it('Embed Card renders', function () {
+    it('renders', function () {
         let opts = {
             env: {
                 dom: new SimpleDom.Document()
@@ -18,6 +18,33 @@ describe('Embed card', function () {
         };
 
         serializer.serialize(card.render(opts)).should.match('<figure class="kg-card kg-embed-card"><h1>HEADING</h1><p>PARAGRAPH</p></figure>');
+    });
+
+    it('renders videos for email target', function () {
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                type: 'video',
+                html: '<h1>HEADING</h1><p>PARAGRAPH</p>',
+                url: 'https://example.com/my-video',
+                metadata: {
+                    thumbnail_url: 'https://example.com/thumbnail.png',
+                    thumbnail_width: 640,
+                    thumbnail_height: 480
+                }
+            },
+            options: {
+                target: 'email'
+            }
+        };
+
+        let output = serializer.serialize(card.render(opts));
+        output.should.not.match(/<h1>HEADING<\/h1>/);
+        output.should.match(/<figure class="kg-card kg-embed-card"/);
+        output.should.match(/<a class="kg-video-preview" href="https:\/\/example\.com\/my-video"/);
+        output.should.match(/background="https:\/\/example\.com\/thumbnail\.png"/);
     });
 
     it('Plain content renders', function () {
