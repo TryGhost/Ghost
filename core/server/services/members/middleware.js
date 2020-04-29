@@ -93,11 +93,14 @@ const decorateResponse = function (req, res, next) {
     next();
 };
 
-// @TODO only loads this stuff if members is enabled
+// @TODO only load this stuff if members is enabled
 // Set req.member & res.locals.member if a cookie is set
 module.exports = {
-    createSessionFromToken: [
+    memberSession: [
         getMemberDataFromSession,
+        decorateResponse
+    ],
+    createSessionFromMagicLink: [
         exchangeTokenForSession,
         decorateResponse
     ],
