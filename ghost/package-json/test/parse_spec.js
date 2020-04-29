@@ -1,11 +1,12 @@
-var should = require('should'),
-    tmp = require('tmp'),
-    fs = require('fs-extra'),
-    packageJSON = require('../../../../../core/server/lib/fs/package-json');
+const should = require('should');
+const tmp = require('tmp');
+const fs = require('fs-extra');
+const packageJSON = require('../../../../../core/server/lib/fs/package-json');
 
 describe('lib/fs/package-json: parse', function () {
     it('should parse valid package.json', function (done) {
-        var pkgJson, tmpFile;
+        let pkgJson;
+        let tmpFile;
 
         tmpFile = tmp.fileSync();
         pkgJson = JSON.stringify({
@@ -29,7 +30,8 @@ describe('lib/fs/package-json: parse', function () {
     });
 
     it('should fail when name is missing', function (done) {
-        var pkgJson, tmpFile;
+        let pkgJson;
+        let tmpFile;
 
         tmpFile = tmp.fileSync();
         pkgJson = JSON.stringify({
@@ -54,7 +56,8 @@ describe('lib/fs/package-json: parse', function () {
     });
 
     it('should fail when version is missing', function (done) {
-        var pkgJson, tmpFile;
+        let pkgJson;
+        let tmpFile;
 
         tmpFile = tmp.fileSync();
         pkgJson = JSON.stringify({
@@ -79,7 +82,8 @@ describe('lib/fs/package-json: parse', function () {
     });
 
     it('should fail when JSON is invalid', function (done) {
-        var pkgJson, tmpFile;
+        let pkgJson;
+        let tmpFile;
 
         tmpFile = tmp.fileSync();
         pkgJson = '{name:"test"}';
@@ -102,7 +106,7 @@ describe('lib/fs/package-json: parse', function () {
     });
 
     it('should fail when file is missing', function (done) {
-        var tmpFile = tmp.fileSync();
+        const tmpFile = tmp.fileSync();
 
         tmpFile.removeCallback();
         packageJSON.parse(tmpFile.name)

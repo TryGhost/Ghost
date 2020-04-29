@@ -1,13 +1,13 @@
-var should = require('should'),
-    tmp = require('tmp'),
-    join = require('path').join,
-    fs = require('fs-extra'),
-    packageJSON = require('../../../../../core/server/lib/fs/package-json');
+const should = require('should');
+const tmp = require('tmp');
+const join = require('path').join;
+const fs = require('fs-extra');
+const packageJSON = require('../../../../../core/server/lib/fs/package-json');
 
 describe('lib/fs/package-json: read', function () {
     describe('all', function () {
         it('should read directory and ignore unneeded items', function (done) {
-            var packagePath = tmp.dirSync({unsafeCleanup: true});
+            const packagePath = tmp.dirSync({unsafeCleanup: true});
 
             // create example theme
             fs.mkdirSync(join(packagePath.name, 'casper'));
@@ -36,7 +36,8 @@ describe('lib/fs/package-json: read', function () {
         });
 
         it('should read directory and parse package.json files', function (done) {
-            var packagePath, pkgJson;
+            let packagePath;
+            let pkgJson;
 
             packagePath = tmp.dirSync({unsafeCleanup: true});
             pkgJson = JSON.stringify({
@@ -69,7 +70,8 @@ describe('lib/fs/package-json: read', function () {
         });
 
         it('should read directory and ignore invalid package.json files', function (done) {
-            var packagePath, pkgJson;
+            let packagePath;
+            let pkgJson;
 
             packagePath = tmp.dirSync({unsafeCleanup: true});
             pkgJson = JSON.stringify({
@@ -100,7 +102,7 @@ describe('lib/fs/package-json: read', function () {
 
     describe('one', function () {
         it('should read directory and ignore unneeded items', function (done) {
-            var packagePath = tmp.dirSync({unsafeCleanup: true});
+            const packagePath = tmp.dirSync({unsafeCleanup: true});
 
             // create example theme
             fs.mkdirSync(join(packagePath.name, 'casper'));
@@ -129,7 +131,8 @@ describe('lib/fs/package-json: read', function () {
         });
 
         it('should read directory and parse package.json files', function (done) {
-            var packagePath, pkgJson;
+            let packagePath;
+            let pkgJson;
 
             packagePath = tmp.dirSync({unsafeCleanup: true});
             pkgJson = JSON.stringify({
@@ -162,7 +165,8 @@ describe('lib/fs/package-json: read', function () {
         });
 
         it('should read directory and ignore invalid package.json files', function (done) {
-            var packagePath, pkgJson;
+            let packagePath;
+            let pkgJson;
 
             packagePath = tmp.dirSync({unsafeCleanup: true});
             pkgJson = JSON.stringify({
@@ -191,7 +195,7 @@ describe('lib/fs/package-json: read', function () {
         });
 
         it('should read directory and include only single requested package', function (done) {
-            var packagePath = tmp.dirSync({unsafeCleanup: true});
+            const packagePath = tmp.dirSync({unsafeCleanup: true});
 
             // create trash
             fs.writeFileSync(join(packagePath.name, 'casper.zip'));
@@ -222,7 +226,7 @@ describe('lib/fs/package-json: read', function () {
         });
 
         it('should return an error if package cannot be found', function (done) {
-            var packagePath = tmp.dirSync({unsafeCleanup: true});
+            const packagePath = tmp.dirSync({unsafeCleanup: true});
 
             // create trash
             fs.writeFileSync(join(packagePath.name, 'casper.zip'));
@@ -240,7 +244,7 @@ describe('lib/fs/package-json: read', function () {
         });
 
         it('should return empty object if package is not a directory', function (done) {
-            var packagePath = tmp.dirSync({unsafeCleanup: true});
+            const packagePath = tmp.dirSync({unsafeCleanup: true});
 
             // create trash
             fs.writeFileSync(join(packagePath.name, 'casper.zip'));

@@ -1,6 +1,6 @@
-var _ = require('lodash'),
-    notAPackageRegex = /^\.|_messages|README.md/i,
-    filterPackages;
+const _ = require('lodash');
+const notAPackageRegex = /^\.|_messages|README.md/i;
+let filterPackages;
 
 /**
  * ### Filter Packages
@@ -26,7 +26,7 @@ filterPackages = function filterPackages(packages, active) {
     }
 
     return _.reduce(packages, function (result, pkg, key) {
-        var item = {};
+        let item = {};
         if (!key.match(notAPackageRegex)) {
             item = {
                 name: key,

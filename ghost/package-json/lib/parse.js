@@ -2,9 +2,10 @@
  * Dependencies
  */
 
-var Promise = require('bluebird'),
-    fs = require('fs-extra'),
-    common = require('../../common');
+const Promise = require('bluebird');
+
+const fs = require('fs-extra');
+const common = require('../../common');
 
 /**
  * Parse package.json and validate it has
@@ -14,13 +15,15 @@ var Promise = require('bluebird'),
 function parsePackageJson(path) {
     return fs.readFile(path)
         .catch(function () {
-            var err = new Error(common.i18n.t('errors.utils.parsepackagejson.couldNotReadPackage'));
+            const err = new Error(common.i18n.t('errors.utils.parsepackagejson.couldNotReadPackage'));
             err.context = path;
 
             return Promise.reject(err);
         })
         .then(function (source) {
-            var hasRequiredKeys, json, err;
+            let hasRequiredKeys;
+            let json;
+            let err;
 
             try {
                 json = JSON.parse(source);
