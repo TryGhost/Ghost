@@ -1,11 +1,12 @@
-var should = require('should'),
-    uuid = require('uuid'),
-    security = require('../../../../core/server/lib/security');
+const should = require('should');
+const uuid = require('uuid');
+const security = require('../../../../core/server/lib/security');
 
 describe('Utils: tokens', function () {
     it('generate', function () {
-        var expires = Date.now() + 60 * 1000,
-            dbHash = uuid.v4(), token;
+        const expires = Date.now() + 60 * 1000;
+        const dbHash = uuid.v4();
+        let token;
 
         token = security.tokens.resetToken.generateHash({
             email: 'test1@ghost.org',
@@ -19,8 +20,10 @@ describe('Utils: tokens', function () {
     });
 
     it('compare: success', function () {
-        var expires = Date.now() + 60 * 1000,
-            dbHash = uuid.v4(), token, tokenIsCorrect;
+        const expires = Date.now() + 60 * 1000;
+        const dbHash = uuid.v4();
+        let token;
+        let tokenIsCorrect;
 
         token = security.tokens.resetToken.generateHash({
             email: 'test1@ghost.org',
@@ -39,8 +42,10 @@ describe('Utils: tokens', function () {
     });
 
     it('compare: error', function () {
-        var expires = Date.now() + 60 * 1000,
-            dbHash = uuid.v4(), token, tokenIsCorrect;
+        const expires = Date.now() + 60 * 1000;
+        const dbHash = uuid.v4();
+        let token;
+        let tokenIsCorrect;
 
         token = security.tokens.resetToken.generateHash({
             email: 'test1@ghost.org',
@@ -59,8 +64,11 @@ describe('Utils: tokens', function () {
     });
 
     it('extract', function () {
-        var expires = Date.now() + 60 * 1000,
-            dbHash = uuid.v4(), token, parts, email = 'test1@ghost.org';
+        const expires = Date.now() + 60 * 1000;
+        const dbHash = uuid.v4();
+        let token;
+        let parts;
+        const email = 'test1@ghost.org';
 
         token = security.tokens.resetToken.generateHash({
             email: email,
@@ -80,8 +88,11 @@ describe('Utils: tokens', function () {
     });
 
     it('extract', function () {
-        var expires = Date.now() + 60 * 1000,
-            dbHash = uuid.v4(), token, parts, email = 'test3@ghost.org';
+        const expires = Date.now() + 60 * 1000;
+        const dbHash = uuid.v4();
+        let token;
+        let parts;
+        const email = 'test3@ghost.org';
 
         token = security.tokens.resetToken.generateHash({
             email: email,
@@ -101,9 +112,12 @@ describe('Utils: tokens', function () {
     });
 
     it('can validate an URI encoded reset token', function () {
-        var expires = Date.now() + 60 * 1000,
-            email = 'test1@ghost.org',
-            dbHash = uuid.v4(), token, tokenIsCorrect, parts;
+        const expires = Date.now() + 60 * 1000;
+        const email = 'test1@ghost.org';
+        const dbHash = uuid.v4();
+        let token;
+        let tokenIsCorrect;
+        let parts;
 
         token = security.tokens.resetToken.generateHash({
             email: email,

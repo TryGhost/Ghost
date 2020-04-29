@@ -13,10 +13,10 @@ _private.getRandomInt = function (min, max) {
  * @api private
  */
 module.exports.uid = function uid(maxLength) {
-    var buf = [],
-        chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-        charLength = chars.length,
-        i;
+    const buf = [];
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charLength = chars.length;
+    let i;
 
     for (i = 0; i < maxLength; i = i + 1) {
         buf.push(chars[_private.getRandomInt(0, charLength - 1)]);
