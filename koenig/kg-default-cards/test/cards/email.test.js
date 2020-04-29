@@ -6,7 +6,7 @@ const card = require('../../lib/cards/email');
 const SimpleDom = require('simple-dom');
 const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 
-describe.only('Email card', function () {
+describe('Email card', function () {
     it('renders html with no replacements', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
