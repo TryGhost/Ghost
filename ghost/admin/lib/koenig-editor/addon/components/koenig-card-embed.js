@@ -180,8 +180,14 @@ export default Component.extend({
 
             set(this.payload, 'linkOnError', undefined);
             set(this.payload, 'isDirectUrl', undefined);
+
             set(this.payload, 'html', response.html);
+            delete response.html;
             set(this.payload, 'type', response.type);
+            delete response.type;
+            // store all other data returned from oembed such as thumbnails, sizing, etc
+            set(this.payload, 'metadata', response);
+
             this.saveCard(this.payload, false);
 
             run.schedule('afterRender', this, this._populateIframe);
