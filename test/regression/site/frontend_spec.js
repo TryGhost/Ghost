@@ -768,6 +768,60 @@ describe('Frontend Routing', function () {
                         doEnd(done)(err, res);
                     });
             });
+
+            it('with capturing group', function (done) {
+                request.get('/external-url/docs')
+                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .end(function (err, res) {
+                        res.headers.location.should.eql('https://ghost.org/docs');
+                        doEnd(done)(err, res);
+                    });
+            });
+        });
+    });
+
+    describe('Subdirectory redirects (use redirects.json from test/utils/fixtures/data)', function () {
+        var ghostServer;
+
+        before(function () {
+            configUtils.set('url', 'http://localhost:2370/blog/');
+            urlUtils.stubUrlUtilsFromConfig();
+
+            return ghost({forceStart: true})
+                .then(function (_ghostServer) {
+                    ghostServer = _ghostServer;
+                    request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
+                });
+        });
+
+        after(function () {
+            configUtils.restore();
+            urlUtils.restore();
+        });
+
+        describe('internal url redirect', function () {
+            it('shold include the subdirectory', function (done) {
+                request.get('/blog/my-old-blog-post/')
+                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .end(function (err, res) {
+                        res.headers.location.should.eql('/blog/revamped-url/');
+                        doEnd(done)(err, res);
+                    });
+            });
+        });
+
+        describe('external url redirect', function () {
+            it('shold not include the subdirectory', function (done) {
+                request.get('/blog/external-url/docs')
+                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .end(function (err, res) {
+                        res.headers.location.should.eql('https://ghost.org/docs');
+                        doEnd(done)(err, res);
+                    });
+            });
         });
     });
 });
