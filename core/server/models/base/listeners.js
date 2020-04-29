@@ -1,8 +1,8 @@
-var moment = require('moment-timezone'),
-    _ = require('lodash'),
-    models = require('../../models'),
-    common = require('../../lib/common'),
-    sequence = require('../../lib/promise/sequence');
+const moment = require('moment-timezone');
+const _ = require('lodash');
+const models = require('../../models');
+const common = require('../../lib/common');
+const sequence = require('../../lib/promise/sequence');
 
 /**
  * WHEN timezone changes, we will:
@@ -13,9 +13,9 @@ common.events.on('settings.active_timezone.edited', function (settingModel, opti
     options = options || {};
     options = _.merge({}, options, {context: {internal: true}});
 
-    var newTimezone = settingModel.attributes.value,
-        previousTimezone = settingModel._previousAttributes.value,
-        timezoneOffsetDiff = moment.tz(previousTimezone).utcOffset() - moment.tz(newTimezone).utcOffset();
+    const newTimezone = settingModel.attributes.value;
+    const previousTimezone = settingModel._previousAttributes.value;
+    const timezoneOffsetDiff = moment.tz(previousTimezone).utcOffset() - moment.tz(newTimezone).utcOffset();
 
     // CASE: TZ was updated, but did not change
     if (previousTimezone === newTimezone) {
@@ -44,7 +44,7 @@ common.events.on('settings.active_timezone.edited', function (settingModel, opti
 
                 return sequence(results.map(function (post) {
                     return function reschedulePostIfPossible() {
-                        var newPublishedAtMoment = moment(post.get('published_at')).add(timezoneOffsetDiff, 'minutes');
+                        const newPublishedAtMoment = moment(post.get('published_at')).add(timezoneOffsetDiff, 'minutes');
 
                         /**
                          * CASE:
@@ -88,9 +88,9 @@ common.events.on('settings.active_timezone.edited', function (settingModel, opti
  * to the settings model to create real lock.
  */
 common.events.on('settings.notifications.edited', function (settingModel) {
-    var allNotifications = JSON.parse(settingModel.attributes.value || []),
-        options = {context: {internal: true}},
-        skip = true;
+    let allNotifications = JSON.parse(settingModel.attributes.value || []);
+    const options = {context: {internal: true}};
+    let skip = true;
 
     allNotifications = allNotifications.filter(function (notification) {
         // Do not delete the release notification

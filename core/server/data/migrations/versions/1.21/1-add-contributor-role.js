@@ -1,13 +1,13 @@
-const merge = require('lodash/merge'),
-    utils = require('../../../schema/fixtures/utils'),
-    models = require('../../../../models'),
-    permissions = require('../../../../services/permissions'),
-    logging = require('../../../../lib/common/logging'),
-    _private = {};
+const merge = require('lodash/merge');
+const utils = require('../../../schema/fixtures/utils');
+const models = require('../../../../models');
+const permissions = require('../../../../services/permissions');
+const logging = require('../../../../lib/common/logging');
+const _private = {};
 
 _private.addRole = function addRole(options) {
-    const contributorRole = utils.findModelFixtureEntry('Role', {name: 'Contributor'}),
-        message = 'Adding "Contributor" role to roles table';
+    const contributorRole = utils.findModelFixtureEntry('Role', {name: 'Contributor'});
+    const message = 'Adding "Contributor" role to roles table';
 
     return models.Role.findOne({name: contributorRole.name}, options)
         .then((role) => {
@@ -22,8 +22,8 @@ _private.addRole = function addRole(options) {
 };
 
 _private.addContributorPermissions = function getPermissions(options) {
-    const relations = utils.findRelationFixture('Role', 'Permission'),
-        message = 'Adding permissions_roles fixtures for the contributor role';
+    const relations = utils.findRelationFixture('Role', 'Permission');
+    const message = 'Adding permissions_roles fixtures for the contributor role';
 
     return utils.addFixturesForRelation({
         from: relations.from,
@@ -46,7 +46,7 @@ module.exports.config = {
 };
 
 module.exports.up = function addContributorRole(options) {
-    var localOptions = merge({
+    const localOptions = merge({
         context: {internal: true}
     }, options);
 

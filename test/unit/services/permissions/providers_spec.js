@@ -1,9 +1,9 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    testUtils = require('../../../utils'),
-    Promise = require('bluebird'),
-    models = require('../../../../core/server/models'),
-    providers = require('../../../../core/server/services/permissions/providers');
+const should = require('should');
+const sinon = require('sinon');
+const testUtils = require('../../../utils');
+const Promise = require('bluebird');
+const models = require('../../../../core/server/models');
+const providers = require('../../../../core/server/services/permissions/providers');
 
 describe('Permission Providers', function () {
     before(function () {
@@ -16,7 +16,7 @@ describe('Permission Providers', function () {
 
     describe('User', function () {
         it('errors if user cannot be found', function (done) {
-            var findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
+            const findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
                 return Promise.resolve();
             });
 
@@ -33,12 +33,14 @@ describe('Permission Providers', function () {
 
         it('can load user with role, and permissions', function (done) {
             // This test requires quite a lot of unique setup work
-            var findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
+            const findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
                 // Create a fake model
-                var fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]),
-                    // Roles & Permissions need to be collections
-                    fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]),
-                    fakeAdminRolePermissions = models.Permissions.forge(testUtils.DataGenerator.Content.permissions);
+                const fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]);
+
+                // Roles & Permissions need to be collections
+                const fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]);
+
+                const fakeAdminRolePermissions = models.Permissions.forge(testUtils.DataGenerator.Content.permissions);
 
                 // ## Fake the relations
                 // User is related to roles & permissions
@@ -78,12 +80,14 @@ describe('Permission Providers', function () {
 
         it('can load user with role, and role.permissions', function (done) {
             // This test requires quite a lot of unique setup work
-            var findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
+            const findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
                 // Create a fake model
-                var fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]),
-                    // Roles & Permissions need to be collections
-                    fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]),
-                    fakeAdminRolePermissions = models.Permissions.forge(testUtils.DataGenerator.Content.permissions);
+                const fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]);
+
+                // Roles & Permissions need to be collections
+                const fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]);
+
+                const fakeAdminRolePermissions = models.Permissions.forge(testUtils.DataGenerator.Content.permissions);
 
                 // ## Fake the relations
                 // Roles are related to permissions
@@ -125,12 +129,14 @@ describe('Permission Providers', function () {
 
         it('can load user with role, permissions and role.permissions and deduplicate them', function (done) {
             // This test requires quite a lot of unique setup work
-            var findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
+            const findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
                 // Create a fake model
-                var fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]),
-                    // Roles & Permissions need to be collections
-                    fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]),
-                    fakeAdminRolePermissions = models.Permissions.forge(testUtils.DataGenerator.Content.permissions);
+                const fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]);
+
+                // Roles & Permissions need to be collections
+                const fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]);
+
+                const fakeAdminRolePermissions = models.Permissions.forge(testUtils.DataGenerator.Content.permissions);
 
                 // ## Fake the relations
                 // Roles are related to permissions

@@ -1,9 +1,9 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    mail = require('../../../../core/server/services/mail');
+const should = require('should');
+const sinon = require('sinon');
+const mail = require('../../../../core/server/services/mail');
 
 describe('Mail: Utils', function () {
-    var scope = {ghostMailer: null};
+    const scope = {ghostMailer: null};
 
     beforeEach(function () {
         scope.ghostMailer = new mail.GhostMailer();

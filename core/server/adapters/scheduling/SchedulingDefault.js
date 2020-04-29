@@ -99,8 +99,8 @@ SchedulingDefault.prototype.unschedule = function (object, options = {bootstrap:
  */
 SchedulingDefault.prototype.run = function () {
     const self = this;
-    let timeout = null,
-        recursiveRun;
+    let timeout = null;
+    let recursiveRun;
 
     // NOTE: Ensure the scheduler never runs twice.
     if (this.isRunning) {
@@ -111,8 +111,8 @@ SchedulingDefault.prototype.run = function () {
 
     recursiveRun = function recursiveRun() {
         timeout = setTimeout(function () {
-            const times = Object.keys(self.allJobs),
-                nextJobs = {};
+            const times = Object.keys(self.allJobs);
+            const nextJobs = {};
 
             // CASE: We stop till the offset is too big. We are only interested in jobs which need get executed soon.
             times.every(function (time) {
@@ -142,11 +142,11 @@ SchedulingDefault.prototype.run = function () {
  * @private
  */
 SchedulingDefault.prototype._addJob = function (object) {
-    let timestamp = moment(object.time).valueOf(),
-        keys = [],
-        sortedJobs = {},
-        instantJob = {},
-        i = 0;
+    let timestamp = moment(object.time).valueOf();
+    let keys = [];
+    let sortedJobs = {};
+    let instantJob = {};
+    let i = 0;
 
     // CASE: should have been already pinged or should be pinged soon
     if (moment(timestamp).diff(moment(), 'minutes') < this.offsetInMinutes) {
@@ -218,12 +218,12 @@ SchedulingDefault.prototype._deleteJob = function (object) {
  * We can't use "process.nextTick" otherwise we will block I/O operations.
  */
 SchedulingDefault.prototype._execute = function (jobs) {
-    const keys = Object.keys(jobs),
-        self = this;
+    const keys = Object.keys(jobs);
+    const self = this;
 
     keys.forEach(function (timestamp) {
-        let timeout = null,
-            diff = moment(Number(timestamp)).diff(moment());
+        let timeout = null;
+        let diff = moment(Number(timestamp)).diff(moment());
 
         // NOTE: awake a little before...
         timeout = setTimeout(function () {

@@ -1,18 +1,18 @@
 // # Backup Database
 // Provides for backing up the database before making potentially destructive changes
-var fs = require('fs-extra'),
-    path = require('path'),
-    Promise = require('bluebird'),
-    config = require('../../config'),
-    common = require('../../lib/common'),
-    urlUtils = require('../../lib/url-utils'),
-    exporter = require('../exporter'),
+const fs = require('fs-extra');
 
-    writeExportFile,
-    backup;
+const path = require('path');
+const Promise = require('bluebird');
+const config = require('../../config');
+const common = require('../../lib/common');
+const urlUtils = require('../../lib/url-utils');
+const exporter = require('../exporter');
+let writeExportFile;
+let backup;
 
 writeExportFile = function writeExportFile(exportResult) {
-    var filename = path.resolve(urlUtils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
+    const filename = path.resolve(urlUtils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename));
 
     return fs.writeFile(filename, JSON.stringify(exportResult.data)).return(filename);
 };
@@ -41,7 +41,7 @@ backup = function backup(options) {
     common.logging.info('Creating database backup');
     options = options || {};
 
-    var props = {
+    const props = {
         data: exporter.doExport(options),
         filename: exporter.fileName(options)
     };

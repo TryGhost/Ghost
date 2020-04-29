@@ -1,5 +1,5 @@
-var should = require('should'),
-    errorProps = ['message', 'errorType'];
+const should = require('should');
+const errorProps = ['message', 'errorType'];
 
 should.Assertion.add('JSONErrorObject', function () {
     this.params = {operator: 'to be a valid JSON Error Object'};

@@ -1,11 +1,12 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    testUtils = require('../../utils'),
-    _ = require('lodash'),
+const should = require('should');
+const sinon = require('sinon');
+const testUtils = require('../../utils');
+const _ = require('lodash');
 
-    // Stuff we are testing
-    exporter = require('../../../core/server/data/exporter'),
-    ghostVersion = require('../../../core/server/lib/ghost-version');
+// Stuff we are testing
+const exporter = require('../../../core/server/data/exporter');
+
+const ghostVersion = require('../../../core/server/lib/ghost-version');
 
 describe('Exporter', function () {
     before(testUtils.teardownDb);
@@ -19,7 +20,7 @@ describe('Exporter', function () {
 
     it('exports data', function (done) {
         exporter.doExport().then(function (exportData) {
-            var tables = ['posts', 'users', 'roles', 'roles_users', 'permissions', 'permissions_roles',
+            const tables = ['posts', 'users', 'roles', 'roles_users', 'permissions', 'permissions_roles',
                 'permissions_users', 'settings', 'tags', 'posts_tags'];
 
             should.exist(exportData);

@@ -1,19 +1,19 @@
-var _ = require('lodash'),
-    Promise = require('bluebird'),
-    models = require('../../models'),
-    common = require('../../lib/common'),
-    providers = require('./providers'),
-    parseContext = require('./parse-context'),
-    actionsMap = require('./actions-map-cache'),
-    canThis,
-    CanThisResult;
+const _ = require('lodash');
+const Promise = require('bluebird');
+const models = require('../../models');
+const common = require('../../lib/common');
+const providers = require('./providers');
+const parseContext = require('./parse-context');
+const actionsMap = require('./actions-map-cache');
+let canThis;
+let CanThisResult;
 
 // Base class for canThis call results
 CanThisResult = function () {
 };
 
 CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, context, permissionLoad) {
-    var objectTypeModelMap = {
+    const objectTypeModelMap = {
         post: models.Post,
         role: models.Role,
         user: models.User,
@@ -25,12 +25,12 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
     return _.reduce(objTypes, function (objTypeHandlers, objType) {
         // Grab the TargetModel through the objectTypeModelMap
-        var TargetModel = objectTypeModelMap[objType];
+        const TargetModel = objectTypeModelMap[objType];
 
         // Create the 'handler' for the object type;
         // the '.post()' in canThis(user).edit.post()
         objTypeHandlers[objType] = function (modelOrId, unsafeAttrs) {
-            var modelId;
+            let modelId;
             unsafeAttrs = unsafeAttrs || {};
 
             // If it's an internal request, resolve immediately
@@ -48,32 +48,34 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
             // Wait for the user loading to finish
             return permissionLoad.then(function (loadedPermissions) {
                 // Iterate through the user permissions looking for an affirmation
-                var userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null,
-                    apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null,
-                    hasUserPermission,
-                    hasApiKeyPermission,
-                    checkPermission = function (perm) {
-                        var permObjId;
+                const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
 
-                        // Look for a matching action type and object type first
-                        if (perm.get('action_type') !== actType || perm.get('object_type') !== objType) {
-                            return false;
-                        }
+                const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
+                let hasUserPermission;
+                let hasApiKeyPermission;
 
-                        // Grab the object id (if specified, could be null)
-                        permObjId = perm.get('object_id');
+                const checkPermission = function (perm) {
+                    let permObjId;
 
-                        // If we didn't specify a model (any thing)
-                        // or the permission didn't have an id scope set
-                        // then the "thing" has permission
-                        if (!modelId || !permObjId) {
-                            return true;
-                        }
+                    // Look for a matching action type and object type first
+                    if (perm.get('action_type') !== actType || perm.get('object_type') !== objType) {
+                        return false;
+                    }
 
-                        // Otherwise, check if the id's match
-                        // TODO: String vs Int comparison possibility here?
-                        return modelId === permObjId;
-                    };
+                    // Grab the object id (if specified, could be null)
+                    permObjId = perm.get('object_id');
+
+                    // If we didn't specify a model (any thing)
+                    // or the permission didn't have an id scope set
+                    // then the "thing" has permission
+                    if (!modelId || !permObjId) {
+                        return true;
+                    }
+
+                    // Otherwise, check if the id's match
+                    // TODO: String vs Int comparison possibility here?
+                    return modelId === permObjId;
+                };
 
                 if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'})) {
                     hasUserPermission = true;
@@ -109,10 +111,10 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
 };
 
 CanThisResult.prototype.beginCheck = function (context) {
-    var self = this,
-        userPermissionLoad,
-        apiKeyPermissionLoad,
-        permissionsLoad;
+    const self = this;
+    let userPermissionLoad;
+    let apiKeyPermissionLoad;
+    let permissionsLoad;
 
     // Get context.user, context.api_key and context.app
     context = parseContext(context);
@@ -149,7 +151,7 @@ CanThisResult.prototype.beginCheck = function (context) {
     _.each(actionsMap.getAll(), function (objTypes, actType) {
         // Build up the object type handlers;
         // the '.post()' parts in canThis(user).edit.post()
-        var objTypeHandlers = self.buildObjectTypeHandlers(objTypes, actType, context, permissionsLoad);
+        const objTypeHandlers = self.buildObjectTypeHandlers(objTypes, actType, context, permissionsLoad);
 
         // Define a property for the action on the result;
         // the '.edit' in canThis(user).edit.post()
@@ -166,7 +168,7 @@ CanThisResult.prototype.beginCheck = function (context) {
 };
 
 canThis = function (context) {
-    var result = new CanThisResult();
+    const result = new CanThisResult();
 
     return result.beginCheck(context);
 };

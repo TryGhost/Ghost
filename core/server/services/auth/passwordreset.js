@@ -10,7 +10,8 @@ const tokenSecurity = {};
 
 function generateToken(email, settingsAPI) {
     const options = {context: {internal: true}};
-    let dbHash, token;
+    let dbHash;
+    let token;
 
     return settingsAPI.read(_.merge({key: 'db_hash'}, options))
         .then((response) => {

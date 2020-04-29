@@ -1,9 +1,8 @@
-var should = require('should'),
-    hbs = require('../../../core/frontend/services/themes/engine'),
-    configUtils = require('../../utils/configUtils'),
-    path = require('path'),
-
-    helpers = require('../../../core/frontend/helpers');
+const should = require('should');
+const hbs = require('../../../core/frontend/services/themes/engine');
+const configUtils = require('../../utils/configUtils');
+const path = require('path');
+const helpers = require('../../../core/frontend/helpers');
 
 describe('{{pagination}} helper', function () {
     before(function (done) {
@@ -18,17 +17,19 @@ describe('{{pagination}} helper', function () {
         hbs.registerHelper('page_url', helpers.page_url);
     });
 
-    var paginationRegex = /class="pagination"/,
-        newerRegex = /class="newer-posts"/,
-        olderRegex = /class="older-posts"/,
-        pageRegex = /class="page-number"/;
+    const paginationRegex = /class="pagination"/;
+    const newerRegex = /class="newer-posts"/;
+    const olderRegex = /class="older-posts"/;
+    const pageRegex = /class="page-number"/;
 
     it('should throw if pagination data is incorrect', function () {
-        var runHelper = function (data) {
-                return function () {
-                    helpers.pagination.call(data);
-                };
-            }, expectedMessage = 'The {{pagination}} helper was used outside of a paginated context. See https://ghost.org/docs/api/handlebars-themes/helpers/pagination/.';
+        const runHelper = function (data) {
+            return function () {
+                helpers.pagination.call(data);
+            };
+        };
+
+        const expectedMessage = 'The {{pagination}} helper was used outside of a paginated context. See https://ghost.org/docs/api/handlebars-themes/helpers/pagination/.';
 
         runHelper('not an object').should.throwError(expectedMessage);
         runHelper(function () {
@@ -36,7 +37,7 @@ describe('{{pagination}} helper', function () {
     });
 
     it('can render single page with no pagination necessary', function () {
-        var rendered = helpers.pagination.call({
+        const rendered = helpers.pagination.call({
             pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
             tag: {slug: 'slug'}
         });
@@ -50,7 +51,7 @@ describe('{{pagination}} helper', function () {
     });
 
     it('can render first page of many with older posts link', function () {
-        var rendered = helpers.pagination.call({
+        const rendered = helpers.pagination.call({
             pagination: {page: 1, prev: null, next: 2, limit: 15, total: 8, pages: 3}
         });
         should.exist(rendered);
@@ -63,7 +64,7 @@ describe('{{pagination}} helper', function () {
     });
 
     it('can render middle pages of many with older and newer posts link', function () {
-        var rendered = helpers.pagination.call({
+        const rendered = helpers.pagination.call({
             pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}
         });
         should.exist(rendered);
@@ -76,7 +77,7 @@ describe('{{pagination}} helper', function () {
     });
 
     it('can render last page of many with newer posts link', function () {
-        var rendered = helpers.pagination.call({
+        const rendered = helpers.pagination.call({
             pagination: {page: 3, prev: 2, next: null, limit: 15, total: 8, pages: 3}
         });
         should.exist(rendered);
@@ -89,7 +90,7 @@ describe('{{pagination}} helper', function () {
     });
 
     it('validates values', function () {
-        var runErrorTest = function (data) {
+        const runErrorTest = function (data) {
             return function () {
                 helpers.pagination.call(data);
             };
@@ -130,7 +131,7 @@ describe('{{pagination}} helper with custom template', function () {
     });
 
     it('can render single page with @site.title', function () {
-        var rendered = helpers.pagination.call({
+        const rendered = helpers.pagination.call({
             pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
             tag: {slug: 'slug'}
         }, {
@@ -148,7 +149,7 @@ describe('{{pagination}} helper with custom template', function () {
     });
 
     it('can pass attributes through', function () {
-        var rendered = helpers.pagination.call({
+        const rendered = helpers.pagination.call({
             pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
             tag: {slug: 'slug'}
         }, {

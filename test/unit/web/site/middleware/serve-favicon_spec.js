@@ -8,7 +8,12 @@ const configUtils = require('../../../../utils/configUtils');
 const path = require('path');
 
 describe('Serve Favicon', function () {
-    let req, res, next, blogApp, localSettingsCache = {}, originalStoragePath;
+    let req;
+    let res;
+    let next;
+    let blogApp;
+    let localSettingsCache = {};
+    let originalStoragePath;
 
     beforeEach(function () {
         req = sinon.spy();

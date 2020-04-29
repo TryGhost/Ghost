@@ -1,12 +1,14 @@
-const KnexMigrator = require('knex-migrator'),
-    config = require('../../config'),
-    common = require('../../lib/common'),
-    knexMigrator = new KnexMigrator({
-        knexMigratorFilePath: config.get('paths:appRoot')
-    });
+const KnexMigrator = require('knex-migrator');
+const config = require('../../config');
+const common = require('../../lib/common');
+
+const knexMigrator = new KnexMigrator({
+    knexMigratorFilePath: config.get('paths:appRoot')
+});
 
 module.exports.getState = () => {
-    let state, err;
+    let state;
+    let err;
 
     return knexMigrator.isDatabaseOK()
         .then(() => {

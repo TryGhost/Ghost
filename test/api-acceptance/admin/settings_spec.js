@@ -39,7 +39,7 @@ describe('Settings API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse);
 
                 localUtils.API.checkResponse(jsonResponse, 'settings');
@@ -97,68 +97,69 @@ describe('Settings API', function () {
                     return done(err);
                 }
 
-                var jsonResponse = res.body,
-                    changedValue = [],
-                    settingToChange = {
-                        settings: [
-                            {
-                                key: 'title',
-                                value: changedValue
-                            },
-                            {
-                                key: 'codeinjection_head',
-                                value: null
-                            },
-                            {
-                                key: 'navigation',
-                                value: {label: 'label1'}
-                            },
-                            {
-                                key: 'slack',
-                                value: JSON.stringify({username: 'username'})
-                            },
-                            {
-                                key: 'is_private',
-                                value: false
-                            },
-                            {
-                                key: 'meta_title',
-                                value: 'SEO title'
-                            },
-                            {
-                                key: 'meta_description',
-                                value: 'SEO description'
-                            },
-                            {
-                                key: 'og_image',
-                                value: '/content/images/2019/07/facebook.png'
-                            },
-                            {
-                                key: 'og_title',
-                                value: 'facebook title'
-                            },
-                            {
-                                key: 'og_description',
-                                value: 'facebook description'
-                            },
-                            {
-                                key: 'twitter_image',
-                                value: '/content/images/2019/07/twitter.png'
-                            },
-                            {
-                                key: 'twitter_title',
-                                value: 'twitter title'
-                            },
-                            {
-                                key: 'twitter_description',
-                                value: 'twitter description'
-                            },
-                            {
-                                key: 'labs',
-                                value: '{"subscribers":false,"members":true}'
-                            }
-                        ]
-                    };
+                const jsonResponse = res.body;
+                const changedValue = [];
+
+                const settingToChange = {
+                    settings: [
+                        {
+                            key: 'title',
+                            value: changedValue
+                        },
+                        {
+                            key: 'codeinjection_head',
+                            value: null
+                        },
+                        {
+                            key: 'navigation',
+                            value: {label: 'label1'}
+                        },
+                        {
+                            key: 'slack',
+                            value: JSON.stringify({username: 'username'})
+                        },
+                        {
+                            key: 'is_private',
+                            value: false
+                        },
+                        {
+                            key: 'meta_title',
+                            value: 'SEO title'
+                        },
+                        {
+                            key: 'meta_description',
+                            value: 'SEO description'
+                        },
+                        {
+                            key: 'og_image',
+                            value: '/content/images/2019/07/facebook.png'
+                        },
+                        {
+                            key: 'og_title',
+                            value: 'facebook title'
+                        },
+                        {
+                            key: 'og_description',
+                            value: 'facebook description'
+                        },
+                        {
+                            key: 'twitter_image',
+                            value: '/content/images/2019/07/twitter.png'
+                        },
+                        {
+                            key: 'twitter_title',
+                            value: 'twitter title'
+                        },
+                        {
+                            key: 'twitter_description',
+                            value: 'twitter description'
+                        },
+                        {
+                            key: 'labs',
+                            value: '{"subscribers":false,"members":true}'
+                        }
+                    ]
+                };
 
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.settings);

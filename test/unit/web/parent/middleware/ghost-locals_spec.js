@@ -4,7 +4,9 @@ const ghostLocals = require('../../../../../core/server/web/parent/middleware/gh
 const themeService = require('../../../../../core/frontend/services/themes');
 
 describe('Theme Handler', function () {
-    let req, res, next;
+    let req;
+    let res;
+    let next;
 
     beforeEach(function () {
         req = sinon.spy();

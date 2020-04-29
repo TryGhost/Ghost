@@ -6,15 +6,15 @@ const security = require('../lib/security');
 const settingsCache = require('../services/settings/cache');
 const ghostBookshelf = require('./base');
 
-let Invite,
-    Invites;
+let Invite;
+let Invites;
 
 Invite = ghostBookshelf.Model.extend({
     tableName: 'invites',
 
     toJSON: function (unfilteredOptions) {
-        var options = Invite.filterOptions(unfilteredOptions, 'toJSON'),
-            attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        const options = Invite.filterOptions(unfilteredOptions, 'toJSON');
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         delete attrs.token;
         return attrs;

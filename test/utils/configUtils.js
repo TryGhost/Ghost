@@ -1,6 +1,6 @@
-var _ = require('lodash'),
-    config = require('../../core/server/config'),
-    configUtils = {};
+const _ = require('lodash');
+const config = require('../../core/server/config');
+const configUtils = {};
 
 configUtils.config = config;
 configUtils.defaultConfig = _.cloneDeep(config.get());
@@ -10,8 +10,8 @@ configUtils.defaultConfig = _.cloneDeep(config.get());
  * configUtils.set('key', 'value');
  */
 configUtils.set = function () {
-    var key = arguments[0],
-        value = arguments[1];
+    const key = arguments[0];
+    const value = arguments[1];
 
     if (_.isObject(key)) {
         _.each(key, function (value, key) {

@@ -1,10 +1,10 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    getTitle = require('../../../../core/frontend/meta/title'),
-    settingsCache = require('../../../../core/server/services/settings/cache');
+const should = require('should');
+const sinon = require('sinon');
+const getTitle = require('../../../../core/frontend/meta/title');
+const settingsCache = require('../../../../core/server/services/settings/cache');
 
 describe('getTitle', function () {
-    var localSettingsCache = {};
+    let localSettingsCache = {};
 
     beforeEach(function () {
         sinon.stub(settingsCache, 'get').callsFake(function (key) {
@@ -18,7 +18,7 @@ describe('getTitle', function () {
     });
 
     it('should return meta_title if on data root', function () {
-        var title = getTitle({
+        const title = getTitle({
             meta_title: 'My test title'
         });
 

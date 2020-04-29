@@ -1,15 +1,15 @@
-const _ = require('lodash'),
-    debug = require('ghost-ignition').debug('services:routing:controllers:rss'),
-    url = require('url'),
-    security = require('../../../../server/lib/security'),
-    settingsCache = require('../../../../server/services/settings/cache'),
-    rssService = require('../../rss'),
-    helpers = require('../helpers');
+const _ = require('lodash');
+const debug = require('ghost-ignition').debug('services:routing:controllers:rss');
+const url = require('url');
+const security = require('../../../../server/lib/security');
+const settingsCache = require('../../../../server/services/settings/cache');
+const rssService = require('../../rss');
+const helpers = require('../helpers');
 
 // @TODO: is this really correct? Should we be using meta data title?
 function getTitle(relatedData) {
     relatedData = relatedData || {};
-    var titleStart = _.get(relatedData, 'author[0].name') || _.get(relatedData, 'tag[0].name') || '';
+    let titleStart = _.get(relatedData, 'author[0].name') || _.get(relatedData, 'tag[0].name') || '';
 
     titleStart += titleStart ? ' - ' : '';
     return titleStart + settingsCache.get('title');

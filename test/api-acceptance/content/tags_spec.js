@@ -39,7 +39,7 @@ describe('Tags Content API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse.tags);
                 localUtils.API.checkResponse(jsonResponse, 'tags');
                 jsonResponse.tags.should.have.length(4);
@@ -76,7 +76,7 @@ describe('Tags Content API', function () {
                     return done(err);
                 }
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse.tags);
                 localUtils.API.checkResponse(jsonResponse, 'tags');
                 jsonResponse.tags.should.have.length(4);
@@ -98,7 +98,7 @@ describe('Tags Content API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse.tags);
                 localUtils.API.checkResponse(jsonResponse, 'tags');
                 jsonResponse.tags.should.have.length(3);

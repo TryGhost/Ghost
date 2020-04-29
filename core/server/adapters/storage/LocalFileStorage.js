@@ -1,16 +1,17 @@
 // # Local File System Image Storage module
 // The (default) module for storing images, using the local file system
 
-const serveStatic = require('express').static,
-    fs = require('fs-extra'),
-    path = require('path'),
-    Promise = require('bluebird'),
-    moment = require('moment'),
-    config = require('../../config'),
-    common = require('../../lib/common'),
-    constants = require('../../lib/constants'),
-    urlUtils = require('../../lib/url-utils'),
-    StorageBase = require('ghost-storage-base');
+const serveStatic = require('express').static;
+
+const fs = require('fs-extra');
+const path = require('path');
+const Promise = require('bluebird');
+const moment = require('moment');
+const config = require('../../config');
+const common = require('../../lib/common');
+const constants = require('../../lib/constants');
+const urlUtils = require('../../lib/url-utils');
+const StorageBase = require('ghost-storage-base');
 
 class LocalFileStore extends StorageBase {
     constructor() {

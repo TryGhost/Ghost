@@ -1,23 +1,25 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    testUtils = require('../../utils'),
-    Promise = require('bluebird'),
-    moment = require('moment'),
-    ObjectId = require('bson-objectid'),
-    assert = require('assert'),
-    _ = require('lodash'),
-    validator = require('validator'),
+const should = require('should');
+const sinon = require('sinon');
+const testUtils = require('../../utils');
+const Promise = require('bluebird');
+const moment = require('moment');
+const ObjectId = require('bson-objectid');
+const assert = require('assert');
+const _ = require('lodash');
+const validator = require('validator');
 
-    // Stuff we are testing
-    db = require('../../../core/server/data/db'),
-    models = require('../../../core/server/models'),
-    importer = require('../../../core/server/data/importer'),
-    dataImporter = importer.importers[1],
-    importOptions = {
-        returnImportedData: true
-    },
+// Stuff we are testing
+const db = require('../../../core/server/data/db');
 
-    knex = db.knex;
+const models = require('../../../core/server/models');
+const importer = require('../../../core/server/data/importer');
+const dataImporter = importer.importers[1];
+
+const importOptions = {
+    returnImportedData: true
+};
+
+const knex = db.knex;
 
 const exportedLatestBody = () => {
     return _.clone({
@@ -396,10 +398,10 @@ describe('Integration: Importer', function () {
 
                     importedData.length.should.equal(4, 'Did not get data successfully');
 
-                    const users = importedData[0],
-                        posts = importedData[1].data,
-                        settings = importedData[2],
-                        tags = importedData[3];
+                    const users = importedData[0];
+                    const posts = importedData[1].data;
+                    const settings = importedData[2];
+                    const tags = importedData[3];
 
                     // we always have 1 user, the owner user we added
                     users.length.should.equal(1, 'There should only be one user');

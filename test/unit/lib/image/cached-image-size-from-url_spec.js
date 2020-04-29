@@ -1,14 +1,14 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
-    rewire = require('rewire'),
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const rewire = require('rewire');
 
-    // Stuff we are testing
-    getCachedImageSizeFromUrl = rewire('../../../../core/server/lib/image/cached-image-size-from-url');
+// Stuff we are testing
+const getCachedImageSizeFromUrl = rewire('../../../../core/server/lib/image/cached-image-size-from-url');
 
 describe('lib/image: image size cache', function () {
-    var sizeOfStub,
-        cachedImagedSize;
+    let sizeOfStub;
+    let cachedImagedSize;
 
     beforeEach(function () {
         sizeOfStub = sinon.stub();
@@ -20,9 +20,9 @@ describe('lib/image: image size cache', function () {
     });
 
     it('should read from cache, if dimensions for image are fetched already', function (done) {
-        var url = 'http://mysite.com/content/image/mypostcoverimage.jpg',
-            cachedImagedSizeResult,
-            imageSizeSpy;
+        const url = 'http://mysite.com/content/image/mypostcoverimage.jpg';
+        let cachedImagedSizeResult;
+        let imageSizeSpy;
 
         sizeOfStub.returns(new Promise.resolve({
             width: 50,
@@ -64,8 +64,8 @@ describe('lib/image: image size cache', function () {
     });
 
     it('can handle image-size errors', function (done) {
-        var url = 'http://mysite.com/content/image/mypostcoverimage.jpg',
-            cachedImagedSizeResult;
+        const url = 'http://mysite.com/content/image/mypostcoverimage.jpg';
+        let cachedImagedSizeResult;
 
         sizeOfStub.returns(new Promise.reject('error'));
 
@@ -83,8 +83,8 @@ describe('lib/image: image size cache', function () {
     });
 
     it('should return null if url is undefined', function (done) {
-        var url = null,
-            result;
+        const url = null;
+        let result;
 
         result = getCachedImageSizeFromUrl(url);
 

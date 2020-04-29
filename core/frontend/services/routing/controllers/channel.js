@@ -1,9 +1,9 @@
-const _ = require('lodash'),
-    debug = require('ghost-ignition').debug('services:routing:controllers:channel'),
-    common = require('../../../../server/lib/common'),
-    security = require('../../../../server/lib/security'),
-    themes = require('../../themes'),
-    helpers = require('../helpers');
+const _ = require('lodash');
+const debug = require('ghost-ignition').debug('services:routing:controllers:channel');
+const common = require('../../../../server/lib/common');
+const security = require('../../../../server/lib/security');
+const themes = require('../../themes');
+const helpers = require('../helpers');
 
 /**
  * @description Channel controller.

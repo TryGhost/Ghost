@@ -1,11 +1,11 @@
-var Promise = require('bluebird'),
-    commands = require('../../schema').commands,
-    schema = require('../../schema').tables,
-    common = require('../../../lib/common'),
-    schemaTables = Object.keys(schema);
+const Promise = require('bluebird');
+const commands = require('../../schema').commands;
+const schema = require('../../schema').tables;
+const common = require('../../../lib/common');
+const schemaTables = Object.keys(schema);
 
 module.exports.up = function createTables(options) {
-    var connection = options.connection;
+    const connection = options.connection;
 
     return Promise.mapSeries(schemaTables, function createTable(table) {
         common.logging.info('Creating table: ' + table);

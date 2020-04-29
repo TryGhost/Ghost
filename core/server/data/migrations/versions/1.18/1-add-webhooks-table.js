@@ -1,9 +1,9 @@
-var Promise = require('bluebird'),
-    common = require('../../../../lib/common'),
-    commands = require('../../../schema').commands,
-    table = 'webhooks',
-    message1 = 'Adding table: ' + table,
-    message2 = 'Dropping table: ' + table;
+const Promise = require('bluebird');
+const common = require('../../../../lib/common');
+const commands = require('../../../schema').commands;
+const table = 'webhooks';
+const message1 = 'Adding table: ' + table;
+const message2 = 'Dropping table: ' + table;
 
 module.exports.up = function addWebhooksTable(options) {
     let connection = options.connection;

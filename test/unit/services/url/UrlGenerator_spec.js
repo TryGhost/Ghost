@@ -7,7 +7,12 @@ const urlUtils = require('../../../../core/server/lib/url-utils');
 const UrlGenerator = require('../../../../core/frontend/services/url/UrlGenerator');
 
 describe('Unit: services/url/UrlGenerator', function () {
-    let queue, router, urls, resources, resource, resource2;
+    let queue;
+    let router;
+    let urls;
+    let resources;
+    let resource;
+    let resource2;
 
     beforeEach(function () {
         queue = {

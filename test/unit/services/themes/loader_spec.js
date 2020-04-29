@@ -1,11 +1,11 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    fs = require('fs-extra'),
-    tmp = require('tmp'),
-    join = require('path').join,
-    config = require('../../../../core/server/config'),
-    loader = require('../../../../core/frontend/services/themes/loader'),
-    themeList = require('../../../../core/frontend/services/themes/list');
+const should = require('should');
+const sinon = require('sinon');
+const fs = require('fs-extra');
+const tmp = require('tmp');
+const join = require('path').join;
+const config = require('../../../../core/server/config');
+const loader = require('../../../../core/frontend/services/themes/loader');
+const themeList = require('../../../../core/frontend/services/themes/list');
 
 describe('Themes', function () {
     afterEach(function () {
@@ -13,7 +13,7 @@ describe('Themes', function () {
     });
 
     describe('Loader', function () {
-        var themePath;
+        let themePath;
 
         beforeEach(function () {
             themePath = tmp.dirSync({unsafeCleanup: true});
@@ -38,7 +38,7 @@ describe('Themes', function () {
 
                 loader.loadAllThemes()
                     .then(function (result) {
-                        var themeResult = themeList.getAll();
+                        const themeResult = themeList.getAll();
 
                         // Loader doesn't return anything
                         should.not.exist(result);
@@ -71,7 +71,7 @@ describe('Themes', function () {
 
                 loader.loadAllThemes()
                     .then(function (result) {
-                        var themeResult = themeList.getAll();
+                        const themeResult = themeList.getAll();
 
                         // Loader doesn't return anything
                         should.not.exist(result);

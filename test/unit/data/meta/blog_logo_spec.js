@@ -1,7 +1,7 @@
-var should = require('should'),
-    getBlogLogo = require('../../../../core/frontend/meta/blog_logo'),
-    sinon = require('sinon'),
-    settingsCache = require('../../../../core/server/services/settings/cache');
+const should = require('should');
+const getBlogLogo = require('../../../../core/frontend/meta/blog_logo');
+const sinon = require('sinon');
+const settingsCache = require('../../../../core/server/services/settings/cache');
 
 describe('getBlogLogo', function () {
     afterEach(function () {
@@ -9,7 +9,7 @@ describe('getBlogLogo', function () {
     });
 
     it('should return logo if uploaded', function () {
-        var blogLogo;
+        let blogLogo;
 
         sinon.stub(settingsCache, 'get').callsFake(function (key) {
             return {
@@ -24,7 +24,7 @@ describe('getBlogLogo', function () {
     });
 
     it('should return custom uploaded png icon if no logo given', function () {
-        var blogLogo;
+        let blogLogo;
 
         sinon.stub(settingsCache, 'get').callsFake(function (key) {
             return {

@@ -1,11 +1,11 @@
-var should = require('should'),
-    themeList = require('../../../core/frontend/services/themes/list'),
+const should = require('should');
+const themeList = require('../../../core/frontend/services/themes/list');
 
-    // Stuff we are testing
-    helpers = require('../../../core/frontend/helpers');
+// Stuff we are testing
+const helpers = require('../../../core/frontend/helpers');
 
 describe('{{body_class}} helper', function () {
-    var options = {};
+    let options = {};
     before(function () {
         themeList.init({
             casper: {
@@ -37,7 +37,7 @@ describe('{{body_class}} helper', function () {
     it('can render class string', function () {
         options.data.root.context = ['home'];
 
-        var rendered = helpers.body_class.call({}, options);
+        const rendered = helpers.body_class.call({}, options);
         should.exist(rendered);
 
         rendered.string.should.equal('home-template');
@@ -53,7 +53,7 @@ describe('{{body_class}} helper', function () {
         }
 
         it('Standard home page', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['home', 'index'],
                 {relativeUrl: '/'}
             );
@@ -62,7 +62,7 @@ describe('{{body_class}} helper', function () {
         });
 
         it('a post', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['post'],
                 {relativeUrl: '/a-post-title', post: {}}
             );
@@ -71,7 +71,7 @@ describe('{{body_class}} helper', function () {
         });
 
         it('paginated index', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['index', 'paged'],
                 {relativeUrl: '/page/4'}
             );
@@ -80,7 +80,7 @@ describe('{{body_class}} helper', function () {
         });
 
         it('tag page', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['tag'],
                 {relativeUrl: '/tag/foo', tag: {slug: 'foo'}}
             );
@@ -89,7 +89,7 @@ describe('{{body_class}} helper', function () {
         });
 
         it('paginated tag page', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['tag', 'paged'],
                 {relativeUrl: '/tag/foo/page/2', tag: {slug: 'foo'}}
             );
@@ -98,7 +98,7 @@ describe('{{body_class}} helper', function () {
         });
 
         it('author page', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['author'],
                 {relativeUrl: '/author/bar', author: {slug: 'bar'}}
             );
@@ -107,7 +107,7 @@ describe('{{body_class}} helper', function () {
         });
 
         it('paginated author page', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['author', 'paged'],
                 {relativeUrl: '/author/bar/page/2', author: {slug: 'bar'}}
             );
@@ -116,7 +116,7 @@ describe('{{body_class}} helper', function () {
         });
 
         it('private route for password protection', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['private'],
                 {relativeUrl: '/private/'}
             );
@@ -125,7 +125,7 @@ describe('{{body_class}} helper', function () {
         });
 
         it('post with tags', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['post'],
                 {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}
             );
@@ -134,7 +134,7 @@ describe('{{body_class}} helper', function () {
         });
 
         it('v2: a static page', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['page'],
                 {relativeUrl: '/about', page: {page: true, slug: 'about'}}
             );
@@ -143,7 +143,7 @@ describe('{{body_class}} helper', function () {
         });
 
         it('canary: a static page', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['page'],
                 {relativeUrl: '/about', page: {page: true, slug: 'about'}}
             );
@@ -152,7 +152,7 @@ describe('{{body_class}} helper', function () {
         });
 
         it('v3: a static page', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['page'],
                 {relativeUrl: '/about', page: {page: true, slug: 'about'}}
             );
@@ -161,7 +161,7 @@ describe('{{body_class}} helper', function () {
         });
 
         it('a static page with custom template (is now the same as one without)', function () {
-            var rendered = callBodyClassWithContext(
+            const rendered = callBodyClassWithContext(
                 ['page'],
                 {relativeUrl: '/about', post: {page: true, slug: 'about'}}
             );

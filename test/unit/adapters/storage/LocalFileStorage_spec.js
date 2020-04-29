@@ -1,21 +1,21 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    fs = require('fs-extra'),
-    moment = require('moment'),
-    Promise = require('bluebird'),
-    path = require('path'),
-    common = require('../../../../core/server/lib/common'),
-    LocalFileStore = require('../../../../core/server/adapters/storage/LocalFileStorage'),
-    localFileStore,
-    configUtils = require('../../../utils/configUtils');
+const should = require('should');
+const sinon = require('sinon');
+const fs = require('fs-extra');
+const moment = require('moment');
+const Promise = require('bluebird');
+const path = require('path');
+const common = require('../../../../core/server/lib/common');
+const LocalFileStore = require('../../../../core/server/adapters/storage/LocalFileStorage');
+let localFileStore;
+const configUtils = require('../../../utils/configUtils');
 
 describe('Local File System Storage', function () {
-    var image,
-        momentStub;
+    let image;
+    let momentStub;
 
     function fakeDate(mm, yyyy) {
-        var month = parseInt(mm, 10),
-            year = parseInt(yyyy, 10);
+        const month = parseInt(mm, 10);
+        const year = parseInt(yyyy, 10);
 
         momentStub.withArgs('YYYY').returns(year.toString());
         momentStub.withArgs('MM').returns(month < 10 ? '0' + month.toString() : month.toString());
@@ -206,7 +206,7 @@ describe('Local File System Storage', function () {
 
     describe('when a custom content path is used', function () {
         beforeEach(function () {
-            var configPaths = configUtils.defaultConfig.paths;
+            const configPaths = configUtils.defaultConfig.paths;
             configUtils.set('paths:contentPath', configPaths.appRoot + '/var/ghostcms');
         });
 
@@ -221,7 +221,7 @@ describe('Local File System Storage', function () {
 
     // @TODO: remove path.join mock...
     describe('on Windows', function () {
-        var truePathSep = path.sep;
+        const truePathSep = path.sep;
 
         beforeEach(function () {
             sinon.stub(path, 'join');

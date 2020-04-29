@@ -1,16 +1,17 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    _ = require('lodash'),
-    testUtils = require('../../../utils'),
-    urlUtils = require('../../../utils/urlUtils'),
-    urlService = require('../../../../core/frontend/services/url'),
-    generateFeed = require('../../../../core/frontend/services/rss/generate-feed');
+const should = require('should');
+const sinon = require('sinon');
+const _ = require('lodash');
+const testUtils = require('../../../utils');
+const urlUtils = require('../../../utils/urlUtils');
+const urlService = require('../../../../core/frontend/services/url');
+const generateFeed = require('../../../../core/frontend/services/rss/generate-feed');
 
 describe('RSS: Generate Feed', function () {
-    var data = {},
-        baseUrl,
-        // Static set of posts
-        posts;
+    const data = {};
+    let baseUrl;
+
+    // Static set of posts
+    let posts;
 
     before(function () {
         posts = _.cloneDeep(testUtils.DataGenerator.forKnex.posts);
@@ -105,8 +106,8 @@ describe('RSS: Generate Feed', function () {
                 xmlData.should.not.match(/<author>/);
 
                 // basic structure check
-                var postEnd = '<\/code><\/pre>\]\]><\/content:encoded>',
-                    firstIndex = xmlData.indexOf(postEnd);
+                const postEnd = '<\/code><\/pre>\]\]><\/content:encoded>';
+                const firstIndex = xmlData.indexOf(postEnd);
 
                 // The first title should be before the first content
                 xmlData.indexOf('HTML Ipsum').should.be.below(firstIndex);
@@ -118,7 +119,7 @@ describe('RSS: Generate Feed', function () {
         });
 
         it('should only return visible tags', function (done) {
-            var postWithTags = posts[2];
+            const postWithTags = posts[2];
             postWithTags.tags = [
                 {name: 'public', visibility: 'public'},
                 {name: 'internal', visibility: 'internal'},

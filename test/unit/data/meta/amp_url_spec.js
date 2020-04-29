@@ -1,8 +1,8 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    rewire = require('rewire'),
-    urlUtils = require('../../../../core/server/lib/url-utils'),
-    testUtils = require('../../../utils');
+const should = require('should');
+const sinon = require('sinon');
+const rewire = require('rewire');
+const urlUtils = require('../../../../core/server/lib/url-utils');
+const testUtils = require('../../../utils');
 
 let getAmpUrl = rewire('../../../../core/frontend/meta/amp_url');
 

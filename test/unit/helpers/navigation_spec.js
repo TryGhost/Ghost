@@ -61,15 +61,15 @@ describe('{{navigation}} helper', function () {
     });
 
     it('can render empty nav', function () {
-        var rendered = runHelper(optionsData);
+        const rendered = runHelper(optionsData);
 
         should.exist(rendered);
         rendered.string.should.be.equal('');
     });
 
     it('can handle relativeUrl not being set (e.g. for images/assets)', function () {
-        var singleItem = {label: 'Foo', url: '/foo'},
-            rendered;
+        const singleItem = {label: 'Foo', url: '/foo'};
+        let rendered;
         delete optionsData.data.root.relativeUrl;
 
         optionsData.data.site.navigation = [singleItem];
@@ -80,9 +80,9 @@ describe('{{navigation}} helper', function () {
     });
 
     it('can render one item', function () {
-        var singleItem = {label: 'Foo', url: '/foo'},
-            testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
-            rendered;
+        const singleItem = {label: 'Foo', url: '/foo'};
+        const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
+        let rendered;
 
         optionsData.data.site.navigation = [singleItem];
         rendered = runHelper(optionsData);
@@ -94,11 +94,11 @@ describe('{{navigation}} helper', function () {
     });
 
     it('can render multiple items', function () {
-        var firstItem = {label: 'Foo', url: '/foo'},
-            secondItem = {label: 'Bar Baz Qux', url: '/qux'},
-            testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
-            testUrl2 = 'href="' + configUtils.config.get('url') + '/qux"',
-            rendered;
+        const firstItem = {label: 'Foo', url: '/foo'};
+        const secondItem = {label: 'Bar Baz Qux', url: '/qux'};
+        const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
+        const testUrl2 = 'href="' + configUtils.config.get('url') + '/qux"';
+        let rendered;
 
         optionsData.data.site.navigation = [firstItem, secondItem];
         rendered = runHelper(optionsData);
@@ -111,9 +111,9 @@ describe('{{navigation}} helper', function () {
     });
 
     it('can annotate the current url', function () {
-        var firstItem = {label: 'Foo', url: '/foo'},
-            secondItem = {label: 'Bar', url: '/qux'},
-            rendered;
+        const firstItem = {label: 'Foo', url: '/foo'};
+        const secondItem = {label: 'Bar', url: '/qux'};
+        let rendered;
 
         optionsData.data.site.navigation = [firstItem, secondItem];
         optionsData.data.root.relativeUrl = '/foo';
@@ -127,9 +127,9 @@ describe('{{navigation}} helper', function () {
     });
 
     it('can annotate current url with trailing slash', function () {
-        var firstItem = {label: 'Foo', url: '/foo'},
-            secondItem = {label: 'Bar', url: '/qux'},
-            rendered;
+        const firstItem = {label: 'Foo', url: '/foo'};
+        const secondItem = {label: 'Bar', url: '/qux'};
+        let rendered;
 
         optionsData.data.site.navigation = [firstItem, secondItem];
         optionsData.data.root.relativeUrl = '/foo/';
@@ -143,8 +143,8 @@ describe('{{navigation}} helper', function () {
     });
 
     it('doesn\'t html-escape URLs', function () {
-        var firstItem = {label: 'Foo', url: '/?foo=bar&baz=qux'},
-            rendered;
+        const firstItem = {label: 'Foo', url: '/?foo=bar&baz=qux'};
+        let rendered;
 
         optionsData.data.site.navigation = [firstItem];
         rendered = runHelper(optionsData);
@@ -156,8 +156,8 @@ describe('{{navigation}} helper', function () {
     });
 
     it('encodes URLs', function () {
-        var firstItem = {label: 'Foo', url: '/?foo=space bar&<script>alert("gotcha")</script>'},
-            rendered;
+        const firstItem = {label: 'Foo', url: '/?foo=space bar&<script>alert("gotcha")</script>'};
+        let rendered;
 
         optionsData.data.site.navigation = [firstItem];
         rendered = runHelper(optionsData);
@@ -169,8 +169,8 @@ describe('{{navigation}} helper', function () {
     });
 
     it('doesn\'t double-encode URLs', function () {
-        var firstItem = {label: 'Foo', url: '/?foo=space%20bar'},
-            rendered;
+        const firstItem = {label: 'Foo', url: '/?foo=space%20bar'};
+        let rendered;
 
         optionsData.data.site.navigation = [firstItem];
         rendered = runHelper(optionsData);
@@ -181,9 +181,9 @@ describe('{{navigation}} helper', function () {
 
     describe('type="secondary"', function () {
         it('can render one item', function () {
-            var singleItem = {label: 'Foo', url: '/foo'},
-                testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
-                rendered;
+            const singleItem = {label: 'Foo', url: '/foo'};
+            const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
+            let rendered;
 
             optionsData.data.site.secondary_navigation = [singleItem];
             optionsData.hash = {type: 'secondary'};
@@ -196,11 +196,11 @@ describe('{{navigation}} helper', function () {
         });
 
         it('can render multiple items', function () {
-            var firstItem = {label: 'Foo', url: '/foo'},
-                secondItem = {label: 'Bar Baz Qux', url: '/qux'},
-                testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
-                testUrl2 = 'href="' + configUtils.config.get('url') + '/qux"',
-                rendered;
+            const firstItem = {label: 'Foo', url: '/foo'};
+            const secondItem = {label: 'Bar Baz Qux', url: '/qux'};
+            const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
+            const testUrl2 = 'href="' + configUtils.config.get('url') + '/qux"';
+            let rendered;
 
             optionsData.data.site.secondary_navigation = [firstItem, secondItem];
             optionsData.hash = {type: 'secondary'};
@@ -216,7 +216,7 @@ describe('{{navigation}} helper', function () {
 });
 
 describe('{{navigation}} helper with custom template', function () {
-    var optionsData;
+    let optionsData;
 
     before(function (done) {
         hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
@@ -241,8 +241,8 @@ describe('{{navigation}} helper with custom template', function () {
     });
 
     it('can render one item and @site title', function () {
-        var testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
-            rendered;
+        const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
+        let rendered;
 
         // Set @site.title
         optionsData.data.site.title = 'Chaos is a ladder.';
@@ -258,8 +258,8 @@ describe('{{navigation}} helper with custom template', function () {
     });
 
     it('can pass attributes through', function () {
-        var testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
-            rendered;
+        const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
+        let rendered;
 
         // Simulate {{navigation isHeader=true}}
         optionsData.hash = {isHeader: true};
@@ -275,8 +275,8 @@ describe('{{navigation}} helper with custom template', function () {
     });
 
     it('sets isSecondary for type=secondary', function () {
-        var testUrl = 'href="' + configUtils.config.get('url') + '/foo"',
-            rendered;
+        const testUrl = 'href="' + configUtils.config.get('url') + '/foo"';
+        let rendered;
 
         // Simulate {{navigation type="secondary"}}
         optionsData.hash = {type: 'secondary'};

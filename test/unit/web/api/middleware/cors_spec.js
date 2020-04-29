@@ -6,7 +6,9 @@ const urlUtils = require('../../../../utils/urlUtils');
 let cors = rewire('../../../../../core/server/web/api/middleware/cors');
 
 describe('cors', function () {
-    let res, req, next;
+    let res;
+    let req;
+    let next;
 
     beforeEach(function () {
         req = {

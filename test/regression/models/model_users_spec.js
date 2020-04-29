@@ -1,18 +1,19 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    testUtils = require('../../utils'),
-    Promise = require('bluebird'),
-    _ = require('lodash'),
+const should = require('should');
+const sinon = require('sinon');
+const testUtils = require('../../utils');
+const Promise = require('bluebird');
+const _ = require('lodash');
 
-    // Stuff we are testing
-    common = require('../../../core/server/lib/common'),
-    imageLib = require('../../../core/server/lib/image'),
-    UserModel = require('../../../core/server/models/user').User,
-    RoleModel = require('../../../core/server/models/role').Role,
-    context = testUtils.context.admin;
+// Stuff we are testing
+const common = require('../../../core/server/lib/common');
+
+const imageLib = require('../../../core/server/lib/image');
+const UserModel = require('../../../core/server/models/user').User;
+const RoleModel = require('../../../core/server/models/role').Role;
+const context = testUtils.context.admin;
 
 describe('User Model', function run() {
-    var eventsTriggered = {};
+    let eventsTriggered = {};
 
     before(testUtils.teardownDb);
     afterEach(testUtils.teardownDb);
@@ -28,7 +29,7 @@ describe('User Model', function run() {
         beforeEach(testUtils.setup('roles'));
 
         it('can add first', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[0];
+            const userData = testUtils.DataGenerator.forModel.users[0];
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
@@ -40,7 +41,7 @@ describe('User Model', function run() {
         });
 
         it('shortens slug if possible', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[2];
+            const userData = testUtils.DataGenerator.forModel.users[2];
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
@@ -51,7 +52,7 @@ describe('User Model', function run() {
         });
 
         it('does not short slug if not possible', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[2];
+            const userData = testUtils.DataGenerator.forModel.users[2];
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
@@ -76,7 +77,7 @@ describe('User Model', function run() {
         });
 
         it('does NOT lowercase email', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[2];
+            const userData = testUtils.DataGenerator.forModel.users[2];
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
@@ -86,7 +87,7 @@ describe('User Model', function run() {
         });
 
         it('can find gravatar', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4];
+            const userData = testUtils.DataGenerator.forModel.users[4];
 
             sinon.stub(imageLib.gravatar, 'lookup').callsFake(function (userData) {
                 userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
@@ -103,7 +104,7 @@ describe('User Model', function run() {
         });
 
         it('can handle no gravatar', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[0];
+            const userData = testUtils.DataGenerator.forModel.users[0];
 
             sinon.stub(imageLib.gravatar, 'lookup').callsFake(function (userData) {
                 return Promise.resolve(userData);
@@ -117,8 +118,8 @@ describe('User Model', function run() {
         });
 
         it('can find by email and is case insensitive', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[2],
-                email = testUtils.DataGenerator.forModel.users[2].email;
+            const userData = testUtils.DataGenerator.forModel.users[2];
+            const email = testUtils.DataGenerator.forModel.users[2].email;
 
             UserModel.add(userData, context).then(function () {
                 // Test same case
@@ -165,7 +166,7 @@ describe('User Model', function run() {
         });
 
         it('sets last login time on successful login', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[0];
+            const userData = testUtils.DataGenerator.forModel.users[0];
 
             UserModel.check({email: userData.email, password: userData.password}).then(function (activeUser) {
                 should.exist(activeUser.get('last_seen'));
@@ -174,14 +175,14 @@ describe('User Model', function run() {
         });
 
         it('converts fetched dateTime fields to Date objects', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[0];
+            const userData = testUtils.DataGenerator.forModel.users[0];
 
             UserModel.check({email: userData.email, password: userData.password}).then(function (user) {
                 return UserModel.findOne({id: user.id});
             }).then(function (user) {
-                var lastLogin,
-                    createdAt,
-                    updatedAt;
+                let lastLogin;
+                let createdAt;
+                let updatedAt;
 
                 should.exist(user);
 
@@ -212,8 +213,8 @@ describe('User Model', function run() {
             return testUtils.fixtures.createExtraUsers().then(function () {
                 return Promise.join(UserModel.findOne({role: 'Owner'}), UserModel.findOne({role: 'Editor'}));
             }).then(function (results) {
-                var owner = results[0],
-                    editor = results[1];
+                let owner = results[0];
+                let editor = results[1];
 
                 should.exist(owner);
                 should.exist(editor);
@@ -230,7 +231,7 @@ describe('User Model', function run() {
         });
 
         it('can invite user', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4];
+            const userData = testUtils.DataGenerator.forModel.users[4];
 
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
@@ -245,7 +246,7 @@ describe('User Model', function run() {
         });
 
         it('can add active user', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4];
+            const userData = testUtils.DataGenerator.forModel.users[4];
 
             RoleModel.findOne().then(function (role) {
                 userData.roles = [role.toJSON()];
@@ -266,7 +267,7 @@ describe('User Model', function run() {
         });
 
         it('can NOT add active user with invalid email address', function (done) {
-            var userData = _.clone(testUtils.DataGenerator.forModel.users[4]);
+            const userData = _.clone(testUtils.DataGenerator.forModel.users[4]);
 
             userData.email = 'invalidemailaddress';
 
@@ -282,10 +283,10 @@ describe('User Model', function run() {
         });
 
         it('can edit active user', function (done) {
-            var firstUser = testUtils.DataGenerator.Content.users[0].id;
+            const firstUser = testUtils.DataGenerator.Content.users[0].id;
 
             UserModel.findOne({id: firstUser}).then(function (results) {
-                var user;
+                let user;
                 should.exist(results);
                 user = results.toJSON();
                 user.id.should.equal(firstUser);
@@ -305,7 +306,7 @@ describe('User Model', function run() {
         });
 
         it('can NOT set an invalid email address', function (done) {
-            var firstUser = testUtils.DataGenerator.Content.users[0].id;
+            const firstUser = testUtils.DataGenerator.Content.users[0].id;
 
             UserModel.findOne({id: firstUser}).then(function (user) {
                 return user.edit({email: 'notanemailaddress'});
@@ -317,8 +318,8 @@ describe('User Model', function run() {
         });
 
         it('can NOT set an already existing email address', function (done) {
-            var firstUser = testUtils.DataGenerator.Content.users[0],
-                secondUser = testUtils.DataGenerator.Content.users[1];
+            const firstUser = testUtils.DataGenerator.Content.users[0];
+            const secondUser = testUtils.DataGenerator.Content.users[1];
 
             UserModel.edit({email: secondUser.email}, {id: firstUser.id})
                 .then(function () {
@@ -331,8 +332,8 @@ describe('User Model', function run() {
         });
 
         it('can edit invited user', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4],
-                userId;
+            const userData = testUtils.DataGenerator.forModel.users[4];
+            let userId;
 
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
@@ -357,8 +358,8 @@ describe('User Model', function run() {
         });
 
         it('can activate invited user', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4],
-                userId;
+            const userData = testUtils.DataGenerator.forModel.users[4];
+            let userId;
 
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
@@ -384,8 +385,8 @@ describe('User Model', function run() {
         });
 
         it('can destroy invited user', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4],
-                userId;
+            const userData = testUtils.DataGenerator.forModel.users[4];
+            let userId;
 
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
@@ -538,7 +539,7 @@ describe('User Model', function run() {
         beforeEach(testUtils.setup('owner'));
 
         it('setup user', function (done) {
-            var userData = {
+            const userData = {
                 name: 'Max Mustermann',
                 email: 'test@ghost.org',
                 password: 'thisissupersafe'

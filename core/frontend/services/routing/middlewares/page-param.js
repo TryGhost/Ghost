@@ -1,5 +1,5 @@
-const common = require('../../../../server/lib/common'),
-    urlUtils = require('../../../../server/lib/url-utils');
+const common = require('../../../../server/lib/common');
+const urlUtils = require('../../../../server/lib/url-utils');
 
 /**
  * @description Middleware, which validates and interprets the page param e.g. /page/1

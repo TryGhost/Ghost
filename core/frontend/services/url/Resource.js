@@ -1,5 +1,5 @@
-const EventEmitter = require('events').EventEmitter,
-    common = require('../../../server/lib/common');
+const EventEmitter = require('events').EventEmitter;
+const common = require('../../../server/lib/common');
 
 /**
  * Resource cache.

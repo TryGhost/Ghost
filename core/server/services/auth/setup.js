@@ -91,17 +91,18 @@ function sendWelcomeEmail(email, mailAPI) {
         return mail.utils.generateContent({data: data, template: 'welcome'})
             .then((content) => {
                 const message = {
-                        to: email,
-                        subject: common.i18n.t('common.api.authentication.mail.yourNewGhostBlog'),
-                        html: content.html,
-                        text: content.text
-                    },
-                    payload = {
-                        mail: [{
-                            message: message,
-                            options: {}
-                        }]
-                    };
+                    to: email,
+                    subject: common.i18n.t('common.api.authentication.mail.yourNewGhostBlog'),
+                    html: content.html,
+                    text: content.text
+                };
+
+                const payload = {
+                    mail: [{
+                        message: message,
+                        options: {}
+                    }]
+                };
 
                 mailAPI.send(payload, {context: {internal: true}})
                     .catch((err) => {

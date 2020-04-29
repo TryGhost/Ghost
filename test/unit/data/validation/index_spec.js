@@ -1,9 +1,9 @@
-var should = require('should'),
-    _ = require('lodash'),
-    ObjectId = require('bson-objectid'),
-    testUtils = require('../../../utils'),
-    models = require('../../../../core/server/models'),
-    validation = require('../../../../core/server/data/validation');
+const should = require('should');
+const _ = require('lodash');
+const ObjectId = require('bson-objectid');
+const testUtils = require('../../../utils');
+const models = require('../../../../core/server/models');
+const validation = require('../../../../core/server/data/validation');
 
 // Validate our customisations
 describe('Validation', function () {
@@ -163,7 +163,7 @@ describe('Validation', function () {
     });
 
     describe('Assert the Validator dependency', function () {
-        var validator = validation.validator;
+        const validator = validation.validator;
 
         it('isEmptyOrUrl filters javascript urls', function () {
             validator.isEmptyOrURL('javascript:alert(0)').should.be.false();

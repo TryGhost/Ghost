@@ -1,6 +1,6 @@
-var hbs = require('express-hbs'),
-    config = require('../../../server/config'),
-    instance = hbs.create();
+const hbs = require('express-hbs');
+const config = require('../../../server/config');
+const instance = hbs.create();
 
 // @TODO think about a config option for this e.g. theme.devmode?
 if (config.get('env') !== 'production') {
@@ -10,7 +10,7 @@ if (config.get('env') !== 'production') {
 instance.escapeExpression = instance.handlebars.Utils.escapeExpression;
 
 instance.configure = function configure(partialsPath) {
-    var hbsOptions = {
+    const hbsOptions = {
         partialsDir: [config.get('paths').helperTemplates],
         onCompile: function onCompile(exhbs, source) {
             return exhbs.handlebars.compile(source, {preventIndent: true});

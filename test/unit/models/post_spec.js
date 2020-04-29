@@ -368,12 +368,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
         describe('As Contributor', function () {
             describe('Editing', function () {
                 it('rejects if changing status', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'published'};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'published'};
 
                     mockPostObj.get.withArgs('status').returns('draft');
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
@@ -398,12 +398,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if changing visibility', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {visibility: 'public'};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {visibility: 'public'};
 
                     mockPostObj.get.withArgs('visibility').returns('paid');
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
@@ -428,12 +428,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if changing author id', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'draft', author_id: 2};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'draft', author_id: 2};
 
                     mockPostObj.get.withArgs('author_id').returns(1);
 
@@ -457,12 +457,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if changing authors.0', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
@@ -486,12 +486,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('ignores if changes authors.1', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'draft', authors: [{id: 1}, {id: 2}]};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'draft', authors: [{id: 1}, {id: 2}]};
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
                     mockPostObj.get.withArgs('status').returns('draft');
@@ -515,12 +515,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if post is not draft', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'published', author_id: 1};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'published', author_id: 1};
 
                     mockPostObj.get.withArgs('status').returns('published');
                     mockPostObj.get.withArgs('author_id').returns(1);
@@ -546,12 +546,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if contributor is not author of post', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'draft', author_id: 2};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'draft', author_id: 2};
 
                     mockPostObj.get.withArgs('status').returns('draft');
                     mockPostObj.get.withArgs('author_id').returns(1);
@@ -577,12 +577,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('resolves if none of the above cases are true', function () {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'draft', author_id: 1};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'draft', author_id: 1};
 
                     mockPostObj.get.withArgs('status').returns('draft');
                     mockPostObj.get.withArgs('author_id').returns(1);
@@ -608,11 +608,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
             describe('Adding', function () {
                 it('rejects if "published" status', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'published', author_id: 1};
+                    const mockPostObj = {
+                        get: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'published', author_id: 1};
 
                     models.Post.permissible(
                         mockPostObj,
@@ -633,11 +633,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if different author id', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'draft', author_id: 2};
+                    const mockPostObj = {
+                        get: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'draft', author_id: 2};
 
                     models.Post.permissible(
                         mockPostObj,
@@ -658,11 +658,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if different logged in user and `authors.0`', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
+                    const mockPostObj = {
+                        get: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
 
                     models.Post.permissible(
                         mockPostObj,
@@ -683,11 +683,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if same logged in user and `authors.0`, but different author_id', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'draft', author_id: 3, authors: [{id: 1}]};
+                    const mockPostObj = {
+                        get: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'draft', author_id: 3, authors: [{id: 1}]};
 
                     models.Post.permissible(
                         mockPostObj,
@@ -708,11 +708,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if different logged in user and `authors.0`, but correct author_id', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'draft', author_id: 1, authors: [{id: 2}]};
+                    const mockPostObj = {
+                        get: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'draft', author_id: 1, authors: [{id: 2}]};
 
                     models.Post.permissible(
                         mockPostObj,
@@ -733,11 +733,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('resolves if same logged in user and `authors.0`', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'draft', authors: [{id: 1}]};
+                    const mockPostObj = {
+                        get: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'draft', authors: [{id: 1}]};
 
                     models.Post.permissible(
                         mockPostObj,
@@ -757,11 +757,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('resolves if none of the above cases are true', function () {
-                    var mockPostObj = {
-                            get: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {status: 'draft', author_id: 1};
+                    const mockPostObj = {
+                        get: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {status: 'draft', author_id: 1};
 
                     return models.Post.permissible(
                         mockPostObj,
@@ -782,11 +782,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
             describe('Destroying', function () {
                 it('rejects if destroying another author\'s post', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
@@ -810,11 +810,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if destroying a published post', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
                     mockPostObj.get.withArgs('status').returns('published');
@@ -839,11 +839,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('resolves if none of the above cases are true', function () {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
 
                     mockPostObj.get.withArgs('status').returns('draft');
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
@@ -870,12 +870,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
         describe('As Author', function () {
             describe('Editing', function () {
                 it('rejects if editing another\'s post', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {author_id: 2};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {author_id: 2};
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 2}]});
                     mockPostObj.get.withArgs('author_id').returns(2);
@@ -900,12 +900,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if changing visibility', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {visibility: 'public'};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {visibility: 'public'};
 
                     mockPostObj.get.withArgs('visibility').returns('paid');
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
@@ -930,12 +930,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if editing another\'s post (using `authors`)', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {authors: [{id: 2}]};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {authors: [{id: 2}]};
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
@@ -959,12 +959,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if changing author', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {author_id: 2};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {author_id: 2};
 
                     mockPostObj.get.withArgs('author_id').returns(1);
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
@@ -989,12 +989,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if changing authors', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {authors: [{id: 2}]};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {authors: [{id: 2}]};
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
@@ -1018,12 +1018,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if changing authors and author_id', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {authors: [{id: 1}], author_id: 2};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {authors: [{id: 1}], author_id: 2};
 
                     mockPostObj.get.withArgs('author_id').returns(1);
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
@@ -1048,12 +1048,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if changing authors and author_id', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {authors: [{id: 2}], author_id: 1};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {authors: [{id: 2}], author_id: 1};
 
                     mockPostObj.get.withArgs('author_id').returns(1);
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
@@ -1078,12 +1078,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('resolves if none of the above cases are true', function () {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {author_id: 1};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {author_id: 1};
 
                     mockPostObj.get.withArgs('author_id').returns(1);
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
@@ -1106,11 +1106,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
             describe('Adding', function () {
                 it('rejects if different author id', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {author_id: 2};
+                    const mockPostObj = {
+                        get: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {author_id: 2};
 
                     models.Post.permissible(
                         mockPostObj,
@@ -1131,12 +1131,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('rejects if different authors', function (done) {
-                    var mockPostObj = {
-                            get: sinon.stub(),
-                            related: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {authors: [{id: 2}]};
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {authors: [{id: 2}]};
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
@@ -1159,11 +1159,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
 
                 it('resolves if none of the above cases are true', function () {
-                    var mockPostObj = {
-                            get: sinon.stub()
-                        },
-                        context = {user: 1},
-                        unsafeAttrs = {author_id: 1};
+                    const mockPostObj = {
+                        get: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {author_id: 1};
 
                     return models.Post.permissible(
                         mockPostObj,
@@ -1183,12 +1183,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
         describe('Everyone Else', function () {
             it('rejects if hasUserPermissions is false and not current owner', function (done) {
-                var mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    },
-                    context = {user: 1},
-                    unsafeAttrs = {author_id: 2};
+                const mockPostObj = {
+                    get: sinon.stub(),
+                    related: sinon.stub()
+                };
+                const context = {user: 1};
+                const unsafeAttrs = {author_id: 2};
 
                 mockPostObj.related.withArgs('authors').returns({models: [{id: 2}]});
                 mockPostObj.get.withArgs('author_id').returns(2);
@@ -1213,11 +1213,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
             });
 
             it('resolves if hasUserPermission is true', function () {
-                var mockPostObj = {
-                        get: sinon.stub()
-                    },
-                    context = {user: 1},
-                    unsafeAttrs = {author_id: 2};
+                const mockPostObj = {
+                    get: sinon.stub()
+                };
+                const context = {user: 1};
+                const unsafeAttrs = {author_id: 2};
 
                 mockPostObj.get.withArgs('author_id').returns(2);
 
@@ -1236,12 +1236,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
             });
 
             it('resolves if changing visibility', function () {
-                var mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    },
-                    context = {user: 1},
-                    unsafeAttrs = {visibility: 'public'};
+                const mockPostObj = {
+                    get: sinon.stub(),
+                    related: sinon.stub()
+                };
+                const context = {user: 1};
+                const unsafeAttrs = {visibility: 'public'};
 
                 mockPostObj.get.withArgs('visibility').returns('paid');
                 mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});

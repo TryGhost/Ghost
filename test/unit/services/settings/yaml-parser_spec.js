@@ -1,10 +1,9 @@
-const sinon = require('sinon'),
-    should = require('should'),
-    fs = require('fs-extra'),
-    yaml = require('js-yaml'),
-    path = require('path'),
-
-    yamlParser = require('../../../../core/frontend/services/settings/yaml-parser');
+const sinon = require('sinon');
+const should = require('should');
+const fs = require('fs-extra');
+const yaml = require('js-yaml');
+const path = require('path');
+const yamlParser = require('../../../../core/frontend/services/settings/yaml-parser');
 
 describe('UNIT > Settings Service yaml parser:', function () {
     let yamlSpy;

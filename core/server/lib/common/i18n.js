@@ -43,7 +43,8 @@ class I18n {
      * @returns {string}
      */
     t(path, bindings) {
-        let string, msg;
+        let string;
+        let msg;
 
         string = this._findString(path);
 
@@ -111,7 +112,8 @@ class I18n {
      */
     _findString(msgPath, opts) {
         const options = merge({log: true}, opts || {});
-        let candidateString, matchingString;
+        let candidateString;
+        let matchingString;
 
         // no path? no string
         if (msgPath.length === 0 || !isString(msgPath)) {
@@ -179,7 +181,8 @@ class I18n {
      *  - Polyfill node.js if it does not have Intl support or support for a particular locale
      */
     _initializeIntl() {
-        let hasBuiltInLocaleData, IntlPolyfill;
+        let hasBuiltInLocaleData;
+        let IntlPolyfill;
 
         if (global.Intl) {
             // Determine if the built-in `Intl` has the locale data we need.

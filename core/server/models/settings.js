@@ -1,15 +1,15 @@
-const Promise = require('bluebird'),
-    _ = require('lodash'),
-    uuid = require('uuid'),
-    crypto = require('crypto'),
-    keypair = require('keypair'),
-    ghostBookshelf = require('./base'),
-    common = require('../lib/common'),
-    validation = require('../data/validation'),
-    settingsCache = require('../services/settings/cache'),
-    internalContext = {context: {internal: true}};
-
-let Settings, defaultSettings;
+const Promise = require('bluebird');
+const _ = require('lodash');
+const uuid = require('uuid');
+const crypto = require('crypto');
+const keypair = require('keypair');
+const ghostBookshelf = require('./base');
+const common = require('../lib/common');
+const validation = require('../data/validation');
+const settingsCache = require('../services/settings/cache');
+const internalContext = {context: {internal: true}};
+let Settings;
+let defaultSettings;
 
 const doBlock = fn => fn();
 
@@ -37,21 +37,22 @@ const getGhostKey = doBlock(() => {
 // It's much easier for us to work with it as a single level
 // instead of iterating those categories every time
 function parseDefaultSettings() {
-    var defaultSettingsInCategories = require('../data/schema/').defaultSettings,
-        defaultSettingsFlattened = {},
-        dynamicDefault = {
-            db_hash: () => uuid.v4(),
-            public_hash: () => crypto.randomBytes(15).toString('hex'),
-            // @TODO: session_secret would ideally be named "admin_session_secret"
-            session_secret: () => crypto.randomBytes(32).toString('hex'),
-            members_session_secret: () => crypto.randomBytes(32).toString('hex'),
-            theme_session_secret: () => crypto.randomBytes(32).toString('hex'),
-            members_public_key: () => getMembersKey('public'),
-            members_private_key: () => getMembersKey('private'),
-            members_email_auth_secret: () => crypto.randomBytes(64).toString('hex'),
-            ghost_public_key: () => getGhostKey('public'),
-            ghost_private_key: () => getGhostKey('private')
-        };
+    const defaultSettingsInCategories = require('../data/schema/').defaultSettings;
+    const defaultSettingsFlattened = {};
+
+    const dynamicDefault = {
+        db_hash: () => uuid.v4(),
+        public_hash: () => crypto.randomBytes(15).toString('hex'),
+        // @TODO: session_secret would ideally be named "admin_session_secret"
+        session_secret: () => crypto.randomBytes(32).toString('hex'),
+        members_session_secret: () => crypto.randomBytes(32).toString('hex'),
+        theme_session_secret: () => crypto.randomBytes(32).toString('hex'),
+        members_public_key: () => getMembersKey('public'),
+        members_private_key: () => getMembersKey('private'),
+        members_email_auth_secret: () => crypto.randomBytes(64).toString('hex'),
+        ghost_public_key: () => getGhostKey('public'),
+        ghost_private_key: () => getGhostKey('private')
+    };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
         _.each(settings, function each(setting, settingName) {
@@ -121,7 +122,7 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     onValidate: function onValidate() {
-        var self = this;
+        const self = this;
 
         return ghostBookshelf.Model.prototype.onValidate.apply(this, arguments)
             .then(function then() {
@@ -170,8 +171,8 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     edit: function (data, unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'edit'),
-            self = this;
+        const options = this.filterOptions(unfilteredOptions, 'edit');
+        const self = this;
 
         if (!Array.isArray(data)) {
             data = [data];
@@ -218,8 +219,8 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     populateDefaults: function populateDefaults(unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'populateDefaults'),
-            self = this;
+        const options = this.filterOptions(unfilteredOptions, 'populateDefaults');
+        const self = this;
 
         if (!options.context) {
             options.context = internalContext.context;
@@ -228,13 +229,14 @@ Settings = ghostBookshelf.Model.extend({
         return this
             .findAll(options)
             .then(function checkAllSettings(allSettings) {
-                var usedKeys = allSettings.models.map(function mapper(setting) {
-                        return setting.get('key');
-                    }),
-                    insertOperations = [];
+                const usedKeys = allSettings.models.map(function mapper(setting) {
+                    return setting.get('key');
+                });
+
+                const insertOperations = [];
 
                 _.each(getDefaultSettings(), function forEachDefault(defaultSetting, defaultSettingKey) {
-                    var isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
+                    const isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
                     if (isMissingFromDB) {
                         defaultSetting.value = defaultSetting.getDefaultValue();
                         insertOperations.push(Settings.forge(defaultSetting).save(null, options));

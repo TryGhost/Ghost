@@ -1,5 +1,5 @@
-const config = require('../../config'),
-    {logging} = require('ghost-ignition');
+const config = require('../../config');
+const {logging} = require('ghost-ignition');
 
 module.exports = logging({
     name: config.get('logging:name'),

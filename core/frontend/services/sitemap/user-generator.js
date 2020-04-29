@@ -1,6 +1,6 @@
-const _ = require('lodash'),
-    validator = require('validator'),
-    BaseMapGenerator = require('./base-generator');
+const _ = require('lodash');
+const validator = require('validator');
+const BaseMapGenerator = require('./base-generator');
 
 class UserMapGenerator extends BaseMapGenerator {
     constructor(opts) {

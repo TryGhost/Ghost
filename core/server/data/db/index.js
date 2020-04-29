@@ -1,4 +1,4 @@
-var connection;
+let connection;
 
 Object.defineProperty(exports, 'knex', {
     enumerable: true,

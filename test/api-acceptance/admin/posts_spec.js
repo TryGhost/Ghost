@@ -194,7 +194,7 @@ describe('Posts API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -219,7 +219,7 @@ describe('Posts API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.posts);
                 localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -243,7 +243,7 @@ describe('Posts API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.posts);
 

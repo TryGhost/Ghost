@@ -1,8 +1,8 @@
-var debug = require('ghost-ignition').debug('utils:image-size-cache'),
-    imageSize = require('./image-size'),
-    errors = require('@tryghost/errors'),
-    {logging} = require('../common'),
-    cache = {};
+const debug = require('ghost-ignition').debug('utils:image-size-cache');
+const imageSize = require('./image-size');
+const errors = require('@tryghost/errors');
+const {logging} = require('../common');
+const cache = {};
 
 /**
  * Get cached image size from URL

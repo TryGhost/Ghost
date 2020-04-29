@@ -1,7 +1,7 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    helpers = require('../../../core/frontend/helpers'),
-    common = require('../../../core/server/lib/common');
+const should = require('should');
+const sinon = require('sinon');
+const helpers = require('../../../core/frontend/helpers');
+const common = require('../../../core/server/lib/common');
 
 describe('{{#is}} helper', function () {
     afterEach(function () {
@@ -10,8 +10,8 @@ describe('{{#is}} helper', function () {
 
     // All positive tests
     it('should match single context "index"', function () {
-        var fn = sinon.spy(),
-            inverse = sinon.spy();
+        const fn = sinon.spy();
+        const inverse = sinon.spy();
 
         helpers.is.call(
             {},
@@ -24,8 +24,8 @@ describe('{{#is}} helper', function () {
     });
 
     it('should match OR context "index, paged"', function () {
-        var fn = sinon.spy(),
-            inverse = sinon.spy();
+        const fn = sinon.spy();
+        const inverse = sinon.spy();
 
         helpers.is.call(
             {},
@@ -38,8 +38,8 @@ describe('{{#is}} helper', function () {
     });
 
     it('should not match "paged"', function () {
-        var fn = sinon.spy(),
-            inverse = sinon.spy();
+        const fn = sinon.spy();
+        const inverse = sinon.spy();
 
         helpers.is.call(
             {},
@@ -52,9 +52,9 @@ describe('{{#is}} helper', function () {
     });
 
     it('should log warning with no args', function () {
-        var fn = sinon.spy(),
-            inverse = sinon.spy(),
-            logWarn = sinon.stub(common.logging, 'warn');
+        const fn = sinon.spy();
+        const inverse = sinon.spy();
+        const logWarn = sinon.stub(common.logging, 'warn');
 
         helpers.is.call(
             {},

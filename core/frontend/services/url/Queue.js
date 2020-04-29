@@ -1,7 +1,7 @@
-const debug = require('ghost-ignition').debug('services:url:queue'),
-    EventEmitter = require('events').EventEmitter,
-    _ = require('lodash'),
-    common = require('../../../server/lib/common');
+const debug = require('ghost-ignition').debug('services:url:queue');
+const EventEmitter = require('events').EventEmitter;
+const _ = require('lodash');
+const common = require('../../../server/lib/common');
 
 /**
  * ### Purpose of this queue
@@ -102,9 +102,9 @@ class Queue extends EventEmitter {
      * @param {Object} options
      */
     run(options) {
-        const event = options.event,
-            action = options.action,
-            eventData = options.eventData;
+        const event = options.event;
+        const action = options.action;
+        const eventData = options.eventData;
 
         clearTimeout(this.toNotify[action].timeout);
         this.toNotify[action].timeout = null;

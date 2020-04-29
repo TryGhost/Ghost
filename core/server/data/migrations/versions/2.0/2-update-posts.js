@@ -1,11 +1,11 @@
-const _ = require('lodash'),
-    Promise = require('bluebird'),
-    common = require('../../../../lib/common'),
-    mobiledocLib = require('../../../../lib/mobiledoc'),
-    message1 = 'Updating posts: apply new editor format and set comment_id field.',
-    message2 = 'Updated posts: apply new editor format and set comment_id field.',
-    message3 = 'Rollback: Updating posts: use old editor format',
-    message4 = 'Rollback: Updated posts: use old editor format';
+const _ = require('lodash');
+const Promise = require('bluebird');
+const common = require('../../../../lib/common');
+const mobiledocLib = require('../../../../lib/mobiledoc');
+const message1 = 'Updating posts: apply new editor format and set comment_id field.';
+const message2 = 'Updated posts: apply new editor format and set comment_id field.';
+const message3 = 'Rollback: Updating posts: use old editor format';
+const message4 = 'Rollback: Updated posts: use old editor format';
 
 module.exports.config = {
     transaction: true

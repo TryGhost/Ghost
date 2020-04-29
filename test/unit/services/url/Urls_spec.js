@@ -7,7 +7,8 @@ const common = require('../../../../core/server/lib/common');
 const Urls = require('../../../../core/frontend/services/url/Urls');
 
 describe('Unit: services/url/Urls', function () {
-    let urls, eventsToRemember;
+    let urls;
+    let eventsToRemember;
 
     beforeEach(function () {
         urls = new Urls();

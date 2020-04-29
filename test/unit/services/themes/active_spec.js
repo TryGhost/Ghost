@@ -1,10 +1,11 @@
-var should = require('should'),
-    sinon = require('sinon'),
+const should = require('should');
+const sinon = require('sinon');
+const config = require('../../../../core/server/config');
 
-    config = require('../../../../core/server/config'),
-    // is only exposed via themes.getActive()
-    activeTheme = require('../../../../core/frontend/services/themes/active'),
-    engine = require('../../../../core/frontend/services/themes/engine');
+// is only exposed via themes.getActive()
+const activeTheme = require('../../../../core/frontend/services/themes/active');
+
+const engine = require('../../../../core/frontend/services/themes/engine');
 
 describe('Themes', function () {
     afterEach(function () {
@@ -13,8 +14,11 @@ describe('Themes', function () {
 
     describe('Active', function () {
         describe('Mount', function () {
-            var engineStub, configStub,
-                fakeBlogApp, fakeLoadedTheme, fakeCheckedTheme;
+            let engineStub;
+            let configStub;
+            let fakeBlogApp;
+            let fakeLoadedTheme;
+            let fakeCheckedTheme;
 
             beforeEach(function () {
                 engineStub = sinon.stub(engine, 'configure');
@@ -42,7 +46,7 @@ describe('Themes', function () {
                 // setup partials
                 fakeCheckedTheme.partials = ['loop', 'navigation'];
 
-                var theme = activeTheme.set(fakeLoadedTheme, fakeCheckedTheme);
+                const theme = activeTheme.set(fakeLoadedTheme, fakeCheckedTheme);
 
                 // Check the theme is not yet mounted
                 activeTheme.get().mounted.should.be.false();
@@ -73,7 +77,7 @@ describe('Themes', function () {
                 // setup partials
                 fakeCheckedTheme.partials = [];
 
-                var theme = activeTheme.set(fakeLoadedTheme, fakeCheckedTheme);
+                const theme = activeTheme.set(fakeLoadedTheme, fakeCheckedTheme);
 
                 // Check the theme is not yet mounted
                 activeTheme.get().mounted.should.be.false();

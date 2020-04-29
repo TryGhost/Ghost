@@ -1,6 +1,6 @@
-const config = require('../../../server/config'),
-    Manager = require('./manager'),
-    manager = new Manager();
+const config = require('../../../server/config');
+const Manager = require('./manager');
+const manager = new Manager();
 
 // Responsible for handling requests for sitemap files
 module.exports = function handler(siteApp) {
@@ -22,8 +22,8 @@ module.exports = function handler(siteApp) {
     });
 
     siteApp.get('/sitemap-:resource.xml', verifyResourceType, function sitemapResourceXML(req, res) {
-        var type = req.params.resource,
-            page = 1;
+        const type = req.params.resource;
+        const page = 1;
 
         res.set({
             'Cache-Control': 'public, max-age=' + config.get('caching:sitemap:maxAge'),

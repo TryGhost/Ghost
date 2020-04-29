@@ -1,18 +1,19 @@
-var should = require('should'),
-    configUtils = require('../../../core/server/config/utils');
+const should = require('should');
+const configUtils = require('../../../core/server/config/utils');
 
 describe('UNIT: Config utils', function () {
     describe('makePathsAbsolute', function () {
         it('ensure we change paths only', function () {
-            var changedKey = [],
-                obj = {
-                    database: {
-                        client: 'mysql',
-                        connection: {
-                            filename: 'content/data/ghost.db'
-                        }
+            const changedKey = [];
+
+            const obj = {
+                database: {
+                    client: 'mysql',
+                    connection: {
+                        filename: 'content/data/ghost.db'
                     }
-                };
+                }
+            };
 
             this.set = function (key, value) {
                 changedKey.push([key, value]);
@@ -26,12 +27,13 @@ describe('UNIT: Config utils', function () {
         });
 
         it('ensure it skips non strings', function () {
-            var changedKey = [],
-                obj = {
-                    database: {
-                        test: 10
-                    }
-                };
+            const changedKey = [];
+
+            const obj = {
+                database: {
+                    test: 10
+                }
+            };
 
             this.set = function (key, value) {
                 changedKey.push([key, value]);
@@ -42,15 +44,16 @@ describe('UNIT: Config utils', function () {
         });
 
         it('ensure we don\'t change absolute paths', function () {
-            var changedKey = [],
-                obj = {
-                    database: {
-                        client: 'mysql',
-                        connection: {
-                            filename: '/content/data/ghost.db'
-                        }
+            const changedKey = [];
+
+            const obj = {
+                database: {
+                    client: 'mysql',
+                    connection: {
+                        filename: '/content/data/ghost.db'
                     }
-                };
+                }
+            };
 
             this.set = function (key, value) {
                 changedKey.push([key, value]);
@@ -61,12 +64,13 @@ describe('UNIT: Config utils', function () {
         });
 
         it('match paths on windows', function () {
-            var changedKey = [],
-                obj = {
-                    database: {
-                        filename: 'content\\data\\ghost.db'
-                    }
-                };
+            const changedKey = [];
+
+            const obj = {
+                database: {
+                    filename: 'content\\data\\ghost.db'
+                }
+            };
 
             this.set = function (key, value) {
                 changedKey.push([key, value]);

@@ -1,24 +1,25 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
-    moment = require('moment-timezone'),
-    rewire = require('rewire'),
-    _ = require('lodash'),
-    common = require('../../../../core/server/lib/common'),
-    models = require('../../../../core/server/models'),
-    testUtils = require('../../../utils'),
-    sequence = require('../../../../core/server/lib/promise/sequence');
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const moment = require('moment-timezone');
+const rewire = require('rewire');
+const _ = require('lodash');
+const common = require('../../../../core/server/lib/common');
+const models = require('../../../../core/server/models');
+const testUtils = require('../../../utils');
+const sequence = require('../../../../core/server/lib/promise/sequence');
 
 describe('Models: listeners', function () {
-    var eventsToRemember = {},
-        now = moment(),
-        listeners,
-        scope = {
-            posts: [],
-            publishedAtFutureMoment1: moment().add(2, 'days').startOf('hour'),
-            publishedAtFutureMoment2: moment().add(2, 'hours').startOf('hour'),
-            publishedAtFutureMoment3: moment().add(10, 'hours').startOf('hour')
-        };
+    const eventsToRemember = {};
+    const now = moment();
+    let listeners;
+
+    const scope = {
+        posts: [],
+        publishedAtFutureMoment1: moment().add(2, 'days').startOf('hour'),
+        publishedAtFutureMoment2: moment().add(2, 'hours').startOf('hour'),
+        publishedAtFutureMoment3: moment().add(10, 'hours').startOf('hour')
+    };
 
     before(testUtils.teardownDb);
 
@@ -40,7 +41,7 @@ describe('Models: listeners', function () {
     });
 
     describe('on timezone changed', function () {
-        var posts;
+        let posts;
 
         describe('db has scheduled posts', function () {
             beforeEach(function (done) {
@@ -77,7 +78,7 @@ describe('Models: listeners', function () {
             });
 
             it('active_timezone changes from London to Los Angeles', function (done) {
-                var timeout;
+                let timeout;
 
                 /**
                  * From London +1
@@ -108,23 +109,25 @@ describe('Models: listeners', function () {
                 (function retry() {
                     models.Post.findAll({context: {internal: true}})
                         .then(function (results) {
-                            var post1 = _.find(results.models, function (post) {
-                                    return post.get('title') === '1';
-                                }),
-                                post2 = _.find(results.models, function (post) {
-                                    return post.get('title') === '2';
-                                }),
-                                post3 = _.find(results.models, function (post) {
-                                    return post.get('title') === '3';
-                                });
+                            const post1 = _.find(results.models, function (post) {
+                                return post.get('title') === '1';
+                            });
+
+                            const post2 = _.find(results.models, function (post) {
+                                return post.get('title') === '2';
+                            });
+
+                            const post3 = _.find(results.models, function (post) {
+                                return post.get('title') === '3';
+                            });
 
                             if (results.models.length === posts.length &&
-                                post1.get('status') === 'scheduled' &&
-                                post2.get('status') === 'scheduled' &&
-                                post3.get('status') === 'scheduled' &&
-                                moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
-                                moment(post2.get('published_at')).diff(scope.publishedAtFutureMoment2.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
-                                moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
+                            post1.get('status') === 'scheduled' &&
+                            post2.get('status') === 'scheduled' &&
+                            post3.get('status') === 'scheduled' &&
+                            moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
+                            moment(post2.get('published_at')).diff(scope.publishedAtFutureMoment2.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
+                            moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
                                 return done();
                             }
 
@@ -136,7 +139,7 @@ describe('Models: listeners', function () {
             });
 
             it('active_timezone changes from Baghdad to UTC', function (done) {
-                var timeout;
+                let timeout;
 
                 /**
                  * From Baghdad +3
@@ -165,23 +168,25 @@ describe('Models: listeners', function () {
                 (function retry() {
                     models.Post.findAll({context: {internal: true}})
                         .then(function (results) {
-                            var post1 = _.find(results.models, function (post) {
-                                    return post.get('title') === '1';
-                                }),
-                                post2 = _.find(results.models, function (post) {
-                                    return post.get('title') === '2';
-                                }),
-                                post3 = _.find(results.models, function (post) {
-                                    return post.get('title') === '3';
-                                });
+                            const post1 = _.find(results.models, function (post) {
+                                return post.get('title') === '1';
+                            });
+
+                            const post2 = _.find(results.models, function (post) {
+                                return post.get('title') === '2';
+                            });
+
+                            const post3 = _.find(results.models, function (post) {
+                                return post.get('title') === '3';
+                            });
 
                             if (results.models.length === posts.length &&
-                                post1.get('status') === 'scheduled' &&
-                                post2.get('status') === 'scheduled' &&
-                                post3.get('status') === 'scheduled' &&
-                                moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
-                                moment(post2.get('published_at')).diff(scope.publishedAtFutureMoment2.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
-                                moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
+                            post1.get('status') === 'scheduled' &&
+                            post2.get('status') === 'scheduled' &&
+                            post3.get('status') === 'scheduled' &&
+                            moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
+                            moment(post2.get('published_at')).diff(scope.publishedAtFutureMoment2.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
+                            moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
                                 return done();
                             }
 
@@ -193,7 +198,7 @@ describe('Models: listeners', function () {
             });
 
             it('active_timezone changes from Amsterdam to Seoul', function (done) {
-                var timeout;
+                let timeout;
 
                 /**
                  * From Amsterdam +2
@@ -222,22 +227,24 @@ describe('Models: listeners', function () {
                 (function retry() {
                     models.Post.findAll({context: {internal: true}})
                         .then(function (results) {
-                            var post1 = _.find(results.models, function (post) {
-                                    return post.get('title') === '1';
-                                }),
-                                post2 = _.find(results.models, function (post) {
-                                    return post.get('title') === '2';
-                                }),
-                                post3 = _.find(results.models, function (post) {
-                                    return post.get('title') === '3';
-                                });
+                            const post1 = _.find(results.models, function (post) {
+                                return post.get('title') === '1';
+                            });
+
+                            const post2 = _.find(results.models, function (post) {
+                                return post.get('title') === '2';
+                            });
+
+                            const post3 = _.find(results.models, function (post) {
+                                return post.get('title') === '3';
+                            });
 
                             if (results.models.length === posts.length &&
-                                post1.get('status') === 'scheduled' &&
-                                post2.get('status') === 'draft' &&
-                                post3.get('status') === 'scheduled' &&
-                                moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
-                                moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
+                            post1.get('status') === 'scheduled' &&
+                            post2.get('status') === 'draft' &&
+                            post3.get('status') === 'scheduled' &&
+                            moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
+                            moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
                                 return done();
                             }
 
@@ -268,7 +275,7 @@ describe('Models: listeners', function () {
 
     describe('on notifications changed', function () {
         it('nothing to delete', function (done) {
-            var notifications = JSON.stringify([
+            const notifications = JSON.stringify([
                 {
                     addedAt: moment().subtract(1, 'week').format(),
                     seen: true
@@ -299,7 +306,7 @@ describe('Models: listeners', function () {
         });
 
         it('expect deletion', function (done) {
-            var notifications = JSON.stringify([
+            const notifications = JSON.stringify([
                 {
                     content: 'keep-1',
                     addedAt: moment().subtract(1, 'week').toDate(),

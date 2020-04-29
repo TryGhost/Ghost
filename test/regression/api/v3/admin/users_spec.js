@@ -8,7 +8,11 @@ const ghost = testUtils.startGhost;
 let request;
 
 describe('User API', function () {
-    let editor, author, ghostServer, otherAuthor, admin;
+    let editor;
+    let author;
+    let ghostServer;
+    let otherAuthor;
+    let admin;
 
     describe('As Owner', function () {
         before(function () {
@@ -55,7 +59,7 @@ describe('User API', function () {
                         }
 
                         should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
+                        const jsonResponse = res.body;
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.errors);
                         testUtils.API.checkResponseValue(jsonResponse.errors[0], [
@@ -85,7 +89,7 @@ describe('User API', function () {
                         }
 
                         should.not.exist(res.headers['x-cache-invalidate']);
-                        var jsonResponse = res.body;
+                        const jsonResponse = res.body;
                         should.exist(jsonResponse);
                         should.exist(jsonResponse.errors);
                         testUtils.API.checkResponseValue(jsonResponse.errors[0], [

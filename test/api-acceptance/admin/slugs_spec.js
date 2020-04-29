@@ -1,11 +1,10 @@
-var should = require('should'),
-    supertest = require('supertest'),
-    testUtils = require('../../utils'),
-    config = require('../../../core/server/config'),
-    localUtils = require('./utils'),
-
-    ghost = testUtils.startGhost,
-    request;
+const should = require('should');
+const supertest = require('supertest');
+const testUtils = require('../../utils');
+const config = require('../../../core/server/config');
+const localUtils = require('./utils');
+const ghost = testUtils.startGhost;
+let request;
 
 describe('Slug API', function () {
     let ghostServer;
@@ -33,7 +32,7 @@ describe('Slug API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.slugs);
                 jsonResponse.slugs.should.have.length(1);

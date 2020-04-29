@@ -1,24 +1,26 @@
-const _ = require('lodash'),
-    Promise = require('bluebird'),
-    validator = require('validator'),
-    ObjectId = require('bson-objectid'),
-    ghostBookshelf = require('./base'),
-    baseUtils = require('./base/utils'),
-    common = require('../lib/common'),
-    security = require('../lib/security'),
-    imageLib = require('../lib/image'),
-    pipeline = require('../lib/promise/pipeline'),
-    validation = require('../data/validation'),
-    permissions = require('../services/permissions'),
-    activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'],
-    /**
-     * inactive: owner user before blog setup, suspended users
-     * locked user: imported users, they get a random password
-     */
-    inactiveStates = ['inactive', 'locked'],
-    allStates = activeStates.concat(inactiveStates);
+const _ = require('lodash');
+const Promise = require('bluebird');
+const validator = require('validator');
+const ObjectId = require('bson-objectid');
+const ghostBookshelf = require('./base');
+const baseUtils = require('./base/utils');
+const common = require('../lib/common');
+const security = require('../lib/security');
+const imageLib = require('../lib/image');
+const pipeline = require('../lib/promise/pipeline');
+const validation = require('../data/validation');
+const permissions = require('../services/permissions');
+const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
 
-let User, Users;
+/**
+ * inactive: owner user before blog setup, suspended users
+ * locked user: imported users, they get a random password
+ */
+const inactiveStates = ['inactive', 'locked'];
+
+const allStates = activeStates.concat(inactiveStates);
+let User;
+let Users;
 
 User = ghostBookshelf.Model.extend({
 
@@ -106,9 +108,9 @@ User = ghostBookshelf.Model.extend({
      * Generating a slug requires a db call to look for conflicting slugs
      */
     onSaving: function onSaving(newPage, attr, options) {
-        var self = this,
-            tasks = [],
-            passwordValidation = {};
+        const self = this;
+        const tasks = [];
+        let passwordValidation = {};
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
@@ -210,8 +212,8 @@ User = ghostBookshelf.Model.extend({
     },
 
     toJSON: function toJSON(unfilteredOptions) {
-        var options = User.filterOptions(unfilteredOptions, 'toJSON'),
-            attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        const options = User.filterOptions(unfilteredOptions, 'toJSON');
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         // remove password hash for security reasons
         delete attrs.password;
@@ -247,7 +249,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     hasRole: function hasRole(roleName) {
-        var roles = this.related('roles');
+        const roles = this.related('roles');
 
         return roles.some(function getRole(role) {
             return role.get('name') === roleName;
@@ -336,18 +338,18 @@ User = ghostBookshelf.Model.extend({
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName, options) {
-        var permittedOptionsToReturn = ghostBookshelf.Model.permittedOptions.call(this, methodName),
+        let permittedOptionsToReturn = ghostBookshelf.Model.permittedOptions.call(this, methodName);
 
-            // whitelists for the `options` hash argument on methods, by method name.
-            // these are the only options that can be passed to Bookshelf / Knex.
-            validOptions = {
-                findOne: ['withRelated', 'status'],
-                setup: ['id'],
-                edit: ['withRelated', 'importPersistUser'],
-                add: ['importPersistUser'],
-                findPage: ['status'],
-                findAll: ['filter']
-            };
+        // whitelists for the `options` hash argument on methods, by method name.
+        // these are the only options that can be passed to Bookshelf / Knex.
+        const validOptions = {
+            findOne: ['withRelated', 'status'],
+            setup: ['id'],
+            edit: ['withRelated', 'importPersistUser'],
+            add: ['importPersistUser'],
+            findPage: ['status'],
+            findAll: ['filter']
+        };
 
         if (validOptions[methodName]) {
             permittedOptionsToReturn = permittedOptionsToReturn.concat(validOptions[methodName]);
@@ -377,11 +379,11 @@ User = ghostBookshelf.Model.extend({
      * **See:** [ghostBookshelf.Model.findOne](base.js.html#Find%20One)
      */
     findOne: function findOne(dataToClone, unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'findOne'),
-            query,
-            status,
-            data = _.cloneDeep(dataToClone),
-            lookupRole = data.role;
+        const options = this.filterOptions(unfilteredOptions, 'findOne');
+        let query;
+        let status;
+        let data = _.cloneDeep(dataToClone);
+        const lookupRole = data.role;
 
         // Ensure only valid fields/columns are added to query
         if (options.columns) {
@@ -428,9 +430,9 @@ User = ghostBookshelf.Model.extend({
      * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
      */
     edit: function edit(data, unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'edit'),
-            self = this,
-            ops = [];
+        const options = this.filterOptions(unfilteredOptions, 'edit');
+        const self = this;
+        const ops = [];
 
         if (data.roles && data.roles.length > 1) {
             return Promise.reject(
@@ -454,7 +456,7 @@ User = ghostBookshelf.Model.extend({
 
         ops.push(function update() {
             return ghostBookshelf.Model.edit.call(self, data, options).then((user) => {
-                var roleId;
+                let roleId;
 
                 if (!data.roles) {
                     return user;
@@ -506,11 +508,11 @@ User = ghostBookshelf.Model.extend({
      * **See:** [ghostBookshelf.Model.add](base.js.html#Add)
      */
     add: function add(dataToClone, unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'add'),
-            self = this,
-            data = _.cloneDeep(dataToClone),
-            userData = this.filterData(data),
-            roles;
+        const options = this.filterOptions(unfilteredOptions, 'add');
+        const self = this;
+        const data = _.cloneDeep(dataToClone);
+        let userData = this.filterData(data);
+        let roles;
 
         // check for too many roles
         if (data.roles && data.roles.length > 1) {
@@ -599,10 +601,10 @@ User = ghostBookshelf.Model.extend({
      * @TODO: kill setup function?
      */
     setup: function setup(data, unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'setup'),
-            self = this,
-            userData = this.filterData(data),
-            passwordValidation = {};
+        const options = this.filterOptions(unfilteredOptions, 'setup');
+        const self = this;
+        const userData = this.filterData(data);
+        let passwordValidation = {};
 
         passwordValidation = validation.validatePassword(userData.password, userData.email, data.blogTitle);
 
@@ -649,9 +651,9 @@ User = ghostBookshelf.Model.extend({
     },
 
     permissible: function permissible(userModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
-        var self = this,
-            userModel = userModelOrId,
-            origArgs;
+        const self = this;
+        const userModel = userModelOrId;
+        let origArgs;
 
         // If we passed in a model without its related roles, we need to fetch it again
         if (_.isObject(userModelOrId) && !_.isObject(userModelOrId.related('roles'))) {
@@ -674,7 +676,7 @@ User = ghostBookshelf.Model.extend({
                 }
 
                 // Build up the original args but substitute with actual model
-                var newArgs = [foundUserModel].concat(origArgs);
+                const newArgs = [foundUserModel].concat(origArgs);
 
                 return self.permissible.apply(self, newArgs);
             });
@@ -792,7 +794,7 @@ User = ghostBookshelf.Model.extend({
     // Finds the user by email, and checks the password
     // @TODO: shorten this function and rename...
     check: function check(object) {
-        var self = this;
+        const self = this;
 
         return this.getByEmail(object.email)
             .then((user) => {
@@ -835,8 +837,8 @@ User = ghostBookshelf.Model.extend({
     },
 
     isPasswordCorrect: function isPasswordCorrect(object) {
-        var plainPassword = object.plainPassword,
-            hashedPassword = object.hashedPassword;
+        const plainPassword = object.plainPassword;
+        const hashedPassword = object.hashedPassword;
 
         if (!plainPassword || !hashedPassword) {
             return Promise.reject(new common.errors.ValidationError({
@@ -960,7 +962,7 @@ User = ghostBookshelf.Model.extend({
     // When multi-user support is added, email addresses must be deduplicated with case insensitivity, so that
     // joe@bloggs.com and JOE@BLOGGS.COM cannot be created as two separate users.
     getByEmail: function getByEmail(email, unfilteredOptions) {
-        var options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'getByEmail');
+        const options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'getByEmail');
 
         // We fetch all users and process them in JS as there is no easy way to make this query across all DBs
         // Although they all support `lower()`, sqlite can't case transform unicode characters
@@ -969,7 +971,7 @@ User = ghostBookshelf.Model.extend({
         options.require = true;
 
         return Users.forge().fetch(options).then(function then(users) {
-            var userWithEmail = users.find(function findUser(user) {
+            const userWithEmail = users.find(function findUser(user) {
                 return user.get('email').toLowerCase() === email.toLowerCase();
             });
 

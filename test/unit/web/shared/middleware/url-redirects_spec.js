@@ -9,7 +9,10 @@ const getFrontendRedirectUrl = urlRedirects.__get__('_private.getFrontendRedirec
 const redirect = urlRedirects.__get__('_private.redirect');
 
 describe('UNIT: url redirects', function () {
-    let res, req, next, host;
+    let res;
+    let req;
+    let next;
+    let host;
 
     beforeEach(function () {
         req = {

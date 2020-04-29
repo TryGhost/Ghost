@@ -36,7 +36,7 @@ describe('Notifications API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201)
             .then(function (res) {
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
 
                 should.exist(jsonResponse.notifications);
 

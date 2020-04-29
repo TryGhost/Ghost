@@ -2,12 +2,13 @@
 //
 // Figure out which template should be used to render a request
 // based on the templates which are allowed, and what is available in the theme
-const _ = require('lodash'),
-    path = require('path'),
-    url = require('url'),
-    config = require('../../../../server/config'),
-    themes = require('../../themes'),
-    _private = {};
+const _ = require('lodash');
+
+const path = require('path');
+const url = require('url');
+const config = require('../../../../server/config');
+const themes = require('../../themes');
+const _private = {};
 
 /**
  * @description Get Error Template Hierarchy
@@ -20,8 +21,8 @@ const _ = require('lodash'),
  * @returns {String[]}
  */
 _private.getErrorTemplateHierarchy = function getErrorTemplateHierarchy(statusCode) {
-    const errorCode = _.toString(statusCode),
-        templateList = ['error'];
+    const errorCode = _.toString(statusCode);
+    const templateList = ['error'];
 
     // Add error class template: E.g. error-4xx.hbs or error-5xx.hbs
     templateList.unshift('error-' + errorCode[0] + 'xx');
@@ -141,20 +142,20 @@ _private.pickTemplate = function pickTemplate(templateList, fallback) {
 };
 
 _private.getTemplateForEntry = function getTemplateForEntry(postObject) {
-    const templateList = _private.getEntryTemplateHierarchy(postObject),
-        fallback = templateList[templateList.length - 1];
+    const templateList = _private.getEntryTemplateHierarchy(postObject);
+    const fallback = templateList[templateList.length - 1];
     return _private.pickTemplate(templateList, fallback);
 };
 
 _private.getTemplateForEntries = function getTemplateForEntries(routerOptions, requestOptions) {
-    const templateList = _private.getEntriesTemplateHierarchy(routerOptions, requestOptions),
-        fallback = templateList[templateList.length - 1];
+    const templateList = _private.getEntriesTemplateHierarchy(routerOptions, requestOptions);
+    const fallback = templateList[templateList.length - 1];
     return _private.pickTemplate(templateList, fallback);
 };
 
 _private.getTemplateForError = function getTemplateForError(statusCode) {
-    const templateList = _private.getErrorTemplateHierarchy(statusCode),
-        fallback = path.resolve(config.get('paths').defaultViews, 'error.hbs');
+    const templateList = _private.getErrorTemplateHierarchy(statusCode);
+    const fallback = path.resolve(config.get('paths').defaultViews, 'error.hbs');
     return _private.pickTemplate(templateList, fallback);
 };
 

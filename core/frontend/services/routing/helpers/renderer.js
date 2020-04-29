@@ -1,6 +1,6 @@
-const debug = require('ghost-ignition').debug('services:routing:helpers:renderer'),
-    setContext = require('./context'),
-    templates = require('./templates');
+const debug = require('ghost-ignition').debug('services:routing:helpers:renderer');
+const setContext = require('./context');
+const templates = require('./templates');
 
 /**
  * @description Helper function to finally render the data.

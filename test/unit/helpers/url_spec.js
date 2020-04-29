@@ -1,12 +1,12 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
-    testUtils = require('../../utils'),
-    urlUtils = require('../../utils/urlUtils'),
-    markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc,
-    helpers = require('../../../core/frontend/helpers'),
-    urlService = require('../../../core/frontend/services/url'),
-    api = require('../../../core/server/api');
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const testUtils = require('../../utils');
+const urlUtils = require('../../utils/urlUtils');
+const markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
+const helpers = require('../../../core/frontend/helpers');
+const urlService = require('../../../core/frontend/services/url');
+const api = require('../../../core/server/api');
 
 describe('{{url}} helper', function () {
     let rendered;

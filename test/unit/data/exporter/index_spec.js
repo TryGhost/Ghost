@@ -1,16 +1,18 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    rewire = require('rewire'),
-    Promise = require('bluebird'),
-    db = require('../../../../core/server/data/db'),
-    common = require('../../../../core/server/lib/common'),
-    exporter = rewire('../../../../core/server/data/exporter'),
-    schema = require('../../../../core/server/data/schema'),
-    models = require('../../../../core/server/models'),
-    schemaTables = Object.keys(schema.tables);
+const should = require('should');
+const sinon = require('sinon');
+const rewire = require('rewire');
+const Promise = require('bluebird');
+const db = require('../../../../core/server/data/db');
+const common = require('../../../../core/server/lib/common');
+const exporter = rewire('../../../../core/server/data/exporter');
+const schema = require('../../../../core/server/data/schema');
+const models = require('../../../../core/server/models');
+const schemaTables = Object.keys(schema.tables);
 
 describe('Exporter', function () {
-    var tablesStub, queryMock, knexMock;
+    let tablesStub;
+    let queryMock;
+    let knexMock;
 
     before(function () {
         models.init();
@@ -47,7 +49,7 @@ describe('Exporter', function () {
             // Execute
             exporter.doExport().then(function (exportData) {
                 // No tables, less the number of excluded tables
-                var expectedCallCount = schemaTables.length - exporter.EXCLUDED_TABLES.length;
+                const expectedCallCount = schemaTables.length - exporter.EXCLUDED_TABLES.length;
 
                 should.exist(exportData);
 
@@ -145,7 +147,7 @@ describe('Exporter', function () {
 
     describe('exportFileName', function () {
         it('should return a correctly structured filename', function (done) {
-            var settingsStub = sinon.stub(models.Settings, 'findOne').returns(
+            const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
                 new Promise.resolve({
                     get: function () {
                         return 'testblog';
@@ -163,7 +165,7 @@ describe('Exporter', function () {
         });
 
         it('should return a correctly structured filename if settings is empty', function (done) {
-            var settingsStub = sinon.stub(models.Settings, 'findOne').returns(
+            const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
                 new Promise.resolve()
             );
 
@@ -177,7 +179,7 @@ describe('Exporter', function () {
         });
 
         it('should return a correctly structured filename if settings errors', function (done) {
-            var settingsStub = sinon.stub(models.Settings, 'findOne').returns(
+            const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
                 new Promise.reject()
             );
 

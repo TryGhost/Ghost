@@ -1,16 +1,16 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    testUtils = require('../../../utils'),
-    Promise = require('bluebird'),
-    _ = require('lodash'),
-    models = require('../../../../core/server/models'),
-    permissions = require('../../../../core/server/services/permissions'),
-    providers = require('../../../../core/server/services/permissions/providers');
+const should = require('should');
+const sinon = require('sinon');
+const testUtils = require('../../../utils');
+const Promise = require('bluebird');
+const _ = require('lodash');
+const models = require('../../../../core/server/models');
+const permissions = require('../../../../core/server/services/permissions');
+const providers = require('../../../../core/server/services/permissions/providers');
 
 describe('Permissions', function () {
-    var fakePermissions = [],
-        findPostSpy,
-        findTagSpy;
+    let fakePermissions = [];
+    let findPostSpy;
+    let findTagSpy;
 
     before(function () {
         models.init();
@@ -23,8 +23,9 @@ describe('Permissions', function () {
 
         findPostSpy = sinon.stub(models.Post, 'findOne').callsFake(function () {
             // @TODO: the test env has no concept of including relations
-            let post = models.Post.forge(testUtils.DataGenerator.Content.posts[0]),
-                authors = [testUtils.DataGenerator.Content.users[0]];
+            let post = models.Post.forge(testUtils.DataGenerator.Content.posts[0]);
+
+            let authors = [testUtils.DataGenerator.Content.users[0]];
 
             post.related('authors').set(authors);
             return Promise.resolve(post);
@@ -54,12 +55,12 @@ describe('Permissions', function () {
     function loadFakePermissions(options) {
         options = options || {};
 
-        var fixturePermissions = _.cloneDeep(testUtils.DataGenerator.Content.permissions),
-            extraPerm = {
-                name: 'test',
-                action_type: 'edit',
-                object_type: 'post'
-            };
+        const fixturePermissions = _.cloneDeep(testUtils.DataGenerator.Content.permissions);
+        const extraPerm = {
+            name: 'test',
+            action_type: 'edit',
+            object_type: 'post'
+        };
 
         if (options.extra) {
             fixturePermissions.push(extraPerm);
@@ -78,7 +79,7 @@ describe('Permissions', function () {
         });
 
         it('canThisResult gets build properly', function () {
-            var canThisResult = permissions.canThis();
+            const canThisResult = permissions.canThis();
 
             canThisResult.browse.should.be.an.Object();
             canThisResult.browse.post.should.be.a.Function();
@@ -244,7 +245,7 @@ describe('Permissions', function () {
             // It can depend on bookshelf, but should NOT use hard coded model knowledge.
             // We use the tag model here because it doesn't have permissible, once that changes, these tests must also change
             it('No permissions: cannot edit tag (no permissible function on model)', function (done) {
-                var userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: [],
@@ -267,7 +268,7 @@ describe('Permissions', function () {
             });
 
             it('With permissions: can edit specific tag (no permissible function on model)', function (done) {
-                var userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
@@ -288,7 +289,7 @@ describe('Permissions', function () {
             });
 
             it('With permissions: can edit non-specific tag (no permissible function on model)', function (done) {
-                var userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
@@ -309,7 +310,7 @@ describe('Permissions', function () {
             });
 
             it('Specific permissions: can edit correct specific tag (no permissible function on model)', function (done) {
-                var userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge([
@@ -338,7 +339,7 @@ describe('Permissions', function () {
             });
 
             it('Specific permissions: cannot edit incorrect specific tag (no permissible function on model)', function (done) {
-                var userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge([
@@ -370,7 +371,7 @@ describe('Permissions', function () {
 
             // @TODO fix this case - it makes no sense?!
             it('Specific permissions: CAN edit non-specific tag (no permissible function on model) @TODO fix this', function (done) {
-                var userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge([
@@ -399,7 +400,7 @@ describe('Permissions', function () {
             });
 
             it('With owner role: can edit tag (no permissible function on model)', function (done) {
-                var userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: [],
@@ -452,16 +453,17 @@ describe('Permissions', function () {
 
     describe('permissible (overridden)', function () {
         it('can use permissible function on model to forbid something (post model)', function (done) {
-            var userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
-                    // Fake the response from providers.user, which contains permissions and roles
-                    return Promise.resolve({
-                        permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
-                        roles: undefined
-                    });
-                }),
-                permissibleStub = sinon.stub(models.Post, 'permissible').callsFake(function () {
-                    return Promise.reject({message: 'Hello World!'});
+            const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                // Fake the response from providers.user, which contains permissions and roles
+                return Promise.resolve({
+                    permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                    roles: undefined
                 });
+            });
+
+            const permissibleStub = sinon.stub(models.Post, 'permissible').callsFake(function () {
+                return Promise.reject({message: 'Hello World!'});
+            });
 
             permissions
                 .canThis({user: {}}) // user context
@@ -489,16 +491,17 @@ describe('Permissions', function () {
         });
 
         it('can use permissible function on model to allow something (post model)', function (done) {
-            var userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
-                    // Fake the response from providers.user, which contains permissions and roles
-                    return Promise.resolve({
-                        permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
-                        roles: undefined
-                    });
-                }),
-                permissibleStub = sinon.stub(models.Post, 'permissible').callsFake(function () {
-                    return Promise.resolve();
+            const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+                // Fake the response from providers.user, which contains permissions and roles
+                return Promise.resolve({
+                    permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
+                    roles: undefined
                 });
+            });
+
+            const permissibleStub = sinon.stub(models.Post, 'permissible').callsFake(function () {
+                return Promise.resolve();
+            });
 
             permissions
                 .canThis({user: {}}) // user context

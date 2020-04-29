@@ -8,5 +8,9 @@
     ],
     "extends": [
         "plugin:ghost/node"
-    ]
+    ],
+    "rules": {
+        "no-var": "error",
+        "one-var": [2, "never"]
+    }
 }

@@ -9,7 +9,13 @@ const helpers = require('../../../../../core/frontend/services/routing/helpers')
 const EDITOR_URL = `/editor/post/`;
 
 describe('Unit - services/routing/controllers/entry', function () {
-    let req, res, entryLookUpStub, secureStub, renderStub, post, page;
+    let req;
+    let res;
+    let entryLookUpStub;
+    let secureStub;
+    let renderStub;
+    let post;
+    let page;
 
     beforeEach(function () {
         post = testUtils.DataGenerator.forKnex.createPost();

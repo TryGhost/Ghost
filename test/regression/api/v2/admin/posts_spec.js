@@ -105,7 +105,7 @@ describe('Posts API (v2)', function () {
                     }
 
                     should.not.exist(res.headers['x-cache-invalidate']);
-                    var jsonResponse = res.body;
+                    const jsonResponse = res.body;
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.errors);
                     testUtils.API.checkResponseValue(jsonResponse.errors[0], [

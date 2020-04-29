@@ -27,9 +27,9 @@ function isISO8601(date) {
 
 // make sure the API only returns expected properties only
 function checkResponseValue(jsonResponse, expectedProperties) {
-    var providedProperties = _.keys(jsonResponse),
-        missing = _.difference(expectedProperties, providedProperties),
-        unexpected = _.difference(providedProperties, expectedProperties);
+    const providedProperties = _.keys(jsonResponse);
+    const missing = _.difference(expectedProperties, providedProperties);
+    const unexpected = _.difference(providedProperties, expectedProperties);
 
     _.each(missing, function (prop) {
         jsonResponse.should.have.property(prop);

@@ -7,9 +7,10 @@ const _ = require('lodash');
 
 // We use the name ghost_foot to match the helper for consistency:
 module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
-    var foot = [],
-        globalCodeinjection = settingsCache.get('ghost_foot'),
-        postCodeinjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_foot : null;
+    const foot = [];
+
+    const globalCodeinjection = settingsCache.get('ghost_foot');
+    const postCodeinjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_foot : null;
 
     if (!_.isEmpty(globalCodeinjection)) {
         foot.push(globalCodeinjection);

@@ -1,10 +1,10 @@
-const _ = require('lodash'),
-    Promise = require('bluebird'),
-    common = require('../../../../lib/common'),
-    models = require('../../../../models'),
-    message1 = 'Removing `koenigEditor` from labs.',
-    message2 = 'Removed `koenigEditor` from labs.',
-    message3 = 'Rollback: Please re-enable König Beta if required. We can\'t rollback this change.';
+const _ = require('lodash');
+const Promise = require('bluebird');
+const common = require('../../../../lib/common');
+const models = require('../../../../models');
+const message1 = 'Removing `koenigEditor` from labs.';
+const message2 = 'Removed `koenigEditor` from labs.';
+const message3 = 'Rollback: Please re-enable König Beta if required. We can\'t rollback this change.';
 
 module.exports.config = {
     transaction: true

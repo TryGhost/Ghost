@@ -1,12 +1,12 @@
-var _ = require('lodash'),
-    uuid = require('uuid'),
-    ObjectId = require('bson-objectid'),
-    moment = require('moment'),
-    constants = require('../../../core/server/lib/constants'),
-    DataGenerator = {};
+const _ = require('lodash');
+const uuid = require('uuid');
+const ObjectId = require('bson-objectid');
+const moment = require('moment');
+const constants = require('../../../core/server/lib/constants');
+const DataGenerator = {};
 
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
-    var mobiledoc = {
+    const mobiledoc = {
         version: '0.3.1',
         markups: [],
         atoms: [],
@@ -401,7 +401,7 @@ DataGenerator.Content.emails[1].post_id = DataGenerator.Content.posts[1].id;
 
 DataGenerator.forKnex = (function () {
     function createBasic(overrides) {
-        var newObj = _.cloneDeep(overrides);
+        const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
             id: ObjectId.generate(),
@@ -413,7 +413,7 @@ DataGenerator.forKnex = (function () {
     }
 
     function createTag(overrides) {
-        var newObj = _.cloneDeep(overrides);
+        const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
             id: ObjectId.generate(),
@@ -434,8 +434,8 @@ DataGenerator.forKnex = (function () {
     function createPost(overrides) {
         overrides = overrides || {};
 
-        var newObj = _.cloneDeep(overrides),
-            mobiledocObj;
+        const newObj = _.cloneDeep(overrides);
+        let mobiledocObj;
 
         if (!newObj.mobiledoc) {
             newObj.mobiledoc = DataGenerator.markdownToMobiledoc('## markdown');
@@ -485,7 +485,7 @@ DataGenerator.forKnex = (function () {
     }
 
     function createUser(overrides) {
-        var newObj = _.cloneDeep(overrides || {});
+        const newObj = _.cloneDeep(overrides || {});
 
         if (!newObj.slug) {
             newObj.slug = 'slug_' + Date.now();
@@ -515,8 +515,8 @@ DataGenerator.forKnex = (function () {
     function createClient(overrides) {
         overrides = overrides || {};
 
-        var newObj = _.cloneDeep(overrides),
-            basics = createBasic(newObj);
+        const newObj = _.cloneDeep(overrides);
+        const basics = createBasic(newObj);
 
         return _.defaults(newObj, {
             id: ObjectId.generate(),
@@ -591,7 +591,7 @@ DataGenerator.forKnex = (function () {
     }
 
     function createToken(overrides) {
-        var newObj = _.cloneDeep(overrides);
+        const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
             id: ObjectId.generate(),
@@ -601,7 +601,7 @@ DataGenerator.forKnex = (function () {
     }
 
     function createInvite(overrides) {
-        var newObj = _.cloneDeep(overrides);
+        const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
             id: ObjectId.generate(),
@@ -616,7 +616,7 @@ DataGenerator.forKnex = (function () {
     }
 
     function createWebhook(overrides) {
-        var newObj = _.cloneDeep(overrides);
+        const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
             id: ObjectId.generate(),
@@ -630,7 +630,7 @@ DataGenerator.forKnex = (function () {
     }
 
     function createIntegration(overrides) {
-        var newObj = _.cloneDeep(overrides);
+        const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
             id: ObjectId.generate(),
@@ -874,10 +874,10 @@ DataGenerator.forKnex = (function () {
 
 // @TODO: this logic only exists because we are now using our models :/
 DataGenerator.forModel = (function () {
-    var posts,
-        tags,
-        users,
-        roles;
+    let posts;
+    let tags;
+    let users;
+    let roles;
 
     posts = _.map(DataGenerator.Content.posts, function (post) {
         return _.pick(post, 'title', 'mobiledoc');

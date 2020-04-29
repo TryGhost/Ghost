@@ -1,11 +1,12 @@
 // # Pagination
 //
 // Extends Bookshelf.Model with a `fetchPage` method. Handles everything to do with paginated requests.
-var _ = require('lodash'),
-    common = require('../../lib/common'),
-    defaults,
-    paginationUtils,
-    pagination;
+const _ = require('lodash');
+
+const common = require('../../lib/common');
+let defaults;
+let paginationUtils;
+let pagination;
 
 /**
  * ### Default pagination values
@@ -65,15 +66,16 @@ paginationUtils = {
      * @returns {pagination} pagination metadata
      */
     formatResponse: function formatResponse(totalItems, options) {
-        var calcPages = Math.ceil(totalItems / options.limit) || 0,
-            pagination = {
-                page: options.page || defaults.page,
-                limit: options.limit,
-                pages: calcPages === 0 ? 1 : calcPages,
-                total: totalItems,
-                next: null,
-                prev: null
-            };
+        const calcPages = Math.ceil(totalItems / options.limit) || 0;
+
+        const pagination = {
+            page: options.page || defaults.page,
+            limit: options.limit,
+            pages: calcPages === 0 ? 1 : calcPages,
+            total: totalItems,
+            next: null,
+            prev: null
+        };
 
         if (pagination.pages > 1) {
             if (pagination.page === 1) {
@@ -142,9 +144,10 @@ pagination = function pagination(bookshelf) {
             options = paginationUtils.parseOptions(options);
 
             // Get the table name and idAttribute for this model
-            var tableName = _.result(this.constructor.prototype, 'tableName'),
-                idAttribute = _.result(this.constructor.prototype, 'idAttribute'),
-                self = this;
+            const tableName = _.result(this.constructor.prototype, 'tableName');
+
+            const idAttribute = _.result(this.constructor.prototype, 'idAttribute');
+            const self = this;
 
             let countPromise;
             if (options.transacting) {

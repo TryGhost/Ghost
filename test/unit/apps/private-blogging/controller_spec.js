@@ -1,12 +1,15 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    path = require('path'),
-    configUtils = require('../../../utils/configUtils'),
-    themes = require('../../../../core/frontend/services/themes'),
-    privateController = require('../../../../core/frontend/apps/private-blogging/lib/router');
+const should = require('should');
+const sinon = require('sinon');
+const path = require('path');
+const configUtils = require('../../../utils/configUtils');
+const themes = require('../../../../core/frontend/services/themes');
+const privateController = require('../../../../core/frontend/apps/private-blogging/lib/router');
 
 describe('Private Controller', function () {
-    var res, req, defaultPath, hasTemplateStub;
+    let res;
+    let req;
+    let defaultPath;
+    let hasTemplateStub;
 
     // Helper function to prevent unit tests
     // from failing via timeout when they

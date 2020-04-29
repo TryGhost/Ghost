@@ -1,16 +1,16 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    _ = require('lodash'),
-    nock = require('nock'),
-    http = require('http'),
-    rewire = require('rewire'),
-    testUtils = require('../../utils'),
-    configUtils = require('../../utils/configUtils'),
-    xmlrpc = rewire('../../../core/server/services/xmlrpc'),
-    common = require('../../../core/server/lib/common');
+const should = require('should');
+const sinon = require('sinon');
+const _ = require('lodash');
+const nock = require('nock');
+const http = require('http');
+const rewire = require('rewire');
+const testUtils = require('../../utils');
+const configUtils = require('../../utils/configUtils');
+const xmlrpc = rewire('../../../core/server/services/xmlrpc');
+const common = require('../../../core/server/lib/common');
 
 describe('XMLRPC', function () {
-    var eventStub;
+    let eventStub;
 
     beforeEach(function () {
         eventStub = sinon.stub(common.events, 'on');
@@ -30,15 +30,17 @@ describe('XMLRPC', function () {
     });
 
     it('listener() calls ping() with toJSONified model', function () {
-        var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
-            testModel = {
-                toJSON: function () {
-                    return testPost;
-                }
-            },
-            pingStub = sinon.stub(),
-            resetXmlRpc = xmlrpc.__set__('ping', pingStub),
-            listener = xmlrpc.__get__('listener');
+        const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+        const testModel = {
+            toJSON: function () {
+                return testPost;
+            }
+        };
+
+        const pingStub = sinon.stub();
+        const resetXmlRpc = xmlrpc.__set__('ping', pingStub);
+        const listener = xmlrpc.__get__('listener');
 
         listener(testModel);
 
@@ -50,15 +52,17 @@ describe('XMLRPC', function () {
     });
 
     it('listener() does not call ping() when importing', function () {
-        var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
-            testModel = {
-                toJSON: function () {
-                    return testPost;
-                }
-            },
-            pingStub = sinon.stub(),
-            resetXmlRpc = xmlrpc.__set__('ping', pingStub),
-            listener = xmlrpc.__get__('listener');
+        const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+        const testModel = {
+            toJSON: function () {
+                return testPost;
+            }
+        };
+
+        const pingStub = sinon.stub();
+        const resetXmlRpc = xmlrpc.__set__('ping', pingStub);
+        const listener = xmlrpc.__get__('listener');
 
         listener(testModel, {importing: true});
 
@@ -69,11 +73,11 @@ describe('XMLRPC', function () {
     });
 
     describe('ping()', function () {
-        var ping = xmlrpc.__get__('ping');
+        const ping = xmlrpc.__get__('ping');
 
         it('with a post should execute two pings', function (done) {
-            var ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200),
-                testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+            const ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200);
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
             ping(testPost);
 
@@ -87,8 +91,8 @@ describe('XMLRPC', function () {
         });
 
         it('with default post should not execute pings', function () {
-            var ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200),
-                testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+            const ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200);
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
             testPost.slug = 'welcome';
 
@@ -98,8 +102,8 @@ describe('XMLRPC', function () {
         });
 
         it('with a page should not execute pings', function () {
-            var ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200),
-                testPage = _.clone(testUtils.DataGenerator.Content.posts[5]);
+            const ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200);
+            const testPage = _.clone(testUtils.DataGenerator.Content.posts[5]);
 
             ping(testPage);
 
@@ -107,8 +111,8 @@ describe('XMLRPC', function () {
         });
 
         it('when privacy.useRpcPing is false should not execute pings', function () {
-            var ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200),
-                testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+            const ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200);
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
             configUtils.set({privacy: {useRpcPing: false}});
 
@@ -118,9 +122,9 @@ describe('XMLRPC', function () {
         });
 
         it('captures && logs errors from requests', function (done) {
-            var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
-                ping1 = nock('http://rpc.pingomatic.com').post('/').reply(400),
-                loggingStub = sinon.stub(common.logging, 'error');
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+            const ping1 = nock('http://rpc.pingomatic.com').post('/').reply(400);
+            const loggingStub = sinon.stub(common.logging, 'error');
 
             ping(testPost);
 
@@ -136,32 +140,34 @@ describe('XMLRPC', function () {
         });
 
         it('captures && logs XML errors from requests with newlines between tags', function (done) {
-            var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
-                ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200,
-                    `<?xml version="1.0"?>
-                 <methodResponse>
-                   <params>
-                     <param>
-                       <value>
-                         <struct>
-                           <member>
-                             <name>flerror</name>
-                             <value>
-                               <boolean>1</boolean>
-                             </value>
-                           </member>
-                           <member>
-                             <name>message</name>
-                             <value>
-                              <string>Uh oh. A wee lil error.</string>
-                             </value>
-                           </member>
-                         </struct>
-                       </value>
-                     </param>
-                   </params>
-                 </methodResponse>`),
-                loggingStub = sinon.stub(common.logging, 'error');
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            const ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200,
+                `<?xml version="1.0"?>
+             <methodResponse>
+               <params>
+                 <param>
+                   <value>
+                     <struct>
+                       <member>
+                         <name>flerror</name>
+                         <value>
+                           <boolean>1</boolean>
+                         </value>
+                       </member>
+                       <member>
+                         <name>message</name>
+                         <value>
+                          <string>Uh oh. A wee lil error.</string>
+                         </value>
+                       </member>
+                     </struct>
+                   </value>
+                 </param>
+               </params>
+             </methodResponse>`);
+
+            const loggingStub = sinon.stub(common.logging, 'error');
 
             ping(testPost);
 
@@ -177,32 +183,34 @@ describe('XMLRPC', function () {
         });
 
         it('captures && logs XML errors from requests without newlines between tags', function (done) {
-            var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
-                ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200,
-                    (`<?xml version="1.0"?>
-                 <methodResponse>
-                   <params>
-                     <param>
-                       <value>
-                         <struct>
-                           <member>
-                             <name>flerror</name>
-                             <value>
-                               <boolean>1</boolean>
-                             </value>
-                           </member>
-                           <member>
-                             <name>message</name>
-                             <value>
-                              <string>Uh oh. A wee lil error.</string>
-                             </value>
-                           </member>
-                         </struct>
-                       </value>
-                     </param>
-                   </params>
-                 </methodResponse>`).replace('\n', '')),
-                loggingStub = sinon.stub(common.logging, 'error');
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            const ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200,
+                (`<?xml version="1.0"?>
+             <methodResponse>
+               <params>
+                 <param>
+                   <value>
+                     <struct>
+                       <member>
+                         <name>flerror</name>
+                         <value>
+                           <boolean>1</boolean>
+                         </value>
+                       </member>
+                       <member>
+                         <name>message</name>
+                         <value>
+                          <string>Uh oh. A wee lil error.</string>
+                         </value>
+                       </member>
+                     </struct>
+                   </value>
+                 </param>
+               </params>
+             </methodResponse>`).replace('\n', ''));
+
+            const loggingStub = sinon.stub(common.logging, 'error');
 
             ping(testPost);
 
@@ -218,22 +226,24 @@ describe('XMLRPC', function () {
         });
 
         it('does not error with responses that have 0 as flerror value', function (done) {
-            var testPost = _.clone(testUtils.DataGenerator.Content.posts[2]),
-                ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200,
-                    `<?xml version="1.0"?>
-                    <methodResponse>
-                      <params>
-                        <param>
-                          <value>
-                            <struct>
-                              <member><name>flerror</name><value><boolean>0</boolean></value></member>
-                              <member><name>message</name><value><string>Pings being forwarded to 9 services!</string></value></member>
-                    </struct>
-                          </value>
-                        </param>
-                      </params>
-                    </methodResponse>`),
-                loggingStub = sinon.stub(common.logging, 'error');
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            const ping1 = nock('http://rpc.pingomatic.com').post('/').reply(200,
+                `<?xml version="1.0"?>
+                <methodResponse>
+                  <params>
+                    <param>
+                      <value>
+                        <struct>
+                          <member><name>flerror</name><value><boolean>0</boolean></value></member>
+                          <member><name>message</name><value><string>Pings being forwarded to 9 services!</string></value></member>
+                </struct>
+                      </value>
+                    </param>
+                  </params>
+                </methodResponse>`);
+
+            const loggingStub = sinon.stub(common.logging, 'error');
 
             ping(testPost);
 

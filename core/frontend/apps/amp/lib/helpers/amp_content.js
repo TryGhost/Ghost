@@ -6,21 +6,21 @@
 //
 // Converts normal HTML into AMP HTML with Amperize module and uses a cache to return it from
 // there if available. The cacheId is a combination of `updated_at` and the `slug`.
-const Promise = require('bluebird'),
-    moment = require('moment'),
-    proxy = require('../../../../services/proxy'),
-    SafeString = proxy.SafeString,
-    logging = proxy.logging,
-    i18n = proxy.i18n,
-    errors = proxy.errors,
-    urlUtils = proxy.urlUtils,
-    amperizeCache = {};
+const Promise = require('bluebird');
 
-let allowedAMPTags = [],
-    allowedAMPAttributes = {},
-    amperize = null,
-    ampHTML = '',
-    cleanHTML = '';
+const moment = require('moment');
+const proxy = require('../../../../services/proxy');
+const SafeString = proxy.SafeString;
+const logging = proxy.logging;
+const i18n = proxy.i18n;
+const errors = proxy.errors;
+const urlUtils = proxy.urlUtils;
+const amperizeCache = {};
+let allowedAMPTags = [];
+let allowedAMPAttributes = {};
+let amperize = null;
+let ampHTML = '';
+let cleanHTML = '';
 
 allowedAMPTags = ['html', 'body', 'article', 'section', 'nav', 'aside', 'h1', 'h2',
     'h3', 'h4', 'h5', 'h6', 'header', 'footer', 'address', 'p', 'hr',
@@ -119,8 +119,8 @@ function getAmperizeHTML(html, post) {
         return;
     }
 
-    let Amperize = require('amperize'),
-        startedAtMoment = moment();
+    let Amperize = require('amperize');
+    let startedAtMoment = moment();
 
     amperize = amperize || new Amperize();
 
@@ -163,11 +163,12 @@ function getAmperizeHTML(html, post) {
 }
 
 function ampContent() {
-    let sanitizeHtml = require('sanitize-html'),
-        cheerio = require('cheerio'),
-        amperizeHTML = {
-            amperize: getAmperizeHTML(this.html, this)
-        };
+    let sanitizeHtml = require('sanitize-html');
+    let cheerio = require('cheerio');
+
+    let amperizeHTML = {
+        amperize: getAmperizeHTML(this.html, this)
+    };
 
     return Promise.props(amperizeHTML).then((result) => {
         let $ = null;

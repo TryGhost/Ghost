@@ -1,24 +1,23 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    rewire = require('rewire'),
-    Promise = require('bluebird'),
-    _ = require('lodash'),
-    testUtils = require('../../../utils'),
-    moment = require('moment'),
-    path = require('path'),
-    common = require('../../../../core/server/lib/common'),
+const should = require('should');
+const sinon = require('sinon');
+const rewire = require('rewire');
+const Promise = require('bluebird');
+const _ = require('lodash');
+const testUtils = require('../../../utils');
+const moment = require('moment');
+const path = require('path');
+const common = require('../../../../core/server/lib/common');
 
-    // Stuff we are testing
-    ImportManager = require('../../../../core/server/data/importer'),
-    JSONHandler = require('../../../../core/server/data/importer/handlers/json'),
-    ImageHandler = rewire('../../../../core/server/data/importer/handlers/image'),
-    MarkdownHandler = require('../../../../core/server/data/importer/handlers/markdown'),
-    DataImporter = require('../../../../core/server/data/importer/importers/data'),
-    ImageImporter = require('../../../../core/server/data/importer/importers/image'),
+// Stuff we are testing
+const ImportManager = require('../../../../core/server/data/importer');
 
-    storage = require('../../../../core/server/adapters/storage'),
-
-    urlUtils = require('../../../utils/urlUtils');
+const JSONHandler = require('../../../../core/server/data/importer/handlers/json');
+let ImageHandler = rewire('../../../../core/server/data/importer/handlers/image');
+const MarkdownHandler = require('../../../../core/server/data/importer/handlers/markdown');
+const DataImporter = require('../../../../core/server/data/importer/importers/data');
+const ImageImporter = require('../../../../core/server/data/importer/importers/image');
+const storage = require('../../../../core/server/adapters/storage');
+const urlUtils = require('../../../utils/urlUtils');
 
 describe('Importer', function () {
     afterEach(function () {
@@ -89,9 +88,9 @@ describe('Importer', function () {
         // Step 1 of importing is loadFile
         describe('loadFile', function () {
             it('knows when to process a file', function (done) {
-                var testFile = {name: 'myFile.json', path: '/my/path/myFile.json'},
-                    zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve()),
-                    fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve());
+                const testFile = {name: 'myFile.json', path: '/my/path/myFile.json'};
+                const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve());
+                const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve());
 
                 ImportManager.loadFile(testFile).then(function () {
                     zipSpy.calledOnce.should.be.false();
@@ -102,9 +101,9 @@ describe('Importer', function () {
 
             // We need to make sure we don't actually extract a zip and leave temporary files everywhere!
             it('knows when to process a zip', function (done) {
-                var testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'},
-                    zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve()),
-                    fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve());
+                const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
+                const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve());
+                const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve());
 
                 ImportManager.loadFile(testZip).then(function () {
                     zipSpy.calledOnce.should.be.true();
@@ -114,16 +113,18 @@ describe('Importer', function () {
             });
 
             it('has same result for zips and files', function (done) {
-                var testFile = {name: 'myFile.json', path: '/my/path/myFile.json'},
-                    testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'},
-                    // need to stub out the extract and glob function for zip
-                    extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve('/tmp/dir/')),
-                    validSpy = sinon.stub(ImportManager, 'isValidZip').returns(true),
-                    baseDirSpy = sinon.stub(ImportManager, 'getBaseDirectory').returns(),
-                    getFileSpy = sinon.stub(ImportManager, 'getFilesFromZip'),
-                    jsonSpy = sinon.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []})),
-                    imageSpy = sinon.stub(ImageHandler, 'loadFile'),
-                    mdSpy = sinon.stub(MarkdownHandler, 'loadFile');
+                const testFile = {name: 'myFile.json', path: '/my/path/myFile.json'};
+                const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
+
+                // need to stub out the extract and glob function for zip
+                const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve('/tmp/dir/'));
+
+                const validSpy = sinon.stub(ImportManager, 'isValidZip').returns(true);
+                const baseDirSpy = sinon.stub(ImportManager, 'getBaseDirectory').returns();
+                const getFileSpy = sinon.stub(ImportManager, 'getFilesFromZip');
+                const jsonSpy = sinon.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []}));
+                const imageSpy = sinon.stub(ImageHandler, 'loadFile');
+                const mdSpy = sinon.stub(MarkdownHandler, 'loadFile');
 
                 getFileSpy.returns([]);
                 getFileSpy.withArgs(JSONHandler).returns(['/tmp/dir/myFile.json']);
@@ -151,39 +152,40 @@ describe('Importer', function () {
 
             describe('Validate Zip', function () {
                 it('accepts a zip with a base directory', function () {
-                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
 
                     ImportManager.isValidZip(testDir).should.be.ok();
                 });
 
                 it('accepts a zip without a base directory', function () {
-                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
 
                     ImportManager.isValidZip(testDir).should.be.ok();
                 });
 
                 it('accepts a zip with an image directory', function () {
-                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
 
                     ImportManager.isValidZip(testDir).should.be.ok();
                 });
 
                 it('fails a zip with two base directories', function () {
-                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
 
                     ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(common.errors.UnsupportedMediaTypeError);
                 });
 
                 it('fails a zip with no content', function () {
-                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-invalid');
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-invalid');
 
                     ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(common.errors.UnsupportedMediaTypeError);
                 });
 
                 it('shows a special error for old Roon exports', function () {
-                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-old-roon-export'),
-                        msg = 'Your zip file looks like an old format Roon export, ' +
-                            'please re-export your Roon blog and try again.';
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-old-roon-export');
+
+                    const msg = 'Your zip file looks like an old format Roon export, ' +
+                        'please re-export your Roon blog and try again.';
 
                     ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(common.errors.UnsupportedMediaTypeError);
                     ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(msg);
@@ -192,13 +194,13 @@ describe('Importer', function () {
 
             describe('Get Base Dir', function () {
                 it('returns string for base directory', function () {
-                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
 
                     ImportManager.getBaseDirectory(testDir).should.equal('basedir');
                 });
 
                 it('returns empty for no base directory', function () {
-                    var testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
 
                     should.not.exist(ImportManager.getBaseDirectory(testDir));
                 });
@@ -224,11 +226,13 @@ describe('Importer', function () {
         describe('preProcess', function () {
             // preProcess can modify the data prior to importing
             it('calls the DataImporter preProcess method', function (done) {
-                var input = {data: {}, images: []},
-                    // pass a copy so that input doesn't get modified
-                    inputCopy = _.cloneDeep(input),
-                    dataSpy = sinon.spy(DataImporter, 'preProcess'),
-                    imageSpy = sinon.spy(ImageImporter, 'preProcess');
+                const input = {data: {}, images: []};
+
+                // pass a copy so that input doesn't get modified
+                const inputCopy = _.cloneDeep(input);
+
+                const dataSpy = sinon.spy(DataImporter, 'preProcess');
+                const imageSpy = sinon.spy(ImageImporter, 'preProcess');
 
                 ImportManager.preProcess(inputCopy).then(function (output) {
                     dataSpy.calledOnce.should.be.true();
@@ -250,19 +254,23 @@ describe('Importer', function () {
             // doImport calls the real importers and has an effect on the DB. We don't want any of those calls to be made,
             // but to test that the right calls would be made
             it('calls the DataImporter doImport method with the data object', function (done) {
-                var input = {data: {posts: []}, images: []},
-                    // pass a copy so that input doesn't get modified
-                    inputCopy = _.cloneDeep(input),
-                    dataSpy = sinon.stub(DataImporter, 'doImport').callsFake(function (i) {
-                        return Promise.resolve(i);
-                    }),
-                    imageSpy = sinon.stub(ImageImporter, 'doImport').callsFake(function (i) {
-                        return Promise.resolve(i);
-                    }),
+                const input = {data: {posts: []}, images: []};
 
-                    // The data importer should get the data object
-                    expectedData = input.data,
-                    expectedImages = input.images;
+                // pass a copy so that input doesn't get modified
+                const inputCopy = _.cloneDeep(input);
+
+                const dataSpy = sinon.stub(DataImporter, 'doImport').callsFake(function (i) {
+                    return Promise.resolve(i);
+                });
+
+                const imageSpy = sinon.stub(ImageImporter, 'doImport').callsFake(function (i) {
+                    return Promise.resolve(i);
+                });
+
+                // The data importer should get the data object
+                const expectedData = input.data;
+
+                const expectedImages = input.images;
 
                 ImportManager.doImport(inputCopy).then(function (output) {
                     // eql checks for equality
@@ -284,7 +292,7 @@ describe('Importer', function () {
             // generateReport is intended to create a message to show to the user about what has been imported
             // it is currently a noop
             it('is currently a noop', function (done) {
-                var input = {data: {}, images: []};
+                const input = {data: {}, images: []};
                 ImportManager.generateReport(input).then(function (output) {
                     output.should.equal(input);
                     done();
@@ -294,11 +302,11 @@ describe('Importer', function () {
 
         describe('importFromFile', function () {
             it('does the import steps in order', function (done) {
-                var loadFileSpy = sinon.stub(ImportManager, 'loadFile').returns(Promise.resolve()),
-                    preProcessSpy = sinon.stub(ImportManager, 'preProcess').returns(Promise.resolve()),
-                    doImportSpy = sinon.stub(ImportManager, 'doImport').returns(Promise.resolve()),
-                    generateReportSpy = sinon.stub(ImportManager, 'generateReport').returns(Promise.resolve()),
-                    cleanupSpy = sinon.stub(ImportManager, 'cleanUp').returns({});
+                const loadFileSpy = sinon.stub(ImportManager, 'loadFile').returns(Promise.resolve());
+                const preProcessSpy = sinon.stub(ImportManager, 'preProcess').returns(Promise.resolve());
+                const doImportSpy = sinon.stub(ImportManager, 'doImport').returns(Promise.resolve());
+                const generateReportSpy = sinon.stub(ImportManager, 'generateReport').returns(Promise.resolve());
+                const cleanupSpy = sinon.stub(ImportManager, 'cleanUp').returns({});
 
                 ImportManager.importFromFile({}).then(function () {
                     loadFileSpy.calledOnce.should.be.true();
@@ -326,7 +334,7 @@ describe('Importer', function () {
         });
 
         it('correctly handles a valid db api wrapper', function (done) {
-            var file = [{
+            const file = [{
                 path: testUtils.fixtures.getExportFixturePath('valid'),
                 name: 'valid.json'
             }];
@@ -338,7 +346,7 @@ describe('Importer', function () {
         });
 
         it('correctly errors when given a bad db api wrapper', function (done) {
-            var file = [{
+            const file = [{
                 path: testUtils.fixtures.getExportFixturePath('broken'),
                 name: 'broken.json'
             }];
@@ -353,7 +361,7 @@ describe('Importer', function () {
     });
 
     describe('ImageHandler', function () {
-        var store = storage.getStorage();
+        const store = storage.getStorage();
 
         it('has the correct interface', function () {
             ImageHandler.type.should.eql('images');
@@ -376,13 +384,15 @@ describe('Importer', function () {
         });
 
         it('can load a single file', function (done) {
-            var filename = 'test-image.jpeg',
-                file = [{
-                    path: '/my/test/' + filename,
-                    name: filename
-                }],
-                storeSpy = sinon.spy(store, 'getUniqueFileName'),
-                storageSpy = sinon.spy(storage, 'getStorage');
+            const filename = 'test-image.jpeg';
+
+            const file = [{
+                path: '/my/test/' + filename,
+                name: filename
+            }];
+
+            const storeSpy = sinon.spy(store, 'getUniqueFileName');
+            const storageSpy = sinon.spy(storage, 'getStorage');
 
             ImageHandler.loadFile(_.clone(file)).then(function () {
                 storageSpy.calledOnce.should.be.true();
@@ -396,13 +406,15 @@ describe('Importer', function () {
         });
 
         it('can load a single file, maintaining structure', function (done) {
-            var filename = 'photos/my-cat.jpeg',
-                file = [{
-                    path: '/my/test/' + filename,
-                    name: filename
-                }],
-                storeSpy = sinon.spy(store, 'getUniqueFileName'),
-                storageSpy = sinon.spy(storage, 'getStorage');
+            const filename = 'photos/my-cat.jpeg';
+
+            const file = [{
+                path: '/my/test/' + filename,
+                name: filename
+            }];
+
+            const storeSpy = sinon.spy(store, 'getUniqueFileName');
+            const storageSpy = sinon.spy(storage, 'getStorage');
 
             ImageHandler.loadFile(_.clone(file)).then(function () {
                 storageSpy.calledOnce.should.be.true();
@@ -416,13 +428,15 @@ describe('Importer', function () {
         });
 
         it('can load a single file, removing ghost dirs', function (done) {
-            var filename = 'content/images/my-cat.jpeg',
-                file = [{
-                    path: '/my/test/content/images/' + filename,
-                    name: filename
-                }],
-                storeSpy = sinon.spy(store, 'getUniqueFileName'),
-                storageSpy = sinon.spy(storage, 'getStorage');
+            const filename = 'content/images/my-cat.jpeg';
+
+            const file = [{
+                path: '/my/test/content/images/' + filename,
+                name: filename
+            }];
+
+            const storeSpy = sinon.spy(store, 'getUniqueFileName');
+            const storageSpy = sinon.spy(storage, 'getStorage');
 
             ImageHandler.loadFile(_.clone(file)).then(function () {
                 storageSpy.calledOnce.should.be.true();
@@ -438,13 +452,15 @@ describe('Importer', function () {
         it('can load a file (subdirectory)', function (done) {
             ImageHandler.__set__('urlUtils', urlUtils.getInstance({url: 'http://localhost:65535/subdir'}));
 
-            var filename = 'test-image.jpeg',
-                file = [{
-                    path: '/my/test/' + filename,
-                    name: filename
-                }],
-                storeSpy = sinon.spy(store, 'getUniqueFileName'),
-                storageSpy = sinon.spy(storage, 'getStorage');
+            const filename = 'test-image.jpeg';
+
+            const file = [{
+                path: '/my/test/' + filename,
+                name: filename
+            }];
+
+            const storeSpy = sinon.spy(store, 'getUniqueFileName');
+            const storageSpy = sinon.spy(storage, 'getStorage');
 
             ImageHandler.loadFile(_.clone(file)).then(function () {
                 storageSpy.calledOnce.should.be.true();
@@ -458,24 +474,25 @@ describe('Importer', function () {
         });
 
         it('can load multiple files', function (done) {
-            var files = [{
-                    path: '/my/test/testing.png',
-                    name: 'testing.png'
-                },
-                {
-                    path: '/my/test/photo/kitten.jpg',
-                    name: 'photo/kitten.jpg'
-                },
-                {
-                    path: '/my/test/content/images/animated/bunny.gif',
-                    name: 'content/images/animated/bunny.gif'
-                },
-                {
-                    path: '/my/test/images/puppy.jpg',
-                    name: 'images/puppy.jpg'
-                }],
-                storeSpy = sinon.spy(store, 'getUniqueFileName'),
-                storageSpy = sinon.spy(storage, 'getStorage');
+            const files = [{
+                path: '/my/test/testing.png',
+                name: 'testing.png'
+            },
+            {
+                path: '/my/test/photo/kitten.jpg',
+                name: 'photo/kitten.jpg'
+            },
+            {
+                path: '/my/test/content/images/animated/bunny.gif',
+                name: 'content/images/animated/bunny.gif'
+            },
+            {
+                path: '/my/test/images/puppy.jpg',
+                name: 'images/puppy.jpg'
+            }];
+
+            const storeSpy = sinon.spy(store, 'getUniqueFileName');
+            const storageSpy = sinon.spy(storage, 'getStorage');
 
             ImageHandler.loadFile(_.clone(files)).then(function () {
                 storageSpy.calledOnce.should.be.true();
@@ -511,11 +528,12 @@ describe('Importer', function () {
         });
 
         it('does convert a markdown file into a post object', function (done) {
-            var filename = 'draft-2014-12-19-test-1.md',
-                file = [{
-                    path: testUtils.fixtures.getImportFixturePath(filename),
-                    name: filename
-                }];
+            const filename = 'draft-2014-12-19-test-1.md';
+
+            const file = [{
+                path: testUtils.fixtures.getImportFixturePath(filename),
+                name: filename
+            }];
 
             MarkdownHandler.loadFile(file).then(function (result) {
                 result.data.posts[0].markdown.should.eql('You\'re live! Nice.');
@@ -531,11 +549,12 @@ describe('Importer', function () {
         });
 
         it('can parse a title from a markdown file', function (done) {
-            var filename = 'draft-2014-12-19-test-2.md',
-                file = [{
-                    path: testUtils.fixtures.getImportFixturePath(filename),
-                    name: filename
-                }];
+            const filename = 'draft-2014-12-19-test-2.md';
+
+            const file = [{
+                path: testUtils.fixtures.getImportFixturePath(filename),
+                name: filename
+            }];
 
             MarkdownHandler.loadFile(file).then(function (result) {
                 result.data.posts[0].markdown.should.eql('You\'re live! Nice.');
@@ -550,11 +569,12 @@ describe('Importer', function () {
         });
 
         it('can parse a featured image from a markdown file if there is a title', function (done) {
-            var filename = 'draft-2014-12-19-test-3.md',
-                file = [{
-                    path: testUtils.fixtures.getImportFixturePath(filename),
-                    name: filename
-                }];
+            const filename = 'draft-2014-12-19-test-3.md';
+
+            const file = [{
+                path: testUtils.fixtures.getImportFixturePath(filename),
+                name: filename
+            }];
 
             MarkdownHandler.loadFile(file).then(function (result) {
                 result.data.posts[0].markdown.should.eql('You\'re live! Nice.');
@@ -569,11 +589,12 @@ describe('Importer', function () {
         });
 
         it('can import a published post', function (done) {
-            var filename = 'published-2014-12-19-test-1.md',
-                file = [{
-                    path: testUtils.fixtures.getImportFixturePath(filename),
-                    name: filename
-                }];
+            const filename = 'published-2014-12-19-test-1.md';
+
+            const file = [{
+                path: testUtils.fixtures.getImportFixturePath(filename),
+                name: filename
+            }];
 
             MarkdownHandler.loadFile(file).then(function (result) {
                 result.data.posts[0].markdown.should.eql('You\'re live! Nice.');
@@ -589,11 +610,12 @@ describe('Importer', function () {
         });
 
         it('does not import deleted posts', function (done) {
-            var filename = 'deleted-2014-12-19-test-1.md',
-                file = [{
-                    path: testUtils.fixtures.getImportFixturePath(filename),
-                    name: filename
-                }];
+            const filename = 'deleted-2014-12-19-test-1.md';
+
+            const file = [{
+                path: testUtils.fixtures.getImportFixturePath(filename),
+                name: filename
+            }];
 
             MarkdownHandler.loadFile(file).then(function (result) {
                 result.data.posts.should.be.empty();
@@ -603,7 +625,7 @@ describe('Importer', function () {
         });
 
         it('can import multiple files', function (done) {
-            var files = [{
+            const files = [{
                 path: testUtils.fixtures.getImportFixturePath('deleted-2014-12-19-test-1.md'),
                 name: 'deleted-2014-12-19-test-1.md'
             }, {
@@ -619,8 +641,9 @@ describe('Importer', function () {
                 // doesn't get imported ;)
 
                 // loadFile doesn't guarantee order of results
-                var one = result.data.posts[0].status === 'published' ? 0 : 1,
-                    two = one === 0 ? 1 : 0;
+                const one = result.data.posts[0].status === 'published' ? 0 : 1;
+
+                const two = one === 0 ? 1 : 0;
 
                 // published-2014-12-19-test-1.md
                 result.data.posts[one].markdown.should.eql('You\'re live! Nice.');
@@ -652,8 +675,8 @@ describe('Importer', function () {
         });
 
         it('does preprocess posts, users and tags correctly', function () {
-            var inputData = require('../../../utils/fixtures/import/import-data-1.json'),
-                outputData = DataImporter.preProcess(_.cloneDeep(inputData));
+            const inputData = require('../../../utils/fixtures/import/import-data-1.json');
+            const outputData = DataImporter.preProcess(_.cloneDeep(inputData));
 
             // Data preprocess is a noop
             inputData.data.data.posts[0].should.eql(outputData.data.data.posts[0]);
@@ -670,8 +693,8 @@ describe('Importer', function () {
         });
 
         it('does preprocess posts, users and tags correctly', function () {
-            var inputData = require('../../../utils/fixtures/import/import-data-1.json'),
-                outputData = ImageImporter.preProcess(_.cloneDeep(inputData));
+            let inputData = require('../../../utils/fixtures/import/import-data-1.json');
+            let outputData = ImageImporter.preProcess(_.cloneDeep(inputData));
 
             inputData = inputData.data.data;
             outputData = outputData.data.data;
@@ -699,13 +722,15 @@ describe('Importer', function () {
         });
 
         it('does import the images correctly', function () {
-            var inputData = require('../../../utils/fixtures/import/import-data-1.json'),
-                storageApi = {
-                    save: sinon.stub().returns(Promise.resolve())
-                },
-                storageSpy = sinon.stub(storage, 'getStorage').callsFake(function () {
-                    return storageApi;
-                });
+            const inputData = require('../../../utils/fixtures/import/import-data-1.json');
+
+            const storageApi = {
+                save: sinon.stub().returns(Promise.resolve())
+            };
+
+            const storageSpy = sinon.stub(storage, 'getStorage').callsFake(function () {
+                return storageApi;
+            });
 
             ImageImporter.doImport(inputData.images).then(function () {
                 storageSpy.calledOnce.should.be.true();

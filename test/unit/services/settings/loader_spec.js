@@ -1,11 +1,11 @@
-const sinon = require('sinon'),
-    should = require('should'),
-    rewire = require('rewire'),
-    fs = require('fs-extra'),
-    path = require('path'),
-    configUtils = require('../../../utils/configUtils'),
-    common = require('../../../../core/server/lib/common'),
-    loadSettings = rewire('../../../../core/frontend/services/settings/loader');
+const sinon = require('sinon');
+const should = require('should');
+const rewire = require('rewire');
+const fs = require('fs-extra');
+const path = require('path');
+const configUtils = require('../../../utils/configUtils');
+const common = require('../../../../core/server/lib/common');
+const loadSettings = rewire('../../../../core/frontend/services/settings/loader');
 
 describe('UNIT > Settings Service loader:', function () {
     beforeEach(function () {

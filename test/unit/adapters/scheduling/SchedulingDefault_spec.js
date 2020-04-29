@@ -1,14 +1,14 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    moment = require('moment'),
-    _ = require('lodash'),
-    express = require('express'),
-    bodyParser = require('body-parser'),
-    http = require('http'),
-    SchedulingDefault = require('../../../../core/server/adapters/scheduling/SchedulingDefault');
+const should = require('should');
+const sinon = require('sinon');
+const moment = require('moment');
+const _ = require('lodash');
+const express = require('express');
+const bodyParser = require('body-parser');
+const http = require('http');
+const SchedulingDefault = require('../../../../core/server/adapters/scheduling/SchedulingDefault');
 
 describe('Scheduling Default Adapter', function () {
-    var scope = {};
+    const scope = {};
 
     beforeEach(function () {
         scope.adapter = new SchedulingDefault();
@@ -23,7 +23,7 @@ describe('Scheduling Default Adapter', function () {
             sinon.stub(scope.adapter, 'run');
             sinon.stub(scope.adapter, '_execute');
 
-            var dates = [
+            const dates = [
                 moment().add(1, 'day').subtract(30, 'seconds').toDate(),
                 moment().add(7, 'minutes').toDate(),
 
@@ -128,10 +128,11 @@ describe('Scheduling Default Adapter', function () {
 
         it('run', function (done) {
             // 1000 jobs, but only the number x are under 1 minute
-            var timestamps = _.map(_.range(1000), function (i) {
-                    return moment().add(i, 'seconds').valueOf();
-                }),
-                allJobs = {};
+            const timestamps = _.map(_.range(1000), function (i) {
+                return moment().add(i, 'seconds').valueOf();
+            });
+
+            const allJobs = {};
 
             sinon.stub(scope.adapter, '_execute').callsFake(function (nextJobs) {
                 Object.keys(nextJobs).length.should.eql(121);
@@ -164,12 +165,14 @@ describe('Scheduling Default Adapter', function () {
         });
 
         it('execute', function (done) {
-            var pinged = 0,
-                jobs = 3,
-                timestamps = _.map(_.range(jobs), function (i) {
-                    return moment().add(i * 50, 'milliseconds').valueOf();
-                }),
-                nextJobs = {};
+            let pinged = 0;
+            const jobs = 3;
+
+            const timestamps = _.map(_.range(jobs), function (i) {
+                return moment().add(i * 50, 'milliseconds').valueOf();
+            });
+
+            const nextJobs = {};
 
             sinon.stub(scope.adapter, 'run');
             sinon.stub(scope.adapter, '_pingUrl').callsFake(function () {
@@ -192,9 +195,9 @@ describe('Scheduling Default Adapter', function () {
         });
 
         it('delete job (unschedule)', function (done) {
-            var pinged = 0,
-                jobsToDelete = {},
-                jobsToExecute = {};
+            let pinged = 0;
+            const jobsToDelete = {};
+            const jobsToExecute = {};
 
             sinon.stub(scope.adapter, 'run');
             sinon.stub(scope.adapter, '_pingUrl').callsFake(function () {
@@ -237,10 +240,10 @@ describe('Scheduling Default Adapter', function () {
         });
 
         it('pingUrl (PUT)', function (done) {
-            var app = express(),
-                server = http.createServer(app),
-                wasPinged = false,
-                reqBody;
+            const app = express();
+            const server = http.createServer(app);
+            let wasPinged = false;
+            let reqBody;
 
             app.use(bodyParser.json());
 
@@ -271,10 +274,10 @@ describe('Scheduling Default Adapter', function () {
         });
 
         it('pingUrl (GET)', function (done) {
-            var app = express(),
-                server = http.createServer(app),
-                wasPinged = false,
-                reqQuery;
+            const app = express();
+            const server = http.createServer(app);
+            let wasPinged = false;
+            let reqQuery;
 
             app.get('/ping', function (req, res) {
                 wasPinged = true;
@@ -298,10 +301,10 @@ describe('Scheduling Default Adapter', function () {
         });
 
         it('pingUrl (PUT, and detect publish in the past)', function (done) {
-            var app = express(),
-                server = http.createServer(app),
-                wasPinged = false,
-                reqBody;
+            const app = express();
+            const server = http.createServer(app);
+            let wasPinged = false;
+            let reqBody;
 
             app.use(bodyParser.json());
 
@@ -327,10 +330,10 @@ describe('Scheduling Default Adapter', function () {
         });
 
         it('pingUrl (GET, and detect publish in the past)', function (done) {
-            var app = express(),
-                server = http.createServer(app),
-                wasPinged = false,
-                reqQuery;
+            const app = express();
+            const server = http.createServer(app);
+            let wasPinged = false;
+            let reqQuery;
 
             app.get('/ping', function (req, res) {
                 wasPinged = true;
@@ -354,11 +357,11 @@ describe('Scheduling Default Adapter', function () {
         });
 
         it('pingUrl, but blog returns 503', function (done) {
-            var app = express(),
-                server = http.createServer(app),
-                returned500Count = 0,
-                returned200 = false,
-                reqBody;
+            const app = express();
+            const server = http.createServer(app);
+            let returned500Count = 0;
+            let returned200 = false;
+            let reqBody;
 
             scope.adapter.retryTimeoutInMs = 10;
 

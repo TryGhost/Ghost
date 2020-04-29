@@ -1,11 +1,11 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    helpers = require('../../../core/frontend/helpers'),
-    proxy = require('../../../core/frontend/services/proxy'),
-    settingsCache = proxy.settingsCache;
+const should = require('should');
+const sinon = require('sinon');
+const helpers = require('../../../core/frontend/helpers');
+const proxy = require('../../../core/frontend/services/proxy');
+const settingsCache = proxy.settingsCache;
 
 describe('{{ghost_foot}} helper', function () {
-    var settingsCacheStub;
+    let settingsCacheStub;
 
     afterEach(function () {
         sinon.restore();

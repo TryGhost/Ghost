@@ -12,10 +12,11 @@ const DISABLE_CORS = {origin: false};
  * @return {Array<String>}
  */
 function getIPs() {
-    const ifaces = os.networkInterfaces(),
-        ips = [
-            'localhost'
-        ];
+    const ifaces = os.networkInterfaces();
+
+    const ips = [
+        'localhost'
+    ];
 
     Object.keys(ifaces).forEach((ifname) => {
         ifaces[ifname].forEach((iface) => {

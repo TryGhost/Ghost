@@ -1,8 +1,8 @@
-var _ = require('lodash'),
-    Promise = require('bluebird'),
-    fs = require('fs-extra'),
-    common = require('../../../lib/common'),
-    JSONHandler;
+const _ = require('lodash');
+const Promise = require('bluebird');
+const fs = require('fs-extra');
+const common = require('../../../lib/common');
+let JSONHandler;
 
 JSONHandler = {
     type: 'data',
@@ -12,10 +12,10 @@ JSONHandler = {
 
     loadFile: function (files, startDir) { // eslint-disable-line no-unused-vars
         // @TODO: Handle multiple JSON files
-        var filePath = files[0].path;
+        const filePath = files[0].path;
 
         return fs.readFile(filePath).then(function (fileData) {
-            var importData;
+            let importData;
 
             try {
                 importData = JSON.parse(fileData);

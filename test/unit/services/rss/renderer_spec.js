@@ -1,12 +1,13 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
-
-    rssCache = require('../../../../core/frontend/services/rss/cache'),
-    renderer = require('../../../../core/frontend/services/rss/renderer');
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const rssCache = require('../../../../core/frontend/services/rss/cache');
+const renderer = require('../../../../core/frontend/services/rss/renderer');
 
 describe('RSS: Renderer', function () {
-    var rssCacheStub, res, baseUrl;
+    let rssCacheStub;
+    let res;
+    let baseUrl;
 
     beforeEach(function () {
         rssCacheStub = sinon.stub(rssCache, 'getXML');
@@ -64,7 +65,7 @@ describe('RSS: Renderer', function () {
         rssCacheStub.returns(new Promise.resolve('dummyxml'));
 
         res.locals = {foo: 'bar'};
-        var data = {foo: 'baz', fizz: 'buzz'};
+        const data = {foo: 'baz', fizz: 'buzz'};
 
         renderer.render(res, baseUrl, data).then(function () {
             rssCacheStub.calledOnce.should.be.true();

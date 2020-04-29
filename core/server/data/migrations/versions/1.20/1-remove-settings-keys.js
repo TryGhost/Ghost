@@ -1,6 +1,6 @@
-const _ = require('lodash'),
-    models = require('../../../../models'),
-    common = require('../../../../lib/common');
+const _ = require('lodash');
+const models = require('../../../../models');
+const common = require('../../../../lib/common');
 
 module.exports.config = {
     transaction: true

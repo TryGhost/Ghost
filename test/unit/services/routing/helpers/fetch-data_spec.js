@@ -5,8 +5,11 @@ const helpers = require('../../../../../core/frontend/services/routing/helpers')
 const testUtils = require('../../../../utils');
 
 describe('Unit - services/routing/helpers/fetch-data', function () {
-    let posts, tags, locals;
-    let browsePostsStub, readTagsStub;
+    let posts;
+    let tags;
+    let locals;
+    let browsePostsStub;
+    let readTagsStub;
 
     beforeEach(function () {
         posts = [

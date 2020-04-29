@@ -5,7 +5,9 @@ const uncapitalise = require('../../../../../core/server/web/shared/middlewares/
 // NOTE: all urls will have had trailing slashes added before uncapitalise is called
 
 describe('Middleware: uncapitalise', function () {
-    let res, req, next;
+    let res;
+    let req;
+    let next;
 
     beforeEach(function () {
         res = {

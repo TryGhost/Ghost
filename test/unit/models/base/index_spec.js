@@ -1,12 +1,12 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    _ = require('lodash'),
-    Promise = require('bluebird'),
-    security = require('../../../../core/server/lib/security'),
-    models = require('../../../../core/server/models'),
-    common = require('../../../../core/server/lib/common'),
-    urlUtils = require('../../../../core/server/lib/url-utils'),
-    testUtils = require('../../../utils');
+const should = require('should');
+const sinon = require('sinon');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const security = require('../../../../core/server/lib/security');
+const models = require('../../../../core/server/models');
+const common = require('../../../../core/server/lib/common');
+const urlUtils = require('../../../../core/server/lib/url-utils');
+const testUtils = require('../../../utils');
 
 describe('Models: base', function () {
     before(function () {

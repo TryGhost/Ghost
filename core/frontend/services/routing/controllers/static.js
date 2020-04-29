@@ -1,7 +1,7 @@
-const _ = require('lodash'),
-    Promise = require('bluebird'),
-    debug = require('ghost-ignition').debug('services:routing:controllers:static'),
-    helpers = require('../helpers');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const debug = require('ghost-ignition').debug('services:routing:controllers:static');
+const helpers = require('../helpers');
 
 function processQuery(query, locals) {
     const api = require('../../../../server/api')[locals.apiVersion];

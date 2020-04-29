@@ -16,14 +16,15 @@ function asyncHelperWrapper(hbs, name, fn) {
         Promise.resolve(fn.call(this, context, options)).then(function asyncHelperSuccess(result) {
             cb(result);
         }).catch(function asyncHelperError(err) {
-            var wrappedErr = err instanceof errors.GhostError ? err : new errors.IncorrectUsageError({
-                    err: err,
-                    context: 'registerAsyncThemeHelper: ' + name,
-                    errorDetails: {
-                        originalError: err
-                    }
-                }),
-                result = config.get('env') === 'development' ? wrappedErr : '';
+            const wrappedErr = err instanceof errors.GhostError ? err : new errors.IncorrectUsageError({
+                err: err,
+                context: 'registerAsyncThemeHelper: ' + name,
+                errorDetails: {
+                    originalError: err
+                }
+            });
+
+            const result = config.get('env') === 'development' ? wrappedErr : '';
 
             logging.error(wrappedErr);
 

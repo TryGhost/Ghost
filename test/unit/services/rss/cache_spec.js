@@ -1,11 +1,12 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    rewire = require('rewire'),
-    configUtils = require('../../../utils/configUtils'),
-    rssCache = rewire('../../../../core/frontend/services/rss/cache');
+const should = require('should');
+const sinon = require('sinon');
+const rewire = require('rewire');
+const configUtils = require('../../../utils/configUtils');
+const rssCache = rewire('../../../../core/frontend/services/rss/cache');
 
 describe('RSS: Cache', function () {
-    var generateSpy, generateFeedReset;
+    let generateSpy;
+    let generateFeedReset;
 
     afterEach(function () {
         configUtils.restore();
@@ -21,13 +22,13 @@ describe('RSS: Cache', function () {
     });
 
     it('should not rebuild xml for same data and url', function (done) {
-        var xmlData1,
-            data = {
-                title: 'Test Title',
-                description: 'Testing Desc',
-                posts: [],
-                meta: {pagination: {pages: 1}}
-            };
+        const data = {
+            title: 'Test Title',
+            description: 'Testing Desc',
+            posts: [],
+            meta: {pagination: {pages: 1}}
+        };
+        let xmlData1;
 
         rssCache.getXML('/rss/', data)
             .then(function (_xmlData) {

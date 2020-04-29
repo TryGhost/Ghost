@@ -1,14 +1,14 @@
-var Promise = require('bluebird'),
-    _ = require('lodash'),
-    fixtures = require('../../schema/fixtures'),
-    common = require('../../../lib/common');
+const Promise = require('bluebird');
+const _ = require('lodash');
+const fixtures = require('../../schema/fixtures');
+const common = require('../../../lib/common');
 
 module.exports.config = {
     transaction: true
 };
 
 module.exports.up = function insertFixtures(options) {
-    var localOptions = _.merge({
+    const localOptions = _.merge({
         context: {internal: true},
         migrating: true
     }, options);

@@ -1,18 +1,18 @@
-var sizeOf = require('image-size'),
-    Promise = require('bluebird'),
-    _ = require('lodash'),
-    path = require('path'),
-    config = require('../../config'),
-    {i18n} = require('../common'),
-    errors = require('@tryghost/errors'),
-    urlUtils = require('../../lib/url-utils'),
-    settingsCache = require('../../services/settings/cache'),
-    storageUtils = require('../../adapters/storage/utils'),
-    getIconDimensions,
-    isIcoImageType,
-    getIconType,
-    getIconUrl,
-    getIconPath;
+const sizeOf = require('image-size');
+const Promise = require('bluebird');
+const _ = require('lodash');
+const path = require('path');
+const config = require('../../config');
+const {i18n} = require('../common');
+const errors = require('@tryghost/errors');
+const urlUtils = require('../../lib/url-utils');
+const settingsCache = require('../../services/settings/cache');
+const storageUtils = require('../../adapters/storage/utils');
+let getIconDimensions;
+let isIcoImageType;
+let getIconType;
+let getIconUrl;
+let getIconPath;
 
 /**
  * Get dimensions for ico file from its real file storage path
@@ -23,7 +23,7 @@ var sizeOf = require('image-size'),
  */
 getIconDimensions = function getIconDimensions(path) {
     return new Promise(function getIconSize(resolve, reject) {
-        var dimensions;
+        let dimensions;
 
         try {
             dimensions = sizeOf(path);
@@ -60,7 +60,7 @@ getIconDimensions = function getIconDimensions(path) {
  * @description Takes a path and returns boolean value.
  */
 isIcoImageType = function isIcoImageType(icon) {
-    var blogIcon = icon || settingsCache.get('icon');
+    const blogIcon = icon || settingsCache.get('icon');
 
     return blogIcon.match(/.ico$/i) ? true : false;
 };
@@ -73,7 +73,7 @@ isIcoImageType = function isIcoImageType(icon) {
  * @description Takes a path and returns boolean value.
  */
 getIconType = function getIconType(icon) {
-    var blogIcon = icon || settingsCache.get('icon');
+    const blogIcon = icon || settingsCache.get('icon');
 
     return isIcoImageType(blogIcon) ? 'x-icon' : 'png';
 };
@@ -86,7 +86,7 @@ getIconType = function getIconType(icon) {
  * exists, we're returning the default `favicon.ico`
  */
 getIconUrl = function getIconUrl(absolut) {
-    var blogIcon = settingsCache.get('icon');
+    const blogIcon = settingsCache.get('icon');
 
     if (absolut) {
         if (blogIcon) {
@@ -111,7 +111,7 @@ getIconUrl = function getIconUrl(absolut) {
  * exists, we're returning the default `favicon.ico`
  */
 getIconPath = function getIconPath() {
-    var blogIcon = settingsCache.get('icon');
+    const blogIcon = settingsCache.get('icon');
 
     if (blogIcon) {
         return storageUtils.getLocalFileStoragePath(blogIcon);

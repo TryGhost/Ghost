@@ -1,10 +1,12 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    getContextObject = require('../../../../core/frontend/meta/context_object.js'),
-    settingsCache = require('../../../../core/server/services/settings/cache');
+const should = require('should');
+const sinon = require('sinon');
+const getContextObject = require('../../../../core/frontend/meta/context_object.js');
+const settingsCache = require('../../../../core/server/services/settings/cache');
 
 describe('getContextObject', function () {
-    var data, context, contextObject;
+    let data;
+    let context;
+    let contextObject;
 
     it('should be a function', function () {
         should.exist(getContextObject);

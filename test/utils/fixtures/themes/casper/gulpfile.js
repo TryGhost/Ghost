@@ -1,26 +1,26 @@
-var gulp = require('gulp');
+const gulp = require('gulp');
 
 // gulp plugins and utils
-var gutil = require('gulp-util');
-var livereload = require('gulp-livereload');
-var postcss = require('gulp-postcss');
-var sourcemaps = require('gulp-sourcemaps');
-var zip = require('gulp-zip');
+const gutil = require('gulp-util');
+const livereload = require('gulp-livereload');
+const postcss = require('gulp-postcss');
+const sourcemaps = require('gulp-sourcemaps');
+const zip = require('gulp-zip');
 
 // postcss plugins
-var autoprefixer = require('autoprefixer');
-var colorFunction = require('postcss-color-function');
-var cssnano = require('cssnano');
-var customProperties = require('postcss-custom-properties');
-var easyimport = require('postcss-easy-import');
+const autoprefixer = require('autoprefixer');
+const colorFunction = require('postcss-color-function');
+const cssnano = require('cssnano');
+const customProperties = require('postcss-custom-properties');
+const easyimport = require('postcss-easy-import');
 
-var swallowError = function swallowError(error) {
+const swallowError = function swallowError(error) {
     gutil.log(error.toString());
     gutil.beep();
     this.emit('end');
 };
 
-var nodemonServerInit = function () {
+const nodemonServerInit = function () {
     livereload.listen(1234);
 };
 
@@ -29,7 +29,7 @@ gulp.task('build', ['css'], function (/* cb */) {
 });
 
 gulp.task('css', function () {
-    var processors = [
+    const processors = [
         easyimport,
         customProperties,
         colorFunction(),
@@ -51,9 +51,9 @@ gulp.task('watch', function () {
 });
 
 gulp.task('zip', ['css'], function () {
-    var targetDir = 'dist/';
-    var themeName = require('./package.json').name;
-    var filename = themeName + '.zip';
+    const targetDir = 'dist/';
+    const themeName = require('./package.json').name;
+    const filename = themeName + '.zip';
 
     return gulp.src([
         '**',

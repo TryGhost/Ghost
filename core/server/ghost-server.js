@@ -1,14 +1,15 @@
 // # Ghost Server
 // Handles the creation of an HTTP Server for Ghost
-var debug = require('ghost-ignition').debug('server'),
-    Promise = require('bluebird'),
-    fs = require('fs-extra'),
-    path = require('path'),
-    _ = require('lodash'),
-    config = require('./config'),
-    urlUtils = require('./lib/url-utils'),
-    common = require('./lib/common'),
-    moment = require('moment');
+const debug = require('ghost-ignition').debug('server');
+
+const Promise = require('bluebird');
+const fs = require('fs-extra');
+const path = require('path');
+const _ = require('lodash');
+const config = require('./config');
+const urlUtils = require('./lib/url-utils');
+const common = require('./lib/common');
+const moment = require('moment');
 
 /**
  * ## GhostServer
@@ -44,12 +45,14 @@ const debugInfo = {
  */
 GhostServer.prototype.start = function (externalApp) {
     debug('Starting...');
-    var self = this,
-        rootApp = externalApp ? externalApp : self.rootApp,
-        socketConfig, socketValues = {
-            path: path.join(config.get('paths').contentPath, config.get('env') + '.socket'),
-            permissions: '660'
-        };
+    const self = this;
+    const rootApp = externalApp ? externalApp : self.rootApp;
+    let socketConfig;
+
+    const socketValues = {
+        path: path.join(config.get('paths').contentPath, config.get('env') + '.socket'),
+        permissions: '660'
+    };
 
     return new Promise(function (resolve, reject) {
         if (Object.prototype.hasOwnProperty.call(config.get('server'), 'socket')) {
@@ -80,7 +83,7 @@ GhostServer.prototype.start = function (externalApp) {
         }
 
         self.httpServer.on('error', function (error) {
-            var ghostError;
+            let ghostError;
 
             if (error.errno === 'EADDRINUSE') {
                 ghostError = new common.errors.GhostError({
@@ -118,7 +121,7 @@ GhostServer.prototype.start = function (externalApp) {
  * @returns {Promise} Resolves once Ghost has stopped
  */
 GhostServer.prototype.stop = function () {
-    var self = this;
+    const self = this;
 
     return new Promise(function (resolve) {
         if (self.httpServer === null) {
@@ -164,7 +167,7 @@ GhostServer.prototype.hammertime = function () {
  * @param {Object} socket
  */
 GhostServer.prototype.connection = function (socket) {
-    var self = this;
+    const self = this;
 
     self.connectionId += 1;
     socket._ghostId = self.connectionId;
@@ -182,10 +185,10 @@ GhostServer.prototype.connection = function (socket) {
  * httpServer from returning. We need to destroy all connections manually.
  */
 GhostServer.prototype.closeConnections = function () {
-    var self = this;
+    const self = this;
 
     Object.keys(self.connections).forEach(function (socketId) {
-        var socket = self.connections[socketId];
+        const socket = self.connections[socketId];
 
         if (socket) {
             socket.destroy();

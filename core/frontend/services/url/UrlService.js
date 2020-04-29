@@ -1,12 +1,12 @@
-const _debug = require('ghost-ignition').debug._base,
-    debug = _debug('ghost:services:url:service'),
-    _ = require('lodash'),
-    common = require('../../../server/lib/common'),
-    UrlGenerator = require('./UrlGenerator'),
-    Queue = require('./Queue'),
-    Urls = require('./Urls'),
-    Resources = require('./Resources'),
-    urlUtils = require('../../../server/lib/url-utils');
+const _debug = require('ghost-ignition').debug._base;
+const debug = _debug('ghost:services:url:service');
+const _ = require('lodash');
+const common = require('../../../server/lib/common');
+const UrlGenerator = require('./UrlGenerator');
+const Queue = require('./Queue');
+const Urls = require('./Urls');
+const Resources = require('./Resources');
+const urlUtils = require('../../../server/lib/url-utils');
 
 /**
  * The url service class holds all instances in a centralised place.

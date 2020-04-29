@@ -1,9 +1,9 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    testUtils = require('../../utils'),
-    _ = require('lodash'),
-    Promise = require('bluebird'),
-    Models = require('../../../core/server/models');
+const should = require('should');
+const sinon = require('sinon');
+const testUtils = require('../../utils');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const Models = require('../../../core/server/models');
 
 describe('Database Migration (special functions)', function () {
     before(testUtils.teardownDb);
@@ -15,7 +15,7 @@ describe('Database Migration (special functions)', function () {
     describe('Fixtures', function () {
         // Custom assertion for detection that a permissions is assigned to the correct roles
         should.Assertion.add('AssignedToRoles', function (roles) {
-            var roleNames;
+            let roleNames;
             this.params = {operator: 'to have role'};
 
             should.exist(this.obj);
@@ -31,7 +31,7 @@ describe('Database Migration (special functions)', function () {
         // Custom assertion to wrap all permissions
         should.Assertion.add('CompletePermissions', function () {
             this.params = {operator: 'to have a complete set of permissions'};
-            var permissions = this.obj;
+            const permissions = this.obj;
 
             // DB
             permissions[0].name.should.eql('Export database');
@@ -213,7 +213,7 @@ describe('Database Migration (special functions)', function () {
             beforeEach(testUtils.setup('default'));
 
             it('should populate all fixtures correctly', function () {
-                var props = {
+                const props = {
                     posts: Models.Post.findAll({withRelated: ['tags']}),
                     tags: Models.Tag.findAll(),
                     users: Models.User.findAll({

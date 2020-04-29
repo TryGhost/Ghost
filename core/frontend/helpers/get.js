@@ -37,7 +37,7 @@ const pathAliases = {
  * @returns {boolean}
  */
 function isBrowse(options) {
-    var browse = true;
+    let browse = true;
 
     if (options.id || options.slug) {
         browse = false;
@@ -55,10 +55,10 @@ function isBrowse(options) {
  * @returns {String}
  */
 function resolvePaths(globals, data, value) {
-    var regex = /\{\{(.*?)\}\}/g;
+    const regex = /\{\{(.*?)\}\}/g;
 
     value = value.replace(regex, function (match, path) {
-        var result;
+        let result;
 
         // Handle aliases
         path = pathAliases[path] ? pathAliases[path] : path;
@@ -141,7 +141,7 @@ module.exports = function get(resource, options) {
 
     // @TODO: https://github.com/TryGhost/Ghost/issues/10548
     return controller[action](apiOptions).then(function success(result) {
-        var blockParams;
+        let blockParams;
 
         // used for logging details of slow requests
         returnedRowsCount = result[resource] && result[resource].length;

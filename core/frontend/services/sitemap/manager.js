@@ -1,9 +1,9 @@
-const common = require('../../../server/lib/common'),
-    IndexMapGenerator = require('./index-generator'),
-    PagesMapGenerator = require('./page-generator'),
-    PostsMapGenerator = require('./post-generator'),
-    UsersMapGenerator = require('./user-generator'),
-    TagsMapGenerator = require('./tag-generator');
+const common = require('../../../server/lib/common');
+const IndexMapGenerator = require('./index-generator');
+const PagesMapGenerator = require('./page-generator');
+const PostsMapGenerator = require('./post-generator');
+const UsersMapGenerator = require('./user-generator');
+const TagsMapGenerator = require('./tag-generator');
 
 class SiteMapManager {
     constructor(options) {

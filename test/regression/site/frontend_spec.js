@@ -2,20 +2,21 @@
 // As it stands, these tests depend on the database, and as such are integration tests.
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
-var should = require('should'),
-    sinon = require('sinon'),
-    supertest = require('supertest'),
-    moment = require('moment'),
-    cheerio = require('cheerio'),
-    _ = require('lodash'),
-    testUtils = require('../../utils'),
-    configUtils = require('../../utils/configUtils'),
-    urlUtils = require('../../utils/urlUtils'),
-    config = require('../../../core/server/config'),
-    settingsCache = require('../../../core/server/services/settings/cache'),
-    origCache = _.cloneDeep(settingsCache),
-    ghost = testUtils.startGhost,
-    request;
+const should = require('should');
+
+const sinon = require('sinon');
+const supertest = require('supertest');
+const moment = require('moment');
+const cheerio = require('cheerio');
+const _ = require('lodash');
+const testUtils = require('../../utils');
+const configUtils = require('../../utils/configUtils');
+const urlUtils = require('../../utils/urlUtils');
+const config = require('../../../core/server/config');
+const settingsCache = require('../../../core/server/services/settings/cache');
+const origCache = _.cloneDeep(settingsCache);
+const ghost = testUtils.startGhost;
+let request;
 
 describe('Frontend Routing', function () {
     function doEnd(done) {
@@ -135,7 +136,7 @@ describe('Frontend Routing', function () {
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(200)
                     .end(function (err, res) {
-                        var $ = cheerio.load(res.text);
+                        const $ = cheerio.load(res.text);
 
                         should.not.exist(res.headers['x-cache-invalidate']);
                         should.not.exist(res.headers['X-CSRF-Token']);
@@ -244,7 +245,7 @@ describe('Frontend Routing', function () {
                             return done(err);
                         }
 
-                        var $ = cheerio.load(res.text);
+                        const $ = cheerio.load(res.text);
 
                         should.not.exist(res.headers['x-cache-invalidate']);
                         should.not.exist(res.headers['X-CSRF-Token']);
@@ -290,7 +291,7 @@ describe('Frontend Routing', function () {
     });
 
     describe('Subdirectory (no slash)', function () {
-        var ghostServer;
+        let ghostServer;
 
         before(function () {
             configUtils.set('url', 'http://localhost/blog');
@@ -370,7 +371,7 @@ describe('Frontend Routing', function () {
     });
 
     describe('Subdirectory (with slash)', function () {
-        var ghostServer;
+        let ghostServer;
 
         before(function () {
             configUtils.set('url', 'http://localhost/blog/');
@@ -458,7 +459,7 @@ describe('Frontend Routing', function () {
 
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
     describe('HTTPS', function () {
-        var ghostServer;
+        let ghostServer;
 
         before(function () {
             configUtils.set('url', 'http://localhost:2370/');
@@ -496,7 +497,7 @@ describe('Frontend Routing', function () {
 
     // TODO: convert to unit tests
     describe('Redirects (use redirects.json from test/utils/fixtures/data)', function () {
-        var ghostServer;
+        let ghostServer;
 
         before(function () {
             configUtils.set('url', 'http://localhost:2370/');

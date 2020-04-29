@@ -1,12 +1,12 @@
-var should = require('should'),
-    fs = require('fs-extra'),
-    configUtils = require('../../../utils/configUtils'),
-    config = require('../../../../core/server/config'),
-    schedulingUtils = require('../../../../core/server/adapters/scheduling/utils');
+const should = require('should');
+const fs = require('fs-extra');
+const configUtils = require('../../../utils/configUtils');
+const config = require('../../../../core/server/config');
+const schedulingUtils = require('../../../../core/server/adapters/scheduling/utils');
 
 const schedulingPath = configUtils.config.getContentPath('adapters') + 'scheduling/';
 describe('Scheduling: utils', function () {
-    var scope = {adapter: null};
+    const scope = {adapter: null};
 
     before(function () {
         if (!fs.existsSync(schedulingPath)) {
@@ -40,7 +40,7 @@ describe('Scheduling: utils', function () {
                 }
             });
 
-            var jsFile = '' +
+            const jsFile = '' +
                 'var util = require(\'util\');' +
                 'var SchedulingBase = require(\'../../../core/server/adapters/scheduling/SchedulingBase\');' +
                 'var AnotherAdapter = function (){ SchedulingBase.call(this); };' +
@@ -63,7 +63,7 @@ describe('Scheduling: utils', function () {
     describe('error', function () {
         it('create with adapter, but missing fn\'s', function (done) {
             scope.adapter = schedulingPath + 'bad-adapter.js';
-            var jsFile = '' +
+            const jsFile = '' +
                 'var util = require(\'util\');' +
                 'var SchedulingBase = require(\'../../../core/server/adapters/scheduling/SchedulingBase\');' +
                 'var BadAdapter = function (){ SchedulingBase.call(this); };' +

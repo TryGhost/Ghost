@@ -1,22 +1,26 @@
 /* eslint-disable no-regex-spaces */
-const should = require('should'),
-    sinon = require('sinon'),
-    _ = require('lodash'),
-    moment = require('moment'),
-    testUtils = require('../../utils'),
-    testUrlUtils = require('../../utils/urlUtils'),
-    configUtils = require('../../utils/configUtils'),
-    themes = require('../../../core/frontend/services/themes'),
-    models = require('../../../core/server/models'),
-    imageLib = require('../../../core/server/lib/image'),
-    routing = require('../../../core/frontend/services/routing'),
-    urlService = require('../../../core/frontend/services/url'),
-    helpers = require('../../../core/frontend/helpers'),
-    proxy = require('../../../core/frontend/services/proxy'),
-    settingsCache = proxy.settingsCache;
+const should = require('should');
+
+const sinon = require('sinon');
+const _ = require('lodash');
+const moment = require('moment');
+const testUtils = require('../../utils');
+const testUrlUtils = require('../../utils/urlUtils');
+const configUtils = require('../../utils/configUtils');
+const themes = require('../../../core/frontend/services/themes');
+const models = require('../../../core/server/models');
+const imageLib = require('../../../core/server/lib/image');
+const routing = require('../../../core/frontend/services/routing');
+const urlService = require('../../../core/frontend/services/url');
+const helpers = require('../../../core/frontend/helpers');
+const proxy = require('../../../core/frontend/services/proxy');
+const settingsCache = proxy.settingsCache;
 
 describe('{{ghost_head}} helper', function () {
-    let posts = [], tags = [], authors = [], users = [];
+    let posts = [];
+    let tags = [];
+    let authors = [];
+    let users = [];
 
     const makeFixtures = () => {
         const {createPost, createUser, createTag} = testUtils.DataGenerator.forKnex;
@@ -423,7 +427,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on static page', function (done) {
-            var renderObject = {
+            const renderObject = {
                 post: posts[0]
             };
 
@@ -472,7 +476,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on static page with custom post structured data', function (done) {
-            var renderObject = {
+            const renderObject = {
                 post: posts[1]
             };
 
@@ -521,9 +525,11 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on post page with author image and post cover image', function (done) {
-            var renderObject = {
-                    post: posts[2]
-                }, postBk = _.cloneDeep(renderObject.post);
+            const renderObject = {
+                post: posts[2]
+            };
+
+            const postBk = _.cloneDeep(renderObject.post);
 
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
@@ -533,10 +539,10 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             })).then(function (rendered) {
-                var re1 = new RegExp('<meta property="article:published_time" content="' + new Date(renderObject.post.published_at).toISOString()),
-                    re2 = new RegExp('<meta property="article:modified_time" content="' + new Date(renderObject.post.updated_at).toISOString()),
-                    re3 = new RegExp('"datePublished": "' + new Date(renderObject.post.published_at).toISOString()),
-                    re4 = new RegExp('"dateModified": "' + new Date(renderObject.post.updated_at).toISOString());
+                const re1 = new RegExp('<meta property="article:published_time" content="' + new Date(renderObject.post.published_at).toISOString());
+                const re2 = new RegExp('<meta property="article:modified_time" content="' + new Date(renderObject.post.updated_at).toISOString());
+                const re3 = new RegExp('"datePublished": "' + new Date(renderObject.post.published_at).toISOString());
+                const re4 = new RegExp('"dateModified": "' + new Date(renderObject.post.updated_at).toISOString());
 
                 should.exist(rendered);
                 rendered.string.should.match(/<link rel="shortcut icon" href="\/favicon.ico" type="image\/x-icon" \/>/);
@@ -590,9 +596,11 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on post page with custom excerpt for description and meta description', function (done) {
-            var renderObject = {
-                    post: posts[3]
-                }, postBk = _.cloneDeep(renderObject.post);
+            const renderObject = {
+                post: posts[3]
+            };
+
+            const postBk = _.cloneDeep(renderObject.post);
 
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
@@ -650,9 +658,11 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on post page with fall back excerpt if no meta description provided', function (done) {
-            var renderObject = {
-                    post: posts[4]
-                }, postBk = _.cloneDeep(renderObject.post);
+            const renderObject = {
+                post: posts[4]
+            };
+
+            const postBk = _.cloneDeep(renderObject.post);
 
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
@@ -699,9 +709,11 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on AMP post page with author image and post cover image', function (done) {
-            var renderObject = {
-                    post: posts[5]
-                }, postBk = _.cloneDeep(renderObject.post);
+            const renderObject = {
+                post: posts[5]
+            };
+
+            const postBk = _.cloneDeep(renderObject.post);
 
             helpers.ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
@@ -759,7 +771,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data if metaTitle and metaDescription have double quotes', function (done) {
-            var renderObject = {
+            const renderObject = {
                 post: posts[6]
             };
 
@@ -819,7 +831,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data without tags if there are no tags', function (done) {
-            var renderObject = {
+            const renderObject = {
                 post: posts[7]
             };
 
@@ -876,7 +888,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on post page with null author image and post cover image', function (done) {
-            var renderObject = {
+            const renderObject = {
                 post: posts[8]
             };
 
@@ -933,7 +945,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns twitter and facebook descriptions even if no meta description available', function (done) {
-            var renderObject = {
+            const renderObject = {
                 post: posts[9]
             };
 
@@ -957,7 +969,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns canonical URL', function (done) {
-            var renderObject = {
+            const renderObject = {
                 post: posts[9]
             };
 
@@ -1031,7 +1043,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data and schema first tag page with meta description and meta title', function (done) {
-            var renderObject = {
+            const renderObject = {
                 tag: tags[0]
             };
 
@@ -1074,7 +1086,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('tag first page without meta data if no meta title and meta description, but model description provided', function (done) {
-            var renderObject = {
+            const renderObject = {
                 tag: tags[1]
             };
 
@@ -1116,7 +1128,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('tag first page without meta and model description returns no description fields', function (done) {
-            var renderObject = {
+            const renderObject = {
                 tag: tags[2]
             };
 
@@ -1140,7 +1152,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not return structured data on paginated tag pages', function (done) {
-            var renderObject = {
+            const renderObject = {
                 tag: tags[3]
             };
 
@@ -1390,7 +1402,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not return structured data', function (done) {
-            var renderObject = {
+            const renderObject = {
                 post: posts[2]
             };
 
@@ -1517,7 +1529,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta tag without injected code for amp context', function (done) {
-            var renderObject = {
+            const renderObject = {
                 post: posts[1]
             };
 
@@ -1546,7 +1558,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not contain amphtml link', function (done) {
-            var renderObject = {
+            const renderObject = {
                 post: posts[1]
             };
 

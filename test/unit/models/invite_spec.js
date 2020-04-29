@@ -1,10 +1,10 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
-    common = require('../../../core/server/lib/common'),
-    models = require('../../../core/server/models'),
-    settingsCache = require('../../../core/server/services/settings/cache'),
-    testUtils = require('../../utils');
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const common = require('../../../core/server/lib/common');
+const models = require('../../../core/server/models');
+const settingsCache = require('../../../core/server/services/settings/cache');
+const testUtils = require('../../utils');
 
 describe('Unit: models/invite', function () {
     before(function () {

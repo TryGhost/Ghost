@@ -1,14 +1,16 @@
 // NOTE: the sole purpose of this suite is to test is it calls through to getAssetUrlHelper
 //       more complicated use cases are tested directly in asset_url.spec
 
-var should = require('should'),
-    sinon = require('sinon'),
-    configUtils = require('../../utils/configUtils'),
-    helpers = require('../../../core/frontend/helpers'),
-    settingsCache = require('../../../core/server/services/settings/cache');
+const should = require('should');
+
+const sinon = require('sinon');
+const configUtils = require('../../utils/configUtils');
+const helpers = require('../../../core/frontend/helpers');
+const settingsCache = require('../../../core/server/services/settings/cache');
 
 describe('{{asset}} helper', function () {
-    var rendered, localSettingsCache = {};
+    let rendered;
+    const localSettingsCache = {};
 
     before(function () {
         configUtils.set({assetHash: 'abc'});

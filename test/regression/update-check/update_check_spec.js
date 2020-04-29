@@ -27,9 +27,9 @@ describe('Update Check', function () {
     after(testUtils.teardownDb);
 
     describe('fn: updateCheck', function () {
-        var updateCheckRequestSpy,
-            updateCheckResponseSpy,
-            updateCheckErrorSpy;
+        let updateCheckRequestSpy;
+        let updateCheckResponseSpy;
+        let updateCheckErrorSpy;
 
         beforeEach(testUtils.teardownDb);
         beforeEach(testUtils.setup('roles', 'owner'));
@@ -107,7 +107,7 @@ describe('Update Check', function () {
     });
 
     describe('fn: updateCheckData', function () {
-        var environmentsOrig;
+        let environmentsOrig;
 
         before(function () {
             configUtils.set('privacy:useUpdateCheck', true);
@@ -121,7 +121,7 @@ describe('Update Check', function () {
         beforeEach(testUtils.setup('roles', 'owner', 'settings', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
 
         it('should report the correct data', function (done) {
-            var updateCheckData = updateCheck.__get__('updateCheckData');
+            const updateCheckData = updateCheck.__get__('updateCheckData');
 
             updateCheckData().then(function (data) {
                 should.exist(data);
@@ -144,7 +144,7 @@ describe('Update Check', function () {
     });
 
     describe('fn: createCustomNotification', function () {
-        var currentVersionOrig;
+        let currentVersionOrig;
 
         before(function () {
             currentVersionOrig = updateCheck.__get__('ghostVersion.original');
@@ -163,18 +163,19 @@ describe('Update Check', function () {
         });
 
         it('should create a release notification for target version', function (done) {
-            var createCustomNotification = updateCheck.__get__('createCustomNotification'),
-                notification = {
-                    id: 1,
-                    custom: 0,
-                    messages: [{
-                        id: uuid.v4(),
-                        version: '0.9.x',
-                        content: '<p>Hey there! This is for 0.9.0 version</p>',
-                        dismissible: true,
-                        top: true
-                    }]
-                };
+            const createCustomNotification = updateCheck.__get__('createCustomNotification');
+
+            const notification = {
+                id: 1,
+                custom: 0,
+                messages: [{
+                    id: uuid.v4(),
+                    version: '0.9.x',
+                    content: '<p>Hey there! This is for 0.9.0 version</p>',
+                    dismissible: true,
+                    top: true
+                }]
+            };
 
             NotificationsAPI.__set__('ghostVersion.full', '0.8.1');
 
@@ -185,7 +186,7 @@ describe('Update Check', function () {
                 should.exist(results.notifications);
                 results.notifications.length.should.eql(1);
 
-                var targetNotification = _.find(results.notifications, {id: notification.messages[0].id});
+                const targetNotification = _.find(results.notifications, {id: notification.messages[0].id});
                 should.exist(targetNotification);
 
                 targetNotification.dismissible.should.eql(notification.messages[0].dismissible);
@@ -198,18 +199,19 @@ describe('Update Check', function () {
         });
 
         it('release notification version format is wrong', function (done) {
-            var createCustomNotification = updateCheck.__get__('createCustomNotification'),
-                notification = {
-                    id: 1,
-                    custom: 0,
-                    messages: [{
-                        id: uuid.v4(),
-                        version: '0.9.x',
-                        content: '<p>Hey there! This is for 0.9 version</p>',
-                        dismissible: true,
-                        top: true
-                    }]
-                };
+            const createCustomNotification = updateCheck.__get__('createCustomNotification');
+
+            const notification = {
+                id: 1,
+                custom: 0,
+                messages: [{
+                    id: uuid.v4(),
+                    version: '0.9.x',
+                    content: '<p>Hey there! This is for 0.9 version</p>',
+                    dismissible: true,
+                    top: true
+                }]
+            };
 
             NotificationsAPI.__set__('ghostVersion.full', '0.8.1');
 
@@ -224,18 +226,19 @@ describe('Update Check', function () {
         });
 
         it('blog version format is wrong', function (done) {
-            var createCustomNotification = updateCheck.__get__('createCustomNotification'),
-                notification = {
-                    id: 1,
-                    custom: 0,
-                    messages: [{
-                        id: uuid.v4(),
-                        version: '0.9.x',
-                        content: '<p>Hey there! This is for 0.9.0 version</p>',
-                        dismissible: true,
-                        top: true
-                    }]
-                };
+            const createCustomNotification = updateCheck.__get__('createCustomNotification');
+
+            const notification = {
+                id: 1,
+                custom: 0,
+                messages: [{
+                    id: uuid.v4(),
+                    version: '0.9.x',
+                    content: '<p>Hey there! This is for 0.9.0 version</p>',
+                    dismissible: true,
+                    top: true
+                }]
+            };
 
             NotificationsAPI.__set__('ghostVersion.full', '0.8');
 
@@ -250,19 +253,20 @@ describe('Update Check', function () {
         });
 
         it('should create a custom notification', function (done) {
-            var createCustomNotification = updateCheck.__get__('createCustomNotification'),
-                notification = {
-                    id: 1,
-                    custom: 1,
-                    messages: [{
-                        id: uuid.v4(),
-                        version: 'custom1',
-                        content: '<p>How about migrating your blog?</p>',
-                        dismissible: false,
-                        top: true,
-                        type: 'warn'
-                    }]
-                };
+            const createCustomNotification = updateCheck.__get__('createCustomNotification');
+
+            const notification = {
+                id: 1,
+                custom: 1,
+                messages: [{
+                    id: uuid.v4(),
+                    version: 'custom1',
+                    content: '<p>How about migrating your blog?</p>',
+                    dismissible: false,
+                    top: true,
+                    type: 'warn'
+                }]
+            };
 
             createCustomNotification(notification).then(function () {
                 return api.notifications.browse(testUtils.context.internal);
@@ -271,7 +275,7 @@ describe('Update Check', function () {
                 should.exist(results.notifications);
                 results.notifications.length.should.eql(1);
 
-                var targetNotification = _.find(results.notifications, {id: notification.messages[0].id});
+                const targetNotification = _.find(results.notifications, {id: notification.messages[0].id});
                 should.exist(targetNotification);
                 targetNotification.dismissible.should.eql(notification.messages[0].dismissible);
                 targetNotification.top.should.eql(notification.messages[0].top);
@@ -281,19 +285,20 @@ describe('Update Check', function () {
         });
 
         it('should not add duplicates', function (done) {
-            var createCustomNotification = updateCheck.__get__('createCustomNotification'),
-                notification = {
-                    id: 1,
-                    custom: 1,
-                    messages: [{
-                        id: uuid.v4(),
-                        version: 'custom1',
-                        content: '<p>How about migrating your blog?</p>',
-                        dismissible: false,
-                        top: true,
-                        type: 'warn'
-                    }]
-                };
+            const createCustomNotification = updateCheck.__get__('createCustomNotification');
+
+            const notification = {
+                id: 1,
+                custom: 1,
+                messages: [{
+                    id: uuid.v4(),
+                    version: 'custom1',
+                    content: '<p>How about migrating your blog?</p>',
+                    dismissible: false,
+                    top: true,
+                    type: 'warn'
+                }]
+            };
 
             createCustomNotification(notification)
                 .then(function () {
@@ -325,15 +330,16 @@ describe('Update Check', function () {
         beforeEach(testUtils.setup('roles', 'settings', 'perms:setting', 'perms:init'));
 
         it('receives a notifications with messages', function (done) {
-            var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
-                createNotificationSpy = sinon.spy(),
-                message = {
-                    id: uuid.v4(),
-                    version: '^0.11.11',
-                    content: 'Test',
-                    dismissible: true,
-                    top: true
-                };
+            const updateCheckResponse = updateCheck.__get__('updateCheckResponse');
+            const createNotificationSpy = sinon.spy();
+
+            const message = {
+                id: uuid.v4(),
+                version: '^0.11.11',
+                content: 'Test',
+                dismissible: true,
+                top: true
+            };
 
             updateCheck.__set__('createCustomNotification', createNotificationSpy);
 
@@ -346,26 +352,29 @@ describe('Update Check', function () {
         });
 
         it('receives multiple notifications', function (done) {
-            var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
-                createNotificationSpy = sinon.spy(),
-                message1 = {
-                    id: uuid.v4(),
-                    version: '^0.11.11',
-                    content: 'Test1',
-                    dismissible: true,
-                    top: true
-                },
-                message2 = {
-                    id: uuid.v4(),
-                    version: '^0',
-                    content: 'Test2',
-                    dismissible: true,
-                    top: false
-                },
-                notifications = [
-                    {version: '0.11.12', messages: [message1]},
-                    {version: 'custom1', messages: [message2]}
-                ];
+            const updateCheckResponse = updateCheck.__get__('updateCheckResponse');
+            const createNotificationSpy = sinon.spy();
+
+            const message1 = {
+                id: uuid.v4(),
+                version: '^0.11.11',
+                content: 'Test1',
+                dismissible: true,
+                top: true
+            };
+
+            const message2 = {
+                id: uuid.v4(),
+                version: '^0',
+                content: 'Test2',
+                dismissible: true,
+                top: false
+            };
+
+            const notifications = [
+                {version: '0.11.12', messages: [message1]},
+                {version: 'custom1', messages: [message2]}
+            ];
 
             updateCheck.__set__('createCustomNotification', createNotificationSpy);
 
@@ -378,34 +387,38 @@ describe('Update Check', function () {
         });
 
         it('ignores some custom notifications which are not marked as group', function (done) {
-            var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
-                createNotificationSpy = sinon.spy(),
-                message1 = {
-                    id: uuid.v4(),
-                    version: '^0.11.11',
-                    content: 'Test1',
-                    dismissible: true,
-                    top: true
-                },
-                message2 = {
-                    id: uuid.v4(),
-                    version: '^0',
-                    content: 'Test2',
-                    dismissible: true,
-                    top: false
-                },
-                message3 = {
-                    id: uuid.v4(),
-                    version: '^0',
-                    content: 'Test2',
-                    dismissible: true,
-                    top: false
-                },
-                notifications = [
-                    {version: '0.11.12', messages: [message1]},
-                    {version: 'all1', messages: [message2], custom: 1},
-                    {version: 'migration1', messages: [message3], custom: 1}
-                ];
+            const updateCheckResponse = updateCheck.__get__('updateCheckResponse');
+            const createNotificationSpy = sinon.spy();
+
+            const message1 = {
+                id: uuid.v4(),
+                version: '^0.11.11',
+                content: 'Test1',
+                dismissible: true,
+                top: true
+            };
+
+            const message2 = {
+                id: uuid.v4(),
+                version: '^0',
+                content: 'Test2',
+                dismissible: true,
+                top: false
+            };
+
+            const message3 = {
+                id: uuid.v4(),
+                version: '^0',
+                content: 'Test2',
+                dismissible: true,
+                top: false
+            };
+
+            const notifications = [
+                {version: '0.11.12', messages: [message1]},
+                {version: 'all1', messages: [message2], custom: 1},
+                {version: 'migration1', messages: [message3], custom: 1}
+            ];
 
             updateCheck.__set__('createCustomNotification', createNotificationSpy);
 
@@ -418,34 +431,38 @@ describe('Update Check', function () {
         });
 
         it('group matches', function (done) {
-            var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
-                createNotificationSpy = sinon.spy(),
-                message1 = {
-                    id: uuid.v4(),
-                    version: '^0.11.11',
-                    content: 'Test1',
-                    dismissible: true,
-                    top: true
-                },
-                message2 = {
-                    id: uuid.v4(),
-                    version: '^0',
-                    content: 'Test2',
-                    dismissible: true,
-                    top: false
-                },
-                message3 = {
-                    id: uuid.v4(),
-                    version: '^0',
-                    content: 'Test2',
-                    dismissible: true,
-                    top: false
-                },
-                notifications = [
-                    {version: '0.11.12', messages: [message1], custom: 0},
-                    {version: 'all1', messages: [message2], custom: 1},
-                    {version: 'migration1', messages: [message3], custom: 1}
-                ];
+            const updateCheckResponse = updateCheck.__get__('updateCheckResponse');
+            const createNotificationSpy = sinon.spy();
+
+            const message1 = {
+                id: uuid.v4(),
+                version: '^0.11.11',
+                content: 'Test1',
+                dismissible: true,
+                top: true
+            };
+
+            const message2 = {
+                id: uuid.v4(),
+                version: '^0',
+                content: 'Test2',
+                dismissible: true,
+                top: false
+            };
+
+            const message3 = {
+                id: uuid.v4(),
+                version: '^0',
+                content: 'Test2',
+                dismissible: true,
+                top: false
+            };
+
+            const notifications = [
+                {version: '0.11.12', messages: [message1], custom: 0},
+                {version: 'all1', messages: [message2], custom: 1},
+                {version: 'migration1', messages: [message3], custom: 1}
+            ];
 
             updateCheck.__set__('createCustomNotification', createNotificationSpy);
 
@@ -460,18 +477,20 @@ describe('Update Check', function () {
         });
 
         it('single custom notification received, group matches', function (done) {
-            var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
-                createNotificationSpy = sinon.spy(),
-                message1 = {
-                    id: uuid.v4(),
-                    version: '^0.11.11',
-                    content: 'Custom',
-                    dismissible: true,
-                    top: true
-                },
-                notifications = [
-                    {version: 'something', messages: [message1], custom: 1}
-                ];
+            const updateCheckResponse = updateCheck.__get__('updateCheckResponse');
+            const createNotificationSpy = sinon.spy();
+
+            const message1 = {
+                id: uuid.v4(),
+                version: '^0.11.11',
+                content: 'Custom',
+                dismissible: true,
+                top: true
+            };
+
+            const notifications = [
+                {version: 'something', messages: [message1], custom: 1}
+            ];
 
             updateCheck.__set__('createCustomNotification', createNotificationSpy);
 
@@ -486,18 +505,20 @@ describe('Update Check', function () {
         });
 
         it('single custom notification received, group does not match', function (done) {
-            var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
-                createNotificationSpy = sinon.spy(),
-                message1 = {
-                    id: uuid.v4(),
-                    version: '^0.11.11',
-                    content: 'Custom',
-                    dismissible: true,
-                    top: true
-                },
-                notifications = [
-                    {version: 'something', messages: [message1], custom: 1}
-                ];
+            const updateCheckResponse = updateCheck.__get__('updateCheckResponse');
+            const createNotificationSpy = sinon.spy();
+
+            const message1 = {
+                id: uuid.v4(),
+                version: '^0.11.11',
+                content: 'Custom',
+                dismissible: true,
+                top: true
+            };
+
+            const notifications = [
+                {version: 'something', messages: [message1], custom: 1}
+            ];
 
             updateCheck.__set__('createCustomNotification', createNotificationSpy);
 
@@ -522,15 +543,16 @@ describe('Update Check', function () {
         });
 
         it('[default]', function () {
-            var updateCheckRequest = updateCheck.__get__('updateCheckRequest'),
-                updateCheckDataSpy = sinon.stub(),
-                hostname,
-                reqObj,
-                data = {
-                    ghost_version: '0.11.11',
-                    blog_id: 'something',
-                    npm_version: 'something'
-                };
+            const updateCheckRequest = updateCheck.__get__('updateCheckRequest');
+            const updateCheckDataSpy = sinon.stub();
+            let hostname;
+            let reqObj;
+
+            const data = {
+                ghost_version: '0.11.11',
+                blog_id: 'something',
+                npm_version: 'something'
+            };
 
             updateCheck.__set__('request', function (_hostname, _reqObj) {
                 hostname = _hostname;
@@ -556,10 +578,10 @@ describe('Update Check', function () {
         });
 
         it('privacy flag is used', function () {
-            var updateCheckRequest = updateCheck.__get__('updateCheckRequest'),
-                updateCheckDataSpy = sinon.stub(),
-                reqObj,
-                hostname;
+            const updateCheckRequest = updateCheck.__get__('updateCheckRequest');
+            const updateCheckDataSpy = sinon.stub();
+            let reqObj;
+            let hostname;
 
             configUtils.set({
                 privacy: {
@@ -599,10 +621,10 @@ describe('Update Check', function () {
         });
 
         it('received 500 from the service', function () {
-            var updateCheckRequest = updateCheck.__get__('updateCheckRequest'),
-                updateCheckDataSpy = sinon.stub(),
-                reqObj,
-                hostname;
+            const updateCheckRequest = updateCheck.__get__('updateCheckRequest');
+            const updateCheckDataSpy = sinon.stub();
+            let reqObj;
+            let hostname;
 
             updateCheck.__set__('request', function (_hostname, _reqObj) {
                 hostname = _hostname;
@@ -632,10 +654,10 @@ describe('Update Check', function () {
         });
 
         it('received 404 from the service', function () {
-            var updateCheckRequest = updateCheck.__get__('updateCheckRequest'),
-                updateCheckDataSpy = sinon.stub(),
-                reqObj,
-                hostname;
+            const updateCheckRequest = updateCheck.__get__('updateCheckRequest');
+            const updateCheckDataSpy = sinon.stub();
+            let reqObj;
+            let hostname;
 
             updateCheck.__set__('request', function (_hostname, _reqObj) {
                 hostname = _hostname;
@@ -666,10 +688,10 @@ describe('Update Check', function () {
         });
 
         it('custom url', function () {
-            var updateCheckRequest = updateCheck.__get__('updateCheckRequest'),
-                updateCheckDataSpy = sinon.stub(),
-                reqObj,
-                hostname;
+            const updateCheckRequest = updateCheck.__get__('updateCheckRequest');
+            const updateCheckDataSpy = sinon.stub();
+            let reqObj;
+            let hostname;
 
             configUtils.set({
                 updateCheck: {

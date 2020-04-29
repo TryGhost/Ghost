@@ -1,7 +1,7 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    common = require('../../../../../core/server/lib/common'),
-    helpers = require('../../../../../core/frontend/services/routing/helpers');
+const should = require('should');
+const sinon = require('sinon');
+const common = require('../../../../../core/server/lib/common');
+const helpers = require('../../../../../core/frontend/services/routing/helpers');
 
 describe('handleError', function () {
     let next;

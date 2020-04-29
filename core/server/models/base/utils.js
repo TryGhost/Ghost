@@ -2,11 +2,13 @@
  * # Utils
  * Parts of the model code which can be split out and unit tested
  */
-var _ = require('lodash'),
-    Promise = require('bluebird'),
-    ObjectId = require('bson-objectid'),
-    common = require('../../lib/common'),
-    attach, detach;
+const _ = require('lodash');
+
+const Promise = require('bluebird');
+const ObjectId = require('bson-objectid');
+const common = require('../../lib/common');
+let attach;
+let detach;
 
 /**
  * Attach wrapper (please never call attach manual!)
@@ -24,8 +26,8 @@ var _ = require('lodash'),
 attach = function attach(Model, effectedModelId, relation, modelsToAttach, options) {
     options = options || {};
 
-    var fetchedModel,
-        localOptions = {transacting: options.transacting};
+    let fetchedModel;
+    const localOptions = {transacting: options.transacting};
 
     return Model.forge({id: effectedModelId}).fetch(localOptions)
         .then(function successFetchedModel(_fetchedModel) {
@@ -66,8 +68,8 @@ attach = function attach(Model, effectedModelId, relation, modelsToAttach, optio
 detach = function detach(Model, effectedModelId, relation, modelsToAttach, options) {
     options = options || {};
 
-    var fetchedModel,
-        localOptions = {transacting: options.transacting};
+    let fetchedModel;
+    const localOptions = {transacting: options.transacting};
 
     return Model.forge({id: effectedModelId}).fetch(localOptions)
         .then(function successFetchedModel(_fetchedModel) {

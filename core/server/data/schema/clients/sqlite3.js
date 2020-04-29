@@ -1,13 +1,14 @@
-var _ = require('lodash'),
-    db = require('../../../data/db'),
+const _ = require('lodash');
+const db = require('../../../data/db');
 
-    // private
-    doRaw,
+// private
+let doRaw;
 
-    // public
-    getTables,
-    getIndexes,
-    getColumns;
+// public
+let getTables;
+
+let getIndexes;
+let getColumns;
 
 doRaw = function doRaw(query, transaction, fn) {
     if (!fn) {

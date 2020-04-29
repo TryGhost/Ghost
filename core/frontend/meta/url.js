@@ -1,6 +1,6 @@
-var schema = require('../../server/data/schema').checks,
-    urlUtils = require('../../server/lib/url-utils'),
-    urlService = require('../services/url');
+const schema = require('../../server/data/schema').checks;
+const urlUtils = require('../../server/lib/url-utils');
+const urlService = require('../services/url');
 
 // This cleans the url from any `/amp` postfixes, so we'll never
 // output a url with `/amp` in the end, except for the needed `amphtml`

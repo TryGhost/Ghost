@@ -1,15 +1,16 @@
-var should = require('should'),
-    common = require('../../../../core/server/lib/common');
+const should = require('should');
+const common = require('../../../../core/server/lib/common');
 
 describe('Errors', function () {
     it('Ensure we inherit from Error', function () {
-        var ghostError = new common.errors.GhostError();
+        const ghostError = new common.errors.GhostError();
         (ghostError instanceof Error).should.eql(true);
     });
 
     describe('Inherite from other error', function () {
         it('default', function () {
-            var someError = new Error(), ghostError;
+            const someError = new Error();
+            let ghostError;
 
             someError.message = 'test';
             someError.context = 'test';
@@ -22,7 +23,8 @@ describe('Errors', function () {
         });
 
         it('has nested object', function () {
-            var someError = new Error(), ghostError;
+            const someError = new Error();
+            let ghostError;
 
             someError.obj = {
                 a: 'b'
@@ -36,7 +38,8 @@ describe('Errors', function () {
         });
 
         it('with custom attribute', function () {
-            var someError = new Error(), ghostError;
+            const someError = new Error();
+            let ghostError;
 
             someError.context = 'test';
 
@@ -49,7 +52,8 @@ describe('Errors', function () {
         });
 
         it('with custom attribute', function () {
-            var someError = new Error(), ghostError;
+            const someError = new Error();
+            let ghostError;
 
             ghostError = new common.errors.GhostError({
                 err: someError,
@@ -60,7 +64,7 @@ describe('Errors', function () {
         });
 
         it('error is string', function () {
-            var ghostError = new common.errors.GhostError({
+            const ghostError = new common.errors.GhostError({
                 err: 'string'
             });
 

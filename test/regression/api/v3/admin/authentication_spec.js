@@ -237,7 +237,7 @@ describe('Authentication API v3', function () {
         it('reset password', function (done) {
             models.User.getOwnerUser(testUtils.context.internal)
                 .then(function (ownerUser) {
-                    var token = security.tokens.resetToken.generateHash({
+                    const token = security.tokens.resetToken.generateHash({
                         expires: Date.now() + (1000 * 60),
                         email: user.email,
                         dbHash: settingsCache.get('db_hash'),

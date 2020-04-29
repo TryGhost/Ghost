@@ -7,24 +7,25 @@
  * Blog owners can opt-out of update checks by setting `privacy: { useUpdateCheck: false }` in their config file.
  */
 
-const crypto = require('crypto'),
-    exec = require('child_process').exec,
-    moment = require('moment'),
-    Promise = require('bluebird'),
-    _ = require('lodash'),
-    url = require('url'),
-    debug = require('ghost-ignition').debug('update-check'),
-    api = require('./api').v2,
-    config = require('./config'),
-    urlUtils = require('./lib/url-utils'),
-    common = require('./lib/common'),
-    request = require('./lib/request'),
-    ghostVersion = require('./lib/ghost-version'),
-    internal = {context: {internal: true}},
-    allowedCheckEnvironments = ['development', 'production'];
+const crypto = require('crypto');
+
+const exec = require('child_process').exec;
+const moment = require('moment');
+const Promise = require('bluebird');
+const _ = require('lodash');
+const url = require('url');
+const debug = require('ghost-ignition').debug('update-check');
+const api = require('./api').v2;
+const config = require('./config');
+const urlUtils = require('./lib/url-utils');
+const common = require('./lib/common');
+const request = require('./lib/request');
+const ghostVersion = require('./lib/ghost-version');
+const internal = {context: {internal: true}};
+const allowedCheckEnvironments = ['development', 'production'];
 
 function nextCheckTimestamp() {
-    var now = Math.round(new Date().getTime() / 1000);
+    const now = Math.round(new Date().getTime() / 1000);
     return now + (24 * 3600);
 }
 
@@ -87,8 +88,8 @@ function createCustomNotification(notification) {
  * @returns {Promise}
  */
 function updateCheckData() {
-    let data = {},
-        mailConfig = config.get('mail');
+    let data = {};
+    let mailConfig = config.get('mail');
 
     data.ghost_version = ghostVersion.original;
     data.node_version = process.versions.node;
@@ -106,14 +107,14 @@ function updateCheckData() {
         users: api.users.browse(internal).reflect(),
         npm: Promise.promisify(exec)('npm -v').reflect()
     }).then(function (descriptors) {
-        var hash = descriptors.hash.value().settings[0],
-            theme = descriptors.theme.value().settings[0],
-            posts = descriptors.posts.value(),
-            users = descriptors.users.value(),
-            npm = descriptors.npm.value(),
-            blogUrl = urlUtils.urlFor('home', true),
-            parsedBlogUrl = url.parse(blogUrl),
-            blogId = parsedBlogUrl.hostname + parsedBlogUrl.pathname.replace(/\//, '') + hash.value;
+        const hash = descriptors.hash.value().settings[0];
+        const theme = descriptors.theme.value().settings[0];
+        const posts = descriptors.posts.value();
+        const users = descriptors.users.value();
+        const npm = descriptors.npm.value();
+        const blogUrl = urlUtils.urlFor('home', true);
+        const parsedBlogUrl = url.parse(blogUrl);
+        const blogId = parsedBlogUrl.hostname + parsedBlogUrl.pathname.replace(/\//, '') + hash.value;
 
         data.url = blogUrl;
         data.blog_id = crypto.createHash('md5').update(blogId).digest('hex');
@@ -140,11 +141,12 @@ function updateCheckRequest() {
     return updateCheckData()
         .then(function then(reqData) {
             let reqObj = {
-                    timeout: 1000,
-                    headers: {}
-                },
-                checkEndpoint = config.get('updateCheck:url'),
-                checkMethod = config.isPrivacyDisabled('useUpdateCheck') ? 'GET' : 'POST';
+                timeout: 1000,
+                headers: {}
+            };
+
+            let checkEndpoint = config.get('updateCheck:url');
+            let checkMethod = config.isPrivacyDisabled('useUpdateCheck') ? 'GET' : 'POST';
 
             // CASE: Expose stats and do a check-in
             if (checkMethod === 'POST') {
@@ -166,7 +168,7 @@ function updateCheckRequest() {
                     return response.body;
                 })
                 .catch(function (err) {
-                    // CASE: no notifications available, ignore
+                // CASE: no notifications available, ignore
                     if (err.statusCode === 404) {
                         return {
                             next_check: nextCheckTimestamp(),
@@ -223,8 +225,8 @@ function updateCheckRequest() {
  * @return {Promise}
  */
 function updateCheckResponse(response) {
-    let notifications = [],
-        notificationGroups = (config.get('notificationGroups') || []).concat(['all']);
+    let notifications = [];
+    let notificationGroups = (config.get('notificationGroups') || []).concat(['all']);
 
     debug('Notification Groups', notificationGroups);
     debug('Response Update Check Service', response);

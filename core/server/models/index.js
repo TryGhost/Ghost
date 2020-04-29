@@ -2,9 +2,7 @@
  * Dependencies
  */
 
-var _ = require('lodash'),
-    exports,
-    models;
+const _ = require('lodash');
 
 // enable event listeners
 require('./base/listeners');
@@ -14,7 +12,7 @@ require('./base/listeners');
  */
 exports = module.exports;
 
-models = [
+const models = [
     'permission',
     'post',
     'role',

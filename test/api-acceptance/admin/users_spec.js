@@ -12,7 +12,8 @@ const ghost = testUtils.startGhost;
 let request;
 
 describe('User API', function () {
-    let inactiveUser, admin;
+    let inactiveUser;
+    let admin;
 
     before(function () {
         return ghost()
@@ -57,7 +58,7 @@ describe('User API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
 
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 localUtils.API.checkResponse(jsonResponse, 'users');
 
@@ -102,7 +103,7 @@ describe('User API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 localUtils.API.checkResponse(jsonResponse, 'users');
 
@@ -141,7 +142,7 @@ describe('User API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 should.not.exist(jsonResponse.meta);
 
@@ -164,7 +165,7 @@ describe('User API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 should.not.exist(jsonResponse.meta);
 
@@ -186,7 +187,7 @@ describe('User API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
                 should.exist(jsonResponse.users);
                 should.not.exist(jsonResponse.meta);
 
@@ -213,7 +214,7 @@ describe('User API', function () {
                     return done(err);
                 }
 
-                var putBody = res.body;
+                const putBody = res.body;
                 res.headers['x-cache-invalidate'].should.eql('/*');
                 should.exist(putBody.users[0]);
                 putBody.users[0].website.should.eql('http://joe-bloggs.ghost.org');

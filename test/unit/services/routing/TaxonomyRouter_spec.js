@@ -1,16 +1,18 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    _ = require('lodash'),
-    settingsCache = require('../../../../core/server/services/settings/cache'),
-    common = require('../../../../core/server/lib/common'),
-    controllers = require('../../../../core/frontend/services/routing/controllers'),
-    TaxonomyRouter = require('../../../../core/frontend/services/routing/TaxonomyRouter'),
-    RESOURCE_CONFIG_V2 = require('../../../../core/frontend/services/routing/config/v2'),
-    RESOURCE_CONFIG_CANARY = require('../../../../core/frontend/services/routing/config/canary'),
-    RESOURCE_CONFIG_V3 = require('../../../../core/frontend/services/routing/config/v3');
+const should = require('should');
+const sinon = require('sinon');
+const _ = require('lodash');
+const settingsCache = require('../../../../core/server/services/settings/cache');
+const common = require('../../../../core/server/lib/common');
+const controllers = require('../../../../core/frontend/services/routing/controllers');
+const TaxonomyRouter = require('../../../../core/frontend/services/routing/TaxonomyRouter');
+const RESOURCE_CONFIG_V2 = require('../../../../core/frontend/services/routing/config/v2');
+const RESOURCE_CONFIG_CANARY = require('../../../../core/frontend/services/routing/config/canary');
+const RESOURCE_CONFIG_V3 = require('../../../../core/frontend/services/routing/config/v3');
 
 describe('UNIT - services/routing/TaxonomyRouter', function () {
-    let req, res, next;
+    let req;
+    let res;
+    let next;
 
     beforeEach(function () {
         sinon.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');

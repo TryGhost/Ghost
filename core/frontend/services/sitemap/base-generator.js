@@ -1,9 +1,9 @@
-const _ = require('lodash'),
-    xml = require('xml'),
-    moment = require('moment'),
-    path = require('path'),
-    urlUtils = require('../../../server/lib/url-utils'),
-    localUtils = require('./utils');
+const _ = require('lodash');
+const xml = require('xml');
+const moment = require('moment');
+const path = require('path');
+const urlUtils = require('../../../server/lib/url-utils');
+const localUtils = require('./utils');
 
 // Sitemap specific xml namespace declarations that should not change
 const XMLNS_DECLS = {
@@ -22,24 +22,28 @@ class BaseSiteMapGenerator {
     }
 
     generateXmlFromNodes() {
-        var self = this,
-            // Get a mapping of node to timestamp
-            timedNodes = _.map(this.nodeLookup, function (node, id) {
-                return {
-                    id: id,
-                    // Using negative here to sort newest to oldest
-                    ts: -(self.nodeTimeLookup[id] || 0),
-                    node: node
-                };
-            }, []),
-            // Sort nodes by timestamp
-            sortedNodes = _.sortBy(timedNodes, 'ts'),
-            // Grab just the nodes
-            urlElements = _.map(sortedNodes, 'node'),
-            data = {
-                // Concat the elements to the _attr declaration
-                urlset: [XMLNS_DECLS].concat(urlElements)
+        const self = this;
+
+        // Get a mapping of node to timestamp
+        const timedNodes = _.map(this.nodeLookup, function (node, id) {
+            return {
+                id: id,
+                // Using negative here to sort newest to oldest
+                ts: -(self.nodeTimeLookup[id] || 0),
+                node: node
             };
+        }, []);
+
+        // Sort nodes by timestamp
+        const sortedNodes = _.sortBy(timedNodes, 'ts');
+
+        // Grab just the nodes
+        const urlElements = _.map(sortedNodes, 'node');
+
+        const data = {
+            // Concat the elements to the _attr declaration
+            urlset: [XMLNS_DECLS].concat(urlElements)
+        };
 
         // Return the xml
         return localUtils.getDeclarations() + xml(data);
@@ -83,7 +87,8 @@ class BaseSiteMapGenerator {
     }
 
     createUrlNodeFromDatum(url, datum) {
-        let node, imgNode;
+        let node;
+        let imgNode;
 
         node = {
             url: [
@@ -103,9 +108,10 @@ class BaseSiteMapGenerator {
 
     createImageNodeFromDatum(datum) {
         // Check for cover first because user has cover but the rest only have image
-        var image = datum.cover_image || datum.profile_image || datum.feature_image,
-            imageUrl,
-            imageEl;
+        const image = datum.cover_image || datum.profile_image || datum.feature_image;
+
+        let imageUrl;
+        let imageEl;
 
         if (!image) {
             return;

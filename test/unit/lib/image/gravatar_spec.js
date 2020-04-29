@@ -1,7 +1,7 @@
-var should = require('should'),
-    nock = require('nock'),
-    configUtils = require('../../../utils/configUtils'),
-    gravatar = require('../../../../core/server/lib/image/gravatar');
+const should = require('should');
+const nock = require('nock');
+const configUtils = require('../../../utils/configUtils');
+const gravatar = require('../../../../core/server/lib/image/gravatar');
 
 describe('lib/image: gravatar', function () {
     beforeEach(function () {

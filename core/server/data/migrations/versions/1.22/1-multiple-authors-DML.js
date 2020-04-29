@@ -1,16 +1,16 @@
-const _ = require('lodash'),
-    Promise = require('bluebird'),
-    ObjectId = require('bson-objectid'),
-    common = require('../../../../lib/common'),
-    models = require('../../../../models');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const ObjectId = require('bson-objectid');
+const common = require('../../../../lib/common');
+const models = require('../../../../models');
 
 module.exports.config = {
     transaction: true
 };
 
 module.exports.up = function handleMultipleAuthors(options) {
-    const postAllColumns = ['id', 'author_id'],
-        userColumns = ['id'];
+    const postAllColumns = ['id', 'author_id'];
+    const userColumns = ['id'];
 
     let localOptions = _.merge({
         context: {internal: true}

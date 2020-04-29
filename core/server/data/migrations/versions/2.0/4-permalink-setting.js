@@ -1,13 +1,13 @@
-const path = require('path'),
-    fs = require('fs-extra'),
-    config = require('../../../../config'),
-    common = require('../../../../lib/common'),
-    models = require('../../../../models'),
-    message1 = 'Removing `globals.permalinks` from routes.yaml.',
-    message2 = 'Removed `globals.permalinks` from routes.yaml.',
-    message3 = 'Skip: Removing `globals.permalinks` from routes.yaml.',
-    message4 = 'Rollback: Removing `globals.permalink` from routes.yaml. Nothing todo.',
-    message5 = 'Skip Rollback: Removing `globals.permalinks` from routes.yaml. Nothing todo.';
+const path = require('path');
+const fs = require('fs-extra');
+const config = require('../../../../config');
+const common = require('../../../../lib/common');
+const models = require('../../../../models');
+const message1 = 'Removing `globals.permalinks` from routes.yaml.';
+const message2 = 'Removed `globals.permalinks` from routes.yaml.';
+const message3 = 'Skip: Removing `globals.permalinks` from routes.yaml.';
+const message4 = 'Rollback: Removing `globals.permalink` from routes.yaml. Nothing todo.';
+const message5 = 'Skip Rollback: Removing `globals.permalinks` from routes.yaml. Nothing todo.';
 
 module.exports.up = () => {
     let localOptions = {

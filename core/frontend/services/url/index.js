@@ -1,5 +1,5 @@
-const UrlService = require('./UrlService'),
-    urlService = new UrlService();
+const UrlService = require('./UrlService');
+const urlService = new UrlService();
 
 // Singleton
 module.exports = urlService;

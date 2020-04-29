@@ -1,8 +1,8 @@
-var should = require('should'),
-    _ = require('lodash'),
-    crypto = require('crypto'),
-    schema = require('../../../../core/server/data/schema'),
-    fixtures = require('../../../../core/server/data/schema/fixtures');
+const should = require('should');
+const _ = require('lodash');
+const crypto = require('crypto');
+const schema = require('../../../../core/server/data/schema');
+const fixtures = require('../../../../core/server/data/schema/fixtures');
 
 /**
  * @NOTE
@@ -25,9 +25,9 @@ describe('DB version integrity', function () {
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
     it('should not change without fixing this test', function () {
-        var tablesNoValidation = _.cloneDeep(schema.tables),
-            schemaHash,
-            fixturesHash;
+        const tablesNoValidation = _.cloneDeep(schema.tables);
+        let schemaHash;
+        let fixturesHash;
 
         _.each(tablesNoValidation, function (table) {
             return _.each(table, function (column, name) {

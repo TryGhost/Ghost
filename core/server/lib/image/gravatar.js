@@ -1,10 +1,10 @@
-var Promise = require('bluebird'),
-    crypto = require('crypto'),
-    config = require('../../config'),
-    request = require('../request');
+const Promise = require('bluebird');
+const crypto = require('crypto');
+const config = require('../../config');
+const request = require('../request');
 
 module.exports.lookup = function lookup(userData, timeout) {
-    var gravatarUrl = '//www.gravatar.com/avatar/' +
+    let gravatarUrl = '//www.gravatar.com/avatar/' +
         crypto.createHash('md5').update(userData.email.toLowerCase().trim()).digest('hex') +
         '?s=250';
 

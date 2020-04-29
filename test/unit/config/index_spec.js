@@ -1,8 +1,8 @@
-var should = require('should'),
-    path = require('path'),
-    rewire = require('rewire'),
-    _ = require('lodash'),
-    configUtils = require('../../utils/configUtils');
+const should = require('should');
+const path = require('path');
+const rewire = require('rewire');
+const _ = require('lodash');
+const configUtils = require('../../utils/configUtils');
 
 describe('Config', function () {
     before(function () {
@@ -14,7 +14,10 @@ describe('Config', function () {
     });
 
     describe('hierarchy of config channels', function () {
-        var originalEnv, originalArgv, customConfig, config;
+        let originalEnv;
+        let originalArgv;
+        let customConfig;
+        let config;
 
         beforeEach(function () {
             originalEnv = _.clone(process.env);
@@ -84,7 +87,7 @@ describe('Config', function () {
 
     describe('Index', function () {
         it('should have exactly the right keys', function () {
-            var pathConfig = configUtils.config.get('paths');
+            const pathConfig = configUtils.config.get('paths');
 
             // This will fail if there are any extra keys
             pathConfig.should.have.keys(
@@ -100,14 +103,14 @@ describe('Config', function () {
         });
 
         it('should have the correct values for each key', function () {
-            var pathConfig = configUtils.config.get('paths'),
-                appRoot = path.resolve(__dirname, '../../../');
+            const pathConfig = configUtils.config.get('paths');
+            const appRoot = path.resolve(__dirname, '../../../');
 
             pathConfig.should.have.property('appRoot', appRoot);
         });
 
         it('should allow specific properties to be user defined', function () {
-            var contentPath = path.join(configUtils.config.get('paths').appRoot, 'otherContent', '/');
+            const contentPath = path.join(configUtils.config.get('paths').appRoot, 'otherContent', '/');
 
             configUtils.set('paths:contentPath', contentPath);
             configUtils.config.get('paths').should.have.property('contentPath', contentPath);

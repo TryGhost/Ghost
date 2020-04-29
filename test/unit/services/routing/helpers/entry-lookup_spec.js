@@ -1,12 +1,13 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
-    testUtils = require('../../../../utils'),
-    api = require('../../../../../core/server/api'),
-    helpers = require('../../../../../core/frontend/services/routing/helpers');
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const testUtils = require('../../../../utils');
+const api = require('../../../../../core/server/api');
+const helpers = require('../../../../../core/frontend/services/routing/helpers');
 
 describe('Unit - services/routing/helpers/entry-lookup', function () {
-    let posts, locals;
+    let posts;
+    let locals;
 
     afterEach(function () {
         sinon.restore();

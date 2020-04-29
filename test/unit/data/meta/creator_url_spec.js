@@ -1,10 +1,10 @@
-var should = require('should'),
-    getCreatorTwitterUrl = require('../../../../core/frontend/meta/creator_url');
+const should = require('should');
+const getCreatorTwitterUrl = require('../../../../core/frontend/meta/creator_url');
 
 describe('getCreatorTwitterUrl', function () {
     it('should return author twitter url if post and has url',
         function () {
-            var twitterUrl = getCreatorTwitterUrl({
+            const twitterUrl = getCreatorTwitterUrl({
                 context: ['post'],
                 post: {
                     primary_author: {
@@ -17,7 +17,7 @@ describe('getCreatorTwitterUrl', function () {
 
     it('should return null if context does not contain author twitter url and is a post',
         function () {
-            var twitterUrl = getCreatorTwitterUrl({
+            const twitterUrl = getCreatorTwitterUrl({
                 context: ['post'],
                 post: {
                     primary_author: {
@@ -29,7 +29,7 @@ describe('getCreatorTwitterUrl', function () {
         });
 
     it('should return null if context does not contain author and is a post', function () {
-        var twitterUrl = getCreatorTwitterUrl({
+        const twitterUrl = getCreatorTwitterUrl({
             context: ['post'],
             post: {}
         });
@@ -38,7 +38,7 @@ describe('getCreatorTwitterUrl', function () {
 
     it('should return author twitter url if AMP post and has url',
         function () {
-            var twitterUrl = getCreatorTwitterUrl({
+            const twitterUrl = getCreatorTwitterUrl({
                 context: ['amp', 'post'],
                 post: {
                     primary_author: {
@@ -51,7 +51,7 @@ describe('getCreatorTwitterUrl', function () {
 
     it('should return null if context does not contain author twitter url and is an AMP post',
         function () {
-            var twitterUrl = getCreatorTwitterUrl({
+            const twitterUrl = getCreatorTwitterUrl({
                 context: ['amp', 'post'],
                 post: {
                     primary_author: {
@@ -63,7 +63,7 @@ describe('getCreatorTwitterUrl', function () {
         });
 
     it('should return null if context does not contain author and is an AMP post', function () {
-        var twitterUrl = getCreatorTwitterUrl({
+        const twitterUrl = getCreatorTwitterUrl({
             context: ['amp', 'post'],
             post: {}
         });
@@ -72,7 +72,7 @@ describe('getCreatorTwitterUrl', function () {
 
     it('should return author twitter url if author and has url',
         function () {
-            var twitterUrl = getCreatorTwitterUrl({
+            const twitterUrl = getCreatorTwitterUrl({
                 context: ['author'],
                 author: {
                     twitter: 'https://twitter.com/user'
@@ -83,7 +83,7 @@ describe('getCreatorTwitterUrl', function () {
 
     it('should return null if context does not contain author twitter url and is a author',
         function () {
-            var twitterUrl = getCreatorTwitterUrl({
+            const twitterUrl = getCreatorTwitterUrl({
                 context: ['author'],
                 author: {
                     twitter: ''
@@ -93,7 +93,7 @@ describe('getCreatorTwitterUrl', function () {
         });
 
     it('should return null if context is not a post', function () {
-        var twitterUrl = getCreatorTwitterUrl({
+        const twitterUrl = getCreatorTwitterUrl({
             context: ['tag']
         });
         should(twitterUrl).equal(null);

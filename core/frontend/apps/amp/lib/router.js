@@ -1,12 +1,13 @@
-const path = require('path'),
-    express = require('express'),
-    ampRouter = express.Router(),
+const path = require('path');
+const express = require('express');
+const ampRouter = express.Router();
 
-    // Dirty requires
-    common = require('../../../../server/lib/common'),
-    urlService = require('../../../services/url'),
-    helpers = require('../../../services/routing/helpers'),
-    templateName = 'amp';
+// Dirty requires
+const common = require('../../../../server/lib/common');
+
+const urlService = require('../../../services/url');
+const helpers = require('../../../services/routing/helpers');
+const templateName = 'amp';
 
 function _renderer(req, res, next) {
     res.routerOptions = {

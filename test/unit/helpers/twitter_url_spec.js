@@ -1,10 +1,10 @@
-var should = require('should'),
+const should = require('should');
 
-    // Stuff we are testing
-    helpers = require('../../../core/frontend/helpers');
+// Stuff we are testing
+const helpers = require('../../../core/frontend/helpers');
 
 describe('{{twitter_url}} helper', function () {
-    var options = {data: {site: {}}};
+    const options = {data: {site: {}}};
 
     beforeEach(function () {
         options.data.site = {twitter: ''};

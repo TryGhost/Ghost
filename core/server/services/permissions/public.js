@@ -1,8 +1,8 @@
-var _ = require('lodash'),
-    Promise = require('bluebird'),
-    common = require('../../lib/common'),
-    parseContext = require('./parse-context'),
-    _private = {};
+const _ = require('lodash');
+const Promise = require('bluebird');
+const common = require('../../lib/common');
+const parseContext = require('./parse-context');
+const _private = {};
 
 /**
  * @TODO:
@@ -16,7 +16,7 @@ var _ = require('lodash'),
  * - public context cannot fetch draft/scheduled posts
  */
 _private.applyStatusRules = function applyStatusRules(docName, method, opts) {
-    var err = new common.errors.NoPermissionError({message: common.i18n.t('errors.permissions.applyStatusRules.error', {docName: docName})});
+    const err = new common.errors.NoPermissionError({message: common.i18n.t('errors.permissions.applyStatusRules.error', {docName: docName})});
 
     // Enforce status 'active' for users
     if (docName === 'users') {

@@ -1,13 +1,10 @@
-var _debug = require('ghost-ignition').debug._base,
-    debug = _debug('ghost-query'),
-    _ = require('lodash');
+const _debug = require('ghost-ignition').debug._base;
+const debug = _debug('ghost-query');
+const _ = require('lodash');
 
 module.exports = function (Bookshelf) {
-    var modelProto = Bookshelf.Model.prototype,
-        Model,
-        countQueryBuilder;
-
-    countQueryBuilder = {
+    const modelProto = Bookshelf.Model.prototype;
+    const countQueryBuilder = {
         tags: {
             posts: function addPostCountToTags(model, options) {
                 model.query('columns', 'tags.*', function (qb) {
@@ -44,13 +41,13 @@ module.exports = function (Bookshelf) {
         }
     };
 
-    Model = Bookshelf.Model.extend({
+    const Model = Bookshelf.Model.extend({
         addCounts: function (options) {
             if (!options) {
                 return;
             }
 
-            var tableName = _.result(this, 'tableName');
+            const tableName = _.result(this, 'tableName');
 
             if (options.withRelated && options.withRelated.indexOf('count.posts') > -1) {
                 // remove post_count from withRelated
@@ -86,11 +83,11 @@ module.exports = function (Bookshelf) {
         },
 
         serialize: function serialize(options) {
-            var attrs = modelProto.serialize.call(this, options),
-                countRegex = /^(count)(__)(.*)$/;
+            const attrs = modelProto.serialize.call(this, options);
+            const countRegex = /^(count)(__)(.*)$/;
 
             _.forOwn(attrs, function (value, key) {
-                var match = key.match(countRegex);
+                const match = key.match(countRegex);
                 if (match) {
                     attrs[match[1]] = attrs[match[1]] || {};
                     attrs[match[1]][match[3]] = value;

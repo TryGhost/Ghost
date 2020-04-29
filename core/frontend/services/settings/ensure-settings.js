@@ -1,9 +1,9 @@
-const fs = require('fs-extra'),
-    Promise = require('bluebird'),
-    path = require('path'),
-    debug = require('ghost-ignition').debug('frontend:services:settings:ensure-settings'),
-    common = require('../../../server/lib/common'),
-    config = require('../../../server/config');
+const fs = require('fs-extra');
+const Promise = require('bluebird');
+const path = require('path');
+const debug = require('ghost-ignition').debug('frontend:services:settings:ensure-settings');
+const common = require('../../../server/lib/common');
+const config = require('../../../server/config');
 
 /**
  * Makes sure that all supported settings files are in the
@@ -16,13 +16,13 @@ const fs = require('fs-extra'),
  * copy the default yaml file over.
  */
 module.exports = function ensureSettingsFiles(knownSettings) {
-    const contentPath = config.getContentPath('settings'),
-        defaultSettingsPath = config.get('paths').defaultSettings;
+    const contentPath = config.getContentPath('settings');
+    const defaultSettingsPath = config.get('paths').defaultSettings;
 
     return Promise.each(knownSettings, function (setting) {
-        const fileName = `${setting}.yaml`,
-            defaultFileName = `default-${fileName}`,
-            filePath = path.join(contentPath, fileName);
+        const fileName = `${setting}.yaml`;
+        const defaultFileName = `default-${fileName}`;
+        const filePath = path.join(contentPath, fileName);
 
         return fs.readFile(filePath, 'utf8')
             .catch({code: 'ENOENT'}, () => {

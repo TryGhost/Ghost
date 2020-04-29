@@ -1,19 +1,19 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
-    moment = require('moment'),
-    testUtils = require('../../../../utils'),
-    common = require('../../../../../core/server/lib/common'),
-    models = require('../../../../../core/server/models'),
-    api = require('../../../../../core/server/api'),
-    schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils'),
-    SchedulingDefault = require('../../../../../core/server/adapters/scheduling/SchedulingDefault'),
-    postScheduling = require('../../../../../core/server/adapters/scheduling/post-scheduling'),
-    urlUtils = require('../../../../../core/server/lib/url-utils');
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const moment = require('moment');
+const testUtils = require('../../../../utils');
+const common = require('../../../../../core/server/lib/common');
+const models = require('../../../../../core/server/models');
+const api = require('../../../../../core/server/api');
+const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
+const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/SchedulingDefault');
+const postScheduling = require('../../../../../core/server/adapters/scheduling/post-scheduling');
+const urlUtils = require('../../../../../core/server/lib/url-utils');
 
 // NOTE: to be unskiped and corrected once default scheduler code is migrated
 describe.skip('Scheduling: Post Scheduling', function () {
-    var scope = {
+    const scope = {
         events: {},
         scheduledPosts: [],
         apiUrl: 'localhost:1111/',

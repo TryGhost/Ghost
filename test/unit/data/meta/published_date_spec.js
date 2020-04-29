@@ -1,9 +1,9 @@
-var should = require('should'),
-    getPublishedDate = require('../../../../core/frontend/meta/published_date');
+const should = require('should');
+const getPublishedDate = require('../../../../core/frontend/meta/published_date');
 
 describe('getPublishedDate', function () {
     it('should return published at date as ISO 8601 from context if exists', function () {
-        var pubDate = getPublishedDate({
+        const pubDate = getPublishedDate({
             context: ['post'],
             post: {
                 published_at: new Date('2016-01-01 12:56:45.232Z')
@@ -13,7 +13,7 @@ describe('getPublishedDate', function () {
     });
 
     it('should return published at over created at date as ISO 8601 if has both', function () {
-        var pubDate = getPublishedDate({
+        const pubDate = getPublishedDate({
             context: ['post'],
             post: {
                 published_at: new Date('2016-01-01 12:56:45.232Z'),
@@ -24,7 +24,7 @@ describe('getPublishedDate', function () {
     });
 
     it('should return published at date for an amp context', function () {
-        var pubDate = getPublishedDate({
+        const pubDate = getPublishedDate({
             context: ['amp', 'post'],
             post: {
                 published_at: new Date('2016-01-01 12:56:45.232Z')
@@ -34,7 +34,7 @@ describe('getPublishedDate', function () {
     });
 
     it('should return null if no update_at date on context', function () {
-        var pubDate = getPublishedDate({
+        const pubDate = getPublishedDate({
             context: ['author'],
             author: {}
         });
@@ -42,7 +42,7 @@ describe('getPublishedDate', function () {
     });
 
     it('should return null if context and property do not match in name', function () {
-        var pubDate = getPublishedDate({
+        const pubDate = getPublishedDate({
             context: ['author'],
             post: {
                 published_at: new Date('2016-01-01 12:56:45.232Z')

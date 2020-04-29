@@ -1,9 +1,9 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    urlService = require('../../../core/frontend/services/url'),
-    helpers = require('../../../core/frontend/helpers'),
-    models = require('../../../core/server/models'),
-    testUtils = require('../../utils');
+const should = require('should');
+const sinon = require('sinon');
+const urlService = require('../../../core/frontend/services/url');
+const helpers = require('../../../core/frontend/helpers');
+const models = require('../../../core/server/models');
+const testUtils = require('../../utils');
 
 describe('{{authors}} helper', function () {
     before(function () {

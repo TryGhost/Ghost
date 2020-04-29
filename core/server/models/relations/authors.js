@@ -291,9 +291,9 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
          * @param  {[type]} options has context and id. Context is the user doing the destroy, id is the user to destroy
          */
         destroyByAuthor: function destroyByAuthor(unfilteredOptions) {
-            let options = this.filterOptions(unfilteredOptions, 'destroyByAuthor', {extraAllowedProperties: ['id']}),
-                postCollection = Posts.forge(),
-                authorId = options.id;
+            let options = this.filterOptions(unfilteredOptions, 'destroyByAuthor', {extraAllowedProperties: ['id']});
+            let postCollection = Posts.forge();
+            let authorId = options.id;
 
             if (!authorId) {
                 return Promise.reject(new common.errors.NotFoundError({
@@ -332,9 +332,14 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
         },
 
         permissible: function permissible(postModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
-            var self = this,
-                postModel = postModelOrId,
-                origArgs, isContributor, isAuthor, isEdit, isAdd, isDestroy;
+            const self = this;
+            const postModel = postModelOrId;
+            let origArgs;
+            let isContributor;
+            let isAuthor;
+            let isEdit;
+            let isAdd;
+            let isDestroy;
 
             // If we passed in an id instead of a model, get the model
             // then check the permissions

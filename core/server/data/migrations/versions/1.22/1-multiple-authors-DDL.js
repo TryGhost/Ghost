@@ -1,9 +1,9 @@
-const Promise = require('bluebird'),
-    common = require('../../../../lib/common'),
-    commands = require('../../../schema').commands,
-    table = 'posts_authors',
-    message1 = 'Adding table: ' + table,
-    message2 = 'Dropping table: ' + table;
+const Promise = require('bluebird');
+const common = require('../../../../lib/common');
+const commands = require('../../../schema').commands;
+const table = 'posts_authors';
+const message1 = 'Adding table: ' + table;
+const message2 = 'Dropping table: ' + table;
 
 module.exports.up = function addMultipleAuthorsTable(options) {
     let connection = options.connection;

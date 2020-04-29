@@ -1,9 +1,9 @@
-var downsize = require('downsize');
+const downsize = require('downsize');
 
 function getExcerpt(html, truncateOptions) {
     truncateOptions = truncateOptions || {};
     // Strip inline and bottom footnotes
-    var excerpt = html.replace(/<a href="#fn.*?rel="footnote">.*?<\/a>/gi, '');
+    let excerpt = html.replace(/<a href="#fn.*?rel="footnote">.*?<\/a>/gi, '');
     excerpt = excerpt.replace(/<div class="footnotes"><ol>.*?<\/ol><\/div>/, '');
 
     // Make sure to have space between paragraphs and new lines

@@ -13,8 +13,8 @@
 const {themeI18n} = require('../services/proxy');
 
 module.exports = function t(text, options) {
-    var bindings = {},
-        prop;
+    const bindings = {};
+    let prop;
     for (prop in options.hash) {
         if (Object.prototype.hasOwnProperty.call(options.hash, prop)) {
             bindings[prop] = options.hash[prop];

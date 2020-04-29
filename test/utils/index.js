@@ -1,55 +1,53 @@
-var Promise = require('bluebird'),
-    _ = require('lodash'),
-    fs = require('fs-extra'),
-    path = require('path'),
-    os = require('os'),
-    express = require('express'),
-    debug = require('ghost-ignition').debug('test'),
-    ObjectId = require('bson-objectid'),
-    uuid = require('uuid'),
-    KnexMigrator = require('knex-migrator'),
-    ghost = require('../../core/server'),
-    GhostServer = require('../../core/server/ghost-server'),
-    common = require('../../core/server/lib/common'),
-    fixtureUtils = require('../../core/server/data/schema/fixtures/utils'),
-    db = require('../../core/server/data/db'),
-    schema = require('../../core/server/data/schema').tables,
-    schemaTables = Object.keys(schema),
-    models = require('../../core/server/models'),
-    urlUtils = require('../../core/server/lib/url-utils'),
-    urlService = require('../../core/frontend/services/url'),
-    routingService = require('../../core/frontend/services/routing'),
-    settingsService = require('../../core/server/services/settings'),
-    frontendSettingsService = require('../../core/frontend/services/settings'),
-    settingsCache = require('../../core/server/services/settings/cache'),
-    imageLib = require('../../core/server/lib/image'),
-    web = require('../../core/server/web'),
-    permissions = require('../../core/server/services/permissions'),
-    sequence = require('../../core/server/lib/promise/sequence'),
-    themes = require('../../core/frontend/services/themes'),
-    DataGenerator = require('./fixtures/data-generator'),
-    configUtils = require('./configUtils'),
-    filterData = require('./fixtures/filter-param'),
-    APIUtils = require('./api'),
-    config = require('../../core/server/config'),
-    knexMigrator = new KnexMigrator(),
-    fixtures,
-    getFixtureOps,
-    toDoList,
-    originalRequireFn,
-    postsInserted = 0,
-
-    teardownDb,
-    setup,
-    truncate,
-    createUser,
-    createPost,
-    startGhost,
-
-    initFixtures,
-    initData,
-    clearData,
-    clearBruteData;
+const Promise = require('bluebird');
+const _ = require('lodash');
+const fs = require('fs-extra');
+const path = require('path');
+const os = require('os');
+const express = require('express');
+const debug = require('ghost-ignition').debug('test');
+const ObjectId = require('bson-objectid');
+const uuid = require('uuid');
+const KnexMigrator = require('knex-migrator');
+const ghost = require('../../core/server');
+const GhostServer = require('../../core/server/ghost-server');
+const common = require('../../core/server/lib/common');
+const fixtureUtils = require('../../core/server/data/schema/fixtures/utils');
+const db = require('../../core/server/data/db');
+const schema = require('../../core/server/data/schema').tables;
+const schemaTables = Object.keys(schema);
+const models = require('../../core/server/models');
+const urlUtils = require('../../core/server/lib/url-utils');
+const urlService = require('../../core/frontend/services/url');
+const routingService = require('../../core/frontend/services/routing');
+const settingsService = require('../../core/server/services/settings');
+const frontendSettingsService = require('../../core/frontend/services/settings');
+const settingsCache = require('../../core/server/services/settings/cache');
+const imageLib = require('../../core/server/lib/image');
+const web = require('../../core/server/web');
+const permissions = require('../../core/server/services/permissions');
+const sequence = require('../../core/server/lib/promise/sequence');
+const themes = require('../../core/frontend/services/themes');
+const DataGenerator = require('./fixtures/data-generator');
+const configUtils = require('./configUtils');
+const filterData = require('./fixtures/filter-param');
+const APIUtils = require('./api');
+const config = require('../../core/server/config');
+const knexMigrator = new KnexMigrator();
+let fixtures;
+let getFixtureOps;
+let toDoList;
+let originalRequireFn;
+let postsInserted = 0;
+let teardownDb;
+let setup;
+let truncate;
+let createUser;
+let createPost;
+let startGhost;
+let initFixtures;
+let initData;
+let clearData;
+let clearBruteData;
 
 // Require additional assertions which help us keep our tests small and clear
 require('./assertions');
@@ -86,8 +84,10 @@ fixtures = {
     },
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {
-        let i, j, k = 0,
-            posts = [];
+        let i;
+        let j;
+        let k = 0;
+        let posts = [];
 
         // NOTE: this variable should become a parameter as test logic depends on it
         const count = 10;
@@ -103,8 +103,8 @@ fixtures = {
                 models.Tag.fetchAll(_.merge({columns: ['id']}, module.exports.context.internal))
             ]);
         }).then(function (results) {
-            let users = results[0],
-                tags = results[1];
+            let users = results[0];
+            let tags = results[1];
 
             tags = tags.toJSON();
 
@@ -127,10 +127,12 @@ fixtures = {
     },
 
     insertExtraPosts: function insertExtraPosts(max) {
-        var lang,
-            status,
-            posts = [],
-            i, j, k = postsInserted;
+        let lang;
+        let status;
+        const posts = [];
+        let i;
+        let j;
+        let k = postsInserted;
 
         max = max || 50;
 
@@ -166,9 +168,9 @@ fixtures = {
 
     insertExtraTags: function insertExtraTags(max) {
         max = max || 50;
-        var tags = [],
-            tagName,
-            i;
+        const tags = [];
+        let tagName;
+        let i;
 
         for (i = 0; i < max; i += 1) {
             tagName = uuid.v4().split('-')[0];
@@ -216,7 +218,7 @@ fixtures = {
     },
 
     initOwnerUser: function initOwnerUser() {
-        var user = DataGenerator.Content.users[0];
+        let user = DataGenerator.Content.users[0];
 
         user = DataGenerator.forKnex.createBasic(user);
         user = _.extend({}, user, {status: 'inactive'});
@@ -239,7 +241,7 @@ fixtures = {
     overrideOwnerUser: function overrideOwnerUser(slug) {
         return models.User.getOwnerUser(module.exports.context.internal)
             .then(function (ownerUser) {
-                var user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+                const user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
 
                 if (slug) {
                     user.slug = slug;
@@ -287,7 +289,7 @@ fixtures = {
     },
 
     createUsersWithoutOwner: function createUsersWithoutOwner() {
-        var usersWithoutOwner = _.cloneDeep(DataGenerator.forKnex.users.slice(1));
+        const usersWithoutOwner = _.cloneDeep(DataGenerator.forKnex.users.slice(1));
 
         return Promise.map(usersWithoutOwner, function (user) {
             let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {user_id: user.id});
@@ -313,7 +315,7 @@ fixtures = {
 
     createExtraUsers: function createExtraUsers() {
         // grab 3 more users
-        var extraUsers = _.cloneDeep(DataGenerator.Content.users.slice(2, 6));
+        let extraUsers = _.cloneDeep(DataGenerator.Content.users.slice(2, 6));
         extraUsers = _.map(extraUsers, function (user) {
             return DataGenerator.forKnex.createUser(_.extend({}, user, {
                 id: ObjectId.generate(),
@@ -360,15 +362,15 @@ fixtures = {
     },
 
     getExportFixturePath: function (filename) {
-        var relativePath = '/fixtures/export/';
+        const relativePath = '/fixtures/export/';
         return path.resolve(__dirname + relativePath + filename + '.json');
     },
 
     loadExportFixture: function loadExportFixture(filename) {
-        var filePath = this.getExportFixturePath(filename);
+        const filePath = this.getExportFixturePath(filename);
 
         return fs.readFile(filePath).then(function (fileContents) {
-            var data;
+            let data;
 
             // Parse the json data
             try {
@@ -382,18 +384,19 @@ fixtures = {
     },
 
     permissionsFor: function permissionsFor(obj) {
-        var permsToInsert = _.cloneDeep(fixtureUtils.findModelFixtures('Permission', {object_type: obj}).entries),
-            permsRolesToInsert = fixtureUtils.findPermissionRelationsForObject(obj).entries,
-            actions = [],
-            permissionsRoles = {},
-            roles = {
-                Administrator: DataGenerator.Content.roles[0].id,
-                Editor: DataGenerator.Content.roles[1].id,
-                Author: DataGenerator.Content.roles[2].id,
-                Owner: DataGenerator.Content.roles[3].id,
-                Contributor: DataGenerator.Content.roles[4].id,
-                'Admin Integration': DataGenerator.Content.roles[5].id
-            };
+        let permsToInsert = _.cloneDeep(fixtureUtils.findModelFixtures('Permission', {object_type: obj}).entries);
+        const permsRolesToInsert = fixtureUtils.findPermissionRelationsForObject(obj).entries;
+        const actions = [];
+        const permissionsRoles = {};
+
+        const roles = {
+            Administrator: DataGenerator.Content.roles[0].id,
+            Editor: DataGenerator.Content.roles[1].id,
+            Author: DataGenerator.Content.roles[2].id,
+            Owner: DataGenerator.Content.roles[3].id,
+            Contributor: DataGenerator.Content.roles[4].id,
+            'Admin Integration': DataGenerator.Content.roles[5].id
+        };
 
         // CASE: if empty db will throw SQLITE_MISUSE, hard to debug
         if (_.isEmpty(permsToInsert)) {
@@ -614,8 +617,9 @@ toDoList = {
  */
 getFixtureOps = function getFixtureOps(toDos) {
     // default = default fixtures, if it isn't present, init with tables only
-    var tablesOnly = !toDos.default,
-        fixtureOps = [];
+    const tablesOnly = !toDos.default;
+
+    const fixtureOps = [];
 
     // Database initialisation
     if (toDos.init || toDos.default) {
@@ -634,7 +638,7 @@ getFixtureOps = function getFixtureOps(toDos) {
 
     // Go through our list of things to do, and add them to an array
     _.each(toDos, function (value, toDo) {
-        var tmp;
+        let tmp;
 
         if ((toDo !== 'perms:init' && toDo.indexOf('perms:') !== -1)) {
             tmp = toDo.split(':');
@@ -657,10 +661,11 @@ getFixtureOps = function getFixtureOps(toDos) {
 // ## Test Setup and Teardown
 
 initFixtures = function initFixtures() {
-    var options = _.merge({init: true}, _.transform(arguments, function (result, val) {
-            result[val] = true;
-        })),
-        fixtureOps = getFixtureOps(options);
+    const options = _.merge({init: true}, _.transform(arguments, function (result, val) {
+        result[val] = true;
+    }));
+
+    const fixtureOps = getFixtureOps(options);
 
     return sequence(fixtureOps);
 };
@@ -673,8 +678,9 @@ initFixtures = function initFixtures() {
  */
 setup = function setup() {
     /*eslint no-invalid-this: "off"*/
-    const self = this,
-        args = arguments;
+    const self = this;
+
+    const args = arguments;
 
     return function setup() {
         models.init();
@@ -683,8 +689,8 @@ setup = function setup() {
 };
 
 createUser = function createUser(options) {
-    var user = options.user,
-        role = options.role;
+    const user = options.user;
+    const role = options.role;
 
     return models.Role.fetchAll(module.exports.context.internal)
         .then(function (roles) {
@@ -699,7 +705,7 @@ createUser = function createUser(options) {
 };
 
 createPost = function createPost(options) {
-    var post = DataGenerator.forKnex.createPost(options.post);
+    const post = DataGenerator.forKnex.createPost(options.post);
 
     if (options.author) {
         post.author_id = options.author.id;
@@ -717,7 +723,7 @@ teardownDb = function teardownDb() {
     debug('Database teardown');
     urlService.softReset();
 
-    var tables = schemaTables.concat(['migrations']);
+    const tables = schemaTables.concat(['migrations']);
 
     if (config.get('database:client') === 'sqlite3') {
         return Promise
@@ -756,7 +762,7 @@ teardownDb = function teardownDb() {
     });
 };
 
-var ghostServer;
+let ghostServer;
 
 /**
  * 1. reset & init db
@@ -775,8 +781,8 @@ startGhost = function startGhost(options) {
         subdir: false
     }, options);
 
-    var contentFolderForTests = options.contentFolder,
-        parentApp;
+    const contentFolderForTests = options.contentFolder;
+    let parentApp;
 
     /**
      * We never use the root content folder for testing!
@@ -1065,19 +1071,20 @@ module.exports = {
      * templateOptions: hbs.updateTemplateOptions(...)
      */
     createHbsResponse: function createHbsResponse(options) {
-        var renderObject = options.renderObject || {},
-            templateOptions = options.templateOptions,
-            locals = options.locals || {},
-            hbsStructure = {
-                data: {
-                    site: {},
-                    config: {},
-                    labs: {},
-                    root: {
-                        _locals: {}
-                    }
+        const renderObject = options.renderObject || {};
+        const templateOptions = options.templateOptions;
+        const locals = options.locals || {};
+
+        const hbsStructure = {
+            data: {
+                site: {},
+                config: {},
+                labs: {},
+                root: {
+                    _locals: {}
                 }
-            };
+            }
+        };
 
         _.merge(hbsStructure.data, templateOptions);
         _.merge(hbsStructure.data.root, renderObject);

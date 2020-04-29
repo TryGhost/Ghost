@@ -1,9 +1,9 @@
-var crypto = require('crypto'),
-    generateFeed = require('./generate-feed'),
-    feedCache = {};
+const crypto = require('crypto');
+const generateFeed = require('./generate-feed');
+const feedCache = {};
 
 module.exports.getXML = function getFeedXml(baseUrl, data) {
-    var dataHash = crypto.createHash('md5').update(JSON.stringify(data)).digest('hex');
+    const dataHash = crypto.createHash('md5').update(JSON.stringify(data)).digest('hex');
     if (!feedCache[baseUrl] || feedCache[baseUrl].hash !== dataHash) {
         // We need to regenerate
         feedCache[baseUrl] = {

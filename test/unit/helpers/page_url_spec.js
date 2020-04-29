@@ -1,10 +1,10 @@
-var should = require('should'),
+const should = require('should');
 
-    // Stuff we are testing
-    helpers = require('../../../core/frontend/helpers');
+// Stuff we are testing
+const helpers = require('../../../core/frontend/helpers');
 
 describe('{{page_url}} helper', function () {
-    var options = {data: {root: {pagination: {}}}};
+    const options = {data: {root: {pagination: {}}}};
 
     beforeEach(function () {
         options.data.root = {pagination: {}};

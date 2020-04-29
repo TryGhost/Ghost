@@ -1,17 +1,16 @@
-var schema = require('../schema').tables,
-    _ = require('lodash'),
-    validator = require('validator'),
-    moment = require('moment-timezone'),
-    assert = require('assert'),
-    Promise = require('bluebird'),
-    common = require('../../lib/common'),
-    settingsCache = require('../../services/settings/cache'),
-    urlUtils = require('../../lib/url-utils'),
-
-    validatePassword,
-    validateSchema,
-    validateSettings,
-    validate;
+const schema = require('../schema').tables;
+const _ = require('lodash');
+const validator = require('validator');
+const moment = require('moment-timezone');
+const assert = require('assert');
+const Promise = require('bluebird');
+const common = require('../../lib/common');
+const settingsCache = require('../../services/settings/cache');
+const urlUtils = require('../../lib/url-utils');
+let validatePassword;
+let validateSchema;
+let validateSettings;
+let validate;
 
 function assertString(input) {
     assert(typeof input === 'string', 'Validator js validates strings only');
@@ -24,9 +23,9 @@ function assertString(input) {
  * @return {Boolean}
  */
 function characterOccurance(stringToTest) {
-    var chars = {},
-        allowedOccurancy,
-        valid = true;
+    const chars = {};
+    let allowedOccurancy;
+    let valid = true;
 
     stringToTest = _.toString(stringToTest);
     allowedOccurancy = stringToTest.length / 2;
@@ -55,7 +54,7 @@ function characterOccurance(stringToTest) {
 // @TODO: We modify the global validator dependency here! https://github.com/chriso/validator.js/issues/525#issuecomment-213149570
 validator.extend = function (name, fn) {
     validator[name] = function () {
-        var args = Array.prototype.slice.call(arguments);
+        const args = Array.prototype.slice.call(arguments);
         assertString(args[0]);
         return fn.apply(validator, args);
     };
@@ -93,19 +92,20 @@ validator.extend('isSlug', function isSlug(str) {
  * valid password: `validationResult: {isValid: true}`
  */
 validatePassword = function validatePassword(password, email, blogTitle) {
-    var validationResult = {isValid: true},
-        disallowedPasswords = ['password', 'ghost', 'passw0rd'],
-        blogUrl = urlUtils.urlFor('home', true),
-        badPasswords = [
-            '1234567890',
-            'qwertyuiop',
-            'qwertzuiop',
-            'asdfghjkl;',
-            'abcdefghij',
-            '0987654321',
-            '1q2w3e4r5t',
-            '12345asdfg'
-        ];
+    const validationResult = {isValid: true};
+    const disallowedPasswords = ['password', 'ghost', 'passw0rd'];
+    let blogUrl = urlUtils.urlFor('home', true);
+
+    const badPasswords = [
+        '1234567890',
+        'qwertyuiop',
+        'qwertzuiop',
+        'asdfghjkl;',
+        'abcdefghij',
+        '0987654321',
+        '1q2w3e4r5t',
+        '12345asdfg'
+    ];
 
     blogTitle = blogTitle ? blogTitle : settingsCache.get('title');
     blogUrl = blogUrl.replace(/^http(s?):\/\//, '');
@@ -178,12 +178,12 @@ validatePassword = function validatePassword(password, email, blogTitle) {
 validateSchema = function validateSchema(tableName, model, options) {
     options = options || {};
 
-    var columns = _.keys(schema[tableName]),
-        validationErrors = [];
+    const columns = _.keys(schema[tableName]);
+    let validationErrors = [];
 
     _.each(columns, function each(columnKey) {
-        var message = '',
-            strVal = _.toString(model.get(columnKey)); // KEEP: Validator.js only validates strings.
+        let message = ''; // KEEP: Validator.js only validates strings.
+        const strVal = _.toString(model.get(columnKey));
 
         if (options.method !== 'insert' && !_.has(model.changed, columnKey)) {
             return;
@@ -276,9 +276,9 @@ validateSchema = function validateSchema(tableName, model, options) {
 // settings are checked against the validation objects
 // form default-settings.json
 validateSettings = function validateSettings(defaultSettings, model) {
-    var values = model.toJSON(),
-        validationErrors = [],
-        matchingDefault = defaultSettings[values.key];
+    const values = model.toJSON();
+    let validationErrors = [];
+    const matchingDefault = defaultSettings[values.key];
 
     if (matchingDefault && matchingDefault.validations) {
         validationErrors = validationErrors.concat(validate(values.value, values.key, matchingDefault.validations, 'settings'));
@@ -313,11 +313,12 @@ validateSettings = function validateSettings(defaultSettings, model) {
  * @return {Array} returns an Array including the found validation errors (empty if none found);
  */
 validate = function validate(value, key, validations, tableName) {
-    var validationErrors = [], translation;
+    const validationErrors = [];
+    let translation;
     value = _.toString(value);
 
     _.each(validations, function each(validationOptions, validationName) {
-        var goodResult = true;
+        let goodResult = true;
 
         if (_.isBoolean(validationOptions)) {
             goodResult = validationOptions;
