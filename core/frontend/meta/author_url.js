@@ -1,7 +1,7 @@
-var urlService = require('../services/url');
+const urlService = require('../services/url');
 
 function getAuthorUrl(data, absolute) {
-    var context = data.context ? data.context[0] : null;
+    let context = data.context ? data.context[0] : null;
 
     context = context === 'amp' ? 'post' : context;
 

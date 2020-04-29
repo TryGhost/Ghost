@@ -189,7 +189,9 @@ const pipeline = (apiController, apiUtils, apiType) => {
 
         obj[key] = function wrapper() {
             const apiConfig = {docName, method};
-            let options, data, frame;
+            let options;
+            let data;
+            let frame;
 
             if (arguments.length === 2) {
                 data = arguments[0];

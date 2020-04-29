@@ -8,7 +8,7 @@ const ghost = testUtils.startGhost;
 let request;
 
 describe('Webhooks API', function () {
-    var ghostServer;
+    let ghostServer;
 
     before(function () {
         return ghost()
@@ -41,7 +41,7 @@ describe('Webhooks API', function () {
                     return done(err);
                 }
 
-                var jsonResponse = res.body;
+                const jsonResponse = res.body;
 
                 should.exist(jsonResponse.webhooks);
 
@@ -118,7 +118,7 @@ describe('Webhooks API', function () {
     });
 
     it('Can delete a webhook', function (done) {
-        var newWebhook = {
+        const newWebhook = {
             event: 'test.create',
             // a different target_url from above is needed to avoid an "already exists" error
             target_url: 'http://example.com/webhooks/test/2'
@@ -136,8 +136,8 @@ describe('Webhooks API', function () {
                     return done(err);
                 }
 
-                var location = res.headers.location;
-                var jsonResponse = res.body;
+                const location = res.headers.location;
+                const jsonResponse = res.body;
 
                 should.exist(jsonResponse.webhooks);
                 localUtils.API.checkResponse(jsonResponse.webhooks[0], 'webhook');

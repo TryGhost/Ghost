@@ -1,30 +1,29 @@
 // # Fixture Utils
 // Standalone file which can be required to help with advanced operations on the fixtures.json file
-var _ = require('lodash'),
-    Promise = require('bluebird'),
-    common = require('../../../lib/common'),
-    models = require('../../../models'),
-    baseUtils = require('../../../models/base/utils'),
-    sequence = require('../../../lib/promise/sequence'),
-    moment = require('moment'),
+const _ = require('lodash');
 
-    fixtures = require('./fixtures'),
+const Promise = require('bluebird');
+const common = require('../../../lib/common');
+const models = require('../../../models');
+const baseUtils = require('../../../models/base/utils');
+const sequence = require('../../../lib/promise/sequence');
+const moment = require('moment');
+const fixtures = require('./fixtures');
 
-    // Private
-    matchFunc,
-    matchObj,
-    fetchRelationData,
-    findRelationFixture,
-    findModelFixture,
+// Private
+let matchFunc;
 
-    addFixturesForModel,
-    addFixturesForRelation,
-    removeFixturesForModel,
-    removeFixturesForRelation,
-
-    findModelFixtureEntry,
-    findModelFixtures,
-    findPermissionRelationsForObject;
+let matchObj;
+let fetchRelationData;
+let findRelationFixture;
+let findModelFixture;
+let addFixturesForModel;
+let addFixturesForRelation;
+let removeFixturesForModel;
+let removeFixturesForRelation;
+let findModelFixtureEntry;
+let findModelFixtures;
+let findPermissionRelationsForObject;
 
 /**
  * ### Match Func
@@ -41,7 +40,7 @@ var _ = require('lodash'),
 matchFunc = function matchFunc(match, key, value) {
     if (_.isArray(match)) {
         return function (item) {
-            var valueTest = true;
+            let valueTest = true;
 
             if (_.isArray(value)) {
                 valueTest = value.indexOf(item.get(match[1])) > -1;
@@ -60,7 +59,7 @@ matchFunc = function matchFunc(match, key, value) {
 };
 
 matchObj = function matchObj(match, item) {
-    var matchObj = {};
+    const matchObj = {};
 
     if (_.isArray(match)) {
         _.each(match, function (matchProp) {
@@ -82,11 +81,12 @@ matchObj = function matchObj(match, item) {
  * @returns {Promise<*>}
  */
 fetchRelationData = function fetchRelationData(relation, options) {
-    var fromOptions = _.extend({}, options, {withRelated: [relation.from.relation]}),
-        props = {
-            from: models[relation.from.model].findAll(fromOptions),
-            to: models[relation.to.model].findAll(options)
-        };
+    const fromOptions = _.extend({}, options, {withRelated: [relation.from.relation]});
+
+    const props = {
+        from: models[relation.from.model].findAll(fromOptions),
+        to: models[relation.to.model].findAll(options)
+    };
 
     return Promise.props(props);
 };
@@ -150,11 +150,12 @@ addFixturesForModel = function addFixturesForModel(modelFixture, options = {}) {
  * @returns {Promise.<*>}
  */
 addFixturesForRelation = function addFixturesForRelation(relationFixture, options) {
-    var ops = [], max = 0;
+    const ops = [];
+    let max = 0;
 
     return fetchRelationData(relationFixture, options).then(function getRelationOps(data) {
         _.each(relationFixture.entries, function processEntries(entry, key) {
-            var fromItem = data.from.find(matchFunc(relationFixture.from.match, key));
+            const fromItem = data.from.find(matchFunc(relationFixture.from.match, key));
 
             // CASE: You add new fixtures e.g. a new role in a new release.
             // As soon as an **older** migration script wants to add permissions for any resource, it iterates over the
@@ -165,7 +166,7 @@ addFixturesForRelation = function addFixturesForRelation(relationFixture, option
             }
 
             _.each(entry, function processEntryValues(value, key) {
-                var toItems = data.to.filter(matchFunc(relationFixture.to.match, key, value));
+                let toItems = data.to.filter(matchFunc(relationFixture.to.match, key, value));
                 max += toItems.length;
 
                 // Remove any duplicates that already exist in the collection
@@ -227,7 +228,7 @@ findModelFixtureEntry = function findModelFixtureEntry(modelName, matchExpr) {
  * @returns {Object} model fixture
  */
 findModelFixtures = function findModelFixtures(modelName, matchExpr) {
-    var foundModel = _.cloneDeep(findModelFixture(modelName));
+    const foundModel = _.cloneDeep(findModelFixture(modelName));
     foundModel.entries = _.filter(foundModel.entries, matchExpr);
     return foundModel;
 };
@@ -254,7 +255,7 @@ findRelationFixture = function findRelationFixture(from, to) {
  */
 findPermissionRelationsForObject = function findPermissionRelationsForObject(objName, role) {
     // Make a copy and delete any entries we don't want
-    var foundRelation = _.cloneDeep(findRelationFixture('Role', 'Permission'));
+    const foundRelation = _.cloneDeep(findRelationFixture('Role', 'Permission'));
 
     _.each(foundRelation.entries, function (entry, key) {
         _.each(entry, function (perm, obj) {

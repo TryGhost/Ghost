@@ -1,9 +1,10 @@
-const should = require('should'),
-    testUtils = require('../../../../utils'),
-    helpers = require('../../../../../core/frontend/services/routing/helpers');
+const should = require('should');
+const testUtils = require('../../../../utils');
+const helpers = require('../../../../../core/frontend/services/routing/helpers');
 
 describe('Unit - services/routing/helpers/format-response', function () {
-    let posts, tags;
+    let posts;
+    let tags;
 
     beforeEach(function () {
         posts = [
@@ -17,8 +18,8 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
     describe('entry', function () {
         it('should return the post object wrapped in a post key', function () {
-            let formatted,
-                postObject = posts[0];
+            let formatted;
+            let postObject = posts[0];
 
             formatted = helpers.formatResponse.entry(postObject);
 
@@ -29,11 +30,12 @@ describe('Unit - services/routing/helpers/format-response', function () {
 
     describe('entries', function () {
         it('should return posts and posts pagination as top level keys', function () {
-            let formatted,
-                data = {
-                    posts: posts,
-                    meta: {pagination: {}}
-                };
+            let formatted;
+
+            let data = {
+                posts: posts,
+                meta: {pagination: {}}
+            };
 
             formatted = helpers.formatResponse.entries(data);
 
@@ -43,12 +45,13 @@ describe('Unit - services/routing/helpers/format-response', function () {
         });
 
         it('should flatten api read responses which have no pagination data', function () {
-            let formatted,
-                data = {
-                    posts: posts,
-                    meta: {pagination: {}},
-                    data: {tag: tags}
-                };
+            let formatted;
+
+            let data = {
+                posts: posts,
+                meta: {pagination: {}},
+                data: {tag: tags}
+            };
 
             formatted = helpers.formatResponse.entries(data);
 
@@ -57,17 +60,18 @@ describe('Unit - services/routing/helpers/format-response', function () {
         });
 
         it('should remove the meta key from api browse responses', function () {
-            let formatted,
-                data = {
-                    posts: posts,
-                    meta: {pagination: {}},
-                    data: {
-                        featured: {
-                            posts: posts,
-                            meta: {pagination: {}}
-                        }
+            let formatted;
+
+            let data = {
+                posts: posts,
+                meta: {pagination: {}},
+                data: {
+                    featured: {
+                        posts: posts,
+                        meta: {pagination: {}}
                     }
-                };
+                }
+            };
 
             formatted = helpers.formatResponse.entries(data);
 

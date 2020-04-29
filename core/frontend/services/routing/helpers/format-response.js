@@ -6,7 +6,7 @@ const _ = require('lodash');
  * @return {Object} containing page variables
  */
 function formatPageResponse(result) {
-    var response = {};
+    const response = {};
 
     if (result.posts) {
         response.posts = result.posts;

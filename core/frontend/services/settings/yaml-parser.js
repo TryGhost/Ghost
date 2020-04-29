@@ -1,6 +1,6 @@
-const yaml = require('js-yaml'),
-    debug = require('ghost-ignition').debug('frontend:services:settings:yaml-parser'),
-    common = require('../../../server/lib/common');
+const yaml = require('js-yaml');
+const debug = require('ghost-ignition').debug('frontend:services:settings:yaml-parser');
+const common = require('../../../server/lib/common');
 
 /**
  * Takes a YAML file, parses it and returns a JSON Object

@@ -1,13 +1,13 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    urlUtils = require('../../../../core/server/lib/url-utils'),
+const should = require('should');
+const sinon = require('sinon');
+const urlUtils = require('../../../../core/server/lib/url-utils');
 
-    // Stuff we are testing
-    storageUtils = require('../../../../core/server/adapters/storage/utils');
+// Stuff we are testing
+const storageUtils = require('../../../../core/server/adapters/storage/utils');
 
 describe('storage utils', function () {
-    var urlForStub,
-        urlGetSubdirStub;
+    let urlForStub;
+    let urlGetSubdirStub;
 
     beforeEach(function () {
         urlForStub = sinon.stub();
@@ -19,8 +19,8 @@ describe('storage utils', function () {
 
     describe('fn: getLocalFileStoragePath', function () {
         it('should return local file storage path for absolute URL', function () {
-            var url = 'http://myblog.com/content/images/2017/07/ghost-logo.png',
-                result;
+            const url = 'http://myblog.com/content/images/2017/07/ghost-logo.png';
+            let result;
 
             urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -36,8 +36,8 @@ describe('storage utils', function () {
         // See https://github.com/TryGhost/Ghost/blob/master/core/server/web/shared/middlewares/url-redirects.js#L76
         // TODO: Change the code to make this test work
         it.skip('should return local file storage path for https request, when blog setup as http', function () {
-            var url = 'https://myblog.com/content/images/2017/07/ghost-logo.png',
-                result;
+            const url = 'https://myblog.com/content/images/2017/07/ghost-logo.png';
+            let result;
 
             urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -50,8 +50,8 @@ describe('storage utils', function () {
         });
 
         it('should return local file storage path for absolute URL with subdirectory', function () {
-            var url = 'http://myblog.com/blog/content/images/2017/07/ghost-logo.png',
-                result;
+            const url = 'http://myblog.com/blog/content/images/2017/07/ghost-logo.png';
+            let result;
 
             urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -64,8 +64,8 @@ describe('storage utils', function () {
         });
 
         it('should return local file storage path for relative URL', function () {
-            var filePath = '/content/images/2017/07/ghost-logo.png',
-                result;
+            const filePath = '/content/images/2017/07/ghost-logo.png';
+            let result;
 
             urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -78,8 +78,8 @@ describe('storage utils', function () {
         });
 
         it('should return local file storage path for relative URL with subdirectory', function () {
-            var filePath = '/blog/content/images/2017/07/ghost-logo.png',
-                result;
+            const filePath = '/blog/content/images/2017/07/ghost-logo.png';
+            let result;
 
             urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -92,8 +92,8 @@ describe('storage utils', function () {
         });
 
         it('should not sanitize URL if not local file storage', function () {
-            var url = 'http://example-blog.com/ghost-logo.png',
-                result;
+            const url = 'http://example-blog.com/ghost-logo.png';
+            let result;
 
             urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -108,8 +108,8 @@ describe('storage utils', function () {
 
     describe('fn: isLocalImage', function () {
         it('should return true when absolute URL and local file', function () {
-            var url = 'http://myblog.com/content/images/2017/07/ghost-logo.png',
-                result;
+            const url = 'http://myblog.com/content/images/2017/07/ghost-logo.png';
+            let result;
 
             urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -125,8 +125,8 @@ describe('storage utils', function () {
         // See https://github.com/TryGhost/Ghost/blob/master/core/server/web/shared/middlewares/url-redirects.js#L76
         // TODO: Change the code to make this test work
         it.skip('should return local file storage path for https request, when blog setup as http', function () {
-            var url = 'https://myblog.com/content/images/2017/07/ghost-logo.png',
-                result;
+            const url = 'https://myblog.com/content/images/2017/07/ghost-logo.png';
+            let result;
 
             urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -139,8 +139,8 @@ describe('storage utils', function () {
         });
 
         it('should return true when absolute URL with subdirectory and local file', function () {
-            var url = 'http://myblog.com/blog/content/images/2017/07/ghost-logo.png',
-                result;
+            const url = 'http://myblog.com/blog/content/images/2017/07/ghost-logo.png';
+            let result;
 
             urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -153,8 +153,8 @@ describe('storage utils', function () {
         });
 
         it('should return true when relative URL and local file', function () {
-            var url = '/content/images/2017/07/ghost-logo.png',
-                result;
+            const url = '/content/images/2017/07/ghost-logo.png';
+            let result;
 
             urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -167,8 +167,8 @@ describe('storage utils', function () {
         });
 
         it('should return true when relative URL and local file', function () {
-            var url = '/blog/content/images/2017/07/ghost-logo.png',
-                result;
+            const url = '/blog/content/images/2017/07/ghost-logo.png';
+            let result;
 
             urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');
@@ -181,8 +181,8 @@ describe('storage utils', function () {
         });
 
         it('should return false when no local file', function () {
-            var url = 'http://somewebsite.com/ghost-logo.png',
-                result;
+            const url = 'http://somewebsite.com/ghost-logo.png';
+            let result;
 
             urlForStub = sinon.stub(urlUtils, 'urlFor');
             urlForStub.withArgs('home').returns('http://myblog.com/');

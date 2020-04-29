@@ -1,40 +1,42 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
-    mail = require('../../../../core/server/services/mail'),
-    settingsCache = require('../../../../core/server/services/settings/cache'),
-    configUtils = require('../../../utils/configUtils'),
-    urlUtils = require('../../../../core/server/lib/url-utils'),
-    common = require('../../../../core/server/lib/common'),
-    mailer,
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const mail = require('../../../../core/server/services/mail');
+const settingsCache = require('../../../../core/server/services/settings/cache');
+const configUtils = require('../../../utils/configUtils');
+const urlUtils = require('../../../../core/server/lib/url-utils');
+const common = require('../../../../core/server/lib/common');
+let mailer;
 
-    // Mock SMTP config
-    SMTP = {
-        transport: 'SMTP',
-        options: {
-            service: 'Gmail',
-            auth: {
-                user: 'nil',
-                pass: '123'
-            }
+// Mock SMTP config
+const SMTP = {
+    transport: 'SMTP',
+    options: {
+        service: 'Gmail',
+        auth: {
+            user: 'nil',
+            pass: '123'
         }
-    },
+    }
+};
 
-    // test data
-    mailDataNoDomain = {
-        to: 'joe@doesntexistexample091283zalgo.com',
-        subject: 'testemail',
-        html: '<p>This</p>'
-    },
-    mailDataNoServer = {
-        to: 'joe@example.com',
-        subject: 'testemail',
-        html: '<p>This</p>'
-    },
-    mailDataIncomplete = {
-        subject: 'testemail',
-        html: '<p>This</p>'
-    };
+// test data
+const mailDataNoDomain = {
+    to: 'joe@doesntexistexample091283zalgo.com',
+    subject: 'testemail',
+    html: '<p>This</p>'
+};
+
+const mailDataNoServer = {
+    to: 'joe@example.com',
+    subject: 'testemail',
+    html: '<p>This</p>'
+};
+
+const mailDataIncomplete = {
+    subject: 'testemail',
+    html: '<p>This</p>'
+};
 
 const sandbox = sinon.createSandbox();
 

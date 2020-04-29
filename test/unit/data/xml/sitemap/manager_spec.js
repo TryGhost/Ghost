@@ -1,20 +1,25 @@
-const should = require('should'),
-    sinon = require('sinon'),
+const should = require('should');
+const sinon = require('sinon');
 
-    // Stuff we are testing
-    common = require('../../../../../core/server/lib/common'),
-    SiteMapManager = require('../../../../../core/frontend/services/sitemap/manager'),
-    PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator'),
-    PageGenerator = require('../../../../../core/frontend/services/sitemap/page-generator'),
-    TagGenerator = require('../../../../../core/frontend/services/sitemap/tag-generator'),
-    UserGenerator = require('../../../../../core/frontend/services/sitemap/user-generator'),
-    IndexGenerator = require('../../../../../core/frontend/services/sitemap/index-generator');
+// Stuff we are testing
+const common = require('../../../../../core/server/lib/common');
+
+const SiteMapManager = require('../../../../../core/frontend/services/sitemap/manager');
+const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator');
+const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-generator');
+const TagGenerator = require('../../../../../core/frontend/services/sitemap/tag-generator');
+const UserGenerator = require('../../../../../core/frontend/services/sitemap/user-generator');
+const IndexGenerator = require('../../../../../core/frontend/services/sitemap/index-generator');
 
 describe('Unit: sitemap/manager', function () {
     let eventsToRemember;
 
     const makeStubManager = function () {
-        let posts, pages, tags, authors, index;
+        let posts;
+        let pages;
+        let tags;
+        let authors;
+        let index;
 
         index = new IndexGenerator();
         posts = new PostGenerator();
@@ -43,7 +48,8 @@ describe('Unit: sitemap/manager', function () {
     });
 
     describe('SiteMapManager', function () {
-        let manager, fake;
+        let manager;
+        let fake;
 
         beforeEach(function () {
             manager = makeStubManager();

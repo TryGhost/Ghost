@@ -1,11 +1,13 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    common = require('../../../../../core/server/lib/common'),
-    urlUtils = require('../../../../../core/server/lib/url-utils'),
-    middlewares = require('../../../../../core/frontend/services/routing/middlewares');
+const should = require('should');
+const sinon = require('sinon');
+const common = require('../../../../../core/server/lib/common');
+const urlUtils = require('../../../../../core/server/lib/url-utils');
+const middlewares = require('../../../../../core/frontend/services/routing/middlewares');
 
 describe('UNIT: services/routing/middlewares/page-param', function () {
-    let req, res, next;
+    let req;
+    let res;
+    let next;
 
     beforeEach(function () {
         req = sinon.stub();

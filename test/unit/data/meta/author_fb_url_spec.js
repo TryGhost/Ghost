@@ -1,10 +1,10 @@
-var should = require('should'),
-    getAuthorFacebookUrl = require('../../../../core/frontend/meta/author_fb_url');
+const should = require('should');
+const getAuthorFacebookUrl = require('../../../../core/frontend/meta/author_fb_url');
 
 describe('getAuthorFacebookUrl', function () {
     it('should return author facebook url if post and has url',
         function () {
-            var facebookUrl = getAuthorFacebookUrl({
+            const facebookUrl = getAuthorFacebookUrl({
                 context: ['post'],
                 post: {
                     primary_author: {
@@ -17,7 +17,7 @@ describe('getAuthorFacebookUrl', function () {
 
     it('should return author facebook url if AMP post and has url',
         function () {
-            var facebookUrl = getAuthorFacebookUrl({
+            const facebookUrl = getAuthorFacebookUrl({
                 context: ['amp', 'post'],
                 post: {
                     primary_author: {
@@ -30,7 +30,7 @@ describe('getAuthorFacebookUrl', function () {
 
     it('should return null if context does not contain author facebook url and is a post',
         function () {
-            var facebookUrl = getAuthorFacebookUrl({
+            const facebookUrl = getAuthorFacebookUrl({
                 context: ['post'],
                 post: {
                     primary_author: {
@@ -42,7 +42,7 @@ describe('getAuthorFacebookUrl', function () {
         });
 
     it('should return null if context does not contain author and is a post', function () {
-        var facebookUrl = getAuthorFacebookUrl({
+        const facebookUrl = getAuthorFacebookUrl({
             context: ['post'],
             post: {}
         });
@@ -51,7 +51,7 @@ describe('getAuthorFacebookUrl', function () {
 
     it('should return author facebook url if author and has url',
         function () {
-            var facebookUrl = getAuthorFacebookUrl({
+            const facebookUrl = getAuthorFacebookUrl({
                 context: ['author'],
                 author: {
                     facebook: 'https://www.facebook.com/user'
@@ -62,7 +62,7 @@ describe('getAuthorFacebookUrl', function () {
 
     it('should return null if context does not contain author facebook url and is a author',
         function () {
-            var facebookUrl = getAuthorFacebookUrl({
+            const facebookUrl = getAuthorFacebookUrl({
                 context: ['author'],
                 author: {
                     facebook: ''
@@ -72,7 +72,7 @@ describe('getAuthorFacebookUrl', function () {
         });
 
     it('should return null if context is not a post', function () {
-        var facebookUrl = getAuthorFacebookUrl({
+        const facebookUrl = getAuthorFacebookUrl({
             context: ['tag']
         });
         should(facebookUrl).equal(null);

@@ -6,7 +6,8 @@ const {logging} = require('../../../../../core/server/lib/common');
 const normalize = require('../../../../../core/server/web/api/middleware/normalize-image');
 
 describe('normalize', function () {
-    let res, req;
+    let res;
+    let req;
 
     beforeEach(function () {
         req = {

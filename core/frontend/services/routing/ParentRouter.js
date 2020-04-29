@@ -7,14 +7,15 @@
  * Only allows for .use and .get at the moment - we don't have clear use-cases for anything else yet.
  */
 
-const debug = require('ghost-ignition').debug('services:routing:ParentRouter'),
-    EventEmitter = require('events').EventEmitter,
-    express = require('express'),
-    _ = require('lodash'),
-    url = require('url'),
-    security = require('../../../server/lib/security'),
-    urlUtils = require('../../../server/lib/url-utils'),
-    registry = require('./registry');
+const debug = require('ghost-ignition').debug('services:routing:ParentRouter');
+
+const EventEmitter = require('events').EventEmitter;
+const express = require('express');
+const _ = require('lodash');
+const url = require('url');
+const security = require('../../../server/lib/security');
+const urlUtils = require('../../../server/lib/url-utils');
+const registry = require('./registry');
 
 /**
  * @description Inherited express router, which gives control to us.

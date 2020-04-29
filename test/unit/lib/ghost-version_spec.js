@@ -2,7 +2,8 @@ const should = require('should');
 const rewire = require('rewire');
 const mockUtils = require('../../utils/mocks');
 
-let ghostVersionUtils, version;
+let ghostVersionUtils;
+let version;
 
 describe('Utils: Ghost Version', function () {
     const beforeEachIt = function be() {

@@ -1,14 +1,14 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    ObjectId = require('bson-objectid'),
-    _ = require('lodash'),
-    testUtils = require('../../../../utils'),
-    urlUtils = require('../../../../../core/server/lib/url-utils'),
-    IndexGenerator = require('../../../../../core/frontend/services/sitemap/index-generator'),
-    PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator'),
-    PageGenerator = require('../../../../../core/frontend/services/sitemap/page-generator'),
-    TagGenerator = require('../../../../../core/frontend/services/sitemap/tag-generator'),
-    UserGenerator = require('../../../../../core/frontend/services/sitemap/user-generator');
+const should = require('should');
+const sinon = require('sinon');
+const ObjectId = require('bson-objectid');
+const _ = require('lodash');
+const testUtils = require('../../../../utils');
+const urlUtils = require('../../../../../core/server/lib/url-utils');
+const IndexGenerator = require('../../../../../core/frontend/services/sitemap/index-generator');
+const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator');
+const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-generator');
+const TagGenerator = require('../../../../../core/frontend/services/sitemap/tag-generator');
+const UserGenerator = require('../../../../../core/frontend/services/sitemap/user-generator');
 
 should.Assertion.add('ValidUrlNode', function (options) {
     // Check urlNode looks correct
@@ -107,7 +107,9 @@ describe('Generators', function () {
             });
 
             it('compare content output', function () {
-                let idxFirst, idxSecond, idxThird;
+                let idxFirst;
+                let idxSecond;
+                let idxThird;
 
                 urlUtils.urlFor.withArgs('image', {image: 'post-100.jpg'}, true).returns('http://my-ghost-blog.com/images/post-100.jpg');
                 urlUtils.urlFor.withArgs('image', {image: 'post-200.jpg'}, true).returns('http://my-ghost-blog.com/images/post-200.jpg');

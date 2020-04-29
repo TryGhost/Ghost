@@ -1,4 +1,4 @@
-var Promise = require('bluebird');
+const Promise = require('bluebird');
 
 module.exports = function beforeEach() {
     return Promise.resolve();

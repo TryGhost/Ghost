@@ -6,23 +6,23 @@
 // accesses the models directly.
 
 // All other parts of Ghost, including the frontend & admin UI are only allowed to access data via the API.
-const _ = require('lodash'),
-    bookshelf = require('bookshelf'),
-    moment = require('moment'),
-    Promise = require('bluebird'),
-    ObjectId = require('bson-objectid'),
-    debug = require('ghost-ignition').debug('models:base'),
-    config = require('../../config'),
-    db = require('../../data/db'),
-    common = require('../../lib/common'),
-    security = require('../../lib/security'),
-    schema = require('../../data/schema'),
-    urlUtils = require('../../lib/url-utils'),
-    validation = require('../../data/validation'),
-    plugins = require('../plugins');
+const _ = require('lodash');
 
-let ghostBookshelf,
-    proto;
+const bookshelf = require('bookshelf');
+const moment = require('moment');
+const Promise = require('bluebird');
+const ObjectId = require('bson-objectid');
+const debug = require('ghost-ignition').debug('models:base');
+const config = require('../../config');
+const db = require('../../data/db');
+const common = require('../../lib/common');
+const security = require('../../lib/security');
+const schema = require('../../data/schema');
+const urlUtils = require('../../lib/url-utils');
+const validation = require('../../data/validation');
+const plugins = require('../plugins');
+let ghostBookshelf;
+let proto;
 
 // ### ghostBookshelf
 // Initializes a new Bookshelf instance called ghostBookshelf, for reference elsewhere in Ghost.
@@ -59,7 +59,7 @@ ghostBookshelf.plugin('bookshelf-relations', {
         belongsToMany: {
             after: function (existing, targets, options) {
                 // reorder tags/authors
-                var queryOptions = {
+                const queryOptions = {
                     query: {
                         where: {}
                     }
@@ -222,7 +222,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // Bookshelf `initialize` - declare a constructor-like method for model creation
     initialize: function initialize() {
-        var self = this;
+        const self = this;
 
         // NOTE: triggered before `creating`/`updating`
         this.on('saving', function onSaving(newObj, attrs, options) {
@@ -429,7 +429,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * date format is now in each db the same
      */
     fixDatesWhenSave: function fixDates(attrs) {
-        var self = this;
+        const self = this;
 
         _.each(attrs, function each(value, key) {
             if (value !== null
@@ -451,7 +451,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      *   - knex wraps the UTC value into a local JS Date
      */
     fixDatesWhenFetch: function fixDates(attrs) {
-        var self = this, dateMoment;
+        const self = this;
+        let dateMoment;
 
         _.each(attrs, function each(value, key) {
             if (value !== null
@@ -474,7 +475,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // Convert integers to real booleans
     fixBools: function fixBools(attrs) {
-        var self = this;
+        const self = this;
         _.each(attrs, function each(value, key) {
             if (Object.prototype.hasOwnProperty.call(schema.tables[self.tableName], key)
                 && schema.tables[self.tableName][key].type === 'bool') {
@@ -701,9 +702,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Object} The filtered results of the passed in data, containing only what's allowed in the schema.
      */
     filterData: function filterData(data) {
-        var permittedAttributes = this.prototype.permittedAttributes(),
-            filteredData = _.pick(data, permittedAttributes),
-            sanitizedData = this.sanitizeData(filteredData);
+        const permittedAttributes = this.prototype.permittedAttributes();
+        const filteredData = _.pick(data, permittedAttributes);
+        const sanitizedData = this.sanitizeData(filteredData);
 
         return sanitizedData;
     },
@@ -730,7 +731,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * Sanitize relations.
      */
     sanitizeData: function sanitizeData(data) {
-        var tableName = _.result(this.prototype, 'tableName'), date;
+        const tableName = _.result(this.prototype, 'tableName');
+        let date;
 
         _.each(data, (value, property) => {
             if (value !== null
@@ -801,9 +803,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             });
         }
 
-        var options = _.cloneDeep(unfilteredOptions),
-            extraAllowedProperties = filterConfig.extraAllowedProperties || [],
-            permittedOptions;
+        let options = _.cloneDeep(unfilteredOptions);
+        const extraAllowedProperties = filterConfig.extraAllowedProperties || [];
+        let permittedOptions;
 
         permittedOptions = this.permittedOptions(methodName, options);
         permittedOptions = _.union(permittedOptions, extraAllowedProperties);
@@ -825,8 +827,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Collection)} Collection of all Models
      */
     findAll: function findAll(unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'findAll'),
-            itemCollection = this.forge();
+        const options = this.filterOptions(unfilteredOptions, 'findAll');
+        const itemCollection = this.forge();
 
         // @TODO: we can't use order raw when running migrations (see https://github.com/tgriesser/knex/issues/2763)
         if (this.orderDefaultRaw && !options.migrating) {
@@ -872,9 +874,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {Object} unfilteredOptions
      */
     findPage: function findPage(unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'findPage'),
-            itemCollection = this.forge(),
-            requestedColumns = options.columns;
+        const options = this.filterOptions(unfilteredOptions, 'findPage');
+        const itemCollection = this.forge();
+        const requestedColumns = options.columns;
 
         // Set this to true or pass ?debug=true as an API option to get output
         itemCollection.debug = options.debug && config.get('env') !== 'production';
@@ -992,8 +994,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Model)} Newly Added Model
      */
     add: function add(data, unfilteredOptions) {
-        var options = this.filterOptions(unfilteredOptions, 'add'),
-            model;
+        const options = this.filterOptions(unfilteredOptions, 'add');
+        let model;
 
         data = this.filterData(data);
         model = this.forge(data);
@@ -1042,14 +1044,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(String)} Resolves to a unique slug string
      */
     generateSlug: function generateSlug(Model, base, options) {
-        var slug,
-            slugTryCount = 1,
-            baseName = Model.prototype.tableName.replace(/s$/, ''),
-            // Look for a matching slug, append an incrementing number if so
-            checkIfSlugExists, longSlug;
+        let slug;
+        let slugTryCount = 1;
+        const baseName = Model.prototype.tableName.replace(/s$/, '');
+
+        // Look for a matching slug, append an incrementing number if so
+        let checkIfSlugExists;
+
+        let longSlug;
 
         checkIfSlugExists = function checkIfSlugExists(slugToFind) {
-            var args = {slug: slugToFind};
+            const args = {slug: slugToFind};
 
             // status is needed for posts
             if (options && options.status) {
@@ -1057,7 +1062,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             }
 
             return Model.findOne(args, options).then(function then(found) {
-                var trimSpace;
+                let trimSpace;
 
                 if (!found) {
                     return slugToFind;
@@ -1127,7 +1132,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     parseOrderOption: function (order, withRelated) {
-        var permittedAttributes, result, rules;
+        let permittedAttributes;
+        let result;
+        let rules;
 
         permittedAttributes = this.prototype.permittedAttributes();
         if (withRelated && withRelated.indexOf('count.posts') > -1) {
@@ -1137,7 +1144,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         rules = order.split(',');
 
         _.each(rules, function (rule) {
-            var match, field, direction;
+            let match;
+            let field;
+            let direction;
 
             match = /^([a-z0-9_.]+)\s+(asc|desc)$/i.exec(rule.trim());
 

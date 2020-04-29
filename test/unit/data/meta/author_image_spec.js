@@ -1,6 +1,6 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    getAuthorImage = require('../../../../core/frontend/meta/author_image');
+const should = require('should');
+const sinon = require('sinon');
+const getAuthorImage = require('../../../../core/frontend/meta/author_image');
 
 describe('getAuthorImage', function () {
     afterEach(function () {
@@ -8,7 +8,7 @@ describe('getAuthorImage', function () {
     });
 
     it('should return author image url if post and has url', function () {
-        var imageUrl = getAuthorImage({
+        const imageUrl = getAuthorImage({
             context: ['post'],
             post: {
                 primary_author: {
@@ -21,7 +21,7 @@ describe('getAuthorImage', function () {
     });
 
     it('should return absolute author image url if post and has url', function () {
-        var imageUrl = getAuthorImage({
+        const imageUrl = getAuthorImage({
             context: ['post'],
             post: {
                 primary_author: {
@@ -34,7 +34,7 @@ describe('getAuthorImage', function () {
     });
 
     it('should return author image url if AMP post and has url', function () {
-        var imageUrl = getAuthorImage({
+        const imageUrl = getAuthorImage({
             context: ['amp', 'post'],
             post: {
                 primary_author: {
@@ -46,7 +46,7 @@ describe('getAuthorImage', function () {
     });
 
     it('should return absolute author image url if AMP post and has url', function () {
-        var imageUrl = getAuthorImage({
+        const imageUrl = getAuthorImage({
             context: ['amp', 'post'],
             post: {
                 primary_author: {
@@ -59,7 +59,7 @@ describe('getAuthorImage', function () {
     });
 
     it('should return null if context does not contain author image url and is a post', function () {
-        var imageUrl = getAuthorImage({
+        const imageUrl = getAuthorImage({
             context: ['post'],
             post: {
                 primary_author: {
@@ -72,7 +72,7 @@ describe('getAuthorImage', function () {
     });
 
     it('should return null if context does not contain author and is a post', function () {
-        var imageUrl = getAuthorImage({
+        const imageUrl = getAuthorImage({
             context: ['post'],
             post: {}
         });
@@ -81,7 +81,7 @@ describe('getAuthorImage', function () {
     });
 
     it('should return null if context is not a post', function () {
-        var imageUrl = getAuthorImage({
+        const imageUrl = getAuthorImage({
             context: ['tag']
         });
 

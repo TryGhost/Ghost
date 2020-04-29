@@ -1,11 +1,11 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
-    rewire = require('rewire'),
-    pagination = rewire('../../../../core/server/models/plugins/pagination');
+const should = require('should');
+const sinon = require('sinon');
+const Promise = require('bluebird');
+const rewire = require('rewire');
+const pagination = rewire('../../../../core/server/models/plugins/pagination');
 
 describe('pagination', function () {
-    var paginationUtils;
+    let paginationUtils;
 
     afterEach(function () {
         sinon.restore();
@@ -17,7 +17,7 @@ describe('pagination', function () {
         });
 
         describe('formatResponse', function () {
-            var formatResponse;
+            let formatResponse;
 
             before(function () {
                 formatResponse = paginationUtils.formatResponse;
@@ -91,7 +91,7 @@ describe('pagination', function () {
         });
 
         describe('parseOptions', function () {
-            var parseOptions;
+            let parseOptions;
 
             before(function () {
                 parseOptions = paginationUtils.parseOptions;
@@ -135,8 +135,8 @@ describe('pagination', function () {
         });
 
         describe('addLimitAndOffset', function () {
-            var addLimitAndOffset,
-                collection = {};
+            let addLimitAndOffset;
+            const collection = {};
 
             before(function () {
                 addLimitAndOffset = paginationUtils.addLimitAndOffset;
@@ -163,7 +163,10 @@ describe('pagination', function () {
     });
 
     describe('fetchPage', function () {
-        var model, bookshelf, knex, mockQuery;
+        let model;
+        let bookshelf;
+        let knex;
+        let mockQuery;
 
         before(function () {
             paginationUtils = pagination.__get__('paginationUtils');
@@ -240,7 +243,7 @@ describe('pagination', function () {
         });
 
         it('calls all paginationUtils and methods when order set', function (done) {
-            var orderOptions = {order: {id: 'DESC'}};
+            const orderOptions = {order: {id: 'DESC'}};
             paginationUtils.parseOptions.returns(orderOptions);
 
             bookshelf.Model.prototype.fetchPage(orderOptions).then(function () {
@@ -279,7 +282,7 @@ describe('pagination', function () {
         });
 
         it('calls all paginationUtils and methods when group by set', function (done) {
-            var groupOptions = {groups: ['posts.id']};
+            const groupOptions = {groups: ['posts.id']};
             paginationUtils.parseOptions.returns(groupOptions);
 
             bookshelf.Model.prototype.fetchPage(groupOptions).then(function () {

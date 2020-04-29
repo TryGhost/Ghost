@@ -1,9 +1,10 @@
 // This file defines everything that helpers "require"
 // With the exception of modules like lodash, Bluebird
 // We can later refactor to enforce this something like we did in apps
-var hbs = require('./themes/engine'),
-    settingsCache = require('../../server/services/settings/cache'),
-    config = require('../../server/config');
+const hbs = require('./themes/engine');
+
+const settingsCache = require('../../server/services/settings/cache');
+const config = require('../../server/config');
 
 // Direct requires:
 // - lodash

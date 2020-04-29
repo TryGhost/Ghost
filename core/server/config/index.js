@@ -1,32 +1,32 @@
-var Nconf = require('nconf'),
-    path = require('path'),
-    _debug = require('ghost-ignition').debug._base,
-    debug = _debug('ghost:config'),
-    localUtils = require('./utils'),
-    env = process.env.NODE_ENV || 'development',
-    _private = {};
+const Nconf = require('nconf');
+const path = require('path');
+const _debug = require('ghost-ignition').debug._base;
+const debug = _debug('ghost:config');
+const localUtils = require('./utils');
+const env = process.env.NODE_ENV || 'development';
+const _private = {};
 
 _private.loadNconf = function loadNconf(options) {
     debug('config start');
     options = options || {};
 
-    var baseConfigPath = options.baseConfigPath || __dirname,
-        customConfigPath = options.customConfigPath || process.cwd(),
-        nconf = new Nconf.Provider();
+    const baseConfigPath = options.baseConfigPath || __dirname;
+    const customConfigPath = options.customConfigPath || process.cwd();
+    const nconf = new Nconf.Provider();
 
     /**
-     * no channel can override the overrides
-     */
+  * no channel can override the overrides
+  */
     nconf.file('overrides', path.join(baseConfigPath, 'overrides.json'));
 
     /**
-     * command line arguments
-     */
+  * command line arguments
+  */
     nconf.argv();
 
     /**
-     * env arguments
-     */
+  * env arguments
+  */
     nconf.env({
         separator: '__',
         parseValues: true
@@ -38,9 +38,9 @@ _private.loadNconf = function loadNconf(options) {
     nconf.file('defaults', path.join(baseConfigPath, 'defaults.json'));
 
     /**
-     * transform all relative paths to absolute paths
-     * transform sqlite filename path for Ghost-CLI
-     */
+  * transform all relative paths to absolute paths
+  * transform sqlite filename path for Ghost-CLI
+  */
     nconf.makePathsAbsolute = localUtils.makePathsAbsolute.bind(nconf);
     nconf.isPrivacyDisabled = localUtils.isPrivacyDisabled.bind(nconf);
     nconf.getContentPath = localUtils.getContentPath.bind(nconf);
@@ -53,19 +53,19 @@ _private.loadNconf = function loadNconf(options) {
         nconf.makePathsAbsolute(nconf.get('database:connection'), 'database:connection');
     }
     /**
-     * Check if the URL in config has a protocol
-     */
+  * Check if the URL in config has a protocol
+  */
     nconf.checkUrlProtocol = localUtils.checkUrlProtocol.bind(nconf);
     nconf.checkUrlProtocol();
 
     /**
-     * Ensure that the content path exists
-     */
+  * Ensure that the content path exists
+  */
     nconf.doesContentPathExist();
 
     /**
-     * values we have to set manual
-     */
+  * values we have to set manual
+  */
     nconf.set('env', env);
 
     // Wrap this in a check, because else nconf.get() is executed unnecessarily

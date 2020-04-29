@@ -1,5 +1,5 @@
-const _ = require('lodash'),
-    database = require('../../../db');
+const _ = require('lodash');
+const database = require('../../../db');
 
 module.exports = function shutdown(options = {}) {
     if (options.executedFromShell === true) {

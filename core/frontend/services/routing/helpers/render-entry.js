@@ -1,6 +1,6 @@
-const debug = require('ghost-ignition').debug('services:routing:helpers:render-post'),
-    formatResponse = require('./format-response'),
-    renderer = require('./renderer');
+const debug = require('ghost-ignition').debug('services:routing:helpers:render-post');
+const formatResponse = require('./format-response');
+const renderer = require('./renderer');
 /**
  * @description Helper to handle rendering multiple resources.
  *

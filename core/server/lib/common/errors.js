@@ -1,7 +1,7 @@
-const merge = require('lodash/merge'),
-    each = require('lodash/each'),
-    util = require('util'),
-    errors = require('ghost-ignition').errors;
+const merge = require('lodash/merge');
+const each = require('lodash/each');
+const util = require('util');
+const errors = require('ghost-ignition').errors;
 
 function GhostError(options) {
     options = options || {};

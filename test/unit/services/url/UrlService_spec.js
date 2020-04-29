@@ -11,7 +11,11 @@ const Urls = require('../../../../core/frontend/services/url/Urls');
 const UrlService = rewire('../../../../core/frontend/services/url/UrlService');
 
 describe('Unit: services/url/UrlService', function () {
-    let QueueStub, ResourcesStub, UrlsStub, UrlGeneratorStub, urlService;
+    let QueueStub;
+    let ResourcesStub;
+    let UrlsStub;
+    let UrlGeneratorStub;
+    let urlService;
 
     beforeEach(function () {
         QueueStub = sinon.stub();

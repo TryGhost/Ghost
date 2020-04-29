@@ -1,13 +1,13 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    _ = require('lodash'),
-    testUtils = require('../../../../utils'),
-    common = require('../../../../../core/server/lib/common'),
-    security = require('../../../../../core/server/lib/security'),
-    settingsCache = require('../../../../../core/server/services/settings/cache'),
-    controllers = require('../../../../../core/frontend/services/routing/controllers'),
-    helpers = require('../../../../../core/frontend/services/routing/helpers'),
-    rssService = require('../../../../../core/frontend/services/rss');
+const should = require('should');
+const sinon = require('sinon');
+const _ = require('lodash');
+const testUtils = require('../../../../utils');
+const common = require('../../../../../core/server/lib/common');
+const security = require('../../../../../core/server/lib/security');
+const settingsCache = require('../../../../../core/server/services/settings/cache');
+const controllers = require('../../../../../core/frontend/services/routing/controllers');
+const helpers = require('../../../../../core/frontend/services/routing/helpers');
+const rssService = require('../../../../../core/frontend/services/rss');
 
 // Helper function to prevent unit tests
 // from failing via timeout when they
@@ -19,7 +19,11 @@ function failTest(done) {
 }
 
 describe('Unit - services/routing/controllers/rss', function () {
-    let req, res, next, fetchDataStub, posts;
+    let req;
+    let res;
+    let next;
+    let fetchDataStub;
+    let posts;
 
     beforeEach(function () {
         posts = [

@@ -13,8 +13,8 @@ describe('{{lang}} helper', function () {
     });
 
     it('returns correct language tag', function () {
-        let expected = proxy.themeI18n.locale(),
-            rendered = helpers.lang.call();
+        let expected = proxy.themeI18n.locale();
+        let rendered = helpers.lang.call();
 
         should.exist(rendered);
         rendered.string.should.equal(expected);

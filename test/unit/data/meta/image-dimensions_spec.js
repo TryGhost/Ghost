@@ -1,10 +1,10 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    rewire = require('rewire'),
-    getImageDimensions = rewire('../../../../core/frontend/meta/image-dimensions');
+const should = require('should');
+const sinon = require('sinon');
+const rewire = require('rewire');
+const getImageDimensions = rewire('../../../../core/frontend/meta/image-dimensions');
 
 describe('getImageDimensions', function () {
-    var sizeOfStub;
+    let sizeOfStub;
 
     beforeEach(function () {
         sizeOfStub = sinon.stub();
@@ -15,7 +15,7 @@ describe('getImageDimensions', function () {
     });
 
     it('should return dimension for images', function (done) {
-        var metaData = {
+        const metaData = {
             coverImage: {
                 url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
             },
@@ -67,7 +67,7 @@ describe('getImageDimensions', function () {
     });
 
     it('should return metaData if url is undefined or null', function (done) {
-        var metaData = {
+        const metaData = {
             coverImage: {
                 url: undefined
             },
@@ -110,7 +110,7 @@ describe('getImageDimensions', function () {
     });
 
     it('should fake image dimension for publisher.logo if file is too big and square', function (done) {
-        var metaData = {
+        const metaData = {
             coverImage: {
                 url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
             },
@@ -162,7 +162,7 @@ describe('getImageDimensions', function () {
     });
 
     it('should not fake dimension for publisher.logo if a logo is too big but not square', function (done) {
-        var metaData = {
+        const metaData = {
             coverImage: {
                 url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
             },

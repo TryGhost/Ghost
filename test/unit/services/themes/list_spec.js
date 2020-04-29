@@ -1,7 +1,7 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    _ = require('lodash'),
-    themeList = require('../../../../core/frontend/services/themes/list');
+const should = require('should');
+const sinon = require('sinon');
+const _ = require('lodash');
+const themeList = require('../../../../core/frontend/services/themes/list');
 
 describe('Themes', function () {
     afterEach(function () {
@@ -30,7 +30,7 @@ describe('Themes', function () {
         });
 
         it('set() updates an existing theme', function () {
-            var origCasper = _.cloneDeep(themeList.get('casper'));
+            const origCasper = _.cloneDeep(themeList.get('casper'));
             themeList.set('casper', {magic: 'update'});
 
             themeList.get('casper').should.not.eql(origCasper);
@@ -59,7 +59,7 @@ describe('Themes', function () {
         });
 
         it('init() calls set for each theme', function () {
-            var setSpy = sinon.spy(themeList, 'set');
+            const setSpy = sinon.spy(themeList, 'set');
 
             themeList.init({test: {a: 'b'}, casper: {c: 'd'}});
             setSpy.calledTwice.should.be.true();
@@ -69,7 +69,7 @@ describe('Themes', function () {
 
         it('init() with empty object resets the list', function () {
             themeList.init();
-            var result = themeList.getAll();
+            const result = themeList.getAll();
             should.exist(result);
             result.should.be.an.Object();
             result.should.eql({});

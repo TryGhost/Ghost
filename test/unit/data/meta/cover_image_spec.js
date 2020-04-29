@@ -1,9 +1,9 @@
-var should = require('should'),
-    getCoverImage = require('../../../../core/frontend/meta/cover_image');
+const should = require('should');
+const getCoverImage = require('../../../../core/frontend/meta/cover_image');
 
 describe('getCoverImage', function () {
     it('should return absolute cover image url for home', function () {
-        var coverImageUrl = getCoverImage({
+        const coverImageUrl = getCoverImage({
             context: ['home'],
             home: {
                 cover_image: '/content/images/my-test-image.jpg'
@@ -14,7 +14,7 @@ describe('getCoverImage', function () {
     });
 
     it('should return absolute cover image url for author', function () {
-        var coverImageUrl = getCoverImage({
+        const coverImageUrl = getCoverImage({
             context: ['author'],
             author: {
                 cover_image: '/content/images/my-test-image.jpg'
@@ -25,7 +25,7 @@ describe('getCoverImage', function () {
     });
 
     it('should return absolute image url for post', function () {
-        var coverImageUrl = getCoverImage({
+        const coverImageUrl = getCoverImage({
             context: ['post'],
             post: {
                 feature_image: '/content/images/my-test-image.jpg'
@@ -36,7 +36,7 @@ describe('getCoverImage', function () {
     });
 
     it('should return absolute image url for AMP post', function () {
-        var coverImageUrl = getCoverImage({
+        const coverImageUrl = getCoverImage({
             context: ['amp', 'post'],
             post: {
                 feature_image: '/content/images/my-test-image.jpg'
@@ -47,7 +47,7 @@ describe('getCoverImage', function () {
     });
 
     it('should return null if missing image', function () {
-        var coverImageUrl = getCoverImage({
+        const coverImageUrl = getCoverImage({
             context: ['post'],
             post: {}
         });
@@ -55,7 +55,7 @@ describe('getCoverImage', function () {
     });
 
     it('should return null if author missing cover', function () {
-        var coverImageUrl = getCoverImage({
+        const coverImageUrl = getCoverImage({
             context: ['author'],
             author: {}
         });
@@ -63,7 +63,7 @@ describe('getCoverImage', function () {
     });
 
     it('should return null if home missing cover', function () {
-        var coverImageUrl = getCoverImage({
+        const coverImageUrl = getCoverImage({
             context: ['home'],
             home: {}
         });

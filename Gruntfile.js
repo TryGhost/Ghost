@@ -48,7 +48,7 @@ const configureGrunt = function (grunt) {
     grunt.loadNpmTasks('grunt-subgrunt');
     grunt.loadNpmTasks('grunt-update-submodules');
 
-    var cfg = {
+    const cfg = {
         // #### Common paths used by tasks
         paths: {
             build: buildDirectory,
@@ -163,7 +163,7 @@ const configureGrunt = function (grunt) {
                 bg: grunt.option('client') ? false : true,
                 stdout: function (chunk) {
                     // hide certain output to prevent confusion when running alongside server
-                    var filter = grunt.option('client') ? false : [
+                    const filter = grunt.option('client') ? false : [
                         /> ghost-admin/,
                         /^Livereload/,
                         /^Serving on/
@@ -208,7 +208,7 @@ const configureGrunt = function (grunt) {
             },
             master: {
                 command: function () {
-                    var upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
+                    const upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
                     grunt.log.writeln('Pulling down the latest master from ' + upstream);
                     return `
                         git submodule sync
@@ -425,7 +425,7 @@ const configureGrunt = function (grunt) {
     // so that the test environments do not need to build out the client files
     grunt.registerTask('stubClientFiles', function () {
         _.each(cfg.clientFiles, function (file) {
-            var filePath = path.resolve(cwd + '/core/' + file);
+            const filePath = path.resolve(cwd + '/core/' + file);
             fs.ensureFileSync(filePath);
         });
     });

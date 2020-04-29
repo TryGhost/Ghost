@@ -1,5 +1,5 @@
-var settingsCache = require('../../server/services/settings/cache'),
-    _ = require('lodash');
+const settingsCache = require('../../server/services/settings/cache');
+const _ = require('lodash');
 
 function getContextObject(data, context) {
     /**

@@ -147,8 +147,8 @@ class CollectionRouter extends ParentRouter {
      * @private
      */
     _onTimezoneEdited(settingModel) {
-        const newTimezone = settingModel.attributes.value,
-            previousTimezone = settingModel._previousAttributes.value;
+        const newTimezone = settingModel.attributes.value;
+        const previousTimezone = settingModel._previousAttributes.value;
 
         if (newTimezone === previousTimezone) {
             return;

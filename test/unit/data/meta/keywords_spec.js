@@ -1,7 +1,7 @@
-var should = require('should'),
-    sinon = require('sinon'),
-    models = require('../../../../core/server/models'),
-    getKeywords = require('../../../../core/frontend/meta/keywords');
+const should = require('should');
+const sinon = require('sinon');
+const models = require('../../../../core/server/models');
+const getKeywords = require('../../../../core/frontend/meta/keywords');
 
 describe('getKeywords', function () {
     before(function () {
@@ -13,7 +13,7 @@ describe('getKeywords', function () {
     });
 
     it('should return tags as keywords if post has tags', function () {
-        var keywords = getKeywords({
+        const keywords = getKeywords({
             post: {
                 tags: [
                     {name: 'one'},
@@ -26,7 +26,7 @@ describe('getKeywords', function () {
     });
 
     it('should only return visible tags', function () {
-        var keywords = getKeywords({
+        const keywords = getKeywords({
             post: {
                 tags: [
                     {name: 'one', visibility: 'public'},
@@ -40,7 +40,7 @@ describe('getKeywords', function () {
     });
 
     it('should return null if post has tags is empty array', function () {
-        var keywords = getKeywords({
+        const keywords = getKeywords({
             post: {
                 tags: []
             }
@@ -49,14 +49,14 @@ describe('getKeywords', function () {
     });
 
     it('should return null if post has no tags', function () {
-        var keywords = getKeywords({
+        const keywords = getKeywords({
             post: {}
         });
         should.equal(keywords, null);
     });
 
     it('should return null if not a post', function () {
-        var keywords = getKeywords({
+        const keywords = getKeywords({
             author: {}
         });
         should.equal(keywords, null);

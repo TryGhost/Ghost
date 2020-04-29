@@ -1,14 +1,15 @@
-const Promise = require('bluebird'),
-    csvParser = require('csv-parser'),
-    _ = require('lodash'),
-    fs = require('fs-extra');
+const Promise = require('bluebird');
+const csvParser = require('csv-parser');
+const _ = require('lodash');
+const fs = require('fs-extra');
 
 module.exports = function readCSV(options) {
-    var columnsToExtract = options.columnsToExtract || [],
-        results = [], rows = [];
+    const columnsToExtract = options.columnsToExtract || [];
+    let results = [];
+    const rows = [];
 
     return new Promise(function (resolve, reject) {
-        var readFile = fs.createReadStream(options.path);
+        const readFile = fs.createReadStream(options.path);
 
         readFile.on('err', function (err) {
             reject(err);
@@ -18,8 +19,11 @@ module.exports = function readCSV(options) {
                 rows.push(row);
             })
             .on('end', function () {
-                // If CSV is single column - return all values including header
-                var headers = _.keys(rows[0]), result = {}, columnMap = {};
+            // If CSV is single column - return all values including header
+                const headers = _.keys(rows[0]);
+
+                let result = {};
+                const columnMap = {};
                 if (columnsToExtract.length === 1 && headers.length === 1) {
                     results = _.map(rows, function (value) {
                         result = {};
@@ -27,8 +31,8 @@ module.exports = function readCSV(options) {
                         return result;
                     });
                 } else {
-                    // If there are multiple columns in csv file
-                    // try to match headers using lookup value
+                // If there are multiple columns in csv file
+                // try to match headers using lookup value
 
                     _.map(columnsToExtract, function findMatches(column) {
                         _.each(headers, function checkheader(header) {
@@ -39,7 +43,7 @@ module.exports = function readCSV(options) {
                     });
 
                     results = _.map(rows, function evaluateRow(row) {
-                        var result = {};
+                        const result = {};
                         _.each(columnMap, function returnMatches(value, key) {
                             result[key] = row[value];
                         });

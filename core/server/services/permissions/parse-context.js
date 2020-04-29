@@ -6,7 +6,7 @@
  * @return {{internal: boolean, external: boolean, user: integer|null, public: boolean, api_key: Object|null}}
  */
 module.exports = function parseContext(context) {
-    var parsed = {
+    const parsed = {
         internal: false,
         external: false,
         user: null,

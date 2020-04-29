@@ -8,7 +8,7 @@ const {i18n} = require('../../../../server/lib/common');
 // Execute a template helper
 // All template helpers are register as partial view.
 templates.execute = function execute(name, context, data) {
-    var partial = hbs.handlebars.partials[name];
+    const partial = hbs.handlebars.partials[name];
 
     if (partial === undefined) {
         throw new errors.IncorrectUsageError({

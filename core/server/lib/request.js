@@ -1,10 +1,10 @@
-var got = require('got'),
-    _ = require('lodash'),
-    validator = require('../data/validation').validator,
-    errors = require('@tryghost/errors'),
-    ghostVersion = require('./ghost-version');
+const got = require('got');
+const _ = require('lodash');
+const validator = require('../data/validation').validator;
+const errors = require('@tryghost/errors');
+const ghostVersion = require('./ghost-version');
 
-var defaultOptions = {
+const defaultOptions = {
     headers: {
         'user-agent': 'Ghost/' + ghostVersion.original + ' (https://github.com/TryGhost/Ghost)'
     }
@@ -19,7 +19,7 @@ module.exports = function request(url, options) {
         }));
     }
 
-    var mergedOptions = _.merge({}, defaultOptions, options);
+    const mergedOptions = _.merge({}, defaultOptions, options);
 
     return got(url, mergedOptions);
 };

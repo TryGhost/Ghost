@@ -1,10 +1,10 @@
-const fs = require('fs-extra'),
-    path = require('path'),
-    debug = require('ghost-ignition').debug('frontend:services:settings:settings-loader'),
-    common = require('../../../server/lib/common'),
-    config = require('../../../server/config'),
-    yamlParser = require('./yaml-parser'),
-    validate = require('./validate');
+const fs = require('fs-extra');
+const path = require('path');
+const debug = require('ghost-ignition').debug('frontend:services:settings:settings-loader');
+const common = require('../../../server/lib/common');
+const config = require('../../../server/config');
+const yamlParser = require('./yaml-parser');
+const validate = require('./validate');
 
 /**
  * Reads the desired settings YAML file and passes the

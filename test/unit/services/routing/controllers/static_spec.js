@@ -1,10 +1,10 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    testUtils = require('../../../../utils'),
-    api = require('../../../../../core/server/api'),
-    themeService = require('../../../../../core/frontend/services/themes'),
-    helpers = require('../../../../../core/frontend/services/routing/helpers'),
-    controllers = require('../../../../../core/frontend/services/routing/controllers');
+const should = require('should');
+const sinon = require('sinon');
+const testUtils = require('../../../../utils');
+const api = require('../../../../../core/server/api');
+const themeService = require('../../../../../core/frontend/services/themes');
+const helpers = require('../../../../../core/frontend/services/routing/helpers');
+const controllers = require('../../../../../core/frontend/services/routing/controllers');
 
 function failTest(done) {
     return function (err) {
@@ -14,14 +14,14 @@ function failTest(done) {
 }
 
 describe('Unit - services/routing/controllers/static', function () {
-    let req,
-        res,
-        secureStub,
-        renderStub,
-        handleErrorStub,
-        formatResponseStub,
-        postsPerPage,
-        tagsReadStub;
+    let req;
+    let res;
+    let secureStub;
+    let renderStub;
+    let handleErrorStub;
+    let formatResponseStub;
+    let postsPerPage;
+    let tagsReadStub;
 
     beforeEach(function () {
         postsPerPage = 5;

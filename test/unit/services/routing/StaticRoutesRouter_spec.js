@@ -1,12 +1,14 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    common = require('../../../../core/server/lib/common'),
-    controllers = require('../../../../core/frontend/services/routing/controllers'),
-    StaticRoutesRouter = require('../../../../core/frontend/services/routing/StaticRoutesRouter'),
-    configUtils = require('../../../utils/configUtils');
+const should = require('should');
+const sinon = require('sinon');
+const common = require('../../../../core/server/lib/common');
+const controllers = require('../../../../core/frontend/services/routing/controllers');
+const StaticRoutesRouter = require('../../../../core/frontend/services/routing/StaticRoutesRouter');
+const configUtils = require('../../../utils/configUtils');
 
 describe('UNIT - services/routing/StaticRoutesRouter', function () {
-    let req, res, next;
+    let req;
+    let res;
+    let next;
 
     afterEach(function () {
         configUtils.restore();

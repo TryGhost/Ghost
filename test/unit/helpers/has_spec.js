@@ -1,11 +1,14 @@
-var should = require('should'),
-    sinon = require('sinon'),
+const should = require('should');
+const sinon = require('sinon');
 
-    // Stuff we are testing
-    helpers = require('../../../core/frontend/helpers');
+// Stuff we are testing
+const helpers = require('../../../core/frontend/helpers');
 
 describe('{{#has}} helper', function () {
-    var fn, inverse, thisCtx, handlebarsOptions;
+    let fn;
+    let inverse;
+    let thisCtx;
+    let handlebarsOptions;
 
     afterEach(function () {
         sinon.restore();
@@ -301,7 +304,7 @@ describe('{{#has}} helper', function () {
         });
 
         it('will match on an exact number (loop)', function () {
-            for (var number = 1; number < 9; number += 1) {
+            for (let number = 1; number < 9; number += 1) {
                 handlebarsOptions.data = {number: number};
                 // Will match 6
                 callHasHelper(thisCtx, {number: '6'});
@@ -331,7 +334,7 @@ describe('{{#has}} helper', function () {
         });
 
         it('will match on a number list (loop)', function () {
-            for (var number = 1; number < 9; number += 1) {
+            for (let number = 1; number < 9; number += 1) {
                 handlebarsOptions.data = {number: number};
                 // Will match 1, 3, 6
                 callHasHelper(thisCtx, {number: '1, 3, 6,12'});
@@ -362,7 +365,7 @@ describe('{{#has}} helper', function () {
         });
 
         it('will match on a nth pattern (loop)', function () {
-            for (var number = 1; number < 9; number += 1) {
+            for (let number = 1; number < 9; number += 1) {
                 handlebarsOptions.data = {number: number};
                 // Will match 3 & 6
                 callHasHelper(thisCtx, {number: 'nth:3'});
@@ -413,7 +416,7 @@ describe('{{#has}} helper', function () {
         });
 
         it('will match on an exact index (loop)', function () {
-            for (var index = 0; index < 8; index += 1) {
+            for (let index = 0; index < 8; index += 1) {
                 handlebarsOptions.data = {index: index};
                 // Will match 6
                 callHasHelper(thisCtx, {index: '6'});
@@ -443,7 +446,7 @@ describe('{{#has}} helper', function () {
         });
 
         it('will match on an index list (loop)', function () {
-            for (var index = 0; index < 8; index += 1) {
+            for (let index = 0; index < 8; index += 1) {
                 handlebarsOptions.data = {index: index};
                 // Will match 1, 3, 6
                 callHasHelper(thisCtx, {index: '1, 3, 6,12'});
@@ -474,7 +477,7 @@ describe('{{#has}} helper', function () {
         });
 
         it('will match on a nth pattern (loop)', function () {
-            for (var index = 0; index < 8; index += 1) {
+            for (let index = 0; index < 8; index += 1) {
                 handlebarsOptions.data = {index: index};
                 // Will match 0, 3, 6
                 callHasHelper(thisCtx, {index: 'nth:3'});

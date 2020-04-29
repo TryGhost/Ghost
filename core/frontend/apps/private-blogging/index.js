@@ -1,10 +1,11 @@
-const urlUtils = require('../../../server/lib/url-utils'),
-    common = require('../../../server/lib/common'),
-    middleware = require('./lib/middleware'),
-    router = require('./lib/router'),
-    registerHelpers = require('./lib/helpers'),
-    // routeKeywords.private: 'private'
-    PRIVATE_KEYWORD = 'private';
+const urlUtils = require('../../../server/lib/url-utils');
+const common = require('../../../server/lib/common');
+const middleware = require('./lib/middleware');
+const router = require('./lib/router');
+const registerHelpers = require('./lib/helpers');
+
+// routeKeywords.private: 'private'
+const PRIVATE_KEYWORD = 'private';
 
 let checkSubdir = function checkSubdir() {
     let paths = '';

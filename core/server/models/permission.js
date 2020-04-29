@@ -1,7 +1,7 @@
 const ghostBookshelf = require('./base');
 
-let Permission,
-    Permissions;
+let Permission;
+let Permissions;
 
 Permission = ghostBookshelf.Model.extend({
 

@@ -1,11 +1,11 @@
-const should = require('should'),
-    sinon = require('sinon'),
-    testUtils = require('../../../../utils'),
-    common = require('../../../../../core/server/lib/common'),
-    security = require('../../../../../core/server/lib/security'),
-    themeService = require('../../../../../core/frontend/services/themes'),
-    controllers = require('../../../../../core/frontend/services/routing/controllers'),
-    helpers = require('../../../../../core/frontend/services/routing/helpers');
+const should = require('should');
+const sinon = require('sinon');
+const testUtils = require('../../../../utils');
+const common = require('../../../../../core/server/lib/common');
+const security = require('../../../../../core/server/lib/security');
+const themeService = require('../../../../../core/frontend/services/themes');
+const controllers = require('../../../../../core/frontend/services/routing/controllers');
+const helpers = require('../../../../../core/frontend/services/routing/helpers');
 
 function failTest(done) {
     return function (err) {
@@ -15,7 +15,13 @@ function failTest(done) {
 }
 
 describe('Unit - services/routing/controllers/channel', function () {
-    let req, res, fetchDataStub, secureStub, renderStub, posts, postsPerPage;
+    let req;
+    let res;
+    let fetchDataStub;
+    let secureStub;
+    let renderStub;
+    let posts;
+    let postsPerPage;
 
     beforeEach(function () {
         postsPerPage = 5;

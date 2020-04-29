@@ -30,12 +30,12 @@ function initialiseServices() {
     // We pass the themeService API version here, so that the frontend services are less tightly-coupled
     routing.bootstrap.start(themeService.getApiVersion());
 
-    const permissions = require('./services/permissions'),
-        xmlrpc = require('./services/xmlrpc'),
-        slack = require('./services/slack'),
-        {mega} = require('./services/mega'),
-        webhooks = require('./services/webhooks'),
-        scheduling = require('./adapters/scheduling');
+    const permissions = require('./services/permissions');
+    const xmlrpc = require('./services/xmlrpc');
+    const slack = require('./services/slack');
+    const {mega} = require('./services/mega');
+    const webhooks = require('./services/webhooks');
+    const scheduling = require('./adapters/scheduling');
 
     debug('`initialiseServices` Start...');
 

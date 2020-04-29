@@ -1,5 +1,5 @@
-const should = require('should'),
-    security = require('../../../../core/server/lib/security');
+const should = require('should');
+const security = require('../../../../core/server/lib/security');
 
 describe('Lib: Security - Password', function () {
     it('hash plain password', function () {
