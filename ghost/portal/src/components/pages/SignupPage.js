@@ -1,6 +1,7 @@
 import ActionButton from '../common/ActionButton';
 import InputField from '../common/InputField';
 import {ParentContext} from '../ParentContext';
+import PlansSection from '../common/PlansSection';
 
 const React = require('react');
 
@@ -47,125 +48,21 @@ class SignupPage extends React.Component {
     }
 
     handleSelectPlan(e, name) {
-        this.setState({
-            plan: name
-        });
-    }
-
-    renderCheckbox({name, isChecked = false}) {
-        const style = {
-            width: '20px',
-            height: '20px',
-            border: 'solid 1px #cccccc'
-        };
-
-        return (
-            <>
-                <input
-                    name={name}
-                    type="checkbox"
-                    style={style}
-                    checked={this.state.plan === name}
-                    onChange={e => e.preventDefault()}
-                />
-            </>
-        );
-    }
-
-    renderPlanOptions(plans) {
-        const nameStyle = {
-            fontSize: '13px',
-            fontWeight: '500',
-            display: 'flex',
-            color: '#343F44',
-            justifyContent: 'center'
-        };
-
-        const priceStyle = {
-            fontSize: '12px',
-            fontWeight: 'bold',
-            display: 'flex',
-            justifyContent: 'center',
-            marginBottom: '9px'
-        };
-        const checkboxStyle = {
-            display: 'flex',
-            justifyContent: 'center'
-        };
-        const boxStyle = ({isLast = false}) => {
-            const style = {
-                padding: '12px 12px',
-                flexBasis: '100%'
-            };
-            if (!isLast) {
-                style.borderRight = '1px solid #c5d2d9';
-            }
-            return style;
-        };
-
-        const PriceLabel = ({name, currency, price}) => {
-            if (name === 'Free') {
-                return (
-                    <strong style={{
-                        fontSize: '11px',
-                        textAlign: 'center',
-                        lineHeight: '18px',
-                        color: '#929292',
-                        fontWeight: 'normal'
-                    }}> Access free members-only posts </strong>
-                );
-            }
-            const type = name === 'Monthly' ? 'month' : 'year';
-            return (
-                <div style={{
-                    display: 'inline',
-                    verticalAlign: 'baseline'
-                }}>
-                    <span style={{fontSize: '14px', color: '#929292', fontWeight: 'normal'}}> {currency} </span>
-                    <strong style={{fontSize: '21px'}}> {price} </strong>
-                    <span style={{fontSize: '12px', color: '#929292', fontWeight: 'normal'}}> {` / ${type}`}</span>
-                </div>
-            );
-        };
-
-        return plans.map(({name, currency, price}, i) => {
-            const isLast = i === plans.length - 1;
-            const isChecked = this.state.plan === name;
-            return (
-                <div style={boxStyle({isLast})} key={name} onClick={e => this.handleSelectPlan(e, name)}>
-                    <div style={checkboxStyle}> {this.renderCheckbox({name, isChecked})} </div>
-                    <div style={nameStyle}> {name.toUpperCase()} </div>
-                    <div style={priceStyle}>
-                        {PriceLabel({name, currency, price})}
-                    </div>
-                </div>
-            );
-        });
+        e.preventDefault();
+        // Hack: React checkbox gets out of sync with dom state with instant update
+        setTimeout(() => {
+            this.setState((prevState) => {
+                return {
+                    plan: name
+                };
+            });
+        }, 5);
     }
 
     renderPlans() {
-        const containerStyle = {
-            display: 'flex',
-            border: '1px solid #c5d2d9',
-            borderRadius: '9px',
-            marginBottom: '12px'
-        };
-        let {site} = this.context;
-        const plans = site.plans;
-        if (!plans) {
-            return null;
-        }
+        const {plans} = this.context.site;
         return (
-            <div style={{width: '100%'}}>
-                <label style={{marginBottom: '3px', fontSize: '12px', fontWeight: '700'}}>  Plan </label>
-                <div style={containerStyle}>
-                    {this.renderPlanOptions([
-                        {type: 'free', price: 'Decide later', name: 'Free'},
-                        {type: 'month', price: plans.monthly, currency: plans.currency_symbol, name: 'Monthly'},
-                        {type: 'year', price: plans.yearly, currency: plans.currency_symbol, name: 'Yearly'}
-                    ])}
-                </div>
-            </div>
+            <PlansSection plans={plans} selectedPlan={this.state.plan} onPlanSelect={(e, name) => this.handleSelectPlan(e, name)}/>
         );
     }
 
