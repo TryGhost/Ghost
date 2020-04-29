@@ -138,10 +138,10 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.post('/members/webhooks/stripe', shared.middlewares.labs.members, membersMiddleware.stripeWebhooks);
 
     // Currently global handling for signing in with ?token= magiclinks
-    siteApp.use(membersMiddleware.createSessionFromMagicLink);
+    siteApp.use('/members/', membersMiddleware.createSessionFromMagicLink);
 
     // Global handling for member session, ensures a member is logged in to the frontend
-    siteApp.use(membersMiddleware.memberSession);
+    siteApp.use(membersMiddleware.loadMemberSession);
 
     // Theme middleware
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates

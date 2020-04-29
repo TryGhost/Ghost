@@ -2,6 +2,7 @@ const {URL} = require('url');
 const settingsCache = require('../settings/cache');
 const ghostVersion = require('../../lib/ghost-version');
 const crypto = require('crypto');
+const path = require('path');
 const common = require('../../lib/common');
 const urlUtils = require('../../lib/url-utils');
 
@@ -155,6 +156,7 @@ function getTokenConfig() {
 
 function getSigninURL(token, type) {
     const signinURL = new URL(siteUrl);
+    signinURL.pathname = path.join(signinURL.pathname, '/members/');
     signinURL.searchParams.set('token', token);
     signinURL.searchParams.set('action', type);
     return signinURL.href;
