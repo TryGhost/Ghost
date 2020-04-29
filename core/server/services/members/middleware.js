@@ -1,6 +1,7 @@
 const common = require('../../lib/common');
 const labsService = require('../labs');
 const membersService = require('./index');
+const urlUtils = require('../../lib/url-utils');
 
 const getIdentityToken = async function (req, res) {
     try {
@@ -26,7 +27,7 @@ const deleteSession = async function (req, res) {
     }
 };
 
-const getMemberDataFromSession = async function (req, res, next) {
+const loadMemberSession = async function (req, res, next) {
     if (!labsService.isSet('members')) {
         req.member = null;
         return next();
@@ -34,6 +35,7 @@ const getMemberDataFromSession = async function (req, res, next) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         Object.assign(req, {member});
+        res.locals.member = req.member;
         next();
     } catch (err) {
         common.logging.warn(err.message);
@@ -68,7 +70,7 @@ const getMemberData = async function (req, res) {
     }
 };
 
-const exchangeTokenForSession = async function (req, res, next) {
+const createSessionFromMagicLink = async function (req, res, next) {
     if (!labsService.isSet('members')) {
         return next();
     }
@@ -76,8 +78,23 @@ const exchangeTokenForSession = async function (req, res, next) {
         return next();
     }
     try {
-        const member = await membersService.ssr.exchangeTokenForSession(req, res);
-        Object.assign(req, {member});
+        await membersService.ssr.exchangeTokenForSession(req, res);
+
+        // req.query is a plain object, copy it to a URLSearchParams object so we can call toString()
+        const searchParams = new URLSearchParams('');
+        Object.keys(req.query).forEach((param) => {
+            // don't copy the token param
+            if (param !== 'token') {
+                searchParams.set(param, req.query[param]);
+            }
+        });
+
+        // We need to include the subdirectory, but members is already removed from the path
+        let redirectPath = `${urlUtils.getSubdir()}${req.path}?${searchParams.toString()}`;
+
+        // Do a standard 302 redirect
+        res.redirect(redirectPath);
+
         next();
     } catch (err) {
         common.logging.warn(err.message);
@@ -85,25 +102,11 @@ const exchangeTokenForSession = async function (req, res, next) {
     }
 };
 
-const decorateResponse = function (req, res, next) {
-    if (!labsService.isSet('members')) {
-        return next();
-    }
-    res.locals.member = req.member;
-    next();
-};
-
 // @TODO only load this stuff if members is enabled
 // Set req.member & res.locals.member if a cookie is set
 module.exports = {
-    memberSession: [
-        getMemberDataFromSession,
-        decorateResponse
-    ],
-    createSessionFromMagicLink: [
-        exchangeTokenForSession,
-        decorateResponse
-    ],
+    loadMemberSession,
+    createSessionFromMagicLink,
     getIdentityToken,
     getMemberData,
     deleteSession,
