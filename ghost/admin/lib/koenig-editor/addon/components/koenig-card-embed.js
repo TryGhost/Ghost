@@ -311,6 +311,22 @@ export default Component.extend({
 
     __debouncedResizeIframe(iframe) {
         iframe.style.height = null;
+
+        // get ratio from nested iframe if present (eg, Vimeo)
+        let firstElement = iframe.contentDocument.body.firstChild;
+        if (firstElement.tagName === 'IFRAME') {
+            let width = parseInt(firstElement.getAttribute('width'));
+            let height = parseInt(firstElement.getAttribute('height'));
+            if (width && height) {
+                let ratio = width / height;
+                let newHeight = iframe.offsetWidth / ratio;
+                firstElement.style.height = `${newHeight}px`;
+                iframe.style.height = `${newHeight}px`;
+                return;
+            }
+        }
+
+        // otherwise use iframes internal height (eg, Instagram)
         let height = iframe.contentDocument.scrollingElement.scrollHeight;
         iframe.style.height = `${height}px`;
     },
