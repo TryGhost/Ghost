@@ -101,7 +101,7 @@ module.exports = {
                     if (error) {
                         // NOTE: logging an error here only but actual handling should happen in more sophisticated batch retry handler
                         // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#errors
-                        let ghostError = new common.errors.GhostError({
+                        let ghostError = new common.errors.EmailError({
                             err: error,
                             context: common.i18n.t('errors.services.mega.requestFailed.error')
                         });
