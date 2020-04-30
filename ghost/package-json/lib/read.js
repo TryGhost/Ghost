@@ -7,7 +7,7 @@ const _ = require('lodash');
 const join = require('path').join;
 const fs = require('fs-extra');
 const parsePackageJson = require('./parse');
-const common = require('../../common');
+const errors = require('@tryghost/errors');
 const notAPackageRegex = /^\.|_messages|README.md|node_modules|bower_components/i;
 const packageJSONPath = 'package.json';
 let readPackage;
@@ -53,7 +53,7 @@ readPackage = function readPackage(packagePath, packageName) {
                 });
         })
         .catch(function (err) {
-            return Promise.reject(new common.errors.NotFoundError({
+            return Promise.reject(new errors.NotFoundError({
                 message: 'Package not found',
                 err: err,
                 help: 'path: ' + packagePath,
