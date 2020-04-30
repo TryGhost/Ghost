@@ -1,5 +1,6 @@
-Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form){
-    const errorEl = form.querySelector('[data-members-error]');
+/* eslint-disable no-var */
+Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
+    var errorEl = form.querySelector('[data-members-error]');
     function submitHandler(event) {
         form.removeEventListener('submit', submitHandler);
         event.preventDefault();
@@ -7,13 +8,13 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
             errorEl.innerText = '';
         }
         form.classList.remove('success', 'invalid', 'error');
-        const input = event.target.querySelector('input[data-members-email]');
-        const email = input.value;
-        let emailType = undefined;
-        const labels = [];
+        var input = event.target.querySelector('input[data-members-email]');
+        var email = input.value;
+        var emailType = undefined;
+        var labels = [];
 
-        const labelInputs = event.target.querySelectorAll('input[data-members-label]') || [];
-        for (let i = 0;i < labelInputs.length; ++i) {
+        var labelInputs = event.target.querySelectorAll('input[data-members-label]') || [];
+        for (var i = 0;i < labelInputs.length; ++i) {
             labels.push(labelInputs[i].value);
         }
 
@@ -49,16 +50,16 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
 });
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), function (el) {
-    const errorEl = el.querySelector('[data-members-error]');
+    var errorEl = el.querySelector('[data-members-error]');
     function clickHandler(event) {
         el.removeEventListener('click', clickHandler);
         event.preventDefault();
 
-        const plan = el.dataset.membersPlan;
-        const successUrl = el.dataset.membersSuccess;
-        const cancelUrl = el.dataset.membersCancel;
-        let checkoutSuccessUrl;
-        let checkoutCancelUrl;
+        var plan = el.dataset.membersPlan;
+        var successUrl = el.dataset.membersSuccess;
+        var cancelUrl = el.dataset.membersCancel;
+        var checkoutSuccessUrl;
+        var checkoutCancelUrl;
 
         if (successUrl) {
             checkoutSuccessUrl = (new URL(successUrl, window.location.href)).href;
@@ -98,7 +99,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
                 return res.json();
             });
         }).then(function (result) {
-            const stripe = Stripe(result.publicKey);
+            var stripe = Stripe(result.publicKey);
             return stripe.redirectToCheckout({
                 sessionId: result.sessionId
             });
@@ -120,11 +121,11 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
 });
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-members-edit-billing]'), function (el) {
-    const errorEl = el.querySelector('[data-members-error]');
-    const membersSuccess = el.dataset.membersSuccess;
-    const membersCancel = el.dataset.membersCancel;
-    let successUrl;
-    let cancelUrl;
+    var errorEl = el.querySelector('[data-members-error]');
+    var membersSuccess = el.dataset.membersSuccess;
+    var membersCancel = el.dataset.membersCancel;
+    var successUrl;
+    var cancelUrl;
 
     if (membersSuccess) {
         successUrl = (new URL(membersSuccess, window.location.href)).href;
@@ -167,7 +168,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-edit-billi
                 return res.json();
             });
         }).then(function (result) {
-            const stripe = Stripe(result.publicKey);
+            var stripe = Stripe(result.publicKey);
             return stripe.redirectToCheckout({
                 sessionId: result.sessionId
             });
@@ -195,7 +196,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]')
         el.classList.remove('error');
         el.classList.add('loading');
         fetch('{{blog-url}}/members/ssr', {
-            method: 'DELETE'
+            method: 'DEvarE'
         }).then(function (res) {
             if (res.ok) {
                 window.location.reload();
@@ -210,14 +211,14 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]')
 });
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-subscription]'), function (el) {
-    const errorEl = el.parentElement.querySelector('[data-members-error]');
+    var errorEl = el.parentElement.querySelector('[data-members-error]');
     function clickHandler(event) {
         el.removeEventListener('click', clickHandler);
         event.preventDefault();
         el.classList.remove('error');
         el.classList.add('loading');
 
-        const subscriptionId = el.dataset.membersCancelSubscription;
+        var subscriptionId = el.dataset.membersCancelSubscription;
 
         if (errorEl) {
             errorEl.innerText = '';
@@ -260,14 +261,14 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-sub
 });
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-members-continue-subscription]'), function (el) {
-    const errorEl = el.parentElement.querySelector('[data-members-error]');
+    var errorEl = el.parentElement.querySelector('[data-members-error]');
     function clickHandler(event) {
         el.removeEventListener('click', clickHandler);
         event.preventDefault();
         el.classList.remove('error');
         el.classList.add('loading');
 
-        const subscriptionId = el.dataset.membersContinueSubscription;
+        var subscriptionId = el.dataset.membersContinueSubscription;
 
         if (errorEl) {
             errorEl.innerText = '';
@@ -309,8 +310,8 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-continue-s
     el.addEventListener('click', clickHandler);
 });
 
-const url = new URL(window.location);
+var url = new URL(window.location);
 if (url.searchParams.get('token')) {
-    url.searchParams.delete('token');
+    url.searchParams.devare('token');
     window.history.replaceState({}, document.title, url.href);
 }
