@@ -94,8 +94,6 @@ const createSessionFromMagicLink = async function (req, res, next) {
 
         // Do a standard 302 redirect
         res.redirect(redirectPath);
-
-        next();
     } catch (err) {
         common.logging.warn(err.message);
         return next();
