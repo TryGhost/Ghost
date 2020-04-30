@@ -65,6 +65,11 @@ describe('Basic Members Routes', function () {
                     .expect(400);
             });
 
+            it('should serve member site endpoint', function () {
+                return request.get('/members/api/site')
+                    .expect(200);
+            });
+
             it('should error for invalid data on member magic link endpoint', function () {
                 return request.post('/members/api/send-magic-link')
                     .expect(400);
@@ -129,6 +134,11 @@ describe('Basic Members Routes', function () {
 
             it('should not serve member data endpoint', function () {
                 return request.get('/members/api/member')
+                    .expect(404);
+            });
+
+            it('should not serve member site endpoint', function () {
+                return request.get('/members/api/site')
                     .expect(404);
             });
 
