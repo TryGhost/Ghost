@@ -4,6 +4,7 @@ const url = require('url');
 const path = require('path');
 const debug = require('ghost-ignition').debug('web:shared:mw:custom-redirects');
 const config = require('../../../config');
+const urlUtils = require('../../../lib/url-utils');
 const errors = require('@tryghost/errors');
 const {logging, i18n} = require('../../../lib/common');
 const redirectsService = require('../../../../frontend/services/redirects');
@@ -51,13 +52,17 @@ _private.registerRoutes = () => {
             debug('register', redirect.from);
             customRedirectsRouter.get(new RegExp(redirect.from, options), function (req, res) {
                 const maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0;
-                const fromURL = url.parse(req.originalUrl);
                 const toURL = url.parse(redirect.to);
+                const currentURL = url.parse(req.originalUrl);
 
-                toURL.pathname = (toURL.hostname)
-                    ? toURL.pathname
-                    : fromURL.pathname.replace(new RegExp(redirect.from, options), toURL.pathname);
-                toURL.search = fromURL.search;
+                // if the URL points to an external website, remove Ghost's base path
+                /** @see https://github.com/TryGhost/Ghost/issues/10776 */
+                const currentPath = (toURL.hostname)
+                    ? currentURL.pathname.replace(urlUtils.getSubdir(), '')
+                    : currentURL.pathname;
+
+                toURL.pathname = currentPath.replace(new RegExp(redirect.from, options), toURL.pathname);
+                toURL.search = currentURL.search;
 
                 res.set({
                     'Cache-Control': `public, max-age=${maxAge}`
