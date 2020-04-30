@@ -196,7 +196,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]')
         el.classList.remove('error');
         el.classList.add('loading');
         fetch('{{blog-url}}/members/ssr', {
-            method: 'DEvarE'
+            method: 'DELETE'
         }).then(function (res) {
             if (res.ok) {
                 window.location.reload();
@@ -312,6 +312,6 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-continue-s
 
 var url = new URL(window.location);
 if (url.searchParams.get('token')) {
-    url.searchParams.devare('token');
+    url.searchParams.delete('token');
     window.history.replaceState({}, document.title, url.href);
 }
