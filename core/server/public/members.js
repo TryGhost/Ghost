@@ -73,7 +73,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
             errorEl.innerText = '';
         }
         el.classList.add('loading');
-        fetch('{{blog-url}}/members/ssr', {
+        fetch('{{blog-url}}/members/api/session', {
             credentials: 'same-origin'
         }).then(function (res) {
             if (!res.ok) {
@@ -143,7 +143,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-edit-billi
             errorEl.innerText = '';
         }
         el.classList.add('loading');
-        fetch('{{blog-url}}/members/ssr', {
+        fetch('{{blog-url}}/members/api/session', {
             credentials: 'same-origin'
         }).then(function (res) {
             if (!res.ok) {
@@ -151,7 +151,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-edit-billi
             }
             return res.text();
         }).then(function (identity) {
-            return fetch('{{blog-url}}/members/api/create-stripe-setup-session/', {
+            return fetch('{{blog-url}}/members/api/create-stripe-update-session/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -195,7 +195,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-signout]')
         event.preventDefault();
         el.classList.remove('error');
         el.classList.add('loading');
-        fetch('{{blog-url}}/members/ssr', {
+        fetch('{{blog-url}}/members/api/session', {
             method: 'DELETE'
         }).then(function (res) {
             if (res.ok) {
@@ -224,7 +224,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-sub
             errorEl.innerText = '';
         }
 
-        return fetch('{{blog-url}}/members/ssr', {
+        return fetch('{{blog-url}}/members/api/session', {
             credentials: 'same-origin'
         }).then(function (res) {
             if (!res.ok) {
@@ -274,7 +274,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-continue-s
             errorEl.innerText = '';
         }
 
-        return fetch('{{blog-url}}/members/ssr', {
+        return fetch('{{blog-url}}/members/api/session', {
             credentials: 'same-origin'
         }).then(function (res) {
             if (!res.ok) {

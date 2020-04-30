@@ -45,23 +45,43 @@ describe('Basic Members Routes', function () {
         });
 
         describe('Routes', function () {
-            it('should error when invalid member token is passed in to ssr', function () {
-                return request.get('/members/ssr')
+            it('should error serving webhook endpoint without any parameters', function () {
+                return request.post('/members/webhooks/stripe')
+                    .expect(400);
+            });
+
+            it('should error when invalid member token is passed into session', function () {
+                return request.get('/members/api/session')
                     .expect(400);
             });
 
             it('should return no content when removing member sessions', function () {
-                return request.del('/members/ssr')
+                return request.del('/members/api/session')
                     .expect(204);
             });
 
             it('should error for invalid member token on member data endpoint', function () {
-                return request.get('/members/ssr/member')
+                return request.get('/members/api/member')
                     .expect(400);
             });
 
-            it('should error serving webhook endpoint without any parameters', function () {
-                return request.post('/members/webhooks/stripe')
+            it('should error for invalid data on member magic link endpoint', function () {
+                return request.post('/members/api/send-magic-link')
+                    .expect(400);
+            });
+
+            it('should error for invalid data on members create checkout session endpoint', function () {
+                return request.post('/members/api/create-stripe-checkout-session')
+                    .expect(400);
+            });
+
+            it('should error for invalid data on members create update session endpoint', function () {
+                return request.post('/members/api/create-stripe-update-session')
+                    .expect(400);
+            });
+
+            it('should error for invalid data on members subscription endpoint', function () {
+                return request.put('/members/api/subscriptions/123')
                     .expect(400);
             });
         });
@@ -92,23 +112,43 @@ describe('Basic Members Routes', function () {
         });
 
         describe('Routes', function () {
-            it('should not serve ssr endpoint', function () {
-                return request.get('/members/ssr')
+            it('should not serve webhook endpoint', function () {
+                return request.post('/members/webhooks/stripe')
                     .expect(404);
             });
 
-            it('should not serve ssr removal endpoint', function () {
-                return request.del('/members/ssr')
+            it('should not serve session endpoint', function () {
+                return request.get('/members/api/session')
+                    .expect(404);
+            });
+
+            it('should not serve session removal endpoint', function () {
+                return request.del('/members/api/session')
                     .expect(404);
             });
 
             it('should not serve member data endpoint', function () {
-                return request.get('/members/ssr/member')
+                return request.get('/members/api/member')
                     .expect(404);
             });
 
-            it('should not serve webhook endpoint', function () {
-                return request.post('/members/webhooks/stripe')
+            it('should not serve member magic link endpoint', function () {
+                return request.post('/members/api/send-magic-link')
+                    .expect(404);
+            });
+
+            it('should not serve members create checkout session endpoint', function () {
+                return request.post('/members/api/create-stripe-checkout-session')
+                    .expect(404);
+            });
+
+            it('should not serve members create update session endpoint', function () {
+                return request.post('/members/api/create-stripe-update-session')
+                    .expect(404);
+            });
+
+            it('should not serve members subscription endpoint', function () {
+                return request.put('/members/api/subscriptions/123')
                     .expect(404);
             });
         });
