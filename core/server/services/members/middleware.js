@@ -3,6 +3,25 @@ const labsService = require('../labs');
 const membersService = require('./index');
 const urlUtils = require('../../lib/url-utils');
 
+// @TODO: This piece of middleware actually belongs to the frontend, not to the member app
+// Need to figure a way to separate these things (e.g. frontend actually talks to members API)
+const loadMemberSession = async function (req, res, next) {
+    if (!labsService.isSet('members')) {
+        req.member = null;
+        return next();
+    }
+    try {
+        const member = await membersService.ssr.getMemberDataFromSession(req, res);
+        Object.assign(req, {member});
+        res.locals.member = req.member;
+        next();
+    } catch (err) {
+        common.logging.warn(err.message);
+        Object.assign(req, {member: null});
+        next();
+    }
+};
+
 const getIdentityToken = async function (req, res) {
     try {
         const token = await membersService.ssr.getIdentityTokenForMemberFromSession(req, res);
@@ -27,27 +46,7 @@ const deleteSession = async function (req, res) {
     }
 };
 
-const loadMemberSession = async function (req, res, next) {
-    if (!labsService.isSet('members')) {
-        req.member = null;
-        return next();
-    }
-    try {
-        const member = await membersService.ssr.getMemberDataFromSession(req, res);
-        Object.assign(req, {member});
-        res.locals.member = req.member;
-        next();
-    } catch (err) {
-        common.logging.warn(err.message);
-        Object.assign(req, {member: null});
-        next();
-    }
-};
-
 const getMemberData = async function (req, res) {
-    if (!labsService.isSet('members')) {
-        res.json(null);
-    }
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         if (member) {
@@ -71,9 +70,6 @@ const getMemberData = async function (req, res) {
 };
 
 const createSessionFromMagicLink = async function (req, res, next) {
-    if (!labsService.isSet('members')) {
-        return next();
-    }
     if (!req.url.includes('token=')) {
         return next();
     }
@@ -100,7 +96,6 @@ const createSessionFromMagicLink = async function (req, res, next) {
     }
 };
 
-// @TODO only load this stuff if members is enabled
 // Set req.member & res.locals.member if a cookie is set
 module.exports = {
     loadMemberSession,
