@@ -55,6 +55,11 @@ describe('Basic Members Routes', function () {
                     .expect(204);
             });
 
+            it('should error for invalid member token on member data endpoint', function () {
+                return request.get('/members/ssr/member')
+                    .expect(400);
+            });
+
             it('should error serving webhook endpoint without any parameters', function () {
                 return request.post('/members/webhooks/stripe')
                     .expect(400);
@@ -94,6 +99,11 @@ describe('Basic Members Routes', function () {
 
             it('should not serve ssr removal endpoint', function () {
                 return request.del('/members/ssr')
+                    .expect(404);
+            });
+
+            it('should not serve member data endpoint', function () {
+                return request.get('/members/ssr/member')
                     .expect(404);
             });
 
