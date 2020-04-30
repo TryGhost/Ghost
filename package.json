@@ -24,7 +24,6 @@
     "start": "node index",
     "dev": "DEBUG=ghost:* grunt dev",
     "test": "grunt validate",
-    "test-all": "grunt test-all --verbose",
     "ci": "grunt validate --verbose",
     "ci:regression": "grunt test-regression --verbose",
     "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || true",
