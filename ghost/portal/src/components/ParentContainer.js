@@ -25,28 +25,39 @@ export default class ParentContainer extends React.Component {
         };
     }
 
+    getStripeUrlParam() {
+        const url = new URL(window.location);
+        return url.searchParams.get('stripe');
+    }
+
     componentDidMount() {
         this.fetchData();
     }
 
-    getDefaultPage(member) {
+    getDefaultPage({member, stripeParam}) {
         // Change page here for testing local UI testing
         if (process.env.NODE_ENV === 'development') {
-            return 'accountHome';
+            return {page: 'accountHome'};
         }
-
-        return member ? 'accountHome' : 'signup';
+        if (!member && stripeParam === 'success') {
+            return {page: 'magiclink', showPopup: true};
+        }
+        return {
+            page: member ? 'accountHome' : 'signup'
+        };
     }
 
     async fetchApiData(adminUrl) {
         try {
             this.GhostApi = setupGhostApi({adminUrl});
-            let {site, member} = await this.GhostApi.init();
-
+            const {site, member} = await this.GhostApi.init();
+            const stripeParam = this.getStripeUrlParam();
+            const {page, showPopup = false} = this.getDefaultPage({member, stripeParam});
             this.setState({
                 site,
                 member,
-                page: this.getDefaultPage(member),
+                page,
+                showPopup,
                 action: 'init:success',
                 initStatus: 'success'
             });
