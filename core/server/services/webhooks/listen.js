@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const common = require('../../lib/common');
+const {events} = require('../../lib/common');
 const trigger = require('./trigger');
 
 const WEBHOOKS = [
@@ -41,7 +41,7 @@ const WEBHOOKS = [
 
 const listen = () => {
     _.each(WEBHOOKS, (event) => {
-        common.events.on(event, (model, options) => {
+        events.on(event, (model, options) => {
             // CASE: avoid triggering webhooks when importing
             if (options && options.importing) {
                 return;

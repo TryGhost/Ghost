@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('services:webhooks:trigger');
-const common = require('../../lib/common');
+const {logging} = require('../../lib/common');
 const request = require('../../../server/lib/request');
 const models = require('../../models');
 const payload = require('./payload');
@@ -21,7 +21,7 @@ const webhooks = {
                 last_triggered_error: data.error || null
             }, {id: webhook.id})
             .catch(() => {
-                common.logging.warn(`Unable to update "last_triggered" for webhook: ${webhook.id}`);
+                logging.warn(`Unable to update "last_triggered" for webhook: ${webhook.id}`);
             });
     },
 
@@ -30,7 +30,7 @@ const webhooks = {
             .Webhook
             .destroy({id: webhook.id}, {context: {internal: true}})
             .catch(() => {
-                common.logging.warn(`Unable to destroy webhook ${webhook.id}.`);
+                logging.warn(`Unable to destroy webhook ${webhook.id}.`);
             });
     }
 };
@@ -47,7 +47,7 @@ const response = {
     onError(webhook) {
         return (err) => {
             if (err.statusCode === 410) {
-                common.logging.info(`Webhook destroyed (410 response) for "${webhook.get('event')}" with url "${webhook.get('target_url')}".`);
+                logging.info(`Webhook destroyed (410 response) for "${webhook.get('event')}" with url "${webhook.get('target_url')}".`);
 
                 return webhooks.destroy(webhook);
             }
@@ -57,7 +57,7 @@ const response = {
                 error: `Request failed: ${err.code || 'unknown'}`
             });
 
-            common.logging.warn(`Request to ${webhook.get('target_url') || null} failed because of: ${err.code || ''}.`);
+            logging.warn(`Request to ${webhook.get('target_url') || null} failed because of: ${err.code || ''}.`);
         };
     }
 };
@@ -82,7 +82,7 @@ module.exports = (event, model) => {
                             retry: 5
                         };
 
-                        common.logging.info(`Trigger Webhook for  "${webhook.get('event')}" with url "${url}".`);
+                        logging.info(`Trigger Webhook for  "${webhook.get('event')}" with url "${url}".`);
 
                         request(url, opts)
                             .then(response.onSuccess(webhook))

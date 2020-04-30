@@ -1,5 +1,6 @@
 const _ = require('lodash');
-const common = require('../../lib/common');
+const errors = require('@tryghost/errors');
+const {i18n, logging} = require('../../lib/common');
 const mailgunProvider = require('./mailgun');
 const configService = require('../../config');
 const settingsCache = require('../settings/cache');
@@ -64,7 +65,7 @@ module.exports = {
         let fromAddress = message.from;
         if (/@localhost$/.test(message.from) || /@ghost.local$/.test(message.from)) {
             fromAddress = 'localhost@example.com';
-            common.logging.warn(`Rewriting bulk email from address ${message.from} to ${fromAddress}`);
+            logging.warn(`Rewriting bulk email from address ${message.from} to ${fromAddress}`);
 
             BATCH_SIZE = 2;
         }
@@ -101,13 +102,13 @@ module.exports = {
                     if (error) {
                         // NOTE: logging an error here only but actual handling should happen in more sophisticated batch retry handler
                         // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#errors
-                        let ghostError = new common.errors.EmailError({
+                        let ghostError = new errors.EmailError({
                             err: error,
-                            context: common.i18n.t('errors.services.mega.requestFailed.error')
+                            context: i18n.t('errors.services.mega.requestFailed.error')
                         });
 
                         sentry.captureException(ghostError);
-                        common.logging.warn(ghostError);
+                        logging.warn(ghostError);
 
                         // NOTE: these are generated variables, so can be regenerated when retry is done
                         const data = _.omit(batchData, ['recipient-variables']);

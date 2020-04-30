@@ -1,5 +1,6 @@
 const labs = require('../labs');
-const common = require('../../lib/common');
+const errors = require('@tryghost/errors');
+const {i18n} = require('../../lib/common');
 
 const authorize = {
     authorizeContentApi(req, res, next) {
@@ -11,9 +12,9 @@ const authorize = {
         if (labs.isSet('members') && hasMember) {
             return next();
         }
-        return next(new common.errors.NoPermissionError({
-            message: common.i18n.t('errors.middleware.auth.authorizationFailed'),
-            context: common.i18n.t('errors.middleware.auth.missingContentMemberOrIntegration')
+        return next(new errors.NoPermissionError({
+            message: i18n.t('errors.middleware.auth.authorizationFailed'),
+            context: i18n.t('errors.middleware.auth.missingContentMemberOrIntegration')
         }));
     },
 
@@ -24,9 +25,9 @@ const authorize = {
         if (hasUser || hasApiKey) {
             return next();
         } else {
-            return next(new common.errors.NoPermissionError({
-                message: common.i18n.t('errors.middleware.auth.authorizationFailed'),
-                context: common.i18n.t('errors.middleware.auth.missingAdminUserOrIntegration')
+            return next(new errors.NoPermissionError({
+                message: i18n.t('errors.middleware.auth.authorizationFailed'),
+                context: i18n.t('errors.middleware.auth.missingAdminUserOrIntegration')
             }));
         }
     }

@@ -2,7 +2,8 @@ const _ = require('lodash');
 const xml = require('xml');
 const config = require('../config');
 const urlService = require('../../frontend/services/url');
-const common = require('../lib/common');
+const errors = require('@tryghost/errors');
+const {events, i18n, logging} = require('../lib/common');
 const request = require('../lib/request');
 const settingsCache = require('./settings/cache');
 
@@ -80,11 +81,11 @@ function ping(post) {
                 }
             })
             .catch(function (err) {
-                common.logging.error(new common.errors.GhostError({
+                logging.error(new errors.GhostError({
                     err: err,
                     message: err.message,
-                    context: common.i18n.t('errors.services.ping.requestFailed.error', {service: 'xmlrpc'}),
-                    help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'https://ghost.org/docs/'})
+                    context: i18n.t('errors.services.ping.requestFailed.error', {service: 'xmlrpc'}),
+                    help: i18n.t('errors.services.ping.requestFailed.help', {url: 'https://ghost.org/docs/'})
                 }));
             });
     });
@@ -101,7 +102,7 @@ function listener(model, options) {
 }
 
 function listen() {
-    common.events.on('post.published', listener);
+    events.on('post.published', listener);
 }
 
 module.exports = {

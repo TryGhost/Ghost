@@ -8,7 +8,8 @@ const path = require('path');
 const _ = require('lodash');
 const config = require('./config');
 const urlUtils = require('./lib/url-utils');
-const common = require('./lib/common');
+const errors = require('@tryghost/errors');
+const {events, i18n, logging} = require('./lib/common');
 const moment = require('moment');
 
 /**
@@ -86,16 +87,16 @@ GhostServer.prototype.start = function (externalApp) {
             let ghostError;
 
             if (error.errno === 'EADDRINUSE') {
-                ghostError = new common.errors.GhostError({
-                    message: common.i18n.t('errors.httpServer.addressInUse.error'),
-                    context: common.i18n.t('errors.httpServer.addressInUse.context', {port: config.get('server').port}),
-                    help: common.i18n.t('errors.httpServer.addressInUse.help')
+                ghostError = new errors.GhostError({
+                    message: i18n.t('errors.httpServer.addressInUse.error'),
+                    context: i18n.t('errors.httpServer.addressInUse.context', {port: config.get('server').port}),
+                    help: i18n.t('errors.httpServer.addressInUse.help')
                 });
             } else {
-                ghostError = new common.errors.GhostError({
-                    message: common.i18n.t('errors.httpServer.otherError.error', {errorNumber: error.errno}),
-                    context: common.i18n.t('errors.httpServer.otherError.context'),
-                    help: common.i18n.t('errors.httpServer.otherError.help')
+                ghostError = new errors.GhostError({
+                    message: i18n.t('errors.httpServer.otherError.error', {errorNumber: error.errno}),
+                    context: i18n.t('errors.httpServer.otherError.context'),
+                    help: i18n.t('errors.httpServer.otherError.help')
                 });
             }
 
@@ -128,7 +129,7 @@ GhostServer.prototype.stop = function () {
             resolve(self);
         } else {
             self.httpServer.close(function () {
-                common.events.emit('server.stop');
+                events.emit('server.stop');
                 self.httpServer = null;
                 self.logShutdownMessages();
                 resolve(self);
@@ -155,7 +156,7 @@ GhostServer.prototype.restart = function () {
  * To be called after `stop`
  */
 GhostServer.prototype.hammertime = function () {
-    common.logging.info(common.i18n.t('notices.httpServer.cantTouchThis'));
+    logging.info(i18n.t('notices.httpServer.cantTouchThis'));
 
     return Promise.resolve(this);
 };
@@ -202,27 +203,27 @@ GhostServer.prototype.closeConnections = function () {
 GhostServer.prototype.logStartMessages = function () {
     // Startup & Shutdown messages
     if (config.get('env') === 'production') {
-        common.logging.info(common.i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
-        common.logging.info(common.i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: urlUtils.urlFor('home', true)}));
-        common.logging.info(common.i18n.t('notices.httpServer.ctrlCToShutDown'));
+        logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
+        logging.info(i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: urlUtils.urlFor('home', true)}));
+        logging.info(i18n.t('notices.httpServer.ctrlCToShutDown'));
     } else {
-        common.logging.info(common.i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
-        common.logging.info(common.i18n.t('notices.httpServer.listeningOn', {
+        logging.info(i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
+        logging.info(i18n.t('notices.httpServer.listeningOn', {
             host: config.get('server').socket || config.get('server').host,
             port: config.get('server').port
         }));
-        common.logging.info(common.i18n.t('notices.httpServer.urlConfiguredAs', {url: urlUtils.urlFor('home', true)}));
-        common.logging.info(common.i18n.t('notices.httpServer.ctrlCToShutDown'));
+        logging.info(i18n.t('notices.httpServer.urlConfiguredAs', {url: urlUtils.urlFor('home', true)}));
+        logging.info(i18n.t('notices.httpServer.ctrlCToShutDown'));
     }
 
     function shutdown() {
-        common.logging.warn(common.i18n.t('notices.httpServer.ghostHasShutdown'));
+        logging.warn(i18n.t('notices.httpServer.ghostHasShutdown'));
 
         if (config.get('env') === 'production') {
-            common.logging.warn(common.i18n.t('notices.httpServer.yourBlogIsNowOffline'));
+            logging.warn(i18n.t('notices.httpServer.yourBlogIsNowOffline'));
         } else {
-            common.logging.warn(
-                common.i18n.t('notices.httpServer.ghostWasRunningFor'),
+            logging.warn(
+                i18n.t('notices.httpServer.ghostWasRunningFor'),
                 moment.duration(process.uptime(), 'seconds').humanize()
             );
         }
@@ -238,7 +239,7 @@ GhostServer.prototype.logStartMessages = function () {
  * ### Log Shutdown Messages
  */
 GhostServer.prototype.logShutdownMessages = function () {
-    common.logging.warn(common.i18n.t('notices.httpServer.ghostIsClosingConnections'));
+    logging.warn(i18n.t('notices.httpServer.ghostIsClosingConnections'));
 };
 
 module.exports = GhostServer;
@@ -253,7 +254,7 @@ const connectToBootstrapSocket = (message) => {
             let wasResolved = false;
 
             const waitTimeout = setTimeout(() => {
-                common.logging.info('Bootstrap socket timed out.');
+                logging.info('Bootstrap socket timed out.');
 
                 if (!client.destroyed) {
                     client.destroy();
@@ -283,7 +284,7 @@ const connectToBootstrapSocket = (message) => {
             });
 
             client.on('close', () => {
-                common.logging.info('Bootstrap client was closed.');
+                logging.info('Bootstrap client was closed.');
 
                 if (waitTimeout) {
                     clearTimeout(waitTimeout);
@@ -291,7 +292,7 @@ const connectToBootstrapSocket = (message) => {
             });
 
             client.on('error', (err) => {
-                common.logging.warn(`Can't connect to the bootstrap socket (${socketAddress.host} ${socketAddress.port}) ${err.code}`);
+                logging.warn(`Can't connect to the bootstrap socket (${socketAddress.host} ${socketAddress.port}) ${err.code}`);
 
                 client.removeAllListeners();
 
@@ -300,10 +301,10 @@ const connectToBootstrapSocket = (message) => {
                 }
 
                 if (options.tries < 3) {
-                    common.logging.warn(`Tries: ${options.tries}`);
+                    logging.warn(`Tries: ${options.tries}`);
 
                     // retry
-                    common.logging.warn('Retrying...');
+                    logging.warn('Retrying...');
 
                     options.tries = options.tries + 1;
                     const retryTimeout = setTimeout(() => {
@@ -338,7 +339,7 @@ module.exports.announceServerStart = function announceServerStart() {
     }
     announceServerStartCalled = true;
 
-    common.events.emit('server.start');
+    events.emit('server.start');
 
     // CASE: IPC communication to the CLI via child process.
     if (process.send) {
