@@ -23,7 +23,7 @@ Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'
         }
 
         form.classList.add('loading');
-        fetch('{{admin-url}}/api/canary/members/send-magic-link/', {
+        fetch('{{blog-url}}/members/api/send-magic-link/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -81,7 +81,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), f
             }
             return res.text();
         }).then(function (identity) {
-            return fetch('{{admin-url}}/api/canary/members/create-stripe-checkout-session/', {
+            return fetch('{{blog-url}}/members/api/create-stripe-checkout-session/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -151,7 +151,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-edit-billi
             }
             return res.text();
         }).then(function (identity) {
-            return fetch('{{admin-url}}/api/canary/members/create-stripe-setup-session/', {
+            return fetch('{{blog-url}}/members/api/create-stripe-setup-session/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -233,7 +233,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-cancel-sub
 
             return res.text();
         }).then(function (identity)  {
-            return fetch('{{admin-url}}/api/canary/members/subscriptions/' + subscriptionId + '/', {
+            return fetch('{{blog-url}}/members/api/subscriptions/' + subscriptionId + '/', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -283,7 +283,7 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-members-continue-s
 
             return res.text();
         }).then(function (identity)  {
-            return fetch('{{admin-url}}/api/canary/members/subscriptions/' + subscriptionId + '/', {
+            return fetch('{{blog-url}}/members/api/subscriptions/' + subscriptionId + '/', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
