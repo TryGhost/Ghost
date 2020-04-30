@@ -15,8 +15,7 @@ const sitemapHandler = require('../../../frontend/services/sitemap/handler');
 const appService = require('../../../frontend/services/apps');
 const themeService = require('../../../frontend/services/themes');
 const themeMiddleware = themeService.middleware;
-const membersService = require('../../services/members');
-const membersMiddleware = membersService.middleware;
+const membersMiddleware = require('../../services/members').middleware;
 const siteRoutes = require('./routes');
 const shared = require('../shared');
 const mw = require('./middleware');
@@ -130,15 +129,7 @@ module.exports = function setupSiteApp(options = {}) {
     themeService.loadCoreHelpers();
     debug('Helpers done');
 
-    // Members middleware
-    // Initializes members specific routes as well as assigns members specific data to the req/res objects
-    siteApp.get('/members/ssr/member', shared.middlewares.labs.members, membersMiddleware.getMemberData);
-    siteApp.get('/members/ssr', shared.middlewares.labs.members, membersMiddleware.getIdentityToken);
-    siteApp.delete('/members/ssr', shared.middlewares.labs.members, membersMiddleware.deleteSession);
-    siteApp.post('/members/webhooks/stripe', shared.middlewares.labs.members, membersMiddleware.stripeWebhooks);
-
-    // Currently global handling for signing in with ?token= magiclinks
-    siteApp.use('/members/', membersMiddleware.createSessionFromMagicLink);
+    siteApp.use('/members', require('../members')());
 
     // Global handling for member session, ensures a member is logged in to the frontend
     siteApp.use(membersMiddleware.loadMemberSession);
