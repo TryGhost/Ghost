@@ -1,7 +1,10 @@
 const common = require('../../lib/common');
+const config = require('../../config');
 const labsService = require('../labs');
 const membersService = require('./index');
 const urlUtils = require('../../lib/url-utils');
+const ghostVersion = require('../../lib/ghost-version');
+const settingsCache = require('../settings/cache');
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
 // Need to figure a way to separate these things (e.g. frontend actually talks to members API)
@@ -69,6 +72,26 @@ const getMemberData = async function (req, res) {
     }
 };
 
+const getMemberSiteData = async function (req, res) {
+    const response = {
+        title: settingsCache.get('title'),
+        description: settingsCache.get('description'),
+        logo: settingsCache.get('logo'),
+        brand: settingsCache.get('brand'),
+        url: urlUtils.urlFor('home', true),
+        version: ghostVersion.safe,
+        plans: membersService.config.getPublicPlans(),
+        allowSelfSignup: membersService.config.getAllowSelfSignup()
+    };
+
+    // Brand is currently an experimental feature
+    if (!config.get('enableDeveloperExperiments')) {
+        delete response.brand;
+    }
+
+    res.json({site: response});
+};
+
 const createSessionFromMagicLink = async function (req, res, next) {
     if (!req.url.includes('token=')) {
         return next();
@@ -102,6 +125,7 @@ module.exports = {
     createSessionFromMagicLink,
     getIdentityToken,
     getMemberData,
+    getMemberSiteData,
     deleteSession,
     stripeWebhooks: (req, res, next) => membersService.api.middleware.handleStripeWebhook(req, res, next)
 };
