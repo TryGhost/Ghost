@@ -1,4 +1,4 @@
-const common = require('../../lib/common');
+const {logging} = require('../../lib/common');
 const config = require('../../config');
 const labsService = require('../labs');
 const membersService = require('./index');
@@ -19,7 +19,7 @@ const loadMemberSession = async function (req, res, next) {
         res.locals.member = req.member;
         next();
     } catch (err) {
-        common.logging.warn(err.message);
+        logging.warn(err.message);
         Object.assign(req, {member: null});
         next();
     }
@@ -31,7 +31,7 @@ const getIdentityToken = async function (req, res) {
         res.writeHead(200);
         res.end(token);
     } catch (err) {
-        common.logging.warn(err.message);
+        logging.warn(err.message);
         res.writeHead(err.statusCode);
         res.end(err.message);
     }
@@ -43,7 +43,7 @@ const deleteSession = async function (req, res) {
         res.writeHead(204);
         res.end();
     } catch (err) {
-        common.logging.warn(err.message);
+        logging.warn(err.message);
         res.writeHead(err.statusCode);
         res.end(err.message);
     }
@@ -66,7 +66,7 @@ const getMemberData = async function (req, res) {
             res.json(null);
         }
     } catch (err) {
-        common.logging.warn(err.message);
+        logging.warn(err.message);
         res.writeHead(err.statusCode);
         res.end(err.message);
     }
@@ -114,7 +114,7 @@ const createSessionFromMagicLink = async function (req, res, next) {
         // Do a standard 302 redirect
         res.redirect(redirectPath);
     } catch (err) {
-        common.logging.warn(err.message);
+        logging.warn(err.message);
         return next();
     }
 };

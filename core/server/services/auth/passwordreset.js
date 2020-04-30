@@ -1,7 +1,8 @@
 const _ = require('lodash');
 const security = require('../../lib/security');
 const constants = require('../../lib/constants');
-const common = require('../../lib/common');
+const errors = require('@tryghost/errors');
+const {i18n} = require('../../lib/common');
 const models = require('../../models');
 const urlUtils = require('../../lib/url-utils');
 const mail = require('../mail');
@@ -21,7 +22,7 @@ function generateToken(email, settingsAPI) {
         })
         .then((user) => {
             if (!user) {
-                throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
+                throw new errors.NotFoundError({message: i18n.t('errors.api.users.userNotFound')});
             }
 
             token = security.tokens.resetToken.generateHash({
@@ -46,8 +47,8 @@ function extractTokenParts(options) {
     });
 
     if (!tokenParts) {
-        return Promise.reject(new common.errors.UnauthorizedError({
-            message: common.i18n.t('errors.api.common.invalidTokenStructure')
+        return Promise.reject(new errors.UnauthorizedError({
+            message: i18n.t('errors.api.common.invalidTokenStructure')
         }));
     }
 
@@ -58,8 +59,8 @@ function extractTokenParts(options) {
 function protectBruteForce({options, tokenParts}) {
     if (tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`] &&
         tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`].count >= 10) {
-        return Promise.reject(new common.errors.NoPermissionError({
-            message: common.i18n.t('errors.models.user.tokenLocked')
+        return Promise.reject(new errors.NoPermissionError({
+            message: i18n.t('errors.models.user.tokenLocked')
         }));
     }
 
@@ -82,7 +83,7 @@ function doReset(options, tokenParts, settingsAPI) {
         })
         .then((user) => {
             if (!user) {
-                throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.users.userNotFound')});
+                throw new errors.NotFoundError({message: i18n.t('errors.api.users.userNotFound')});
             }
 
             let tokenIsCorrect = security.tokens.resetToken.compare({
@@ -92,8 +93,8 @@ function doReset(options, tokenParts, settingsAPI) {
             });
 
             if (!tokenIsCorrect) {
-                return Promise.reject(new common.errors.BadRequestError({
-                    message: common.i18n.t('errors.api.common.invalidTokenStructure')
+                return Promise.reject(new errors.BadRequestError({
+                    message: i18n.t('errors.api.common.invalidTokenStructure')
                 }));
             }
 
@@ -107,14 +108,14 @@ function doReset(options, tokenParts, settingsAPI) {
             updatedUser.set('status', 'active');
             return updatedUser.save(options);
         })
-        .catch(common.errors.ValidationError, (err) => {
+        .catch(errors.ValidationError, (err) => {
             return Promise.reject(err);
         })
         .catch((err) => {
-            if (common.errors.utils.isIgnitionError(err)) {
+            if (errors.utils.isIgnitionError(err)) {
                 return Promise.reject(err);
             }
-            return Promise.reject(new common.errors.UnauthorizedError({err: err}));
+            return Promise.reject(new errors.UnauthorizedError({err: err}));
         });
 }
 
@@ -133,7 +134,7 @@ async function sendResetNotification(data, mailAPI) {
         mail: [{
             message: {
                 to: data.email,
-                subject: common.i18n.t('common.api.authentication.mail.resetPassword'),
+                subject: i18n.t('common.api.authentication.mail.resetPassword'),
                 html: content.html,
                 text: content.text
             },

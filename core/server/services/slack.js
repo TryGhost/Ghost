@@ -1,4 +1,5 @@
-const common = require('../lib/common');
+const errors = require('@tryghost/errors');
+const {events, i18n, logging} = require('../lib/common');
 const request = require('../lib/request');
 const imageLib = require('../lib/image');
 const urlUtils = require('../lib/url-utils');
@@ -123,10 +124,10 @@ function ping(post) {
                 'Content-type': 'application/json'
             }
         }).catch(function (err) {
-            common.logging.error(new common.errors.GhostError({
+            logging.error(new errors.GhostError({
                 err: err,
-                context: common.i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
-                help: common.i18n.t('errors.services.ping.requestFailed.help', {url: 'https://ghost.org/docs/'})
+                context: i18n.t('errors.services.ping.requestFailed.error', {service: 'slack'}),
+                help: i18n.t('errors.services.ping.requestFailed.help', {url: 'https://ghost.org/docs/'})
             }));
         });
     }
@@ -149,8 +150,8 @@ function testPing() {
 }
 
 function listen() {
-    common.events.on('post.published', listener);
-    common.events.on('slack.test', testPing);
+    events.on('post.published', listener);
+    events.on('slack.test', testPing);
 }
 
 // Public API

@@ -13,7 +13,7 @@ const ghost = require('./core');
 debug('Required ghost');
 
 const express = require('./core/shared/express');
-const common = require('./core/server/lib/common');
+const {logging} = require('./core/server/lib/common');
 const urlService = require('./core/frontend/services/url');
 const ghostApp = express();
 
@@ -31,10 +31,10 @@ ghost().then(function (ghostServer) {
     // Let Ghost handle starting our server instance.
     return ghostServer.start(ghostApp)
         .then(function afterStart() {
-            common.logging.info('Ghost boot', (Date.now() - startTime) / 1000 + 's');
+            logging.info('Ghost boot', (Date.now() - startTime) / 1000 + 's');
         });
 }).catch(function (err) {
-    common.logging.error(err);
+    logging.error(err);
     setTimeout(() => {
         process.exit(-1);
     }, 100);

@@ -4,12 +4,13 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const validator = require('validator');
 const config = require('../../config');
-const common = require('../../lib/common');
+const errors = require('@tryghost/errors');
+const {i18n} = require('../../lib/common');
 const settingsCache = require('../settings/cache');
 const urlUtils = require('../../lib/url-utils');
 
-const helpMessage = common.i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://ghost.org/docs/concepts/config/#mail'});
-const defaultErrorMessage = common.i18n.t('errors.mail.failedSendingEmail.error');
+const helpMessage = i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://ghost.org/docs/concepts/config/#mail'});
+const defaultErrorMessage = i18n.t('errors.mail.failedSendingEmail.error');
 
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
@@ -28,7 +29,7 @@ function getFromAddress(requestedFromAddress) {
 
     // If we do have a from address, and it's just an email
     if (validator.isEmail(address, {require_tld: false})) {
-        const defaultBlogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : common.i18n.t('common.mail.title', {domain: getDomain()});
+        const defaultBlogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : i18n.t('common.mail.title', {domain: getDomain()});
         return `"${defaultBlogTitle}" <${address}>`;
     }
 
@@ -47,7 +48,7 @@ function createMessage(message) {
 
 function createMailError({message, err, ignoreDefaultMessage} = {message: ''}) {
     const fullErrorMessage = defaultErrorMessage + message;
-    return new common.errors.EmailError({
+    return new errors.EmailError({
         message: ignoreDefaultMessage ? message : fullErrorMessage,
         err: err,
         help: helpMessage
@@ -70,7 +71,7 @@ module.exports = class GhostMailer {
     send(message) {
         if (!(message && message.subject && message.html && message.to)) {
             return Promise.reject(createMailError({
-                message: common.i18n.t('errors.mail.incompleteMessageData.error'),
+                message: i18n.t('errors.mail.incompleteMessageData.error'),
                 ignoreDefaultMessage: true
             }));
         }
@@ -90,7 +91,7 @@ module.exports = class GhostMailer {
             this.transport.sendMail(message, (err, response) => {
                 if (err) {
                     reject(createMailError({
-                        message: common.i18n.t('errors.mail.reason', {reason: err.message || err}),
+                        message: i18n.t('errors.mail.reason', {reason: err.message || err}),
                         err
                     }));
                 }
@@ -104,7 +105,7 @@ module.exports = class GhostMailer {
             response.statusHandler.once('failed', function (data) {
                 if (data.error && data.error.errno === 'ENOTFOUND') {
                     reject(createMailError({
-                        message: common.i18n.t('errors.mail.noMailServerAtAddress.error', {domain: data.domain})
+                        message: i18n.t('errors.mail.noMailServerAtAddress.error', {domain: data.domain})
                     }));
                 }
 
@@ -114,7 +115,7 @@ module.exports = class GhostMailer {
             response.statusHandler.once('requeue', function (data) {
                 if (data.error && data.error.message) {
                     reject(createMailError({
-                        message: common.i18n.t('errors.mail.reason', {reason: data.error.message})
+                        message: i18n.t('errors.mail.reason', {reason: data.error.message})
                     }));
                 }
 
@@ -122,7 +123,7 @@ module.exports = class GhostMailer {
             });
 
             response.statusHandler.once('sent', function () {
-                resolve(common.i18n.t('notices.mail.messageSent'));
+                resolve(i18n.t('notices.mail.messageSent'));
             });
         });
     }

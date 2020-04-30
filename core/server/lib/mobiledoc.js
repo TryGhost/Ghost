@@ -1,4 +1,5 @@
-const common = require('./common');
+const errors = require('@tryghost/errors');
+const {logging} = require('./common');
 const config = require('../config');
 
 let cardFactory;
@@ -49,7 +50,7 @@ module.exports = {
                 cards: this.cards,
                 atoms: this.atoms,
                 unknownCardHandler(args) {
-                    common.logging.error(new common.errors.InternalServerError({
+                    logging.error(new errors.InternalServerError({
                         message: 'Mobiledoc card \'' + args.env.name + '\' not found.'
                     }));
                 }
@@ -64,7 +65,7 @@ module.exports = {
             return require('@tryghost/html-to-mobiledoc').toMobiledoc;
         } catch (err) {
             return () => {
-                throw new common.errors.InternalServerError({
+                throw new errors.InternalServerError({
                     message: 'Unable to convert from source HTML to Mobiledoc',
                     context: 'The html-to-mobiledoc package was not installed',
                     help: 'Please review any errors from the install process by checking the Ghost logs',

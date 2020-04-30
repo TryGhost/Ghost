@@ -1,6 +1,6 @@
 const settingsCache = require('../settings/cache');
 const MembersApi = require('@tryghost/members-api');
-const common = require('../../lib/common');
+const {logging} = require('../../lib/common');
 const mail = require('../mail');
 const models = require('../../models');
 const signinEmail = require('./emails/signin');
@@ -24,7 +24,7 @@ function createApiInstance() {
             transporter: {
                 sendMail(message) {
                     if (process.env.NODE_ENV !== 'production') {
-                        common.logging.warn(message.text);
+                        logging.warn(message.text);
                     }
                     let msg = Object.assign({
                         from: config.getEmailFromAddress(),
@@ -126,7 +126,7 @@ function createApiInstance() {
         memberStripeCustomerModel: models.MemberStripeCustomer,
         stripeCustomerSubscriptionModel: models.StripeCustomerSubscription,
         memberModel: models.Member,
-        logger: common.logging
+        logger: logging
     });
 
     return membersApiInstance;

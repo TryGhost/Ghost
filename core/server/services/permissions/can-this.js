@@ -1,7 +1,8 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const models = require('../../models');
-const common = require('../../lib/common');
+const errors = require('@tryghost/errors');
+const {i18n} = require('../../lib/common');
 const providers = require('./providers');
 const parseContext = require('./parse-context');
 const actionsMap = require('./actions-map-cache');
@@ -102,7 +103,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                     return;
                 }
 
-                return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.permissions.noPermissionToAction')}));
+                return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.permissions.noPermissionToAction')}));
             });
         };
 
@@ -120,7 +121,7 @@ CanThisResult.prototype.beginCheck = function (context) {
     context = parseContext(context);
 
     if (actionsMap.empty()) {
-        throw new Error(common.i18n.t('errors.permissions.noActionsMapFound.error'));
+        throw new Error(i18n.t('errors.permissions.noActionsMapFound.error'));
     }
 
     // Kick off loading of user permissions if necessary

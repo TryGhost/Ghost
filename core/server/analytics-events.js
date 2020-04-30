@@ -1,16 +1,14 @@
 const _ = require('lodash');
 const Analytics = require('analytics-node');
 const config = require('./config');
-const common = require('./lib/common');
-let analytics;
+const {events} = require('./lib/common');
 
 module.exports.init = function () {
-    analytics = new Analytics(config.get('segment:key'));
-    let toTrack;
+    const analytics = new Analytics(config.get('segment:key'));
     const trackDefaults = config.get('segment:trackDefaults') || {};
     const prefix = config.get('segment:prefix') || '';
 
-    toTrack = [
+    const toTrack = [
         {
             event: 'post.published',
             name: 'Post Published'
@@ -30,7 +28,7 @@ module.exports.init = function () {
     ];
 
     _.each(toTrack, function (track) {
-        common.events.on(track.event, function () {
+        events.on(track.event, function () {
             analytics.track(_.extend(trackDefaults, {event: prefix + track.name}));
         });
     });

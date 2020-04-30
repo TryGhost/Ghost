@@ -3,7 +3,7 @@
 // circular dependency bugs.
 const debug = require('ghost-ignition').debug('settings:cache');
 const _ = require('lodash');
-const common = require('../../lib/common');
+const {events} = require('../../lib/common');
 const publicSettings = require('./public');
 
 // Local function, only ever used for initialising
@@ -123,17 +123,17 @@ module.exports = {
         }
 
         // Bind to events to automatically keep up-to-date
-        common.events.on('settings.edited', updateSettingFromModel);
-        common.events.on('settings.added', updateSettingFromModel);
-        common.events.on('settings.deleted', updateSettingFromModel);
+        events.on('settings.edited', updateSettingFromModel);
+        events.on('settings.added', updateSettingFromModel);
+        events.on('settings.deleted', updateSettingFromModel);
 
         return settingsCache;
     },
 
     shutdown() {
-        common.events.removeListener('settings.edited', updateSettingFromModel);
-        common.events.removeListener('settings.added', updateSettingFromModel);
-        common.events.removeListener('settings.deleted', updateSettingFromModel);
+        events.removeListener('settings.edited', updateSettingFromModel);
+        events.removeListener('settings.added', updateSettingFromModel);
+        events.removeListener('settings.deleted', updateSettingFromModel);
     },
 
     reset() {
