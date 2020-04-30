@@ -91,10 +91,6 @@ module.exports = function setupSiteApp(options = {}) {
     // (Optionally) redirect any requests to /ghost to the admin panel
     siteApp.use(mw.redirectGhostToAdmin());
 
-    // force SSL if blog url is set to https. The redirects handling must happen before asset and page routing,
-    // otherwise we serve assets/pages with http. This can cause mixed content warnings in the admin client.
-    siteApp.use(shared.middlewares.urlRedirects.frontendSSLRedirect);
-
     // Static content/assets
     // @TODO make sure all of these have a local 404 error handler
     // Favicon
@@ -128,8 +124,6 @@ module.exports = function setupSiteApp(options = {}) {
     // Else we end up with circular dependencies
     themeService.loadCoreHelpers();
     debug('Helpers done');
-
-    siteApp.use('/members', require('../members')());
 
     // Global handling for member session, ensures a member is logged in to the frontend
     siteApp.use(membersMiddleware.loadMemberSession);
