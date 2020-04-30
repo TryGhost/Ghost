@@ -217,7 +217,8 @@ module.exports = function MembersApi({
 
         const sessionInfo = await stripe.createCheckoutSession(member, plan, {
             successUrl: req.body.successUrl,
-            cancelUrl: req.body.cancelUrl
+            cancelUrl: req.body.cancelUrl,
+            customerEmail: req.body.customerEmail
         });
 
         res.writeHead(200, {
