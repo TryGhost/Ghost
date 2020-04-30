@@ -46,5 +46,9 @@
     {
         "from": "/external-url",
         "to": "https://ghost.org"
+    },
+    {
+        "from": "/external-url/(.*)",
+        "to": "https://ghost.org/$1"
     }
 ]
