@@ -1,7 +1,8 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const models = require('../../models');
-const common = require('../../lib/common');
+const errors = require('@tryghost/errors');
+const {i18n} = require('../../lib/common');
 
 module.exports = {
     user: function (id) {
@@ -9,8 +10,8 @@ module.exports = {
             .then(function (foundUser) {
             // CASE: {context: {user: id}} where the id is not in our database
                 if (!foundUser) {
-                    return Promise.reject(new common.errors.NotFoundError({
-                        message: common.i18n.t('errors.models.user.userNotFound')
+                    return Promise.reject(new errors.NotFoundError({
+                        message: i18n.t('errors.models.user.userNotFound')
                     }));
                 }
 
@@ -50,8 +51,8 @@ module.exports = {
         return models.ApiKey.findOne({id}, {withRelated: ['role', 'role.permissions']})
             .then((foundApiKey) => {
                 if (!foundApiKey) {
-                    throw new common.errors.NotFoundError({
-                        message: common.i18n.t('errors.models.api_key.apiKeyNotFound')
+                    throw new errors.NotFoundError({
+                        message: i18n.t('errors.models.api_key.apiKeyNotFound')
                     });
                 }
 

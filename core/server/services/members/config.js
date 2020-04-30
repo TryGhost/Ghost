@@ -3,7 +3,7 @@ const settingsCache = require('../settings/cache');
 const ghostVersion = require('../../lib/ghost-version');
 const crypto = require('crypto');
 const path = require('path');
-const common = require('../../lib/common');
+const {logging} = require('../../lib/common');
 const urlUtils = require('../../lib/url-utils');
 
 const COMPLIMENTARY_PLAN = {
@@ -130,12 +130,12 @@ function getStripePaymentConfig() {
 function getAuthSecret() {
     const hexSecret = settingsCache.get('members_email_auth_secret');
     if (!hexSecret) {
-        common.logging.warn('Could not find members_email_auth_secret, using dynamically generated secret');
+        logging.warn('Could not find members_email_auth_secret, using dynamically generated secret');
         return crypto.randomBytes(64);
     }
     const secret = Buffer.from(hexSecret, 'hex');
     if (secret.length < 64) {
-        common.logging.warn('members_email_auth_secret not large enough (64 bytes), using dynamically generated secret');
+        logging.warn('members_email_auth_secret not large enough (64 bytes), using dynamically generated secret');
         return crypto.randomBytes(64);
     }
     return secret;

@@ -18,7 +18,8 @@ const debug = require('ghost-ignition').debug('update-check');
 const api = require('./api').v2;
 const config = require('./config');
 const urlUtils = require('./lib/url-utils');
-const common = require('./lib/common');
+const errors = require('@tryghost/errors');
+const {i18n, logging} = require('./lib/common');
 const request = require('./lib/request');
 const ghostVersion = require('./lib/ghost-version');
 const internal = {context: {internal: true}};
@@ -49,9 +50,9 @@ function updateCheckError(err) {
         }]
     }, internal);
 
-    err.context = common.i18n.t('errors.updateCheck.checkingForUpdatesFailed.error');
-    err.help = common.i18n.t('errors.updateCheck.checkingForUpdatesFailed.help', {url: 'https://ghost.org/docs/'});
-    common.logging.error(err);
+    err.context = i18n.t('errors.updateCheck.checkingForUpdatesFailed.error');
+    err.help = i18n.t('errors.updateCheck.checkingForUpdatesFailed.help', {url: 'https://ghost.org/docs/'});
+    logging.error(err);
 }
 
 /**
@@ -178,7 +179,7 @@ function updateCheckRequest() {
 
                     // CASE: service returns JSON error, deserialize into JS error
                     if (err.response && err.response.body && typeof err.response.body === 'object') {
-                        err = common.errors.utils.deserialize(err.response.body);
+                        err = errors.utils.deserialize(err.response.body);
                     }
 
                     throw err;

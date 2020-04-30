@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const url = require('url');
 const models = require('../../../models');
-const common = require('../../../lib/common');
+const errors = require('@tryghost/errors');
+const {i18n} = require('../../../lib/common');
 const _ = require('lodash');
 
 let JWT_OPTIONS = {
@@ -42,8 +43,8 @@ const authenticate = (req, res, next) => {
     const token = _extractTokenFromHeader(req.headers.authorization);
 
     if (!token) {
-        return next(new common.errors.UnauthorizedError({
-            message: common.i18n.t('errors.middleware.auth.incorrectAuthHeaderFormat'),
+        return next(new errors.UnauthorizedError({
+            message: i18n.t('errors.middleware.auth.incorrectAuthHeaderFormat'),
             code: 'INVALID_AUTH_HEADER'
         }));
     }
@@ -54,8 +55,8 @@ const authenticate = (req, res, next) => {
 const authenticateWithUrl = (req, res, next) => {
     const token = _extractTokenFromUrl(req.originalUrl);
     if (!token) {
-        return next(new common.errors.UnauthorizedError({
-            message: common.i18n.t('errors.middleware.auth.invalidTokenWithMessage', {message: 'No token found in URL'}),
+        return next(new errors.UnauthorizedError({
+            message: i18n.t('errors.middleware.auth.invalidTokenWithMessage', {message: 'No token found in URL'}),
             code: 'INVALID_JWT'
         }));
     }
@@ -81,8 +82,8 @@ const authenticateWithToken = (req, res, next, {token, JWT_OPTIONS}) => {
     const decoded = jwt.decode(token, {complete: true});
 
     if (!decoded || !decoded.header) {
-        return next(new common.errors.BadRequestError({
-            message: common.i18n.t('errors.middleware.auth.invalidToken'),
+        return next(new errors.BadRequestError({
+            message: i18n.t('errors.middleware.auth.invalidToken'),
             code: 'INVALID_JWT'
         }));
     }
@@ -90,23 +91,23 @@ const authenticateWithToken = (req, res, next, {token, JWT_OPTIONS}) => {
     const apiKeyId = decoded.header.kid;
 
     if (!apiKeyId) {
-        return next(new common.errors.BadRequestError({
-            message: common.i18n.t('errors.middleware.auth.adminApiKidMissing'),
+        return next(new errors.BadRequestError({
+            message: i18n.t('errors.middleware.auth.adminApiKidMissing'),
             code: 'MISSING_ADMIN_API_KID'
         }));
     }
 
     models.ApiKey.findOne({id: apiKeyId}).then((apiKey) => {
         if (!apiKey) {
-            return next(new common.errors.UnauthorizedError({
-                message: common.i18n.t('errors.middleware.auth.unknownAdminApiKey'),
+            return next(new errors.UnauthorizedError({
+                message: i18n.t('errors.middleware.auth.unknownAdminApiKey'),
                 code: 'UNKNOWN_ADMIN_API_KEY'
             }));
         }
 
         if (apiKey.get('type') !== 'admin') {
-            return next(new common.errors.UnauthorizedError({
-                message: common.i18n.t('errors.middleware.auth.invalidApiKeyType'),
+            return next(new errors.UnauthorizedError({
+                message: i18n.t('errors.middleware.auth.invalidApiKeyType'),
                 code: 'INVALID_API_KEY_TYPE'
             }));
         }
@@ -129,22 +130,22 @@ const authenticateWithToken = (req, res, next, {token, JWT_OPTIONS}) => {
             jwt.verify(token, secret, options);
         } catch (err) {
             if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError') {
-                return next(new common.errors.UnauthorizedError({
-                    message: common.i18n.t('errors.middleware.auth.invalidTokenWithMessage', {message: err.message}),
+                return next(new errors.UnauthorizedError({
+                    message: i18n.t('errors.middleware.auth.invalidTokenWithMessage', {message: err.message}),
                     code: 'INVALID_JWT',
                     err
                 }));
             }
 
             // unknown error
-            return next(new common.errors.InternalServerError({err}));
+            return next(new errors.InternalServerError({err}));
         }
 
         // authenticated OK, store the api key on the request for later checks and logging
         req.api_key = apiKey;
         next();
     }).catch((err) => {
-        next(new common.errors.InternalServerError({err}));
+        next(new errors.InternalServerError({err}));
     });
 };
 
