@@ -113,11 +113,13 @@ module.exports = class StripePaymentProcessor {
             customer = null;
         }
         const plan = this._plans.find(plan => plan.nickname === planName);
+        const customerEmail = (!customer && options.customerEmail) ? options.customerEmail : undefined;
         const session = await this._stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             success_url: options.successUrl || this._checkoutSuccessUrl,
             cancel_url: options.cancelUrl || this._checkoutCancelUrl,
             customer: customer ? customer.id : undefined,
+            customer_email: customerEmail,
             subscription_data: {
                 items: [{
                     plan: plan.id
