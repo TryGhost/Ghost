@@ -10,8 +10,7 @@
     "normalize.css",
     "validator",
     "ember-in-viewport",
-    "codemirror",
-    "broccoli-concat"
+    "codemirror"
   ],
   "ignorePaths": ["lib/koenig-editor/package.json"],
   "packageRules": [
