@@ -2,7 +2,6 @@ const ghostVersion = require('../../lib/ghost-version');
 const settingsCache = require('../../services/settings/cache');
 const urlUtils = require('../../lib/url-utils');
 const config = require('../../config');
-const membersService = require('../../services/members');
 
 const site = {
     docName: 'site',
@@ -16,10 +15,7 @@ const site = {
                 logo: settingsCache.get('logo'),
                 brand: settingsCache.get('brand'),
                 url: urlUtils.urlFor('home', true),
-                version: ghostVersion.safe,
-                // @TODO: move these to a members API
-                plans: membersService.config.getPublicPlans(), // these are new members features that probably won't live here
-                allowSelfSignup: membersService.config.getAllowSelfSignup() // these are new members features that probably won't live here
+                version: ghostVersion.safe
             };
 
             // Brand is currently an experimental feature
