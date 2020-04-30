@@ -802,10 +802,10 @@ describe('Frontend Routing', function () {
         });
 
         describe('internal url redirect', function () {
-            it('shold include the subdirectory', function (done) {
+            it('should include the subdirectory', function (done) {
                 request.get('/blog/my-old-blog-post/')
-                    .expect(302)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect(301)
+                    .expect('Cache-Control', testUtils.cacheRules.year)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/blog/revamped-url/');
                         doEnd(done)(err, res);
@@ -814,7 +814,7 @@ describe('Frontend Routing', function () {
         });
 
         describe('external url redirect', function () {
-            it('shold not include the subdirectory', function (done) {
+            it('should not include the subdirectory', function (done) {
                 request.get('/blog/external-url/docs')
                     .expect(302)
                     .expect('Cache-Control', testUtils.cacheRules.public)
