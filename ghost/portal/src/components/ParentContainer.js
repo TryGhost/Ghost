@@ -34,10 +34,10 @@ export default class ParentContainer extends React.Component {
         this.fetchData();
     }
 
-    getDefaultPage({member, stripeParam}) {
+    getDefaultPage({member = this.state.member, stripeParam} = {}) {
         // Change page here for testing local UI testing
         if (process.env.NODE_ENV === 'development') {
-            return {page: 'accountHome'};
+            return {page: 'magiclink'};
         }
         if (!member && stripeParam === 'success') {
             return {page: 'magiclink', showPopup: true};
@@ -129,8 +129,10 @@ export default class ParentContainer extends React.Component {
                     showPopup: !this.state.showPopup
                 });
             } else if (action === 'closePopup') {
+                const {page: defaultPage} = this.getDefaultPage();
                 this.setState({
-                    showPopup: false
+                    showPopup: false,
+                    page: this.state.page === 'magiclink' ? defaultPage : this.state.page
                 });
             } else if (action === 'signout') {
                 await this.GhostApi.member.signout();
