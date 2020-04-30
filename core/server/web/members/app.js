@@ -22,16 +22,19 @@ module.exports = function setupMembersApp() {
     membersApp.use(middleware.createSessionFromMagicLink);
 
     // Routing
-    // Initializes members specific routes as well as assigns members specific data to the req/res objects
-    membersApp.get('/ssr/member', shared.middlewares.labs.members, middleware.getMemberData);
-    membersApp.get('/ssr', shared.middlewares.labs.members, middleware.getIdentityToken);
-    membersApp.delete('/ssr', shared.middlewares.labs.members, middleware.deleteSession);
+
+    // Webhooks
     membersApp.post('/webhooks/stripe', shared.middlewares.labs.members, middleware.stripeWebhooks);
+
+    // Initializes members specific routes as well as assigns members specific data to the req/res objects
+    membersApp.get('/api/member', shared.middlewares.labs.members, middleware.getMemberData);
+    membersApp.get('/api/session', shared.middlewares.labs.members, middleware.getIdentityToken);
+    membersApp.delete('/api/session', shared.middlewares.labs.members, middleware.deleteSession);
 
     // NOTE: this is wrapped in a function to ensure we always go via the getter
     membersApp.post('/api/send-magic-link', (req, res, next) => membersService.api.middleware.sendMagicLink(req, res, next));
     membersApp.post('/api/create-stripe-checkout-session', (req, res, next) => membersService.api.middleware.createCheckoutSession(req, res, next));
-    membersApp.post('/api/create-stripe-setup-session', (req, res, next) => membersService.api.middleware.createCheckoutSetupSession(req, res, next));
+    membersApp.post('/api/create-stripe-update-session', (req, res, next) => membersService.api.middleware.createCheckoutSetupSession(req, res, next));
     membersApp.put('/api/subscriptions/:id', (req, res, next) => membersService.api.middleware.updateSubscription(req, res, next));
 
     // API error handling
