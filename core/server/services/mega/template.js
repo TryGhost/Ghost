@@ -475,6 +475,7 @@ figure blockquote p {
 }
 .kg-video-preview table {
     background-size: cover;
+    min-height: 200px; /* for when images aren't loaded */
 }
 .kg-video-play-button {
     height: 2em;
@@ -486,6 +487,7 @@ figure blockquote p {
     background-color: rgba(0,0,0,0.85);
 }
 .kg-video-play-button div {
+    line-height: 0px; /* fix for Yahoo Mail */
     border-color: transparent transparent transparent white;
     border-style: solid;
     border-width: 0.8em 0 0.8em 1.5em;
