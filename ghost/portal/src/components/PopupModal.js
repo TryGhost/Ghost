@@ -35,19 +35,6 @@ const Styles = {
             height: '60%',
             backgroundColor: 'white'
         },
-        menu: {
-            position: 'fixed',
-            padding: '0',
-            outline: '0',
-            bottom: '100px',
-            right: '20px',
-            borderRadius: '8px',
-            boxShadow: 'rgba(0, 0, 0, 0.16) 0px 5px 40px',
-            opacity: '1',
-            overflow: 'hidden',
-            height: '60%',
-            backgroundColor: 'white'
-        },
         signin: {
             minHeight: '200px',
             maxHeight: '330px'
@@ -57,9 +44,9 @@ const Styles = {
             maxHeight: '620px'
         },
         accountHome: {
-            width: '280px',
-            minHeight: '200px',
-            maxHeight: '240px'
+            width: '500px',
+            minHeight: '300px',
+            maxHeight: '350px'
         },
         magiclink: {
             minHeight: '230px',
@@ -144,9 +131,8 @@ export default class PopupModal extends React.Component {
 
     renderFrameContainer() {
         const page = this.context.page;
-        const commonStyle = this.context.page === 'accountHome' ? Styles.frame.menu : Styles.frame.common;
         const frameStyle = {
-            ...commonStyle,
+            ...Styles.frame.common,
             ...Styles.frame[page]
         };
         return (

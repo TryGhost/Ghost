@@ -1,4 +1,6 @@
 import {ParentContext} from '../ParentContext';
+import MemberAvatar from '../common/MemberGravatar';
+import ActionButton from '../common/ActionButton';
 
 const React = require('react');
 
@@ -8,108 +10,6 @@ export default class AccountHomePage extends React.Component {
     handleSignout(e) {
         e.preventDefault();
         this.context.onAction('signout');
-    }
-
-    handlePlanCheckout(e) {
-        e.preventDefault();
-        const plan = e.target.name;
-        const email = this.context.member.email;
-        this.context.onAction('checkoutPlan', {email, plan});
-    }
-
-    renderPlanSelectButton({name}) {
-        const buttonStyle = {
-            display: 'inline-block',
-            height: '38px',
-            border: '0',
-            fontSize: '14px',
-            fontWeight: '300',
-            textAlign: 'center',
-            textDecoration: 'none',
-            whiteSpace: 'nowrap',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            transition: '.4s ease',
-            color: '#fff',
-            backgroundColor: this.context.brandColor,
-            boxShadow: 'none',
-            userSelect: 'none',
-            width: '90px',
-            marginBottom: '12px'
-        };
-
-        return (
-            <button name={name} onClick={(e) => {
-                this.handlePlanCheckout(e);
-            }} style={buttonStyle}>
-                Choose
-            </button>
-        );
-    }
-
-    renderPlanBox({position, id, type, price, currency, name}) {
-        const boxStyle = (position) => {
-            const style = {
-                padding: '12px 24px',
-                flexBasis: '100%'
-            };
-            if (position !== 'last') {
-                style.borderRight = '1px solid black';
-            }
-            return style;
-        };
-
-        const nameStyle = {
-            fontSize: '14px',
-            fontWeight: 'bold',
-            display: 'flex',
-            justifyContent: 'center'
-        };
-
-        const priceStyle = {
-            fontSize: '12px',
-            fontWeight: 'bold',
-            display: 'flex',
-            justifyContent: 'center',
-            marginBottom: '9px'
-        };
-        const checkboxStyle = {
-            display: 'flex',
-            justifyContent: 'center'
-        };
-
-        return (
-            <div style={boxStyle(position)}>
-                <div style={nameStyle}> {name} </div>
-                <div style={priceStyle}>
-                    <strong style={{fontSize: '14px'}}> {currency} {price} </strong>
-                    <span> {` / ${type}`}</span>
-                </div>
-                <div style={checkboxStyle}> {this.renderPlanSelectButton({name})} </div>
-            </div>
-        );
-    }
-
-    renderPlans() {
-        const containerStyle = {
-            display: 'flex',
-            border: '1px solid black',
-            marginBottom: '12px'
-        };
-        const siteTitle = this.context.site.title;
-        const plans = this.context.site.plans;
-        return (
-            <div style={{padding: '12px 12px'}}>
-                <div style={{marginBottom: '12px', fontSize: '14px'}}>
-                    {`Hey there! You are subscribed to free updates from ${siteTitle}, but don't have a paid subscription to unlock full access`}
-                </div>
-                <div style={{fontWeight: 'bold', marginBottom: '9px'}}>  Choose a Plan </div>
-                <div style={containerStyle}>
-                    {this.renderPlanBox({position: 'first', type: 'month', price: plans.monthly, currency: plans.currency_symbol, name: 'Monthly'})}
-                    {this.renderPlanBox({position: 'last', type: 'year', price: plans.yearly, currency: plans.currency_symbol, name: 'Yearly'})}
-                </div>
-            </div>
-        );
     }
 
     renderHeader() {
@@ -130,43 +30,65 @@ export default class AccountHomePage extends React.Component {
     renderUserAvatar() {
         const avatarImg = (this.context.member && this.context.member.avatar_image);
 
-        const logoStyle = {
+        const avatarContainerStyle = {
             position: 'relative',
-            display: 'block',
+            display: 'flex',
             width: '64px',
             height: '64px',
             marginBottom: '6px',
-            backgroundPosition: '50%',
-            backgroundSize: 'cover',
             borderRadius: '100%',
             boxShadow: '0 0 0 3px #fff',
-            border: '1px solid gray'
+            border: '1px solid gray',
+            overflow: 'hidden',
+            justifyContent: 'center',
+            alignItems: 'center'
         };
 
-        if (avatarImg) {
-            logoStyle.backgroundImage = `url(${avatarImg})`;
-            return (
-                <span style={logoStyle}> </span>
-            );
-        }
-        return null;
-    }
-
-    renderUserHeader() {
-        const memberEmail = this.context.member.email;
-        const memberName = this.context.member.name;
-
         return (
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px'}}>
-                {this.renderUserAvatar()}
-                {memberName ? <div style={{fontSize: '16px', fontWeight: '400'}}> {memberName}</div> : null}
-                <div style={{fontSize: '14px', fontWeight: '400', color: '#929292', lineHeight: '12px'}}> {memberEmail}</div>
+            <div style={avatarContainerStyle}>
+                <MemberAvatar gravatar={avatarImg} style={{userIcon: {color: 'black', width: '45px', height: '45px'}}} />
             </div>
         );
     }
 
-    handleAccountDetail(e) {
-        // No-op
+    renderUserHeader() {
+        return (
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px'}}>
+                {this.renderUserAvatar()}
+                <div style={{fontSize: '21px', fontWeight: '500', marginTop: '6px'}}> Your Account </div>
+            </div>
+        );
+    }
+
+    openSettings(e) {
+        // no-op
+    }
+
+    renderAccountFooter() {
+        return (
+            <div style={{display: 'flex', padding: '0 24px', marginTop: '6px', color: this.context.brandColor, fontWeight: 'bold', fontSize: '13px'}}>
+                <div style={{cursor: 'pointer'}} role='button'> Contact support </div>
+                <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
+                    <div style={{marginRight: '16px', cursor: 'pointer'}} onClick={e => this.openSettings(e)} role='button'> Settings </div>
+                    <div style={{cursor: 'pointer'}} onClick={e => this.handleSignout(e)} role='button'> Logout </div>
+                </div>
+            </div>
+        );
+    }
+
+    renderAccountDetail(e) {
+        const {name, firstname, email} = this.context.member;
+        const siteTitle = this.context.site.title;
+
+        return (
+            <div style={{padding: '0 24px'}}>
+                <div style={{textAlign: 'center', marginBottom: '12px', fontSize: '14px'}}>
+                    <span style={{fontWeight: 'bold'}}>Hey {firstname || name || email}! </span>
+                    You are subscribed to free updates from <span style={{fontWeight: 'bold'}}>{siteTitle}</span>, but you don't have a paid subscription to unlock full access
+                </div>
+                <ActionButton label="Subscribe now" onClick={e => {}} brandColor={this.context.brandColor} />
+            </div>
+        );
     }
 
     renderLogoutButton() {
@@ -184,9 +106,10 @@ export default class AccountHomePage extends React.Component {
 
     render() {
         return (
-            <div style={{display: 'flex', flexDirection: 'column', color: '#313131', paddingTop: '9px'}}>
+            <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
                 {this.renderUserHeader()}
-                {this.renderLogoutButton()}
+                {this.renderAccountDetail()}
+                {this.renderAccountFooter()}
             </div>
         );
     }

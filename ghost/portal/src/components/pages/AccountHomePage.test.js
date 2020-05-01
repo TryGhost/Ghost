@@ -6,11 +6,13 @@ const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
         <AccountHomePage />
     );
-    const memberEmail = utils.getByText('member@example.com');
-    const logoutButton = utils.queryByRole('button', {name: 'Log out'});
+    const logoutBtn = utils.queryByRole('button', {name: 'Logout'});
+    const settingsBtn = utils.queryByRole('button', {name: 'Settings'});
+    const supportBtn = utils.queryByRole('button', {name: 'Contact support'});
     return {
-        memberEmail,
-        logoutButton,
+        logoutBtn,
+        settingsBtn,
+        supportBtn,
         mockOnActionFn,
         ...utils
     };
@@ -18,16 +20,17 @@ const setup = (overrides) => {
 
 describe('Account Home Page', () => {
     test('renders', () => {
-        const {memberEmail, logoutButton} = setup();
+        const {settingsBtn, supportBtn, logoutBtn} = setup();
 
-        expect(memberEmail).toBeInTheDocument();
-        expect(logoutButton).toBeInTheDocument();
+        expect(settingsBtn).toBeInTheDocument();
+        expect(logoutBtn).toBeInTheDocument();
+        expect(supportBtn).toBeInTheDocument();
     });
 
     test('can call signout', () => {
-        const {mockOnActionFn, logoutButton} = setup();
+        const {mockOnActionFn, logoutBtn} = setup();
 
-        fireEvent.click(logoutButton);
+        fireEvent.click(logoutBtn);
         expect(mockOnActionFn).toHaveBeenCalledWith('signout');
     });
 });
