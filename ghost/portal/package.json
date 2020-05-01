@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-js",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "license": "MIT",
   "repository": "git@github.com:TryGhost/membersjs.git",
   "author": "Ghost Foundation",
@@ -37,8 +37,13 @@
     "prepublishOnly": "yarn build"
   },
   "eslintConfig": {
-    "extends": ["react-app", "plugin:ghost/browser"],
-    "plugins": ["ghost"]
+    "extends": [
+      "react-app",
+      "plugin:ghost/browser"
+    ],
+    "plugins": [
+      "ghost"
+    ]
   },
   "browserslist": {
     "production": [
