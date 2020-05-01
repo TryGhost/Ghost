@@ -8,6 +8,7 @@ import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
 import {ParentContext} from './ParentContext';
 import FrameStyle from './Frame.styles';
 import AccountPlanPage from './pages/AccountPlanPage';
+import PaidAccountHomePage from './pages/PaidAccountHomePage';
 
 const React = require('react');
 
@@ -49,6 +50,11 @@ const Styles = {
             width: '500px',
             minHeight: '300px',
             maxHeight: '350px'
+        },
+        paidAccountHome: {
+            width: '500px',
+            minHeight: '650px',
+            maxHeight: '700px'
         },
         magiclink: {
             minHeight: '230px',
@@ -97,6 +103,7 @@ const Pages = {
     signin: SigninPage,
     signup: SignupPage,
     accountHome: AccountHomePage,
+    paidAccountHome: PaidAccountHomePage,
     accountPlan: AccountPlanPage,
     magiclink: MagicLinkPage,
     loading: LoadingPage
