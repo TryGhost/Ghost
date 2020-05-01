@@ -85,10 +85,11 @@ const configureGrunt = function (grunt) {
             },
             express: {
                 files: [
-                    'core/ghost-server.js',
                     'core/server/**/*.js',
                     'core/shared/**/*.js',
                     'core/frontend/**/*.js',
+                    'core/index.js',
+                    'index.js',
                     'config.*.json',
                     '!config.testing.json'
                 ],
