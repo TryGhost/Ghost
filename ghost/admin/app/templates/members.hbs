@@ -65,7 +65,7 @@
                             <div class="gh-list-header gh-list-cellwidth-20 nowrap">Created</div>
                             <div class="gh-list-header gh-list-cellwidth-chevron"></div>
                         </li>
-                        <VerticalCollection @items={{this.filteredMembers}} @key="id" @containerSelector=".gh-main" @estimateHeight=60 @bufferSize=20 as |member|>
+                        <VerticalCollection @items={{this.filteredMembers}} @key="id" @containerSelector=".gh-main" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
                             <GhMembersListItem @member={{member}} @data-test-member-id={{member.id}} />
                         </VerticalCollection>
                     {{else}}
