@@ -5,12 +5,11 @@ import PlansSection from './PlansSection';
 const setup = (overrides = {}) => {
     const mockOnPlanSelectFn = jest.fn();
     const props = {
-        plans: {
-            monthly: 12,
-            yearly: 110,
-            currency: 'USD',
-            currency_symbol: '$'
-        },
+        plans: [
+            {type: 'free', price: 'Decide later', name: 'Free'},
+            {type: 'month', price: 12, currency: '$', name: 'Monthly'},
+            {type: 'year', price: 110, currency: '$', name: 'Yearly'}
+        ],
         selectedPlan: 'Monthly',
         onPlanSelect: mockOnPlanSelectFn
     };

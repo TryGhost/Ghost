@@ -93,7 +93,16 @@ function PlanOptions({plans, selectedPlan, onPlanSelect}) {
     });
 }
 
-function PlansSection({plans, selectedPlan, onPlanSelect, style}) {
+function PlanLabel({showLabel}) {
+    if (!showLabel) {
+        return null;
+    }
+    return (
+        <label style={{marginBottom: '3px', fontSize: '12px', fontWeight: '700'}}>  Plan </label>
+    );
+}
+
+function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, style}) {
     const containerStyle = {
         display: 'flex',
         border: '1px solid #c5d2d9',
@@ -106,13 +115,9 @@ function PlansSection({plans, selectedPlan, onPlanSelect, style}) {
     }
     return (
         <div style={{width: '100%'}}>
-            <label style={{marginBottom: '3px', fontSize: '12px', fontWeight: '700'}}>  Plan </label>
+            <PlanLabel showLabel={showLabel} />
             <div style={containerStyle}>
-                <PlanOptions plans={[
-                    {type: 'free', price: 'Decide later', name: 'Free'},
-                    {type: 'month', price: plans.monthly, currency: plans.currency_symbol, name: 'Monthly'},
-                    {type: 'year', price: plans.yearly, currency: plans.currency_symbol, name: 'Yearly'}
-                ]} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} />
+                <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} />
             </div>
         </div>
     );
