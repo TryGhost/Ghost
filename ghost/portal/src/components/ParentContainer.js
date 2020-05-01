@@ -4,12 +4,8 @@ import setupGhostApi from '../utils/api';
 import {ParentContext} from './ParentContext';
 
 const React = require('react');
-const PropTypes = require('prop-types');
 
 export default class ParentContainer extends React.Component {
-    static propTypes = {
-        data: PropTypes.object.isRequired
-    };
 
     constructor(props) {
         super(props);
@@ -47,9 +43,10 @@ export default class ParentContainer extends React.Component {
         };
     }
 
-    async fetchApiData(adminUrl) {
+    // Fetch site and member session data with Ghost Apis
+    async fetchData() {
         try {
-            this.GhostApi = setupGhostApi({adminUrl});
+            this.GhostApi = setupGhostApi();
             const {site, member} = await this.GhostApi.init();
             const stripeParam = this.getStripeUrlParam();
             const {page, showPopup = false} = this.getDefaultPage({member, stripeParam});
@@ -63,26 +60,10 @@ export default class ParentContainer extends React.Component {
             });
         } catch (e) {
             /* eslint-disable no-console */
-            console.error(`[Members.js] Failed to fetch site data, please make sure your admin url - ${adminUrl} - is correct.`);
+            console.error(`[Members.js] Failed to initialize`);
             /* eslint-enable no-console */
             this.setState({
-                action: 'init:failed:incorrectAdminUrl',
-                initStatus: 'failed'
-            });
-        }
-    }
-
-    // Fetch site and member session data with Ghost Apis
-    fetchData() {
-        const {adminUrl} = this.props.data;
-        if (adminUrl) {
-            this.fetchApiData(adminUrl);
-        } else {
-            /* eslint-disable no-console */
-            console.error(`[Members.js] Failed to initialize, pass a valid admin url.`);
-            /* eslint-enable no-console */
-            this.setState({
-                action: 'init:failed:missingAdminUrl',
+                action: 'init:failed',
                 initStatus: 'failed'
             });
         }
