@@ -65,7 +65,10 @@ export default class AccountHomePage extends React.Component {
     }
 
     openSubscribe(e) {
-        //no-op
+        this.context.onAction('switchPage', {
+            page: 'accountPlan',
+            lastPage: 'accountHome'
+        });
     }
 
     renderAccountFooter() {
