@@ -48,15 +48,23 @@ export default class ParentContainer extends React.Component {
     }
 
     getDefaultPage({member = this.state.member, stripeParam} = {}) {
-        // Change page here for testing local UI testing
+        // Loads default page and popup state for local UI testing
         if (process.env.NODE_ENV === 'development') {
-            return {page: 'magiclink'};
+            return {
+                page: process.env.REACT_APP_DEFAULT_PAGE || 'signup',
+                showPopup: true
+            };
         }
         if (!member && stripeParam === 'success') {
             return {page: 'magiclink', showPopup: true};
         }
+        if (member) {
+            return {
+                page: member.paid ? 'paidAccountHome' : 'accountHome'
+            };
+        }
         return {
-            page: member ? 'accountHome' : 'signup'
+            page: 'signup'
         };
     }
 
