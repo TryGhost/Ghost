@@ -33,7 +33,8 @@ export default Component.extend({
                 if (!fetchingSubscription && !this.get('subscription')) {
                     fetchingSubscription = true;
                     iframe.contentWindow.postMessage({
-                        query: 'getSubscription'
+                        query: 'getSubscription',
+                        response: 'subscription'
                     }, '*');
                 }
             }
