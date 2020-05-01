@@ -7,17 +7,10 @@ Drop-in script to make the bulk of members work on any theme.
 
 ## Usage
 
-Add below code in your theme's `default.hbs` before the end of body tag OR in the code injection footer in Ghost Admin.
+Add below script in your theme's `default.hbs` just before the end of body tag OR in the code injection footer in Ghost Admin.
 
 ```html
 <script type="text/javascript" src="https://unpkg.com/@tryghost/members-js@latest/umd/members.min.js"></script>
-<script>
-    // Initializes members.js
-    // adminUrl: Your API domain (Ref: https://ghost.org/docs/api/v3/javascript/admin/#authentication)
-    window.GhostMembers.init({
-      adminUrl: 'https://youradminurl.com'
-    });
-</script>
 ```
 
 ## Basic Setup
@@ -46,15 +39,10 @@ Only useful for active UI development without publishing a version on unpkg. Alw
 #### In your theme(Ex. Lyra):
 
 - Copy `members.min.js` from above and paste it in your theme at `assets/built/members.min.js`
-- Add below code in your theme's `default.hbs` just above `{{{block "scripts"}}}` to add and initialize members script
+- Add below code in your theme's `default.hbs` just before end of body tag
+
 ```html
 <script src="{{asset "built/members.min.js"}}"></script>
-<script>
-    // Initialize members.js
-    window.GhostMembers.init({
-        adminUrl: 'youradminurl.com'
-    });
-</script>
 ```
 
 ## Available Scripts
@@ -68,10 +56,6 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 The page will reload if you make edits.<br />
 You will also see any lint errors in the console.
-
-Note: You'll need to configure the local Admin API url for script initialization.
-- Copy `.env.development.local.example` to `.env.development.local`
-- Update the values to match your local dev version of Ghost
 
 ### `yarn build`
 
