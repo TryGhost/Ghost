@@ -61,8 +61,13 @@ class SignupPage extends React.Component {
 
     renderPlans() {
         const {plans} = this.context.site;
+        const plansData = [
+            {type: 'free', price: 'Decide later', name: 'Free'},
+            {type: 'month', price: plans.monthly, currency: plans.currency_symbol, name: 'Monthly'},
+            {type: 'year', price: plans.yearly, currency: plans.currency_symbol, name: 'Yearly'}
+        ];
         return (
-            <PlansSection plans={plans} selectedPlan={this.state.plan} onPlanSelect={(e, name) => this.handleSelectPlan(e, name)}/>
+            <PlansSection plans={plansData} selectedPlan={this.state.plan} onPlanSelect={(e, name) => this.handleSelectPlan(e, name)}/>
         );
     }
 
