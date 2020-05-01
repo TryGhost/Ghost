@@ -145,13 +145,9 @@ export default class ParentContainer extends React.Component {
                     page: 'magiclink'
                 });
             } else if (action === 'checkoutPlan') {
-                const checkoutSuccessUrl = (new URL('/account/?stripe=billing-update-success', window.location.href)).href;
-                const checkoutCancelUrl = (new URL('/account/?stripe=billing-update-cancel', window.location.href)).href;
                 const {plan} = data;
                 await this.GhostApi.member.checkoutPlan({
-                    plan,
-                    checkoutSuccessUrl,
-                    checkoutCancelUrl
+                    plan
                 });
             }
         } catch (e) {
