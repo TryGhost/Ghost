@@ -75,7 +75,7 @@ function SiteRouter(req, res, next) {
 module.exports = function setupSiteApp(options = {}) {
     debug('Site setup start');
 
-    const siteApp = express();
+    const siteApp = express('site');
 
     // ## App - specific code
     // set the view engine

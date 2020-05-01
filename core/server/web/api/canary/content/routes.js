@@ -1,10 +1,10 @@
-const express = require('express');
+const express = require('../../../../../shared/express');
 const cors = require('cors');
 const apiCanary = require('../../../../api/canary');
 const mw = require('./middleware');
 
 module.exports = function apiRoutes() {
-    const router = express.Router();
+    const router = express.Router('canary content');
 
     router.use(cors());
 

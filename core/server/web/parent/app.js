@@ -11,7 +11,7 @@ const shared = require('../shared');
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
-    const parentApp = express();
+    const parentApp = express('parent');
 
     parentApp.use(mw.requestId);
     parentApp.use(mw.logRequest);
@@ -44,7 +44,7 @@ module.exports = function setupParentApp(options = {}) {
 
     // BACKEND
     // Wrap the admin and API apps into a single express app for use with vhost
-    const backendApp = express();
+    const backendApp = express('backend');
     backendApp.use('/ghost/api', require('../api')());
     backendApp.use('/ghost/.well-known', require('../well-known')());
     backendApp.use('/ghost', require('../../services/auth/session').createSessionFromToken, require('../admin')());
@@ -55,7 +55,7 @@ module.exports = function setupParentApp(options = {}) {
     parentApp.use(vhost(backendVhostArg, backendApp));
 
     // FRONTEND
-    const frontendApp = express();
+    const frontendApp = express('frontend');
 
     // Force SSL if blog url is set to https. The redirects handling must happen before asset and page routing,
     // otherwise we serve assets/pages with http. This can cause mixed content warnings in the admin client.

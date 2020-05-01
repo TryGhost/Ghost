@@ -8,7 +8,7 @@ const routes = require('./routes');
 
 module.exports = function setupApiApp() {
     debug('Admin API canary setup start');
-    const apiApp = express();
+    const apiApp = express('canary admin');
 
     // API middleware
 

@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const express = require('express');
+const express = require('../../../../../core/shared/express');
 const serveFavicon = require('../../../../../core/server/web/site/middleware/serve-favicon');
 const settingsCache = require('../../../../../core/server/services/settings/cache');
 const storage = require('../../../../../core/server/adapters/storage');
@@ -19,7 +19,7 @@ describe('Serve Favicon', function () {
         req = sinon.spy();
         res = sinon.spy();
         next = sinon.spy();
-        blogApp = express();
+        blogApp = express('test');
         req.app = blogApp;
 
         sinon.stub(settingsCache, 'get').callsFake(function (key) {

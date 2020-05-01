@@ -2,9 +2,9 @@ const should = require('should');
 const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
-const express = require('express');
 const bodyParser = require('body-parser');
 const http = require('http');
+const express = require('../../../../core/shared/express');
 const SchedulingDefault = require('../../../../core/server/adapters/scheduling/SchedulingDefault');
 
 describe('Scheduling Default Adapter', function () {

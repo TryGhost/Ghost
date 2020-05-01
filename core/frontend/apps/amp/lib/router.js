@@ -1,6 +1,6 @@
 const path = require('path');
-const express = require('express');
-const ampRouter = express.Router();
+const express = require('../../../../shared/express');
+const ampRouter = express.Router('amp');
 
 // Dirty requires
 const common = require('../../../../server/lib/common');
