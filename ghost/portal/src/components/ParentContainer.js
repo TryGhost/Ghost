@@ -6,7 +6,6 @@ import {ParentContext} from './ParentContext';
 const React = require('react');
 
 export default class ParentContainer extends React.Component {
-
     constructor(props) {
         super(props);
 
