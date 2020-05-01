@@ -110,6 +110,12 @@ export default class ParentContainer extends React.Component {
                 this.setState({
                     showPopup: !this.state.showPopup
                 });
+            } else if (action === 'back') {
+                if (this.state.lastPage) {
+                    this.setState({
+                        page: this.state.lastPage
+                    });
+                }
             } else if (action === 'closePopup') {
                 const {page: defaultPage} = this.getDefaultPage();
                 this.setState({
@@ -187,6 +193,7 @@ export default class ParentContainer extends React.Component {
                     action: this.state.action,
                     brandColor: this.getBrandColor(),
                     page: this.state.page,
+                    lastPage: this.state.lastPage,
                     onAction: (action, data) => this.onAction(action, data)
                 }}>
                     {this.renderPopup()}
