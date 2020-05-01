@@ -1,11 +1,11 @@
 const path = require('path');
-const express = require('express');
+const express = require('../../../../shared/express');
 const middleware = require('./middleware');
 const bodyParser = require('body-parser');
 const routing = require('../../../services/routing');
 const web = require('../../../../server/web');
 const templateName = 'private';
-const privateRouter = express.Router();
+const privateRouter = express.Router(templateName);
 
 function _renderer(req, res) {
     res.routerOptions = {

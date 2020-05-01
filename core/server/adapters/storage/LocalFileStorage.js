@@ -1,7 +1,6 @@
 // # Local File System Image Storage module
 // The (default) module for storing images, using the local file system
-
-const serveStatic = require('express').static;
+const serveStatic = require('../../../shared/express').static;
 
 const fs = require('fs-extra');
 const path = require('path');

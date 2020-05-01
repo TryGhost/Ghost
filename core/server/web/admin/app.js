@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('web:admin:app');
 const express = require('../../../shared/express');
-const serveStatic = require('express').static;
+const serveStatic = express.static;
 const config = require('../../config');
 const constants = require('../../lib/constants');
 const urlUtils = require('../../lib/url-utils');
@@ -9,7 +9,7 @@ const adminMiddleware = require('./middleware');
 
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
-    const adminApp = express();
+    const adminApp = express('admin');
 
     // Admin assets
     // @TODO ensure this gets a local 404 error handler

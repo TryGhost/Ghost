@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const express = require('express');
+const express = require('../../../../core/shared/express')._express;
 const settingsCache = require('../../../../core/server/services/settings/cache');
 const common = require('../../../../core/server/lib/common');
 const controllers = require('../../../../core/frontend/services/routing/controllers');

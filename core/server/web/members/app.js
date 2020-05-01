@@ -9,7 +9,7 @@ const shared = require('../shared');
 
 module.exports = function setupMembersApp() {
     debug('Members App setup start');
-    const membersApp = express();
+    const membersApp = express('members');
 
     // Entire app is behind labs flag
     membersApp.use(shared.middlewares.labs.members);

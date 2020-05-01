@@ -5,7 +5,7 @@ const errorHandler = require('../shared/middlewares/error-handler');
 
 module.exports = function setupApiApp() {
     debug('Parent API setup start');
-    const apiApp = express();
+    const apiApp = express('api');
 
     // Mount different API versions
     apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'content'}), require('./v2/content/app')());
