@@ -29,13 +29,13 @@ module.exports = {
             const html = `
                 <!--[if !mso !vml]-->
                 <a class="kg-video-preview" href="${payload.url}" aria-label="Play video" style="mso-hide: all">
-                    <table cellpadding="0" cellspacing="0" border="0" width="100%" background="${payload.metadata.thumbnail_url}" role="presentation" style="mso-hide: all">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%" background="${payload.metadata.thumbnail_url}" role="presentation" style="background: url('${payload.metadata.thumbnail_url}') left top / cover; mso-hide: all">
                         <tr style="mso-hide: all">
-                            <td width="25%" style="mso-hide: all">
-                                <img src="https://placehold.it/${spacerWidth}x${spacerHeight}.gif?text=+" alt="" width="100%" border="0" style="height: auto; opacity: 0; visibility: hidden; mso-hide: all;">
+                            <td width="25%" style="visibility: hidden; mso-hide: all">
+                                <img src="https://img.spacergif.org/v1/${spacerWidth}x${spacerHeight}/0a/spacer.png" alt="" width="100%" border="0" style="height: auto; opacity: 0; visibility: hidden; mso-hide: all;">
                             </td>
                             <td width="50%" align="center" valign="middle" style="vertical-align: middle; mso-hide: all;">
-                                <div class="kg-video-play-button" style="mso-hide: all"><div style="mso-hide: all">&nbsp;</div></div>
+                                <div class="kg-video-play-button" style="mso-hide: all"><div style="mso-hide: all"></div></div>
                             </td>
                             <td width="25%" style="mso-hide: all">&nbsp;</td>
                         </tr>
