@@ -1,4 +1,5 @@
 import Frame from './Frame';
+import MemberGravatar from './common/MemberGravatar';
 import {ParentContext} from './ParentContext';
 import {ReactComponent as UserIcon} from '../images/icons/user.svg';
 import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
@@ -51,7 +52,6 @@ const Styles = ({brandColor}) => {
             height: '20px',
             color: '#fff'
         },
-
         closeIcon: {
             width: '20px',
             height: '20px',
@@ -69,6 +69,13 @@ export default class TriggerButton extends React.Component {
 
     renderTriggerIcon() {
         const Style = Styles({brandColor: this.context.brandColor});
+        const memberGravatar = this.context.member && this.context.member.avatar_image;
+
+        if (memberGravatar) {
+            return (
+                <MemberGravatar gravatar={memberGravatar} />
+            );
+        }
 
         if (this.props.isPopupOpen) {
             return (
