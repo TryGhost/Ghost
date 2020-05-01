@@ -486,14 +486,14 @@ figure blockquote p {
     background-color: rgba(0,0,0,0.85);
 }
 .kg-video-play-button div {
+    display: block;
+    width: 0;
+    height: 0;
+    margin: 0 auto;
     line-height: 0px; /* fix for Yahoo Mail */
     border-color: transparent transparent transparent white;
     border-style: solid;
     border-width: 0.8em 0 0.8em 1.5em;
-    display: block;
-    height: 0;
-    Margin: 0 auto;
-    width: 0;
 }
 
 
