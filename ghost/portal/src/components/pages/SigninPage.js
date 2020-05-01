@@ -71,7 +71,13 @@ export default class SigninPage extends React.Component {
         return (
             <div style={{display: 'flex', justifyContent: 'center'}}>
                 <div style={{marginRight: '6px', color: '#929292'}}> Don't have an account ? </div>
-                <div style={{color: brandColor, fontWeight: 'bold', cursor: 'pointer'}} role="button" onClick={() => this.context.onAction('switchPage', 'signup')}> Subscribe </div>
+                <div
+                    style={{color: brandColor, fontWeight: 'bold', cursor: 'pointer'}}
+                    role="button"
+                    onClick={() => this.context.onAction('switchPage', {page: 'signup'})}
+                >
+                    Subscribe
+                </div>
             </div>
         );
     }

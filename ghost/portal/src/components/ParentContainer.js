@@ -16,7 +16,8 @@ export default class ParentContainer extends React.Component {
             page: 'loading',
             showPopup: false,
             action: 'init:running',
-            initStatus: 'running'
+            initStatus: 'running',
+            lastPage: null
         };
     }
 
@@ -102,7 +103,8 @@ export default class ParentContainer extends React.Component {
         try {
             if (action === 'switchPage') {
                 this.setState({
-                    page: data
+                    page: data.page,
+                    lastPage: data.lastPage || null
                 });
             } else if (action === 'togglePopup') {
                 this.setState({

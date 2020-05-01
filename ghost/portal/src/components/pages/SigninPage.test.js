@@ -41,6 +41,6 @@ describe('SigninPage', () => {
         const {signupButton, mockOnActionFn} = setup();
 
         fireEvent.click(signupButton);
-        expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', 'signup');
+        expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {page: 'signup'});
     });
 });
