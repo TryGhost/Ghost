@@ -6,6 +6,7 @@ import MagicLinkPage from './pages/MagicLinkPage';
 import LoadingPage from './pages/LoadingPage';
 import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
 import {ParentContext} from './ParentContext';
+import FrameStyle from './Frame.styles';
 
 const React = require('react');
 
@@ -129,6 +130,12 @@ export default class PopupModal extends React.Component {
         }
     }
 
+    renderFrameStyles() {
+        return (
+            <style dangerouslySetInnerHTML={{__html: FrameStyle}} />
+        );
+    }
+
     renderFrameContainer() {
         const page = this.context.page;
         const frameStyle = {
@@ -137,7 +144,7 @@ export default class PopupModal extends React.Component {
         };
         return (
             <div style={Styles.modalContainer} onClick = {e => this.handlePopupClose(e)}>
-                <Frame style={frameStyle} title="membersjs-popup">
+                <Frame style={frameStyle} title="membersjs-popup" head={this.renderFrameStyles()}>
                     {this.renderPopupContent()}
                 </Frame>
             </div>
