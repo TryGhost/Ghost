@@ -10,7 +10,7 @@
 const debug = require('ghost-ignition').debug('services:routing:ParentRouter');
 
 const EventEmitter = require('events').EventEmitter;
-const express = require('express');
+const express = require('../../../shared/express');
 const _ = require('lodash');
 const url = require('url');
 const security = require('../../../server/lib/security');
@@ -29,7 +29,7 @@ const registry = require('./registry');
  * @constructor
  */
 function GhostRouter(options) {
-    const router = express.Router(options);
+    const router = express.Router('Parent', options);
 
     function innerRouter(req, res, next) {
         return innerRouter.handle(req, res, next);

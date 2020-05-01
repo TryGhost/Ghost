@@ -1,5 +1,5 @@
 const fs = require('fs-extra');
-const express = require('express');
+const express = require('../../../../shared/express');
 const url = require('url');
 const path = require('path');
 const debug = require('ghost-ignition').debug('web:shared:mw:custom-redirects');
@@ -16,7 +16,7 @@ let customRedirectsRouter;
 _private.registerRoutes = () => {
     debug('redirects loading');
 
-    customRedirectsRouter = express.Router();
+    customRedirectsRouter = express.Router('redirects');
 
     try {
         let redirects = fs.readFileSync(path.join(config.getContentPath('data'), 'redirects.json'), 'utf-8');

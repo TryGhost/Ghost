@@ -8,7 +8,7 @@ const routes = require('./routes');
 
 module.exports = function setupApiApp() {
     debug('Admin API v2 setup start');
-    const apiApp = express();
+    const apiApp = express('v2 admin');
 
     // API middleware
 

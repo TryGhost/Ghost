@@ -3,7 +3,7 @@ const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
-const express = require('express');
+const express = require('../../core/shared/express');
 const debug = require('ghost-ignition').debug('test');
 const ObjectId = require('bson-objectid');
 const uuid = require('uuid');
@@ -907,7 +907,7 @@ startGhost = function startGhost(options) {
             ghostServer = _ghostServer;
 
             if (options.subdir) {
-                parentApp = express();
+                parentApp = express('test parent');
                 parentApp.use(urlUtils.getSubdir(), ghostServer.rootApp);
                 return ghostServer.start(parentApp);
             }
