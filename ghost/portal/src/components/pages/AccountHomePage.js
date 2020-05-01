@@ -64,6 +64,10 @@ export default class AccountHomePage extends React.Component {
         // no-op
     }
 
+    openSubscribe(e) {
+        //no-op
+    }
+
     renderAccountFooter() {
         return (
             <div style={{display: 'flex', padding: '0 24px', marginTop: '6px', color: this.context.brandColor, fontWeight: 'bold', fontSize: '13px'}}>
@@ -86,7 +90,7 @@ export default class AccountHomePage extends React.Component {
                     <span style={{fontWeight: 'bold'}}>Hey {firstname || name || email}! </span>
                     You are subscribed to free updates from <span style={{fontWeight: 'bold'}}>{siteTitle}</span>, but you don't have a paid subscription to unlock full access
                 </div>
-                <ActionButton label="Subscribe now" onClick={e => {}} brandColor={this.context.brandColor} />
+                <ActionButton label="Subscribe now" onClick={e => this.openSubscribe(e)} brandColor={this.context.brandColor} />
             </div>
         );
     }
