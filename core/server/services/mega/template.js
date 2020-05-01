@@ -62,7 +62,6 @@ table td {
     margin: 0 auto !important;
     /* makes it centered */
     max-width: 600px;
-    width: 600px;
 }
 
 /* This should also be a block element, so that it will fill 100% of the .container */
@@ -627,148 +626,148 @@ figure blockquote p {
 ------------------------------------- */
 @media only screen and (max-width: 620px) {
 
-    table[class=body] {
+    table.body {
         width: 100%;
         min-width: 100%;
     }
 
-    table[class=body] p,
-    table[class=body] ul,
-    table[class=body] ol,
-    table[class=body] td,
-    table[class=body] span {
+    table.body p,
+    table.body ul,
+    table.body ol,
+    table.body td,
+    table.body span {
         font-size: 16px !important;
     }
 
-    table[class=body] pre {
+    table.body pre {
         white-space: pre-wrap !important;
         word-break: break-word !important;
     }
 
-    table[class=body] .wrapper,
-    table[class=body] .article {
+    table.body .wrapper,
+    table.body .article {
         padding: 0 10px !important;
     }
 
-    table[class=body] .content {
+    table.body .content {
         padding: 0 !important;
     }
 
-    table[class=body] .container {
+    table.body .container {
         padding: 0 !important;
         width: 100% !important;
     }
 
-    table[class=body] .main {
+    table.body .main {
         border-left-width: 0 !important;
         border-radius: 0 !important;
         border-right-width: 0 !important;
     }
 
-    table[class=body] .btn table {
+    table.body .btn table {
         width: 100% !important;
     }
 
-    table[class=body] .btn a {
+    table.body .btn a {
         width: 100% !important;
     }
 
-    table[class=body] .img-responsive {
+    table.body .img-responsive {
         height: auto !important;
         max-width: 100% !important;
         width: auto !important;
     }
 
-    table[class=body] .site-icon img {
+    table.body .site-icon img {
         width: 40px !important;
         height: 40px !important;
     }
 
-    table[class=body] .site-url a {
+    table.body .site-url a {
         font-size: 14px !important;
         padding-bottom: 15px !important;
     }
 
-    table[class=body] .post-meta {
+    table.body .post-meta {
         white-space: normal !important;
         font-size: 12px !important;
         line-height: 1.5em;
     }
 
-    table[class=body] .view-online-link,
-    table[class=body] .footer,
-    table[class=body] .footer a {
+    table.body .view-online-link,
+    table.body .footer,
+    table.body .footer a {
         font-size: 12px !important;
     }
 
-    table[class=body] .post-title a {
+    table.body .post-title a {
         font-size: 32px !important;
         line-height: 1.15em !important;
     }
 
-    table[class=body] .kg-bookmark-card {
+    table.body .kg-bookmark-card {
         width: 90vw !important;
     }
 
-    table[class=body] .kg-bookmark-thumbnail {
+    table.body .kg-bookmark-thumbnail {
         display: none !important;
     }
 
-    table[class=body] .kg-bookmark-metadata span {
+    table.body .kg-bookmark-metadata span {
         font-size: 13px !important;
     }
 
-    table[class=body] .kg-embed-card {
+    table.body .kg-embed-card {
         max-width: 90vw !important;
     }
 
-    table[class=body] h1 {
+    table.body h1 {
         font-size: 32px !important;
         line-height: 1.3em !important;
     }
 
-    table[class=body] h2 {
+    table.body h2 {
         font-size: 26px !important;
         line-height: 1.22em !important;
     }
 
-    table[class=body] h3 {
+    table.body h3 {
         font-size: 21px !important;
         line-height: 1.25em !important;
     }
 
-    table[class=body] h4 {
+    table.body h4 {
         font-size: 19px !important;
         line-height: 1.3em !important;
     }
 
-    table[class=body] h5 {
+    table.body h5 {
         font-size: 16px !important;
         line-height: 1.4em !important;
     }
 
-    table[class=body] h6 {
+    table.body h6 {
         font-size: 16px !important;
         line-height: 1.4em !important;
     }
 
-    table[class=body] blockquote {
+    table.body blockquote {
         font-size: 17px !important;
         line-height: 1.6em !important;
         margin-bottom: 0 !important;
         padding-left: 15px !important;
     }
 
-    table[class=body] blockquote + * {
+    table.body blockquote + * {
         margin-top: 1.5em !important;
     }
 
-    table[class=body] hr {
+    table.body hr {
         margin: 2em 0 !important;
     }
 
-    table[class=body] figcaption,
-    table[class=body] figcaption a {
+    table.body figcaption,
+    table.body figcaption a {
         font-size: 13px !important;
     }
 
