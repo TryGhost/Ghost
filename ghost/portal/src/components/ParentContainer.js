@@ -21,6 +21,23 @@ export default class ParentContainer extends React.Component {
         };
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.showPopup !== this.state.showPopup) {
+            this.handleCustomTriggerClassUpdate();
+        }
+    }
+
+    handleCustomTriggerClassUpdate() {
+        const popupOpenClass = 'gh-members-popup-open';
+        const popupCloseClass = 'gh-members-popup-close';
+        if (this.customTriggerButton) {
+            const elAddClass = this.state.showPopup ? popupOpenClass : popupCloseClass;
+            const elRemoveClass = this.state.showPopup ? popupCloseClass : popupOpenClass;
+            this.customTriggerButton.classList.add(elAddClass);
+            this.customTriggerButton.classList.remove(elRemoveClass);
+        }
+    }
+
     getStripeUrlParam() {
         const url = new URL(window.location);
         return url.searchParams.get('stripe');
@@ -71,18 +88,15 @@ export default class ParentContainer extends React.Component {
 
     setupCustomTriggerButton() {
         const customTriggerSelector = '[data-members-trigger-button]';
+        const popupCloseClass = 'gh-members-popup-close';
         this.customTriggerButton = document.querySelector(customTriggerSelector);
 
         if (this.customTriggerButton) {
             const clickHandler = (event) => {
                 event.preventDefault();
-                const elAddClass = this.state.showPopup ? 'popup-close' : 'popup-open';
-                const elRemoveClass = this.state.showPopup ? 'popup-open' : 'popup-close';
-                this.customTriggerButton.classList.add(elAddClass);
-                this.customTriggerButton.classList.remove(elRemoveClass);
                 this.onAction('togglePopup');
             };
-            this.customTriggerButton.classList.add('popup-close');
+            this.customTriggerButton.classList.add(popupCloseClass);
             this.customTriggerButton.addEventListener('click', clickHandler);
         }
     }
