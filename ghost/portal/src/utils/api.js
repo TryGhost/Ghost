@@ -1,19 +1,12 @@
 import * as Fixtures from './fixtures';
 
-function setupGhostApi({adminUrl}) {
-    const ghostPath = 'ghost';
-    const ssrPath = 'members/ssr';
-    const version = 'v3';
-    adminUrl = adminUrl.replace(/\/$/, '');
-    let siteUrl = window.location.origin;
+function setupGhostApi() {
+    const apiPath = 'members/api';
+    const siteUrl = window.location.origin;
 
     function endpointFor({type, resource}) {
         if (type === 'members') {
-            return `${adminUrl}/${ghostPath}/api/${version}/members/${resource}/`;
-        } else if (type === 'admin') {
-            return `${adminUrl}/${ghostPath}/api/${version}/admin/${resource}/`;
-        } else if (type === 'ssr') {
-            return resource ? `${siteUrl}/${ssrPath}/${resource}/` : `${siteUrl}/${ssrPath}/`;
+            return `${siteUrl}/${apiPath}/${resource}/`;
         }
     }
 
@@ -30,7 +23,7 @@ function setupGhostApi({adminUrl}) {
 
     api.site = {
         read() {
-            const url = endpointFor({type: 'admin', resource: 'site'});
+            const url = endpointFor({type: 'members', resource: 'site'});
             return makeRequest({
                 url,
                 method: 'GET',
@@ -49,7 +42,7 @@ function setupGhostApi({adminUrl}) {
 
     api.member = {
         identity() {
-            const url = endpointFor({type: 'ssr'});
+            const url = endpointFor({type: 'members', resource: 'session'});
             return makeRequest({
                 url,
                 credentials: 'same-origin'
@@ -62,7 +55,7 @@ function setupGhostApi({adminUrl}) {
         },
 
         sessionData() {
-            const url = endpointFor({type: 'ssr', resource: 'member'});
+            const url = endpointFor({type: 'members', resource: 'member'});
             return makeRequest({
                 url,
                 credentials: 'same-origin'
@@ -97,7 +90,7 @@ function setupGhostApi({adminUrl}) {
         },
 
         signout() {
-            const url = endpointFor({type: 'ssr'});
+            const url = endpointFor({type: 'members', resource: 'session'});
             return makeRequest({
                 url,
                 method: 'DELETE'
@@ -149,16 +142,14 @@ function setupGhostApi({adminUrl}) {
     };
 
     api.init = async () => {
-        const {site} = await api.site.read();
-        // Update site url from site data instead of default window.location.origin
-        siteUrl = site.url.replace(/\/$/, '');
-
         // Load member from fixtures for local development
         if (process.env.NODE_ENV === 'development') {
-            return {site, member: Fixtures.member.free};
+            return {site: Fixtures.site, member: Fixtures.member.free};
         }
 
+        const {site} = await api.site.read();
         const member = await api.member.sessionData();
+
         return {site, member};
     };
 
