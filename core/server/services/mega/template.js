@@ -823,6 +823,15 @@ figure blockquote p {
 <body class="">
     <span class="preheader">${ post.excerpt ? post.excerpt : `${post.title} – ` }</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" width="100%">
+
+        <!-- Outlook doesn't respect max-width so we need an extra centered table -->
+        <!--[if mso]>
+        <tr>
+            <td>
+                <center>
+                    <table border="0" cellpadding="0" cellspacing="0" width="600">
+        <![endif]-->
+
         <tr>
             <td>&nbsp;</td>
             <td class="container">
@@ -900,6 +909,14 @@ figure blockquote p {
             </td>
             <td>&nbsp;</td>
         </tr>
+
+    <!--[if mso]>
+                    </table>
+                </center>
+            </td>
+        </tr>
+    <![endif]-->
+
     </table>
 </body>
 
