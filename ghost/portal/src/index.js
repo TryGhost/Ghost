@@ -17,23 +17,15 @@ function handleTokenUrl() {
     }
 }
 
-function init(data) {
+function init() {
     addRootDiv();
     handleTokenUrl();
     ReactDOM.render(
         <React.StrictMode>
-            <App data={data} />
+            <App />
         </React.StrictMode>,
         document.getElementById('ghost-membersjs-root')
     );
 }
 
-window.GhostMembers = {
-    init: init
-};
-
-// This will automatically load for local if an .env.development.local file is present
-if (process.env.NODE_ENV === 'development') {
-    const adminUrl = process.env.REACT_APP_ADMIN_URL;
-    init({adminUrl});
-}
+init();
