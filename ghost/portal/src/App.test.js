@@ -4,7 +4,7 @@ import App from './App';
 
 test('renders App', () => {
     const {container} = render(
-        <App data={{adminUrl: 'https://youradminurl.com'}} />
+        <App />
     );
 
     // dashboard component should be rendered on root route
