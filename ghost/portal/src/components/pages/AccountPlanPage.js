@@ -1,9 +1,6 @@
 import {ParentContext} from '../ParentContext';
-import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
-import InputField from '../common/InputField';
 import PlansSection from '../common/PlansSection';
-import Switch from '../common/Switch';
 
 const React = require('react');
 
