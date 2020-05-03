@@ -36,10 +36,14 @@ const session = {
                 });
             });
         }).catch((err) => {
-            throw new common.errors.UnauthorizedError({
-                message: common.i18n.t('errors.middleware.auth.accessDenied'),
-                err
-            });
+            if (!common.errors.utils.isIgnitionError(err)) {
+                throw new common.errors.UnauthorizedError({
+                    message: common.i18n.t('errors.middleware.auth.accessDenied'),
+                    err
+                });
+            }
+
+            throw err;
         });
     },
     delete() {
