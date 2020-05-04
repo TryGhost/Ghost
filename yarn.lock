@@ -3837,10 +3837,10 @@ got@9.6.0, got@^9.6.0:
     to-readable-stream "^1.0.0"
     url-parse-lax "^3.0.0"
 
-got@~11.0.3:
-  version "11.0.3"
-  resolved "https://registry.yarnpkg.com/got/-/got-11.0.3.tgz#1df7678f9768ad3991c03b3efc304795eb29fdad"
-  integrity sha512-VmU5xQ5tWIc2SudsZQ6ewOwPxXxJ4pMS3SJoqP5SK8oBKxnZ3OgAhLZcPMDYeOW0RKIL6HF/vHtibWDLSa3rvw==
+got@~11.1.0:
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/got/-/got-11.1.0.tgz#99c0c3404ee17592e553f9ed1c895f920f554ed8"
+  integrity sha512-9lZDzFe43s6HH60tSurUk04kEtssfLiIfMiY5lSE0+vVaDCmT7+0xYzzlHY5VArSiz41mQQC38LefW2KoE9erw==
   dependencies:
     "@sindresorhus/is" "^2.1.0"
     "@szmarczak/http-timer" "^4.0.0"
@@ -5784,13 +5784,13 @@ metascraper-image@5.11.10:
   dependencies:
     "@metascraper/helpers" "^5.11.10"
 
-metascraper-logo-favicon@5.11.11:
-  version "5.11.11"
-  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.11.11.tgz#26476c604001e480b7284f1633b018b744864997"
-  integrity sha512-+wLlJ0YJ8OUyNVMkNf1gZSa232knbjV8sfPVEX6hTrfKnVnigZbsNo6t/4feKTX0O3vJW7/8aOtTvZRlNCJGHw==
+metascraper-logo-favicon@5.11.12:
+  version "5.11.12"
+  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.11.12.tgz#7351c19ca822a327ba9f4b2bc126df7b3dff71d2"
+  integrity sha512-xg2lC4tyvDInlK07ozSyc3W3xDjj+ZpEoKefxg5mWOhyJ+rl5oFB9GSasF9kuz1OlLWUtqF/Jwhw422MIvZgkw==
   dependencies:
     "@metascraper/helpers" "^5.11.10"
-    got "~11.0.3"
+    got "~11.1.0"
     lodash "~4.17.15"
 
 metascraper-logo@5.11.10:
