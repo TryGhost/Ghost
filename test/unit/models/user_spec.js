@@ -146,7 +146,7 @@ describe('Unit: models/user', function () {
 
             return models.User.check({email: user.get('email'), password: 'test'})
                 .catch(function (err) {
-                    (err instanceof common.errors.NoPermissionError).should.eql(true);
+                    (err instanceof common.errors.PasswordResetRequiredError).should.eql(true);
                 });
         });
     });

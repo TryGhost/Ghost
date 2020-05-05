@@ -227,7 +227,6 @@
                     "help": "Visit and save your profile after logging in to check for problems."
                 },
                 "incorrectPassword": "Your password is incorrect.",
-                "accountLocked": "As a security precaution, your password must be reset. Click \"Forgot?\" to receive an email with instructions.",
                 "accountSuspended": "Your account was suspended.",
                 "newPasswordsDoNotMatch": "Your new passwords do not match",
                 "passwordRequiredForOperation": "Password is required for this operation",

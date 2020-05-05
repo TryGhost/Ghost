@@ -44,7 +44,7 @@ const session = {
                 });
             }
 
-            if (err.errorType === 'NoPermissionError') {
+            if (err.errorType === 'PasswordResetRequiredError') {
                 await api.authentication.generateResetToken({
                     passwordreset: [{
                         email: object.username
