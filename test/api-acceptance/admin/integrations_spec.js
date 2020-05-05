@@ -312,7 +312,19 @@ describe('Integrations API', function () {
                                 const updatedAdminApiKey = updatedIntegration.api_keys.find(key => key.type === 'admin');
                                 should.equal(updatedIntegration.id, createdIntegration.id);
                                 updatedAdminApiKey.secret.should.not.eql(adminApiKey.secret);
-                                done();
+                                request.get(localUtils.API.getApiQuery(`actions/?filter=resource_id:${adminApiKey.id}&include=actor`))
+                                    .set('Origin', config.get('url'))
+                                    .expect('Content-Type', /json/)
+                                    .expect('Cache-Control', testUtils.cacheRules.private)
+                                    .expect(200)
+                                    .end(function (err, {body}) {
+                                        const actions = body.actions;
+                                        const refreshedAction = actions.find((action) => {
+                                            return action.event === 'refreshed';
+                                        });
+                                        should.exist(refreshedAction);
+                                        done();
+                                    });
                             });
                     });
             });
