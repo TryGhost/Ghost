@@ -48,7 +48,8 @@ const session = {
                 await api.authentication.generateResetToken({
                     passwordreset: [{
                         email: object.username
-                    }]
+                    }],
+                    required: true
                 }, frame.options.context);
             }
 
