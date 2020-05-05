@@ -1,6 +1,24 @@
 <div class="gh-flow">
     <div class="gh-flow-content-wrap">
         <section class="gh-flow-content">
+            {{#if this.passwordResetEmailSent}}
+                <div class="gh-auth-email">
+                    <div class="gh-auth-animation-container">
+                        <div class="gh-auth-email-animation">
+                            {{svg-jar "locked-email-back" class="gh-auth-envelope-back"}}
+                            {{svg-jar "locked-email-front" class="gh-auth-envelope-front"}}
+                            <div class="gh-auth-paper">
+                                {{svg-jar "locked-email-lock" class="gh-auth-lock"}}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gh-auth-lock-body">
+                        <p>
+                            For security, you need to create new password. An email has been sent to you with instructions!
+                        </p>
+                    </div>
+                </div>
+            {{else}}
             <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{action "authenticate" on="submit"}}>
                 <GhFormGroup @errors={{this.signin.errors}} @hasValidated={{this.hasValidated}} @property="identification">
                     <span class="gh-input-icon gh-icon-mail">
@@ -57,6 +75,7 @@
             </form>
 
             <p class="main-error">{{if this.flowErrors this.flowErrors}}&nbsp;</p>
+            {{/if}}
         </section>
     </div>
 </div>
