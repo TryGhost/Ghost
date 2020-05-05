@@ -269,6 +269,55 @@ describe('Integrations API', function () {
             });
     });
 
+    it('Can successfully refresh an integration api key', function (done) {
+        request.post(localUtils.API.getApiQuery('integrations/?include=api_keys'))
+            .set('Origin', config.get('url'))
+            .send({
+                integrations: [{
+                    name: 'Rubbish Integration Name'
+                }]
+            })
+            .expect(201)
+            .end(function (err, {body}) {
+                if (err) {
+                    return done(err);
+                }
+                const [createdIntegration] = body.integrations;
+                const apiKeys = createdIntegration.api_keys;
+                const adminApiKey = apiKeys.find(key => key.type === 'admin');
+                request.post(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/api_key/${adminApiKey.id}/refresh`))
+                    .set('Origin', config.get('url'))
+                    .send({
+                        integrations: [{
+                            id: createdIntegration.id
+                        }]
+                    })
+                    .expect(200)
+                    .end(function (err) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/?include=api_keys`))
+                            .set('Origin', config.get('url'))
+                            .expect('Content-Type', /json/)
+                            .expect('Cache-Control', testUtils.cacheRules.private)
+                            .expect(200)
+                            .end(function (err, {body}) {
+                                if (err) {
+                                    return done(err);
+                                }
+
+                                const [updatedIntegration] = body.integrations;
+                                const updatedAdminApiKey = updatedIntegration.api_keys.find(key => key.type === 'admin');
+                                should.equal(updatedIntegration.id, createdIntegration.id);
+                                updatedAdminApiKey.secret.should.not.eql(adminApiKey.secret);
+                                done();
+                            });
+                    });
+            });
+    });
+
     it('Can successfully add and delete a created integrations webhooks', function (done) {
         request.post(localUtils.API.getApiQuery('integrations/'))
             .set('Origin', config.get('url'))
