@@ -57,7 +57,7 @@ export default Controller.extend(ValidationEngine, {
 
                 this.set('flowErrors', (mainError.context.string || mainError.message.string));
 
-                if (mainError.message.string.match(/your password must be reset/i)) {
+                if (mainError.type === 'PasswordResetRequiredError') {
                     this.set('passwordResetEmailSent', true);
                 }
 
