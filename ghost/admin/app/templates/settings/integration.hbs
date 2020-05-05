@@ -94,45 +94,53 @@
             <table class="ma0 mt5" style="table-layout: fixed">
                 <tbody>
                     <tr>
-                        <td class="pa3 pl0 fw7 f8 w35">Content API Key</td>
+                        <td class="pa3 pl0 fw7 f8 w35 v-top">Content API Key</td>
                         <td class="pa0 truncate bb b--lightgrey">
-                            <div class="pt3 pb3 relative truncate {{unless this.copyContentKey.isRunning "hide-child-instant"}}">
+                            <div class="pt3 pb3 relative truncate flex items-center {{unless this.copyContentKey.isRunning "hide-child-instant"}}">
                                 <span class="midlightgrey" data-test-text="content-key">
                                     {{this.integration.contentKey.secret}}
                                 </span>
-                                <div class="absolute top-1 right-0">
-                                    <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
-                                        <button type="button" {{action (perform this.copyContentKey)}} class="white fw4 flex items-center">
-                                            {{#if this.copyContentKey.isRunning}}
-                                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
-                                            {{else}}
-                                            Copy
-                                            {{/if}}
-                                        </button>
-                                    </div>
+                                <div class="absolute top-2 right-0 flex items-stretch child">
+                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.contentKey}} class="ba b--lightgrey-d1 br3 pa1 pl2 pr2 flex items-center mr2">
+                                        {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
+                                    </button>
+                                    <button type="button" {{action (perform this.copyContentKey)}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
+                                        {{#if this.copyContentKey.isRunning}}
+                                        {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                        {{else}}
+                                        Copy
+                                        {{/if}}
+                                    </button>
                                 </div>
                             </div>
+                            {{#if (eq this.regeneratedKeyType this.integration.contentKey.type)}}
+                                <div class="green nt3 mb2"> Content API Key was successfully regenerated </div>
+                            {{/if}}
                         </td>
                     </tr>
                     <tr>
-                        <td class="pa3 pl0 w50 fw7 f8 w35">Admin API Key</td>
+                        <td class="pa3 pl0 w50 fw7 f8 w35 v-top">Admin API Key</td>
                         <td class="pa0 truncate bb b--lightgrey">
-                            <div class="pt3 pb3 relative truncate {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
+                            <div class="pt3 pb3 relative truncate flex items-center {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
                                 <span class="midlightgrey" data-test-text="admin-key">
                                     {{this.integration.adminKey.secret}}
                                 </span>
-                                <div class="absolute top-1 right-0">
-                                    <div class="pt1 pr3 pb1 pl3 bg-black-70 child br3 f8 nudge-top--4 nudge-right--1">
-                                        <button type="button" {{action (perform this.copyAdminKey)}} class="white fw4 flex items-center">
-                                            {{#if this.copyAdminKey.isRunning}}
-                                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
-                                            {{else}}
-                                            Copy
-                                            {{/if}}
-                                        </button>
-                                    </div>
+                                <div class="absolute top-2 right-0 flex items-stretch child">
+                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.adminKey}} class="ba b--lightgrey-d1 br3 pa1 pl2 pr2 flex items-center mr2">
+                                        {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
+                                    </button>
+                                    <button type="button" {{action (perform this.copyAdminKey)}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
+                                        {{#if this.copyAdminKey.isRunning}}
+                                        {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                        {{else}}
+                                        Copy
+                                        {{/if}}
+                                    </button>
                                 </div>
                             </div>
+                            {{#if (eq this.regeneratedKeyType this.integration.adminKey.type)}}
+                                <div class="green nt3 mb2"> Admin API Key was successfully regenerated </div>
+                            {{/if}}
                         </td>
                     </tr>
                     <tr>
@@ -234,6 +242,17 @@
     <GhFullscreenModal @modal="leave-settings"
         @confirm={{action "leaveScreen"}}
         @close={{action "toggleUnsavedChangesModal"}}
+        @modifier="action wide" />
+{{/if}}
+
+{{#if this.showRegenerateKeyModal}}
+    <GhFullscreenModal @modal="regenerate-key"
+        @model={{hash
+            apiKey=this.selectedApiKey
+            integration=this.integration
+        }}
+        @confirm={{action "regenerateKey"}}
+        @close={{action "cancelRegenerateKeyModal"}}
         @modifier="action wide" />
 {{/if}}
 
