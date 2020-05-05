@@ -85,11 +85,16 @@ module.exports = {
                                 })
                             });
                         }
-                        await models.ApiKey.refreshSecret(model.toJSON(), Object.assign({}, options, {id: options.keyid}));
-                        // TODO: Throw error if changing secret fails
-                        return models.Integration.findOne({id: options.id}, {
-                            withRelated: ['api_keys', 'webhooks']
-                        });
+                        try {
+                            await models.ApiKey.refreshSecret(model.toJSON(), Object.assign({}, options, {id: options.keyid}));
+                            return models.Integration.findOne({id: options.id}, {
+                                withRelated: ['api_keys', 'webhooks']
+                            });
+                        } catch (err) {
+                            throw new common.errors.GhostError({
+                                err: err
+                            });
+                        }
                     });
             }
             return models.Integration.edit(data, Object.assign(options, {require: true}))
