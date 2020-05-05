@@ -6,13 +6,17 @@ const {i18n} = require('../../lib/common');
 
 module.exports = {
     user: function (id) {
-        return models.User.findOne({id: id, status: 'active'}, {withRelated: ['permissions', 'roles', 'roles.permissions']})
+        return models.User.findOne({id: id}, {withRelated: ['permissions', 'roles', 'roles.permissions']})
             .then(function (foundUser) {
             // CASE: {context: {user: id}} where the id is not in our database
                 if (!foundUser) {
                     return Promise.reject(new errors.NotFoundError({
                         message: i18n.t('errors.models.user.userNotFound')
                     }));
+                }
+
+                if (foundUser.get('status') !== 'active') {
+                    return Promise.reject(new errors.UnauthorizedError());
                 }
 
                 const seenPerms = {};

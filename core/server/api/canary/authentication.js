@@ -108,7 +108,11 @@ module.exports = {
                     return auth.passwordreset.generateToken(frame.data.passwordreset[0].email, api.settings);
                 })
                 .then((token) => {
-                    return auth.passwordreset.sendResetNotification(token, api.mail);
+                    if (frame.data.required) {
+                        return auth.passwordreset.sendRequiredResetNotification(token, api.mail);
+                    } else {
+                        return auth.passwordreset.sendResetNotification(token, api.mail);
+                    }
                 });
         }
     },
