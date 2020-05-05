@@ -135,6 +135,20 @@ describe('Unit: models/user', function () {
                     (err instanceof common.errors.ValidationError).should.eql(true);
                 });
         });
+
+        it('status is locked', function () {
+            const user = models.User.forge(testUtils.DataGenerator.forKnex.createUser({
+                status: 'locked',
+                email: 'test@ghost.de'
+            }));
+
+            sinon.stub(models.User, 'getByEmail').resolves(user);
+
+            return models.User.check({email: user.get('email'), password: 'test'})
+                .catch(function (err) {
+                    (err instanceof common.errors.PasswordResetRequiredError).should.eql(true);
+                });
+        });
     });
 
     describe('permissible', function () {

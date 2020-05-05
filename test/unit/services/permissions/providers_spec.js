@@ -36,6 +36,7 @@ describe('Permission Providers', function () {
             const findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
                 // Create a fake model
                 const fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]);
+                fakeUser.set('status', 'active');
 
                 // Roles & Permissions need to be collections
                 const fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]);
@@ -83,6 +84,7 @@ describe('Permission Providers', function () {
             const findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
                 // Create a fake model
                 const fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]);
+                fakeUser.set('status', 'active');
 
                 // Roles & Permissions need to be collections
                 const fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]);
@@ -132,6 +134,7 @@ describe('Permission Providers', function () {
             const findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
                 // Create a fake model
                 const fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]);
+                fakeUser.set('status', 'active');
 
                 // Roles & Permissions need to be collections
                 const fakeAdminRole = models.Roles.forge(testUtils.DataGenerator.Content.roles[0]);
@@ -175,6 +178,28 @@ describe('Permission Providers', function () {
                     done();
                 })
                 .catch(done);
+        });
+
+        it('throws when user with non-active status is loaded', function (done) {
+            // This test requires quite a lot of unique setup work
+            const findUserSpy = sinon.stub(models.User, 'findOne').callsFake(function () {
+                // Create a fake model
+                const fakeUser = models.User.forge(testUtils.DataGenerator.Content.users[0]);
+                fakeUser.set('status', 'locked');
+
+                return Promise.resolve(fakeUser);
+            });
+
+            // Get permissions for the user
+            providers.user(1)
+                .then(function (res) {
+                    done(new Error('Locked user should should throw an error'));
+                })
+                .catch((err) => {
+                    err.errorType.should.equal('UnauthorizedError');
+                    findUserSpy.callCount.should.eql(1);
+                    done();
+                });
         });
     });
 

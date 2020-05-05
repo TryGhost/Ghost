@@ -145,10 +145,37 @@ async function sendResetNotification(data, mailAPI) {
     return mailAPI.send(payload, {context: {internal: true}});
 }
 
+async function sendRequiredResetNotification(data, mailAPI) {
+    const adminUrl = urlUtils.urlFor('admin', true);
+    const resetUrl = urlUtils.urlJoin(adminUrl, 'reset', security.url.encodeBase64(data.resetToken), '/');
+
+    const content = await mail.utils.generateContent({
+        data: {
+            resetUrl: resetUrl
+        },
+        template: 'reset-password-required'
+    });
+
+    const payload = {
+        mail: [{
+            message: {
+                to: data.email,
+                subject: i18n.t('common.api.authentication.mail.resetPasswordRequired'),
+                html: content.html,
+                text: content.text
+            },
+            options: {}
+        }]
+    };
+
+    return mailAPI.send(payload, {context: {internal: true}});
+}
+
 module.exports = {
-    generateToken: generateToken,
-    extractTokenParts: extractTokenParts,
-    protectBruteForce: protectBruteForce,
-    doReset: doReset,
-    sendResetNotification: sendResetNotification
+    generateToken,
+    extractTokenParts,
+    protectBruteForce,
+    doReset,
+    sendResetNotification,
+    sendRequiredResetNotification
 };

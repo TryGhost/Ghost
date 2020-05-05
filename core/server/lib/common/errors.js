@@ -67,6 +67,13 @@ const ghostErrors = {
             errorType: 'HelperWarning',
             hideStack: true
         }, options));
+    },
+    PasswordResetRequiredError: function PasswordResetRequiredError(options) {
+        GhostError.call(this, merge({
+            errorType: 'PasswordResetRequiredError',
+            statusCode: 401,
+            message: 'For security, you need to create a new password. An email has been sent to you with instructions!'
+        }, options));
     }
 };
 

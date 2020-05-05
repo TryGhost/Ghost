@@ -805,9 +805,7 @@ User = ghostBookshelf.Model.extend({
                 }
 
                 if (user.isLocked()) {
-                    throw new common.errors.NoPermissionError({
-                        message: common.i18n.t('errors.models.user.accountLocked')
-                    });
+                    throw new common.errors.PasswordResetRequiredError();
                 }
 
                 if (user.isInactive()) {
