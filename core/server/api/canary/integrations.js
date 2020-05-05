@@ -61,6 +61,7 @@ module.exports = {
         ],
         options: [
             'id',
+            'keyid',
             'include'
         ],
         validation: {
@@ -74,6 +75,23 @@ module.exports = {
             }
         },
         query({data, options}) {
+            if (options.keyid) {
+                return models.ApiKey.findOne({id: options.keyid})
+                    .then(async (model) => {
+                        if (!model) {
+                            throw new common.errors.NotFoundError({
+                                message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                                    resource: 'ApiKey'
+                                })
+                            });
+                        }
+                        await models.ApiKey.refreshSecret(model.toJSON(), Object.assign({}, options, {id: options.keyid}));
+                        // TODO: Throw error if changing secret fails
+                        return models.Integration.findOne({id: options.id}, {
+                            withRelated: ['api_keys', 'webhooks']
+                        });
+                    });
+            }
             return models.Integration.edit(data, Object.assign(options, {require: true}))
                 .catch(models.Integration.NotFoundError, () => {
                     throw new common.errors.NotFoundError({
