@@ -9,6 +9,10 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
         this._super(...arguments);
         this.router.on('routeWillChange', (transition) => {
             this.showUnsavedChangesModal(transition);
+            if (this.controller) {
+                this.controller.set('selectedApiKey', null);
+                this.controller.set('isApiKeyRegenerated', false);
+            }
         });
     },
 
