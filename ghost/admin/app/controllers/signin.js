@@ -21,6 +21,8 @@ export default Controller.extend(ValidationEngine, {
     authProperties: null,
 
     flowErrors: '',
+    passwordResetEmailSent: false,
+
     // ValidationEngine settings
     validationType: 'signin',
 
@@ -54,6 +56,10 @@ export default Controller.extend(ValidationEngine, {
                 mainError.context = (mainError.context || '').htmlSafe();
 
                 this.set('flowErrors', (mainError.context.string || mainError.message.string));
+
+                if (mainError.message.string.match(/your password must be reset/i)) {
+                    this.set('passwordResetEmailSent', true);
+                }
 
                 if (mainError.context.string.match(/user with that email/i)) {
                     this.get('signin.errors').add('identification', '');
