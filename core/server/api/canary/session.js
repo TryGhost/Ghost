@@ -2,6 +2,7 @@ const Promise = require('bluebird');
 const common = require('../../lib/common');
 const models = require('../../models');
 const auth = require('../../services/auth');
+const api = require('./index');
 
 const session = {
     read(frame) {
@@ -35,12 +36,20 @@ const session = {
                     auth.session.createSession(req, res, next);
                 });
             });
-        }).catch((err) => {
+        }).catch(async (err) => {
             if (!common.errors.utils.isIgnitionError(err)) {
                 throw new common.errors.UnauthorizedError({
                     message: common.i18n.t('errors.middleware.auth.accessDenied'),
                     err
                 });
+            }
+
+            if (err.errorType === 'NoPermissionError') {
+                await api.authentication.generateResetToken({
+                    passwordreset: [{
+                        email: object.username
+                    }]
+                }, frame.options.context);
             }
 
             throw err;
