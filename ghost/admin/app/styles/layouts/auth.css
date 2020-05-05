@@ -1,7 +1,6 @@
 /* Sign in
 /* ---------------------------------------------------------- */
-
-.gh-signin {
+.gh-signin, .gh-auth-email {
     position: relative;
     margin: 30px auto;
     padding: 40px;
@@ -59,4 +58,139 @@
 .forgotten-link:active {
     box-shadow: none;
     text-decoration: underline;
+}
+
+
+/* Email notification */
+/* ---------------------------------------------------------- */
+.gh-auth-animation-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-bottom: 1px solid var(--lightgrey);
+    animation: 0.5s forwards 0.6s containerFadeIn;
+    opacity: 0;
+}
+
+@keyframes containerFadeIn {
+    0% { 
+        opacity: 0;
+    }
+    100% { 
+        opacity: 1;
+    }
+}
+
+.gh-auth-email-animation {
+    position: relative;
+    width: 122px;
+    height: 125px;
+    margin-bottom: -24px;
+    animation: 0.5s forwards 0.6s envelopeFadeIn;
+    opacity: 0;
+}
+
+@keyframes envelopeFadeIn {
+    0% { 
+        transform: translateY(-6px);
+        opacity: 0;
+    }
+    100% { 
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.gh-auth-email-animation .gh-auth-envelope-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.gh-auth-email-animation .gh-auth-envelope-front {
+    position: absolute;
+    top: 48px;
+    left: 0;
+    z-index: 100;
+}
+
+.gh-auth-email-animation .gh-auth-paper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    position: absolute;
+    top: 40px;
+    left: 15px;
+    width: 90px;
+    height: 82px;
+    background: white;
+    border: 1px solid #C5D2D9;
+    border-radius: 4px;
+    animation: 1.2s ease forwards 1.15s paperIn;
+}
+
+.gh-auth-email-animation .gh-auth-lock {
+    margin-top: 15px;
+    width: 40px;
+    height: 40px;
+    opacity: 0;
+    animation: 0.45s forwards 1.35s lockIn;
+}
+
+@keyframes paperIn {
+    0% { 
+        transform: scale(1,1) translateY(0); 
+    }
+    10% { 
+        transform: scale(1.05,.95) translateY(0); 
+    }
+    30% { 
+        transform: scale(.95,1.05) translateY(-32px); 
+    }
+    50% { 
+        transform: scale(1,1) translateY(-27px); 
+    }
+    100% { 
+        transform: scale(1,1) translateY(-27px); 
+    }
+}
+
+@keyframes lockIn {
+    0% { 
+        transform: scale(1) translateY(2px); 
+        opacity: 0;
+    }
+    60% { 
+        transform: scale(1.1) translateY(-2px); 
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) translateY(0px);
+        opacity: 1;
+    }
+}
+
+.gh-auth-lock-body {
+    margin-top: 48px;
+    animation: 0.5s forwards 0.2s bodyFadeIn;
+    opacity: 0;
+}
+
+.gh-auth-lock-body p {
+    color: var(--midgrey);
+    margin: 0;
+    padding: 0;
+    font-size: 1.6rem;
+    font-weight: 400;
+    line-height: 1.4em;
+    text-align: center;
+}
+
+@keyframes bodyFadeIn {
+    0% { 
+        opacity: 0;
+    }
+    100% { 
+        opacity: 1;
+    }
 }
