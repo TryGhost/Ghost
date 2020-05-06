@@ -95,13 +95,13 @@
                 <tbody>
                     <tr>
                         <td class="pa3 pl0 fw7 f8 w35 v-top">Content API Key</td>
-                        <td class="pa0 truncate bb b--lightgrey">
-                            <div class="pt3 pb3 relative truncate flex items-center {{unless this.copyContentKey.isRunning "hide-child-instant"}}">
-                                <span class="midlightgrey" data-test-text="content-key">
+                        <td class="pa0 bb b--lightgrey">
+                            <div class="pt3 pb3 relative flex items-center {{unless this.copyContentKey.isRunning "hide-child-instant"}}">
+                                <span class="midlightgrey truncate" data-test-text="content-key">
                                     {{this.integration.contentKey.secret}}
                                 </span>
                                 <div class="absolute top-2 right-0 flex items-stretch child">
-                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.contentKey}} class="ba b--lightgrey-d1 br3 pa1 pl2 pr2 flex items-center mr2">
+                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.contentKey}} class="bg-white ba b--lightgrey-d1 br3 pa1 pl2 pr2 flex items-center mr2" data-tooltip="Regenerate">
                                         {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
                                     </button>
                                     <button type="button" {{action (perform this.copyContentKey)}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
@@ -120,13 +120,13 @@
                     </tr>
                     <tr>
                         <td class="pa3 pl0 w50 fw7 f8 w35 v-top">Admin API Key</td>
-                        <td class="pa0 truncate bb b--lightgrey">
-                            <div class="pt3 pb3 relative truncate flex items-center {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
-                                <span class="midlightgrey" data-test-text="admin-key">
+                        <td class="pa0 bb b--lightgrey">
+                            <div class="pt3 pb3 relative flex items-center {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
+                                <span class="midlightgrey truncate" data-test-text="admin-key">
                                     {{this.integration.adminKey.secret}}
                                 </span>
                                 <div class="absolute top-2 right-0 flex items-stretch child">
-                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.adminKey}} class="ba b--lightgrey-d1 br3 pa1 pl2 pr2 flex items-center mr2">
+                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.adminKey}} class="bg-white ba b--lightgrey-d1 br3 pa1 pl2 pr2 flex items-center mr2" data-tooltip="Regenerate">
                                         {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
                                     </button>
                                     <button type="button" {{action (perform this.copyAdminKey)}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
