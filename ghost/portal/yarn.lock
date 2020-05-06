@@ -3913,10 +3913,10 @@ eslint-module-utils@^2.4.1:
     debug "^2.6.9"
     pkg-dir "^2.0.0"
 
-eslint-plugin-ember@7.10.1:
-  version "7.10.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ember/-/eslint-plugin-ember-7.10.1.tgz#9ec731f158fc76a293bfb8055eaceb6b978ae0e7"
-  integrity sha512-3iOrcUsqZXsri6krYw+8fEH20Es8A2QEkog8fCw/Ldr54SR2/IEO41F7ldOrr0X3h8w9z1W1/v97IlMiGJhXkg==
+eslint-plugin-ember@8.5.0:
+  version "8.5.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ember/-/eslint-plugin-ember-8.5.0.tgz#08660485edcf78c716b7db7c0834c970d06a3dc1"
+  integrity sha512-tj8GQbm5XknbUDp4FrwMLGBprxqzoi9JAszXyCwMPJQBipinHyyAxIRbu57/ENJVyeGRmQTme1WM4PJuMh3kFQ==
   dependencies:
     "@ember-data/rfc395-data" "^0.0.4"
     ember-rfc176-data "^0.3.12"
@@ -3929,12 +3929,12 @@ eslint-plugin-flowtype@4.6.0:
   dependencies:
     lodash "^4.17.15"
 
-eslint-plugin-ghost@1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-1.3.0.tgz#7ba8db9cd577f2c5a9a1cd0cb3c4a61affe8cbf7"
-  integrity sha512-AvG9n9WIK/e4abtwWUZ2qpaUjHZT1H386ANrNpMYVXMPoCPDZTt27T0T4rk9FlWvNoV3eGPQD8aABaA6cl5Ehw==
+eslint-plugin-ghost@1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-1.4.0.tgz#cef5ce7779e3f174e9c9b267d9e9b48256750fa2"
+  integrity sha512-cLeyUfUIlLLBtFJyyPIgxQ0D9UzR3dwRpmGApKnJdlWoXvnc3HElvAPK3qZO9VhSyJQNgGIAd6F0ATIieFXz8w==
   dependencies:
-    eslint-plugin-ember "7.10.1"
+    eslint-plugin-ember "8.5.0"
     eslint-plugin-mocha "6.3.0"
     eslint-plugin-sort-imports-es6-autofix "0.5.0"
 
