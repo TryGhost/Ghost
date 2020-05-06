@@ -5,7 +5,11 @@
 
 <div class="modal-body">
     <p>
-        You can rengenerate <strong>{{capitalize this.apiKey.type}} API Key</strong> any time, but any scripts or applications using it will need to be updated.
+        {{#if (eq this.internalIntegration "zapier")}}
+            You will need to locate the Ghost App within your Zapier account and click on "Reconnect" to enter the new Admin API Key.
+        {{else}}
+            You can rengenerate <strong>{{capitalize this.apiKey.type}} API Key</strong> any time, but any scripts or applications using it will need to be updated.
+        {{/if}}
     </p>
     {{#if this.errorMessage}}
         <p class='red'> {{this.errorMessage}}</p>
