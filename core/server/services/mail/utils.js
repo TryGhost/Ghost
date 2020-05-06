@@ -3,13 +3,15 @@ const fs = require('fs-extra');
 const path = require('path');
 const htmlToText = require('html-to-text');
 const urlUtils = require('../../lib/url-utils');
+const settingsCache = require('../settings/cache');
 const templatesDir = path.resolve(__dirname, '..', 'mail', 'templates');
 
 _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
 
 exports.generateContent = function generateContent(options) {
     const defaults = {
-        siteUrl: urlUtils.urlFor('home', true)
+        siteUrl: urlUtils.urlFor('home', true),
+        siteTitle: settingsCache.get('title')
     };
 
     const data = _.defaults(defaults, options.data);
