@@ -13,6 +13,7 @@ export default ModalComponent.extend({
     confirm: () => {},
     apiKey: alias('model.apiKey'),
     integration: alias('model.integration'),
+    internalIntegration: alias('model.internalIntegration'),
     actions: {
         confirm() {
             this.regenerateApiKey.perform();
