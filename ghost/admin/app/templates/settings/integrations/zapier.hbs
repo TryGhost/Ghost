@@ -26,12 +26,12 @@
                     <tr class="bb b--lightgrey">
                         <td class="pa3 w50 fw7 v-top">Admin API Key</td>
                         <td class="pa0">
-                            <div class="pa3 relative truncate flex items-center {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
-                                <span class="midgrey" data-test-text="admin-key">
+                            <div class="pa3 relative flex items-center {{unless this.copyAdminKey.isRunning "hide-child-instant"}}">
+                                <span class="midgrey truncate" data-test-text="admin-key">
                                     {{this.integration.adminKey.secret}}
                                 </span>
                                 <div class="absolute top-2 right-2 flex items-stretch child">
-                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.adminKey}} class="ba b--lightgrey-d1 br3 pa1 pl2 pr2 flex items-center mr2">
+                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.adminKey}} class="ba b--lightgrey-d1 br3 pa1 pl2 pr2 flex items-center mr2 bg-white" data-tooltip="Regenerate">
                                         {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
                                     </button>
                                     <button type="button" {{action (perform this.copyAdminKey)}} class="bg-black-70 f8 pa1 pr3 pl3 br3 white fw4 flex items-center">
