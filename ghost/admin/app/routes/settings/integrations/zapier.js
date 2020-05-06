@@ -1,7 +1,20 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from '../../../mixins/current-user-settings';
+import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
+    router: service(),
+
+    init() {
+        this._super(...arguments);
+        this.router.on('routeWillChange', () => {
+            if (this.controller) {
+                this.controller.set('selectedApiKey', null);
+                this.controller.set('isApiKeyRegenerated', false);
+            }
+        });
+    },
+
     beforeModel() {
         this._super(...arguments);
         return this.get('session.user')
