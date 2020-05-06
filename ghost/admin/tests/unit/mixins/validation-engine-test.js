@@ -7,13 +7,6 @@ import {
 // import ValidationEngineMixin from 'ghost-admin/mixins/validation-engine';
 
 describe('ValidationEngineMixin', function () {
-    // Replace this with your real tests.
-    // it('works', function () {
-    //     var ValidationEngineObject = EmberObject.extend(ValidationEngineMixin);
-    //     var subject = ValidationEngineObject.create();
-    //     expect(subject).to.be.ok;
-    // });
-
     describe('#validate', function () {
         it('loads the correct validator');
         it('rejects if the validator doesn\'t exist');

@@ -1,6 +1,7 @@
 import Mixin from '@ember/object/mixin';
 import {A as emberA} from '@ember/array';
 import {isEmpty} from '@ember/utils';
+// eslint-disable-next-line ghost/ember/no-observers
 import {observer} from '@ember/object';
 import {on} from '@ember/object/evented';
 import {run} from '@ember/runloop';
