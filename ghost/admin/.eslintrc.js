@@ -20,6 +20,7 @@ module.exports = {
         'ghost/ember/use-ember-get-and-set': 'off',
 
         // disable linting of mixins until we migrate away
+        'ghost/ember/no-mixins': 'off',
         'ghost/ember/no-new-mixins': 'off'
     }
 };

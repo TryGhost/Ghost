@@ -57,7 +57,7 @@ export default Controller.extend({
         return !searchText && !label;
     }),
 
-    availableLabels: computed('_availableLabels.@each.{isNew}', function () {
+    availableLabels: computed('_availableLabels.@each.isNew', function () {
         let labels = this._availableLabels
             .filter(label => !label.get('isNew'))
             .filter(label => label.get('id') !== null)
