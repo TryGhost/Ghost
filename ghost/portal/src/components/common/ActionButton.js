@@ -21,7 +21,6 @@ const Styles = ({brandColor, disabled, style = {}}) => {
             boxShadow: 'none',
             userSelect: 'none',
             width: '100%',
-            marginBottom: '12px',
             ...(style.button || {}) // Override any custom style
         }
     };
