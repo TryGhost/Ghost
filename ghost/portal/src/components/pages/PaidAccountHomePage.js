@@ -110,10 +110,17 @@ export default class PaidAccountHomePage extends React.Component {
         return `**** **** **** ${defaultCardLast4}`;
     }
 
+    onEditProfile() {
+        this.context.onAction('switchPage', {
+            page: 'accountProfile',
+            lastPage: 'paidAccountHome'
+        });
+    }
+
     renderAccountDetails() {
         const buttonStyle = {
             padding: '6px 9px', border: '1px solid black', width: '60px', display: 'flex', justifyContent: 'center',
-            borderRadius: '5px'
+            borderRadius: '5px', cursor: 'pointer'
         };
         const {name, email, subscriptions} = this.context.member;
 
@@ -132,7 +139,7 @@ export default class PaidAccountHomePage extends React.Component {
                             <div style={{color: '#666666', fontSize: '11px'}}> {email} </div>
                         </div>
                     </div>
-                    <div style={buttonStyle}>
+                    <div style={buttonStyle} onClick={e => this.onEditProfile(e)}>
                         Edit
                     </div>
                 </div>
