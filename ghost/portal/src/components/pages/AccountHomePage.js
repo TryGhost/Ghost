@@ -61,7 +61,10 @@ export default class AccountHomePage extends React.Component {
     }
 
     openSettings(e) {
-        // no-op
+        this.context.onAction('switchPage', {
+            page: 'accountProfile',
+            lastPage: 'accountHome'
+        });
     }
 
     openSubscribe(e) {
@@ -73,7 +76,7 @@ export default class AccountHomePage extends React.Component {
 
     renderAccountFooter() {
         return (
-            <div style={{display: 'flex', padding: '0 24px', marginTop: '6px', color: this.context.brandColor, fontWeight: 'bold', fontSize: '13px'}}>
+            <div style={{display: 'flex', padding: '0 24px', marginTop: '18px', color: this.context.brandColor, fontWeight: 'bold', fontSize: '13px'}}>
                 <div style={{cursor: 'pointer'}} role='button'> Contact support </div>
                 <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
                     <div style={{marginRight: '16px', cursor: 'pointer'}} onClick={e => this.openSettings(e)} role='button'> Settings </div>
