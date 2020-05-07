@@ -93,9 +93,12 @@ const getMemberSiteData = async function (req, res) {
 };
 
 const createSessionFromMagicLink = async function (req, res, next) {
+    let redirectPath = `${urlUtils.getSubdir()}${req.path}`;
+
     if (!req.url.includes('token=')) {
         return next();
     }
+
     try {
         await membersService.ssr.exchangeTokenForSession(req, res);
 
@@ -109,13 +112,12 @@ const createSessionFromMagicLink = async function (req, res, next) {
         });
 
         // We need to include the subdirectory, but members is already removed from the path
-        let redirectPath = `${urlUtils.getSubdir()}${req.path}?${searchParams.toString()}`;
-
+        redirectPath = `${redirectPath}?${searchParams.toString()}`;
         // Do a standard 302 redirect
-        res.redirect(redirectPath);
+        return res.redirect(redirectPath);
     } catch (err) {
         logging.warn(err.message);
-        return next();
+        return res.redirect(redirectPath);
     }
 };
 
