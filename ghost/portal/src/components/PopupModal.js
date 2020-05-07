@@ -9,6 +9,7 @@ import {ParentContext} from './ParentContext';
 import FrameStyle from './Frame.styles';
 import AccountPlanPage from './pages/AccountPlanPage';
 import PaidAccountHomePage from './pages/PaidAccountHomePage';
+import AccountProfilePage from './pages/AccountProfilePage';
 
 const React = require('react');
 
@@ -67,6 +68,11 @@ const Styles = {
             width: '500px',
             minHeight: '290px',
             maxHeight: '290px'
+        },
+        accountProfile: {
+            width: '500px',
+            minHeight: '400px',
+            maxHeight: '400px'
         }
     },
     popup: {
@@ -105,6 +111,7 @@ const Pages = {
     accountHome: AccountHomePage,
     paidAccountHome: PaidAccountHomePage,
     accountPlan: AccountPlanPage,
+    accountProfile: AccountProfilePage,
     magiclink: MagicLinkPage,
     loading: LoadingPage
 };
