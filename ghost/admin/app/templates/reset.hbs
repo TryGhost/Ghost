@@ -8,7 +8,7 @@
                         <GhTextInput
                             @type="password"
                             @name="newpassword"
-                            @placeholder="Password"
+                            @placeholder="New password"
                             @class="password"
                             @autocorrect="off"
                             @shouldFocus={{true}}
@@ -22,16 +22,15 @@
                         <GhTextInput
                             @type="password"
                             @name="ne2password"
-                            @placeholder="Confirm Password"
+                            @placeholder="Confirm new password"
                             @class="password"
                             @autocorrect="off"
-                            @shouldFocus={{true}}
                             @value={{readonly this.ne2Password}}
                             @input={{action (mut this.ne2Password) value="target.value"}} />
                     </span>
                 </GhFormGroup>
 
-                <GhTaskButton @buttonText="Reset Password" @task={{this.resetPassword}} @class="gh-btn gh-btn-blue gh-btn-block gh-btn-icon" @type="submit" @autoWidth="false" />
+                <GhTaskButton @buttonText="Save new password" @task={{this.resetPassword}} @class="gh-btn gh-btn-blue gh-btn-block gh-btn-icon" @type="submit" @autoWidth="false" />
             </form>
 
             <p class="main-error">{{this.flowErrors}}&nbsp;</p>
