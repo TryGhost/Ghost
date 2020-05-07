@@ -96,26 +96,28 @@ const createSessionFromMagicLink = async function (req, res, next) {
     if (!req.url.includes('token=')) {
         return next();
     }
+
+    // req.query is a plain object, copy it to a URLSearchParams object so we can call toString()
+    const searchParams = new URLSearchParams('');
+    Object.keys(req.query).forEach((param) => {
+        // don't copy the token param
+        if (param !== 'token') {
+            searchParams.set(param, req.query[param]);
+        }
+    });
+
+    // We need to include the subdirectory,
+    // members is already removed from the path by express because it's a mount path
+    const redirectPath = `${urlUtils.getSubdir()}${req.path}?${searchParams.toString()}`;
+
     try {
         await membersService.ssr.exchangeTokenForSession(req, res);
 
-        // req.query is a plain object, copy it to a URLSearchParams object so we can call toString()
-        const searchParams = new URLSearchParams('');
-        Object.keys(req.query).forEach((param) => {
-            // don't copy the token param
-            if (param !== 'token') {
-                searchParams.set(param, req.query[param]);
-            }
-        });
-
-        // We need to include the subdirectory, but members is already removed from the path
-        let redirectPath = `${urlUtils.getSubdir()}${req.path}?${searchParams.toString()}`;
-
         // Do a standard 302 redirect
-        res.redirect(redirectPath);
+        return res.redirect(redirectPath);
     } catch (err) {
         logging.warn(err.message);
-        return next();
+        return res.redirect(redirectPath);
     }
 };
 
