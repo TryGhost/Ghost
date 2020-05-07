@@ -6631,10 +6631,10 @@ object.values@^1.1.0:
     function-bind "^1.1.1"
     has "^1.0.3"
 
-oembed-parser@1.3.8:
-  version "1.3.8"
-  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.3.8.tgz#f2c4a182d51e52b15569772a4982d8449797d97c"
-  integrity sha512-h+C32WGFkqnqerUv2cBxIPMg5+yPIzycWHy9UCwkwmQQe9CtUEECdFwZuTsLRcRPu8qOTn88gHGyx3+ksMgSgg==
+oembed-parser@1.3.9:
+  version "1.3.9"
+  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.3.9.tgz#e976e047c9228f5ac070bde0d505be4fab0f1425"
+  integrity sha512-RakXG3RkzqSdcLbKXpInV9Z1C+yDIr+yDIwNQTQImBabQhjCodo5pbPbBTQIqAUBraCGkOqTIqUnaRUwW9Lsjg==
   dependencies:
     node-fetch "^2.6.0"
 
