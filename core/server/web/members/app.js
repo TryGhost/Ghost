@@ -39,8 +39,12 @@ module.exports = function setupMembersApp() {
     membersApp.put('/api/subscriptions/:id', (req, res, next) => membersService.api.middleware.updateSubscription(req, res, next));
 
     // API error handling
-    membersApp.use(shared.middlewares.errorHandler.resourceNotFound);
-    membersApp.use(shared.middlewares.errorHandler.handleJSONResponseV2);
+    membersApp.use('/api', shared.middlewares.errorHandler.resourceNotFound);
+    membersApp.use('/api', shared.middlewares.errorHandler.handleJSONResponseV2);
+
+    // Webhook error handling
+    membersApp.use('/webhooks', shared.middlewares.errorHandler.resourceNotFound);
+    membersApp.use('/webhooks', shared.middlewares.errorHandler.handleJSONResponseV2);
 
     debug('Members App setup end');
 
