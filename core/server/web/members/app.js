@@ -42,6 +42,10 @@ module.exports = function setupMembersApp() {
     membersApp.use('/api', shared.middlewares.errorHandler.resourceNotFound);
     membersApp.use('/api', shared.middlewares.errorHandler.handleJSONResponseV2);
 
+    // Webhook error handling
+    membersApp.use('/webhooks', shared.middlewares.errorHandler.resourceNotFound);
+    membersApp.use('/webhooks', shared.middlewares.errorHandler.handleJSONResponseV2);
+
     debug('Members App setup end');
 
     return membersApp;
