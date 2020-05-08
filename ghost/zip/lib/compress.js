@@ -4,6 +4,7 @@ const Promise = require('bluebird');
 const defaultOptions = {
     type: 'zip',
     glob: '**/*',
+    dot: true,
     ignore: ['node_modules/**']
 };
 
@@ -17,14 +18,16 @@ const defaultOptions = {
  * @param {Object} [options]
  * @param {String} options.type - zip by default see archiver for other options
  * @param {String} options.glob - the files to include, defaults to all files and folders
+ * @param {Boolean} options.dot - include all dotfiles and dotfolders
  * @param {Array} options.ignore - any paths that should be ignored, sets node_modules by default
+ *
  */
 module.exports = (folderToZip, destination, options = {}) => {
     const opts = Object.assign({}, defaultOptions, options);
 
     const archiver = require('archiver');
     const output = fs.createWriteStream(destination);
-    const archive = archiver.create(opts.type, {});
+    const archive = archiver.create(opts.type);
 
     return new Promise((resolve, reject) => {
         // If folder to zip is a symlink, we want to get the target
@@ -42,6 +45,7 @@ module.exports = (folderToZip, destination, options = {}) => {
         });
         archive.glob(opts.glob, {
             cwd: folderToZip,
+            dot: opts.dot,
             ignore: opts.ignore
         });
         archive.pipe(output);

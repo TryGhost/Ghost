@@ -4,6 +4,7 @@ require('./utils');
 
 const path = require('path');
 const fs = require('fs-extra');
+const {hashElement} = require('folder-hash');
 
 // Mimic how we expect this to be required
 const {compress, extract} = require('../');
@@ -33,29 +34,30 @@ describe('Compress and Extract should be opposite functions', function () {
     it('ensure symlinks work', function (done) {
         fs.symlink(folderToSymlink, symlinkPath);
 
-        compress(symlinkPath, zipDestination)
+        let originalHash;
+
+        hashElement(symlinkPath)
+            .then((_originalHash) => {
+                originalHash = _originalHash;
+                return compress(symlinkPath, zipDestination);
+            })
             .then((res) => {
                 res.should.be.an.Object().with.properties('path', 'size');
                 res.path.should.eql(zipDestination);
-                res.size.should.eql(321775);
+                res.size.should.eql(323805);
 
-                extract(zipDestination, unzipDestination)
-                    .then((res) => {
-                        res.should.be.an.Object().with.properties('path');
-                        res.path.should.eql(unzipDestination);
+                return extract(zipDestination, unzipDestination);
+            })
+            .then((res) => {
+                res.should.be.an.Object().with.properties('path');
+                res.path.should.eql(unzipDestination);
 
-                        fs.readdir(unzipDestination, function (err, files) {
-                            if (err) {
-                                return done(err);
-                            }
+                return hashElement(unzipDestination);
+            })
+            .then((extractedHash) => {
+                originalHash.children.toString().should.eql(extractedHash.children.toString());
 
-                            files.length.should.eql(16);
-                            done();
-                        });
-                    })
-                    .catch((err) => {
-                        return done(err);
-                    });
+                done();
             })
             .catch((err) => {
                 return done(err);
