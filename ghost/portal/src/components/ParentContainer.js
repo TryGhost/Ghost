@@ -171,6 +171,8 @@ export default class ParentContainer extends React.Component {
                 await this.GhostApi.member.checkoutPlan({
                     plan
                 });
+            } else if (action === 'editBilling') {
+                await this.GhostApi.member.editBilling();
             }
         } catch (e) {
             this.setState({
