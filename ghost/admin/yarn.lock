@@ -5600,7 +5600,7 @@ ember-cli-version-checker@^4.1.0:
     semver "^6.3.0"
     silent-error "^1.1.1"
 
-ember-cli-version-checker@^5.0.1, ember-cli-version-checker@^5.0.2:
+ember-cli-version-checker@^5.0.2:
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/ember-cli-version-checker/-/ember-cli-version-checker-5.0.2.tgz#7e96157be4b13b083a68078b188820193275d8c4"
   integrity sha512-cqFrIg9++GKdpMv2DP8pryAhTcmCYUL2hzHatLwkcJe23s+ioZ0JQWte0avxZ5lJnwn5e3kzUKkLkDfHDFBMUw==
@@ -6153,14 +6153,14 @@ ember-svg-jar@2.2.3:
     mkdirp "^0.5.1"
     path-posix "^1.0.0"
 
-ember-test-selectors@4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/ember-test-selectors/-/ember-test-selectors-4.0.0.tgz#84604b499ddbff290957c3fa0b1e7a9844f5174d"
-  integrity sha512-ABZ7+Xs8kcnVd9mp1AhGPuGPtaalz10cVpQIw1biA6TEscEnFhcJObtqyaxvF6C9AqfZ6p/MsgJZrXMPpgnpmw==
+ember-test-selectors@4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/ember-test-selectors/-/ember-test-selectors-4.1.0.tgz#0416c9ebdbd5ded4585643ba121115e45932dfc2"
+  integrity sha512-njyopeK018CP4PUWvkRdNFcP+56B7yfVYGt6k+71+4t8WscUzWPqgJvDYaJ64avn5EvrI+QBSWb80NC7Q++WDA==
   dependencies:
     calculate-cache-key-for-tree "^2.0.0"
-    ember-cli-babel "^7.18.0"
-    ember-cli-version-checker "^5.0.1"
+    ember-cli-babel "^7.19.0"
+    ember-cli-version-checker "^5.0.2"
 
 ember-test-waiters@^1.1.1:
   version "1.2.0"
