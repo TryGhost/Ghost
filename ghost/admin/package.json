@@ -52,7 +52,7 @@
     "ember-ajax": "5.0.0",
     "ember-assign-helper": "0.2.0",
     "ember-auto-import": "1.5.3",
-    "ember-cli": "3.17.0",
+    "ember-cli": "3.18.0",
     "ember-cli-app-version": "3.2.0",
     "ember-cli-babel": "7.19.0",
     "ember-cli-chai": "0.5.0",
