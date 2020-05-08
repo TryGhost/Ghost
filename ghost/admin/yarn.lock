@@ -2345,7 +2345,7 @@ babel-plugin-htmlbars-inline-precompile@^3.0.1:
   resolved "https://registry.yarnpkg.com/babel-plugin-htmlbars-inline-precompile/-/babel-plugin-htmlbars-inline-precompile-3.0.1.tgz#e1e38a4087f446578e419a21c112530c8df02345"
   integrity sha512-ZiFY0nQjtdMPGIDwp/5LYOs6rCr54QfcSV5nPbrA7C++Fv4Vb2Q/qrKYx78t+dwmARJztnOBlObFk4z8veHxNA==
 
-babel-plugin-htmlbars-inline-precompile@^4.0.1:
+babel-plugin-htmlbars-inline-precompile@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/babel-plugin-htmlbars-inline-precompile/-/babel-plugin-htmlbars-inline-precompile-4.1.0.tgz#11796422e65d900a968481fa3fb37e0425c928dd"
   integrity sha512-gM+UP6HO5RlGiOQzJVGRUHgAsefJeOdh5Pn+rZRS6Tr1MnEqVgTJ2G2ywnl+G+Zcuec18fz7XA+O2tHhsmct6w==
@@ -5406,13 +5406,13 @@ ember-cli-htmlbars-inline-precompile@^2.1.0:
     heimdalljs-logger "^0.1.9"
     silent-error "^1.1.0"
 
-ember-cli-htmlbars@5.1.1:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-5.1.1.tgz#9a011de4e5bc5e6b70a85fe4c2c129d36e396ca3"
-  integrity sha512-JpyjYXVabWQ/9CkiR1+J/Dm7yXpm5lB7e0LSzxesTO3apOtcodDUxyzEC+e3D/tjHD7si9h8WGYrFbEpfQtdUw==
+ember-cli-htmlbars@5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-5.1.2.tgz#b07cdb6b870bb223605dbed915c9c8d5185c53bb"
+  integrity sha512-//TZ3g0YYsSXylK4RhaFDDr694YOnjrO884+vzNteirYDLB9Yk0SnERlFC2qH6UKZ8koSZtdiXeEtltEqv5wew==
   dependencies:
     "@ember/edition-utils" "^1.2.0"
-    babel-plugin-htmlbars-inline-precompile "^4.0.1"
+    babel-plugin-htmlbars-inline-precompile "^4.1.0"
     broccoli-debug "^0.6.5"
     broccoli-persistent-filter "^2.3.1"
     broccoli-plugin "^4.0.3"
