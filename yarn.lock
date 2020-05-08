@@ -550,14 +550,14 @@
     remark "^11.0.1"
     unist-util-visit "^2.0.0"
 
-"@tryghost/vhost-middleware@1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.3.tgz#c2779a3e15c21393a69a380daf95205e030eb979"
-  integrity sha512-nPKGrL+frenlyVOIKN9f59DR7JGP5azi+8GkWxvZsDmjic+Yh8osJgXJ9luNU35w5eIGpOvQSh9Wo8YZfsZBFw==
+"@tryghost/vhost-middleware@1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.4.tgz#b998ef2a0198153c16a8899b2f9140e7d1060046"
+  integrity sha512-TWgYHJkMw3KhVFlE09/zUWt+BxDaygMyuboZ3WMdrrIAvhNcpUTSww9xqi8deTJKOwj7HVGrkTWsn12ZSLvS+Q==
   dependencies:
-    bluebird "^3.7.1"
-    ghost-ignition "^4.0.0"
-    lodash "^4.17.15"
+    bluebird "3.7.2"
+    ghost-ignition "4.2.1"
+    lodash "4.17.15"
 
 "@tryghost/zip@1.0.1":
   version "1.0.1"
@@ -1233,11 +1233,6 @@ bluebird@^3.4.1, bluebird@^3.5.0, bluebird@^3.5.3, bluebird@^3.5.4, bluebird@^3.
   version "3.7.0"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.0.tgz#56a6a886e03f6ae577cffedeb524f8f2450293cf"
   integrity sha512-aBQ1FxIa7kSWCcmKHlcHFlT2jt6J/l4FzC7KcPELkOJOsPOb/bccdhmIrKDfXhwFrmc7vDoDrrepFvGqjyXGJg==
-
-bluebird@^3.7.1:
-  version "3.7.1"
-  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.1.tgz#df70e302b471d7473489acf26a93d63b53f874de"
-  integrity sha512-DdmyoGCleJnkbp3nkbxTLJ18rjDsE4yCggEwKNXkeV123sPNfOCYeDoeuOY+F2FrSjO1YXcTU+dsy96KMy+gcg==
 
 body-parser@1.19.0, body-parser@^1.19.0:
   version "1.19.0"
@@ -3700,7 +3695,7 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-ignition@4.1.0, ghost-ignition@^4.0.0, ghost-ignition@^4.1.0:
+ghost-ignition@4.1.0, ghost-ignition@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.1.0.tgz#44ac9dc8873606207f81a652a705f383714c2f07"
   integrity sha512-d3hfUE1qey4S1sdjayWcbsYCr77joc7KcM4Zrhol0vdR/anGvR6h6Z529MI42VJHr38h6x0/PaQ/mjrlOey7XQ==
