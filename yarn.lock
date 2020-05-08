@@ -353,7 +353,7 @@
   dependencies:
     "@tryghost/errors" "^0.1.3"
 
-"@tryghost/errors@0.1.2", "@tryghost/errors@^0.1.2":
+"@tryghost/errors@0.1.2":
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.1.2.tgz#aaf6c54923920825477f403839cb6551ad37b6d9"
   integrity sha512-wwareSxmIprkNuFb+sFYBZ9vl8EEnIbV7an+35C3JBH0D1TUQ2LzaK6IFOowfc7JOQPxACeo+1Or8NHC1B/H0A==
@@ -504,12 +504,12 @@
     chalk "^3.0.0"
     sywac "^1.2.1"
 
-"@tryghost/session-service@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.1.tgz#520ba12494e761777a3303a04299e7dfb284affc"
-  integrity sha512-yBLk+UOrl0hC5RX2rD+l4WfHtrAENSsndEHP6ye+Qx8KkrPA5SbhTwz4mCUg8cO6RXtP774l0GrYj1AWmfA5rg==
+"@tryghost/session-service@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.2.tgz#84a9f284643f7d72c1c65332428239b94195a089"
+  integrity sha512-uhRyZC0jQfZn2G3JaOAbCqtqWH1zjl0VmeOHgFvt8zatiDssb/cNmTDr2e3DPhN0WIYXahxXwlqLQk5eGdgEVw==
   dependencies:
-    "@tryghost/errors" "^0.1.2"
+    "@tryghost/errors" "^0.1.3"
 
 "@tryghost/social-urls@0.1.9":
   version "0.1.9"
