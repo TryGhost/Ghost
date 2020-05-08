@@ -13,7 +13,9 @@ module.exports = function navigation(options) {
     options.data = options.data || {};
 
     const key = options.hash.type && options.hash.type === 'secondary' ? 'secondary_navigation' : 'navigation';
-    options.hash.isSecondary = options.hash.type && options.hash.type === 'secondary';
+    // Set isSecondary so we can compare in the template
+    options.hash.isSecondary = !!(options.hash.type && options.hash.type === 'secondary');
+    // Remove type, so it's not accessible
     delete options.hash.type;
 
     const navigationData = options.data.site[key];

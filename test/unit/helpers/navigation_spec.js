@@ -3,6 +3,7 @@ const hbs = require('../../../core/frontend/services/themes/engine');
 const configUtils = require('../../utils/configUtils');
 const path = require('path');
 const helpers = require('../../../core/frontend/helpers');
+const handlebars = require('../../../core/frontend/services/themes/engine').handlebars;
 
 const runHelper = data => helpers.navigation.call({}, data);
 const runHelperThunk = data => () => runHelper(data);
@@ -289,5 +290,48 @@ describe('{{navigation}} helper with custom template', function () {
         rendered.string.should.containEql('Jeremy Bearimy baby!');
         rendered.string.should.containEql(testUrl);
         rendered.string.should.containEql('Fighters');
+    });
+
+    describe('using compile', function () {
+        let defaultGlobals;
+        function compile(templateString) {
+            const template = handlebars.compile(templateString);
+            template.with = (locals = {}, globals) => {
+                globals = globals || defaultGlobals;
+
+                return template(locals, globals);
+            };
+
+            return template;
+        }
+
+        before(function () {
+            handlebars.registerHelper('link_class', helpers.link_class);
+            handlebars.registerHelper('concat', helpers.concat);
+            handlebars.registerHelper('url', helpers.concat);
+            handlebars.registerHelper('navigation', helpers.navigation);
+            configUtils.config.set('url', 'https://siteurl.com');
+            defaultGlobals = {
+                data: {
+                    site: {
+                        url: configUtils.config.get('url'),
+                        navigation: [{label: 'Foo', url: '/foo'}],
+                        secondary_navigation: [{label: 'Fighters', url: '/foo'}]
+                    }
+                }
+            };
+        });
+
+        it('can render both primary and secondary nav in order', function () {
+            compile('{{navigation}}{{navigation type="secondary"}}')
+                .with({})
+                .should.eql('\n\n\n\nPrime time!\n\n    <a href="">Foo</a>\n\n\n\n\nJeremy Bearimy baby!\n\n    <a href="">Fighters</a>\n');
+        });
+
+        it('can render both primary and secondary nav in reverse order', function () {
+            compile('{{navigation type="secondary"}}{{navigation}}')
+                .with({})
+                .should.eql('\n\n\n\nJeremy Bearimy baby!\n\n    <a href="">Fighters</a>\n\n\n\n\nPrime time!\n\n    <a href="">Foo</a>\n');
+        });
     });
 });
