@@ -3,9 +3,6 @@ contact_links:
   - name: Help & Support
     url: https://forum.ghost.org
     about: Please use the community forum for questions
-  - name: Security Policy
-    url: https://ghost.org/security/
-    about: Please report security vulnerabilities here.
   - name: Features & Ideas
     url: https://forum.ghost.org/c/Ideas
     about: Please vote for & post new ideas in the the forum.
