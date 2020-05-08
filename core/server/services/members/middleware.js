@@ -108,16 +108,18 @@ const createSessionFromMagicLink = async function (req, res, next) {
 
     // We need to include the subdirectory,
     // members is already removed from the path by express because it's a mount path
-    const redirectPath = `${urlUtils.getSubdir()}${req.path}?${searchParams.toString()}`;
+    let redirectPath = `${urlUtils.getSubdir()}${req.path}`;
 
     try {
         await membersService.ssr.exchangeTokenForSession(req, res);
 
-        // Do a standard 302 redirect
-        return res.redirect(redirectPath);
+        // Do a standard 302 redirect, with success=true
+        searchParams.set('success', true);
     } catch (err) {
         logging.warn(err.message);
-        return res.redirect(redirectPath);
+        searchParams.set('success', false);
+    } finally {
+        res.redirect(`${redirectPath}?${searchParams.toString()}`);
     }
 };
 

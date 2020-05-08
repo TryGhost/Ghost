@@ -89,6 +89,18 @@ describe('Basic Members Routes', function () {
                 return request.put('/members/api/subscriptions/123')
                     .expect(400);
             });
+
+            it('should serve theme 404 on members endpoint', function () {
+                return request.get('/members/')
+                    .expect(404)
+                    .expect('Content-Type', 'text/html; charset=utf-8');
+            });
+
+            it('should redirect invalid token on members endpoint', function () {
+                return request.get('/members/?token=abc&action=signup')
+                    .expect(302)
+                    .expect('Location', '/?action=signup&success=false');
+            });
         });
     });
 
@@ -159,6 +171,16 @@ describe('Basic Members Routes', function () {
 
             it('should not serve members subscription endpoint', function () {
                 return request.put('/members/api/subscriptions/123')
+                    .expect(404);
+            });
+
+            it('should serve 404 on members endpoint', function () {
+                return request.get('/members/')
+                    .expect(404);
+            });
+
+            it('should not redirect members endpoint with token', function () {
+                return request.get('/members/?token=abc&action=signup')
                     .expect(404);
             });
         });
