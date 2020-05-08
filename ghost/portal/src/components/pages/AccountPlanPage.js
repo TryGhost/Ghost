@@ -34,9 +34,15 @@ export default class AccountPlanPage extends React.Component {
 
     onPlanCheckout(e) {
         e.preventDefault();
-        const {onAction} = this.context;
+        const {onAction, member} = this.context;
         const plan = this.state.plan;
-        onAction('checkoutPlan', {plan});
+        if (member.paid) {
+            const {subscriptions} = member;
+            const subscriptionId = subscriptions[0].id;
+            onAction('updatePlan', {plan, subscriptionId});
+        } else {
+            onAction('checkoutPlan', {plan});
+        }
     }
 
     onPlanSelect(e, name) {
