@@ -110,11 +110,22 @@ export default class PaidAccountHomePage extends React.Component {
         return `**** **** **** ${defaultCardLast4}`;
     }
 
-    onEditProfile() {
+    openEditProfile() {
         this.context.onAction('switchPage', {
             page: 'accountProfile',
             lastPage: 'paidAccountHome'
         });
+    }
+
+    openUpdatePlan() {
+        this.context.onAction('switchPage', {
+            page: 'accountPlan',
+            lastPage: 'paidAccountHome'
+        });
+    }
+
+    onEditBilling() {
+        this.context.onAction('editBilling');
     }
 
     renderAccountDetails() {
@@ -139,7 +150,7 @@ export default class PaidAccountHomePage extends React.Component {
                             <div style={{color: '#666666', fontSize: '11px'}}> {email} </div>
                         </div>
                     </div>
-                    <div style={buttonStyle} onClick={e => this.onEditProfile(e)}>
+                    <div style={buttonStyle} onClick={e => this.openEditProfile(e)}>
                         Edit
                     </div>
                 </div>
@@ -150,8 +161,8 @@ export default class PaidAccountHomePage extends React.Component {
                             <div style={{color: '#666666'}}> {this.getPlanLabel(plan)} </div>
                         </div>
                     </div>
-                    <div>
-                        <div style={buttonStyle}> Change </div>
+                    <div style={buttonStyle} onClick={e => this.openUpdatePlan(e)}>
+                        Change
                     </div>
                 </div>
                 <div style={{display: 'flex', alignItems: 'center', marginTop: '24px'}}>
@@ -161,7 +172,7 @@ export default class PaidAccountHomePage extends React.Component {
                             <div style={{color: '#666666'}}> {this.getCardLabel({defaultCardLast4})} </div>
                         </div>
                     </div>
-                    <div style={buttonStyle}>
+                    <div style={buttonStyle} onClick={e => this.onEditBilling(e)}>
                         Update
                     </div>
                 </div>
