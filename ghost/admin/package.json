@@ -38,7 +38,7 @@
     "@tryghost/timezone-data": "0.2.24",
     "autoprefixer": "9.7.6",
     "babel-eslint": "10.1.0",
-    "blueimp-md5": "2.13.0",
+    "blueimp-md5": "2.14.0",
     "broccoli-asset-rev": "3.0.0",
     "broccoli-concat": "4.2.4",
     "broccoli-funnel": "3.0.2",
