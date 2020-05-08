@@ -127,7 +127,39 @@ function setupGhostApi() {
                 }
                 return res.json();
             }).then(function (result) {
-                var stripe = window.Stripe(result.publicKey);
+                const stripe = window.Stripe(result.publicKey);
+                return stripe.redirectToCheckout({
+                    sessionId: result.sessionId
+                });
+            }).then(function (result) {
+                if (result.error) {
+                    throw new Error(result.error.message);
+                }
+            }).catch(function (err) {
+                throw err;
+            });
+        },
+
+        async editBilling() {
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: 'create-stripe-update-session'});
+
+            return makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    identity: identity
+                })
+            }).then(function (res) {
+                if (!res.ok) {
+                    throw new Error('Could not create stripe checkout session');
+                }
+                return res.json();
+            }).then(function (result) {
+                const stripe = window.Stripe(result.publicKey);
                 return stripe.redirectToCheckout({
                     sessionId: result.sessionId
                 });
