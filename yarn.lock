@@ -385,16 +385,16 @@
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "16.2.2"
 
-"@tryghost/image-transform@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-0.2.1.tgz#39a4faf730afeb47c7304c4b8aea5b3d71a1711c"
-  integrity sha512-Mdjqg34MMCWv2lXCYMRkCj/qdy/eLNWNucgJE0zcbMh0GnASe2ZhpTfusx80H0+xYNNH0vtpEFn/D9Vh3lG8pA==
+"@tryghost/image-transform@0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-0.2.2.tgz#4c391629bdacc6fdbeee24cc739c61e8d09f2343"
+  integrity sha512-x9UeExJEoCihE+MLQwCyCmA1d6enEZOpLg3gD5tnlQVE+RDD/G1zwcZbK0yNmLnncaEQEdI4R7FvsoUitW9vbA==
   dependencies:
-    "@tryghost/errors" "^0.1.2"
-    bluebird "^3.7.2"
-    fs-extra "^9.0.0"
+    "@tryghost/errors" "^0.1.3"
+    bluebird "3.7.2"
+    fs-extra "9.0.0"
   optionalDependencies:
-    sharp "^0.25.2"
+    sharp "0.25.2"
 
 "@tryghost/kg-card-factory@1.0.3":
   version "1.0.3"
@@ -8280,7 +8280,7 @@ setprototypeof@1.1.1:
   resolved "https://registry.yarnpkg.com/setprototypeof/-/setprototypeof-1.1.1.tgz#7e95acb24aa92f5885e0abef5ba131330d4ae683"
   integrity sha512-JvdAWfbXeIGaZ9cILp38HntZSFSo3mWg6xGcJJsd+d4aRMOqauag1C63dJfDw7OaMYwEbHMOxEZ1lqVRYP2OAw==
 
-sharp@^0.25.2:
+sharp@0.25.2:
   version "0.25.2"
   resolved "https://registry.yarnpkg.com/sharp/-/sharp-0.25.2.tgz#f9003d73be50e9265e98f79f04fe53d8c66a3967"
   integrity sha512-l1GN0kFNtJr3U9i9pt7a+vo2Ij0xv4tTKDIPx8W6G9WELhPwrMyZZJKAAQNBSI785XB4uZfS5Wpz8C9jWV4AFQ==
