@@ -6,10 +6,8 @@
         isFailure=this.isFailure
     )}}
 {{else}}
-    <span>
-    {{#if this.isRunning}}{{svg-jar "spinner" class="gh-icon-spinner"}}{{this.runningText}}{{/if}}
-    {{#if this.isIdle}}{{this.buttonText}}{{/if}}
-    {{#if this.isSuccess}}{{svg-jar "check-circle"}} {{this.successText}}{{/if}}
-    {{#if this.isFailure}}{{svg-jar "retry"}} {{this.failureText}}{{/if}}
-    </span>
+    {{#if this.isRunning}}<span>{{svg-jar "spinner" class="gh-icon-spinner"}}{{this.runningText}}</span>{{/if}}
+    {{#if this.isIdle}}<span>{{this.buttonText}}</span>{{/if}}
+    {{#if this.isSuccess}}<span {{did-insert this.handleReset}}>{{svg-jar "check-circle"}} {{this.successText}}</span>{{/if}}
+    {{#if this.isFailure}}<span>{{svg-jar "retry"}} {{this.failureText}}</span>{{/if}}
 {{/if}}

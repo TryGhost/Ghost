@@ -8,7 +8,7 @@ import {isEmpty} from '@ember/utils';
 import {isThemeValidationError} from 'ghost-admin/services/ajax';
 import {notEmpty} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
-import {task, timeout} from 'ember-concurrency';
+import {task} from 'ember-concurrency';
 
 export default Controller.extend({
     config: service(),
@@ -97,8 +97,8 @@ export default Controller.extend({
                 this.set('leaveSettingsTransition', transition);
 
                 // if a save is running, wait for it to finish then transition
-                if (this.get('save.isRunning')) {
-                    return this.get('save.last').then(() => {
+                if (this.save.isRunning) {
+                    return this.save.last.then(() => {
                         transition.retry();
                     });
                 }
@@ -200,7 +200,7 @@ export default Controller.extend({
         }
     },
 
-    saveTask: task(function* () {
+    save: task(function* () {
         let navItems = this.get('settings.navigation');
         let secondaryNavItems = this.get('settings.secondaryNavigation');
 
@@ -232,15 +232,6 @@ export default Controller.extend({
                 notifications.showAPIError(error);
                 throw error;
             }
-        }
-    }),
-
-    save: task(function* () {
-        yield this.saveTask.perform();
-        yield timeout(2500);
-        if (this.get('saveTask.last.isSuccessful') && this.get('saveTask.last.value')) {
-            // Reset last task to bring button back to idle state
-            yield this.set('saveTask.last', null);
         }
     }),
 
