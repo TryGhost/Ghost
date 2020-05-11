@@ -58,7 +58,7 @@
     ]
   },
   "devDependencies": {
-    "eslint-plugin-ghost": "1.4.0",
+    "eslint-plugin-ghost": "1.4.1",
     "rewire": "5.0.0",
     "webpack-cli": "3.3.11"
   }
