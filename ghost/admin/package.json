@@ -63,7 +63,7 @@
     "ember-cli-htmlbars": "5.1.2",
     "ember-cli-inject-live-reload": "2.0.2",
     "ember-cli-mirage": "1.1.6",
-    "ember-cli-moment-shim": "3.7.1",
+    "ember-cli-moment-shim": "3.8.0",
     "ember-cli-node-assets": "0.2.2",
     "ember-cli-postcss": "6.0.1",
     "ember-cli-shims": "1.2.0",

@@ -5521,7 +5521,24 @@ ember-cli-mirage@1.1.6:
     lodash-es "^4.17.11"
     miragejs "^0.1.31"
 
-ember-cli-moment-shim@3.7.1, ember-cli-moment-shim@^3.7.1:
+ember-cli-moment-shim@3.8.0:
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-moment-shim/-/ember-cli-moment-shim-3.8.0.tgz#dc61bbac9dce4963394e60dd42726d4ba38e2bc1"
+  integrity sha512-dN5ImjrjZevEqB7xhwFXaPWwxdKGSFiR1kqy9gDVB+A5EGnhCL1uveKugcyJE/MICVhXUAHBUu6G2LFWEPF2YA==
+  dependencies:
+    broccoli-funnel "^2.0.0"
+    broccoli-merge-trees "^2.0.0"
+    broccoli-source "^1.1.0"
+    broccoli-stew "^1.5.0"
+    chalk "^1.1.3"
+    ember-cli-babel "^7.1.2"
+    ember-cli-import-polyfill "^0.2.0"
+    ember-get-config ""
+    lodash.defaults "^4.2.0"
+    moment "^2.19.3"
+    moment-timezone "^0.5.13"
+
+ember-cli-moment-shim@^3.7.1:
   version "3.7.1"
   resolved "https://registry.yarnpkg.com/ember-cli-moment-shim/-/ember-cli-moment-shim-3.7.1.tgz#3ad691c5027c1f38a4890fe47d74b5224cc98e32"
   integrity sha512-U3HHuEU7sXQ78v25ifmIa9w4nQPQ7vK/LZ2bt18pN3aKNvIDYiLe/MDeXGmqfFIq3OfruKG+CF+7dOLqxuzSlQ==
@@ -5960,7 +5977,7 @@ ember-fetch@8.0.1:
     node-fetch "^2.6.0"
     whatwg-fetch "^3.0.0"
 
-ember-get-config@^0.2.2:
+ember-get-config@, ember-get-config@^0.2.2:
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/ember-get-config/-/ember-get-config-0.2.4.tgz#118492a2a03d73e46004ed777928942021fe1ecd"
   integrity sha1-EYSSoqA9c+RgBO13eSiUICH+Hs0=
