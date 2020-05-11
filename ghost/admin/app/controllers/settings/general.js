@@ -11,7 +11,7 @@ import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
-import {task, timeout} from 'ember-concurrency';
+import {task} from 'ember-concurrency';
 
 const ICON_EXTENSIONS = ['ico', 'png'];
 
@@ -135,8 +135,8 @@ export default Controller.extend({
                 this.set('leaveSettingsTransition', transition);
 
                 // if a save is running, wait for it to finish then transition
-                if (this.get('save.isRunning')) {
-                    return this.get('save.last').then(() => {
+                if (this.save.isRunning) {
+                    return this.save.last.then(() => {
                         transition.retry();
                     });
                 }
@@ -321,7 +321,7 @@ export default Controller.extend({
         });
     },
 
-    saveSettings: task(function* () {
+    save: task(function* () {
         let notifications = this.notifications;
         let config = this.config;
 
@@ -338,15 +338,6 @@ export default Controller.extend({
                 notifications.showAPIError(error, {key: 'settings.save'});
             }
             throw error;
-        }
-    }),
-
-    save: task(function* () {
-        yield this.saveSettings.perform();
-        yield timeout(2500);
-        if (this.get('saveSettings.last.isSuccessful') && this.get('saveSettings.last.value')) {
-            // Reset last task to bring button back to idle state
-            yield this.set('saveSettings.last', null);
         }
     })
 });

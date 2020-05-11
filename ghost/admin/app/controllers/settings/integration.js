@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import config from 'ghost-admin/config/environment';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {
     IMAGE_EXTENSIONS,
@@ -19,6 +20,13 @@ export default Controller.extend({
     showRegenerateKeyModal: false,
     selectedApiKey: null,
     isApiKeyRegenerated: false,
+
+    init() {
+        this._super(...arguments);
+        if (this.isTesting === undefined) {
+            this.isTesting = config.environment === 'test';
+        }
+    },
 
     integration: alias('model'),
 
@@ -157,31 +165,22 @@ export default Controller.extend({
         }
     },
 
-    saveIntegration: task(function* () {
-        return yield this.integration.save();
-    }),
-
     save: task(function* () {
-        yield this.saveIntegration.perform();
-        yield timeout(2500);
-        if (this.get('saveIntegration.last.isSuccessful') && this.get('saveIntegration.last.value')) {
-            // Reset last task to bring button back to idle state
-            yield this.set('saveIntegration.last', null);
-        }
+        return yield this.integration.save();
     }),
 
     copyContentKey: task(function* () {
         copyTextToClipboard(this.integration.contentKey.secret);
-        yield timeout(3000);
+        yield timeout(this.isTesting ? 50 : 3000);
     }),
 
     copyAdminKey: task(function* () {
         copyTextToClipboard(this.integration.adminKey.secret);
-        yield timeout(3000);
+        yield timeout(this.isTesting ? 50 : 3000);
     }),
 
     copyApiUrl: task(function* () {
         copyTextToClipboard(this.apiUrl);
-        yield timeout(3000);
+        yield timeout(this.isTesting ? 50 : 3000);
     })
 });

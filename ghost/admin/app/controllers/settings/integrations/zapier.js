@@ -10,7 +10,6 @@ import {task, timeout} from 'ember-concurrency';
 export default Controller.extend({
     ghostPaths: service(),
 
-    isTesting: undefined,
     selectedApiKey: null,
     isApiKeyRegenerated: false,
 
@@ -56,11 +55,11 @@ export default Controller.extend({
 
     copyAdminKey: task(function* () {
         copyTextToClipboard(this.integration.adminKey.secret);
-        yield timeout(3000);
+        yield timeout(this.isTesting ? 50 : 3000);
     }),
 
     copyApiUrl: task(function* () {
         copyTextToClipboard(this.apiUrl);
-        yield timeout(3000);
+        yield timeout(this.isTesting ? 50 : 3000);
     })
 });
