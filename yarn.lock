@@ -69,15 +69,14 @@
   dependencies:
     "@hapi/hoek" "8.x.x"
 
-"@lodder/grunt-postcss@2.0.2":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@lodder/grunt-postcss/-/grunt-postcss-2.0.2.tgz#2815e178c154fc0d5597e9a1894a7f996966aab8"
-  integrity sha512-zWPI9w+6bUyVn2R3yDJhYfy19WJFNUeq4ZU4OPGdqxGkPOvkNMRLUorF9iuQXG2gKdUd3zQf78I2gnuspDDRVw==
+"@lodder/grunt-postcss@2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@lodder/grunt-postcss/-/grunt-postcss-2.0.3.tgz#c3f7a8d45508457311245411955af569aa18b553"
+  integrity sha512-rPCesja8kJMpSuQx9jIaFM6QqE3B/CMiP0dlE7+QfRwZOolUKTqD6ESN9GI8jsqYF3da/fPNe3bo7mA2lSNBsw==
   dependencies:
     diff "^4.0.2"
-    kleur "^3.0.3"
     maxmin "^2.1.0"
-    postcss "^7.0.27"
+    postcss "^7.0.30"
 
 "@metascraper/helpers@^5.11.9":
   version "5.11.10"
@@ -5257,11 +5256,6 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.2.tgz#01146b36a6218e64e58f3a8d66de5d7fc6f6d051"
   integrity sha512-s5kLOcnH0XqDO+FvuaLX8DDjZ18CGFk7VygH40QoKPUQhW4e2rvM0rwUq0t8IQDOwYSeLK01U90OjzBTme2QqA==
 
-kleur@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
-  integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
-
 knex-migrator@3.4.6:
   version "3.4.6"
   resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-3.4.6.tgz#0a86822965c8ee282dbc2b12ca3c2bef92923976"
@@ -7383,6 +7377,15 @@ postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.27:
   version "7.0.27"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.27.tgz#cc67cdc6b0daa375105b7c424a85567345fc54d9"
   integrity sha512-WuQETPMcW9Uf1/22HWUWP9lgsIC+KEHg2kozMflKjbeUtw9ujvFX6QmIfozaErDkmLWS9WEnEdEe6Uo9/BNTdQ==
+  dependencies:
+    chalk "^2.4.2"
+    source-map "^0.6.1"
+    supports-color "^6.1.0"
+
+postcss@^7.0.30:
+  version "7.0.30"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.30.tgz#cc9378beffe46a02cbc4506a0477d05fcea9a8e2"
+  integrity sha512-nu/0m+NtIzoubO+xdAlwZl/u5S5vi/y6BCsoL8D+8IxsD3XvBS8X4YEADNIVXKVuQvduiucnRv+vPIqj56EGMQ==
   dependencies:
     chalk "^2.4.2"
     source-map "^0.6.1"
