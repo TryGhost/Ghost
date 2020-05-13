@@ -1890,11 +1890,6 @@ commander@^2.19.0, commander@^2.20.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.1.tgz#3863ce3ca92d0831dcf2a102f5fb4b5926afd0f9"
   integrity sha512-cCuLsMhJeWQ/ZpsFTbE765kvVfoeSddc4nU3up4fV+fDBcfUXnbITJ+JzhkdjzOqhURjZgujxaioam4RM9yGUg==
 
-commander@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-5.0.0.tgz#dbf1909b49e5044f8fdaf0adc809f0c0722bdfd0"
-  integrity sha512-JrDGPAKjMGSP1G0DUoaceEJ3DZgAfr/q6X7FVk4+U5KxUSKviYGM2k6zWkfyyBHy5rAtzgYJFa1ro2O9PtoxwQ==
-
 commander@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-5.1.0.tgz#46abbd1652f8e059bddaef99bbdcb2ad9cf179ae"
@@ -5319,27 +5314,6 @@ knex@^0.17:
     uuid "^3.3.2"
     v8flags "^3.1.3"
 
-knex@^0.21.0:
-  version "0.21.0"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.21.0.tgz#ed09cb5b596bf52295d09f680e8d3572d75a4ef2"
-  integrity sha512-3dvT3lXlewre6l+3JCLdWV5v+Otp0IwXENFTuvcoDgtCzQu2tSSw45/jtNdLH52JpmoqFpCFXCpDciWAGcRGtw==
-  dependencies:
-    colorette "1.1.0"
-    commander "^5.0.0"
-    debug "4.1.1"
-    esm "^3.2.25"
-    getopts "2.2.5"
-    inherits "~2.0.4"
-    interpret "^2.0.0"
-    liftoff "3.1.0"
-    lodash "^4.17.15"
-    mkdirp "^1.0.4"
-    pg-connection-string "2.2.0"
-    tarn "^3.0.0"
-    tildify "2.0.0"
-    uuid "^7.0.3"
-    v8flags "^3.1.3"
-
 lazystream@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/lazystream/-/lazystream-1.0.0.tgz#f6995fe0f820392f61396be89462407bb77168e4"
@@ -6176,13 +6150,12 @@ mocha@^7.1.0:
     yargs-parser "13.1.2"
     yargs-unparser "1.6.0"
 
-mock-knex@0.4.8:
-  version "0.4.8"
-  resolved "https://registry.yarnpkg.com/mock-knex/-/mock-knex-0.4.8.tgz#3f90ab5a32a7431f62af027bf2d84335a103e07e"
-  integrity sha512-mDtO0bmFi8YmVVmFgP7w+TGHu5TYQYq+AwtayjQtINdRj0RaNdMNMGBGTCNhTAS1w8pGPFd8tZ5v5lKPI+Mvqw==
+mock-knex@0.4.9:
+  version "0.4.9"
+  resolved "https://registry.yarnpkg.com/mock-knex/-/mock-knex-0.4.9.tgz#af831d376500483d6499469eb847842490af04c3"
+  integrity sha512-w8BZXdKeNtPxcXu/cnJVCv+/e+Nxs8sfDulxfV/MK2+NErxbv/NYkQA7Kr15TNYA8Q51WyFTwD4bNQB9/YWotw==
   dependencies:
     bluebird "^3.4.1"
-    knex "^0.21.0"
     lodash "^4.14.2"
     semver "^5.3.0"
 
