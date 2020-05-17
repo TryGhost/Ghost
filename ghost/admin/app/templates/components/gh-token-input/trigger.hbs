@@ -1,29 +1,29 @@
 <SortableObjects
     @tagName="ul"
-    @id={{concat "ember-power-select-multiple-options-" select.uniqueId}}
+    @id={{concat "ember-power-select-multiple-options-" @select.uniqueId}}
     @class="ember-power-select-multiple-options"
-    @sortableObjectList={{select.selected}}
+    @sortableObjectList={{@select.selected}}
     @enableSort={{true}}
     @useSwap={{false}}
     @sortEndAction={{action "reorderItems"}}
 >
-    {{#each select.selected as |opt idx|}}
-        {{#component (or this.extra.tokenComponent "draggable-object")
+    {{#each @select.selected as |opt idx|}}
+        {{#component (or @extra.tokenComponent "draggable-object")
             tagName="li"
             class="ember-power-select-multiple-option"
-            select=select
+            select=@select
             content=(readonly opt)
             idx=idx
             isSortable=true
-            mouseDown=(action "handleOptionMouseDown")
-            touchStart=(action "handleOptionTouchStart")
+            mouseDown=this.handleOptionMouseDown
+            touchStart=this.handleOptionTouchStart
         }}
-            {{#if this.selectedItemComponent}}
-                {{component this.selectedItemComponent option=(readonly opt) select=(readonly select)}}
+            {{#if @selectedItemComponent}}
+                {{component @selectedItemComponent option=(readonly opt) select=(readonly @select)}}
             {{else}}
-                {{yield opt select}}
+                {{yield opt @select}}
             {{/if}}
-            {{#unless select.disabled}}
+            {{#unless @select.disabled}}
                 <span role="button"
                     aria-label="remove element"
                     class="ember-power-select-multiple-remove-btn"
@@ -34,12 +34,12 @@
             {{/unless}}
         {{/component}}
     {{else}}
-        {{#if (and placeholder (not this.searchEnabled))}}
-            <span class="ember-power-select-placeholder">{{placeholder}}</span>
+        {{#if (and @placeholder (not @searchEnabled))}}
+            <span class="ember-power-select-placeholder">{{@placeholder}}</span>
         {{/if}}
     {{/each}}
 
-    {{#if this.searchEnabled}}
+    {{#if @searchEnabled}}
         <input
             type="search"
             class="ember-power-select-trigger-multiple-input"
@@ -49,7 +49,7 @@
             spellcheck="false"
             id="ember-power-select-trigger-multiple-input-{{@select.uniqueId}}"
             value={{@select.searchText}}
-            aria-controls={{this.listboxId}}
+            aria-controls={{@listboxId}}
             style={{this.triggerMultipleInputStyle}}
             placeholder={{this.maybePlaceholder}}
             disabled={{@select.disabled}}

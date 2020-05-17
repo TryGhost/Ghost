@@ -1,76 +1,84 @@
 <div class="gh-contentfilter" ...attributes>
     {{#unless this.session.user.isContributor}}
-    <PowerSelect
-        @selected={{@selectedType}}
-        @options={{@availableTypes}}
-        @searchEnabled={{false}}
-        @onChange={{@onTypeChange}}
-        @tagName="div"
-        @classNames={{concat "gh-contentfilter-menu gh-contentfilter-type " (if @selectedType.value "gh-contentfilter-selected")}}
-        @triggerClass="gh-contentfilter-menu-trigger"
-        @dropdownClass="gh-contentfilter-menu-dropdown"
-        @matchTriggerWidth={{false}}
-        data-test-type-select="true"
-        as |type|
-    >
-        {{#if type.name}}{{type.name}}{{else}}<span class="red">Unknown type</span>{{/if}}
-    </PowerSelect>
+        <div data-test-type-select="true">
+            <PowerSelect
+                @selected={{@selectedType}}
+                @options={{@availableTypes}}
+                @searchEnabled={{false}}
+                @onChange={{@onTypeChange}}
+                @tagName="div"
+                @classNames={{concat "gh-contentfilter-menu gh-contentfilter-type " (if @selectedType.value "gh-contentfilter-selected")}}
+                @triggerComponent="gh-power-select/trigger"
+                @triggerClass="gh-contentfilter-menu-trigger"
+                @dropdownClass="gh-contentfilter-menu-dropdown"
+                @matchTriggerWidth={{false}}
+                as |type|
+            >
+                {{#if type.name}}{{type.name}}{{else}}<span class="red">Unknown type</span>{{/if}}
+            </PowerSelect>
+        </div>
     {{/unless}}
 
     {{#unless this.session.user.isAuthorOrContributor}}
-    <PowerSelect
-        @selected={{@selectedAuthor}}
-        @options={{@availableAuthors}}
-        @searchField="name"
-        @onChange={{@onAuthorChange}}
-        @tagName="div"
-        @classNames={{concat "gh-contentfilter-menu gh-contentfilter-author " (if @selectedAuthor.slug "gh-contentfilter-selected")}}
-        @triggerClass="gh-contentfilter-menu-trigger"
-        @dropdownClass="gh-contentfilter-menu-dropdown"
-        @searchPlaceholder="Search authors"
-        @matchTriggerWidth={{false}}
-        data-test-author-select="true"
-        as |author|
-    >
-        {{#if author.name}}{{author.name}}{{else}}<span class="red">Unknown author</span>{{/if}}
-    </PowerSelect>
+        <div data-test-author-select="true">
+            <PowerSelect
+                @selected={{@selectedAuthor}}
+                @options={{@availableAuthors}}
+                @searchField="name"
+                @onChange={{@onAuthorChange}}
+                @tagName="div"
+                @classNames={{concat "gh-contentfilter-menu gh-contentfilter-author " (if @selectedAuthor.slug "gh-contentfilter-selected")}}
+                @triggerComponent="gh-power-select/trigger"
+                @triggerClass="gh-contentfilter-menu-trigger"
+                @dropdownClass="gh-contentfilter-menu-dropdown"
+                @searchPlaceholder="Search authors"
+                @matchTriggerWidth={{false}}
+                as |author|
+            >
+                {{#if author.name}}{{author.name}}{{else}}<span class="red">Unknown author</span>{{/if}}
+            </PowerSelect>
+        </div>
     {{/unless}}
 
     {{#unless this.session.user.isContributor}}
-    <PowerSelect
-        @selected={{@selectedTag}}
-        @options={{@availableTags}}
-        @searchField="name"
-        @onChange={{@onTagChange}}
-        @tagName="div"
-        @classNames={{concat "gh-contentfilter-menu gh-contentfilter-tag " (if @selectedTag.slug "gh-contentfilter-selected")}}
-        @triggerClass="gh-contentfilter-menu-trigger"
-        @dropdownClass="gh-contentfilter-menu-dropdown"
-        @searchPlaceholder="Search tags"
-        @matchTriggerWidth={{false}}
-        @optionsComponent="power-select-vertical-collection-options"
-        data-test-tag-select="true"
-        as |tag|
-    >
-        {{#if tag.name}}{{tag.name}}{{else}}<span class="red">Unknown tag</span>{{/if}}
-    </PowerSelect>
+        <div data-test-tag-select="true">
+            <PowerSelect
+                @selected={{@selectedTag}}
+                @options={{@availableTags}}
+                @searchField="name"
+                @onChange={{@onTagChange}}
+                @tagName="div"
+                @classNames={{concat "gh-contentfilter-menu gh-contentfilter-tag " (if @selectedTag.slug "gh-contentfilter-selected")}}
+                @triggerComponent="gh-power-select/trigger"
+                @triggerClass="gh-contentfilter-menu-trigger"
+                @dropdownClass="gh-contentfilter-menu-dropdown"
+                @searchPlaceholder="Search tags"
+                @matchTriggerWidth={{false}}
+                @optionsComponent="power-select-vertical-collection-options"
+                as |tag|
+            >
+                {{#if tag.name}}{{tag.name}}{{else}}<span class="red">Unknown tag</span>{{/if}}
+            </PowerSelect>
+        </div>
     {{/unless}}
 
-    <PowerSelect
-        @selected={{@selectedOrder}}
-        @options={{@availableOrders}}
-        @searchEnabled={{false}}
-        @onChange={{@onOrderChange}}
-        @tagName="div"
-        @classNames="gh-contentfilter-menu gh-contentfilter-sort"
-        @triggerClass="gh-contentfilter-menu-trigger"
-        @dropdownClass="gh-contentfilter-menu-dropdown"
-        @matchTriggerWidth={{false}}
-        @data-test-order-select="true"
-        as |order|
-    >
-        {{#if order.name}}{{order.name}}{{else}}<span class="red">Unknown</span>{{/if}}
-    </PowerSelect>
+    <div data-test-order-select="true">
+        <PowerSelect
+            @selected={{@selectedOrder}}
+            @options={{@availableOrders}}
+            @searchEnabled={{false}}
+            @onChange={{@onOrderChange}}
+            @tagName="div"
+            @classNames="gh-contentfilter-menu gh-contentfilter-sort"
+            @triggerComponent="gh-power-select/trigger"
+            @triggerClass="gh-contentfilter-menu-trigger"
+            @dropdownClass="gh-contentfilter-menu-dropdown"
+            @matchTriggerWidth={{false}}
+            as |order|
+        >
+            {{#if order.name}}{{order.name}}{{else}}<span class="red">Unknown</span>{{/if}}
+        </PowerSelect>
+    </div>
 
     {{#if (and (eq this.router.currentRouteName "posts") (or @selectedType.value @selectedAuthor.slug @selectedTag.slug @selectedOrder.value) (not this.customViews.activeView.isDefault))}}
         <div class="dropdown gh-contentfilter-menu gh-contentfilter-actions">

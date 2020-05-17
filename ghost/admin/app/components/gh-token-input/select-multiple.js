@@ -13,7 +13,9 @@ const END_ACTIONS = 'click.ghToken mouseup.ghToken touchend.ghToken';
 // could be the start of a drag and disable the default focus behaviour until
 // we get another event signalling the end of a drag
 
-export default @tagName('div') @layout(templateLayout) class GhTokenInputSelectMultiple extends PowerSelectMultiple {
+@tagName('div')
+@layout(templateLayout)
+class GhTokenInputSelectMultiple extends PowerSelectMultiple {
     _canFocus = true;
 
     willDestroyElement() {
@@ -64,3 +66,5 @@ export default @tagName('div') @layout(templateLayout) class GhTokenInputSelectM
         this._allowFocusListener = null;
     }
 }
+
+export default GhTokenInputSelectMultiple;
