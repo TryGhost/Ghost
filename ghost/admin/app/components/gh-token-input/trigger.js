@@ -7,7 +7,7 @@ export default class Trigger extends EmberPowerSelectMultipleTrigger {
     @action
     handleOptionMouseDown(event) {
         if (!event.target.closest('[data-selected-index]')) {
-            let optionMouseDown = this.get('extra.optionMouseDown');
+            let optionMouseDown = this.args.extra.optionMouseDown;
             if (optionMouseDown) {
                 return optionMouseDown(event);
             }
@@ -18,7 +18,7 @@ export default class Trigger extends EmberPowerSelectMultipleTrigger {
 
     @action
     handleOptionTouchStart(event) {
-        let optionTouchStart = this.get('extra.optionTouchStart');
+        let optionTouchStart = this.args.extra.optionTouchStart;
         if (optionTouchStart) {
             return optionTouchStart(event);
         }
@@ -29,32 +29,32 @@ export default class Trigger extends EmberPowerSelectMultipleTrigger {
         // ember-drag-drop's sortable-objects has two-way bindings and will
         // update EPS' selected value directly. We have to create a copy
         // after sorting in order to force the onchange action to be triggered
-        let selectedCopy = this.select.selected.slice();
-        this.select.actions.select(selectedCopy);
+        let selectedCopy = this.args.select.selected.slice();
+        this.args.select.actions.select(selectedCopy);
     }
 
     // copied directly from EPS, the default behaviour of stopping propagation
     // of keydown events prevents our shortcuts from being triggered
     @action
     handleKeydown(e) {
-        if (this.onKeydown && this.onKeydown(e) === false) {
+        if (this.args.onKeydown && this.args.onKeydown(e) === false) {
             e.stopPropagation();
             return false;
         }
         if (e.keyCode === 8) {
             e.stopPropagation();
             if (isBlank(e.target.value)) {
-                let lastSelection = this.select.selected[this.select.selected.length - 1];
+                let lastSelection = this.args.select.selected[this.args.select.selected.length - 1];
                 if (lastSelection) {
-                    this.select.actions.select(this.get('buildSelection')(lastSelection, this.select), e);
+                    this.args.select.actions.select(this.args.buildSelection(lastSelection, this.args.select), e);
                     if (typeof lastSelection === 'string') {
-                        this.select.actions.search(lastSelection);
+                        this.args.select.actions.search(lastSelection);
                     } else {
                         let searchField = this.get('searchField');
                         assert('`{{power-select-multiple}}` requires a `searchField` when the options are not strings to remove options using backspace', searchField);
-                        this.select.actions.search(get(lastSelection, searchField));
+                        this.args.select.actions.search(get(lastSelection, searchField));
                     }
-                    this.select.actions.open(e);
+                    this.args.select.actions.open(e);
                 }
             }
         }

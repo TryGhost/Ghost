@@ -1,6 +1,6 @@
 import OptionsComponent from 'ember-power-select/components/power-select/options';
-import layout from '../templates/components/power-select-vertical-collection-options';
+import templateLayout from '../templates/components/power-select-vertical-collection-options';
+import {layout} from '@ember-decorators/component';
 
-export default OptionsComponent.extend({
-    layout
-});
+@layout(templateLayout)
+export default class PowerSelectVerticalCollectionOptions extends OptionsComponent {}

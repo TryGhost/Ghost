@@ -210,6 +210,7 @@
                                 @selected={{this.mailgunRegion}}
                                 @onChange={{action "setBulkEmailRegion"}}
                                 @searchEnabled={{false}}
+                                @triggerComponent="gh-power-select/trigger"
                                 as |region|
                             >
                                 {{region.flag}} {{region.name}}

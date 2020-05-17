@@ -10,8 +10,8 @@
     @ariaLabelledBy={{@ariaLabelledBy}}
     @afterOptionsComponent={{@afterOptionsComponent}}
     @allowClear={{@allowClear}}
-    @beforeOptionsComponent={{this.beforeOptionsComponent}}
-    @buildSelection={{this.buildSelection}}
+    @beforeOptionsComponent={{or @beforeOptionsComponent null}}
+    @buildSelection={{or @buildSelection this.defaultBuildSelection}}
     @calculatePosition={{@calculatePosition}}
     @closeOnSelect={{@closeOnSelect}}
     @defaultHighlighted={{@defaultHighlighted}}
@@ -54,8 +54,8 @@
     @selectedItemComponent={{@selectedItemComponent}}
     @eventType={{@eventType}}
     @title={{@title}}
-    @triggerClass={{this.concatenatedTriggerClass}}
-    @triggerComponent={{component this.triggerComponent tabindex=@tabindex}}
+    @triggerClass="ember-power-select-multiple-trigger {{@triggerClass}}"
+    @triggerComponent={{component (or @triggerComponent "power-select-multiple/trigger") tabindex=@tabindex}}
     @triggerId={{@triggerId}}
     @verticalPosition={{@verticalPosition}}
     @tabindex={{this.computedTabIndex}}

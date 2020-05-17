@@ -12,12 +12,10 @@ describe('Integration: Component: gh-basic-dropdown', function () {
         let dropdownService = this.owner.lookup('service:dropdown');
 
         await render(hbs`
-            {{#gh-basic-dropdown as |dropdown|}}
-                <button class="ember-basic-dropdown-trigger" onclick={{dropdown.actions.toggle}}></button>
-                {{#if dropdown.isOpen}}
-                    <div id="dropdown-is-opened"></div>
-                {{/if}}
-            {{/gh-basic-dropdown}}
+            <GhBasicDropdown as |dropdown|>
+                <dropdown.Trigger>Click me!</dropdown.Trigger>
+                <dropdown.Content><div id="dropdown-is-opened">Content of the trigger</div></dropdown.Content>
+            </GhBasicDropdown>
         `);
 
         await clickTrigger();
