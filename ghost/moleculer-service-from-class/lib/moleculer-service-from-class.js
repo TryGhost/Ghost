@@ -17,11 +17,12 @@ const moleculer = require('moleculer');
  * @param {moleculer.Context} ctx
  * @param {string} serviceName - The name of the service in the moleculer cluster
  * @param {string} methodName - The name of the moleculer "action" on the service
+ * @param {string} serviceVersion - The version of the service in the moleculer cluster
  *
  * @returns {(params: object) => Promise<any>}
  */
-function proxy(ctx, serviceName, methodName) {
-    return async params => ctx.call(`${serviceName}.${methodName}`, params);
+function proxy(ctx, serviceName, methodName, serviceVersion) {
+    return async params => ctx.call(`${serviceVersion}.${serviceName}.${methodName}`, params);
 }
 
 /**
@@ -48,10 +49,14 @@ function getClassMethods(Class) {
  *
  * @param {moleculer.Context} ctx
  * @param {string} serviceName
+ * @param {string} serviceVersion
  * @returns {Promise<object>}
  */
-async function createServiceProxy(ctx, serviceName) {
-    await ctx.broker.waitForServices(serviceName);
+async function createServiceProxy(ctx, serviceName, serviceVersion) {
+    await ctx.broker.waitForServices([{
+        name: serviceName,
+        version: serviceVersion
+    }]);
     /** @type {{action: {name: string, rawName: string}}[]} */
     const actionsList = await ctx.call('$node.actions');
 
@@ -60,7 +65,7 @@ async function createServiceProxy(ctx, serviceName) {
         if (!isValidAction) {
             ctx.broker.logger.debug(`Recieved invalid action ${obj}`);
         }
-        const belongsToService = obj.action.name.startsWith(`${serviceName}.`);
+        const belongsToService = obj.action.name.startsWith(`${serviceVersion}.${serviceName}.`);
 
         return isValidAction && belongsToService;
     }).map(obj => obj.action.rawName);
@@ -68,10 +73,16 @@ async function createServiceProxy(ctx, serviceName) {
     return serviceMethods.reduce((serviceProxy, methodName) => {
         ctx.broker.logger.debug(`Creating proxy ${serviceName}.${methodName}`);
         return Object.assign(serviceProxy, {
-            [methodName]: proxy(ctx, serviceName, methodName)
+            [methodName]: proxy(ctx, serviceName, methodName, serviceVersion)
         });
     }, []);
 }
+
+/**
+ * @typedef {Object} ServiceDefinition
+ * @prop {string} name
+ * @prop {string} version
+ */
 
 /**
  * Create a ServiceSchema compatible with moleculer
@@ -81,13 +92,14 @@ async function createServiceProxy(ctx, serviceName) {
  * @param {object} params The Service to proxy via moleculer
  * @param {Class<Type>} params.Service The Service to proxy via moleculer
  * @param {string} params.name The name of the service in moleculer
- * @param {Object.<string, string>} [params.serviceDeps] A map of dependencies with a key of the param name and value of the moleculer service
+ * @param {Object.<string, ServiceDefinition>} [params.serviceDeps] A map of dependencies with a key of the param name and value of the moleculer service
  * @param {Object.<string, any>} [params.staticDeps] Any static dependencies which do not need to be proxied by moleculer
  * @param {boolean} [params.forceSingleton=false] Forces the wrapper to only ever create once instance of Service
+ * @param {string} [params.version='1'] Forces the wrapper to only ever create once instance of Service
  *
  * @returns {moleculer.ServiceSchema}
  */
-function createMoleculerServiceSchema({Service, name, serviceDeps = null, staticDeps = null, forceSingleton = false}) {
+function createMoleculerServiceSchema({Service, name, serviceDeps = null, staticDeps = null, forceSingleton = false, version = '1'}) {
     const methods = getClassMethods(Service);
 
     /**
@@ -100,8 +112,10 @@ function createMoleculerServiceSchema({Service, name, serviceDeps = null, static
         const instanceDeps = Object.create(serviceDeps);
         if (serviceDeps) {
             for (const dep in serviceDeps) {
-                const serviceName = serviceDeps[dep];
-                const serviceProxy = await createServiceProxy(ctx, serviceName);
+                const serviceDefinition = serviceDeps[dep];
+                const serviceName = serviceDefinition.name;
+                const serviceVersion = serviceDefinition.version;
+                const serviceProxy = await createServiceProxy(ctx, serviceName, serviceVersion);
                 instanceDeps[dep] = serviceProxy;
             }
         }
@@ -149,6 +163,7 @@ function createMoleculerServiceSchema({Service, name, serviceDeps = null, static
 
     return {
         name,
+        version,
         actions,
         async started() {
             const ctx = new moleculer.Context(this.broker, null);
