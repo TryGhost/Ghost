@@ -18,6 +18,7 @@ export default class NavigationService extends Service {
 
     constructor() {
         super(...arguments);
+        this.settings = Object.assign({}, DEFAULT_SETTINGS);
         this.updateSettings();
     }
 
