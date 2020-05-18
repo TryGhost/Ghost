@@ -1,5 +1,4 @@
 import Component from '@ember/component';
-import layout from '../templates/components/koenig-link-input';
 import relativeToAbsolute from '../lib/relative-to-absolute';
 import {TOOLBAR_MARGIN} from './koenig-toolbar';
 import {computed} from '@ember/object';
@@ -29,8 +28,6 @@ function getScrollParent(node) {
 
 export default Component.extend({
     config: service(),
-
-    layout,
 
     attributeBindings: ['style'],
     classNames: ['kg-input-bar', 'absolute', 'z-999'],

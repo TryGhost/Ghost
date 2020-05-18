@@ -1,6 +1,5 @@
 import Component from '@ember/component';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
-import layout from '../templates/components/koenig-card-markdown';
 import {computed} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {htmlSafe} from '@ember/string';
@@ -13,8 +12,6 @@ const {countWords, countImages} = ghostHelperUtils;
 const MIN_HEIGHT = 130;
 
 export default Component.extend({
-    layout,
-
     // attrs
     payload: null,
     isSelected: false,

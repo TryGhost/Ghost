@@ -1,7 +1,6 @@
 import $ from 'jquery';
 import Component from '@ember/component';
 import EmberObject, {computed, set} from '@ember/object';
-import layout from '../templates/components/koenig-card-gallery';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
@@ -18,8 +17,6 @@ const {countWords} = ghostHelperUtils;
 
 export default Component.extend({
     koenigDragDropHandler: service(),
-
-    layout,
 
     // attrs
     files: null,

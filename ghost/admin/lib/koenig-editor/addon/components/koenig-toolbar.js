@@ -1,5 +1,4 @@
 import Component from '@ember/component';
-import layout from '../templates/components/koenig-toolbar';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
@@ -20,8 +19,6 @@ export const TOOLBAR_MARGIN = 15;
 const TICK_ADJUSTMENT = 8;
 
 export default Component.extend({
-    layout,
-
     attributeBindings: ['style'],
     classNames: ['absolute', 'z-999'],
 

@@ -1,7 +1,6 @@
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import layout from '../templates/components/koenig-basic-html-input';
 import parserPlugins from '../options/basic-html-parser-plugins';
 import registerKeyCommands, {BASIC_KEY_COMMANDS} from '../options/key-commands';
 import validator from 'validator';
@@ -20,8 +19,6 @@ const UNDO_DEPTH = 50;
 // TODO: extract core to share functionality between this and `{{koenig-editor}}`
 
 export default Component.extend({
-    layout,
-
     // public attrs
     autofocus: false,
     html: null,

@@ -1,13 +1,10 @@
 import Component from '@ember/component';
-import layout from '../templates/components/koenig-plus-menu';
 import {CARD_MENU} from '../options/cards';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
 
 export default Component.extend({
-    layout,
-
     // public attrs
     classNames: ['absolute'],
     attributeBindings: ['style', 'data-kg'],

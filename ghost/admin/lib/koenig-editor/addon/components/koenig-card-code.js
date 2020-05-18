@@ -1,6 +1,5 @@
 import Component from '@ember/component';
 import Ember from 'ember';
-import layout from '../templates/components/koenig-card-code';
 import {computed} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {htmlSafe} from '@ember/string';
@@ -19,8 +18,6 @@ const CM_MODE_MAP = {
 };
 
 export default Component.extend({
-    layout,
-
     // attrs
     payload: null,
     isSelected: false,

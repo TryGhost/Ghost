@@ -1,5 +1,4 @@
 import Component from '@ember/component';
-import layout from '../templates/components/koenig-card-bookmark';
 import {NO_CURSOR_MOVEMENT} from './koenig-editor';
 import {computed} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
@@ -13,8 +12,6 @@ const {countWords} = ghostHelperUtils;
 export default Component.extend({
     ajax: service(),
     ghostPaths: service(),
-
-    layout,
 
     // attrs
     payload: null,

@@ -1,6 +1,5 @@
 import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@ember/component';
-import layout from '../templates/components/koenig-card';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/string';
 import {run} from '@ember/runloop';
@@ -11,7 +10,6 @@ const TICK_HEIGHT = 8;
 export default Component.extend({
     koenigUi: service(),
 
-    layout,
     attributeBindings: ['_style:style'],
     classNameBindings: ['selectedClass'],
 

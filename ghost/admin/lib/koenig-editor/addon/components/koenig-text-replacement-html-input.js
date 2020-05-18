@@ -2,7 +2,6 @@ import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
 import cleanTextReplacementHtml from '../lib/clean-text-replacement-html';
 import defaultAtoms from '../options/atoms';
-import layout from '../templates/components/koenig-text-replacement-html-input';
 import registerKeyCommands, {TEXT_REPLACEMENT_KEY_COMMANDS} from '../options/key-commands';
 import validator from 'validator';
 import {BLANK_DOC, MOBILEDOC_VERSION} from './koenig-editor';
@@ -60,8 +59,6 @@ function toggleSpecialFormatEditState(editor) {
 }
 
 export default Component.extend({
-    layout,
-
     // public attrs
     autofocus: false,
     html: null,

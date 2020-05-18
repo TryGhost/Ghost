@@ -1,6 +1,5 @@
 import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@ember/component';
-import layout from '../templates/components/koenig-card-email';
 import {computed} from '@ember/object';
 import {formatTextReplacementHtml} from './koenig-text-replacement-html-input';
 import {isBlank} from '@ember/utils';
@@ -8,8 +7,6 @@ import {run} from '@ember/runloop';
 import {set} from '@ember/object';
 
 export default Component.extend({
-    layout,
-
     // attrs
     payload: null,
     isSelected: false,

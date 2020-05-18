@@ -1,9 +1,6 @@
 import BasicDropdown from 'ember-basic-dropdown/components/basic-dropdown';
-import templateLayout from '../templates/components/gh-basic-dropdown';
-import {layout} from '@ember-decorators/component';
 import {inject as service} from '@ember/service';
 
-@layout(templateLayout)
 class GhBasicDropdown extends BasicDropdown {
     @service dropdown
 

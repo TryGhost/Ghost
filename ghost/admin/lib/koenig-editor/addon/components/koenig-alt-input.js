@@ -1,5 +1,4 @@
 import Component from '@ember/component';
-import layout from '../templates/components/koenig-alt-input';
 import {action, computed} from '@ember/object';
 import {kgStyle} from '../helpers/kg-style';
 import {inject as service} from '@ember/service';
@@ -9,7 +8,6 @@ export default Component.extend({
 
     tagName: 'figcaption',
     classNameBindings: ['figCaptionClass'],
-    layout,
 
     alt: '',
     placeholder: '',

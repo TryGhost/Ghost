@@ -13,7 +13,6 @@ import calculateReadingTime from '../utils/reading-time';
 import defaultAtoms from '../options/atoms';
 import defaultCards, {CARD_COMPONENT_MAP, CARD_ICON_MAP} from '../options/cards';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
-import layout from '../templates/components/koenig-editor';
 import registerKeyCommands from '../options/key-commands';
 import registerTextExpansions from '../options/text-expansions';
 import validator from 'validator';
@@ -170,7 +169,6 @@ function insertImageCards(files, postEditor) {
 export default Component.extend({
     koenigDragDropHandler: service(),
 
-    layout,
     tagName: 'article',
     classNames: ['koenig-editor', 'w-100', 'flex-grow', 'relative', 'center', 'mb0', 'mt0'],
 
