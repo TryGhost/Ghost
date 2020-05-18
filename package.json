@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "3.15.3",
+  "version": "3.16.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -41,7 +41,7 @@
   "dependencies": {
     "@nexes/nql": "0.3.0",
     "@sentry/node": "5.15.5",
-    "@tryghost/adapter-manager": "0.1.4",
+    "@tryghost/adapter-manager": "0.1.5",
     "@tryghost/errors": "0.1.2",
     "@tryghost/helpers": "1.1.27",
     "@tryghost/image-transform": "0.2.2",
