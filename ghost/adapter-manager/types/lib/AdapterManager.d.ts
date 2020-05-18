@@ -7,7 +7,7 @@ declare class AdapterManager {
      */
     constructor({ pathsToAdapters, loadAdapterFromPath }: {
         pathsToAdapters: string[];
-        loadAdapterFromPath: (path: string) => new (arg1: any) => Adapter;
+        loadAdapterFromPath: (path: string) => AdapterConstructor;
     });
     /**
      * @private
@@ -35,7 +35,7 @@ declare class AdapterManager {
      * @param {string} type The name for the type of adapter
      * @param {AdapterConstructor} BaseClass The class from which all adapters of this type must extend
      */
-    registerAdapter(type: string, BaseClass: new (arg1: any) => Adapter): void;
+    registerAdapter(type: string, BaseClass: AdapterConstructor): void;
     /**
      * getAdapter
      *
@@ -45,12 +45,12 @@ declare class AdapterManager {
      *
      * @returns {Adapter} The resolved and instantiated adapter
      */
-    getAdapter(adapterType: string, adapterName: string, config: any): Adapter;
+    getAdapter(adapterType: string, adapterName: string, config: object): Adapter;
 }
 declare namespace AdapterManager {
     export { AdapterConstructor, Adapter };
 }
+type AdapterConstructor = new (arg1: object) => Adapter;
 type Adapter = {
     requiredFns: string[];
 };
-type AdapterConstructor = new (arg1: any) => Adapter;
