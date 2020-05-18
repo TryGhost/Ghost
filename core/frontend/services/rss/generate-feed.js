@@ -54,6 +54,14 @@ generateItem = function generateItem(post, secure) {
         htmlContent('img').attr('alt', post.title);
     }
 
+    /*
+    Replace bookmark container with html anchor element, fixes #11705
+    This first greps the orginal link and the title and then replaces the bookmark card
+    */
+    let origLink = htmlContent('.kg-bookmark-container').attr('href');
+    let linkTitle = htmlContent('.kg-bookmark-publisher').text();
+    htmlContent('.kg-bookmark-card').replaceWith('<a href="' + origLink + '">' + linkTitle + '</a>');
+
     item.custom_elements.push({
         'content:encoded': {
             _cdata: htmlContent.html()
