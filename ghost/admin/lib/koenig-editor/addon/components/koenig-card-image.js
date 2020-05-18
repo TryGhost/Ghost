@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import Component from '@ember/component';
-import layout from '../templates/components/koenig-card-image';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
@@ -16,7 +15,6 @@ const {countWords} = ghostHelperUtils;
 
 export default Component.extend({
     ui: service(),
-    layout,
 
     // attrs
     editor: null,

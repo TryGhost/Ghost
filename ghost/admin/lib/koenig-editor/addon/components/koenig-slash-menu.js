@@ -1,5 +1,4 @@
 import Component from '@ember/component';
-import layout from '../templates/components/koenig-slash-menu';
 import {CARD_MENU} from '../options/cards';
 import {assign} from '@ember/polyfills';
 import {computed, set} from '@ember/object';
@@ -10,8 +9,6 @@ import {run} from '@ember/runloop';
 const ROW_LENGTH = 3;
 
 export default Component.extend({
-    layout,
-
     // public attrs
     classNames: 'absolute',
     attributeBindings: ['style'],
