@@ -1,9 +1,8 @@
 import $ from 'jquery';
 import PowerSelectMultiple from 'ember-power-select/components/power-select-multiple';
-import templateLayout from '../../templates/components/gh-token-input/select-multiple';
 import {action} from '@ember/object';
 import {bind} from '@ember/runloop';
-import {layout, tagName} from '@ember-decorators/component';
+import {tagName} from '@ember-decorators/component';
 
 // TODO: convert from jQuery to native DOM
 const END_ACTIONS = 'click.ghToken mouseup.ghToken touchend.ghToken';
@@ -14,7 +13,6 @@ const END_ACTIONS = 'click.ghToken mouseup.ghToken touchend.ghToken';
 // we get another event signalling the end of a drag
 
 @tagName('div')
-@layout(templateLayout)
 class GhTokenInputSelectMultiple extends PowerSelectMultiple {
     _canFocus = true;
 

@@ -1,5 +1,4 @@
 import Component from '@ember/component';
-import layout from '../templates/components/koenig-link-toolbar';
 import relativeToAbsolute from '../lib/relative-to-absolute';
 import {computed} from '@ember/object';
 import {getEventTargetMatchingTag} from 'mobiledoc-kit/utils/element-utils';
@@ -19,8 +18,6 @@ const DELAY = 120;
 
 export default Component.extend({
     config: service(),
-
-    layout,
 
     attributeBindings: ['style'],
     classNames: ['absolute', 'z-999'],

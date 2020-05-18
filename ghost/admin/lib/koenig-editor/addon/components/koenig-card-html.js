@@ -1,5 +1,4 @@
 import Component from '@ember/component';
-import layout from '../templates/components/koenig-card-html';
 import {computed} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {isBlank} from '@ember/utils';
@@ -9,8 +8,6 @@ import {set} from '@ember/object';
 const {countWords, countImages} = ghostHelperUtils;
 
 export default Component.extend({
-    layout,
-
     // attrs
     payload: null,
     isSelected: false,
