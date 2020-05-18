@@ -63,11 +63,12 @@ async function createServiceProxy(ctx, serviceName, serviceVersion) {
     const serviceMethods = actionsList.filter((obj) => {
         const isValidAction = obj && obj.action;
         if (!isValidAction) {
-            ctx.broker.logger.debug(`Recieved invalid action ${obj}`);
+            ctx.broker.logger.debug(`Recieved invalid action ${JSON.stringify(obj)}`);
+            return false;
         }
         const belongsToService = obj.action.name.startsWith(`${serviceVersion}.${serviceName}.`);
 
-        return isValidAction && belongsToService;
+        return belongsToService;
     }).map(obj => obj.action.rawName);
 
     return serviceMethods.reduce((serviceProxy, methodName) => {
