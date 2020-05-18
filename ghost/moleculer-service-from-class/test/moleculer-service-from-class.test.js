@@ -15,12 +15,14 @@ describe('MoleculerServiceFromClass', function () {
             }
         }
 
-        const service = createMoleculerServiceFromClass({Service: Dep, name: 'dep'});
+        const service = createMoleculerServiceFromClass({Service: Dep, name: 'dep', version: '1'});
 
         const name = service.name;
+        const version = service.version;
         const actions = service.actions;
 
         should.equal(name, 'dep');
+        should.equal(version, '1');
 
         should.equal(hasOwnProperty(actions, '_privateMethod'), false);
         should.equal(hasOwnProperty(actions, 'constructor'), false);
@@ -58,12 +60,15 @@ describe('MoleculerServiceFromClass', function () {
             }
         }
 
-        const depService = createMoleculerServiceFromClass({Service: Dep, name: 'dep', staticDeps: {
+        const depService = createMoleculerServiceFromClass({Service: Dep, name: 'dep', version: '1', staticDeps: {
             staticDep: fakeStaticDep
         }});
 
-        const mainService = createMoleculerServiceFromClass({Service: Main, name: 'main', serviceDeps: {
-            dep: 'dep'
+        const mainService = createMoleculerServiceFromClass({Service: Main, name: 'main', version: '1', serviceDeps: {
+            dep: {
+                name: 'dep',
+                version: '1'
+            }
         }});
 
         const broker = new moleculer.ServiceBroker({logger: false});
@@ -75,7 +80,7 @@ describe('MoleculerServiceFromClass', function () {
         const someMethod = sinon.spy(Dep.prototype, 'someMethod');
         const someOtherMethod = sinon.spy(Main.prototype, 'someOtherMethod');
 
-        const result = await broker.call('main.someOtherMethod');
+        const result = await broker.call('1.main.someOtherMethod');
 
         should.equal(someMethod.called, true);
         should.equal(someOtherMethod.called, true);
