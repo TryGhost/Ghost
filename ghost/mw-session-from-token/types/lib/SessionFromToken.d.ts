@@ -25,19 +25,19 @@ export = SessionFromToken;
  * @returns {RequestHandler}
  */
 declare function SessionFromToken<Token, Lookup>({ getTokenFromRequest, getLookupFromToken, findUserByLookup, createSession, callNextWithError }: {
-    getTokenFromRequest: (req: import("express").Request<import("express-serve-static-core").ParamsDictionary>) => Promise<Token>;
+    getTokenFromRequest: (req: Req) => Promise<Token>;
     getLookupFromToken: (token: Token) => Promise<Lookup>;
     findUserByLookup: (lookup: Lookup) => Promise<User>;
-    createSession: (req: import("express").Request<import("express-serve-static-core").ParamsDictionary>, res: import("express").Response<any>, user: User) => Promise<void>;
+    createSession: (req: Req, res: Res, user: User) => Promise<void>;
     callNextWithError: boolean;
-}): import("express").RequestHandler<import("express-serve-static-core").ParamsDictionary>;
+}): RequestHandler;
 declare namespace SessionFromToken {
     export { User, Req, Res, Next, RequestHandler };
 }
+type Req = import("express").Request<import("express-serve-static-core").ParamsDictionary>;
 type User = {
     id: string;
 };
-type Req = import("express").Request<import("express-serve-static-core").ParamsDictionary>;
 type Res = import("express").Response<any>;
-type Next = import("express").NextFunction;
 type RequestHandler = import("express").RequestHandler<import("express-serve-static-core").ParamsDictionary>;
+type Next = import("express").NextFunction;
