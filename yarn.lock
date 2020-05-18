@@ -345,10 +345,10 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tryghost/adapter-manager@0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.1.4.tgz#878ba9b5ebfc9a36f3dd87639410106030a18dd2"
-  integrity sha512-5QqF1U5U7szCn9UP1Zvux/nGDJffPzljR+QZPaXrQMEVY9oLzKzw+S7fkvmE2bRUHj/x8ZW/08wZrY1hpmV/Nw==
+"@tryghost/adapter-manager@0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.1.5.tgz#cd1fd3edb15b4bf69f9c1c7676d5c8f7b0be1e58"
+  integrity sha512-HJEfX+1jvJnfa3MGV7BK4njWicHsnRJb74dBbtnnMpNg20Y2Rkmrm6pSAOszhV/TaUU70zM+3q1F578XKNDUHA==
   dependencies:
     "@tryghost/errors" "^0.1.3"
 
