@@ -1,7 +1,6 @@
 {{#if this.isVisible}}
     <div
         {{did-insert this.didInsertLoader this}}
-        {{will-destroy this.willDestroyLoader this}}
         class="{{this.loaderClassNames}}{{if this.viewportEntered " in-viewport"}}{{if this.isDoneLoading " reached-infinity"}}"
         data-test-infinity-loader>
 

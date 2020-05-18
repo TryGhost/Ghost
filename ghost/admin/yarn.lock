@@ -5929,10 +5929,10 @@ ember-in-viewport@3.5.8, ember-in-viewport@~3.0.0, ember-in-viewport@~3.7.2:
     intersection-observer-admin "~0.2.5"
     raf-pool "0.1.0"
 
-ember-infinity@2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-2.1.1.tgz#ef1e5f25099696ac254c179a79c815afb7d36b48"
-  integrity sha512-tJrSYqcZCT0quLeu+IoXy46TAMaFtTRPF0jgHgKfa9xP4NvHDqENwdLpMewlkS4vbs3SCkxo4yBtQw5JG9GuEw==
+ember-infinity@2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/ember-infinity/-/ember-infinity-2.1.2.tgz#74eb09554d7e500979b7fe24a4843ecca5baf435"
+  integrity sha512-SgNGGyMp0oWWObcVpK1K9ztcz7bjXeR0wRMo38hgJlk5Vuj4jb4JdeV4500YCFGuQzTgAR9y5xSJ3v/q1IxXAg==
   dependencies:
     "@ember/render-modifiers" "^1.0.2"
     ember-cli-babel "~7.11.0"
