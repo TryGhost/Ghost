@@ -99,7 +99,7 @@
     "ember-svg-jar": "2.2.3",
     "ember-test-selectors": "4.1.0",
     "ember-truth-helpers": "2.1.0",
-    "ember-useragent": "0.9.1",
+    "ember-useragent": "0.10.0",
     "emberx-file-input": "1.2.1",
     "eslint": "7.0.0",
     "eslint-plugin-ghost": "1.4.1",
