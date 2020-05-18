@@ -28,6 +28,7 @@
                     aria-label="remove element"
                     class="ember-power-select-multiple-remove-btn"
                     data-selected-index={{idx}}
+                    {{on "mousedown" this.handleOptionMouseDown}}
                 >
                     {{svg-jar "close" data-selected-index=idx}}
                 </span>
