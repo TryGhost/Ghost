@@ -156,11 +156,11 @@ export default class ParentContainer extends React.Component {
                     page: 'magiclink'
                 });
             } else if (action === 'signup') {
-                const {plan, email} = data;
+                const {plan, email, name} = data;
                 if (plan.toLowerCase() === 'free') {
                     await this.GhostApi.member.sendMagicLink(data);
                 } else {
-                    await this.GhostApi.member.checkoutPlan({plan, email});
+                    await this.GhostApi.member.checkoutPlan({plan, email, name});
                 }
                 this.setState({
                     action: 'signup:success',
