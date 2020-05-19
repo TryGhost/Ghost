@@ -67,6 +67,28 @@ function setupGhostApi() {
             });
         },
 
+        update({email, name, subscribed}) {
+            const url = endpointFor({type: 'members', resource: 'member'});
+            return makeRequest({
+                url,
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    email,
+                    name,
+                    subscribed
+                })
+            }).then(function (res) {
+                if (!res.ok) {
+                    return null;
+                }
+                return res.json();
+            });
+        },
+
         sendMagicLink({email, emailType, labels}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             return makeRequest({
