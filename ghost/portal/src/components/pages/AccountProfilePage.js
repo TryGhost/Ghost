@@ -28,7 +28,7 @@ export default class AccountProfilePage extends React.Component {
 
     onProfileSave(e) {
         const {email, name} = this.state;
-        this.context.onAction('profileSave', {email, name});
+        this.context.onAction('updateMember', {email, name});
     }
 
     renderAccountFooter() {
