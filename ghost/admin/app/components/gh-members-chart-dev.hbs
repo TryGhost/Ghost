@@ -1,0 +1,56 @@
+<div class="flex justify-between mb6 items-stretch gh-members-chart-wrapper">
+
+    {{!-- Chart title/filter graph --}}
+    <div class="flex-auto bg-white br3 shadow-1 bg-grouped-table mr6 gh-members-chart-box">
+        <div class="flex justify-between items-center gh-members-chart-header">
+            <h2 class="f-small ttu midgrey fw5 mb0">Total members</h2>
+            <div class="view-actions">
+                <div class="gh-contentfilter">
+                    <PowerSelect
+                        @selected={{this.selectedRange}}
+                        @options={{this.availableRange}}
+                        @searchEnabled={{false}}
+                        @onChange={{action "changeDateRange"}}
+                        @tagName="div"
+                        @classNames="gh-contentfilter-menu gh-contentfilter-type"
+                        @triggerComponent="gh-power-select/trigger"
+                        @triggerClass="gh-contentfilter-menu-trigger"
+                        @dropdownClass="gh-contentfilter-menu-dropdown gh-members-chart-dropdown"
+                        @matchTriggerWidth={{false}}
+                        data-test-type-select="true"
+                        as |range|
+                    >
+                        {{range.name}}
+                    </PowerSelect>
+                </div>
+            </div>
+        </div>
+        <div class="gh-members-chart-container">
+            <EmberChart @type="LineWithLine" @options={{this.subData.chartData.options}} @data={{this.subData.chartData.data}} @height={{300}} />
+        </div>
+        <div class="flex justify-between pa4 pt0 pb2 nt1">
+            <span class="f8 midlightgrey">{{this.subData.startDateLabel}}</span>
+            <span class="f8 midlightgrey">Today</span>
+        </div>
+    </div>
+
+    {{!-- Summary --}}
+    <div class="flex flex-column justify-between gh-members-chart-summary bg-white br3 shadow-1 bg-grouped-table">
+        <div class="flex-auto flex flex-column justify-center items-start pa4 bb b--whitegrey">
+            <h3 class="f-small ttu midgrey fw5">Total Members</h3>
+            <div class="gh-members-chart-summary-data">{{this.subData.totalSubs}}</div>
+        </div>
+        <div class="flex-auto flex flex-column justify-center items-start pa4 bb b--whitegrey">
+            {{#if (eq this.range "all-time")}}
+                <h3 class="f-small ttu midgrey fw5">All time signups</h3>
+            {{else}}
+                <h3 class="f-small ttu midgrey fw5">Signed up in the last {{this.range}} days</h3>
+            {{/if}}
+            <div class="gh-members-chart-summary-data">{{this.subData.totalSubsInRange}}</div>
+        </div>
+        <div class="flex-auto flex flex-column justify-center items-start pa4">
+            <h3 class="f-small ttu midgrey fw5">Signed up today</h3>
+            <div class="gh-members-chart-summary-data">{{this.subData.totalSubsToday}}</div>
+        </div>
+    </div>
+</div>
