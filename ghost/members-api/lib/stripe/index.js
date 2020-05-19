@@ -1,4 +1,5 @@
 const debug = require('ghost-ignition').debug('stripe');
+const _ = require('lodash');
 const {retrieve, list, create, update, del} = require('./api/stripeRequests');
 const api = require('./api');
 
@@ -187,12 +188,18 @@ module.exports = class StripePaymentProcessor {
     }
 
     async updateSubscriptionFromClient(subscription) {
-        const updatedSubscription = await update(this._stripe, 'subscriptions', subscription.id, {
-            cancel_at_period_end: subscription.cancel_at_period_end
-        });
+        const updatedSubscription = await update(
+            this._stripe, 'subscriptions',
+            subscription.id,
+            _.pick(subscription, ['plan', 'cancel_at_period_end'])
+        );
         await this._updateSubscription(updatedSubscription);
 
         return updatedSubscription;
+    }
+
+    findPlanByNickname(nickname) {
+        return this._plans.find(plan => plan.nickname === nickname);
     }
 
     async getSubscriptions(member) {
