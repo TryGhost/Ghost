@@ -327,6 +327,7 @@ module.exports = function MembersApi({
     middleware.updateSubscription.use(ensureStripe, body.json(), async function (req, res) {
         const identity = req.body.identity;
         const cancelAtPeriodEnd = req.body.cancel_at_period_end;
+        const planName = req.body.planName;
         const subscriptionId = req.params.id;
 
         let member;
@@ -334,7 +335,7 @@ module.exports = function MembersApi({
         try {
             if (!identity) {
                 throw new common.errors.BadRequestError({
-                    message: 'Cancel membership failed! Could not find member'
+                    message: 'Updating subscription failed! Could not find member'
                 });
             }
 
@@ -344,32 +345,44 @@ module.exports = function MembersApi({
 
             if (!member) {
                 throw new common.errors.BadRequestError({
-                    message: 'Cancel membership failed! Could not find member'
+                    message: 'Updating subscription failed! Could not find member'
                 });
             }
         } catch (err) {
             res.writeHead(401);
             return res.end('Unauthorized');
         }
-
         // Don't allow removing subscriptions that don't belong to the member
+        const plan = planName && stripe.findPlanByNickname(planName);
+        if (planName && !plan) {
+            throw new common.errors.BadRequestError({
+                message: 'Updating subscription failed! Could not find plan'
+            });
+        }
         const subscription = member.stripe.subscriptions.find(sub => sub.id === subscriptionId);
-
         if (!subscription) {
             res.writeHead(403);
             return res.end('No permission');
         }
 
-        if (cancelAtPeriodEnd === undefined) {
+        if (cancelAtPeriodEnd === undefined && planName === undefined) {
             throw new common.errors.BadRequestError({
-                message: 'Canceling membership failed!',
-                help: 'Request should contain boolean "cancel" field.'
+                message: 'Updating subscription failed!',
+                help: 'Request should contain "cancel" or "plan" field.'
             });
         }
+        const subscriptionUpdate = {
+            id: subscription.id
+        };
+        if (cancelAtPeriodEnd !== undefined) {
+            subscriptionUpdate.cancel_at_period_end = !!(cancelAtPeriodEnd);
+        }
 
-        subscription.cancel_at_period_end = !!(cancelAtPeriodEnd);
+        if (plan) {
+            subscriptionUpdate.plan = plan.id;
+        }
 
-        await stripe.updateSubscriptionFromClient(subscription);
+        await stripe.updateSubscriptionFromClient(subscriptionUpdate);
 
         res.writeHead(204);
         res.end();
