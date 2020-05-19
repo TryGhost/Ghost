@@ -170,6 +170,21 @@ function setupGhostApi() {
             }).catch(function (err) {
                 throw err;
             });
+        },
+        async updateSubscription({subscriptionId, planName}) {
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: 'subscriptions'}) + subscriptionId + '/';
+            return makeRequest({
+                url,
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    identity: identity,
+                    planName
+                })
+            });
         }
     };
 
