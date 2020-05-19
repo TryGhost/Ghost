@@ -104,7 +104,7 @@ function setupGhostApi() {
             });
         },
 
-        async checkoutPlan({plan, checkoutCancelUrl, checkoutSuccessUrl, email: customerEmail}) {
+        async checkoutPlan({plan, checkoutCancelUrl, checkoutSuccessUrl, email: customerEmail, name}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
 
@@ -117,6 +117,9 @@ function setupGhostApi() {
                 body: JSON.stringify({
                     plan: plan,
                     identity: identity,
+                    metadata: {
+                        name
+                    },
                     successUrl: checkoutSuccessUrl,
                     cancelUrl: checkoutCancelUrl,
                     customerEmail: customerEmail
