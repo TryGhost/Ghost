@@ -301,8 +301,12 @@ module.exports = function MembersApi({
                     const customer = await stripe.getCustomer(event.data.object.customer, {
                         expand: ['subscriptions.data.default_payment_method']
                     });
-
-                    const member = await users.get({email: customer.email}) || await users.create({email: customer.email});
+                    let member = await users.get({email: customer.email});
+                    if (!member) {
+                        const metadata = event.data.object.metadata;
+                        const name = (metadata && metadata.name) || '';
+                        member = await users.create({email: customer.email, name});
+                    }
                     await stripe.handleCheckoutSessionCompletedWebhook(member, customer);
 
                     const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
