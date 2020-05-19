@@ -64,6 +64,12 @@ Router.map(function () {
     this.route('member.new', {path: '/members/new'});
     this.route('member', {path: '/members/:member_id'});
 
+    this.route('members-dev', function () {
+        this.route('import');
+    });
+    this.route('member-dev.new', {path: '/members-dev/new'});
+    this.route('member-dev', {path: '/members-dev/:member_id'});
+
     this.route('error404', {path: '/*path'});
 });
 
