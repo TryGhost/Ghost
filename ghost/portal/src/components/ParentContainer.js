@@ -174,7 +174,7 @@ export default class ParentContainer extends React.Component {
             } else if (action === 'updatePlan') {
                 const {plan, subscriptionId} = data;
                 await this.GhostApi.member.updateSubscription({
-                    plan, subscriptionId
+                    planName: plan, subscriptionId
                 });
             } else if (action === 'editBilling') {
                 await this.GhostApi.member.editBilling();
