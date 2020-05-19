@@ -28,19 +28,8 @@ async function getMember(data, options = {}) {
     return member;
 }
 
-async function updateMember({name, note, subscribed, geolocation}, options = {}) {
-    const attrs = {
-        name,
-        note
-    };
-
-    if (subscribed !== undefined) {
-        attrs.subscribed = subscribed;
-    }
-
-    if (geolocation !== undefined) {
-        attrs.geolocation = geolocation;
-    }
+async function updateMember(data, options = {}) {
+    const attrs = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation']);
 
     const model = await Member.edit(attrs, options);
 
@@ -136,7 +125,23 @@ module.exports = function ({
     async function update(data, options) {
         debug(`update id:${options.id}`);
 
-        return updateMember(data, options);
+        const member = await updateMember(data, options);
+        if (!member) {
+            return member;
+        }
+
+        try {
+            const subscriptions = await getStripeSubscriptions(member);
+
+            return Object.assign(member, {
+                stripe: {
+                    subscriptions
+                }
+            });
+        } catch (err) {
+            common.logging.error(err);
+            return null;
+        }
     }
 
     async function list(options) {
