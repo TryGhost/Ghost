@@ -5,9 +5,9 @@
             <GhMembersContentfilter
                 @selectedLabel={{this.selectedLabel}}
                 @availableLabels={{this.availableLabels}}
-                @onLabelChange={{action "changeLabel"}}
-                @onLabelAdd={{action "addLabel"}}
-                @onLabelEdit={{action "editLabel"}}
+                @onLabelChange={{this.changeLabel}}
+                @onLabelAdd={{this.addLabel}}
+                @onLabelEdit={{this.editLabel}}
             />
             <div class="relative gh-members-header-search">
                 {{svg-jar "search" class="gh-input-search-icon"}}
@@ -34,9 +34,9 @@
                         </LinkTo>
                     </li>
                     <li>
-                        <a href="#" {{action 'exportData'}} class="mr2">
+                        <button class="mr2" {{on "click" this.exportData}}>
                             <span>Export all members</span>
-                        </a>
+                        </button>
                     </li>
                 </GhDropdown>
             </span>
@@ -93,7 +93,7 @@
     <GhFullscreenModal
         @modal="members-label-form"
         @model={{this.labelModalData}}
-        @close={{action "toggleLabelModal"}}
+        @close={{this.toggleLabelModal}}
         @modifier="action wide"
     />
 {{/if}}

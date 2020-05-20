@@ -1,95 +1,111 @@
-import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import Controller, {inject as controller} from '@ember/controller';
+import EmberObject, {action, defineProperty} from '@ember/object';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
 import {alias} from '@ember/object/computed';
-import {computed, defineProperty} from '@ember/object';
-import {inject as controller} from '@ember/controller';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task} from 'ember-concurrency-decorators';
+import {tracked} from '@glimmer/tracking';
 
 const SCRATCH_PROPS = ['name', 'email', 'note'];
 
-export default Controller.extend({
-    members: controller(),
-    session: service(),
-    dropdown: service(),
-    notifications: service(),
-    router: service(),
-    store: service(),
+export default class MemberController extends Controller {
+    @controller members;
+    @service session;
+    @service dropdown;
+    @service notifications;
+    @service router;
+    @service store;
 
-    showImpersonateMemberModal: false,
+    @tracked isLoading = false;
+    @tracked showDeleteMemberModal = false;
+    @tracked showImpersonateMemberModal = false;
+    @tracked showUnsavedChangesModal = false;
 
-    member: alias('model'),
+    leaveScreenTransition = null;
 
-    scratchMember: computed('member', function () {
+    // Computed properties -----------------------------------------------------
+
+    @alias('model') member;
+
+    get scratchMember() {
         let scratchMember = EmberObject.create({member: this.member});
         SCRATCH_PROPS.forEach(prop => defineProperty(scratchMember, prop, boundOneWay(`member.${prop}`)));
         return scratchMember;
-    }),
+    }
 
-    subscribedAt: computed('member.createdAtUTC', function () {
+    get subscribedAt() {
         let memberSince = moment(this.member.createdAtUTC).from(moment());
         let createdDate = moment(this.member.createdAtUTC).format('MMM DD, YYYY');
         return `${createdDate} (${memberSince})`;
-    }),
+    }
 
-    actions: {
-        setProperty(propKey, value) {
-            this._saveMemberProperty(propKey, value);
-        },
+    // Actions -----------------------------------------------------------------
 
-        toggleDeleteMemberModal() {
-            this.toggleProperty('showDeleteMemberModal');
-        },
+    @action
+    setProperty(propKey, value) {
+        this._saveMemberProperty(propKey, value);
+    }
 
-        toggleImpersonateMemberModal() {
-            this.toggleProperty('showImpersonateMemberModal');
-        },
+    @action
+    toggleDeleteMemberModal() {
+        this.showDeleteMemberModal = !this.showDeleteMemberModal;
+    }
 
-        save() {
-            return this.save.perform();
-        },
+    @action
+    toggleImpersonateMemberModal() {
+        this.showImpersonateMemberModal = !this.showImpersonateMemberModal;
+    }
 
-        deleteMember() {
-            return this.member.destroyRecord().then(() => {
-                return this.transitionToRoute('members');
-            }, (error) => {
-                return this.notifications.showAPIError(error, {key: 'member.delete'});
-            });
-        },
+    @action
+    save() {
+        return this.saveTask.perform();
+    }
 
-        toggleUnsavedChangesModal(transition) {
-            let leaveTransition = this.leaveScreenTransition;
+    @action
+    deleteMember() {
+        return this.member.destroyRecord().then(() => {
+            return this.transitionToRoute('members');
+        }, (error) => {
+            return this.notifications.showAPIError(error, {key: 'member.delete'});
+        });
+    }
 
-            if (!transition && this.showUnsavedChangesModal) {
-                this.set('leaveScreenTransition', null);
-                this.set('showUnsavedChangesModal', false);
-                return;
-            }
+    @action
+    toggleUnsavedChangesModal(transition) {
+        let leaveTransition = this.leaveScreenTransition;
 
-            if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-                this.set('leaveScreenTransition', transition);
-
-                // if a save is running, wait for it to finish then transition
-                if (this.save.isRunning) {
-                    return this.save.last.then(() => {
-                        transition.retry();
-                    });
-                }
-
-                // we genuinely have unsaved data, show the modal
-                this.set('showUnsavedChangesModal', true);
-            }
-        },
-
-        leaveScreen() {
-            this.member.rollbackAttributes();
-            return this.leaveScreenTransition.retry();
+        if (!transition && this.showUnsavedChangesModal) {
+            this.leaveScreenTransition = null;
+            this.showUnsavedChangesModal = false;
+            return;
         }
-    },
 
-    save: task(function* () {
+        if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
+            this.leaveScreenTransition = transition;
+
+            // if a save is running, wait for it to finish then transition
+            if (this.save.isRunning) {
+                return this.save.last.then(() => {
+                    transition.retry();
+                });
+            }
+
+            // we genuinely have unsaved data, show the modal
+            this.showUnsavedChangesModal = true;
+        }
+    }
+
+    @action
+    leaveScreen() {
+        this.member.rollbackAttributes();
+        return this.leaveScreenTransition.retry();
+    }
+
+    // Tasks -------------------------------------------------------------------
+
+    @task({drop: true})
+    *saveTask() {
         let {member, scratchMember} = this;
 
         // if Cmd+S is pressed before the field loses focus make sure we're
@@ -109,18 +125,20 @@ export default Controller.extend({
                 this.notifications.showAPIError(error, {key: 'member.save'});
             }
         }
-    }).drop(),
+    }
 
-    fetchMember: task(function* (memberId) {
-        this.set('isLoading', true);
+    @task
+    *fetchMemberTask(memberId) {
+        this.isLoading = true;
 
-        let member = yield this.store.findRecord('member', memberId, {
+        this.member = yield this.store.findRecord('member', memberId, {
             reload: true
         });
 
-        this.set('member', member);
-        this.set('isLoading', false);
-    }),
+        this.isLoading = false;
+    }
+
+    // Private -----------------------------------------------------------------
 
     _saveMemberProperty(propKey, newValue) {
         let currentValue = this.member.get(propKey);
@@ -136,4 +154,4 @@ export default Controller.extend({
 
         this.member.set(propKey, newValue);
     }
-});
+}

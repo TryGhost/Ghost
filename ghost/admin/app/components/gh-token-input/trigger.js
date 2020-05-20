@@ -50,7 +50,7 @@ export default class Trigger extends EmberPowerSelectMultipleTrigger {
                     if (typeof lastSelection === 'string') {
                         this.args.select.actions.search(lastSelection);
                     } else {
-                        let searchField = this.get('searchField');
+                        let searchField = this.searchField;
                         assert('`{{power-select-multiple}}` requires a `searchField` when the options are not strings to remove options using backspace', searchField);
                         this.args.select.actions.search(get(lastSelection, searchField));
                     }
