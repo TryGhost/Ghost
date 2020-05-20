@@ -1,6 +1,7 @@
 /* global key */
 import Component from '@ember/component';
 import Ember from 'ember';
+import classic from 'ember-classic-decorator';
 import fallbackIfUndefined from '../utils/computed-fallback-if-undefined';
 import {A, isArray} from '@ember/array';
 import {action, computed, get} from '@ember/object';
@@ -19,6 +20,7 @@ const {Handlebars} = Ember;
 const BACKSPACE = 8;
 const TAB = 9;
 
+@classic
 @tagName('')
 class GhTokenInput extends Component {
     // public attrs

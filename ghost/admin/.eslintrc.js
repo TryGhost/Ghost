@@ -16,6 +16,10 @@ module.exports = {
         'plugin:ghost/ember'
     ],
     rules: {
+        // octane 🏎
+        'ghost/ember/classic-decorator-hooks': 'error',
+        'ghost/ember/classic-decorator-no-classic-methods': 'error',
+
         // disable linting of `this.get` until there's a reliable autofix
         'ghost/ember/use-ember-get-and-set': 'off',
 

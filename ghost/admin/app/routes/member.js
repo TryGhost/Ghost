@@ -1,24 +1,26 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
+import classic from 'ember-classic-decorator';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default AuthenticatedRoute.extend(CurrentUserSettings, {
-    router: service(),
+@classic
+export default class MembersRoute extends AuthenticatedRoute.extend(CurrentUserSettings) {
+    @service router;
 
-    _requiresBackgroundRefresh: true,
+    _requiresBackgroundRefresh = true;
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.router.on('routeWillChange', (transition) => {
             this.showUnsavedChangesModal(transition);
         });
-    },
+    }
 
     beforeModel() {
-        this._super(...arguments);
-        return this.get('session.user')
-            .then(this.transitionAuthor());
-    },
+        super.beforeModel(...arguments);
+        return this.session.user.then(this.transitionAuthor());
+    }
 
     model(params) {
         this._requiresBackgroundRefresh = false;
@@ -28,33 +30,30 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
         } else {
             return this.store.createRecord('member');
         }
-    },
+    }
 
     setupController(controller, member) {
-        this._super(...arguments);
+        super.setupController(...arguments);
         if (this._requiresBackgroundRefresh) {
-            controller.fetchMember.perform(member.get('id'));
+            controller.fetchMemberTask.perform(member.get('id'));
         }
-    },
+    }
 
     deactivate() {
-        this._super(...arguments);
-
+        super.deactivate(...arguments);
         // clean up newly created records and revert unsaved changes to existing
         this.controller.member.rollbackAttributes();
-
         this._requiresBackgroundRefresh = true;
-    },
+    }
 
-    actions: {
-        save() {
-            this.controller.send('save');
-        }
-    },
+    @action
+    save() {
+        this.controller.save();
+    }
 
     titleToken() {
-        return this.controller.get('member.name');
-    },
+        return this.controller.member.name;
+    }
 
     showUnsavedChangesModal(transition) {
         if (transition.from && transition.from.name === this.routeName && transition.targetName) {
@@ -65,9 +64,9 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
 
             if (!controller.member.isDeleted && isChanged) {
                 transition.abort();
-                controller.send('toggleUnsavedChangesModal', transition);
+                controller.toggleUnsavedChangesModal(transition);
                 return;
             }
         }
     }
-});
+}

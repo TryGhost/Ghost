@@ -1,6 +1,6 @@
 import MemberRoute from '../member';
 
-export default MemberRoute.extend({
-    controllerName: 'member',
-    templateName: 'member'
-});
+export default class NewMemberRoute extends MemberRoute {
+    controllerName = 'member';
+    templateName = 'member';
+}
