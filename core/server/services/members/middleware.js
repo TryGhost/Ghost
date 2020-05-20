@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const {logging} = require('../../lib/common');
 const config = require('../../config');
 const labsService = require('../labs');
@@ -5,6 +6,7 @@ const membersService = require('./index');
 const urlUtils = require('../../lib/url-utils');
 const ghostVersion = require('../../lib/ghost-version');
 const settingsCache = require('../settings/cache');
+const {formattedMemberResponse} = require('./utils');
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
 // Need to figure a way to separate these things (e.g. frontend actually talks to members API)
@@ -53,15 +55,24 @@ const getMemberData = async function (req, res) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         if (member) {
-            res.json({
-                uuid: member.uuid,
-                email: member.email,
-                name: member.name,
-                firstname: member.name && member.name.split(' ')[0],
-                avatar_image: member.avatar_image,
-                subscriptions: member.stripe.subscriptions,
-                paid: member.stripe.subscriptions.length !== 0
-            });
+            res.json(formattedMemberResponse(member));
+        } else {
+            res.json(null);
+        }
+    } catch (err) {
+        logging.warn(err.message);
+        res.writeHead(err.statusCode);
+        res.end(err.message);
+    }
+};
+
+const updateMemberData = async function (req, res) {
+    try {
+        const data = _.pick(req.body, 'email', 'name', 'subscribed');
+        const member = await membersService.ssr.getMemberDataFromSession(req, res);
+        if (member) {
+            const updatedMember = await membersService.api.members.update(data, {id: member.id});
+            res.json(formattedMemberResponse(updatedMember));
         } else {
             res.json(null);
         }
@@ -129,6 +140,7 @@ module.exports = {
     createSessionFromMagicLink,
     getIdentityToken,
     getMemberData,
+    updateMemberData,
     getMemberSiteData,
     deleteSession,
     stripeWebhooks: (req, res, next) => membersService.api.middleware.handleStripeWebhook(req, res, next)

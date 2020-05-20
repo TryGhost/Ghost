@@ -1,6 +1,8 @@
 const debug = require('ghost-ignition').debug('web:members:app');
 const {URL} = require('url');
 const cors = require('cors');
+const bodyParser = require('body-parser');
+const boolParser = require('express-query-boolean');
 const express = require('../../../shared/express');
 const urlUtils = require('../../lib/url-utils');
 const membersService = require('../../services/members');
@@ -10,6 +12,16 @@ const shared = require('../shared');
 module.exports = function setupMembersApp() {
     debug('Members App setup start');
     const membersApp = express('members');
+
+    // Body parsing
+    membersApp.use(bodyParser.json({limit: '1mb'}));
+    membersApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
+
+    // Query parsing
+    membersApp.use(boolParser());
+
+    // send 503 json response in case of maintenance
+    membersApp.use(shared.middlewares.maintenance);
 
     // Entire app is behind labs flag
     membersApp.use(shared.middlewares.labs.members);
@@ -28,6 +40,7 @@ module.exports = function setupMembersApp() {
 
     // Initializes members specific routes as well as assigns members specific data to the req/res objects
     membersApp.get('/api/member', middleware.getMemberData);
+    membersApp.put('/api/member', middleware.updateMemberData);
     membersApp.get('/api/session', middleware.getIdentityToken);
     membersApp.delete('/api/session', middleware.deleteSession);
     membersApp.get('/api/site', middleware.getMemberSiteData);
