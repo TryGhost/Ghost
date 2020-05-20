@@ -96,8 +96,7 @@ module.exports = function MembersApi({
 
     async function getMemberDataFromMagicLinkToken(token) {
         const email = await magicLinkService.getUserFromToken(token);
-        const {labels = [], ip} = await magicLinkService.getPayloadFromToken(token);
-
+        const {labels = [], ip, name = ''} = await magicLinkService.getPayloadFromToken(token);
         if (!email) {
             return null;
         }
@@ -126,7 +125,7 @@ module.exports = function MembersApi({
             return member;
         }
 
-        await users.create({email, labels, geolocation});
+        await users.create({name, email, labels, geolocation});
         return getMemberIdentityData(email);
     }
     async function getMemberIdentityData(email){
@@ -165,9 +164,7 @@ module.exports = function MembersApi({
                     await sendEmailWithMagicLink({email, requestedType: emailType, payload});
                 }
             } else {
-                if (body.labels) {
-                    payload.labels = body.labels;
-                }
+                Object.assign(payload, _.pick(body, ['labels', 'name']));
                 await sendEmailWithMagicLink({email, requestedType: emailType, payload});
             }
             res.writeHead(201);
