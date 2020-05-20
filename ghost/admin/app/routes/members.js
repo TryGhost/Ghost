@@ -20,20 +20,11 @@ export default class MembersRoute extends AuthenticatedRoute {
         });
     }
 
-    // trigger a background load of labels for filter dropdown
+    // trigger a background load of members plus labels for filter dropdown
     setupController(controller) {
         super.setupController(...arguments);
         controller.fetchMembersTask.perform();
-        if (!controller.hasLoadedLabels) {
-            this.store.query('label', {limit: 'all'}).then(() => {
-                controller.hasLoadedLabels = true;
-            });
-        }
-    }
-
-    deactivate() {
-        super.deactivate(...arguments);
-        this.controller.modalLabel && this.controller.modalLabel.rollbackAttributes();
+        controller.fetchLabelsTask.perform();
     }
 
     buildRouteInfoMetadata() {

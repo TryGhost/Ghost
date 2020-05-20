@@ -21,8 +21,6 @@ export default class MembersController extends Controller {
 
     @tracked _availableLabels = A([]);
 
-    hasLoadedLabels = false;
-
     constructor() {
         super(...arguments);
         this.members = this.store.peekAll('member');
@@ -187,5 +185,14 @@ export default class MembersController extends Controller {
         }
 
         this._lastFetchDate = newFetchDate;
+    }
+
+    @task
+    *fetchLabelsTask() {
+        if (!this._hasLoadedLabels) {
+            yield this.store.query('label', {limit: 'all'}).then(() => {
+                this._hasLoadedLabels = true;
+            });
+        }
     }
 }

@@ -1,11 +1,10 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 @classic
-export default class MembersRoute extends AuthenticatedRoute.extend(CurrentUserSettings) {
+export default class MembersRoute extends AuthenticatedRoute {
     @service router;
 
     _requiresBackgroundRefresh = true;
@@ -19,7 +18,11 @@ export default class MembersRoute extends AuthenticatedRoute.extend(CurrentUserS
 
     beforeModel() {
         super.beforeModel(...arguments);
-        return this.session.user.then(this.transitionAuthor());
+        return this.session.user.then((user) => {
+            if (!user.isOwnerOrAdmin) {
+                return this.transitionTo('home');
+            }
+        });
     }
 
     model(params) {
