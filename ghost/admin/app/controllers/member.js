@@ -35,8 +35,9 @@ export default class MemberController extends Controller {
     }
 
     get subscribedAt() {
-        let memberSince = moment(this.member.createdAtUTC).from(moment());
-        let createdDate = moment(this.member.createdAtUTC).format('MMM DD, YYYY');
+        // member can be a proxy object in a sparse array so .get is required
+        let memberSince = moment(this.member.get('createdAtUTC')).from(moment());
+        let createdDate = moment(this.member.get('createdAtUTC')).format('MMM DD, YYYY');
         return `${createdDate} (${memberSince})`;
     }
 

@@ -14,11 +14,12 @@ export default Component.extend({
     setProperty: () => {},
 
     hasMultipleSubscriptions: gt('member.stripe', 1),
+
     canShowStripeInfo: computed('member.isNew', 'settings.membersSubscriptionSettings', function () {
         let membersSubscriptionSettings = this.settings.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
         let stripeEnabled = membersSubscriptionSettings && !!(membersSubscriptionSettings.paymentProcessors[0].config.secret_token) && !!(membersSubscriptionSettings.paymentProcessors[0].config.public_token);
 
-        if (this.member.isNew || !stripeEnabled) {
+        if (this.member.get('isNew') || !stripeEnabled) {
             return false;
         } else {
             return true;

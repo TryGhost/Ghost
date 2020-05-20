@@ -14,7 +14,9 @@ const stringToHslColor = function (str, saturation, lightness) {
 export default class GhMemberAvatarComponent extends Component {
     get memberName() {
         let {member} = this.args;
-        return member.name || member.email || 'NM';
+
+        // can be a proxy in a sparse array so .get is required
+        return member.get('name') || member.get('email') || 'NM';
     }
 
     get backgroundStyle() {
