@@ -22,6 +22,7 @@ export default ModalComponent.extend({
         this.label.errors.clear();
         this.label.rollbackAttributes();
     },
+
     actions: {
         toggleDeleteLabelModal() {
             this.label.rollbackAttributes();
