@@ -5,19 +5,19 @@ const _ = require('lodash');
 
 function schemaImageObject(metaDataVal) {
     let imageObject;
-    if (!metaDataVal) {
+    if (!metaDataVal || !metaDataVal.url) {
         return null;
-    }
-    if (!metaDataVal.dimensions) {
-        return metaDataVal.url;
     }
 
     imageObject = {
         '@type': 'ImageObject',
-        url: metaDataVal.url,
-        width: metaDataVal.dimensions.width,
-        height: metaDataVal.dimensions.height
+        url: metaDataVal.url
     };
+
+    if (metaDataVal.dimensions) {
+        imageObject.width = metaDataVal.dimensions.width;
+        imageObject.height = metaDataVal.dimensions.height;
+    }
 
     return imageObject;
 }
