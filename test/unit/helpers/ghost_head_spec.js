@@ -371,7 +371,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "WebSite"/);
                 rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/"/);
-                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/site-cover.png"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/site-cover.png"\n/);
                 rendered.string.should.match(/"description": "site description"/);
 
                 done();
@@ -419,7 +419,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "WebSite"/);
                 rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/"/);
-                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/site-cover.png"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/site-cover.png"\n/);
                 rendered.string.should.match(/"description": "site SEO description"/);
 
                 done();
@@ -467,8 +467,8 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"name": "Ghost"/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/about\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
-                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/test-image-about.png"/);
-                rendered.string.should.match(/"image\": \"http:\/\/localhost:65530\/content\/images\/test-author-image.png\"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image-about.png"\n/);
+                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"\n/);
                 rendered.string.should.match(/"description": "all about our site"/);
 
                 done();
@@ -516,8 +516,8 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"name": "Ghost"/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/about\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
-                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/test-image-about.png"/);
-                rendered.string.should.match(/"image\": \"http:\/\/localhost:65530\/content\/images\/test-author-image.png\"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image-about.png"/);
+                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"\n/);
                 rendered.string.should.match(/"description": "all about our site"/);
 
                 done();
@@ -574,7 +574,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"author": {/);
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.match(/"image\": \"http:\/\/localhost:65530\/content\/images\/test-author-image.png\"/);
+                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"\n/);
                 rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
                 rendered.string.should.not.match(/"description": "Author bio"/);
@@ -582,7 +582,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
                 rendered.string.should.match(re3);
                 rendered.string.should.match(re4);
-                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image.png"\n/);
                 rendered.string.should.match(/"keywords": "tag1, tag2, tag3"/);
                 rendered.string.should.match(/"description": "site description"/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
@@ -638,13 +638,13 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"author": {/);
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.match(/"image\": \"http:\/\/localhost:65530\/content\/images\/test-author-image.png\"/);
+                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"/);
                 rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
                 rendered.string.should.not.match(/"description": "Author bio"/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost"/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
-                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
                 rendered.string.should.match(/"keywords": "tag1, tag2, tag3"/);
                 rendered.string.should.match(/"description": "post custom excerpt"/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
@@ -751,13 +751,13 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"author": {/);
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.match(/"image\": \"http:\/\/localhost:65530\/content\/images\/test-author-image.png\"/);
+                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"/);
                 rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
                 rendered.string.should.not.match(/"description": "Author bio"/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost"/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
-                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
                 rendered.string.should.match(/"keywords": "tag1, tag2, tag3"/);
                 rendered.string.should.match(/"description": "site description"/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
@@ -813,13 +813,13 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"author": {/);
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.match(/"image\": \"http:\/\/localhost:65530\/content\/images\/test-author-image.png\"/);
+                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"/);
                 rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost &quot;test&quot;"/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
                 rendered.string.should.match(/"keywords": "tag1, tag2, tag3"/);
                 rendered.string.should.match(/"description": "site &quot;test&quot; description"/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
@@ -870,13 +870,13 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"author": {/);
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.match(/"image\": \"http:\/\/localhost:65530\/content\/images\/test-author-image.png\"/);
+                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"/);
                 rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost"/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
                 rendered.string.should.not.match(/"keywords":/);
                 rendered.string.should.match(/"description": "site description"/);
                 rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
@@ -1077,7 +1077,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Series"/);
                 rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/tag\/tagtitle\/"/);
-                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/tag-image.png"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/tag-image.png"/);
                 rendered.string.should.match(/"name": "tagtitle"/);
                 rendered.string.should.match(/"description": "tag meta description"/);
 
@@ -1120,7 +1120,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Series"/);
                 rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
                 rendered.string.should.match(/"url": "http:\/\/localhost:65530\/tag\/tagtitle\/"/);
-                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/tag-image.png"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/tag-image.png"/);
                 rendered.string.should.match(/"name": "tagtitle"/);
 
                 done();
@@ -1210,7 +1210,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"sameAs": \[\n        "http:\/\/authorwebsite.com",\n        "https:\/\/www.facebook.com\/testuser",\n        "https:\/\/twitter.com\/testuser"\n    \]/);
                 rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
-                rendered.string.should.match(/"image": "http:\/\/localhost:65530\/content\/images\/author-cover-image.png"/);
+                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/author-cover-image.png"/);
                 rendered.string.should.match(/"name": "Author name"/);
 
                 done();
