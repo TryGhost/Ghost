@@ -1235,7 +1235,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
             });
 
-            it('resolves if changing visibility', function () {
+            it('resolves if changing visibility as owner', function (done) {
                 const mockPostObj = {
                     get: sinon.stub(),
                     related: sinon.stub()
@@ -1251,13 +1251,45 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     'edit',
                     context,
                     unsafeAttrs,
-                    testUtils.permissions.editor,
+                    testUtils.permissions.owner,
                     false,
                     true,
                     true
                 ).then(() => {
                     should(mockPostObj.get.called).be.false();
                     should(mockPostObj.related.calledOnce).be.true();
+                    done();
+                }).catch(() => {
+                    done(new Error('Permissible function should have passed for owner.'));
+                });
+            });
+
+            it('resolves if changing visibility as administrator', function (done) {
+                const mockPostObj = {
+                    get: sinon.stub(),
+                    related: sinon.stub()
+                };
+                const context = {user: 1};
+                const unsafeAttrs = {visibility: 'public'};
+
+                mockPostObj.get.withArgs('visibility').returns('paid');
+                mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+
+                models.Post.permissible(
+                    mockPostObj,
+                    'edit',
+                    context,
+                    unsafeAttrs,
+                    testUtils.permissions.admin,
+                    false,
+                    true,
+                    true
+                ).then(() => {
+                    should(mockPostObj.get.called).be.false();
+                    should(mockPostObj.related.calledOnce).be.true();
+                    done();
+                }).catch(() => {
+                    done(new Error('Permissible function should have passed for administrator.'));
                 });
             });
         });
