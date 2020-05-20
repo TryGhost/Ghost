@@ -430,7 +430,10 @@ describe('getSchema', function () {
             author: {
                 '@type': 'Person',
                 description: 'My author bio.',
-                image: 'http://mysite.com/author/image/url/me.jpg',
+                image: {
+                    '@type': 'ImageObject',
+                    url: 'http://mysite.com/author/image/url/me.jpg'
+                },
                 name: 'Post Author',
                 sameAs: [
                     'http://myblogsite.com/',
@@ -443,7 +446,10 @@ describe('getSchema', function () {
             datePublished: '2015-12-25T05:35:01.234Z',
             description: 'Post meta description',
             headline: 'Post Title',
-            image: 'http://mysite.com/content/image/mypostcoverimage.jpg',
+            image: {
+                '@type': 'ImageObject',
+                url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
+            },
             keywords: 'one, two, tag',
             mainEntityOfPage: {
                 '@type': 'WebPage',
@@ -453,7 +459,10 @@ describe('getSchema', function () {
                 '@type': 'Organization',
                 name: 'Site Title',
                 url: 'http://mysite.com',
-                logo: 'http://mysite.com/author/image/url/logo.jpg'
+                logo: {
+                    '@type': 'ImageObject',
+                    url: 'http://mysite.com/author/image/url/logo.jpg'
+                }
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
