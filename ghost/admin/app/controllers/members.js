@@ -9,6 +9,7 @@ import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 
 export default class MembersController extends Controller {
+    @service ellaSparse;
     @service store;
 
     queryParams = ['label'];
@@ -29,19 +30,15 @@ export default class MembersController extends Controller {
 
     // Computed properties -----------------------------------------------------
 
-    get showLoader() {
-        return (!this.filteredMembers.length && this.fetchMembersTask.isRunning);
-    }
-
     get listHeader() {
-        let {searchText, selectedLabel, filteredMembers} = this;
+        let {searchText, selectedLabel, members} = this;
         if (searchText) {
             return 'Search result';
         }
         if (this.fetchMembersTask.lastSuccessful) {
-            let count = pluralize(filteredMembers.length, 'member');
+            let count = pluralize(members.length, 'member');
             if (selectedLabel && selectedLabel.slug) {
-                if (filteredMembers.length > 1) {
+                if (members.length > 1) {
                     return `${count} match current filter`;
                 } else {
                     return `${count} matches current filter`;
@@ -165,26 +162,35 @@ export default class MembersController extends Controller {
     // Tasks -------------------------------------------------------------------
 
     @task
-    *fetchMembersTask() {
-        let newFetchDate = new Date();
+    *fetchMembersTask({forceReload = false} = {}) {
+        // use a fixed created_at date so that subsequent pages have a consistent index
+        let startDate = new Date();
 
-        if (this._hasFetchedAll) {
-            // fetch any records modified since last fetch
-            yield this.store.query('member', {
-                limit: 'all',
-                filter: `updated_at:>='${moment.utc(this._lastFetchDate).format('YYYY-MM-DD HH:mm:ss')}'`,
-                order: 'created_at desc'
-            });
-        } else {
-            // fetch all records
-            yield this.store.query('member', {
-                limit: 'all',
-                order: 'created_at desc'
-            });
-            this._hasFetchedAll = true;
+        // unless we have a forced reload, do not re-fetch the members list unless it's more than a minute old
+        // keeps navigation between list->details->list snappy
+        if (!forceReload && this._startDate && !(this._startDate - startDate > 1 * 60 * 1000)) {
+            return;
         }
 
-        this._lastFetchDate = newFetchDate;
+        this._startDate = startDate;
+
+        this.members = yield this.ellaSparse.array((range = {}, query = {}) => {
+            query = Object.assign({
+                limit: range.length,
+                page: range.start / range.length,
+                order: 'created_at desc',
+                filter: `created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`
+            }, query);
+
+            return this.store.query('member', query).then((result) => {
+                return {
+                    data: result,
+                    total: result.meta.pagination.total
+                };
+            });
+        }, {
+            limit: 50
+        });
     }
 
     @task
