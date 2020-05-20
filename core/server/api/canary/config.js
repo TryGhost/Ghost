@@ -18,7 +18,8 @@ module.exports = {
                 useGravatar: !config.isPrivacyDisabled('useGravatar'),
                 labs: labs.getAll(),
                 clientExtensions: config.get('clientExtensions') || {},
-                enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false
+                enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false,
+                stripeDirect: config.get('stripeDirect')
             };
             if (billingUrl) {
                 response.billingUrl = billingUrl;
