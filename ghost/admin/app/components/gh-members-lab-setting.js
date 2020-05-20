@@ -37,6 +37,8 @@ export default Component.extend({
 
     defaultContentVisibility: reads('settings.defaultContentVisibility'),
 
+    stripeDirect: reads('config.stripeDirect'),
+
     selectedCurrency: computed('subscriptionSettings.stripeConfig.plans.monthly.currency', function () {
         return CURRENCIES.findBy('value', this.get('subscriptionSettings.stripeConfig.plans.monthly.currency'));
     }),
