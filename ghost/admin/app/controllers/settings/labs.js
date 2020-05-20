@@ -217,19 +217,6 @@ export default Controller.extend({
         return RSVP.resolve();
     },
 
-    sendTestEmail: task(function* () {
-        let notifications = this.notifications;
-        let emailUrl = this.get('ghostPaths.url').api('mail', 'test');
-
-        try {
-            yield this.ajax.post(emailUrl);
-            notifications.showAlert('Check your email for the test message.', {type: 'info', key: 'test-email.send.success'});
-            return true;
-        } catch (error) {
-            notifications.showAPIError(error, {key: 'test-email:send'});
-        }
-    }).drop(),
-
     saveSettings: task(function* () {
         return yield this.settings.save();
     }).drop(),
