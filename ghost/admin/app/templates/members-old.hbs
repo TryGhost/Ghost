@@ -29,7 +29,7 @@
                 <GhDropdown @name="members-actions-menu" @tagName="ul"
                     @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right">
                     <li>
-                        <LinkTo @route="members-dev.import" class="mr2" data-test-link="import-csv">
+                        <LinkTo @route="members-old.import" class="mr2" data-test-link="import-csv">
                             <span>Import members</span>
                         </LinkTo>
                     </li>
@@ -40,7 +40,7 @@
                     </li>
                 </GhDropdown>
             </span>
-            <LinkTo @route="member-dev.new" class="gh-btn gh-btn-green" data-test-new-member-button="true"><span>New member</span></LinkTo>
+            <LinkTo @route="member-old.new" class="gh-btn gh-btn-green" data-test-new-member-button="true"><span>New member</span></LinkTo>
         </section>
     </GhCanvasHeader>
     {{#if this.showLoader}}
@@ -52,7 +52,7 @@
             {{#if this.filteredMembers}}
                 {{#if this.showingAll}}
                     <section>
-                        <GhMembersChartDev @members={{members}} />
+                        <GhMembersChartOld @members={{members}} />
                     </section>
                 {{/if}}
             {{/if}}
@@ -66,7 +66,7 @@
                             <div class="gh-list-header gh-list-cellwidth-chevron"></div>
                         </li>
                         <VerticalCollection @items={{this.filteredMembers}} @key="id" @containerSelector=".gh-main" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
-                            <GhMembersListItemDev @member={{member}} @data-test-member-id={{member.id}} />
+                            <GhMembersListItemOld @member={{member}} @data-test-member-id={{member.id}} />
                         </VerticalCollection>
                     {{else}}
                         <li class="no-posts-box">

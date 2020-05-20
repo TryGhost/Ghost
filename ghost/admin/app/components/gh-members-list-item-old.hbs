@@ -1,5 +1,5 @@
 <li class="gh-list-row gh-members-list-item" ...attributes>
-    <LinkTo @route="member-dev" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-basic">
+    <LinkTo @route="member-old" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-basic">
         <div class="flex items-center">
             <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3" />
             <div>
@@ -11,7 +11,7 @@
         </div>
     </LinkTo>
 
-    <LinkTo @route="member-dev" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-geolocation gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not @member.name) "gh-members-geolocation-noname"}}">
+    <LinkTo @route="member-old" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-geolocation gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not @member.name) "gh-members-geolocation-noname"}}">
         {{#if @member.geolocation}}
             {{#if (eq @member.geolocation.country_code "US")}}
                 {{@member.geolocation.region}}, US
@@ -23,11 +23,11 @@
         {{/if}}
     </LinkTo>
 
-    <LinkTo @route="member-dev" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not @member.name) "gh-members-subscribed-noname"}}">
+    <LinkTo @route="member-old" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not @member.name) "gh-members-subscribed-noname"}}">
         {{moment-format @member.createdAtUTC "MMM DD, YYYY"}} <span class="midlightgrey">({{this.memberSince}})</span>
     </LinkTo>
 
-    <LinkTo @route="member-dev" @model={{@member}} title="Member details" class="gh-list-data gh-list-cellwidth-chevron gh-members-list-chevron">
+    <LinkTo @route="member-old" @model={{@member}} title="Member details" class="gh-list-data gh-list-cellwidth-chevron gh-members-list-chevron">
         <div class="flex items-center justify-end w-100 h-100">
             <span class="nr2">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
         </div>
