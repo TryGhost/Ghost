@@ -4,7 +4,7 @@ import {inject as service} from '@ember/service';
 
 /* eslint-disable ghost/ember/alias-model-in-controller */
 export default Controller.extend({
-    members: controller(),
+    members: controller('members-old'),
     router: service(),
 
     actions: {
@@ -13,7 +13,7 @@ export default Controller.extend({
         },
 
         close() {
-            this.router.transitionTo('members-dev');
+            this.router.transitionTo('members-old');
         }
     }
 });
