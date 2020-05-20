@@ -1,55 +1,57 @@
 <div class="flex flex-column b--whitegrey bt">
 
     <section class="bb b--whitegrey pa5">
-        <div class="flex justify-between">
-            <div>
-                <h4 class="gh-setting-title">Connect to Stripe</h4>
-                <p class="gh-setting-desc pa0 ma0">Configure API keys to create subscriptions and take payments</p>
+        {{#if this.stripeDirect}}
+            <div class="flex justify-between">
+                <div>
+                    <h4 class="gh-setting-title">Connect to Stripe</h4>
+                    <p class="gh-setting-desc pa0 ma0">Configure API keys to create subscriptions and take payments</p>
+                </div>
+                <div>
+                    <button type="button" class="gh-btn" {{action (toggle "membersStripeOpen" this)}} data-test-toggle-membersstripe><span>{{if this.membersStripeOpen "Close" "Expand"}}</span></button>
+                </div>
             </div>
-            <div>
-                <button type="button" class="gh-btn" {{action (toggle "membersStripeOpen" this)}} data-test-toggle-membersstripe><span>{{if this.membersStripeOpen "Close" "Expand"}}</span></button>
-            </div>
-        </div>
 
-        {{#liquid-if this.membersStripeOpen}}
-            <div class="flex flex-column flex-row-l items-start justify-between mb4 mt6">
-                <div class="w-100 w-50-l">
-                    <div class="mb4">
-                        <label class="fw6 f8">Stripe Publishable key</label>
-                        <GhTextInput
-                            @type="password"
-                            @value={{readonly this.subscriptionSettings.stripeConfig.public_token}}
-                            @input={{action "setSubscriptionSettings" "public_token"}}
-                            @class="mt1 password"
-                        />
-                    </div>
-                    <div class="nudge-top--3">
-                        <label class="fw6 f8 mt4">Stripe Secret key</label>
-                        <GhTextInput
-                            @type="password"
-                            @value={{readonly this.subscriptionSettings.stripeConfig.secret_token}}
-                            @input={{action "setSubscriptionSettings" "secret_token"}}
-                            @class="mt1 password"
-                        />
-                        <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 fw4 f8">
-                            Find your Stripe API keys here &raquo;
-                        </a>
-                    </div>
-                </div>
-                <div class="ml0 ml5-l mt6">
-                    <div class="gh-members-stripe-info">
-                        <div class="gh-members-stripe-info-header">
-                            <h4>How you get paid</h4>
-                            {{svg-jar "stripe-verified-partner-badge" class="gh-members-stripe-badge"}}
+            {{#liquid-if this.membersStripeOpen}}
+                <div class="flex flex-column flex-row-l items-start justify-between mb4 mt6">
+                    <div class="w-100 w-50-l">
+                        <div class="mb4">
+                            <label class="fw6 f8">Stripe Publishable key</label>
+                            <GhTextInput
+                                @type="password"
+                                @value={{readonly this.subscriptionSettings.stripeConfig.public_token}}
+                                @input={{action "setSubscriptionSettings" "public_token"}}
+                                @class="mt1 password"
+                            />
                         </div>
-                        <p class="f8 mt2 mb0">
-                            Stripe is our exclusive direct payments partner.<br />
-                            Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank"  rel="noopener" class="gh-members-stripe-link">sign up here</a>.
-                        </p>
+                        <div class="nudge-top--3">
+                            <label class="fw6 f8 mt4">Stripe Secret key</label>
+                            <GhTextInput
+                                @type="password"
+                                @value={{readonly this.subscriptionSettings.stripeConfig.secret_token}}
+                                @input={{action "setSubscriptionSettings" "secret_token"}}
+                                @class="mt1 password"
+                            />
+                            <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 fw4 f8">
+                                Find your Stripe API keys here &raquo;
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ml0 ml5-l mt6">
+                        <div class="gh-members-stripe-info">
+                            <div class="gh-members-stripe-info-header">
+                                <h4>How you get paid</h4>
+                                {{svg-jar "stripe-verified-partner-badge" class="gh-members-stripe-badge"}}
+                            </div>
+                            <p class="f8 mt2 mb0">
+                                Stripe is our exclusive direct payments partner.<br />
+                                Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank"  rel="noopener" class="gh-members-stripe-link">sign up here</a>.
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        {{/liquid-if}}
+            {{/liquid-if}}
+        {{/if}}
     </section>
 
     <section class="bb b--whitegrey pa5">
