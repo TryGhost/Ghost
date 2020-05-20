@@ -443,22 +443,22 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^0.1.8"
 
-"@tryghost/magic-link@^0.4.5":
-  version "0.4.5"
-  resolved "https://registry.npmjs.org/@tryghost/magic-link/-/magic-link-0.4.5.tgz#512d1f8bc6a43a894ec6c6cac3769bf4d4b2cd38"
-  integrity sha512-9OVv8amAEKT3XdzEKZ0c4baSlCucS9orTpTOmgKa/uwHUHD9HKuCuc4RAWb23TnenMYZhHTEqXk/kWsfqJYyqg==
+"@tryghost/magic-link@^0.4.6":
+  version "0.4.6"
+  resolved "https://registry.npmjs.org/@tryghost/magic-link/-/magic-link-0.4.6.tgz#480c411ae0c781da2acf1444428070368f9a2bab"
+  integrity sha512-/bKBTss6orP8RKE05NxkYsucHfZXRYBAWnUGQkVNmlj/EuniRnyhta1ilTQ+Uvqt/coF3mBBrOzV8bUKwK++XQ==
   dependencies:
     bluebird "^3.5.5"
     ghost-ignition "^3.1.0"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@^0.18.4":
-  version "0.18.4"
-  resolved "https://registry.npmjs.org/@tryghost/members-api/-/members-api-0.18.4.tgz#e942dec06796c8e6f0be04126ca5edf7928f4b11"
-  integrity sha512-PO0sMhcmzRFJSaCaKY9lw46O5GcFKIFcyAeAxfNnhvaheVpBlUvyJAgawvTNYCRb4ZSae5LgivxYhzfPPv5cYg==
+"@tryghost/members-api@^0.18.5":
+  version "0.18.5"
+  resolved "https://registry.npmjs.org/@tryghost/members-api/-/members-api-0.18.5.tgz#0041cc86c99834a3a85fddabe1c5c06c4af15396"
+  integrity sha512-+i+g75urHAgywaaOnGhV+C4x5ZVdbgKpfR3MFe+eqojFX48r5lxk/bkqXxrBo6DP7NCfQjgJkXqqBJs06QJ/SQ==
   dependencies:
-    "@tryghost/magic-link" "^0.4.5"
+    "@tryghost/magic-link" "^0.4.6"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
     cookies "^0.8.0"
