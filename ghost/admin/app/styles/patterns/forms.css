@@ -673,9 +673,6 @@ textarea {
 /* ---------------------------------------------------------- */
 
 @-moz-document url-prefix() {
-    .gh-select {
-        border-width: 1px;
-    }
     .gh-select select {
         padding: 7px 10px 7px 8px;
     }
