@@ -469,6 +469,23 @@ fixtures = {
         return Promise.map(DataGenerator.forKnex.emails, function (email) {
             return models.Email.add(email, module.exports.context.internal);
         });
+    },
+
+    insertMembersAndLabels: function insertMembersAndLabels() {
+        return Promise.map(DataGenerator.forKnex.labels, function (label) {
+            return models.Label.add(label, module.exports.context.internal);
+        }).then(function () {
+            return Promise.each(_.cloneDeep(DataGenerator.forKnex.members), function (member) {
+                let memberLabelRelations = _.filter(DataGenerator.forKnex.members_labels, {member_id: member.id});
+
+                memberLabelRelations = _.map(memberLabelRelations, function (memberLabelRelation) {
+                    return _.find(DataGenerator.forKnex.labels, {id: memberLabelRelation.label_id});
+                });
+
+                member.labels = memberLabelRelations;
+                return models.Member.add(member, module.exports.context.internal);
+            });
+        });
     }
 };
 
@@ -536,6 +553,9 @@ toDoList = {
     },
     member: function insertMember() {
         return fixtures.insertOne('Member', 'members', 'createMember');
+    },
+    members: function insertMembersAndLabels() {
+        return fixtures.insertMembersAndLabels();
     },
     posts: function insertPostsAndTags() {
         return fixtures.insertPostsAndTags();

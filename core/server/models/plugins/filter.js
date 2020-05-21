@@ -16,6 +16,13 @@ const RELATIONS = {
         joinTable: 'posts_authors',
         joinFrom: 'post_id',
         joinTo: 'author_id'
+    },
+    labels: {
+        tableName: 'labels',
+        type: 'manyToMany',
+        joinTable: 'members_labels',
+        joinFrom: 'member_id',
+        joinTo: 'label_id'
     }
 };
 
@@ -39,6 +46,12 @@ const EXPANSIONS = [{
 }, {
     key: 'tags',
     replacement: 'tags.slug'
+}, {
+    key: 'label',
+    replacement: 'labels.slug'
+}, {
+    key: 'labels',
+    replacement: 'labels.slug'
 }];
 
 const filter = function filter(Bookshelf) {
