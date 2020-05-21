@@ -128,12 +128,16 @@ export default class PaidAccountHomePage extends React.Component {
         this.context.onAction('editBilling');
     }
 
+    onToggleSubscription(e, subscribed) {
+        this.context.onAction('updateMember', {subscribed: !subscribed});
+    }
+
     renderAccountDetails() {
         const buttonStyle = {
             padding: '6px 9px', border: '1px solid black', width: '60px', display: 'flex', justifyContent: 'center',
             borderRadius: '5px', cursor: 'pointer'
         };
-        const {name, email, subscriptions} = this.context.member;
+        const {name, email, subscriptions, subscribed} = this.context.member;
 
         const {
             plan,
@@ -184,7 +188,9 @@ export default class PaidAccountHomePage extends React.Component {
                         </div>
                     </div>
                     <div>
-                        <Switch onToggle={(e) => {}}/>
+                        <Switch onToggle={(e) => {
+                            this.onToggleSubscription(e, subscribed);
+                        }} checked={subscribed} />
                     </div>
                 </div>
             </div>

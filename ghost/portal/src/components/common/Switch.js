@@ -8,10 +8,12 @@ function Switch({id, label, onToggle, checked = false}) {
                     type="checkbox"
                     checked={checked}
                     id={id}
-                    onChange={e => onToggle(e)}
+                    onChange={() => {}}
                     aria-label={label}
                 />
-                <span className="input-toggle-component"></span>
+                <span className="input-toggle-component" onClick={(e) => {
+                    onToggle(e);
+                }}></span>
             </label>
         </div>
     );
