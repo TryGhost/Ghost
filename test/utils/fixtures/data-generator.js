@@ -319,6 +319,19 @@ DataGenerator.Content = {
         }
     ],
 
+    labels: [
+        {
+            id: ObjectId.generate(),
+            name: 'Label 1',
+            slug: 'label-1'
+        },
+        {
+            id: ObjectId.generate(),
+            name: 'Label 2',
+            slug: 'label-2'
+        }
+    ],
+
     webhooks: [
         {
             id: ObjectId.generate(),
@@ -572,6 +585,29 @@ DataGenerator.forKnex = (function () {
             id: ObjectId.generate(),
             email: 'member@ghost.org'
         });
+    }
+
+    function createLabel(overrides) {
+        const newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            id: ObjectId.generate(),
+            name: 'label',
+            slug: 'slug',
+            created_by: DataGenerator.Content.users[0].id,
+            created_at: new Date(),
+            updated_by: DataGenerator.Content.users[0].id,
+            updated_at: new Date()
+        });
+    }
+
+    function createMembersLabels(member_id, label_id, sort_order = 0) {
+        return {
+            id: ObjectId.generate(),
+            member_id,
+            label_id,
+            sort_order
+        };
     }
 
     function createSetting(overrides) {
@@ -837,38 +873,61 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.emails[1])
     ];
 
+    const members = [
+        createMember(DataGenerator.Content.members[0]),
+        createMember(DataGenerator.Content.members[1])
+    ];
+
+    const labels = [
+        createLabel(DataGenerator.Content.labels[0])
+    ];
+
+    const members_labels = [
+        {
+            id: ObjectId.generate(),
+            member_id: DataGenerator.Content.members[0].id,
+            label_id: DataGenerator.Content.labels[0].id,
+            sort_order: 0
+        }
+    ];
+
     return {
-        createPost: createPost,
-        createGenericPost: createGenericPost,
-        createTag: createTag,
-        createUser: createUser,
-        createUsersRoles: createUsersRoles,
-        createPostsAuthors: createPostsAuthors,
-        createClient: createClient,
-        createGenericUser: createGenericUser,
-        createBasic: createBasic,
+        createPost,
+        createGenericPost,
+        createTag,
+        createUser,
+        createUsersRoles,
+        createPostsAuthors,
+        createClient,
+        createGenericUser,
+        createBasic,
         createRole: createBasic,
         createPermission: createBasic,
-        createPostsTags: createPostsTags,
-        createSetting: createSetting,
-        createToken: createToken,
-        createMember: createMember,
-        createInvite: createInvite,
-        createWebhook: createWebhook,
-        createIntegration: createIntegration,
+        createPostsTags,
+        createSetting,
+        createToken,
+        createMember,
+        createLabel,
+        createMembersLabels,
+        createInvite,
+        createWebhook,
+        createIntegration,
 
-        invites: invites,
-        posts: posts,
-        tags: tags,
-        posts_tags: posts_tags,
-        posts_authors: posts_authors,
-        roles: roles,
-        users: users,
-        roles_users: roles_users,
-        webhooks: webhooks,
-        integrations: integrations,
-        api_keys: api_keys,
-        emails: emails
+        invites,
+        posts,
+        tags,
+        posts_tags,
+        posts_authors,
+        roles,
+        users,
+        roles_users,
+        webhooks,
+        integrations,
+        api_keys,
+        emails,
+        labels,
+        members,
+        members_labels
     };
 }());
 

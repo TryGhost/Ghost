@@ -19,6 +19,7 @@ const expectedProperties = {
     invites: ['invites', 'meta'],
     themes: ['themes'],
     actions: ['actions', 'meta'],
+    members: ['members', 'meta'],
 
     action: ['id', 'resource_type', 'actor_type', 'event', 'created_at', 'actor'],
 
