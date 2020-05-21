@@ -89,7 +89,7 @@ function setupGhostApi() {
             });
         },
 
-        sendMagicLink({email, emailType, labels}) {
+        sendMagicLink({email, emailType, labels, name}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             return makeRequest({
                 url,
@@ -98,6 +98,7 @@ function setupGhostApi() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    name,
                     email,
                     emailType,
                     labels
