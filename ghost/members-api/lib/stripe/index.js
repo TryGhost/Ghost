@@ -124,6 +124,7 @@ module.exports = class StripePaymentProcessor {
             customer_email: customerEmail,
             metadata,
             subscription_data: {
+                trial_from_plan: true,
                 items: [{
                     plan: plan.id
                 }]
