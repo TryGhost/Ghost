@@ -26,7 +26,7 @@ describe('Members API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return localUtils.doAuth(request, 'member');
+                return localUtils.doAuth(request, 'members');
             });
     });
 
@@ -42,7 +42,7 @@ describe('Members API', function () {
                 const jsonResponse = res.body;
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.members);
-                jsonResponse.members.should.have.length(1);
+                jsonResponse.members.should.have.length(2);
                 localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
 
                 testUtils.API.isISO8601(jsonResponse.members[0].created_at).should.be.true();
@@ -51,9 +51,28 @@ describe('Members API', function () {
                 jsonResponse.meta.pagination.should.have.property('page', 1);
                 jsonResponse.meta.pagination.should.have.property('limit', 15);
                 jsonResponse.meta.pagination.should.have.property('pages', 1);
-                jsonResponse.meta.pagination.should.have.property('total', 1);
+                jsonResponse.meta.pagination.should.have.property('total', 2);
                 jsonResponse.meta.pagination.should.have.property('next', null);
                 jsonResponse.meta.pagination.should.have.property('prev', null);
+            });
+    });
+
+    it('Can browse with filter', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/?filter=label:label-1'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.members);
+                jsonResponse.members.should.have.length(1);
+                localUtils.API.checkResponse(jsonResponse, 'members');
+                localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
             });
     });
 
