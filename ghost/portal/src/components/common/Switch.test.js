@@ -13,7 +13,7 @@ const setup = (overrides = {}) => {
         <Switch {...props} />
     );
 
-    const checkboxEl = utils.getByLabelText(props.label);
+    const checkboxEl = utils.getByTestId('switch-input');
     return {
         checkboxEl,
         mockOnToggle,

@@ -13,7 +13,7 @@ function Switch({id, label, onToggle, checked = false}) {
                 />
                 <span className="input-toggle-component" onClick={(e) => {
                     onToggle(e);
-                }}></span>
+                }} data-testid="switch-input"></span>
             </label>
         </div>
     );
