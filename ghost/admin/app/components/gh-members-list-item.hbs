@@ -1,37 +1,44 @@
-<li class="gh-list-row gh-members-list-item" ...attributes>
-    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-basic">
-        <div class="flex items-center">
-            <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3" />
-            <div>
-                <h3 class="ma0 pa0 gh-members-list-name {{if (not @member.name) "gh-members-name-noname"}}">{{or @member.name @member.email}}</h3>
-                {{#if @member.name}}
-                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{@member.email}}</p>
-                {{/if}}
+<li class="gh-list-row gh-members-list-item {{if @member.is_loading "loading"}}" ...attributes>
+    {{#if @member.is_loading}}
+        <div class="gh-list-data gh-list-loadingcell gh-list-cellwidth-100">
+            <div class="gh-list-loading-title"></div>
+            <div class="gh-list-loading-detail"></div>
+        </div>
+    {{else}}
+        <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-basic">
+            <div class="flex items-center">
+                <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3" />
+                <div>
+                    <h3 class="ma0 pa0 gh-members-list-name {{if (not @member.name) "gh-members-name-noname"}}">{{or @member.name @member.email}}</h3>
+                    {{#if @member.name}}
+                        <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{@member.email}}</p>
+                    {{/if}}
+                </div>
             </div>
-        </div>
-    </LinkTo>
+        </LinkTo>
 
-    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-geolocation gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not @member.name) "gh-members-geolocation-noname"}}">
-        {{#if @member.geolocation}}
-            {{#if (eq @member.geolocation.country_code "US")}}
-                {{@member.geolocation.region}}, US
+        <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-geolocation gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not @member.name) "gh-members-geolocation-noname"}}">
+            {{#if @member.geolocation}}
+                {{#if (eq @member.geolocation.country_code "US")}}
+                    {{@member.geolocation.region}}, US
+                {{else}}
+                    {{@member.geolocation.country}}
+                {{/if}}
             {{else}}
-                {{@member.geolocation.country}}
+                <span class="midlightgrey">Unknown</span>
             {{/if}}
-        {{else}}
-            <span class="midlightgrey">Unknown</span>
-        {{/if}}
-    </LinkTo>
+        </LinkTo>
 
-    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not @member.name) "gh-members-subscribed-noname"}}">
-        {{#if @member.createdAtUTC}}
-            {{moment-format @member.createdAtUTC "MMM DD, YYYY"}} <span class="midlightgrey">({{this.memberSince}})</span>
-        {{/if}}
-    </LinkTo>
+        <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not @member.name) "gh-members-subscribed-noname"}}">
+            {{#if @member.createdAtUTC}}
+                {{moment-format @member.createdAtUTC "MMM DD, YYYY"}} <span class="midlightgrey">({{this.memberSince}})</span>
+            {{/if}}
+        </LinkTo>
 
-    <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-list-cellwidth-chevron gh-members-list-chevron">
-        <div class="flex items-center justify-end w-100 h-100">
-            <span class="nr2">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
-        </div>
-    </LinkTo>
+        <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-list-cellwidth-chevron gh-members-list-chevron">
+            <div class="flex items-center justify-end w-100 h-100">
+                <span class="nr2">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
+            </div>
+        </LinkTo>
+    {{/if}}
 </li>
