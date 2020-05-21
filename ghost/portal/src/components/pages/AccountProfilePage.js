@@ -148,7 +148,15 @@ export default class AccountProfilePage extends React.Component {
         );
     }
 
+    onToggleSubscription(e, subscribed) {
+        this.context.onAction('updateMember', {subscribed: !subscribed});
+    }
+
     renderNewsletterOption() {
+        const {subscribed, paid} = this.context.member;
+        if (paid) {
+            return null;
+        }
         return (
             <div style={{padding: '0 24px', display: 'flex', alignItems: 'center'}}>
                 <div style={{flexGrow: 1}}>
@@ -164,7 +172,9 @@ export default class AccountProfilePage extends React.Component {
                     }}> You are not subscribed to email newsletters </div>
                 </div>
                 <div>
-                    <Switch onToggle={(e) => {}} />
+                    <Switch onToggle={(e) => {
+                        this.onToggleSubscription(e, subscribed);
+                    }} checked={subscribed} />
                 </div>
             </div>
         );
