@@ -1,8 +1,62 @@
 import {ParentContext} from '../ParentContext';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
+import Switch from '../common/Switch';
 
 const React = require('react');
+
+const Divider = () => {
+    return (
+        <div style={{borderBottom: '1px solid grey'}}>  </div>
+    );
+};
+
+const UserAvatar = ({avatar}) => {
+    const avatarContainerStyle = {
+        position: 'relative',
+        display: 'flex',
+        width: '64px',
+        height: '64px',
+        marginBottom: '6px',
+        borderRadius: '100%',
+        boxShadow: '0 0 0 3px #fff',
+        border: '1px solid gray',
+        overflow: 'hidden',
+        justifyContent: 'center',
+        alignItems: 'center'
+    };
+
+    return (
+        <div style={avatarContainerStyle}>
+            <MemberAvatar gravatar={avatar} style={{userIcon: {color: 'black', width: '45px', height: '45px'}}} />
+        </div>
+    );
+};
+
+const AccountFooter = ({onLogout, onSettings, brandColor}) => {
+    return (
+        <div style={{display: 'flex', padding: '0 24px', marginTop: '18px', color: brandColor, fontWeight: 'bold', fontSize: '13px'}}>
+            <div style={{cursor: 'pointer'}} role='button'> Contact support </div>
+            <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
+                {onSettings
+                    ? <div style={{marginRight: '16px', cursor: 'pointer'}} onClick={onSettings} role='button'> Settings </div>
+                    : null
+                }
+                <div style={{cursor: 'pointer'}} onClick={onLogout} role='button'> Logout </div>
+            </div>
+        </div>
+    );
+};
+
+const UserHeader = ({member}) => {
+    const avatar = member.avatar_image;
+    return (
+        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px'}}>
+            <UserAvatar avatar={avatar} />
+            <div style={{fontSize: '21px', fontWeight: '500', marginTop: '6px'}}> Your Account </div>
+        </div>
+    );
+};
 
 class FreeAccountHomePage extends React.Component {
     static contextType = ParentContext;
@@ -10,54 +64,6 @@ class FreeAccountHomePage extends React.Component {
     handleSignout(e) {
         e.preventDefault();
         this.context.onAction('signout');
-    }
-
-    renderHeader() {
-        const memberEmail = this.context.member.email;
-
-        return (
-            <>
-                <div style={{paddingLeft: '16px', paddingRight: '16px', color: '#A6A6A6', fontSize: '1.2rem', lineHeight: '1.0em'}}>
-                    Signed in as
-                </div>
-                <div style={{paddingLeft: '16px', paddingRight: '16px', paddingBottom: '9px'}}>
-                    {memberEmail}
-                </div>
-            </>
-        );
-    }
-
-    renderUserAvatar() {
-        const avatarImg = (this.context.member && this.context.member.avatar_image);
-
-        const avatarContainerStyle = {
-            position: 'relative',
-            display: 'flex',
-            width: '64px',
-            height: '64px',
-            marginBottom: '6px',
-            borderRadius: '100%',
-            boxShadow: '0 0 0 3px #fff',
-            border: '1px solid gray',
-            overflow: 'hidden',
-            justifyContent: 'center',
-            alignItems: 'center'
-        };
-
-        return (
-            <div style={avatarContainerStyle}>
-                <MemberAvatar gravatar={avatarImg} style={{userIcon: {color: 'black', width: '45px', height: '45px'}}} />
-            </div>
-        );
-    }
-
-    renderUserHeader() {
-        return (
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px'}}>
-                {this.renderUserAvatar()}
-                <div style={{fontSize: '21px', fontWeight: '500', marginTop: '6px'}}> Your Account </div>
-            </div>
-        );
     }
 
     openSettings(e) {
@@ -72,18 +78,6 @@ class FreeAccountHomePage extends React.Component {
             page: 'accountPlan',
             lastPage: 'accountHome'
         });
-    }
-
-    renderAccountFooter() {
-        return (
-            <div style={{display: 'flex', padding: '0 24px', marginTop: '18px', color: this.context.brandColor, fontWeight: 'bold', fontSize: '13px'}}>
-                <div style={{cursor: 'pointer'}} role='button'> Contact support </div>
-                <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
-                    <div style={{marginRight: '16px', cursor: 'pointer'}} onClick={e => this.openSettings(e)} role='button'> Settings </div>
-                    <div style={{cursor: 'pointer'}} onClick={e => this.handleSignout(e)} role='button'> Logout </div>
-                </div>
-            </div>
-        );
     }
 
     renderAccountDetail(e) {
@@ -101,25 +95,13 @@ class FreeAccountHomePage extends React.Component {
         );
     }
 
-    renderLogoutButton() {
-        return (
-            <div style={{paddingLeft: '21px', paddingRight: '16px', paddingTop: '12px', borderTop: '1px solid #EFEFEF', cursor: 'pointer'}}>
-                <div role="button" onClick={(e) => {
-                    this.handleAccountDetail(e);
-                }} style={{marginBottom: '3px'}}> Account </div>
-                <div role="button" onClick={(e) => {
-                    this.handleSignout(e);
-                }}> Log out </div>
-            </div>
-        );
-    }
-
     render() {
+        const {member, brandColor} = this.context;
         return (
             <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
-                {this.renderUserHeader()}
+                <UserHeader member={member} />
                 {this.renderAccountDetail()}
-                {this.renderAccountFooter()}
+                <AccountFooter onLogout={e => this.handleSignout(e)} onSettings={e => this.openSettings(e)} brandColor={brandColor} />
             </div>
         );
     }
@@ -133,74 +115,11 @@ class PaidAccountHomePage extends React.Component {
         this.context.onAction('signout');
     }
 
-    renderHeader() {
-        const memberEmail = this.context.member.email;
-
-        return (
-            <>
-                <div style={{paddingLeft: '16px', paddingRight: '16px', color: '#A6A6A6', fontSize: '1.2rem', lineHeight: '1.0em'}}>
-                    Signed in as
-                </div>
-                <div style={{paddingLeft: '16px', paddingRight: '16px', paddingBottom: '9px'}}>
-                    {memberEmail}
-                </div>
-            </>
-        );
-    }
-
-    renderUserAvatar() {
-        const avatarImg = (this.context.member && this.context.member.avatar_image);
-
-        const avatarContainerStyle = {
-            position: 'relative',
-            display: 'flex',
-            width: '64px',
-            height: '64px',
-            marginBottom: '6px',
-            borderRadius: '100%',
-            boxShadow: '0 0 0 3px #fff',
-            border: '1px solid gray',
-            overflow: 'hidden',
-            justifyContent: 'center',
-            alignItems: 'center'
-        };
-
-        return (
-            <div style={avatarContainerStyle}>
-                <MemberAvatar gravatar={avatarImg} style={{userIcon: {color: 'black', width: '45px', height: '45px'}}} />
-            </div>
-        );
-    }
-
-    renderUserHeader() {
-        return (
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '12px'}}>
-                {this.renderUserAvatar()}
-                <div style={{fontSize: '21px', fontWeight: '500', marginTop: '6px'}}> Your Account </div>
-            </div>
-        );
-    }
-
-    openSettings(e) {
-        // no-op
-    }
-
     openSubscribe(e) {
         this.context.onAction('switchPage', {
             page: 'accountPlan',
             lastPage: 'accountHome'
         });
-    }
-
-    renderAccountFooter() {
-        return (
-            <div style={{display: 'flex', padding: '0 24px', marginTop: '24px', color: this.context.brandColor, fontWeight: 'bold', fontSize: '13px'}}>
-                <div style={{cursor: 'pointer'}} role='button'> Contact support </div>
-                <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
-                    <div style={{cursor: 'pointer'}} onClick={e => this.handleSignout(e)} role='button'> Logout </div>
-                </div>
-            </div>
-        );
     }
 
     renderAccountWelcome() {
@@ -214,12 +133,6 @@ class PaidAccountHomePage extends React.Component {
                     You have an active <span style={{fontWeight: 'bold'}}>{siteTitle}</span> account with access to all areas. Get in touch if you have any problems or need some help getting things updated, and thanks for subscribing.
                 </div>
             </div>
-        );
-    }
-
-    renderDivider() {
-        return (
-            <div style={{borderBottom: '1px solid grey'}}>  </div>
         );
     }
 
@@ -318,28 +231,16 @@ class PaidAccountHomePage extends React.Component {
         );
     }
 
-    renderLogoutButton() {
-        return (
-            <div style={{paddingLeft: '21px', paddingRight: '16px', paddingTop: '12px', borderTop: '1px solid #EFEFEF', cursor: 'pointer'}}>
-                <div role="button" onClick={(e) => {
-                    this.handleAccountDetail(e);
-                }} style={{marginBottom: '3px'}}> Account </div>
-                <div role="button" onClick={(e) => {
-                    this.handleSignout(e);
-                }}> Log out </div>
-            </div>
-        );
-    }
-
     render() {
+        const {member, brandColor} = this.context;
         return (
             <div style={{display: 'flex', flexDirection: 'column', color: '#313131'}}>
-                {this.renderUserHeader()}
+                <UserHeader member={member} />
                 {this.renderAccountWelcome()}
-                {this.renderDivider()}
+                <Divider />
                 {this.renderAccountDetails()}
-                {this.renderDivider()}
-                {this.renderAccountFooter()}
+                <Divider />
+                <AccountFooter onLogout={e => this.handleSignout(e)} brandColor={brandColor} />
             </div>
         );
     }
