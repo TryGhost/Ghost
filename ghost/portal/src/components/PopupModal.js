@@ -8,7 +8,6 @@ import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
 import {ParentContext} from './ParentContext';
 import FrameStyle from './Frame.styles';
 import AccountPlanPage from './pages/AccountPlanPage';
-import PaidAccountHomePage from './pages/PaidAccountHomePage';
 import AccountProfilePage from './pages/AccountProfilePage';
 
 const React = require('react');
@@ -109,7 +108,7 @@ const Pages = {
     signin: SigninPage,
     signup: SignupPage,
     accountHome: AccountHomePage,
-    paidAccountHome: PaidAccountHomePage,
+    paidAccountHome: AccountHomePage,
     accountPlan: AccountPlanPage,
     accountProfile: AccountProfilePage,
     magiclink: MagicLinkPage,
