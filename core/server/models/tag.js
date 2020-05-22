@@ -1,5 +1,6 @@
 const ghostBookshelf = require('./base');
-const common = require('../lib/common');
+const {i18n} = require('../lib/common');
+const errors = require('@tryghost/errors');
 
 let Tag;
 let Tags;
@@ -120,8 +121,8 @@ Tag = ghostBookshelf.Model.extend({
             .fetch(options)
             .then(function destroyTagsAndPost(tag) {
                 if (!tag) {
-                    return Promise.reject(new common.errors.NotFoundError({
-                        message: common.i18n.t('errors.api.tags.tagNotFound')
+                    return Promise.reject(new errors.NotFoundError({
+                        message: i18n.t('errors.api.tags.tagNotFound')
                     }));
                 }
 

@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const Promise = require('bluebird');
 const config = require('../../config');
-const common = require('../../lib/common');
+const {logging} = require('../../lib/common');
 const urlUtils = require('../../lib/url-utils');
 const exporter = require('../exporter');
 let writeExportFile;
@@ -38,7 +38,7 @@ const readBackup = async (filename) => {
  * @returns {Promise<*>}
  */
 backup = function backup(options) {
-    common.logging.info('Creating database backup');
+    logging.info('Creating database backup');
     options = options || {};
 
     const props = {
@@ -49,7 +49,7 @@ backup = function backup(options) {
     return Promise.props(props)
         .then(writeExportFile)
         .then(function successMessage(filename) {
-            common.logging.info('Database backup written to: ' + filename);
+            logging.info('Database backup written to: ' + filename);
             return filename;
         });
 };
