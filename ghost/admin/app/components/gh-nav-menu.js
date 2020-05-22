@@ -38,7 +38,6 @@ export default Component.extend(ShortcutsMixin, {
     showMenuExtension: and('config.clientExtensions.menu', 'session.user.isOwner'),
     showDropdownExtension: and('config.clientExtensions.dropdown', 'session.user.isOwner'),
     showScriptExtension: and('config.clientExtensions.script', 'session.user.isOwner'),
-    showBillingModal: computed.reads('billing.billingWindowOpen'),
     showBilling: computed.reads('config.billingUrl'),
 
     init() {
@@ -81,8 +80,7 @@ export default Component.extend(ShortcutsMixin, {
             this.toggleProperty('showSearchModal');
         },
         toggleBillingModal() {
-            this.billing.set('upgrade', false);
-            this.billing.toggleProperty('billingWindowOpen');
+            this.billing.openBillingWindow(this.router.currentURL);
         }
     },
 

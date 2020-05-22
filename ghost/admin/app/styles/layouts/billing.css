@@ -1,19 +1,36 @@
-.fullscreen-modal-billing {
-    margin: 0;
-    max-width: 100%;
+.gh-billing {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 9999;
+    background: var(--main-bg-color);
 }
 
-.fullscreen-modal-billing .modal-content {
+.gh-billing-container {
     position: relative;
     height: 100%;
-    padding: 0;
+    width: 100%;
 }
 
-.fullscreen-modal-billing .modal-body {
+.gh-billing.closed {
+    display: none;
+}
+
+.gh-billing .close {
+    position: absolute;
+    top: 19px;
+    right: 19px;
+    z-index: 9999;
     margin: 0;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    border: none;
 }
 
-.fullscreen-modal-billing .billing-frame {
+.gh-billing .billing-frame {
     position: absolute;
     top: 0;
     right: 0;
@@ -34,11 +51,4 @@
     opacity: 0.6;
     transition: all 0.2s ease-in-out;
     top: 25px;
-}
-
-#billing-frame-global {
-    visibility: hidden;
-    height:0;
-    width:0;
-    border:none;
 }

@@ -28,6 +28,10 @@
             @modifier="action narrow"
         />
     {{/if}}
+
+    {{#if this.showBilling}}
+        <GhBillingModal />
+    {{/if}}
 </GhApp>
 
 <EmberLoadRemover />
