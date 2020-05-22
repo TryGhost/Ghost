@@ -1,13 +1,11 @@
 <div class="gh-contentfilter" ...attributes>
     {{#unless this.session.user.isContributor}}
-        <div data-test-type-select="true">
+        <div class="gh-contentfilter-menu gh-contentfilter-type {{if @selectedType.value "gh-contentfilter-selected"}}" data-test-type-select="true">
             <PowerSelect
                 @selected={{@selectedType}}
                 @options={{@availableTypes}}
                 @searchEnabled={{false}}
                 @onChange={{@onTypeChange}}
-                @tagName="div"
-                @classNames={{concat "gh-contentfilter-menu gh-contentfilter-type " (if @selectedType.value "gh-contentfilter-selected")}}
                 @triggerComponent="gh-power-select/trigger"
                 @triggerClass="gh-contentfilter-menu-trigger"
                 @dropdownClass="gh-contentfilter-menu-dropdown"
@@ -20,14 +18,12 @@
     {{/unless}}
 
     {{#unless this.session.user.isAuthorOrContributor}}
-        <div data-test-author-select="true">
+        <div class="gh-contentfilter-menu gh-contentfilter-author {{if @selectedAuthor.slug "gh-contentfilter-selected"}}" data-test-author-select="true">
             <PowerSelect
                 @selected={{@selectedAuthor}}
                 @options={{@availableAuthors}}
                 @searchField="name"
                 @onChange={{@onAuthorChange}}
-                @tagName="div"
-                @classNames={{concat "gh-contentfilter-menu gh-contentfilter-author " (if @selectedAuthor.slug "gh-contentfilter-selected")}}
                 @triggerComponent="gh-power-select/trigger"
                 @triggerClass="gh-contentfilter-menu-trigger"
                 @dropdownClass="gh-contentfilter-menu-dropdown"
@@ -41,14 +37,12 @@
     {{/unless}}
 
     {{#unless this.session.user.isContributor}}
-        <div data-test-tag-select="true">
+        <div class="gh-contentfilter-menu gh-contentfilter-tag {{if @selectedTag.slug "gh-contentfilter-selected"}}" data-test-tag-select="true">
             <PowerSelect
                 @selected={{@selectedTag}}
                 @options={{@availableTags}}
                 @searchField="name"
                 @onChange={{@onTagChange}}
-                @tagName="div"
-                @classNames={{concat "gh-contentfilter-menu gh-contentfilter-tag " (if @selectedTag.slug "gh-contentfilter-selected")}}
                 @triggerComponent="gh-power-select/trigger"
                 @triggerClass="gh-contentfilter-menu-trigger"
                 @dropdownClass="gh-contentfilter-menu-dropdown"
@@ -62,14 +56,12 @@
         </div>
     {{/unless}}
 
-    <div data-test-order-select="true">
+    <div class="gh-contentfilter-menu gh-contentfilter-sort" data-test-order-select="true">
         <PowerSelect
             @selected={{@selectedOrder}}
             @options={{@availableOrders}}
             @searchEnabled={{false}}
             @onChange={{@onOrderChange}}
-            @tagName="div"
-            @classNames="gh-contentfilter-menu gh-contentfilter-sort"
             @triggerComponent="gh-power-select/trigger"
             @triggerClass="gh-contentfilter-menu-trigger"
             @dropdownClass="gh-contentfilter-menu-dropdown"

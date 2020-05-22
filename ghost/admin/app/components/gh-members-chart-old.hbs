@@ -5,14 +5,12 @@
         <div class="flex justify-between items-center gh-members-chart-header">
             <h2 class="f-small ttu midgrey fw5 mb0">Total members</h2>
             <div class="view-actions">
-                <div class="gh-contentfilter">
+                <div class="gh-contentfilter gh-contentfilter-menu gh-contentfilter-type">
                     <PowerSelect
                         @selected={{this.selectedRange}}
                         @options={{this.availableRange}}
                         @searchEnabled={{false}}
                         @onChange={{action "changeDateRange"}}
-                        @tagName="div"
-                        @classNames="gh-contentfilter-menu gh-contentfilter-type"
                         @triggerComponent="gh-power-select/trigger"
                         @triggerClass="gh-contentfilter-menu-trigger"
                         @dropdownClass="gh-contentfilter-menu-dropdown gh-members-chart-dropdown"
