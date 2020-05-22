@@ -9,6 +9,7 @@ import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 
 export default class MembersController extends Controller {
+    @service feature;
     @service store;
 
     queryParams = ['label'];

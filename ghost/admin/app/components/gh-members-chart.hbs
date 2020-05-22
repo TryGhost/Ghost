@@ -1,4 +1,6 @@
-<div class="flex justify-between mb6 items-stretch gh-members-chart-wrapper">
+<div class="flex justify-between mb6 items-stretch gh-members-chart-wrapper"
+    {{did-insert (perform this.fetchStatsTask)}}
+>
 
     {{!-- Chart title/filter graph --}}
     <div class="flex-auto bg-white br3 shadow-1 bg-grouped-table mr6 gh-members-chart-box">
@@ -8,7 +10,7 @@
                 <div class="gh-contentfilter gh-contentfilter-menu gh-contentfilter-type">
                     <PowerSelect
                         @selected={{this.selectedRange}}
-                        @options={{this.availableRange}}
+                        @options={{this.availableRanges}}
                         @searchEnabled={{false}}
                         @onChange={{action "changeDateRange"}}
                         @triggerComponent="gh-power-select/trigger"
@@ -24,10 +26,18 @@
             </div>
         </div>
         <div class="gh-members-chart-container">
-            <EmberChart @type="LineWithLine" @options={{this.subData.chartData.options}} @data={{this.subData.chartData.data}} @height={{300}} />
+            {{#if this.fetchStatsTask.isRunning}}
+                <GhLoadingSpinner />
+            {{else}}
+                <EmberChart
+                    @type="LineWithLine"
+                    @options={{this.chartOptions}}
+                    @data={{this.chartData}}
+                    @height={{300}} />
+            {{/if}}
         </div>
         <div class="flex justify-between pa4 pt0 pb2 nt1">
-            <span class="f8 midlightgrey">{{this.subData.startDateLabel}}</span>
+            <span class="f8 midlightgrey">{{this.startDateLabel}}</span>
             <span class="f8 midlightgrey">Today</span>
         </div>
     </div>
@@ -36,7 +46,7 @@
     <div class="flex flex-column justify-between gh-members-chart-summary bg-white br3 shadow-1 bg-grouped-table">
         <div class="flex-auto flex flex-column justify-center items-start pa4 bb b--whitegrey">
             <h3 class="f-small ttu midgrey fw5">Total Members</h3>
-            <div class="gh-members-chart-summary-data">{{this.subData.totalSubs}}</div>
+            <div class="gh-members-chart-summary-data">{{if this.fetchStatsTask.isRunning "-" this.stats.totalMembers}}</div>
         </div>
         <div class="flex-auto flex flex-column justify-center items-start pa4 bb b--whitegrey">
             {{#if (eq this.range "all-time")}}
@@ -44,11 +54,11 @@
             {{else}}
                 <h3 class="f-small ttu midgrey fw5">Signed up in the last {{this.range}} days</h3>
             {{/if}}
-            <div class="gh-members-chart-summary-data">{{this.subData.totalSubsInRange}}</div>
+            <div class="gh-members-chart-summary-data">{{if this.fetchStatsTask.isRunning "-" this.stats.totalMembersInRange}}</div>
         </div>
         <div class="flex-auto flex flex-column justify-center items-start pa4">
             <h3 class="f-small ttu midgrey fw5">Signed up today</h3>
-            <div class="gh-members-chart-summary-data">{{this.subData.totalSubsToday}}</div>
+            <div class="gh-members-chart-summary-data">{{if this.fetchStatsTask.isRunning "-" this.stats.newMembersToday}}</div>
         </div>
     </div>
 </div>
