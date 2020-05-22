@@ -1,5 +1,6 @@
 const Promise = require('bluebird');
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const errors = require('@tryghost/errors');
 const models = require('../../models');
 const auth = require('../../services/auth');
 const api = require('./index');
@@ -18,8 +19,8 @@ const session = {
         const object = frame.data;
 
         if (!object || !object.username || !object.password) {
-            return Promise.reject(new common.errors.UnauthorizedError({
-                message: common.i18n.t('errors.middleware.auth.accessDenied')
+            return Promise.reject(new errors.UnauthorizedError({
+                message: i18n.t('errors.middleware.auth.accessDenied')
             }));
         }
 
@@ -37,9 +38,9 @@ const session = {
                 });
             });
         }).catch(async (err) => {
-            if (!common.errors.utils.isIgnitionError(err)) {
-                throw new common.errors.UnauthorizedError({
-                    message: common.i18n.t('errors.middleware.auth.accessDenied'),
+            if (!errors.utils.isIgnitionError(err)) {
+                throw new errors.UnauthorizedError({
+                    message: i18n.t('errors.middleware.auth.accessDenied'),
                     err
                 });
             }
