@@ -9,8 +9,10 @@ export default class AccountPlanPage extends React.Component {
 
     constructor(props, context) {
         super(props, context);
+        const {member} = this.context;
+        const activePlan = this.getActivePlanName({member});
         this.state = {
-            plan: 'Monthly'
+            plan: activePlan
         };
     }
 
@@ -55,11 +57,29 @@ export default class AccountPlanPage extends React.Component {
         }, 5);
     }
 
+    getActivePlanName({member}) {
+        if (member && member.paid && member.subscriptions[0]) {
+            const {plan} = member.subscriptions[0];
+            return plan.nickname;
+        }
+        return null;
+    }
+
     renderPlanChooser() {
         const {plans} = this.context.site;
         const plansData = [
-            {type: 'month', price: plans.monthly, currency: plans.currency_symbol, name: 'Monthly'},
-            {type: 'year', price: plans.yearly, currency: plans.currency_symbol, name: 'Yearly'}
+            {
+                type: 'month',
+                price: plans.monthly,
+                currency: plans.currency_symbol,
+                name: 'Monthly'
+            },
+            {
+                type: 'year',
+                price: plans.yearly,
+                currency: plans.currency_symbol,
+                name: 'Yearly'
+            }
         ];
         return (
             <div style={{padding: '0 24px', marginTop: '12px'}}>
