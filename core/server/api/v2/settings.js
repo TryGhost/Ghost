@@ -3,7 +3,7 @@ const _ = require('lodash');
 const models = require('../../models');
 const routing = require('../../../frontend/services/routing');
 const {i18n} = require('../../lib/common');
-const errors = require('@tryghost/errors');
+const {NoPermissionError, NotFoundError} = require('@tryghost/errors');
 const settingsCache = require('../../services/settings/cache');
 
 const SETTINGS_BLACKLIST = [
@@ -59,7 +59,7 @@ module.exports = {
             let setting = settingsCache.get(frame.options.key, {resolve: false});
 
             if (!setting) {
-                return Promise.reject(new errors.NotFoundError({
+                return Promise.reject(new NotFoundError({
                     message: i18n.t('errors.api.settings.problemFindingSetting', {
                         key: frame.options.key
                     })
@@ -68,7 +68,7 @@ module.exports = {
 
             // @TODO: handle in settings model permissible fn
             if (setting.type === 'core' && !(frame.options.context && frame.options.context.internal)) {
-                return Promise.reject(new errors.NoPermissionError({
+                return Promise.reject(new NoPermissionError({
                     message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
                 }));
             }
@@ -92,7 +92,7 @@ module.exports = {
 
                 frame.data.settings.map((setting) => {
                     if (setting.type === 'core' && !(frame.options.context && frame.options.context.internal)) {
-                        errors.push(new errors.NoPermissionError({
+                        errors.push(new NoPermissionError({
                             message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
                         }));
                     }
@@ -122,14 +122,14 @@ module.exports = {
                 const settingFromCache = settingsCache.get(setting.key, {resolve: false});
 
                 if (!settingFromCache) {
-                    errors.push(new errors.NotFoundError({
+                    errors.push(new NotFoundError({
                         message: i18n.t('errors.api.settings.problemFindingSetting', {
                             key: setting.key
                         })
                     }));
                 } else if (settingFromCache.type === 'core' && !(frame.options.context && frame.options.context.internal)) {
                     // @TODO: handle in settings model permissible fn
-                    errors.push(new errors.NoPermissionError({
+                    errors.push(new NoPermissionError({
                         message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
                     }));
                 }
