@@ -33,7 +33,7 @@ export default class AccountProfilePage extends React.Component {
 
     renderAccountFooter() {
         return (
-            <div style={{display: 'flex', padding: '0 24px', marginTop: '42px', color: this.context.brandColor, fontWeight: 'bold', fontSize: '13px', alignItems: 'center'}}>
+            <div style={{display: 'flex', padding: '0 24px', marginTop: '12px', color: this.context.brandColor, fontWeight: 'bold', fontSize: '13px', alignItems: 'center'}}>
                 <div style={{cursor: 'pointer', color: 'red'}} role='button'> Delete Account </div>
                 <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
                     <ActionButton
@@ -123,17 +123,14 @@ export default class AccountProfilePage extends React.Component {
                 value: this.state.email,
                 placeholder: 'Email...',
                 label: 'Email',
-                name: 'email'
+                name: 'email',
+                disabled: true
             }
         };
         const field = fields[fieldName];
         return (
             <InputField
-                label = {field.label}
-                type={field.type}
-                name={field.name}
-                placeholder={field.placeholder}
-                value={field.value}
+                {...field}
                 onChange={(e, fieldName) => this.handleInput(e, fieldName)}
             />
         );
@@ -159,7 +156,7 @@ export default class AccountProfilePage extends React.Component {
         }
         const label = subscribed ? 'You are subscribed to email newsletters' : 'You are not subscribed to email newsletters';
         return (
-            <div style={{padding: '0 24px', display: 'flex', alignItems: 'center'}}>
+            <div style={{padding: '0 24px', display: 'flex', alignItems: 'center', marginBottom: '20px'}}>
                 <div style={{flexGrow: 1}}>
                     <div style={{
                         marginBottom: '3px',

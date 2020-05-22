@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Styles = ({style = {}}) => {
+const Styles = ({disabled, style = {}} = {}) => {
     return {
         input: {
             display: 'block',
@@ -11,7 +11,7 @@ const Styles = ({style = {}}) => {
             border: '1px solid #c5d2d9',
             color: 'inherit',
             textDecoration: 'none',
-            background: '#fff',
+            background: disabled ? '#ececec' : '#fff',
             borderRadius: '9px',
             fontSize: '14px',
             marginBottom: '12px',
@@ -27,8 +27,8 @@ const Styles = ({style = {}}) => {
     };
 };
 
-function InputField({name, id, label, type, value, placeholder, onChange, style}) {
-    const Style = Styles({style});
+function InputField({name, id, label, type, value, placeholder, disabled, onChange, style}) {
+    const Style = Styles({disabled, style});
     id = id || `input-${name}`;
     return (
         <>
@@ -39,6 +39,7 @@ function InputField({name, id, label, type, value, placeholder, onChange, style}
                 name={name}
                 placeholder={placeholder}
                 value={value}
+                disabled={disabled}
                 onChange={e => onChange(e, name)}
                 style={Style.input}
                 aria-label={label}
