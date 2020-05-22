@@ -1,4 +1,5 @@
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const errors = require('@tryghost/errors');
 const {extract, hasProvider} = require('oembed-parser');
 const Promise = require('bluebird');
 const request = require('../../lib/request');
@@ -76,15 +77,15 @@ const findUrlWithProvider = (url) => {
 };
 
 function unknownProvider(url) {
-    return Promise.reject(new common.errors.ValidationError({
-        message: common.i18n.t('errors.api.oembed.unknownProvider'),
+    return Promise.reject(new errors.ValidationError({
+        message: i18n.t('errors.api.oembed.unknownProvider'),
         context: url
     }));
 }
 
 function knownProvider(url) {
     return extract(url, {maxwidth: 1280}).catch((err) => {
-        return Promise.reject(new common.errors.InternalServerError({
+        return Promise.reject(new errors.InternalServerError({
             message: err.message
         }));
     });

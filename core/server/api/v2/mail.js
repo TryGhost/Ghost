@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
 const mailService = require('../../services/mail');
 const api = require('./');
 let mailer;
@@ -17,8 +17,8 @@ _private.sendMail = (object) => {
                     notifications: [{
                         type: 'warn',
                         message: [
-                            common.i18n.t('warnings.index.unableToSendEmail'),
-                            common.i18n.t('common.seeLinkForInstructions', {link: 'https://ghost.org/docs/concepts/config/#mail'})
+                            i18n.t('warnings.index.unableToSendEmail'),
+                            i18n.t('common.seeLinkForInstructions', {link: 'https://ghost.org/docs/concepts/config/#mail'})
                         ].join(' ')
                     }]
                 },
@@ -47,7 +47,7 @@ module.exports = {
                     mail: [{
                         message: {
                             to: frame.user.get('email'),
-                            subject: common.i18n.t('common.api.mail.testGhostEmail'),
+                            subject: i18n.t('common.api.mail.testGhostEmail'),
                             html: content.html,
                             text: content.text
                         }

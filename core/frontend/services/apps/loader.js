@@ -1,7 +1,7 @@
 const path = require('path');
 const _ = require('lodash');
 const Promise = require('bluebird');
-const common = require('../../../server/lib/common');
+const {i18n} = require('../../../server/lib/common');
 const config = require('../../../server/config');
 const Proxy = require('./proxy');
 
@@ -35,7 +35,7 @@ module.exports = {
 
         // Check for an activate() method on the app.
         if (!_.isFunction(app.activate)) {
-            return Promise.reject(new Error(common.i18n.t('errors.apps.noActivateMethodLoadingApp.error', {name: name})));
+            return Promise.reject(new Error(i18n.t('errors.apps.noActivateMethodLoadingApp.error', {name: name})));
         }
 
         // Wrapping the activate() with a when because it's possible

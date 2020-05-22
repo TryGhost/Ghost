@@ -2,7 +2,8 @@ const fs = require('fs-extra');
 const Promise = require('bluebird');
 const path = require('path');
 const debug = require('ghost-ignition').debug('frontend:services:settings:ensure-settings');
-const common = require('../../../server/lib/common');
+const {i18n} = require('../../../server/lib/common');
+const errors = require('@tryghost/errors');
 const config = require('../../../server/config');
 
 /**
@@ -35,8 +36,8 @@ module.exports = function ensureSettingsFiles(knownSettings) {
                 });
             }).catch((error) => {
                 // CASE: we might have a permission error, as we can't access the directory
-                throw new common.errors.GhostError({
-                    message: common.i18n.t('errors.services.settings.ensureSettings', {path: contentPath}),
+                throw new errors.GhostError({
+                    message: i18n.t('errors.services.settings.ensureSettings', {path: contentPath}),
                     err: error,
                     context: error.path
                 });

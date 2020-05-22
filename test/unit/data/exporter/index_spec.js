@@ -2,8 +2,8 @@ const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const Promise = require('bluebird');
+const errors = require('@tryghost/errors');
 const db = require('../../../../core/server/data/db');
-const common = require('../../../../core/server/lib/common');
 const exporter = rewire('../../../../core/server/data/exporter');
 const schema = require('../../../../core/server/data/schema');
 const models = require('../../../../core/server/models');
@@ -139,7 +139,7 @@ describe('Exporter', function () {
                     done(new Error('expected error for export'));
                 })
                 .catch(function (err) {
-                    (err instanceof common.errors.DataExportError).should.eql(true);
+                    (err instanceof errors.DataExportError).should.eql(true);
                     done();
                 });
         });

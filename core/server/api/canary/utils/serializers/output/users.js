@@ -1,5 +1,5 @@
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:users');
-const common = require('../../../../../lib/common');
+const {i18n} = require('../../../../../lib/common');
 const mapper = require('./utils/mapper');
 
 module.exports = {
@@ -39,7 +39,7 @@ module.exports = {
         debug('changePassword');
 
         frame.response = {
-            password: [{message: common.i18n.t('notices.api.users.pwdChangedSuccessfully')}]
+            password: [{message: i18n.t('notices.api.users.pwdChangedSuccessfully')}]
         };
     },
 
