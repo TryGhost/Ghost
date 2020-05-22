@@ -5,12 +5,14 @@ import {inject as service} from '@ember/service';
 
 export default Controller.extend({
     customViews: service(),
+    config: service(),
     dropdown: service(),
     router: service(),
     session: service(),
     settings: service(),
     ui: service(),
 
+    showBilling: computed.reads('config.billingUrl'),
     showNavMenu: computed('router.currentRouteName', 'session.{isAuthenticated,user.isFulfilled}', 'ui.isFullScreen', function () {
         let {router, session, ui} = this;
 

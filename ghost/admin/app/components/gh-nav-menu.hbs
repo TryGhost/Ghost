@@ -14,12 +14,6 @@
         @modifier="action wide" />
 {{/if}}
 
-{{#if this.showBillingModal}}
-    <GhFullscreenModal @modal="billing"
-        @close={{action "toggleBillingModal"}}
-        @modifier="full-overlay billing" />
-{{/if}}
-
 <section class="gh-nav-body">
     <div class="gh-nav-top">
         <ul class="gh-nav-list gh-nav-main">
