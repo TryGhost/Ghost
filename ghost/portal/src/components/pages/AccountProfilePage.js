@@ -157,6 +157,7 @@ export default class AccountProfilePage extends React.Component {
         if (paid) {
             return null;
         }
+        const label = subscribed ? 'You are subscribed to email newsletters' : 'You are not subscribed to email newsletters';
         return (
             <div style={{padding: '0 24px', display: 'flex', alignItems: 'center'}}>
                 <div style={{flexGrow: 1}}>
@@ -169,7 +170,7 @@ export default class AccountProfilePage extends React.Component {
                         color: '#666666',
                         fontSize: '13px',
                         lineHeight: '6px'
-                    }}> You are not subscribed to email newsletters </div>
+                    }}> {label} </div>
                 </div>
                 <div>
                     <Switch onToggle={(e) => {
