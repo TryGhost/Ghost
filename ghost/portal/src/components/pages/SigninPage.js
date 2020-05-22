@@ -69,7 +69,7 @@ export default class SigninPage extends React.Component {
     renderSignupMessage() {
         const brandColor = this.context.brandColor;
         return (
-            <div style={{display: 'flex', justifyContent: 'center'}}>
+            <div style={{display: 'flex', justifyContent: 'center', marginTop: '12px'}}>
                 <div style={{marginRight: '6px', color: '#929292'}}> Don't have an account ? </div>
                 <div
                     style={{color: brandColor, fontWeight: 'bold', cursor: 'pointer'}}
