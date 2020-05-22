@@ -60,7 +60,7 @@ export default class ParentContainer extends React.Component {
         }
         if (member) {
             return {
-                page: member.paid ? 'paidAccountHome' : 'accountHome'
+                page: 'accountHome'
             };
         }
         return {
