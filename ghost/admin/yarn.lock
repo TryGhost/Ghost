@@ -5146,6 +5146,14 @@ ember-assign-helper@0.2.0, ember-assign-helper@^0.2.0:
   dependencies:
     ember-cli-babel "^6.6.0"
 
+ember-assign-helper@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/ember-assign-helper/-/ember-assign-helper-0.3.0.tgz#7a023dd165ef56b28f77f70fd20e88261380aca7"
+  integrity sha512-kDY0IRP6PUSJjghM2gIq24OD7d6XcZ1666zmZrywxEVjCenhaR0Oi/BXUU8JEATrIcXIExMIu34GKrHHlCLw0Q==
+  dependencies:
+    ember-cli-babel "^7.19.0"
+    ember-cli-htmlbars "^4.3.1"
+
 ember-assign-polyfill@^2.5.0, ember-assign-polyfill@^2.6.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/ember-assign-polyfill/-/ember-assign-polyfill-2.6.0.tgz#07847e3357ee35b33f886a0b5fbec6873f6860eb"
@@ -5192,6 +5200,21 @@ ember-basic-dropdown@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/ember-basic-dropdown/-/ember-basic-dropdown-3.0.1.tgz#a1c3ba6c6c5bc933e84dc770354b73a482458d93"
   integrity sha512-pT+8jl8iPB1I7RnAcescy7VyWjp8qX5x+VCAVIHRF/d8aEsHJ9jy+vckuN94/JURLkGx+MzDwD5RWjJuXGYZ+g==
+  dependencies:
+    "@ember/render-modifiers" "^1.0.2"
+    "@glimmer/component" "^1.0.0"
+    "@glimmer/tracking" "^1.0.0"
+    ember-cli-babel "^7.13.0"
+    ember-cli-htmlbars "^4.2.0"
+    ember-cli-typescript "^3.1.2"
+    ember-element-helper "^0.2.0"
+    ember-maybe-in-element "^0.4.0"
+    ember-truth-helpers "2.1.0"
+
+ember-basic-dropdown@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/ember-basic-dropdown/-/ember-basic-dropdown-3.0.2.tgz#420ab4b0aa6f81c63c0eff6a83ffce092cad243b"
+  integrity sha512-yYfPLcaunBa5ca1sCWTCpeLq0y8DwcKe8SVKM03GFaAY0YetqOerimrf6hiap9GX8NySaHM4RBALwwHlhqKbaw==
   dependencies:
     "@ember/render-modifiers" "^1.0.2"
     "@glimmer/component" "^1.0.0"
@@ -5460,7 +5483,7 @@ ember-cli-htmlbars@^3.0.0, ember-cli-htmlbars@^3.0.1:
     json-stable-stringify "^1.0.1"
     strip-bom "^3.0.0"
 
-ember-cli-htmlbars@^4.0.0, ember-cli-htmlbars@^4.2.0, ember-cli-htmlbars@^4.2.3:
+ember-cli-htmlbars@^4.0.0, ember-cli-htmlbars@^4.2.0, ember-cli-htmlbars@^4.2.3, ember-cli-htmlbars@^4.3.1:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-4.3.1.tgz#4af8adc21ab3c4953f768956b7f7d207782cb175"
   integrity sha512-CW6AY/yzjeVqoRtItOKj3hcYzc5dWPRETmeCzr2Iqjt5vxiVtpl0z5VTqHqIlT5fsFx6sGWBQXNHIe+ivYsxXQ==
@@ -6144,21 +6167,21 @@ ember-power-datepicker@0.8.0:
     ember-decorators "^6.1.1"
     ember-power-calendar "^0.15.0"
 
-ember-power-select@4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/ember-power-select/-/ember-power-select-4.0.0.tgz#4b3a421b2f5c3ec49242cdb5d49196d876298006"
-  integrity sha512-47Fylz6qPYRzDsKq2O+v5LZzGZ5kgbZcDuw4SimCymQT16WjciitrqKkdjYdHHJNRSLyugJfGWq62dC6/1ANPg==
+ember-power-select@4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/ember-power-select/-/ember-power-select-4.0.2.tgz#d346e7d018e1b24e924542f0046893a11231a0fe"
+  integrity sha512-FCOXfKXcejDRLQMI57VjY1J80l6lDmfUKCJyRcw+CP675391+7dNRnysOE08pX+nc/08vkdYu6s47xD3Hrh7Dg==
   dependencies:
     "@ember-decorators/component" "^6.1.0"
     "@glimmer/component" "^1.0.0"
-    ember-assign-helper "^0.2.0"
-    ember-basic-dropdown "^3.0.1"
+    ember-assign-helper "^0.3.0"
+    ember-basic-dropdown "^3.0.2"
     ember-cli-babel "^7.18.0"
     ember-cli-htmlbars "^4.2.3"
     ember-cli-typescript "^3.1.1"
     ember-concurrency "^1.1.0"
     ember-concurrency-decorators "^1.0.0"
-    ember-text-measurer "^0.5.0"
+    ember-text-measurer "^0.6.0"
     ember-truth-helpers "^2.1.0"
 
 ember-raf-scheduler@0.1.0:
@@ -6309,12 +6332,13 @@ ember-test-waiters@^1.1.1:
     ember-cli-babel "^7.11.0"
     semver "^6.3.0"
 
-ember-text-measurer@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/ember-text-measurer/-/ember-text-measurer-0.5.0.tgz#b907aeb8cbc04560e5070dc0347cdd35d0040d0d"
-  integrity sha512-YhcOcce8kaHp4K0frKW7xlPJxz82RegGQCVNTcFftEL/jpEflZyFJx17FWVINfDFRL4K8wXtlzDXFgMOg8vmtQ==
+ember-text-measurer@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/ember-text-measurer/-/ember-text-measurer-0.6.0.tgz#140eda044fd7d4d7f60f654dd30da79c06922b2e"
+  integrity sha512-/aZs2x2i6kT4a5tAW+zenH2wg8AbRK9jKxLkbVsKl/1ublNl27idVRdov1gJ+zgWu3DNK7whcfVycXtlaybYQw==
   dependencies:
-    ember-cli-babel "^7.1.0"
+    ember-cli-babel "^7.19.0"
+    ember-cli-htmlbars "^4.3.1"
 
 ember-truth-helpers@2.1.0, ember-truth-helpers@^2.1.0:
   version "2.1.0"
