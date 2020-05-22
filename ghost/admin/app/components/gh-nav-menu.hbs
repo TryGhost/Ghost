@@ -61,7 +61,7 @@
             <li>
                 {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
                 {{#if (eq this.router.currentRouteName "pages")}}
-                    <LinkTo @route="pages" @query={{hash type=null author=null tag=null order=null}} @classNames="active" data-test-nav="pages">{{svg-jar "page"}}Pages</LinkTo>
+                    <LinkTo @route="pages" @query={{reset-query-params "pages"}} @classNames="active" data-test-nav="pages">{{svg-jar "page"}}Pages</LinkTo>
                 {{else}}
                     <LinkTo @route="pages" data-test-nav="pages">{{svg-jar "page"}}Pages</LinkTo>
                 {{/if}}
@@ -75,7 +75,11 @@
                 </li>
                 {{#if this.config.enableDeveloperExperiments}}
                     <li>
-                        <LinkTo @route="members" @current-when="members member" @query={{hash label=null}} data-test-nav="members-old">{{svg-jar "members"}}Members (dev)</LinkTo>
+                        {{#if (eq this.router.currentRouteName "members.index")}}
+                            <LinkTo @route="members" @current-when="members member" @query={{reset-query-params "members.index"}} data-test-nav="members-old">{{svg-jar "members"}}Members (dev)</LinkTo>
+                        {{else}}
+                            <LinkTo @route="members" @current-when="members member" data-test-nav="members-old">{{svg-jar "members"}}Members (dev)</LinkTo>
+                        {{/if}}
                     </li>
                 {{/if}}
             {{/if}}
