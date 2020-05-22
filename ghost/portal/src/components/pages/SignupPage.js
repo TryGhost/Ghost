@@ -104,7 +104,7 @@ class SignupPage extends React.Component {
     renderLoginMessage() {
         const {brandColor, onAction} = this.context;
         return (
-            <div style={{display: 'flex', justifyContent: 'center'}}>
+            <div style={{display: 'flex', justifyContent: 'center', marginTop: '12px'}}>
                 <div style={{marginRight: '6px', color: '#929292'}}> Already a member ? </div>
                 <div style={{color: brandColor, fontWeight: 'bold', cursor: 'pointer'}} role="button" onClick={() => onAction('switchPage', {page: 'signin'})}> Log in </div>
             </div>
