@@ -4,7 +4,7 @@ const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const rewire = require('rewire');
 const _ = require('lodash');
-const common = require('../../../../core/server/lib/common');
+const {events} = require('../../../../core/server/lib/common');
 const models = require('../../../../core/server/models');
 const testUtils = require('../../../utils');
 const sequence = require('../../../../core/server/lib/promise/sequence');
@@ -26,7 +26,7 @@ describe('Models: listeners', function () {
     beforeEach(testUtils.setup('owner', 'settings'));
 
     beforeEach(function () {
-        sinon.stub(common.events, 'on').callsFake(function (eventName, callback) {
+        sinon.stub(events, 'on').callsFake(function (eventName, callback) {
             eventsToRemember[eventName] = callback;
         });
 
@@ -34,7 +34,7 @@ describe('Models: listeners', function () {
     });
 
     afterEach(function () {
-        common.events.on.restore();
+        events.on.restore();
         sinon.restore();
         scope.posts = [];
         return testUtils.teardownDb();

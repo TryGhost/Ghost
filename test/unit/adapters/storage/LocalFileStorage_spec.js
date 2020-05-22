@@ -1,10 +1,10 @@
+const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
 const moment = require('moment');
 const Promise = require('bluebird');
 const path = require('path');
-const common = require('../../../../core/server/lib/common');
 const LocalFileStore = require('../../../../core/server/adapters/storage/LocalFileStorage');
 let localFileStore;
 const configUtils = require('../../../utils/configUtils');
@@ -168,7 +168,7 @@ describe('Local File System Storage', function () {
                     done(new Error('image should not exist'));
                 })
                 .catch(function (err) {
-                    (err instanceof common.errors.NotFoundError).should.eql(true);
+                    (err instanceof errors.NotFoundError).should.eql(true);
                     err.code.should.eql('ENOENT');
                     done();
                 });

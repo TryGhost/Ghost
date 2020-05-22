@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const should = require('should');
 const rewire = require('rewire');
-const common = require('../../../../core/server/lib/common');
+const errors = require('@tryghost/errors');
 const settings = rewire('../../../../core/frontend/services/settings');
 
 describe('UNIT > Settings Service:', function () {
@@ -62,7 +62,7 @@ describe('UNIT > Settings Service:', function () {
         });
 
         it('passes SettingsLoader error through', function (done) {
-            settingsLoaderStub.throws(new common.errors.GhostError({message: 'oops'}));
+            settingsLoaderStub.throws(new errors.GhostError({message: 'oops'}));
             settings.__set__('SettingsLoader', settingsLoaderStub);
 
             try {
@@ -120,7 +120,7 @@ describe('UNIT > Settings Service:', function () {
 
         it('passes SettinsLoader error through', function (done) {
             settingsLoaderStub.onFirstCall().returns(settingsStubFile1);
-            settingsLoaderStub.onSecondCall().throws(new common.errors.GhostError({message: 'oops'}));
+            settingsLoaderStub.onSecondCall().throws(new errors.GhostError({message: 'oops'}));
             settings.__set__('SettingsLoader', settingsLoaderStub);
 
             try {
