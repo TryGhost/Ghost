@@ -51,7 +51,7 @@ export default class ParentContainer extends React.Component {
         // Loads default page and popup state for local UI testing
         if (process.env.NODE_ENV === 'development') {
             return {
-                page: process.env.REACT_APP_DEFAULT_PAGE || 'signup',
+                page: 'signup',
                 showPopup: true
             };
         }
