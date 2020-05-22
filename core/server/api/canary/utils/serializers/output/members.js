@@ -1,5 +1,6 @@
 const _ = require('lodash');
-const common = require('../../../../../lib/common');
+const {i18n} = require('../../../../../lib/common');
+const errors = require('@tryghost/errors');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:members');
 const mapper = require('./utils/mapper');
 const {formatCSV} = require('../../../../../lib/fs');
@@ -34,8 +35,8 @@ module.exports = {
         debug('read');
 
         if (!data) {
-            return Promise.reject(new common.errors.NotFoundError({
-                message: common.i18n.t('errors.api.members.memberNotFound')
+            return Promise.reject(new errors.NotFoundError({
+                message: i18n.t('errors.api.members.memberNotFound')
             }));
         }
 

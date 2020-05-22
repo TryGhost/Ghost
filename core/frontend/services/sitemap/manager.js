@@ -1,4 +1,4 @@
-const common = require('../../../server/lib/common');
+const {events} = require('../../../server/lib/common');
 const IndexMapGenerator = require('./index-generator');
 const PagesMapGenerator = require('./page-generator');
 const PostsMapGenerator = require('./post-generator');
@@ -15,7 +15,7 @@ class SiteMapManager {
         this.tags = options.tags || this.createTagsGenerator(options);
         this.index = options.index || this.createIndexGenerator(options);
 
-        common.events.on('router.created', (router) => {
+        events.on('router.created', (router) => {
             if (router.name === 'StaticRoutesRouter') {
                 this.pages.addUrl(router.getRoute({absolute: true}), {id: router.identifier, staticRoute: true});
             }
@@ -25,15 +25,15 @@ class SiteMapManager {
             }
         });
 
-        common.events.on('url.added', (obj) => {
+        events.on('url.added', (obj) => {
             this[obj.resource.config.type].addUrl(obj.url.absolute, obj.resource.data);
         });
 
-        common.events.on('url.removed', (obj) => {
+        events.on('url.removed', (obj) => {
             this[obj.resource.config.type].removeUrl(obj.url.absolute, obj.resource.data);
         });
 
-        common.events.on('routers.reset', () => {
+        events.on('routers.reset', () => {
             this.pages && this.pages.reset();
             this.posts && this.posts.reset();
             this.users && this.users.reset();

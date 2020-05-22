@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const semver = require('semver');
-const common = require('../../../../lib/common');
+const {IncorrectUsageError} = require('@tryghost/errors');
 const debug = require('ghost-ignition').debug('importer:data');
 const sequence = require('../../../../lib/promise/sequence');
 const models = require('../../../../models');
@@ -55,14 +55,14 @@ DataImporter = {
         }
 
         if (!importData.meta) {
-            return Promise.reject(new common.errors.IncorrectUsageError({
+            return Promise.reject(new IncorrectUsageError({
                 message: 'Wrong importer structure. `meta` is missing.',
                 help: 'https://ghost.org/docs/api/migration/#json-file-structure'
             }));
         }
 
         if (!importData.meta.version) {
-            return Promise.reject(new common.errors.IncorrectUsageError({
+            return Promise.reject(new IncorrectUsageError({
                 message: 'Wrong importer structure. `meta.version` is missing.',
                 help: 'https://ghost.org/docs/api/migration/#json-file-structure'
             }));
@@ -71,7 +71,7 @@ DataImporter = {
         // CASE: We deny LTS imports, because these are major version jumps. Only imports from v1 until the latest are supported.
         //       We can detect a wrong structure by checking the meta version field. Ghost v0 doesn't use semver compliant versions.
         if (!semver.valid(importData.meta.version)) {
-            return Promise.reject(new common.errors.IncorrectUsageError({
+            return Promise.reject(new IncorrectUsageError({
                 message: 'Detected unsupported file structure.',
                 help: 'Please install Ghost 1.0, import the file and then update your blog to the latest Ghost version.\nVisit https://ghost.org/update/?v=0.1 or ask for help in our https://forum.ghost.org.'
             }));

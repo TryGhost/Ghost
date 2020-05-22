@@ -1,4 +1,4 @@
-const common = require('../../lib/common');
+const {events} = require('../../lib/common');
 const themeService = require('../../../frontend/services/themes');
 const models = require('../../models');
 
@@ -66,7 +66,7 @@ module.exports = {
                         // CASE: clear cache
                         this.headers.cacheInvalidate = true;
                     }
-                    common.events.emit('theme.uploaded');
+                    events.emit('theme.uploaded');
                     return theme;
                 });
         }

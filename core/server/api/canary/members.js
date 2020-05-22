@@ -3,7 +3,8 @@
 const Promise = require('bluebird');
 const models = require('../../models');
 const membersService = require('../../services/members');
-const common = require('../../lib/common');
+const {i18n, logging} = require('../../lib/common');
+const errors = require('@tryghost/errors');
 const fsLib = require('../../lib/fs');
 const _ = require('lodash');
 
@@ -120,8 +121,8 @@ const members = {
             let model = await models.Member.findOne(frame.data, frame.options);
 
             if (!model) {
-                throw new common.errors.NotFoundError({
-                    message: common.i18n.t('errors.api.members.memberNotFound')
+                throw new errors.NotFoundError({
+                    message: i18n.t('errors.api.members.memberNotFound')
                 });
             }
 
@@ -172,7 +173,7 @@ const members = {
                 return decorateWithSubscriptions(member);
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                    throw new common.errors.ValidationError({message: common.i18n.t('errors.api.members.memberAlreadyExists')});
+                    throw new errors.ValidationError({message: i18n.t('errors.api.members.memberAlreadyExists')});
                 }
 
                 // NOTE: failed to link Stripe customer/plan/subscription
@@ -248,8 +249,8 @@ const members = {
             let member = await models.Member.findOne(frame.options);
 
             if (!member) {
-                throw new common.errors.NotFoundError({
-                    message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                throw new errors.NotFoundError({
+                    message: i18n.t('errors.api.resource.resourceNotFound', {
                         resource: 'Member'
                     })
                 });
@@ -260,8 +261,8 @@ const members = {
 
             await models.Member.destroy(frame.options)
                 .catch(models.Member.NotFoundError, () => {
-                    throw new common.errors.NotFoundError({
-                        message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                    throw new errors.NotFoundError({
+                        message: i18n.t('errors.api.resource.resourceNotFound', {
                             resource: 'Member'
                         })
                     });
@@ -377,15 +378,15 @@ const members = {
                         if (inspection.isFulfilled()) {
                             fulfilled = fulfilled + 1;
                         } else {
-                            if (inspection.reason() instanceof common.errors.ValidationError) {
+                            if (inspection.reason() instanceof errors.ValidationError) {
                                 duplicates = duplicates + 1;
                             } else {
                                 // NOTE: if the error happens as a result of pure API call it doesn't get logged anywhere
                                 //       for this reason we have to make sure any unexpected errors are logged here
                                 if (Array.isArray(inspection.reason())) {
-                                    common.logging.error(inspection.reason()[0]);
+                                    logging.error(inspection.reason()[0]);
                                 } else {
-                                    common.logging.error(inspection.reason());
+                                    logging.error(inspection.reason());
                                 }
 
                                 invalid = invalid + 1;

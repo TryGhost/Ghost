@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 const dbBackup = require('../../data/db/backup');
 const exporter = require('../../data/exporter');
 const importer = require('../../data/importer');
-const common = require('../../lib/common');
+const errors = require('@tryghost/errors');
 const models = require('../../models');
 
 module.exports = {
@@ -53,7 +53,7 @@ module.exports = {
                 let backup = await dbBackup.readBackup(frame.options.filename);
 
                 if (!backup) {
-                    throw new common.errors.NotFoundError();
+                    throw new errors.NotFoundError();
                 }
 
                 return backup;
@@ -62,7 +62,7 @@ module.exports = {
             return Promise.resolve()
                 .then(() => exporter.doExport({include: frame.options.withRelated}))
                 .catch((err) => {
-                    return Promise.reject(new common.errors.GhostError({err: err}));
+                    return Promise.reject(new errors.GhostError({err: err}));
                 });
         }
     },
@@ -118,7 +118,7 @@ module.exports = {
                             }, {concurrency: 100});
                         })
                         .catch((err) => {
-                            throw new common.errors.GhostError({
+                            throw new errors.GhostError({
                                 err: err
                             });
                         });

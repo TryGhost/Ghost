@@ -3,7 +3,7 @@ const debug = require('ghost-ignition').debug('frontend:services:settings:index'
 const SettingsLoader = require('./loader');
 const ensureSettingsFiles = require('./ensure-settings');
 
-const common = require('../../../server/lib/common');
+const errors = require('@tryghost/errors');
 
 module.exports = {
     init: function () {
@@ -39,7 +39,7 @@ module.exports = {
         // CASE: this should be an edge case and only if internal usage of the
         // getter is incorrect.
         if (!setting || _.indexOf(knownSettings, setting) < 0) {
-            throw new common.errors.IncorrectUsageError({
+            throw new errors.IncorrectUsageError({
                 message: `Requested setting is not supported: '${setting}'.`,
                 help: `Please use only the supported settings: ${knownSettings}.`
             });

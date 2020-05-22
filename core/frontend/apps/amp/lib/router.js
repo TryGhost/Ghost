@@ -3,7 +3,8 @@ const express = require('../../../../shared/express');
 const ampRouter = express.Router('amp');
 
 // Dirty requires
-const common = require('../../../../server/lib/common');
+const {i18n} = require('../../../../server/lib/common');
+const errors = require('@tryghost/errors');
 
 const urlService = require('../../../services/url');
 const helpers = require('../../../services/routing/helpers');
@@ -22,7 +23,7 @@ function _renderer(req, res, next) {
 
     // CASE: we only support amp pages for posts that are not static pages
     if (!data.post || data.post.page) {
-        return next(new common.errors.NotFoundError({message: common.i18n.t('errors.errors.pageNotFound')}));
+        return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
     }
 
     // Render Call
@@ -59,8 +60,8 @@ function getPostData(req, res, next) {
     const permalinks = urlService.getPermalinkByUrl(urlWithoutSubdirectoryWithoutAmp, {withUrlOptions: true});
 
     if (!permalinks) {
-        return next(new common.errors.NotFoundError({
-            message: common.i18n.t('errors.errors.pageNotFound')
+        return next(new errors.NotFoundError({
+            message: i18n.t('errors.errors.pageNotFound')
         }));
     }
 

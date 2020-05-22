@@ -1,7 +1,8 @@
 const debug = require('ghost-ignition').debug('api:shared:validators:input:all');
 const _ = require('lodash');
 const Promise = require('bluebird');
-const common = require('../../../../lib/common');
+const {i18n} = require('../../../../lib/common');
+const {BadRequestError, ValidationError} = require('@tryghost/errors');
 const validation = require('../../../../data/validation');
 
 const GLOBAL_VALIDATORS = {
@@ -29,8 +30,8 @@ const validate = (config, attrs) => {
 
     _.each(config, (value, key) => {
         if (value.required && !attrs[key]) {
-            errors.push(new common.errors.ValidationError({
-                message: common.i18n.t('notices.data.validation.index.validationFailed', {
+            errors.push(new ValidationError({
+                message: i18n.t('notices.data.validation.index.validationFailed', {
                     validationName: 'FieldIsRequired',
                     key: key
                 })
@@ -69,8 +70,8 @@ const validate = (config, attrs) => {
                         return;
                     }
 
-                    errors.push(new common.errors.ValidationError({
-                        message: common.i18n.t('notices.data.validation.index.validationFailed', {
+                    errors.push(new ValidationError({
+                        message: i18n.t('notices.data.validation.index.validationFailed', {
                             validationName: 'AllowedValues',
                             key: key
                         })
@@ -122,8 +123,8 @@ module.exports = {
         //       are introduced for all of the endpoints
         if (!['posts', 'tags'].includes(apiConfig.docName)) {
             if (_.isEmpty(frame.data) || _.isEmpty(frame.data[apiConfig.docName]) || _.isEmpty(frame.data[apiConfig.docName][0])) {
-                return Promise.reject(new common.errors.BadRequestError({
-                    message: common.i18n.t('errors.api.utils.noRootKeyProvided', {docName: apiConfig.docName})
+                return Promise.reject(new BadRequestError({
+                    message: i18n.t('errors.api.utils.noRootKeyProvided', {docName: apiConfig.docName})
                 }));
             }
         }
@@ -143,8 +144,8 @@ module.exports = {
             });
 
             if (missedDataProperties.length) {
-                return Promise.reject(new common.errors.ValidationError({
-                    message: common.i18n.t('notices.data.validation.index.validationFailed', {
+                return Promise.reject(new ValidationError({
+                    message: i18n.t('notices.data.validation.index.validationFailed', {
                         validationName: 'FieldIsRequired',
                         key: JSON.stringify(missedDataProperties)
                     })
@@ -152,8 +153,8 @@ module.exports = {
             }
 
             if (nilDataProperties.length) {
-                return Promise.reject(new common.errors.ValidationError({
-                    message: common.i18n.t('notices.data.validation.index.validationFailed', {
+                return Promise.reject(new ValidationError({
+                    message: i18n.t('notices.data.validation.index.validationFailed', {
                         validationName: 'FieldIsInvalid',
                         key: JSON.stringify(nilDataProperties)
                     })
@@ -177,8 +178,8 @@ module.exports = {
         if (!['posts', 'tags'].includes(apiConfig.docName)) {
             if (frame.options.id && frame.data[apiConfig.docName][0].id
                 && frame.options.id !== frame.data[apiConfig.docName][0].id) {
-                return Promise.reject(new common.errors.BadRequestError({
-                    message: common.i18n.t('errors.api.utils.invalidIdProvided')
+                return Promise.reject(new BadRequestError({
+                    message: i18n.t('errors.api.utils.invalidIdProvided')
                 }));
             }
         }

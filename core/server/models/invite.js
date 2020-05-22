@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
-const common = require('../lib/common');
+const {i18n} = require('../lib/common');
+const errors = require('@tryghost/errors');
 const constants = require('../lib/constants');
 const security = require('../lib/security');
 const settingsCache = require('../services/settings/cache');
@@ -50,8 +51,8 @@ Invite = ghostBookshelf.Model.extend({
                 return Promise.resolve();
             }
 
-            return Promise.reject(new common.errors.NoPermissionError({
-                message: common.i18n.t('errors.models.invite.notEnoughPermission')
+            return Promise.reject(new errors.NoPermissionError({
+                message: i18n.t('errors.models.invite.notEnoughPermission')
             }));
         }
 
@@ -60,14 +61,14 @@ Invite = ghostBookshelf.Model.extend({
             .findOne({id: unsafeAttrs.role_id})
             .then((roleToInvite) => {
                 if (!roleToInvite) {
-                    return Promise.reject(new common.errors.NotFoundError({
-                        message: common.i18n.t('errors.api.invites.roleNotFound')
+                    return Promise.reject(new errors.NotFoundError({
+                        message: i18n.t('errors.api.invites.roleNotFound')
                     }));
                 }
 
                 if (roleToInvite.get('name') === 'Owner') {
-                    return Promise.reject(new common.errors.NoPermissionError({
-                        message: common.i18n.t('errors.api.invites.notAllowedToInviteOwner')
+                    return Promise.reject(new errors.NoPermissionError({
+                        message: i18n.t('errors.api.invites.notAllowedToInviteOwner')
                     }));
                 }
 
@@ -81,8 +82,8 @@ Invite = ghostBookshelf.Model.extend({
                 }
 
                 if (allowed.indexOf(roleToInvite.get('name')) === -1) {
-                    throw new common.errors.NoPermissionError({
-                        message: common.i18n.t('errors.api.invites.notAllowedToInvite')
+                    throw new errors.NoPermissionError({
+                        message: i18n.t('errors.api.invites.notAllowedToInvite')
                     });
                 }
 
@@ -90,8 +91,8 @@ Invite = ghostBookshelf.Model.extend({
                     return Promise.resolve();
                 }
 
-                return Promise.reject(new common.errors.NoPermissionError({
-                    message: common.i18n.t('errors.models.invite.notEnoughPermission')
+                return Promise.reject(new errors.NoPermissionError({
+                    message: i18n.t('errors.models.invite.notEnoughPermission')
                 }));
             });
     }

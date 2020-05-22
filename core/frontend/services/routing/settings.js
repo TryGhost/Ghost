@@ -3,7 +3,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const urlService = require('../url');
 
-const common = require('../../../server/lib/common');
+const errors = require('@tryghost/errors');
 const config = require('../../../server/config');
 
 /**
@@ -56,7 +56,7 @@ const setFromFilePath = (filePath) => {
                     .then(() => {
                         if (!urlService.hasFinished()) {
                             if (tries > 5) {
-                                throw new common.errors.InternalServerError({
+                                throw new errors.InternalServerError({
                                     message: 'Could not load routes.yaml file.'
                                 });
                             }
@@ -86,11 +86,11 @@ const get = () => {
                 return Promise.resolve([]);
             }
 
-            if (common.errors.utils.isIgnitionError(err)) {
+            if (errors.utils.isIgnitionError(err)) {
                 throw err;
             }
 
-            throw new common.errors.NotFoundError({
+            throw new errors.NotFoundError({
                 err: err
             });
         });

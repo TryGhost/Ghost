@@ -2,7 +2,7 @@ const debug = require('ghost-ignition').debug('api:shared:pipeline');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const shared = require('../shared');
-const common = require('../../lib/common');
+const errors = require('@tryghost/errors');
 const sequence = require('../../lib/promise/sequence');
 
 const STAGES = {
@@ -106,7 +106,7 @@ const STAGES = {
 
         // CASE: it's required to put the permission key to avoid security holes
         if (!Object.prototype.hasOwnProperty.call(apiImpl, 'permissions')) {
-            return Promise.reject(new common.errors.IncorrectUsageError());
+            return Promise.reject(new errors.IncorrectUsageError());
         }
 
         // CASE: handle permissions completely yourself
@@ -150,7 +150,7 @@ const STAGES = {
         debug('stages: query');
 
         if (!apiImpl.query) {
-            return Promise.reject(new common.errors.IncorrectUsageError());
+            return Promise.reject(new errors.IncorrectUsageError());
         }
 
         return apiImpl.query(frame);

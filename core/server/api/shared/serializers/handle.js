@@ -1,7 +1,7 @@
 const debug = require('ghost-ignition').debug('api:shared:serializers:handle');
 const Promise = require('bluebird');
 const sequence = require('../../../lib/promise/sequence');
-const common = require('../../../lib/common');
+const errors = require('@tryghost/errors');
 
 /**
  * @description Shared input serialization handler.
@@ -22,11 +22,11 @@ module.exports.input = (apiConfig, apiSerializers, frame) => {
     const sharedSerializers = require('./input');
 
     if (!apiSerializers) {
-        return Promise.reject(new common.errors.IncorrectUsageError());
+        return Promise.reject(new errors.IncorrectUsageError());
     }
 
     if (!apiConfig) {
-        return Promise.reject(new common.errors.IncorrectUsageError());
+        return Promise.reject(new errors.IncorrectUsageError());
     }
 
     // ##### SHARED ALL SERIALIZATION
@@ -86,11 +86,11 @@ module.exports.output = (response = {}, apiConfig, apiSerializers, frame) => {
     const tasks = [];
 
     if (!apiConfig) {
-        return Promise.reject(new common.errors.IncorrectUsageError());
+        return Promise.reject(new errors.IncorrectUsageError());
     }
 
     if (!apiSerializers) {
-        return Promise.reject(new common.errors.IncorrectUsageError());
+        return Promise.reject(new errors.IncorrectUsageError());
     }
 
     // ##### API VERSION RESOURCE SERIALIZATION

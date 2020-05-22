@@ -4,7 +4,8 @@ const uuid = require('uuid');
 const crypto = require('crypto');
 const keypair = require('keypair');
 const ghostBookshelf = require('./base');
-const common = require('../lib/common');
+const {i18n} = require('../lib/common');
+const errors = require('@tryghost/errors');
 const validation = require('../data/validation');
 const settingsCache = require('../services/settings/cache');
 const internalContext = {context: {internal: true}};
@@ -184,7 +185,7 @@ Settings = ghostBookshelf.Model.extend({
                 item = item.toJSON();
             }
             if (!(_.isString(item.key) && item.key.length > 0)) {
-                return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.models.settings.valueCannotBeBlank')}));
+                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.settings.valueCannotBeBlank')}));
             }
 
             item = self.filterData(item);
@@ -213,7 +214,7 @@ Settings = ghostBookshelf.Model.extend({
                     }
                 }
 
-                return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.models.settings.unableToFindSetting', {key: item.key})}));
+                return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.settings.unableToFindSetting', {key: item.key})}));
             });
         });
     },
@@ -277,8 +278,8 @@ Settings = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject(new common.errors.NoPermissionError({
-            message: common.i18n.t('errors.models.post.notEnoughPermission')
+        return Promise.reject(new errors.NoPermissionError({
+            message: i18n.t('errors.models.post.notEnoughPermission')
         }));
     }
 });

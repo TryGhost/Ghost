@@ -1,7 +1,8 @@
 const Promise = require('bluebird');
 const validator = require('validator');
 const debug = require('ghost-ignition').debug('api:v2:utils:validators:input:invitation');
-const common = require('../../../../../lib/common');
+const {i18n} = require('../../../../../lib/common');
+const errors = require('@tryghost/errors');
 
 module.exports = {
     acceptInvitation(apiConfig, frame) {
@@ -10,19 +11,19 @@ module.exports = {
         const data = frame.data.invitation[0];
 
         if (!data.token) {
-            return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.authentication.noTokenProvided')}));
+            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noTokenProvided')}));
         }
 
         if (!data.email) {
-            return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.authentication.noEmailProvided')}));
+            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noEmailProvided')}));
         }
 
         if (!data.password) {
-            return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.authentication.noPasswordProvided')}));
+            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noPasswordProvided')}));
         }
 
         if (!data.name) {
-            return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.authentication.noNameProvided')}));
+            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noNameProvided')}));
         }
     },
 
@@ -32,8 +33,8 @@ module.exports = {
         const email = frame.data.email;
 
         if (typeof email !== 'string' || !validator.isEmail(email)) {
-            throw new common.errors.BadRequestError({
-                message: common.i18n.t('errors.api.authentication.invalidEmailReceived')
+            throw new errors.BadRequestError({
+                message: i18n.t('errors.api.authentication.invalidEmailReceived')
             });
         }
     }

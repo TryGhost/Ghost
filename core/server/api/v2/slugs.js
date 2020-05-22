@@ -1,5 +1,6 @@
 const models = require('../../models');
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const errors = require('@tryghost/errors');
 
 const allowedTypes = {
     post: models.Post,
@@ -35,8 +36,8 @@ module.exports = {
             return models.Base.Model.generateSlug(allowedTypes[frame.options.type], frame.data.name, {status: 'all'})
                 .then((slug) => {
                     if (!slug) {
-                        return Promise.reject(new common.errors.GhostError({
-                            message: common.i18n.t('errors.api.slugs.couldNotGenerateSlug')
+                        return Promise.reject(new errors.GhostError({
+                            message: i18n.t('errors.api.slugs.couldNotGenerateSlug')
                         }));
                     }
                     return slug;

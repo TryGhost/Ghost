@@ -1,7 +1,7 @@
 const moment = require('moment-timezone');
 const Promise = require('bluebird');
 const _ = require('lodash');
-const common = require('../../lib/common');
+const errors = require('@tryghost/errors');
 
 module.exports = function (Bookshelf) {
     const ParentModel = Bookshelf.Model;
@@ -58,7 +58,7 @@ module.exports = function (Bookshelf) {
                         if (Object.keys(changed).length) {
                             if (clientUpdatedAt.diff(serverUpdatedAt) !== 0) {
                                 // @NOTE: This will rollback the update. We cannot know if relations were updated before doing the update.
-                                return Promise.reject(new common.errors.UpdateCollisionError({
+                                return Promise.reject(new errors.UpdateCollisionError({
                                     message: 'Saving failed! Someone else is editing this post.',
                                     code: 'UPDATE_COLLISION',
                                     level: 'critical',

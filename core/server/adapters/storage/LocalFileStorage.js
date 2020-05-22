@@ -7,7 +7,8 @@ const path = require('path');
 const Promise = require('bluebird');
 const moment = require('moment');
 const config = require('../../config');
-const common = require('../../lib/common');
+const {logging, i18n} = require('../../lib/common');
+const errors = require('@tryghost/errors');
 const constants = require('../../lib/constants');
 const urlUtils = require('../../lib/url-utils');
 const StorageBase = require('ghost-storage-base');
@@ -110,28 +111,28 @@ class LocalFileStore extends StorageBase {
                     maxAge: constants.ONE_YEAR_MS,
                     fallthrough: false,
                     onEnd: () => {
-                        common.logging.info('LocalFileStorage.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');
+                        logging.info('LocalFileStorage.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');
                     }
                 }
             )(req, res, (err) => {
                 if (err) {
                     if (err.statusCode === 404) {
-                        return next(new common.errors.NotFoundError({
-                            message: common.i18n.t('errors.errors.imageNotFound'),
+                        return next(new errors.NotFoundError({
+                            message: i18n.t('errors.errors.imageNotFound'),
                             code: 'STATIC_FILE_NOT_FOUND',
                             property: err.path
                         }));
                     }
 
                     if (err.statusCode === 400) {
-                        return next(new common.errors.BadRequestError({err: err}));
+                        return next(new errors.BadRequestError({err: err}));
                     }
 
                     if (err.statusCode === 403) {
-                        return next(new common.errors.NoPermissionError({err: err}));
+                        return next(new errors.NoPermissionError({err: err}));
                     }
 
-                    return next(new common.errors.GhostError({err: err}));
+                    return next(new errors.GhostError({err: err}));
                 }
 
                 next();
@@ -165,23 +166,23 @@ class LocalFileStore extends StorageBase {
             fs.readFile(targetPath, (err, bytes) => {
                 if (err) {
                     if (err.code === 'ENOENT' || err.code === 'ENOTDIR') {
-                        return reject(new common.errors.NotFoundError({
+                        return reject(new errors.NotFoundError({
                             err: err,
-                            message: common.i18n.t('errors.errors.imageNotFoundWithRef', {img: options.path})
+                            message: i18n.t('errors.errors.imageNotFoundWithRef', {img: options.path})
                         }));
                     }
 
                     if (err.code === 'ENAMETOOLONG') {
-                        return reject(new common.errors.BadRequestError({err: err}));
+                        return reject(new errors.BadRequestError({err: err}));
                     }
 
                     if (err.code === 'EACCES') {
-                        return reject(new common.errors.NoPermissionError({err: err}));
+                        return reject(new errors.NoPermissionError({err: err}));
                     }
 
-                    return reject(new common.errors.GhostError({
+                    return reject(new errors.GhostError({
                         err: err,
-                        message: common.i18n.t('errors.errors.cannotReadImage', {img: options.path})
+                        message: i18n.t('errors.errors.cannotReadImage', {img: options.path})
                     }));
                 }
 

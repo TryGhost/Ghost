@@ -1,5 +1,6 @@
 const debug = require('ghost-ignition').debug('models:plugins:filter');
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const errors = require('@tryghost/errors');
 
 const RELATIONS = {
     tags: {
@@ -100,8 +101,8 @@ const filter = function filter(Bookshelf) {
                     }).querySQL(qb);
                 });
             } catch (err) {
-                throw new common.errors.BadRequestError({
-                    message: common.i18n.t('errors.models.plugins.filter.errorParsing'),
+                throw new errors.BadRequestError({
+                    message: i18n.t('errors.models.plugins.filter.errorParsing'),
                     err: err
                 });
             }

@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('services:routing:bootstrap');
 const _ = require('lodash');
-const common = require('../../../server/lib/common');
+const {events} = require('../../../server/lib/common');
 const settingsService = require('../settings');
 const StaticRoutesRouter = require('./StaticRoutesRouter');
 const StaticPagesRouter = require('./StaticPagesRouter');
@@ -34,7 +34,7 @@ module.exports.init = (options = {start: false}) => {
     registry.resetAllRouters();
     registry.resetAllRoutes();
 
-    common.events.emit('routers.reset');
+    events.emit('routers.reset');
 
     siteRouter = new ParentRouter('SiteRouter');
     registry.setRouter('siteRouter', siteRouter);

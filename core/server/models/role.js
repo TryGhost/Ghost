@@ -1,7 +1,8 @@
 const _ = require('lodash');
 const ghostBookshelf = require('./base');
 const Promise = require('bluebird');
-const common = require('../lib/common');
+const {i18n} = require('../lib/common');
+const errors = require('@tryghost/errors');
 let Role;
 let Roles;
 
@@ -57,8 +58,8 @@ Role = ghostBookshelf.Model.extend({
             return this.findOne({id: roleModelOrId, status: 'all'})
                 .then((foundRoleModel) => {
                     if (!foundRoleModel) {
-                        throw new common.errors.NotFoundError({
-                            message: common.i18n.t('errors.models.role.roleNotFound')
+                        throw new errors.NotFoundError({
+                            message: i18n.t('errors.models.role.roleNotFound')
                         });
                     }
 
@@ -88,8 +89,8 @@ Role = ghostBookshelf.Model.extend({
         if (action === 'assign' && loadedPermissions.apiKey) {
             // apiKey cannot 'assign' the 'Owner' role
             if (roleModel.get('name') === 'Owner') {
-                return Promise.reject(new common.errors.NoPermissionError({
-                    message: common.i18n.t('errors.models.role.notEnoughPermission')
+                return Promise.reject(new errors.NoPermissionError({
+                    message: i18n.t('errors.models.role.notEnoughPermission')
                 }));
             }
         }
@@ -98,7 +99,7 @@ Role = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.role.notEnoughPermission')}));
+        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.role.notEnoughPermission')}));
     }
 });
 

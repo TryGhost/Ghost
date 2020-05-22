@@ -4,7 +4,8 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const settingsCache = require('../../services/settings/cache');
 const ghostVersion = require('../../lib/ghost-version');
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid');
 const api = require('./index');
 const internalContext = {context: {internal: true}};
@@ -170,14 +171,14 @@ module.exports = {
             });
 
             if (notificationToMarkAsSeenIndex > -1 && !notificationToMarkAsSeen.dismissible) {
-                return Promise.reject(new common.errors.NoPermissionError({
-                    message: common.i18n.t('errors.api.notifications.noPermissionToDismissNotif')
+                return Promise.reject(new errors.NoPermissionError({
+                    message: i18n.t('errors.api.notifications.noPermissionToDismissNotif')
                 }));
             }
 
             if (notificationToMarkAsSeenIndex < 0) {
-                return Promise.reject(new common.errors.NotFoundError({
-                    message: common.i18n.t('errors.api.notifications.notificationDoesNotExist')
+                return Promise.reject(new errors.NotFoundError({
+                    message: i18n.t('errors.api.notifications.notificationDoesNotExist')
                 }));
             }
 

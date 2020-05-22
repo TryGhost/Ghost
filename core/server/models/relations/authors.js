@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const errors = require('@tryghost/errors');
 const sequence = require('../../lib/promise/sequence');
 
 /**
@@ -113,7 +114,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
             // CASE: you can't delete all authors
             if (model.get('authors') && !model.get('authors').length) {
-                throw new common.errors.ValidationError({
+                throw new errors.ValidationError({
                     message: 'At least one author is required.'
                 });
             }
@@ -194,7 +195,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
              */
             if (this._originalOptions.withRelated && this._originalOptions.withRelated && this._originalOptions.withRelated.indexOf('author') !== -1) {
                 if (!authors.models.length) {
-                    throw new common.errors.ValidationError({
+                    throw new errors.ValidationError({
                         message: 'The target post has no primary author.'
                     });
                 }
@@ -296,8 +297,8 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             let authorId = options.id;
 
             if (!authorId) {
-                return Promise.reject(new common.errors.NotFoundError({
-                    message: common.i18n.t('errors.models.post.noUserFound')
+                return Promise.reject(new errors.NotFoundError({
+                    message: i18n.t('errors.models.post.noUserFound')
                 }));
             }
 
@@ -317,7 +318,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                             .then(() => response);
                     })
                     .catch((err) => {
-                        throw new common.errors.GhostError({err: err});
+                        throw new errors.GhostError({err: err});
                     });
             });
 
@@ -351,9 +352,9 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 return this.findOne({id: postModelOrId, status: 'all'}, {withRelated: ['authors']})
                     .then(function then(foundPostModel) {
                         if (!foundPostModel) {
-                            throw new common.errors.NotFoundError({
+                            throw new errors.NotFoundError({
                                 level: 'critical',
-                                message: common.i18n.t('errors.models.post.postNotFound')
+                                message: i18n.t('errors.models.post.postNotFound')
                             });
                         }
 
@@ -448,8 +449,8 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 });
             }
 
-            return Promise.reject(new common.errors.NoPermissionError({
-                message: common.i18n.t('errors.models.post.notEnoughPermission')
+            return Promise.reject(new errors.NoPermissionError({
+                message: i18n.t('errors.models.post.notEnoughPermission')
             }));
         }
     });
