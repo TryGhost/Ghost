@@ -1,7 +1,7 @@
+const errors = require('@tryghost/errors');
 const should = require('should');
 const Promise = require('bluebird');
 const sinon = require('sinon');
-const common = require('../../../../../core/server/lib/common');
 const shared = require('../../../../../core/server/api/shared');
 
 describe('Unit: api/shared/serializers/handle', function () {
@@ -14,7 +14,7 @@ describe('Unit: api/shared/serializers/handle', function () {
             return shared.serializers.handle.input()
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof common.errors.IncorrectUsageError).should.be.true();
+                    (err instanceof errors.IncorrectUsageError).should.be.true();
                 });
         });
 
@@ -22,7 +22,7 @@ describe('Unit: api/shared/serializers/handle', function () {
             return shared.serializers.handle.input({})
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof common.errors.IncorrectUsageError).should.be.true();
+                    (err instanceof errors.IncorrectUsageError).should.be.true();
                 });
         });
 
@@ -68,7 +68,7 @@ describe('Unit: api/shared/serializers/handle', function () {
             return shared.serializers.handle.output([])
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof common.errors.IncorrectUsageError).should.be.true();
+                    (err instanceof errors.IncorrectUsageError).should.be.true();
                 });
         });
 
@@ -76,7 +76,7 @@ describe('Unit: api/shared/serializers/handle', function () {
             return shared.serializers.handle.output([], {})
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof common.errors.IncorrectUsageError).should.be.true();
+                    (err instanceof errors.IncorrectUsageError).should.be.true();
                 });
         });
 

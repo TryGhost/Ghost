@@ -1,9 +1,9 @@
 const should = require('should');
-const common = require('../../../../core/server/lib/common');
+const errors = require('@tryghost/errors');
 
 describe('Errors', function () {
     it('Ensure we inherit from Error', function () {
-        const ghostError = new common.errors.GhostError();
+        const ghostError = new errors.GhostError();
         (ghostError instanceof Error).should.eql(true);
     });
 
@@ -16,7 +16,7 @@ describe('Errors', function () {
             someError.context = 'test';
             someError.help = 'test';
 
-            ghostError = new common.errors.GhostError({err: someError});
+            ghostError = new errors.GhostError({err: someError});
             ghostError.stack.should.match(/Error: test/);
             ghostError.context.should.eql(someError.context);
             ghostError.help.should.eql(someError.help);
@@ -30,7 +30,7 @@ describe('Errors', function () {
                 a: 'b'
             };
 
-            ghostError = new common.errors.GhostError({
+            ghostError = new errors.GhostError({
                 err: someError
             });
 
@@ -43,7 +43,7 @@ describe('Errors', function () {
 
             someError.context = 'test';
 
-            ghostError = new common.errors.GhostError({
+            ghostError = new errors.GhostError({
                 err: someError,
                 context: 'context'
             });
@@ -55,7 +55,7 @@ describe('Errors', function () {
             const someError = new Error();
             let ghostError;
 
-            ghostError = new common.errors.GhostError({
+            ghostError = new errors.GhostError({
                 err: someError,
                 message: 'test'
             });
@@ -64,7 +64,7 @@ describe('Errors', function () {
         });
 
         it('error is string', function () {
-            const ghostError = new common.errors.GhostError({
+            const ghostError = new errors.GhostError({
                 err: 'string'
             });
 

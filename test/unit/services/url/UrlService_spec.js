@@ -1,9 +1,10 @@
+const errors = require('@tryghost/errors');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const rewire = require('rewire');
 const should = require('should');
 const sinon = require('sinon');
-const common = require('../../../../core/server/lib/common');
+const {events} = require('../../../../core/server/lib/common');
 const Queue = require('../../../../core/frontend/services/url/Queue');
 const Resources = require('../../../../core/frontend/services/url/Resources');
 const UrlGenerator = require('../../../../core/frontend/services/url/UrlGenerator');
@@ -35,7 +36,7 @@ describe('Unit: services/url/UrlService', function () {
         UrlService.__set__('Urls', UrlsStub);
         UrlService.__set__('UrlGenerator', UrlGeneratorStub);
 
-        sinon.stub(common.events, 'on');
+        sinon.stub(events, 'on');
 
         urlService = new UrlService();
     });
@@ -57,9 +58,9 @@ describe('Unit: services/url/UrlService', function () {
         urlService.queue.addListener.args[0][0].should.eql('started');
         urlService.queue.addListener.args[1][0].should.eql('ended');
 
-        common.events.on.calledTwice.should.be.true();
-        common.events.on.args[0][0].should.eql('router.created');
-        common.events.on.args[1][0].should.eql('services.themes.api.changed');
+        events.on.calledTwice.should.be.true();
+        events.on.args[0][0].should.eql('router.created');
+        events.on.args[1][0].should.eql('services.themes.api.changed');
     });
 
     it('fn: _onQueueStarted', function () {
@@ -102,7 +103,7 @@ describe('Unit: services/url/UrlService', function () {
                 urlService.getResource('/blog-post/');
                 throw new Error('Expected error.');
             } catch (err) {
-                (err instanceof common.errors.InternalServerError).should.be.true();
+                (err instanceof errors.InternalServerError).should.be.true();
             }
         });
 

@@ -1,10 +1,10 @@
+const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const path = require('path');
 const ampController = require('../../../../core/frontend/apps/amp/lib/router');
 const urlService = require('../../../../core/frontend/services/url');
 const helpers = require('../../../../core/frontend/services/routing/helpers');
-const common = require('../../../../core/server/lib/common');
 const testUtils = require('../../../utils');
 const configUtils = require('../../../utils/configUtils');
 
@@ -71,7 +71,7 @@ describe('Unit - apps/amp/lib/router', function () {
             req.body = {};
 
             ampController.renderer(req, res, function (err) {
-                (err instanceof common.errors.NotFoundError).should.be.true();
+                (err instanceof errors.NotFoundError).should.be.true();
                 helpers.renderer.called.should.be.false();
                 done();
             });
@@ -85,7 +85,7 @@ describe('Unit - apps/amp/lib/router', function () {
             };
 
             ampController.renderer(req, res, function (err) {
-                (err instanceof common.errors.NotFoundError).should.be.true();
+                (err instanceof errors.NotFoundError).should.be.true();
                 helpers.renderer.called.should.be.false();
                 done();
             });
@@ -158,10 +158,10 @@ describe('Unit - apps/amp/lib/router', function () {
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
             helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
-                .rejects(new common.errors.NotFoundError());
+                .rejects(new errors.NotFoundError());
 
             ampController.getPostData(req, res, function (err) {
-                (err instanceof common.errors.NotFoundError).should.be.true();
+                (err instanceof errors.NotFoundError).should.be.true();
                 done();
             });
         });

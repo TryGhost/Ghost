@@ -1,10 +1,11 @@
+const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 const moment = require('moment');
 const testUtils = require('../../../../utils');
-const common = require('../../../../../core/server/lib/common');
 const models = require('../../../../../core/server/models');
+const {events} = require('../../../../../core/server/lib/common');
 const api = require('../../../../../core/server/api');
 const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
 const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/SchedulingDefault');
@@ -38,7 +39,7 @@ describe.skip('Scheduling: Post Scheduling', function () {
             return Promise.resolve({posts: scope.scheduledPosts});
         });
 
-        sinon.stub(common.events, 'onMany').callsFake(function (events, stubDone) {
+        sinon.stub(events, 'onMany').callsFake(function (events, stubDone) {
             events.forEach(function (event) {
                 scope.events[event] = stubDone;
             });
@@ -100,7 +101,7 @@ describe.skip('Scheduling: Post Scheduling', function () {
                 postScheduling.init()
                     .catch(function (err) {
                         should.exist(err);
-                        (err instanceof common.errors.IncorrectUsageError).should.eql(true);
+                        (err instanceof errors.IncorrectUsageError).should.eql(true);
                         done();
                     });
             });
