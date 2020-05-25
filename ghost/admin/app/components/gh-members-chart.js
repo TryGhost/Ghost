@@ -1,6 +1,5 @@
 /* global Chart */
 import Component from '@ember/component';
-import moment from 'moment';
 import {action} from '@ember/object';
 import {computed, get} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -70,12 +69,12 @@ export default Component.extend({
         this.set('stats', stats);
 
         this.setChartOptions({
-            rangeInDays: Object.keys(stats.totalMembersOnDate).length
+            rangeInDays: Object.keys(stats.totalOnDate).length
         });
 
         this.setChartData({
-            dateLabels: Object.keys(stats.totalMembersOnDate),
-            dateValues: Object.values(stats.totalMembersOnDate)
+            dateLabels: Object.keys(stats.totalOnDate),
+            dateValues: Object.values(stats.totalOnDate)
         });
     }),
 
