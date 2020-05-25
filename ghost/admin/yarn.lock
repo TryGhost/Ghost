@@ -6621,10 +6621,10 @@ eslint-plugin-es@^3.0.0:
     eslint-utils "^2.0.0"
     regexpp "^3.0.0"
 
-eslint-plugin-ghost@1.4.1:
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-1.4.1.tgz#727d837d1e9cbb3025a23baf2fccda4f297bea07"
-  integrity sha512-ChHAQSKPA/qwyhkx5NTk9iA2L60aJEBnpQCqLlqJDaBUK28s6L+lsWz0Lv7Y4I0ZXYa7Wpy9OPPX4GlFFPxDyg==
+eslint-plugin-ghost@1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-1.5.0.tgz#93c8ecbfe3b039b4f89c1383249dbc58d90121e3"
+  integrity sha512-W+woYN6HIVfMjVCfIsF3EncqJP8rwXIilqciHs22YuhHNOA0IULfb3sO2Fy/Yq2NG0nqco+8FxZIOD3Gu0dp4w==
   dependencies:
     eslint-plugin-ember "8.5.1"
     eslint-plugin-mocha "6.3.0"
@@ -6715,10 +6715,10 @@ eslint-visitor-keys@^1.0.0, eslint-visitor-keys@^1.1.0:
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-1.1.0.tgz#e2a82cea84ff246ad6fb57f9bde5b46621459ec2"
   integrity sha512-8y9YjtM1JBJU/A9Kc+SbaOV4y29sSWckBwMHa+FGtVj5gN/sbnKDf6xJUl+8g7FAij9LVaP8C24DUiH/f/2Z9A==
 
-eslint@7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-7.0.0.tgz#c35dfd04a4372110bd78c69a8d79864273919a08"
-  integrity sha512-qY1cwdOxMONHJfGqw52UOpZDeqXy8xmD0u8CT6jIstil72jkhURC704W8CFyTPDPllz4z4lu0Ql1+07PG/XdIg==
+eslint@7.1.0:
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-7.1.0.tgz#d9a1df25e5b7859b0a3d86bb05f0940ab676a851"
+  integrity sha512-DfS3b8iHMK5z/YLSme8K5cge168I8j8o1uiVmFCgnnjxZQbCGyraF8bMl7Ju4yfBmCuxD7shOF7eqGkcuIHfsA==
   dependencies:
     "@babel/code-frame" "^7.0.0"
     ajv "^6.10.0"
