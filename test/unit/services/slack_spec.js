@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const rewire = require('rewire');
@@ -8,7 +7,7 @@ const configUtils = require('../../utils/configUtils');
 // Stuff we test
 const slack = rewire('../../../core/server/services/slack');
 
-const common = require('../../../core/server/lib/common');
+const {logging, events} = require('../../../core/server/lib/common');
 const imageLib = require('../../../core/server/lib/image');
 const urlService = require('../../../core/frontend/services/url');
 const schema = require('../../../core/server/data/schema').checks;
@@ -23,7 +22,7 @@ describe('Slack', function () {
     let eventStub;
 
     beforeEach(function () {
-        eventStub = sinon.stub(common.events, 'on');
+        eventStub = sinon.stub(events, 'on');
     });
 
     afterEach(function () {
@@ -107,7 +106,7 @@ describe('Slack', function () {
             sinon.stub(urlService, 'getUrlByResourceId');
 
             settingsCacheStub = sinon.stub(settingsCache, 'get');
-            sinon.spy(common.logging, 'error');
+            sinon.spy(logging, 'error');
 
             makeRequestStub = sinon.stub();
             slackReset = slack.__set__('request', makeRequestStub);
@@ -189,7 +188,7 @@ describe('Slack', function () {
             ping({});
 
             (function retry() {
-                if (common.logging.error.calledOnce) {
+                if (logging.error.calledOnce) {
                     makeRequestStub.calledOnce.should.be.true();
                     return done();
                 }

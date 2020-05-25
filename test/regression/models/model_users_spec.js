@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -5,7 +6,7 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 
 // Stuff we are testing
-const common = require('../../../core/server/lib/common');
+const {events} = require('../../../core/server/lib/common');
 
 const imageLib = require('../../../core/server/lib/image');
 const UserModel = require('../../../core/server/models/user').User;
@@ -156,7 +157,7 @@ describe('User Model', function run() {
 
         beforeEach(function () {
             eventsTriggered = {};
-            sinon.stub(common.events, 'emit').callsFake(function (eventName, eventObj) {
+            sinon.stub(events, 'emit').callsFake(function (eventName, eventObj) {
                 if (!eventsTriggered[eventName]) {
                     eventsTriggered[eventName] = [];
                 }
@@ -326,7 +327,7 @@ describe('User Model', function run() {
                     done(new Error('Already existing email address was accepted'));
                 })
                 .catch(function (err) {
-                    (err instanceof common.errors.ValidationError).should.eql(true);
+                    (err instanceof errors.ValidationError).should.eql(true);
                     done();
                 });
         });
@@ -430,7 +431,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof common.errors.ValidationError).should.eql(true);
+                    (err instanceof errors.ValidationError).should.eql(true);
                     done();
                 });
             });
@@ -444,7 +445,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof common.errors.ValidationError).should.eql(true);
+                    (err instanceof errors.ValidationError).should.eql(true);
                     done();
                 });
             });
@@ -458,7 +459,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof common.errors.ValidationError).should.eql(true);
+                    (err instanceof errors.ValidationError).should.eql(true);
                     done();
                 });
             });
@@ -472,7 +473,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof common.errors.ValidationError).should.eql(true);
+                    (err instanceof errors.ValidationError).should.eql(true);
                     done();
                 });
             });
@@ -486,7 +487,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof common.errors.ValidationError).should.eql(true);
+                    (err instanceof errors.ValidationError).should.eql(true);
                     done();
                 });
             });
@@ -500,7 +501,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof common.errors.ValidationError).should.eql(true);
+                    (err instanceof errors.ValidationError).should.eql(true);
                     done();
                 });
             });
@@ -514,7 +515,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof common.errors.ValidationError).should.eql(true);
+                    (err instanceof errors.ValidationError).should.eql(true);
                     done();
                 });
             });
@@ -528,7 +529,7 @@ describe('User Model', function run() {
                 }, testUtils.context.owner).then(function () {
                     done(new Error('expected error!'));
                 }).catch(function (err) {
-                    (err instanceof common.errors.ValidationError).should.eql(true);
+                    (err instanceof errors.ValidationError).should.eql(true);
                     done();
                 });
             });

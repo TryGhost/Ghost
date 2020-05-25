@@ -10,7 +10,7 @@ const uuid = require('uuid');
 const KnexMigrator = require('knex-migrator');
 const ghost = require('../../core/server');
 const GhostServer = require('../../core/server/ghost-server');
-const common = require('../../core/server/lib/common');
+const {events} = require('../../core/server/lib/common');
 const fixtureUtils = require('../../core/server/data/schema/fixtures/utils');
 const db = require('../../core/server/data/db');
 const schema = require('../../core/server/data/schema').tables;
@@ -493,7 +493,7 @@ fixtures = {
 initData = function initData() {
     return knexMigrator.init()
         .then(function () {
-            common.events.emit('db.ready');
+            events.emit('db.ready');
 
             let timeout;
 
@@ -850,7 +850,7 @@ startGhost = function startGhost(options) {
             })
             .then(function () {
                 urlService.softReset();
-                common.events.emit('db.ready');
+                events.emit('db.ready');
 
                 let timeout;
 
@@ -869,7 +869,7 @@ startGhost = function startGhost(options) {
             .then(function () {
                 web.shared.middlewares.customRedirects.reload();
 
-                common.events.emit('server.start');
+                events.emit('server.start');
 
                 /**
                  * @TODO: this is dirty, but makes routing testing a lot easier for now, because the routing test
@@ -1042,7 +1042,7 @@ module.exports = {
                 let timeout;
 
                 if (!options.dbIsReady) {
-                    common.events.emit('db.ready');
+                    events.emit('db.ready');
                 }
 
                 return new Promise(function (resolve) {
@@ -1065,7 +1065,7 @@ module.exports = {
                 const tagRouter = new routingService.TaxonomyRouter('tag', routes.taxonomies.tag);
                 const authorRouter = new routingService.TaxonomyRouter('author', routes.taxonomies.author);
 
-                common.events.emit('db.ready');
+                events.emit('db.ready');
 
                 return this.waitTillFinished();
             },

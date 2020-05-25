@@ -1,8 +1,8 @@
+const errors = require('@tryghost/errors');
 const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
-const common = require('../../../../../../../core/server/lib/common');
 const validators = require('../../../../../../../core/server/api/canary/utils/validators');
 
 describe('Unit: v3/utils/validators/input/pages', function () {
@@ -25,7 +25,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.ValidationError).should.be.true();
+                        (err instanceof errors.ValidationError).should.be.true();
                     });
             });
 
@@ -40,7 +40,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.ValidationError).should.be.true();
+                        (err instanceof errors.ValidationError).should.be.true();
                     });
             });
 
@@ -55,7 +55,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.ValidationError).should.be.true();
+                        (err instanceof errors.ValidationError).should.be.true();
                     });
             });
 
@@ -71,7 +71,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.ValidationError).should.be.true();
+                        (err instanceof errors.ValidationError).should.be.true();
                     });
             });
 
@@ -88,7 +88,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.ValidationError).should.be.true();
+                        (err instanceof errors.ValidationError).should.be.true();
                     });
             });
 
@@ -172,7 +172,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                         return validators.input.pages.add(apiConfig, frame)
                             .then(Promise.reject)
                             .catch((err) => {
-                                (err instanceof common.errors.ValidationError).should.be.true();
+                                (err instanceof errors.ValidationError).should.be.true();
                             });
                     });
 
@@ -198,7 +198,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.ValidationError).should.be.true();
+                        (err instanceof errors.ValidationError).should.be.true();
                     });
             });
 
@@ -220,7 +220,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 return validators.input.pages.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.ValidationError).should.be.true();
+                        (err instanceof errors.ValidationError).should.be.true();
                     });
             });
 
@@ -260,7 +260,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.ValidationError).should.be.true();
+                        (err instanceof errors.ValidationError).should.be.true();
                     });
             });
 
@@ -275,7 +275,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.ValidationError).should.be.true();
+                        (err instanceof errors.ValidationError).should.be.true();
                     });
             });
 
@@ -291,7 +291,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.ValidationError).should.be.true();
+                        (err instanceof errors.ValidationError).should.be.true();
                     });
             });
 
@@ -327,7 +327,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.ValidationError).should.be.true();
+                        (err instanceof errors.ValidationError).should.be.true();
                     });
             });
 
@@ -349,7 +349,7 @@ describe('Unit: v3/utils/validators/input/pages', function () {
                 return validators.input.pages.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        (err instanceof common.errors.ValidationError).should.be.true();
+                        (err instanceof errors.ValidationError).should.be.true();
                     });
             });
 

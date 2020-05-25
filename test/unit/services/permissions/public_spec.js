@@ -1,6 +1,6 @@
 const should = require('should');
 const _ = require('lodash');
-const common = require('../../../../core/server/lib/common');
+const errors = require('@tryghost/errors');
 const applyPublicRules = require('../../../../core/server/services/permissions/public');
 
 describe('Permissions', function () {
@@ -54,7 +54,7 @@ describe('Permissions', function () {
             applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
                 done('Did not throw an error for draft');
             }).catch(function (err) {
-                (err instanceof common.errors.NoPermissionError).should.eql(true);
+                (err instanceof errors.NoPermissionError).should.eql(true);
                 done();
             });
         });
@@ -65,7 +65,7 @@ describe('Permissions', function () {
             applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
                 done('Did not throw an error for draft');
             }).catch(function (err) {
-                (err instanceof common.errors.NoPermissionError).should.eql(true);
+                (err instanceof errors.NoPermissionError).should.eql(true);
                 done();
             });
         });
@@ -94,7 +94,7 @@ describe('Permissions', function () {
             applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
                 done('Did not throw an error for draft');
             }).catch(function (err) {
-                (err instanceof common.errors.NoPermissionError).should.eql(true);
+                (err instanceof errors.NoPermissionError).should.eql(true);
                 done();
             });
         });
@@ -105,7 +105,7 @@ describe('Permissions', function () {
             applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
                 done('Did not throw an error for draft');
             }).catch(function (err) {
-                (err instanceof common.errors.NoPermissionError).should.eql(true);
+                (err instanceof errors.NoPermissionError).should.eql(true);
                 done();
             });
         });
@@ -116,14 +116,14 @@ describe('Permissions', function () {
             applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
                 done('Did not throw an error for draft');
             }).catch(function (err) {
-                (err instanceof common.errors.NoPermissionError).should.eql(true);
+                (err instanceof errors.NoPermissionError).should.eql(true);
 
                 draft = {context: {}, data: {status: 'draft', uuid: '1234-abcd', slug: 'abcd'}};
 
                 return applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
                     done('Did not throw an error for draft');
                 }).catch(function (err) {
-                    (err instanceof common.errors.NoPermissionError).should.eql(true);
+                    (err instanceof errors.NoPermissionError).should.eql(true);
                     done();
                 });
             });
