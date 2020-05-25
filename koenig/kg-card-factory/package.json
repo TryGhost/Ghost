@@ -19,7 +19,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "mocha": "7.1.2",
+    "mocha": "7.2.0",
     "should": "13.2.3",
     "simple-dom": "^1.4.0",
     "sinon": "9.0.2"
