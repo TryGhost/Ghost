@@ -46,10 +46,10 @@ export function mockMembersStats(server) {
         }
 
         return {
-            totalMembers: total,
-            totalMembersInRange: rangeTotal,
-            totalMembersOnDate: totalOnDate,
-            newMembersToday: dateCounts[moment().format('YYYY-MM-DD')]
+            total,
+            totalInRange: rangeTotal,
+            totalOnDate,
+            newToday: dateCounts[moment().format('YYYY-MM-DD')]
         };
     });
 }
