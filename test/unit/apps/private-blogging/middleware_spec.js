@@ -1,8 +1,7 @@
-const should = require('should');
+const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const crypto = require('crypto');
 const fs = require('fs-extra');
-const common = require('../../../../core/server/lib/common');
 const settingsCache = require('../../../../core/server/services/settings/cache');
 const privateBlogging = require('../../../../core/frontend/apps/private-blogging/lib/middleware');
 
@@ -248,7 +247,7 @@ describe('Private Blogging', function () {
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
                     next.called.should.be.true();
-                    (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
+                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
                 });
 
                 it('filterPrivateRoutes should 404 for /rss requests', function () {
@@ -265,7 +264,7 @@ describe('Private Blogging', function () {
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
                     next.called.should.be.true();
-                    (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
+                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
                 });
 
                 it('filterPrivateRoutes should 404 for rss with pagination requests', function () {
@@ -282,7 +281,7 @@ describe('Private Blogging', function () {
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
                     next.called.should.be.true();
-                    (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
+                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
                 });
 
                 it('filterPrivateRoutes should 404 for tag rss requests', function () {
@@ -299,7 +298,7 @@ describe('Private Blogging', function () {
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
                     next.called.should.be.true();
-                    (next.firstCall.args[0] instanceof common.errors.NotFoundError).should.eql(true);
+                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
                 });
 
                 it('filterPrivateRoutes should return next if tag contains rss', function () {

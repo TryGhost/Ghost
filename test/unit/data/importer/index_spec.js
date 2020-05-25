@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
@@ -6,7 +7,6 @@ const _ = require('lodash');
 const testUtils = require('../../../utils');
 const moment = require('moment');
 const path = require('path');
-const common = require('../../../../core/server/lib/common');
 
 // Stuff we are testing
 const ImportManager = require('../../../../core/server/data/importer');
@@ -172,13 +172,13 @@ describe('Importer', function () {
                 it('fails a zip with two base directories', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
 
-                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(common.errors.UnsupportedMediaTypeError);
+                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
                 });
 
                 it('fails a zip with no content', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-invalid');
 
-                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(common.errors.UnsupportedMediaTypeError);
+                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
                 });
 
                 it('shows a special error for old Roon exports', function () {
@@ -187,7 +187,7 @@ describe('Importer', function () {
                     const msg = 'Your zip file looks like an old format Roon export, ' +
                         'please re-export your Roon blog and try again.';
 
-                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(common.errors.UnsupportedMediaTypeError);
+                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
                     ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(msg);
                 });
             });

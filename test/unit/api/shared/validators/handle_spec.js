@@ -1,7 +1,6 @@
-const should = require('should');
+const errors = require('@tryghost/errors');
 const Promise = require('bluebird');
 const sinon = require('sinon');
-const common = require('../../../../../core/server/lib/common');
 const shared = require('../../../../../core/server/api/shared');
 
 describe('Unit: api/shared/validators/handle', function () {
@@ -14,7 +13,7 @@ describe('Unit: api/shared/validators/handle', function () {
             return shared.validators.handle.input()
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof common.errors.IncorrectUsageError).should.be.true();
+                    (err instanceof errors.IncorrectUsageError).should.be.true();
                 });
         });
 
@@ -22,7 +21,7 @@ describe('Unit: api/shared/validators/handle', function () {
             return shared.validators.handle.input({})
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof common.errors.IncorrectUsageError).should.be.true();
+                    (err instanceof errors.IncorrectUsageError).should.be.true();
                 });
         });
 

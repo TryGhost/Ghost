@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const common = require('../../../../core/server/lib/common');
+const {events} = require('../../../../core/server/lib/common');
 const controllers = require('../../../../core/frontend/services/routing/controllers');
 const StaticRoutesRouter = require('../../../../core/frontend/services/routing/StaticRoutesRouter');
 const configUtils = require('../../../utils/configUtils');
@@ -15,8 +15,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
     });
 
     beforeEach(function () {
-        sinon.stub(common.events, 'emit');
-        sinon.stub(common.events, 'on');
+        sinon.stub(events, 'emit');
+        sinon.stub(events, 'on');
 
         sinon.spy(StaticRoutesRouter.prototype, 'mountRoute');
         sinon.spy(StaticRoutesRouter.prototype, 'mountRouter');
@@ -42,8 +42,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             staticRoutesRouter.templates.should.eql(['test']);
 
-            common.events.emit.calledOnce.should.be.true();
-            common.events.emit.calledWith('router.created', staticRoutesRouter).should.be.true();
+            events.emit.calledOnce.should.be.true();
+            events.emit.calledWith('router.created', staticRoutesRouter).should.be.true();
 
             staticRoutesRouter.mountRoute.callCount.should.eql(1);
 
@@ -64,8 +64,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             should.not.exist(staticRoutesRouter.getFilter());
             staticRoutesRouter.templates.should.eql([]);
 
-            common.events.emit.calledOnce.should.be.true();
-            common.events.emit.calledWith('router.created', staticRoutesRouter).should.be.true();
+            events.emit.calledOnce.should.be.true();
+            events.emit.calledWith('router.created', staticRoutesRouter).should.be.true();
 
             staticRoutesRouter.mountRoute.callCount.should.eql(1);
 
@@ -124,8 +124,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 staticRoutesRouter.templates.should.eql([]);
                 should.exist(staticRoutesRouter.data);
 
-                common.events.emit.calledOnce.should.be.true();
-                common.events.emit.calledWith('router.created', staticRoutesRouter).should.be.true();
+                events.emit.calledOnce.should.be.true();
+                events.emit.calledWith('router.created', staticRoutesRouter).should.be.true();
 
                 staticRoutesRouter.mountRoute.callCount.should.eql(2);
 
@@ -151,8 +151,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 staticRoutesRouter.templates.should.eql([]);
 
-                common.events.emit.calledOnce.should.be.true();
-                common.events.emit.calledWith('router.created', staticRoutesRouter).should.be.true();
+                events.emit.calledOnce.should.be.true();
+                events.emit.calledWith('router.created', staticRoutesRouter).should.be.true();
 
                 staticRoutesRouter.mountRoute.callCount.should.eql(2);
 

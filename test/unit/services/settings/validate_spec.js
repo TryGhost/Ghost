@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const common = require('../../../../core/server/lib/common');
+const errors = require('@tryghost/errors');
 const themesService = require('../../../../core/frontend/services/themes');
 const validate = require('../../../../core/frontend/services/settings/validate');
 
@@ -45,7 +45,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -60,7 +60,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -75,7 +75,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -90,7 +90,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -105,7 +105,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -120,7 +120,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -135,7 +135,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -152,7 +152,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -169,7 +169,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -186,7 +186,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -203,7 +203,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -220,7 +220,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -703,7 +703,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -723,7 +723,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -743,7 +743,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -765,7 +765,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -785,7 +785,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -818,7 +818,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -833,7 +833,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -848,7 +848,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -863,7 +863,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -878,7 +878,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -893,7 +893,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -908,7 +908,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -925,7 +925,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -942,7 +942,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -959,7 +959,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -976,7 +976,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -993,7 +993,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -1476,7 +1476,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -1496,7 +1496,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -1516,7 +1516,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -1538,7 +1538,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -1558,7 +1558,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -1591,7 +1591,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -1606,7 +1606,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -1621,7 +1621,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -1636,7 +1636,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -1651,7 +1651,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -1666,7 +1666,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -1681,7 +1681,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -1698,7 +1698,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -1715,7 +1715,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -1732,7 +1732,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -1749,7 +1749,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -1766,7 +1766,7 @@ describe('UNIT: services/settings/validate', function () {
                     }
                 });
             } catch (err) {
-                (err instanceof common.errors.ValidationError).should.be.true();
+                (err instanceof errors.ValidationError).should.be.true();
                 return;
             }
 
@@ -2249,7 +2249,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -2269,7 +2269,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -2289,7 +2289,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -2311,7 +2311,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 
@@ -2331,7 +2331,7 @@ describe('UNIT: services/settings/validate', function () {
                         }
                     });
                 } catch (err) {
-                    (err instanceof common.errors.ValidationError).should.be.true();
+                    (err instanceof errors.ValidationError).should.be.true();
                     return;
                 }
 

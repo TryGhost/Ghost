@@ -1,4 +1,4 @@
-const common = require('../../../../../core/server/lib/common');
+const errors = require('@tryghost/errors');
 const {authenticateContentApiKey} = require('../../../../../core/server/services/auth/api-key/content');
 const models = require('../../../../../core/server/models');
 const should = require('should');
@@ -53,7 +53,7 @@ describe('Content API Key Auth', function () {
 
         authenticateContentApiKey(req, res, function next(err) {
             should.exist(err);
-            should.equal(err instanceof common.errors.UnauthorizedError, true);
+            should.equal(err instanceof errors.UnauthorizedError, true);
             err.code.should.eql('UNKNOWN_CONTENT_API_KEY');
             should.not.exist(req.api_key);
             done();
@@ -72,7 +72,7 @@ describe('Content API Key Auth', function () {
 
         authenticateContentApiKey(req, res, function next(err) {
             should.exist(err);
-            should.equal(err instanceof common.errors.UnauthorizedError, true);
+            should.equal(err instanceof errors.UnauthorizedError, true);
             err.code.should.eql('INVALID_API_KEY_TYPE');
             should.not.exist(req.api_key);
             done();
@@ -89,7 +89,7 @@ describe('Content API Key Auth', function () {
 
         authenticateContentApiKey(req, res, function next(err) {
             should.exist(err);
-            should.equal(err instanceof common.errors.BadRequestError, true);
+            should.equal(err instanceof errors.BadRequestError, true);
             err.code.should.eql('INVALID_REQUEST');
             should.not.exist(req.api_key);
             done();

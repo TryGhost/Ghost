@@ -1,7 +1,7 @@
+const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
-const common = require('../../../../../core/server/lib/common');
 const security = require('../../../../../core/server/lib/security');
 const themeService = require('../../../../../core/frontend/services/themes');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
@@ -151,7 +151,7 @@ describe('Unit - services/routing/controllers/channel', function () {
             });
 
         controllers.channel(req, res, function (err) {
-            (err instanceof common.errors.NotFoundError).should.be.true();
+            (err instanceof errors.NotFoundError).should.be.true();
 
             themeService.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();

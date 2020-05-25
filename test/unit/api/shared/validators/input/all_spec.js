@@ -1,7 +1,7 @@
+const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
-const common = require('../../../../../../core/server/lib/common');
 const shared = require('../../../../../../core/server/api/shared');
 
 describe('Unit: api/shared/validators/input/all', function () {
@@ -398,7 +398,7 @@ describe('Unit: api/shared/validators/input/all', function () {
             return shared.validators.input.all.edit(apiConfig, frame)
                 .then(Promise.reject)
                 .catch((err) => {
-                    (err instanceof common.errors.BadRequestError).should.be.true();
+                    (err instanceof errors.BadRequestError).should.be.true();
                 });
         });
     });

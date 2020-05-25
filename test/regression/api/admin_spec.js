@@ -10,11 +10,11 @@ const testUtils = require('../../utils/index');
 const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
 const ghost = testUtils.startGhost;
-const common = require('../../../core/server/lib/common/index');
+const {i18n} = require('../../../core/server/lib/common/index');
 const config = require('../../../core/server/config/index');
 let request;
 
-common.i18n.init();
+i18n.init();
 
 describe('Admin Routing', function () {
     function doEnd(done) {

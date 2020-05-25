@@ -1,10 +1,9 @@
-const should = require('should');
+const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 const markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
 const helpers = require('../../../core/frontend/helpers');
 const api = require('../../../core/server/api');
-const common = require('../../../core/server/lib/common');
 
 // These helpers are the same, their name just changes
 helpers.next_post = helpers.prev_post;
@@ -404,7 +403,7 @@ describe('{{next_post}} helper', function () {
     describe('general error handling', function () {
         beforeEach(function () {
             browsePostsStub = sinon.stub().callsFake(function () {
-                return Promise.reject(new common.errors.NotFoundError({message: 'Something wasn\'t found'}));
+                return Promise.reject(new errors.NotFoundError({message: 'Something wasn\'t found'}));
             });
         });
 

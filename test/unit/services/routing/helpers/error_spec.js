@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const common = require('../../../../../core/server/lib/common');
+const errors = require('@tryghost/errors');
 const helpers = require('../../../../../core/frontend/services/routing/helpers');
 
 describe('handleError', function () {
@@ -15,7 +15,7 @@ describe('handleError', function () {
     });
 
     it('should call next with no args for 404 errors', function () {
-        const notFoundError = new common.errors.NotFoundError({message: 'Something wasn\'t found'});
+        const notFoundError = new errors.NotFoundError({message: 'Something wasn\'t found'});
         helpers.handleError(next)(notFoundError);
 
         next.calledOnce.should.be.true();
