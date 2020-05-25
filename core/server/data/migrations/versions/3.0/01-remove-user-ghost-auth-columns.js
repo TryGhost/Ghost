@@ -1,7 +1,7 @@
-const common = require('../../../../lib/common');
+const {logging} = require('../../../../lib/common');
 const commands = require('../../../schema').commands;
 
-const createLog = type => msg => common.logging[type](msg);
+const createLog = type => msg => logging[type](msg);
 
 function createColumnMigrations(migrations) {
     return function columnMigrations({transacting}) {
