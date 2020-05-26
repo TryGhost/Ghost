@@ -345,14 +345,14 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tryghost/adapter-manager@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.1.5.tgz#cd1fd3edb15b4bf69f9c1c7676d5c8f7b0be1e58"
-  integrity sha512-HJEfX+1jvJnfa3MGV7BK4njWicHsnRJb74dBbtnnMpNg20Y2Rkmrm6pSAOszhV/TaUU70zM+3q1F578XKNDUHA==
+"@tryghost/adapter-manager@0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.1.6.tgz#91e4b6ae284db16c6cf1a4a23e8f2bdfeabbe608"
+  integrity sha512-kO839p7Ac/2M6acB0L1R5fvG/80pTaotktZ1M4EP3LXWT9ehiwZzLVrElPTug2SwPklX3aG83OsE+dGrR/z6Hw==
   dependencies:
-    "@tryghost/errors" "^0.1.3"
+    "@tryghost/errors" "^0.2.0"
 
-"@tryghost/errors@0.2.0":
+"@tryghost/errors@0.2.0", "@tryghost/errors@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.0.tgz#850fe93db8aceadfe1f9e21b8c3a42599de17808"
   integrity sha512-zYCsJMeNdmNBcJwsFJ4bILGuixGAFdIhzc/TpxFGmzWjordLKWDzL8mnIWvWb5EVeuk0BQnYDg0/V+soodCCBA==
