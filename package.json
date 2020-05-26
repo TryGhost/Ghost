@@ -83,7 +83,7 @@
     "express-query-boolean": "2.0.0",
     "express-session": "1.17.1",
     "fs-extra": "9.0.0",
-    "ghost-ignition": "4.1.0",
+    "ghost-ignition": "4.2.1",
     "ghost-storage-base": "0.0.4",
     "glob": "7.1.6",
     "got": "9.6.0",
