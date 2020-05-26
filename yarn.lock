@@ -352,15 +352,7 @@
   dependencies:
     "@tryghost/errors" "^0.1.3"
 
-"@tryghost/errors@0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.1.2.tgz#aaf6c54923920825477f403839cb6551ad37b6d9"
-  integrity sha512-wwareSxmIprkNuFb+sFYBZ9vl8EEnIbV7an+35C3JBH0D1TUQ2LzaK6IFOowfc7JOQPxACeo+1Or8NHC1B/H0A==
-  dependencies:
-    ghost-ignition "^4.1.0"
-    lodash "^4.17.15"
-
-"@tryghost/errors@^0.1.3":
+"@tryghost/errors@0.1.3", "@tryghost/errors@^0.1.3":
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.1.3.tgz#2a5920314925a37c01afadb7e6ba8dbbe1fa91db"
   integrity sha512-ctdZADhZNADQ+5vbJ3AuksrgnxrI3cRpo8M1nm6xPuPAJa04RKnPOF4IR7tOOIHirx2vHtqve2Yv/3f3WFLQ3g==
@@ -3696,7 +3688,7 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-ignition@4.1.0, ghost-ignition@^4.1.0:
+ghost-ignition@4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.1.0.tgz#44ac9dc8873606207f81a652a705f383714c2f07"
   integrity sha512-d3hfUE1qey4S1sdjayWcbsYCr77joc7KcM4Zrhol0vdR/anGvR6h6Z529MI42VJHr38h6x0/PaQ/mjrlOey7XQ==
