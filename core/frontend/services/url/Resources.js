@@ -2,7 +2,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const debug = require('ghost-ignition').debug('services:url:resources');
 const Resource = require('./Resource');
-const config = require('../../../server/config');
+const config = require('../../../shared/config');
 const models = require('../../../server/models');
 const {events} = require('../../../server/lib/common');
 

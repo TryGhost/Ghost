@@ -4,7 +4,7 @@ const path = require('path');
 const debug = require('ghost-ignition').debug('frontend:services:settings:ensure-settings');
 const {i18n} = require('../../../server/lib/common');
 const errors = require('@tryghost/errors');
-const config = require('../../../server/config');
+const config = require('../../../shared/config');
 
 /**
  * Makes sure that all supported settings files are in the
