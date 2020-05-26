@@ -568,10 +568,10 @@
     extract-zip "^2.0.0"
     fs-extra "^9.0.0"
 
-"@tryghost/zip@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.0.tgz#5f517e3e45c5d3ee383247a7bc2ecfd5fe1d8081"
-  integrity sha512-ajIvT1btjl4Bj8ZrI0yuNoULDtnf/qKM6jReGq/7tBQn41BnjWfHkoCnAN85NiMYINLIqAVzqUDT/Zs+0S/9Dg==
+"@tryghost/zip@1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.1.tgz#acce62dd451c2914bd61dce003a3ea0a5cf15b32"
+  integrity sha512-k7U8zy0dFoQmTkbKmlnIOibdoBGWbtEDOvcMWgS8tl2F+DuIHzaaG2naxM39jKBl6PMjqt7D0bOvs+VxwfnPYw==
   dependencies:
     archiver "4.0.1"
     bluebird "3.7.2"
