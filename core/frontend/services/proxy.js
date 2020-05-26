@@ -2,7 +2,9 @@
 // With the exception of modules like lodash, Bluebird
 // We can later refactor to enforce this something like we did in apps
 const hbs = require('./themes/engine');
+const errors = require('@tryghost/errors');
 
+const {i18n, logging} = require('../../server/lib/common');
 const settingsCache = require('../../server/services/settings/cache');
 const config = require('../../server/config');
 
@@ -25,9 +27,9 @@ module.exports = {
     settingsCache: settingsCache,
 
     // These 3 are kind of core and required all the time
-    errors: require('../../server/lib/common/errors'),
-    i18n: require('../../server/lib/common/i18n'),
-    logging: require('../../server/lib/common/logging'),
+    errors,
+    i18n,
+    logging,
 
     // Theme i18n is separate to common i18n
     themeI18n: require('./themes/i18n'),
