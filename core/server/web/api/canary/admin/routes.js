@@ -86,6 +86,8 @@ module.exports = function apiRoutes() {
     router.get('/members', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.browse));
     router.post('/members', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.add));
 
+    router.get('/members/stats', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.stats));
+
     router.get('/members/csv', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.exportCSV));
     router.post('/members/csv',
         shared.middlewares.labs.members,

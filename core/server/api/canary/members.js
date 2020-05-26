@@ -1,11 +1,15 @@
 // NOTE: We must not cache references to membersService.api
 // as it is a getter and may change during runtime.
 const Promise = require('bluebird');
+const moment = require('moment-timezone');
+const errors = require('@tryghost/errors');
+const config = require('../../config');
 const models = require('../../models');
 const membersService = require('../../services/members');
+const settingsCache = require('../../services/settings/cache');
 const {i18n, logging} = require('../../lib/common');
-const errors = require('@tryghost/errors');
 const fsLib = require('../../lib/fs');
+const db = require('../../data/db');
 const _ = require('lodash');
 
 const decorateWithSubscriptions = async function (member) {
@@ -404,6 +408,126 @@ const members = {
                     }
                 };
             });
+        }
+    },
+
+    stats: {
+        options: [
+            'days'
+        ],
+        permissions: {
+            method: 'browse'
+        },
+        validation: {
+            options: {
+                days: {
+                    values: ['30', '90', '365', 'all-time']
+                }
+            }
+        },
+        async query(frame) {
+            const dateFormat = 'YYYY-MM-DD HH:mm:ss';
+            const isSQLite = config.get('database:client') === 'sqlite3';
+            const siteTimezone = settingsCache.get('active_timezone');
+            const tzOffsetMins = moment.tz(siteTimezone).utcOffset();
+
+            const days = frame.options.days === 'all-time' ? 'all-time' : Number(frame.options.days || 30);
+
+            // get total members before other stats because the figure is used multiple times
+            async function getTotalMembers() {
+                const result = await db.knex.raw('SELECT COUNT(id) AS total FROM members');
+                return isSQLite ? result[0].total : result[0][0].total;
+            }
+            const totalMembers = await getTotalMembers();
+
+            async function getTotalMembersInRange() {
+                if (days === 'all-time') {
+                    return totalMembers;
+                }
+
+                const startOfRange = moment.tz(siteTimezone).subtract(days - 1, 'days').startOf('day').utc().format(dateFormat);
+                const result = await db.knex.raw('SELECT COUNT(id) AS total FROM members WHERE created_at >= ?', [startOfRange]);
+                return isSQLite ? result[0].total : result[0][0].total;
+            }
+
+            async function getTotalMembersOnDatesInRange() {
+                const startOfRange = moment.tz(siteTimezone).subtract(days - 1, 'days').startOf('day').utc().format(dateFormat);
+                let result;
+
+                if (isSQLite) {
+                    const dateModifier = `+${tzOffsetMins} minutes`;
+
+                    result = await db.knex('members')
+                        .select(db.knex.raw('DATE(created_at, ?) AS created_at, COUNT(DATE(created_at, ?)) AS count', [dateModifier, dateModifier]))
+                        .where((builder) => {
+                            if (days !== 'all-time') {
+                                builder.whereRaw('created_at >= ?', [startOfRange]);
+                            }
+                        }).groupByRaw('DATE(created_at, ?)', [dateModifier]);
+                } else {
+                    const mins = tzOffsetMins % 60;
+                    const hours = (tzOffsetMins - mins) / 60;
+                    const utcOffset = `${Math.sign(tzOffsetMins) === -1 ? '-' : '+'}${hours}:${mins < 10 ? '0' : ''}${mins}`;
+
+                    result = await db.knex('members')
+                        .select(db.knex.raw('DATE(CONVERT_TZ(created_at, \'+00:00\', ?)) AS created_at, COUNT(CONVERT_TZ(created_at, \'+00:00\', ?)) AS count', [utcOffset, utcOffset]))
+                        .where((builder) => {
+                            if (days !== 'all-time') {
+                                builder.whereRaw('created_at >= ?', [startOfRange]);
+                            }
+                        })
+                        .groupByRaw('DATE(CONVERT_TZ(created_at, \'+00:00\', ?))', [utcOffset]);
+                }
+
+                // sql doesn't return rows with a 0 count so we build an object
+                // with sparse results to reference by date rather than performing
+                // multiple finds across an array
+                const resultObject = {};
+                result.forEach((row) => {
+                    resultObject[moment(row.created_at).format('YYYY-MM-DD')] = row.count;
+                });
+
+                // loop over every date in the range so we can return a contiguous range object
+                const totalInRange = Object.values(resultObject).reduce((acc, value) => acc + value, 0);
+                let runningTotal = totalMembers - totalInRange;
+                let currentRangeDate;
+
+                if (days === 'all-time') {
+                    // start from the date of first created member
+                    currentRangeDate = moment(moment(result[0].created_at).format('YYYY-MM-DD')).tz(siteTimezone);
+                } else {
+                    currentRangeDate = moment.tz(siteTimezone).subtract(days - 1, 'days');
+                }
+
+                let endDate = moment.tz(siteTimezone).add(1, 'hour');
+                const output = {};
+
+                while (currentRangeDate.isBefore(endDate)) {
+                    let dateStr = currentRangeDate.format('YYYY-MM-DD');
+                    runningTotal += resultObject[dateStr] || 0;
+                    output[dateStr] = runningTotal;
+
+                    currentRangeDate = currentRangeDate.add(1, 'day');
+                }
+
+                return output;
+            }
+
+            async function getNewMembersToday() {
+                const startOfToday = moment.tz(siteTimezone).startOf('day').utc().format(dateFormat);
+                const result = await db.knex.raw('SELECT count(id) AS total FROM members WHERE created_at >= ?', [startOfToday]);
+                return isSQLite ? result[0].total : result[0][0].total;
+            }
+
+            // perform final calculations in parallel
+            const results = await Promise.props({
+                total: totalMembers,
+                total_in_range: getTotalMembersInRange(),
+                total_on_date: getTotalMembersOnDatesInRange(),
+                new_today: getNewMembersToday()
+            });
+
+            return results;
         }
     }
 };

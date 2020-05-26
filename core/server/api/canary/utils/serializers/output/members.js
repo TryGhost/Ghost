@@ -92,7 +92,11 @@ module.exports = {
 
     importCSV(data, apiConfig, frame) {
         debug('importCSV');
+        frame.response = data;
+    },
 
+    stats(data, apiConfig, frame) {
+        debug('stats');
         frame.response = data;
     }
 };

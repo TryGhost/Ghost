@@ -26,7 +26,7 @@ describe('Members API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return localUtils.doAuth(request, 'member');
+                return localUtils.doAuth(request, 'members');
             });
     });
 
@@ -165,5 +165,86 @@ describe('Members API', function () {
                 jsonResponse.meta.stats.duplicates.should.equal(0);
                 jsonResponse.meta.stats.invalid.should.equal(2);
             });
+    });
+
+    it('Can fetch stats with no ?days param', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/stats/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            // .expect(200) - doesn't surface underlying errors in tests
+            .then((res) => {
+                res.status.should.equal(200, JSON.stringify(res.body));
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.total);
+                should.exist(jsonResponse.total_in_range);
+                should.exist(jsonResponse.total_on_date);
+                should.exist(jsonResponse.new_today);
+
+                // 2 from fixtures and 3 imported in previous tests
+                jsonResponse.total.should.equal(5);
+            });
+    });
+
+    it('Can fetch stats with ?days=90', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/stats/?days=90'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            // .expect(200) - doesn't surface underlying errors in tests
+            .then((res) => {
+                res.status.should.equal(200, JSON.stringify(res.body));
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.total);
+                should.exist(jsonResponse.total_in_range);
+                should.exist(jsonResponse.total_on_date);
+                should.exist(jsonResponse.new_today);
+
+                // 2 from fixtures and 3 imported in previous tests
+                jsonResponse.total.should.equal(5);
+            });
+    });
+
+    it('Can fetch stats with ?days=all-time', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/stats/?days=all-time'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            // .expect(200) - doesn't surface underlying errors in tests
+            .then((res) => {
+                res.status.should.equal(200, JSON.stringify(res.body));
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.total);
+                should.exist(jsonResponse.total_in_range);
+                should.exist(jsonResponse.total_on_date);
+                should.exist(jsonResponse.new_today);
+
+                // 2 from fixtures and 3 imported in previous tests
+                jsonResponse.total.should.equal(5);
+            });
+    });
+
+    it('Errors when fetching stats with unknown days param value', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/stats/?days=nope'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422);
     });
 });

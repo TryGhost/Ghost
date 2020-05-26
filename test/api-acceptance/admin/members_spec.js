@@ -256,4 +256,26 @@ describe('Members API', function () {
                 jsonResponse.meta.stats.invalid.should.equal(0);
             });
     });
+
+    it('Can fetch stats', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/stats/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.total);
+                should.exist(jsonResponse.total_in_range);
+                should.exist(jsonResponse.total_on_date);
+                should.exist(jsonResponse.new_today);
+
+                // 2 from fixtures, 2 from above posts, 2 from above import
+                jsonResponse.total.should.equal(6);
+            });
+    });
 });
