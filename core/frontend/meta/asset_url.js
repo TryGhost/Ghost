@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const config = require('../../server/config');
-const imageLib = require('../../server/lib/image');
+const {blogIcon} = require('../../server/lib/image');
 const urlUtils = require('../../server/lib/url-utils');
 
 /**
@@ -8,7 +8,7 @@ const urlUtils = require('../../server/lib/url-utils');
  * @return {string}
  */
 function getFaviconUrl() {
-    return imageLib.blogIcon.getIconUrl();
+    return blogIcon.getIconUrl();
 }
 
 function getAssetUrl(path, hasMinFile) {
