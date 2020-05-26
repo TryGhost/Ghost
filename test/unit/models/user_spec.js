@@ -5,7 +5,6 @@ const errors = require('@tryghost/errors');
 const models = require('../../../core/server/models');
 const permissions = require('../../../core/server/services/permissions');
 const validation = require('../../../core/server/data/validation');
-const {errors: commonErrors} = require('../../../core/server/lib/common');
 const security = require('../../../core/server/lib/security');
 const testUtils = require('../../utils');
 
@@ -144,7 +143,7 @@ describe('Unit: models/user', function () {
 
             return models.User.check({email: user.get('email'), password: 'test'})
                 .catch(function (err) {
-                    (err instanceof commonErrors.PasswordResetRequiredError).should.eql(true);
+                    (err instanceof errors.PasswordResetRequiredError).should.eql(true);
                 });
         });
     });
