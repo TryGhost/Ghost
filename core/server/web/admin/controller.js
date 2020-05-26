@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('web:admin:controller');
 const path = require('path');
-const config = require('../../config');
+const config = require('../../../shared/config');
 const updateCheck = require('../../update-check');
 const {logging} = require('../../lib/common');
 

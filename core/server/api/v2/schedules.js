@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const moment = require('moment');
-const config = require('../../config');
+const config = require('../../../shared/config');
 const models = require('../../models');
 const urlUtils = require('../../lib/url-utils');
 const {i18n} = require('../../lib/common');

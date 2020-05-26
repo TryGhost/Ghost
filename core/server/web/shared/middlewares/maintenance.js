@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const config = require('../../../config');
+const config = require('../../../../shared/config');
 const {i18n} = require('../../../lib/common');
 const urlService = require('../../../../frontend/services/url');
 

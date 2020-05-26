@@ -6,7 +6,7 @@ const {URL} = require('url');
 const errors = require('@tryghost/errors');
 
 // App requires
-const config = require('../../config');
+const config = require('../../../shared/config');
 const constants = require('../../lib/constants');
 const storage = require('../../adapters/storage');
 const urlService = require('../../../frontend/services/url');

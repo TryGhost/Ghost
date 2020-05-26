@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const path = require('path');
-const config = require('../../../config');
+const config = require('../../../../shared/config');
 const urlUtils = require('../../../lib/url-utils');
 const storage = require('../../../adapters/storage');
 let ImageHandler;

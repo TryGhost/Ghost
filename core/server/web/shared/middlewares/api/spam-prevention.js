@@ -2,7 +2,7 @@ const moment = require('moment');
 const extend = require('lodash/extend');
 const pick = require('lodash/pick');
 const errors = require('@tryghost/errors');
-const config = require('../../../../config');
+const config = require('../../../../../shared/config');
 const {logging,i18n} = require('../../../../lib/common');
 const spam = config.get('spam') || {};
 

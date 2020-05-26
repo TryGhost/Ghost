@@ -1,5 +1,5 @@
 const cloneDeep = require('lodash/cloneDeep');
-const config = require('../../../config');
+const config = require('../../../../shared/config');
 const {logging} = require('../../../lib/common');
 const imageTransform = require('@tryghost/image-transform');
 
