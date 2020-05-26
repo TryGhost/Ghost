@@ -41,7 +41,7 @@ export default class AccountPlanPage extends React.Component {
         if (member.paid) {
             const {subscriptions} = member;
             const subscriptionId = subscriptions[0].id;
-            onAction('updatePlan', {plan, subscriptionId});
+            onAction('updateSubscription', {plan, subscriptionId});
         } else {
             onAction('checkoutPlan', {plan});
         }
