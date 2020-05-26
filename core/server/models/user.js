@@ -4,7 +4,7 @@ const validator = require('validator');
 const ObjectId = require('bson-objectid');
 const ghostBookshelf = require('./base');
 const baseUtils = require('./base/utils');
-const {i18n, errors: {PasswordResetRequiredError}} = require('../lib/common');
+const {i18n} = require('../lib/common');
 const errors = require('@tryghost/errors');
 const security = require('../lib/security');
 const imageLib = require('../lib/image');
@@ -806,7 +806,7 @@ User = ghostBookshelf.Model.extend({
                 }
 
                 if (user.isLocked()) {
-                    throw new PasswordResetRequiredError();
+                    throw new errors.PasswordResetRequiredError();
                 }
 
                 if (user.isInactive()) {
