@@ -69,12 +69,12 @@ export default Component.extend({
         this.set('stats', stats);
 
         this.setChartOptions({
-            rangeInDays: Object.keys(stats.totalOnDate).length
+            rangeInDays: Object.keys(stats.total_on_date).length
         });
 
         this.setChartData({
-            dateLabels: Object.keys(stats.totalOnDate),
-            dateValues: Object.values(stats.totalOnDate)
+            dateLabels: Object.keys(stats.total_on_date),
+            dateValues: Object.values(stats.total_on_date)
         });
     }),
 
