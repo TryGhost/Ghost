@@ -197,7 +197,7 @@ function setupGhostApi() {
                 throw err;
             });
         },
-        async updateSubscription({subscriptionId, planName}) {
+        async updateSubscription({subscriptionId, planName, cancelAtPeriodEnd}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'subscriptions'}) + subscriptionId + '/';
             return makeRequest({
@@ -207,6 +207,7 @@ function setupGhostApi() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    cancel_at_period_end: cancelAtPeriodEnd,
                     identity: identity,
                     planName
                 })
