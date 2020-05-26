@@ -2,10 +2,10 @@ const jsonSchema = require('../utils/json-schema');
 const config = require('../../../../../config');
 const {i18n} = require('../../../../../lib/common');
 const errors = require('@tryghost/errors');
-const imageLib = require('../../../../../lib/image');
+const {imageSize, blogIcon} = require('../../../../../lib/image');
 
 const profileImage = (frame) => {
-    return imageLib.imageSize.getImageSizeFromPath(frame.file.path).then((response) => {
+    return imageSize.getImageSizeFromPath(frame.file.path).then((response) => {
         // save the image dimensions in new property for file
         frame.file.dimensions = response;
 
@@ -32,7 +32,7 @@ const icon = (frame) => {
         }));
     }
 
-    return imageLib.blogIcon.getIconDimensions(frame.file.path).then((response) => {
+    return blogIcon.getIconDimensions(frame.file.path).then((response) => {
         // save the image dimensions in new property for file
         frame.file.dimensions = response;
 
