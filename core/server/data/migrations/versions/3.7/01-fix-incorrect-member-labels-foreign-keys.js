@@ -1,4 +1,4 @@
-const logging = require('../../../../lib/common/logging');
+const {logging} = require('../../../../lib/common');
 const commands = require('../../../schema').commands;
 
 const table = 'members_labels';

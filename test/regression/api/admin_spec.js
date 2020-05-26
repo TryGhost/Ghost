@@ -6,12 +6,12 @@
 const should = require('should');
 
 const supertest = require('supertest');
-const testUtils = require('../../utils/index');
+const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
 const ghost = testUtils.startGhost;
-const {i18n} = require('../../../core/server/lib/common/index');
-const config = require('../../../core/server/config/index');
+const {i18n} = require('../../../core/server/lib/common');
+const config = require('../../../core/server/config');
 let request;
 
 i18n.init();
