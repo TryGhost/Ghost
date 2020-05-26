@@ -13,6 +13,7 @@ export default class MemberController extends Controller {
     @controller members;
     @service session;
     @service dropdown;
+    @service membersStats;
     @service notifications;
     @service router;
     @service store;
@@ -66,6 +67,7 @@ export default class MemberController extends Controller {
     @action
     deleteMember() {
         return this.member.destroyRecord().then(() => {
+            this.membersStats.invalidate();
             return this.transitionToRoute('members');
         }, (error) => {
             return this.notifications.showAPIError(error, {key: 'member.delete'});
@@ -113,6 +115,10 @@ export default class MemberController extends Controller {
         // saving the intended property values
         let scratchProps = scratchMember.getProperties(SCRATCH_PROPS);
         member.setProperties(scratchProps);
+
+        if (!member.isNew) {
+            this.membersStats.invalidate();
+        }
 
         try {
             yield member.save();
