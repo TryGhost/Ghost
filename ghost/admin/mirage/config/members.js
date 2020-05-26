@@ -47,9 +47,9 @@ export function mockMembersStats(server) {
 
         return {
             total,
-            totalInRange: rangeTotal,
-            totalOnDate,
-            newToday: dateCounts[moment().format('YYYY-MM-DD')]
+            total_in_range: rangeTotal,
+            total_on_date: totalOnDate,
+            new_today: dateCounts[moment().format('YYYY-MM-DD')]
         };
     });
 }
