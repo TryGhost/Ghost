@@ -44,7 +44,7 @@
     "@tryghost/adapter-manager": "0.1.6",
     "@tryghost/errors": "0.2.0",
     "@tryghost/helpers": "1.1.27",
-    "@tryghost/image-transform": "0.2.3",
+    "@tryghost/image-transform": "0.2.4",
     "@tryghost/kg-card-factory": "1.0.3",
     "@tryghost/kg-default-atoms": "1.0.0",
     "@tryghost/kg-default-cards": "1.2.2",
