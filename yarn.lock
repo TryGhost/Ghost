@@ -453,9 +453,9 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@^0.18.5":
+"@tryghost/members-api@0.18.5":
   version "0.18.5"
-  resolved "https://registry.npmjs.org/@tryghost/members-api/-/members-api-0.18.5.tgz#0041cc86c99834a3a85fddabe1c5c06c4af15396"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-0.18.5.tgz#0041cc86c99834a3a85fddabe1c5c06c4af15396"
   integrity sha512-+i+g75urHAgywaaOnGhV+C4x5ZVdbgKpfR3MFe+eqojFX48r5lxk/bkqXxrBo6DP7NCfQjgJkXqqBJs06QJ/SQ==
   dependencies:
     "@tryghost/magic-link" "^0.4.6"
