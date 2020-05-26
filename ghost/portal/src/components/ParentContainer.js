@@ -171,14 +171,14 @@ export default class ParentContainer extends React.Component {
                 await this.GhostApi.member.checkoutPlan({
                     plan
                 });
-            } else if (action === 'updatePlan') {
-                const {plan, subscriptionId} = data;
+            } else if (action === 'updateSubscription') {
+                const {plan, subscriptionId, cancelAtPeriodEnd} = data;
                 await this.GhostApi.member.updateSubscription({
-                    planName: plan, subscriptionId
+                    planName: plan, subscriptionId, cancelAtPeriodEnd
                 });
                 const member = await this.GhostApi.member.sessionData();
                 this.setState({
-                    action: 'updatePlan:success',
+                    action: 'updateSubscription:success',
                     page: 'accountHome',
                     member: member
                 });
