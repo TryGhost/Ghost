@@ -31,7 +31,7 @@ const DataGenerator = require('./fixtures/data-generator');
 const configUtils = require('./configUtils');
 const filterData = require('./fixtures/filter-param');
 const APIUtils = require('./api');
-const config = require('../../core/server/config');
+const config = require('../../core/shared/config');
 const knexMigrator = new KnexMigrator();
 let fixtures;
 let getFixtureOps;

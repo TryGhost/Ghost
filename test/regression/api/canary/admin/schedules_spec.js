@@ -6,7 +6,7 @@ const sinon = require('sinon');
 const moment = require('moment-timezone');
 const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/SchedulingDefault');
 const models = require('../../../../../core/server/models/index');
-const config = require('../../../../../core/server/config/index');
+const config = require('../../../../../core/shared/config/index');
 const testUtils = require('../../../../utils/index');
 const localUtils = require('./utils');
 

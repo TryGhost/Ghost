@@ -6,7 +6,7 @@ const cheerio = require('cheerio');
 const moment = require('moment');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
-const config = require('../../../core/server/config');
+const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
 
 const ghost = testUtils.startGhost;
