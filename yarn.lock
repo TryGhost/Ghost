@@ -384,12 +384,12 @@
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "16.2.2"
 
-"@tryghost/image-transform@0.2.3":
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-0.2.3.tgz#784949f5a8e17eb63408d10f448bbe866d536d0a"
-  integrity sha512-NIVeqOAEaOejj67e4gco34vWA6gYBcn0iCKRsUoa/uhDhBWhk8k81KzBR9ljzy9HlR6ADbGCyn6L5vwetL4/8w==
+"@tryghost/image-transform@0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-0.2.4.tgz#bc0e791c909beff03f85ce61f7f8c7ece1213c9e"
+  integrity sha512-4FXm8VnRsv9SbXFqRKhrc4U56h1Bx58UTRxAMsp0FA2Sq68AU9YmTtjFS5t6h+mA0eQ/I6O5BiS1qPMdoWg/BA==
   dependencies:
-    "@tryghost/errors" "^0.1.3"
+    "@tryghost/errors" "^0.2.0"
     bluebird "3.7.2"
     fs-extra "9.0.0"
   optionalDependencies:
