@@ -3,6 +3,7 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {A} from '@ember/array';
 import {action} from '@ember/object';
 import {alias} from '@ember/object/computed';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
@@ -41,7 +42,7 @@ export default class MembersController extends Controller {
             return 'Search result';
         }
 
-        let count = `${members.length.toLocaleString()} ${pluralize(members.length, 'member', {withoutCount: true})}`;
+        let count = `${formatNumber(members.length)} ${pluralize(members.length, 'member', {withoutCount: true})}`;
 
         if (selectedLabel && selectedLabel.slug) {
             if (members.length > 1) {
