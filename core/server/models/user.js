@@ -7,7 +7,7 @@ const baseUtils = require('./base/utils');
 const {i18n, errors: {PasswordResetRequiredError}} = require('../lib/common');
 const errors = require('@tryghost/errors');
 const security = require('../lib/security');
-const imageLib = require('../lib/image');
+const {gravatar} = require('../lib/image');
 const pipeline = require('../lib/promise/pipeline');
 const validation = require('../data/validation');
 const permissions = require('../services/permissions');
@@ -134,7 +134,7 @@ User = ghostBookshelf.Model.extend({
         // If the user's email is set & has changed & we are not importing
         if (self.hasChanged('email') && self.get('email') && !options.importing) {
             tasks.gravatar = (function lookUpGravatar() {
-                return imageLib.gravatar.lookup({
+                return gravatar.lookup({
                     email: self.get('email')
                 }).then(function (response) {
                     if (response && response.image) {
