@@ -23,10 +23,6 @@ module.exports = {
         return require('./invitations');
     },
 
-    get members() {
-        return require('./members');
-    },
-
     get settings() {
         return require('./settings');
     },
