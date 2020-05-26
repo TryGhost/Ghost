@@ -54,11 +54,11 @@
             {{else}}
                 <h3 class="f-small ttu midgrey fw5">Signed up in the last {{this.range}} days</h3>
             {{/if}}
-            <div class="gh-members-chart-summary-data">{{if this.fetchStatsTask.isRunning "-" this.stats.totalInRange}}</div>
+            <div class="gh-members-chart-summary-data">{{if this.fetchStatsTask.isRunning "-" this.stats.total_in_range}}</div>
         </div>
         <div class="flex-auto flex flex-column justify-center items-start pa4">
             <h3 class="f-small ttu midgrey fw5">Signed up today</h3>
-            <div class="gh-members-chart-summary-data">{{if this.fetchStatsTask.isRunning "-" this.stats.newToday}}</div>
+            <div class="gh-members-chart-summary-data">{{if this.fetchStatsTask.isRunning "-" this.stats.new_today}}</div>
         </div>
     </div>
 </div>
