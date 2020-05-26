@@ -7,7 +7,7 @@ import {task} from 'ember-concurrency';
 
 export default Component.extend({
     ajax: service(),
-    ghostPaths: service(),
+    membersStats: service(),
 
     // public attrs
     nightShift: false,
@@ -63,8 +63,7 @@ export default Component.extend({
     // Tasks -------------------------------------------------------------------
 
     fetchStatsTask: task(function* () {
-        let statsUrl = this.ghostPaths.url.api('members/stats');
-        let stats = yield this.ajax.request(statsUrl, {data: {days: this.selectedRange.days}});
+        let stats = yield this.membersStats.fetch({days: this.selectedRange.days});
 
         this.set('stats', stats);
 
