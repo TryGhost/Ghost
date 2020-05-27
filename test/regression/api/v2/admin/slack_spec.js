@@ -10,6 +10,8 @@ const ghost = testUtils.startGhost;
 let request;
 
 describe('Slack API', function () {
+    let ghostServer;
+
     before(function () {
         return ghost()
             .then(function (_ghostServer) {
