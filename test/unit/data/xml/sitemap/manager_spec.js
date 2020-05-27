@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 
 // Stuff we are testing
-const common = require('../../../../../core/server/lib/common');
+const {events} = require('../../../../../core/server/lib/common');
 
 const SiteMapManager = require('../../../../../core/frontend/services/sitemap/manager');
 const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator');
@@ -19,7 +19,6 @@ describe('Unit: sitemap/manager', function () {
         let pages;
         let tags;
         let authors;
-        let index;
 
         index = new IndexGenerator();
         posts = new PostGenerator();
@@ -33,7 +32,7 @@ describe('Unit: sitemap/manager', function () {
     beforeEach(function () {
         eventsToRemember = {};
 
-        sinon.stub(common.events, 'on').callsFake(function (eventName, callback) {
+        sinon.stub(events, 'on').callsFake(function (eventName, callback) {
             eventsToRemember[eventName] = callback;
         });
 
