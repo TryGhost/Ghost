@@ -26,7 +26,7 @@
             </div>
         </div>
         <div class="gh-members-chart-container">
-            {{#if this.fetchStatsTask.isRunning}}
+            {{#if (not this.stats)}}
                 <GhLoadingSpinner />
             {{else}}
                 <EmberChart
@@ -46,7 +46,7 @@
     <div class="flex flex-column justify-between gh-members-chart-summary bg-white br3 shadow-1 bg-grouped-table">
         <div class="flex-auto flex flex-column justify-center items-start pa4 bb b--whitegrey">
             <h3 class="f-small ttu midgrey fw5">Total Members</h3>
-            <div class="gh-members-chart-summary-data">{{if this.fetchStatsTask.isRunning "-" (format-number this.stats.total)}}</div>
+            <div class="gh-members-chart-summary-data">{{if (not this.stats) "-" (format-number this.stats.total)}}</div>
         </div>
         <div class="flex-auto flex flex-column justify-center items-start pa4 bb b--whitegrey">
             {{#if (eq this.range "all-time")}}
@@ -54,11 +54,11 @@
             {{else}}
                 <h3 class="f-small ttu midgrey fw5">Signed up in the last {{this.range}} days</h3>
             {{/if}}
-            <div class="gh-members-chart-summary-data">{{if this.fetchStatsTask.isRunning "-" (format-number this.stats.total_in_range)}}</div>
+            <div class="gh-members-chart-summary-data">{{if (not this.stats) "-" (format-number this.stats.total_in_range)}}</div>
         </div>
         <div class="flex-auto flex flex-column justify-center items-start pa4">
             <h3 class="f-small ttu midgrey fw5">Signed up today</h3>
-            <div class="gh-members-chart-summary-data">{{if this.fetchStatsTask.isRunning "-" (format-number this.stats.new_today)}}</div>
+            <div class="gh-members-chart-summary-data">{{if (not this.stats) "-" (format-number this.stats.new_today)}}</div>
         </div>
     </div>
 </div>

@@ -63,18 +63,22 @@ export default Component.extend({
     // Tasks -------------------------------------------------------------------
 
     fetchStatsTask: task(function* () {
+        this.set('stats', null);
+
         let stats = yield this.membersStats.fetch({days: this.selectedRange.days});
 
-        this.set('stats', stats);
+        if (stats) {
+            this.set('stats', stats);
 
-        this.setChartOptions({
-            rangeInDays: Object.keys(stats.total_on_date).length
-        });
+            this.setChartOptions({
+                rangeInDays: Object.keys(stats.total_on_date).length
+            });
 
-        this.setChartData({
-            dateLabels: Object.keys(stats.total_on_date),
-            dateValues: Object.values(stats.total_on_date)
-        });
+            this.setChartData({
+                dateLabels: Object.keys(stats.total_on_date),
+                dateValues: Object.values(stats.total_on_date)
+            });
+        }
     }),
 
     // Internal ----------------------------------------------------------------

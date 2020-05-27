@@ -11,11 +11,12 @@ export default class MembersStatsService extends Service {
     fetch({days}) {
         // return existing stats unless data is > 1 min old
         let daysChanged = days === this._days;
-        let staleData = this._lastFetched - new Date() > 1 * 60 * 1000;
-        if (!this._forceRefresh && !daysChanged && !staleData) {
+        let staleData = this._lastFetched && this._lastFetched - new Date() > 1 * 60 * 1000;
+        if (this.stats && !this._forceRefresh && !daysChanged && !staleData) {
             return Promise.resolve(this.stats);
         }
 
+        this._forceRefresh = false;
         this._days = days;
         this._lastFetched = new Date();
 
