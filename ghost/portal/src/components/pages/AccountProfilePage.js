@@ -80,29 +80,6 @@ export default class AccountProfilePage extends React.Component {
         );
     }
 
-    openSettings(e) {
-        // no-op
-    }
-
-    openSubscribe(e) {
-        //no-op
-    }
-
-    renderAccountDetail(e) {
-        const {name, firstname, email} = this.context.member;
-        const siteTitle = this.context.site.title;
-
-        return (
-            <div style={{padding: '0 24px'}}>
-                <div style={{textAlign: 'center', marginBottom: '12px', fontSize: '14px'}}>
-                    <span style={{fontWeight: 'bold'}}>Hey {firstname || name || email}! </span>
-                    You are subscribed to free updates from <span style={{fontWeight: 'bold'}}>{siteTitle}</span>, but you don't have a paid subscription to unlock full access
-                </div>
-                <ActionButton label="Subscribe now" onClick={e => this.openSubscribe(e)} brandColor={this.context.brandColor} />
-            </div>
-        );
-    }
-
     handleInput(e, field) {
         this.setState({
             [field]: e.target.value
@@ -131,7 +108,7 @@ export default class AccountProfilePage extends React.Component {
         return (
             <InputField
                 {...field}
-                onChange={(e, fieldName) => this.handleInput(e, fieldName)}
+                onChange={(e, name) => this.handleInput(e, name)}
             />
         );
     }

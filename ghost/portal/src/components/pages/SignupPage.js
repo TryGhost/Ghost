@@ -96,7 +96,7 @@ class SignupPage extends React.Component {
                 name={field.name}
                 placeholder={field.placeholder}
                 value={field.value}
-                onChange={(e, fieldName) => this.handleInput(e, fieldName)}
+                onChange={(e, name) => this.handleInput(e, name)}
             />
         );
     }
