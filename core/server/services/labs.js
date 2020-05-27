@@ -3,7 +3,8 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const SafeString = require('../../frontend/services/themes/engine').SafeString;
 const errors = require('@tryghost/errors');
-const {i18n, logging} = require('../lib/common');
+const {i18n} = require('../lib/common');
+const logging = require('../../shared/logging');
 const deprecatedFeatures = ['subscribers', 'publicAPI'];
 
 module.exports.getAll = () => {

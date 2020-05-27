@@ -1,6 +1,7 @@
 const debug = require('ghost-ignition').debug('services:apps');
 const Promise = require('bluebird');
-const {logging, i18n} = require('../../../server/lib/common');
+const {i18n} = require('../../../server/lib/common');
+const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
 const loader = require('./loader');

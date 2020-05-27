@@ -1,7 +1,8 @@
 const MembersSSR = require('@tryghost/members-ssr');
 
 const createMembersApiInstance = require('./api');
-const {events, logging} = require('../../lib/common');
+const {events} = require('../../lib/common');
+const logging = require('../../../shared/logging');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../settings/cache');
 
