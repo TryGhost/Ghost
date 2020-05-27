@@ -3,7 +3,7 @@ const os = require('os');
 const multer = require('multer');
 const fs = require('fs-extra');
 const errors = require('@tryghost/errors');
-const config = require('../../../config');
+const config = require('../../../../shared/config');
 const {i18n,logging} = require('../../../lib/common');
 
 const upload = {

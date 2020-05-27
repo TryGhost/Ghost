@@ -22,7 +22,7 @@ describe('Config', function () {
         beforeEach(function () {
             originalEnv = _.clone(process.env);
             originalArgv = _.clone(process.argv);
-            config = rewire('../../../core/server/config');
+            config = rewire('../../../core/shared/config');
 
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available

@@ -5,7 +5,7 @@ const moment = require('moment-timezone');
 
 const validation = require('./validation');
 
-const config = require('../../../server/config');
+const config = require('../../../shared/config');
 const {i18n} = require('../../../server/lib/common');
 const errors = require('@tryghost/errors');
 

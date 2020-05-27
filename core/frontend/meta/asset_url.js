@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const config = require('../../server/config');
+const config = require('../../shared/config');
 const {blogIcon} = require('../../server/lib/image');
 const urlUtils = require('../../server/lib/url-utils');
 

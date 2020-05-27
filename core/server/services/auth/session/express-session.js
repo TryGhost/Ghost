@@ -1,6 +1,6 @@
 const session = require('express-session');
 const constants = require('../../../lib/constants');
-const config = require('../../../config');
+const config = require('../../../../shared/config');
 const settingsCache = require('../../settings/cache');
 const models = require('../../../models');
 const urlUtils = require('../../../lib/url-utils');

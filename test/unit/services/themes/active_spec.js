@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const config = require('../../../../core/server/config');
+const config = require('../../../../core/shared/config');
 
 // is only exposed via themes.getActive()
 const activeTheme = require('../../../../core/frontend/services/themes/active');

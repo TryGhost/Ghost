@@ -2,7 +2,7 @@ const path = require('path');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const {i18n} = require('../../../server/lib/common');
-const config = require('../../../server/config');
+const config = require('../../../shared/config');
 const Proxy = require('./proxy');
 
 // Get the full path to an app by name

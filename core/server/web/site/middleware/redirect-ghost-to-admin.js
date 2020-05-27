@@ -1,5 +1,5 @@
 const express = require('../../../../shared/express');
-const config = require('../../../config');
+const config = require('../../../../shared/config');
 const urlUtils = require('../../../lib/url-utils');
 
 const adminRedirect = (path) => {
