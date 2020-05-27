@@ -1,5 +1,5 @@
 const knex = require('knex');
-const config = require('../../config');
+const config = require('../../../shared/config');
 const {logging} = require('../../lib/common');
 const errors = require('@tryghost/errors');
 let knexInstance;

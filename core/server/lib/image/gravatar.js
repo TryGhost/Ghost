@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const crypto = require('crypto');
-const config = require('../../config');
+const config = require('../../../shared/config');
 const request = require('../request');
 
 module.exports.lookup = function lookup(userData, timeout) {

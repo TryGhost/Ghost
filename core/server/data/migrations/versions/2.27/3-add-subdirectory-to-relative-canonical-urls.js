@@ -1,5 +1,5 @@
 const {logging} = require('../../../../lib/common');
-const config = require('../../../../config');
+const config = require('../../../../../shared/config');
 const {URL} = require('url');
 
 module.exports.config = {

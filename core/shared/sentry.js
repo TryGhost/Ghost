@@ -1,4 +1,4 @@
-const config = require('../server/config');
+const config = require('./config');
 const sentryConfig = config.get('sentry');
 
 const expressNoop = function (req, res, next) {

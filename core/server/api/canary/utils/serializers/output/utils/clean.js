@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const localUtils = require('../../../index');
-const config = require('../../../../../../config');
+const config = require('../../../../../../../shared/config');
 
 const tag = (attrs, frame) => {
     if (localUtils.isContentAPI(frame)) {

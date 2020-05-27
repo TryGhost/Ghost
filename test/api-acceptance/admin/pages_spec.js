@@ -2,7 +2,7 @@ const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
 const testUtils = require('../../utils');
-const config = require('../../../core/server/config');
+const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const localUtils = require('./utils');
 

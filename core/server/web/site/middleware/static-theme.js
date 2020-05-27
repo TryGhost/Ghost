@@ -1,5 +1,5 @@
 const path = require('path');
-const config = require('../../../config');
+const config = require('../../../../shared/config');
 const constants = require('../../../lib/constants');
 const themeUtils = require('../../../../frontend/services/themes');
 const express = require('../../../../shared/express');

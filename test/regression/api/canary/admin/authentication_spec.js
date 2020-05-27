@@ -6,7 +6,7 @@ const testUtils = require('../../../../utils/index');
 const models = require('../../../../../core/server/models/index');
 const security = require('../../../../../core/server/lib/security/index');
 const settingsCache = require('../../../../../core/server/services/settings/cache');
-const config = require('../../../../../core/server/config/index');
+const config = require('../../../../../core/shared/config/index');
 const mailService = require('../../../../../core/server/services/mail/index');
 
 let ghost = testUtils.startGhost;

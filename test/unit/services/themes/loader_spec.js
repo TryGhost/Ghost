@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const fs = require('fs-extra');
 const tmp = require('tmp');
 const join = require('path').join;
-const config = require('../../../../core/server/config');
+const config = require('../../../../core/shared/config');
 const loader = require('../../../../core/frontend/services/themes/loader');
 const themeList = require('../../../../core/frontend/services/themes/list');
 

@@ -7,7 +7,7 @@ const membersService = require('../members');
 const bulkEmailService = require('../bulk-email');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
-const config = require('../../config');
+const config = require('../../../shared/config');
 
 const getEmailData = async (postModel, members = []) => {
     const {emailTmpl, replacements} = await postEmailSerializer.serialize(postModel);

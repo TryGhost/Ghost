@@ -6,7 +6,7 @@ const path = require('path');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../../../utils/configUtils');
-const config = require('../../../../../core/server/config');
+const config = require('../../../../../core/shared/config');
 
 const ghost = testUtils.startGhost;
 let request;

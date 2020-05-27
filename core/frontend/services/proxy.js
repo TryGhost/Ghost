@@ -6,7 +6,7 @@ const errors = require('@tryghost/errors');
 
 const {i18n, logging} = require('../../server/lib/common');
 const settingsCache = require('../../server/services/settings/cache');
-const config = require('../../server/config');
+const config = require('../../shared/config');
 
 // Direct requires:
 // - lodash

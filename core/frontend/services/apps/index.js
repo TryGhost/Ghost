@@ -2,7 +2,7 @@ const debug = require('ghost-ignition').debug('services:apps');
 const Promise = require('bluebird');
 const {logging, i18n} = require('../../../server/lib/common');
 const errors = require('@tryghost/errors');
-const config = require('../../../server/config');
+const config = require('../../../shared/config');
 const loader = require('./loader');
 
 module.exports = {

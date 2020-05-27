@@ -4,7 +4,7 @@ const should = require('should');
 const supertest = require('supertest');
 const localUtils = require('./utils');
 const testUtils = require('../../utils');
-const config = require('../../../core/server/config');
+const config = require('../../../core/shared/config');
 
 const ghost = testUtils.startGhost;
 

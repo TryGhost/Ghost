@@ -4,7 +4,7 @@ const path = require('path');
 const urlService = require('../url');
 
 const errors = require('@tryghost/errors');
-const config = require('../../../server/config');
+const config = require('../../../shared/config');
 
 /**
  * The `routes.yaml` file offers a way to configure your Ghost blog. It's currently a setting feature

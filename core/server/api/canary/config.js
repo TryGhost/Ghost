@@ -1,5 +1,5 @@
 const {isPlainObject} = require('lodash');
-const config = require('../../config');
+const config = require('../../../shared/config');
 const labs = require('../../services/labs');
 const ghostVersion = require('../../lib/ghost-version');
 

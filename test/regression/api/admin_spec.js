@@ -11,7 +11,7 @@ const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
 const ghost = testUtils.startGhost;
 const {i18n} = require('../../../core/server/lib/common');
-const config = require('../../../core/server/config');
+const config = require('../../../core/shared/config');
 let request;
 
 i18n.init();

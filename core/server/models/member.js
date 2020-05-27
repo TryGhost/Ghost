@@ -2,7 +2,7 @@ const ghostBookshelf = require('./base');
 const uuid = require('uuid');
 const _ = require('lodash');
 const sequence = require('../lib/promise/sequence');
-const config = require('../config');
+const config = require('../../shared/config');
 const crypto = require('crypto');
 
 const Member = ghostBookshelf.Model.extend({

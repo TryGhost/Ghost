@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const config = require('../../core/server/config');
+const config = require('../../core/shared/config');
 const configUtils = {};
 
 configUtils.config = config;

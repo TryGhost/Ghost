@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs-extra');
-const config = require('../../../../config');
+const config = require('../../../../../shared/config');
 const {logging} = require('../../../../lib/common');
 const models = require('../../../../models');
 const message1 = 'Removing `globals.permalinks` from routes.yaml.';

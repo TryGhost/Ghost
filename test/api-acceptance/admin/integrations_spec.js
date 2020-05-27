@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
-const config = require('../../../core/server/config');
+const config = require('../../../core/shared/config');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 

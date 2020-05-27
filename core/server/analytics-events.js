@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Analytics = require('analytics-node');
-const config = require('./config');
+const config = require('../shared/config');
 const {events} = require('./lib/common');
 
 module.exports.init = function () {

@@ -2,7 +2,7 @@ const nock = require('nock');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../../utils/index');
-const config = require('../../../../../core/server/config/index');
+const config = require('../../../../../core/shared/config/index');
 const localUtils = require('./utils');
 
 const ghost = testUtils.startGhost;

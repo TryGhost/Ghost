@@ -16,7 +16,7 @@ const join = require('path').join;
 const _ = require('lodash');
 const themeConfig = require('./config');
 const themeEngines = require('./engines');
-const config = require('../../../server/config');
+const config = require('../../../shared/config');
 const engine = require('./engine');
 
 // Current instance of ActiveTheme

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const config = require('../../config');
+const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
 const {i18n, logging} = require('../../lib/common');
 const models = require('../../models');

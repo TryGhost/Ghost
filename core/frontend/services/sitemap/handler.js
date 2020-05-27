@@ -1,4 +1,4 @@
-const config = require('../../../server/config');
+const config = require('../../../shared/config');
 const Manager = require('./manager');
 const manager = new Manager();
 

@@ -1,5 +1,5 @@
 const hbs = require('express-hbs');
-const config = require('../../../server/config');
+const config = require('../../../shared/config');
 const instance = hbs.create();
 
 // @TODO think about a config option for this e.g. theme.devmode?

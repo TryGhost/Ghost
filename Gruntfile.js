@@ -8,7 +8,7 @@
 
 require('./core/server/overrides');
 
-const config = require('./core/server/config');
+const config = require('./core/shared/config');
 const urlService = require('./core/frontend/services/url');
 const _ = require('lodash');
 const fs = require('fs-extra');
