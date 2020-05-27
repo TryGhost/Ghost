@@ -1,7 +1,6 @@
-const should = require('should');
 const sinon = require('sinon');
 const helpers = require('../../../core/frontend/helpers');
-const common = require('../../../core/server/lib/common');
+const logging = require('../../../core/shared/logging');
 
 describe('{{#is}} helper', function () {
     afterEach(function () {
@@ -54,7 +53,7 @@ describe('{{#is}} helper', function () {
     it('should log warning with no args', function () {
         const fn = sinon.spy();
         const inverse = sinon.spy();
-        const logWarn = sinon.stub(common.logging, 'warn');
+        const logWarn = sinon.stub(logging, 'warn');
 
         helpers.is.call(
             {},
