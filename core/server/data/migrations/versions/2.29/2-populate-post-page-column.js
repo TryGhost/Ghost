@@ -1,5 +1,5 @@
 const toPairs = require('lodash/toPairs');
-const {logging} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 
 /*
  * @param from: object with a SINGLE entry { 'fromColumn': 'fromValue' }
