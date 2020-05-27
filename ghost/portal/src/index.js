@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 
+const handleDataAttributes = require('./data-attributes');
+
 function addRootDiv() {
     const elem = document.createElement('div');
     elem.id = 'ghost-membersjs-root';
@@ -19,6 +21,7 @@ function handleTokenUrl() {
 
 function init() {
     addRootDiv();
+    handleDataAttributes({siteUrl: window.location.origin});
     handleTokenUrl();
     ReactDOM.render(
         <React.StrictMode>

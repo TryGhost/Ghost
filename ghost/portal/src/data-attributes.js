@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 function handleDataAttributes({siteUrl}) {
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
