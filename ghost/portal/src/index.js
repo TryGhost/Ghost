@@ -4,10 +4,11 @@ import './index.css';
 import App from './App';
 
 const handleDataAttributes = require('./data-attributes');
+const ROOT_DIV_ID = 'ghost-membersjs-root';
 
 function addRootDiv() {
     const elem = document.createElement('div');
-    elem.id = 'ghost-membersjs-root';
+    elem.id = ROOT_DIV_ID;
     document.body.appendChild(elem);
 }
 
@@ -33,15 +34,20 @@ function handleTokenUrl() {
     }
 }
 
-function init() {
+function setup() {
+    loadStripe();
     addRootDiv();
     handleDataAttributes({siteUrl: window.location.origin});
     handleTokenUrl();
+}
+
+function init() {
+    setup();
     ReactDOM.render(
         <React.StrictMode>
             <App />
         </React.StrictMode>,
-        document.getElementById('ghost-membersjs-root')
+        document.getElementById(ROOT_DIV_ID)
     );
 }
 
