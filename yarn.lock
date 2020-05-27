@@ -3848,12 +3848,12 @@ ghost-ignition@^3.0.4, ghost-ignition@^3.1.0:
     prettyjson "^1.1.3"
     uuid "^3.0.0"
 
-ghost-storage-base@0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-0.0.4.tgz#c5badcab13d1763febc8eb3b293e1eb3a5e511e1"
-  integrity sha512-OWL/ONgP24r5s64eH25u8Nb36+MkQALvaeANByaEZlVYXJGkbt+lX+KMmkWMaC9bVpMRTc+ZZE1q/V3V0B0PXQ==
+ghost-storage-base@0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-0.0.5.tgz#5608326ab6067c8eb3cac537a850c175f8532849"
+  integrity sha512-uNOFYmHHfp9aTs6Fg4O9NQUi478DUpA4r/hckHOJNHfa29j+GHrKFHEVBeqY63Ta8XW+0+u2MZH5VruWRbX9Rg==
   dependencies:
-    moment "2.24.0"
+    moment "2.26.0"
 
 github-from-package@0.0.0:
   version "0.0.0"
@@ -6286,7 +6286,7 @@ moment@2.25.1:
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.25.1.tgz#1cb546dca1eccdd607c9324747842200b683465d"
   integrity sha512-nRKMf9wDS4Fkyd0C9LXh2FFXinD+iwbJ5p/lh3CHitW9kZbRbJ8hCruiadiIXZVbeAqKZzqcTvHnK3mRhFjb6w==
 
-moment@^2.10.6, moment@^2.18.1:
+moment@2.26.0, moment@^2.10.6, moment@^2.18.1:
   version "2.26.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.26.0.tgz#5e1f82c6bafca6e83e808b30c8705eed0dcbd39a"
   integrity sha512-oIixUO+OamkUkwjhAVE18rAMfRJNsNe/Stid/gwHSOfHrOtw9EhAY2AHvdKZ/k/MggcYELFCJz/Sn2pL8b8JMw==
