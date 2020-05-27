@@ -1,7 +1,7 @@
 const models = require('../../models');
 const {i18n} = require('../../lib/common');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const allowedIncludes = ['tags', 'authors', 'authors.roles'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 

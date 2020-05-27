@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('services:routing:collection-router');
 const {events} = require('../../../server/lib/common');
-const urlUtils = require('../../../server/lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const ParentRouter = require('./ParentRouter');
 
 const controllers = require('./controllers');

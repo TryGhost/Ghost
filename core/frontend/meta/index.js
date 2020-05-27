@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const settingsCache = require('../../server/services/settings/cache');
-const urlUtils = require('../../server/lib/url-utils');
+const urlUtils = require('../../shared/url-utils');
 const {logging} = require('../../server/lib/common');
 const getUrl = require('./url');
 const getImageDimensions = require('./image-dimensions');

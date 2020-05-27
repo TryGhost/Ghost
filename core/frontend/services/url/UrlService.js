@@ -7,7 +7,7 @@ const UrlGenerator = require('./UrlGenerator');
 const Queue = require('./Queue');
 const Urls = require('./Urls');
 const Resources = require('./Resources');
-const urlUtils = require('../../../server/lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 
 /**
  * The url service class holds all instances in a centralised place.

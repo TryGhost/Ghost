@@ -4,7 +4,7 @@ const Promise = require('bluebird');
 const mail = require('../../../../core/server/services/mail');
 const settingsCache = require('../../../../core/server/services/settings/cache');
 const configUtils = require('../../../utils/configUtils');
-const urlUtils = require('../../../../core/server/lib/url-utils');
+const urlUtils = require('../../../../core/shared/url-utils');
 const {i18n} = require('../../../../core/server/lib/common');
 let mailer;
 

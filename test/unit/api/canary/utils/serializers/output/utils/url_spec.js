@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../../utils');
 const urlService = require('../../../../../../../../core/frontend/services/url');
-const urlUtils = require('../../../../../../../../core/server/lib/url-utils');
+const urlUtils = require('../../../../../../../../core/shared/url-utils');
 const urlUtil = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/url');
 
 describe('Unit: canary/utils/serializers/output/utils/url', function () {

@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const urlUtils = require('../../../../core/server/lib/url-utils');
+const urlUtils = require('../../../../core/shared/url-utils');
 const testUtils = require('../../../utils');
 
 let getCanonicalUrl = rewire('../../../../core/frontend/meta/canonical_url');

@@ -10,7 +10,7 @@ const api = require('../../../../../core/server/api');
 const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
 const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/SchedulingDefault');
 const postScheduling = require('../../../../../core/server/adapters/scheduling/post-scheduling');
-const urlUtils = require('../../../../../core/server/lib/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils');
 
 // NOTE: to be unskiped and corrected once default scheduler code is migrated
 describe.skip('Scheduling: Post Scheduling', function () {

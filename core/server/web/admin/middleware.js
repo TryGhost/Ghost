@@ -1,4 +1,4 @@
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 
 function redirectAdminUrls(req, res, next) {
     const subdir = urlUtils.getSubdir();

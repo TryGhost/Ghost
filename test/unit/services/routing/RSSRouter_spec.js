@@ -4,7 +4,7 @@ const configUtils = require('../../../utils/configUtils');
 const {events} = require('../../../../core/server/lib/common');
 const controllers = require('../../../../core/frontend/services/routing/controllers');
 const RSSRouter = require('../../../../core/frontend/services/routing/RSSRouter');
-const urlUtils = require('../../../../core/server/lib/url-utils');
+const urlUtils = require('../../../../core/shared/url-utils');
 
 describe('UNIT - services/routing/RSSRouter', function () {
     describe('instantiate', function () {

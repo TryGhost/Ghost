@@ -4,7 +4,7 @@ const constants = require('../../lib/constants');
 const errors = require('@tryghost/errors');
 const {i18n} = require('../../lib/common');
 const models = require('../../models');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const mail = require('../mail');
 
 const tokenSecurity = {};

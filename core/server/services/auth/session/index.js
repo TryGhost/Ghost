@@ -6,7 +6,7 @@ const createSessionMiddleware = require('./middleware');
 const expressSession = require('./express-session');
 
 const models = require('../../../models');
-const urlUtils = require('../../../lib/url-utils');
+const urlUtils = require('../../../../shared/url-utils');
 const url = require('url');
 
 function getOriginOfRequest(req) {
