@@ -3,7 +3,7 @@ const path = require('path');
 const debug = require('ghost-ignition').debug('frontend:services:settings:settings-loader');
 const {i18n} = require('../../../server/lib/common');
 const errors = require('@tryghost/errors');
-const config = require('../../../server/config');
+const config = require('../../../shared/config');
 const yamlParser = require('./yaml-parser');
 const validate = require('./validate');
 

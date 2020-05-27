@@ -1,5 +1,5 @@
 const KnexMigrator = require('knex-migrator');
-const config = require('../../config');
+const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
 
 const knexMigrator = new KnexMigrator({

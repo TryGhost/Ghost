@@ -7,7 +7,7 @@ const membersService = require('../../services/members');
 const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 const _ = require('lodash');
-const config = require('../../config');
+const config = require('../../../shared/config');
 
 module.exports = {
     docName: 'posts',

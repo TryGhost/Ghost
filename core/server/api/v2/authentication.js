@@ -1,5 +1,5 @@
 const api = require('./index');
-const config = require('../../config');
+const config = require('../../../shared/config');
 const {i18n} = require('../../lib/common');
 const errors = require('@tryghost/errors');
 const web = require('../../web');

@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const xml = require('xml');
-const config = require('../config');
+const config = require('../../shared/config');
 const urlService = require('../../frontend/services/url');
 const errors = require('@tryghost/errors');
 const {events, i18n, logging} = require('../lib/common');

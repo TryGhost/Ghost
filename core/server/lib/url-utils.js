@@ -1,5 +1,5 @@
 const UrlUtils = require('@tryghost/url-utils');
-const config = require('../config');
+const config = require('../../shared/config');
 const mobiledoc = require('./mobiledoc');
 
 const urlUtils = new UrlUtils({

@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const semver = require('semver');
-const config = require('../../../../server/config');
+const config = require('../../../../shared/config');
 const DEFAULTS = require('./defaults');
 const allowedKeys = ['ghost-api'];
 
