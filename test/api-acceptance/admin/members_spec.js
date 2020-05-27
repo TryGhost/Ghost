@@ -76,6 +76,26 @@ describe('Members API', function () {
             });
     });
 
+    it('Can browse with search', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/?search=member1'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.members);
+                jsonResponse.members.should.have.length(1);
+                jsonResponse.members[0].email.should.equal('member1@test.com');
+                localUtils.API.checkResponse(jsonResponse, 'members');
+                localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+            });
+    });
+
     it('Can read', function () {
         return request
             .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/`))
