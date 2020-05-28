@@ -35,9 +35,12 @@ function handleTokenUrl() {
 }
 
 function setup() {
+    const allowDataAttributeHandling = false;
     loadStripe();
     addRootDiv();
-    handleDataAttributes({siteUrl: window.location.origin});
+    if (allowDataAttributeHandling) {
+        handleDataAttributes({siteUrl: window.location.origin});
+    }
     handleTokenUrl();
 }
 
