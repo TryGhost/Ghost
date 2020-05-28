@@ -45,7 +45,9 @@ const membersService = {
         cookieName: 'ghost-members-ssr',
         cookieCacheName: 'ghost-members-ssr-cache',
         getMembersApi: () => membersService.api
-    })
+    }),
+
+    stripeConnect: require('./stripe-connect')
 };
 
 module.exports = membersService;
