@@ -35,7 +35,7 @@ function handleTokenUrl() {
 }
 
 function setup() {
-    const allowDataAttributeHandling = false;
+    const allowDataAttributeHandling = true;
     loadStripe();
     addRootDiv();
     if (allowDataAttributeHandling) {
