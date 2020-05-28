@@ -61,7 +61,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '10.13.0'
-      - run: npm install -g ghost-cli@next
+      - run: npm install -g ghost-cli@latest
       - run: zip -r ghost.zip .
 
       - name: Clean Install
