@@ -2,9 +2,7 @@ version: 1.0
 publish: app
 services:
   app:
-    build:
-      type: dockerfile
-      config: ./.runme/Dockerfile
+    image: ghost:latest
     ports:
       - container: 2368
         public: 80

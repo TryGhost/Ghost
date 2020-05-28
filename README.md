@@ -1,5 +1,3 @@
-[![Runme](https://svc.runme.io/static/button.svg)](https://runme.io/run?app_id=ca1e4e09-8d71-4e06-bcaa-b151cf1ac167/ghost/)
-
 <p align="center">
   <a href="https://ghost.org">
     <img src="https://user-images.githubusercontent.com/120485/43974508-b64b2fe8-9cd2-11e8-8e58-707254b8817c.png" width="140px" alt="Ghost" />
@@ -28,6 +26,9 @@
     </a>
     <a href="https://opencollective.com/ghost">
         <img src="https://opencollective.com/ghost/backers/badge.svg" alt="OpenCollective" />
+    </a>
+    <a href="https://runme.io/run?app_id=7386379b-3877-4b59-bcab-548181af62a9">
+        <img src="https://svc.runme.io/static/button.svg" alt="Runme" />
     </a>
 </p>
 
