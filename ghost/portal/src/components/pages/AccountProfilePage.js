@@ -46,10 +46,15 @@ export default class AccountProfilePage extends React.Component {
         );
     }
 
+    renderDeleteAccountButton() {
+        return (
+            <div style={{cursor: 'pointer', color: 'red'}} role='button'> Delete Account </div>
+        );
+    }
+
     renderAccountFooter() {
         return (
             <div style={{display: 'flex', padding: '0 24px', marginTop: '12px', color: this.context.brandColor, fontWeight: 'bold', fontSize: '13px', alignItems: 'center'}}>
-                <div style={{cursor: 'pointer', color: 'red'}} role='button'> Delete Account </div>
                 <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
                     {this.renderSaveButton()}
                 </div>
