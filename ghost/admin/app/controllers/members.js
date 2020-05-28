@@ -7,17 +7,19 @@ import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
+import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class MembersController extends Controller {
     @service feature;
     @service store;
 
-    queryParams = ['label'];
+    queryParams = ['label', {searchParam: 'search'}];
 
     @alias('model') members;
 
     @tracked searchText = '';
+    @tracked searchParam = '';
     @tracked label = null;
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
@@ -56,7 +58,7 @@ export default class MembersController extends Controller {
     }
 
     get showingAll() {
-        return !this.searchText && !this.label;
+        return !this.searchParam && !this.label;
     }
 
     get availableLabels() {
@@ -87,6 +89,11 @@ export default class MembersController extends Controller {
     }
 
     // Actions -----------------------------------------------------------------
+
+    @action
+    search(e) {
+        this.searchTask.perform(e.target.value);
+    }
 
     @action
     exportData() {
@@ -141,6 +148,12 @@ export default class MembersController extends Controller {
 
     // Tasks -------------------------------------------------------------------
 
+    @task({restartable: true})
+    *searchTask(query) {
+        yield timeout(250); // debounce
+        this.searchParam = query;
+    }
+
     @task
     *fetchLabelsTask() {
         if (!this._hasLoadedLabels) {
@@ -148,5 +161,11 @@ export default class MembersController extends Controller {
                 this._hasLoadedLabels = true;
             });
         }
+    }
+
+    // Internal ----------------------------------------------------------------
+
+    resetSearch() {
+        this.searchText = '';
     }
 }

@@ -13,9 +13,8 @@
                 {{svg-jar "search" class="gh-input-search-icon"}}
                 <GhTextInput
                     placeholder="Search members..."
-                    @disabled={{true}}
                     @value={{this.searchText}}
-                    @input={{action (mut this.searchText) value="target.value"}}
+                    @input={{this.search}}
                     class="gh-members-list-searchfield {{if this.searchText "active"}}" />
             </div>
 
