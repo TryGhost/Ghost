@@ -36,7 +36,7 @@ const UserAvatar = ({avatar}) => {
 const AccountFooter = ({onLogout, onSettings, brandColor}) => {
     return (
         <div style={{display: 'flex', padding: '0 24px', marginTop: '18px', color: brandColor, fontWeight: 'bold', fontSize: '13px'}}>
-            <div style={{cursor: 'pointer'}} role='button'> Contact support </div>
+            <div style={{color: 'grey'}} role='button'> Contact support </div>
             <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
                 {onSettings
                     ? <div style={{marginRight: '16px', cursor: 'pointer'}} onClick={onSettings} role='button'> Settings </div>
