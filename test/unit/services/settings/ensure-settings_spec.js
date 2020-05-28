@@ -1,10 +1,8 @@
 const sinon = require('sinon');
 const should = require('should');
 const fs = require('fs-extra');
-const yaml = require('js-yaml');
 const path = require('path');
 const configUtils = require('../../../utils/configUtils');
-const common = require('../../../../core/server/lib/common');
 const ensureSettings = require('../../../../core/frontend/services/settings/ensure-settings');
 
 describe('UNIT > Settings Service ensure settings:', function () {

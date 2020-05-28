@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const mockDb = require('mock-knex');
 const models = require('../../../core/server/models');
 const {knex} = require('../../../core/server/data/db');
-const common = require('../../../core/server/lib/common');
+const {events} = require('../../../core/server/lib/common');
 
 describe('Unit: models/settings', function () {
     before(function () {
@@ -25,7 +25,7 @@ describe('Unit: models/settings', function () {
         });
 
         beforeEach(function () {
-            eventSpy = sinon.spy(common.events, 'emit');
+            eventSpy = sinon.spy(events, 'emit');
         });
 
         afterEach(function () {
@@ -99,7 +99,7 @@ describe('Unit: models/settings', function () {
         });
 
         beforeEach(function () {
-            eventSpy = sinon.spy(common.events, 'emit');
+            eventSpy = sinon.spy(events, 'emit');
         });
 
         afterEach(function () {

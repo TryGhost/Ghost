@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/configUtils');
-const common = require('../../../../core/server/lib/common');
+const {events} = require('../../../../core/server/lib/common');
 const urlUtils = require('../../../../core/shared/url-utils');
 const ParentRouter = require('../../../../core/frontend/services/routing/ParentRouter');
 
@@ -11,8 +11,8 @@ describe('UNIT - services/routing/ParentRouter', function () {
     let next;
 
     beforeEach(function () {
-        sinon.stub(common.events, 'emit');
-        sinon.stub(common.events, 'on');
+        sinon.stub(events, 'emit');
+        sinon.stub(events, 'on');
 
         sinon.stub(urlUtils, 'redirect301');
 
