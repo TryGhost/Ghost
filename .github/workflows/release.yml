@@ -18,7 +18,6 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-      - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - run: yarn
 
       - run: grunt release --skip-tests
