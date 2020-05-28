@@ -48,6 +48,7 @@ export default Component.extend(SettingsMenuMixin, {
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
 
     showVisibilityInput: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
+    showEmailNewsletter: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
 
     seoTitle: computed('metaTitleScratch', 'post.titleScratch', function () {
         return this.metaTitleScratch || this.post.titleScratch || '(Untitled)';
