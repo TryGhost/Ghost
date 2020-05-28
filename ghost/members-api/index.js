@@ -96,13 +96,12 @@ module.exports = function MembersApi({
 
     async function getMemberDataFromMagicLinkToken(token) {
         const email = await magicLinkService.getUserFromToken(token);
-        const {labels = [], ip, name = ''} = await magicLinkService.getPayloadFromToken(token);
+        const {labels = [], ip, name = '', oldEmail} = await magicLinkService.getPayloadFromToken(token);
         if (!email) {
             return null;
         }
 
-        const member = await getMemberIdentityData(email);
-
+        const member = oldEmail ? await getMemberIdentityData(oldEmail) : await getMemberIdentityData(email);
         let geolocation;
         if (ip && (!member || !member.geolocation)) {
             try {
@@ -116,9 +115,16 @@ module.exports = function MembersApi({
         }
 
         if (member) {
-            // user exists but doesn't have geolocation yet so update it
-            if (geolocation) {
-                member.geolocation = geolocation;
+            if (geolocation || oldEmail) {
+                // user exists but doesn't have geolocation yet so update it
+                if (geolocation) {
+                    member.geolocation = geolocation;
+                }
+
+                // user exists but wants to change their email address
+                if (oldEmail) {
+                    member.email = email;
+                }
                 await users.update(member, {id: member.id});
                 return getMemberIdentityData(email);
             }
@@ -149,7 +155,7 @@ module.exports = function MembersApi({
 
     middleware.sendMagicLink.use(body.json(), async function (req, res) {
         const {ip, body} = req;
-        const {email, emailType} = body;
+        const {email, emailType, oldEmail} = body;
         const payload = {ip};
 
         if (!email) {
@@ -158,13 +164,22 @@ module.exports = function MembersApi({
         }
 
         try {
+            if (oldEmail) {
+                const existingMember = await users.get({email});
+                if (existingMember) {
+                    throw new common.errors.BadRequestError({
+                        message: 'This email is already associated with a member'
+                    });
+                }
+            }
             if (!allowSelfSignup) {
                 const member = await users.get({email});
                 if (member) {
+                    Object.assign(payload, _.pick(body, ['oldEmail']));
                     await sendEmailWithMagicLink({email, requestedType: emailType, payload});
                 }
             } else {
-                Object.assign(payload, _.pick(body, ['labels', 'name']));
+                Object.assign(payload, _.pick(body, ['labels', 'name', 'oldEmail']));
                 await sendEmailWithMagicLink({email, requestedType: emailType, payload});
             }
             res.writeHead(201);
