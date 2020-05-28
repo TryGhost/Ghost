@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const urlService = require('../../../../../../../frontend/services/url');
-const urlUtils = require('../../../../../../lib/url-utils');
+const urlUtils = require('../../../../../../../shared/url-utils');
 const localUtils = require('../../../index');
 
 const forPost = (id, attrs, frame) => {

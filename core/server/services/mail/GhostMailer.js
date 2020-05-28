@@ -7,7 +7,7 @@ const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
 const {i18n} = require('../../lib/common');
 const settingsCache = require('../settings/cache');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 
 const helpMessage = i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://ghost.org/docs/concepts/config/#mail'});
 const defaultErrorMessage = i18n.t('errors.mail.failedSendingEmail.error');

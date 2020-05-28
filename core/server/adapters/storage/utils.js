@@ -1,4 +1,4 @@
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 /**
  * @TODO: move `events.js` to here - e.g. storageUtils.getStorage
  */

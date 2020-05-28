@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const config = require('../../../../shared/config');
 const {blogIcon} = require('../../../lib/image');
 const storage = require('../../../adapters/storage');
-const urlUtils = require('../../../lib/url-utils');
+const urlUtils = require('../../../../shared/url-utils');
 const settingsCache = require('../../../services/settings/cache');
 
 let content;

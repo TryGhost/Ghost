@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const hbs = require('./engine');
-const urlUtils = require('../../../server/lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const config = require('../../../shared/config');
 const {i18n} = require('../../../server/lib/common');
 const errors = require('@tryghost/errors');

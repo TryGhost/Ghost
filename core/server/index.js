@@ -14,7 +14,7 @@ const Promise = require('bluebird');
 const config = require('../shared/config');
 const {events, i18n, logging} = require('./lib/common');
 const migrator = require('./data/db/migrator');
-const urlUtils = require('./lib/url-utils');
+const urlUtils = require('./../shared/url-utils');
 let parentApp;
 
 // Frontend Components

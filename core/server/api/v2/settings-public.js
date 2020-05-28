@@ -1,5 +1,5 @@
 const settingsCache = require('../../services/settings/cache');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 
 module.exports = {
     docName: 'settings',

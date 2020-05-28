@@ -13,7 +13,7 @@
 //  req.path =  /ghost/signin/
 
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../lib/url-utils');
+const urlUtils = require('../../../../shared/url-utils');
 const {i18n} = require('../../../lib/common');
 const localUtils = require('../utils');
 
