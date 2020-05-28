@@ -216,7 +216,7 @@ const configureGrunt = function (grunt) {
                         git submodule update
 
                         if ! git diff --exit-code --quiet --ignore-submodules=untracked; then
-                            echo "Working directory is not clean, do you have uncommited changes? Please commit, stash or discard changes to continue."
+                            echo "Working directory is not clean, do you have uncommitted changes? Please commit, stash or discard changes to continue."
                             exit 1
                         fi
 
