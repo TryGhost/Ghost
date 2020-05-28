@@ -131,7 +131,7 @@
                         </button>
                         {{svg-jar "arrow-right"}}
                     </li>
-                    {{#if (and this.feature.members (eq this.post.displayName "post") this.session.user.isOwnerOrAdmin)}}
+                    {{#if (and this.feature.members (eq this.post.displayName "post") showEmailNewsletter)}}
                         <li class="nav-list-item" {{action "showSubview" "email-settings"}} data-test-button="email-settings">
                             <button type="button">
                                 <b>Email newsletter</b>
