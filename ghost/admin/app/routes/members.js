@@ -8,7 +8,8 @@ export default class MembersRoute extends AuthenticatedRoute {
     @service store;
 
     queryParams = {
-        label: {refreshModel: true}
+        label: {refreshModel: true},
+        searchParam: {refreshModel: true, replace: true}
     };
 
     // redirect to posts screen if:
@@ -24,12 +25,17 @@ export default class MembersRoute extends AuthenticatedRoute {
     }
 
     model(params) {
+        if (!params.searchParam) {
+            this.controllerFor('members').resetSearch();
+        }
+
         // use a fixed created_at date so that subsequent pages have a consistent index
         let startDate = new Date();
 
         // bypass the stale data shortcut if params change
-        let forceReload = params.label !== this._lastLabel;
+        let forceReload = params.label !== this._lastLabel || params.searchParam !== this._lastSearchParam;
         this._lastLabel = params.label;
+        this._lastSearchParam = params.searchParam;
 
         // unless we have a forced reload, do not re-fetch the members list unless it's more than a minute old
         // keeps navigation between list->details->list snappy
@@ -46,7 +52,8 @@ export default class MembersRoute extends AuthenticatedRoute {
                 limit: range.length,
                 page: range.start / range.length,
                 order: 'created_at desc',
-                filter: `${labelFilter}created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`
+                filter: `${labelFilter}created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`,
+                search: params.searchParam
             }, query);
 
             return this.store.query('member', query).then((result) => {
