@@ -13,7 +13,7 @@ const ghost = require('./core');
 debug('Required ghost');
 
 const express = require('./core/shared/express');
-const {logging} = require('./core/server/lib/common');
+const logging = require('./core/shared/logging');
 const urlService = require('./core/frontend/services/url');
 // This is what listen gets called on, it needs to be a full Express App
 const ghostApp = express('ghost');

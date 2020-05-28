@@ -1,7 +1,8 @@
 const moment = require('moment-timezone');
 const _ = require('lodash');
 const models = require('../../models');
-const {events, logging} = require('../../lib/common');
+const {events} = require('../../lib/common');
+const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const sequence = require('../../lib/promise/sequence');
 

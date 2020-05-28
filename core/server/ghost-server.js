@@ -9,7 +9,8 @@ const _ = require('lodash');
 const config = require('../shared/config');
 const urlUtils = require('./../shared/url-utils');
 const errors = require('@tryghost/errors');
-const {events, i18n, logging} = require('./lib/common');
+const {events, i18n} = require('./lib/common');
+const logging = require('../shared/logging');
 const moment = require('moment');
 
 /**

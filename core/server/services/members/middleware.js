@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const {logging} = require('../../lib/common');
+const logging = require('../../../shared/logging');
 const config = require('../../../shared/config');
 const labsService = require('../labs');
 const membersService = require('./index');

@@ -1,4 +1,4 @@
-const {logging} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const debug = require('ghost-ignition').debug('migrations');
 
 module.exports.config = {

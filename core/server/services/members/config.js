@@ -3,7 +3,7 @@ const settingsCache = require('../settings/cache');
 const ghostVersion = require('../../lib/ghost-version');
 const crypto = require('crypto');
 const path = require('path');
-const {logging} = require('../../lib/common');
+const logging = require('../../../shared/logging');
 const urlUtils = require('../../../shared/url-utils');
 
 const COMPLIMENTARY_PLAN = {

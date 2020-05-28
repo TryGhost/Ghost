@@ -1,5 +1,5 @@
 const EventEmitter = require('events').EventEmitter;
-const {logging} = require('../../../server/lib/common');
+const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 
 /**

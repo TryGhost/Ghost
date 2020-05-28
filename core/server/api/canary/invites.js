@@ -1,5 +1,6 @@
 const Promise = require('bluebird');
-const {i18n, logging} = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const security = require('../../lib/security');
 const mailService = require('../../services/mail');

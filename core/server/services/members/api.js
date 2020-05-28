@@ -1,6 +1,6 @@
 const settingsCache = require('../settings/cache');
 const MembersApi = require('@tryghost/members-api');
-const {logging} = require('../../lib/common');
+const logging = require('../../../shared/logging');
 const mail = require('../mail');
 const models = require('../../models');
 const signinEmail = require('./emails/signin');

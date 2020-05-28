@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const {logging} = require('./common');
+const logging = require('../../shared/logging');
 const config = require('../../shared/config');
 
 let cardFactory;
