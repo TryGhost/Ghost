@@ -38,6 +38,9 @@ ghostBookshelf.plugin(plugins.transactionEvents);
 // Load the Ghost filter plugin, which handles applying a 'filter' to findPage requests
 ghostBookshelf.plugin(plugins.filter);
 
+// Load the Ghost search plugin, which handles applying a search query to findPage requests
+ghostBookshelf.plugin(plugins.search);
+
 // Load the Ghost include count plugin, which allows for the inclusion of cross-table counts
 ghostBookshelf.plugin(plugins.includeCount);
 
@@ -884,6 +887,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         // Add Filter behaviour
         itemCollection.applyDefaultAndCustomFilters(options);
+
+        // Apply model-specific search behaviour
+        itemCollection.applySearchQuery(options);
 
         // Ensure only valid fields/columns are added to query
         // and append default columns to fetch

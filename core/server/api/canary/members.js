@@ -104,7 +104,8 @@ const members = {
             'filter',
             'order',
             'debug',
-            'page'
+            'page',
+            'search'
         ],
         permissions: true,
         validation: {},
