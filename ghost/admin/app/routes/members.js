@@ -25,7 +25,9 @@ export default class MembersRoute extends AuthenticatedRoute {
     }
 
     model(params) {
-        if (!params.searchParam) {
+        const {label, searchParam} = params;
+
+        if (!searchParam) {
             this.controllerFor('members').resetSearch();
         }
 
@@ -33,9 +35,9 @@ export default class MembersRoute extends AuthenticatedRoute {
         let startDate = new Date();
 
         // bypass the stale data shortcut if params change
-        let forceReload = params.label !== this._lastLabel || params.searchParam !== this._lastSearchParam;
-        this._lastLabel = params.label;
-        this._lastSearchParam = params.searchParam;
+        let forceReload = label !== this._lastLabel || searchParam !== this._lastSearchParam;
+        this._lastLabel = label;
+        this._lastSearchParam = searchParam;
 
         // unless we have a forced reload, do not re-fetch the members list unless it's more than a minute old
         // keeps navigation between list->details->list snappy
@@ -46,15 +48,15 @@ export default class MembersRoute extends AuthenticatedRoute {
         this._startDate = startDate;
 
         return this.ellaSparse.array((range = {}, query = {}) => {
-            const labelFilter = params.label ? `label:'${params.label}'+` : '';
+            const labelFilter = label ? `label:'${label}'+` : '';
+            const searchQuery = searchParam ? {search: searchParam} : {};
 
             query = Object.assign({
                 limit: range.length,
                 page: range.start / range.length,
                 order: 'created_at desc',
-                filter: `${labelFilter}created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`,
-                search: params.searchParam
-            }, query);
+                filter: `${labelFilter}created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`
+            }, searchQuery, query);
 
             return this.store.query('member', query).then((result) => {
                 return {
