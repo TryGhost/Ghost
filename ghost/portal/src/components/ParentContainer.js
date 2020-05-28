@@ -185,8 +185,8 @@ export default class ParentContainer extends React.Component {
             } else if (action === 'editBilling') {
                 await this.GhostApi.member.editBilling();
             } else if (action === 'updateMember') {
-                const {email, name, subscribed} = data;
-                const member = await this.GhostApi.member.update({email, name, subscribed});
+                const {name, subscribed} = data;
+                const member = await this.GhostApi.member.update({name, subscribed});
                 if (!member) {
                     this.setState({
                         action: 'updateMember:failed'
