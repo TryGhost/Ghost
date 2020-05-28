@@ -68,7 +68,7 @@ const getMemberData = async function (req, res) {
 
 const updateMemberData = async function (req, res) {
     try {
-        const data = _.pick(req.body, 'email', 'name', 'subscribed');
+        const data = _.pick(req.body, 'name', 'subscribed');
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         if (member) {
             const updatedMember = await membersService.api.members.update(data, {id: member.id});
