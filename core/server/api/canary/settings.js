@@ -3,8 +3,9 @@ const _ = require('lodash');
 const models = require('../../models');
 const routing = require('../../../frontend/services/routing');
 const {i18n} = require('../../lib/common');
-const {NoPermissionError, NotFoundError} = require('@tryghost/errors');
+const {BadRequestError, NoPermissionError, NotFoundError} = require('@tryghost/errors');
 const settingsCache = require('../../services/settings/cache');
+const membersService = require('../../services/members');
 
 const SETTINGS_BLACKLIST = [
     'members_public_key',
@@ -101,7 +102,13 @@ module.exports = {
             }
         },
         async query(frame) {
-            const settings = frame.data.settings;
+            const stripeConnectIntegrationToken = frame.data.settings.find(setting => setting.key === 'stripe_connect_integration_token');
+
+            // The `stripe_connect_integration_token` "setting" is only used to set the `stripe_connect_integration` setting.
+            // The `stripe_connect_integration` setting is not allowed to be set directly.
+            const settings = frame.data.settings.filter((setting) => {
+                return !['stripe_connect_integration', 'stripe_connect_integration_token'].includes(setting.key);
+            });
 
             const getSetting = setting => settingsCache.get(setting.key, {resolve: false});
 
@@ -120,6 +127,21 @@ module.exports = {
                 if (firstCoreSetting) {
                     throw new NoPermissionError({
                         message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
+                    });
+                }
+            }
+
+            if (stripeConnectIntegrationToken) {
+                const getSessionProp = prop => frame.original.session[prop];
+                try {
+                    const data = await membersService.stripeConnect.getStripeConnectTokenData(stripeConnectIntegrationToken.value, getSessionProp);
+                    settings.push({
+                        key: 'stripe_connect_integration',
+                        value: JSON.stringify(data)
+                    });
+                } catch (err) {
+                    throw new BadRequestError({
+                        message: 'The Stripe Connect token could not be parsed.'
                     });
                 }
             }
