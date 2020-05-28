@@ -89,13 +89,23 @@ export default class AccountPlanPage extends React.Component {
                     selectedPlan={this.state.plan}
                     onPlanSelect={(e, name) => this.onPlanSelect(e, name)}
                 />
-                <ActionButton
-                    label="Continue"
-                    onClick={e => this.onPlanCheckout(e)}
-                    brandColor={this.context.brandColor}
-                    style={{button: {marginTop: '12px'}}}
-                />
+                {this.renderActionButton()}
             </div>
+        );
+    }
+
+    renderActionButton() {
+        const isRunning = ['updateSubscription:running', 'checkoutPlan:running'].includes(this.context.action);
+        const label = isRunning ? 'Updating...' : 'Continue';
+        const disabled = isRunning ? true : false;
+        return (
+            <ActionButton
+                style={{button: {marginTop: '12px'}}}
+                onClick={e => this.onPlanCheckout(e)}
+                disabled={disabled}
+                brandColor={this.context.brandColor}
+                label={label}
+            />
         );
     }
 
