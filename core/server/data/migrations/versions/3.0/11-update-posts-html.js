@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const htmlToText = require('html-to-text');
-const {logging} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const mobiledocLib = require('../../../../lib/mobiledoc');
 
 module.exports.config = {

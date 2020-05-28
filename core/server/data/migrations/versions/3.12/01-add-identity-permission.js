@@ -1,5 +1,5 @@
 const ObjectId = require('bson-objectid');
-const {logging} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 
 module.exports.config = {
     transaction: true

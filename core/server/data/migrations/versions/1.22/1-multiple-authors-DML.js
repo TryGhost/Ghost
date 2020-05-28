@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const ObjectId = require('bson-objectid');
-const {logging} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const models = require('../../../../models');
 
 module.exports.config = {

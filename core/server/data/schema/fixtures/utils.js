@@ -3,7 +3,7 @@
 const _ = require('lodash');
 
 const Promise = require('bluebird');
-const {logging} = require('../../../lib/common');
+const logging = require('../../../../shared/logging');
 const models = require('../../../models');
 const baseUtils = require('../../../models/base/utils');
 const sequence = require('../../../lib/promise/sequence');

@@ -1,7 +1,7 @@
 const debug = require('ghost-ignition').debug('utils:image-size-cache');
 const imageSize = require('./image-size');
 const errors = require('@tryghost/errors');
-const {logging} = require('../common');
+const logging = require('../../../shared/logging');
 const cache = {};
 
 /**

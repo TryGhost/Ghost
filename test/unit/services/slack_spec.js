@@ -7,7 +7,8 @@ const configUtils = require('../../utils/configUtils');
 // Stuff we test
 const slack = rewire('../../../core/server/services/slack');
 
-const {logging, events} = require('../../../core/server/lib/common');
+const {events} = require('../../../core/server/lib/common');
+const logging = require('../../../core/shared/logging');
 const imageLib = require('../../../core/server/lib/image');
 const urlService = require('../../../core/frontend/services/url');
 const schema = require('../../../core/server/data/schema').checks;
