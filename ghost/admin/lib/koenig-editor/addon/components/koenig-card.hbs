@@ -22,7 +22,7 @@
     <KgActionBar @class="absolute" @style={{this.toolbarStyle}} @isVisible={{this.shouldShowToolbar}}>
         {{#each this.toolbar.items as |item|}}
             {{#if item.divider}}
-                <li class="ma0 kg-action-bar-divider bg-darkgrey-d2 h5"></li>
+                <li class="ma0 kg-action-bar-divider bg-darkgrey-d2 h5" role="separator"></li>
             {{else}}
                 <li class="ma0 lh-solid">
                     <button

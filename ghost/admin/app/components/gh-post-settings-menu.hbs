@@ -3,7 +3,7 @@
         <div class="{{if this.isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
             <div class="settings-menu-header">
                 <h4>{{capitalize this.post.displayName}} settings</h4>
-                <button class="close settings-menu-header-action" {{action "closeMenus" target=this.ui}} data-test-close-settings-menu>
+                <button aria-label="Close" class="close settings-menu-header-action" {{action "closeMenus" target=this.ui}} data-test-close-settings-menu>
                     {{svg-jar "close"}}<span class="hidden">Close</span>
                 </button>
             </div>
@@ -182,7 +182,7 @@
                 {{#if this.isViewingSubview}}
                     {{#if (eq this.subview "meta-data")}}
                         <div class="settings-menu-header subview">
-                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <button aria-label="Back" {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
                             <h4>Meta data</h4>
                             <div style="width:23px;"></div>
                         </div>
@@ -246,7 +246,7 @@
 
                     {{#if (eq this.subview "twitter-data")}}
                         <div class="settings-menu-header subview">
-                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <button aria-label="Back" {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
                             <h4>Twitter card</h4>
                             <div style="width:23px;"></div>
                         </div>
@@ -326,7 +326,7 @@
 
                     {{#if (eq this.subview "facebook-data")}}
                         <div class="settings-menu-header subview">
-                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <button aria-label="Back" {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
                             <h4>Facebook card</h4>
                             <div style="width:23px;"></div>
                         </div>
@@ -395,7 +395,7 @@
 
                     {{#if (eq this.subview "codeinjection")}}
                         <div class="settings-menu-header subview">
-                            <button {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <button aria-label="Back" {{action "closeSubview"}} class="back settings-menu-header-action" data-test-button="close-psm-subview">{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
                             <h4>Code injection</h4>
                             <div style="width:23px;"></div>
                         </div>

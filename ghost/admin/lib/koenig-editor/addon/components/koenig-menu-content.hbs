@@ -4,8 +4,8 @@
     </div>
     {{#each section.items as |item|}}
         {{#if (or (not item.developerExperiment) (and item.developerExperiment config.enableDeveloperExperiments))}}
-            <div class="{{if item.selected "kg-cardmenu-card-selected"}} {{kg-style "cardmenu-card"}}" onclick={{action itemClicked item}} data-kg="cardmenu-card">
-                <div class="{{kg-style "cardmenu-icon"}} {{item.iconClass}}">{{svg-jar item.icon class="w8 h8"}}</div>
+            <div class="{{if item.selected "kg-cardmenu-card-selected"}} {{kg-style "cardmenu-card"}}" onclick={{action itemClicked item}} data-kg="cardmenu-card" role="menuitem">
+                <div class="{{kg-style "cardmenu-icon"}} {{item.iconClass}}" aria-hidden="true">{{svg-jar item.icon class="w8 h8"}}</div>
                 <div class="{{kg-style "cardmenu-label"}}">{{item.label}}</div>
             </div>
         {{/if}}
