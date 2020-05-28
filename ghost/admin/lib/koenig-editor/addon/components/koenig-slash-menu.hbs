@@ -1,5 +1,5 @@
 {{#if (and this.showMenu this.itemSections)}}
-    <div class="koenig-cardmenu {{kg-style "cardmenu"}}">
+    <div class="koenig-cardmenu {{kg-style "cardmenu"}}" role="menu">
         <KoenigMenuContent @itemSections={{this.itemSections}} @itemClicked={{action "itemClicked"}} />
     </div>
 {{/if}}
