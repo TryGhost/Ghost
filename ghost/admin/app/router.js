@@ -61,17 +61,11 @@ Router.map(function () {
     this.route('settings.integrations.unsplash', {path: '/settings/integrations/unsplash'});
     this.route('settings.integrations.zapier', {path: '/settings/integrations/zapier'});
 
-    this.route('members', {path: '/members-dev'}, function () {
+    this.route('members', function () {
         this.route('import');
     });
-    this.route('member.new', {path: '/members-dev/new'});
-    this.route('member', {path: '/members-dev/:member_id'});
-
-    this.route('members-old', {path: '/members'}, function () {
-        this.route('import');
-    });
-    this.route('member-old.new', {path: '/members/new'});
-    this.route('member-old', {path: '/members/:member_id'});
+    this.route('member.new', {path: '/members/new'});
+    this.route('member', {path: '/members/:member_id'});
 
     this.route('error404', {path: '/*path'});
 });
