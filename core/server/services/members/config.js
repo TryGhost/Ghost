@@ -82,6 +82,33 @@ class MembersConfigProvider {
         }
     }
 
+    /**
+     * @function getStripeAPIKeys
+     * @desc Gets the stripe api keys from settings, respecting the stripeDirect config
+     *
+     * @param {string} publicKey - The publicKey to use if stripeDirect is enabled
+     * @param {string} secretKey - The secretKey to use if stripeDirect is enabled
+     *
+     * @returns {{publicKey: string, secretKey: string}}
+     */
+    getStripeAPIKeys(publicKey, secretKey) {
+        const stripeDirect = this._config.get('stripeDirect');
+        const stripeConnectIntegration = this._settingsCache.get('stripe_connect_integration');
+        const hasStripeConnectKeys = stripeConnectIntegration.secret_key && stripeConnectIntegration.public_key;
+
+        if (stripeDirect || !hasStripeConnectKeys) {
+            return {
+                publicKey,
+                secretKey
+            };
+        }
+
+        return {
+            publicKey: stripeConnectIntegration.public_key,
+            secretKey: stripeConnectIntegration.secret_key
+        };
+    }
+
     getStripePaymentConfig() {
         const subscriptionSettings = this._settingsCache.get('members_subscription_settings');
 
@@ -114,9 +141,14 @@ class MembersConfigProvider {
         const billingCancelUrl = new URL(siteUrl);
         billingCancelUrl.searchParams.set('stripe', 'billing-update-cancel');
 
+        const stripeApiKeys = this.getStripeAPIKeys(
+            stripePaymentProcessor.config.public_token,
+            stripePaymentProcessor.config.secret_token
+        );
+
         return {
-            publicKey: stripePaymentProcessor.config.public_token,
-            secretKey: stripePaymentProcessor.config.secret_token,
+            publicKey: stripeApiKeys.publicKey,
+            secretKey: stripeApiKeys.secretKey,
             checkoutSuccessUrl: checkoutSuccessUrl.href,
             checkoutCancelUrl: checkoutCancelUrl.href,
             billingSuccessUrl: billingSuccessUrl.href,
