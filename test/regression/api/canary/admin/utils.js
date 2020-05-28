@@ -17,6 +17,7 @@ const expectedProperties = {
     slug: ['slug'],
     invites: ['invites', 'meta'],
     themes: ['themes'],
+    members: ['members', 'meta'],
 
     post: _(schema.posts)
         .keys()
