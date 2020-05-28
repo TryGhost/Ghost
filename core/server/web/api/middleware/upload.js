@@ -4,7 +4,8 @@ const multer = require('multer');
 const fs = require('fs-extra');
 const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
-const {i18n,logging} = require('../../../lib/common');
+const {i18n} = require('../../../lib/common');
+const logging = require('../../../../shared/logging');
 
 const upload = {
     enabledClear: config.get('uploadClear') || true,

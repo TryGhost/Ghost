@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('themes');
-const {events, i18n: commonI18n, logging} = require('../../../server/lib/common');
+const {events, i18n: commonI18n} = require('../../../server/lib/common');
+const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const themeLoader = require('./loader');
 const active = require('./active');

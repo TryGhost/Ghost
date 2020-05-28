@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const {logging} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const commands = require('../../../schema').commands;
 const table = 'posts';
 const columns = ['og_image', 'og_title', 'og_description', 'twitter_image', 'twitter_title', 'twitter_description'];

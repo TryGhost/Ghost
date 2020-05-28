@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const {logging} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const commands = require('../../../schema').commands;
 const table = 'posts';
 const columns = ['codeinjection_head', 'codeinjection_foot'];

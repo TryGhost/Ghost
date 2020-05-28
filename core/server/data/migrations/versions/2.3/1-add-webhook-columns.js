@@ -1,4 +1,4 @@
-const {logging} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const commands = require('../../../schema').commands;
 const table = 'webhooks';
 const newColumnNames = [

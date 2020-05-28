@@ -1,6 +1,6 @@
 const {URL} = require('url');
 const mailgun = require('mailgun-js');
-const {logging} = require('../../lib/common');
+const logging = require('../../../shared/logging');
 const configService = require('../../../shared/config');
 const settingsCache = require('../settings/cache');
 

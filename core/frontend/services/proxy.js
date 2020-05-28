@@ -4,7 +4,8 @@
 const hbs = require('./themes/engine');
 const errors = require('@tryghost/errors');
 
-const {i18n, logging} = require('../../server/lib/common');
+const {i18n} = require('../../server/lib/common');
+const logging = require('../../shared/logging');
 const settingsCache = require('../../server/services/settings/cache');
 const config = require('../../shared/config');
 

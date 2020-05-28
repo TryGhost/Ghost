@@ -1,4 +1,4 @@
-const {logging} = require('../../../lib/common');
+const logging = require('../../../../shared/logging');
 
 /**
  * @TODO: move this middleware to ignition?

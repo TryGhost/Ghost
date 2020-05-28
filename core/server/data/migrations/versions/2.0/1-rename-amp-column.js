@@ -1,4 +1,4 @@
-const {logging} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const table = 'posts';
 const columnNameOld = 'amp';
 const columnNameNew = 'comment_id';

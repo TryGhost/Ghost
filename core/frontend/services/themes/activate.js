@@ -1,4 +1,5 @@
-const {events, logging, i18n} = require('../../../server/lib/common');
+const {events, i18n} = require('../../../server/lib/common');
+const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const active = require('./active');
 

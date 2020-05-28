@@ -1,19 +1,18 @@
-const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const nock = require('nock');
-const http = require('http');
 const rewire = require('rewire');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const xmlrpc = rewire('../../../core/server/services/xmlrpc');
-const common = require('../../../core/server/lib/common');
+const {events} = require('../../../core/server/lib/common');
+const logging = require('../../../core/shared/logging');
 
 describe('XMLRPC', function () {
     let eventStub;
 
     beforeEach(function () {
-        eventStub = sinon.stub(common.events, 'on');
+        eventStub = sinon.stub(events, 'on');
         configUtils.set('privacy:useRpcPing', true);
     });
 
@@ -124,7 +123,7 @@ describe('XMLRPC', function () {
         it('captures && logs errors from requests', function (done) {
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
             const ping1 = nock('http://rpc.pingomatic.com').post('/').reply(400);
-            const loggingStub = sinon.stub(common.logging, 'error');
+            const loggingStub = sinon.stub(logging, 'error');
 
             ping(testPost);
 
@@ -167,7 +166,7 @@ describe('XMLRPC', function () {
                </params>
              </methodResponse>`);
 
-            const loggingStub = sinon.stub(common.logging, 'error');
+            const loggingStub = sinon.stub(logging, 'error');
 
             ping(testPost);
 
@@ -210,7 +209,7 @@ describe('XMLRPC', function () {
                </params>
              </methodResponse>`).replace('\n', ''));
 
-            const loggingStub = sinon.stub(common.logging, 'error');
+            const loggingStub = sinon.stub(logging, 'error');
 
             ping(testPost);
 
@@ -243,7 +242,7 @@ describe('XMLRPC', function () {
                   </params>
                 </methodResponse>`);
 
-            const loggingStub = sinon.stub(common.logging, 'error');
+            const loggingStub = sinon.stub(logging, 'error');
 
             ping(testPost);
 

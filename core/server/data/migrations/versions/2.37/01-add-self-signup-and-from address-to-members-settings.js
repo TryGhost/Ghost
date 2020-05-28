@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const {logging} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 
 module.exports.config = {
     transaction: true

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const {logging} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const models = require('../../../../models');
 const fixtures = require('../../../../data/schema/fixtures');
 const message1 = 'Adding demo post.';

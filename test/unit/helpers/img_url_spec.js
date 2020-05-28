@@ -5,13 +5,13 @@ const urlUtils = require('../../utils/urlUtils');
 // Stuff we are testing
 const helpers = require('../../../core/frontend/helpers');
 
-const common = require('../../../core/server/lib/common');
+const logging = require('../../../core/shared/logging');
 
 describe('{{image}} helper', function () {
     let logWarnStub;
 
     beforeEach(function () {
-        logWarnStub = sinon.stub(common.logging, 'warn');
+        logWarnStub = sinon.stub(logging, 'warn');
     });
 
     afterEach(function () {

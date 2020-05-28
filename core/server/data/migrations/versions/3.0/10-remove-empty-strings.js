@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const {logging} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const schema = require('../../../schema');
 
 /*
