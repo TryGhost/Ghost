@@ -71,6 +71,10 @@ module.exports = {
         return shared.pipeline(require('./settings'), localUtils);
     },
 
+    get membersStripeConnect() {
+        return shared.pipeline(require('./membersStripeConnect'), localUtils);
+    },
+
     get members() {
         return shared.pipeline(require('./members'), localUtils);
     },
