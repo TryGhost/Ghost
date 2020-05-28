@@ -31,7 +31,7 @@
 
         <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap middarkgrey f8 {{if (not @member.name) "gh-members-subscribed-noname"}}">
             {{#if @member.createdAtUTC}}
-                {{moment-format @member.createdAtUTC "MMM DD, YYYY"}} <span class="midlightgrey">({{this.memberSince}})</span>
+                {{moment-format @member.createdAtUTC "MMM DD, YYYY"}} <span class="midlightgrey">({{moment-from-now @member.createdAtUTC}})</span>
             {{/if}}
         </LinkTo>
 
