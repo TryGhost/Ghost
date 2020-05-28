@@ -166,6 +166,11 @@ export default class ParentContainer extends React.Component {
                     action: 'signup:success',
                     page: 'magiclink'
                 });
+            } else if (action === 'updateEmail') {
+                await this.GhostApi.member.sendMagicLink(data);
+                this.setState({
+                    action: 'updateEmail:success'
+                });
             } else if (action === 'checkoutPlan') {
                 const {plan} = data;
                 await this.GhostApi.member.checkoutPlan({
