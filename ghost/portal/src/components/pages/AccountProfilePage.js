@@ -11,9 +11,10 @@ export default class AccountProfilePage extends React.Component {
 
     constructor(props, context) {
         super(props, context);
+        const {name = '', email = ''} = context.member;
         this.state = {
-            name: this.context.member.name || '',
-            email: this.context.member.email || ''
+            name,
+            email
         };
     }
 
@@ -28,6 +29,10 @@ export default class AccountProfilePage extends React.Component {
 
     onProfileSave(e) {
         const {email, name} = this.state;
+        const originalEmail = this.context.member.email;
+        if (email !== originalEmail) {
+            this.context.onAction('updateEmail', {email, oldEmail: originalEmail, emailType: 'updateEmail'});
+        }
         this.context.onAction('updateMember', {email, name});
     }
 
@@ -115,8 +120,7 @@ export default class AccountProfilePage extends React.Component {
                 value: this.state.email,
                 placeholder: 'Email...',
                 label: 'Email',
-                name: 'email',
-                disabled: true
+                name: 'email'
             }
         };
         const field = fields[fieldName];

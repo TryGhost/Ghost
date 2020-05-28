@@ -67,7 +67,7 @@ function setupGhostApi() {
             });
         },
 
-        update({email, name, subscribed}) {
+        update({name, subscribed}) {
             const url = endpointFor({type: 'members', resource: 'member'});
             return makeRequest({
                 url,
@@ -77,7 +77,6 @@ function setupGhostApi() {
                 },
                 credentials: 'same-origin',
                 body: JSON.stringify({
-                    email,
                     name,
                     subscribed
                 })
@@ -89,7 +88,7 @@ function setupGhostApi() {
             });
         },
 
-        sendMagicLink({email, emailType, labels, name}) {
+        sendMagicLink({email, emailType, labels, name, oldEmail}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             return makeRequest({
                 url,
@@ -100,6 +99,7 @@ function setupGhostApi() {
                 body: JSON.stringify({
                     name,
                     email,
+                    oldEmail,
                     emailType,
                     labels
                 })
