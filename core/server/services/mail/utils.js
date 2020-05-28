@@ -2,7 +2,7 @@ const _ = require('lodash').runInContext();
 const fs = require('fs-extra');
 const path = require('path');
 const htmlToText = require('html-to-text');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../settings/cache');
 const templatesDir = path.resolve(__dirname, '..', 'mail', 'templates');
 

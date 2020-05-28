@@ -1,7 +1,7 @@
 const cors = require('cors');
 const url = require('url');
 const os = require('os');
-const urlUtils = require('../../../lib/url-utils');
+const urlUtils = require('../../../../shared/url-utils');
 
 let whitelist = [];
 const ENABLE_CORS = {origin: true, maxAge: 86400};

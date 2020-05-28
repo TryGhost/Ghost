@@ -1,5 +1,5 @@
 const schema = require('../../server/data/schema').checks;
-const urlUtils = require('../../server/lib/url-utils');
+const urlUtils = require('../../shared/url-utils');
 const urlService = require('../services/url');
 
 // This cleans the url from any `/amp` postfixes, so we'll never

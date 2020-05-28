@@ -66,6 +66,6 @@ module.exports = {
     socialUrls: require('@tryghost/social-urls'),
     blogIcon: require('../../server/lib/image/blog-icon'),
     urlService: require('./url'),
-    urlUtils: require('../../server/lib/url-utils'),
+    urlUtils: require('../../shared/url-utils'),
     localUtils: require('./themes/handlebars/utils')
 };

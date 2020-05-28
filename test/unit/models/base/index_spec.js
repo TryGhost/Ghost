@@ -5,7 +5,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const security = require('../../../../core/server/lib/security');
 const models = require('../../../../core/server/models');
-const urlUtils = require('../../../../core/server/lib/url-utils');
+const urlUtils = require('../../../../core/shared/url-utils');
 const testUtils = require('../../../utils');
 
 describe('Models: base', function () {
