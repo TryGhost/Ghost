@@ -2,7 +2,7 @@
     <h1>Invite a New User</h1>
 </header>
 {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
-<a class="close" href title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
+<a class="close" href role="button" title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
     {{svg-jar "close"}}<span class="hidden">Close</span>
 </a>
 
