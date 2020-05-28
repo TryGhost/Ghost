@@ -6,13 +6,12 @@ const models = require('../../models');
 const signinEmail = require('./emails/signin');
 const signupEmail = require('./emails/signup');
 const subscribeEmail = require('./emails/subscribe');
-const config = require('./config');
 
 const ghostMailer = new mail.GhostMailer();
 
 module.exports = createApiInstance;
 
-function createApiInstance() {
+function createApiInstance(config) {
     const membersApiInstance = MembersApi({
         tokenConfig: config.getTokenConfig(),
         auth: {
