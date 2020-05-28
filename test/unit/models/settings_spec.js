@@ -4,6 +4,7 @@ const mockDb = require('mock-knex');
 const models = require('../../../core/server/models');
 const {knex} = require('../../../core/server/data/db');
 const {events} = require('../../../core/server/lib/common');
+const defaultSettings = require('../../../core/server/data/schema/default-settings');
 
 describe('Unit: models/settings', function () {
     before(function () {
@@ -113,8 +114,12 @@ describe('Unit: models/settings', function () {
 
             return models.Settings.populateDefaults()
                 .then(() => {
+                    const numberOfSettings = Object.keys(defaultSettings).reduce((settings, settingGroup) => {
+                        return settings.concat(Object.keys(defaultSettings[settingGroup]));
+                    }, []).length;
                     // 2 events per item - settings.added and settings.[name].added
-                    eventSpy.callCount.should.equal(92);
+                    eventSpy.callCount.should.equal(numberOfSettings * 2);
+
                     const eventsEmitted = eventSpy.args.map(args => args[0]);
                     const checkEventEmitted = event => should.ok(eventsEmitted.includes(event), `${event} event should be emitted`);
 
