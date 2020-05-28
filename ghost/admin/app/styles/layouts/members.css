@@ -45,6 +45,10 @@
 /* Members list
 /* ----------------------------------------- */
 
+.members-list {
+    table-layout: fixed;
+}
+
 .members-header .view-actions input.gh-members-list-searchfield {
     min-width: 220px;
     padding-left: 30px;
@@ -160,7 +164,7 @@ p.gh-members-list-email {
 }
 
 .gh-members-not-found-for-label {
-    
+
 }
 
 /* .members-header .gh-member */

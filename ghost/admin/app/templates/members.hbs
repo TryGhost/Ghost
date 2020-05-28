@@ -58,9 +58,9 @@
                     {{#if this.members}}
                         <li class="gh-list-row header">
                             <div class="gh-list-header">{{this.listHeader}}</div>
-                            <div class="gh-list-header gh-list-cellwidth-20 nowrap">Location</div>
-                            <div class="gh-list-header gh-list-cellwidth-20 nowrap">Created</div>
-                            <div class="gh-list-header gh-list-cellwidth-chevron"></div>
+                            <div class="gh-list-header gh-members-list-geolocation gh-list-cellwidth-20 nowrap">Location</div>
+                            <div class="gh-list-header gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap">Created</div>
+                            <div class="gh-list-header gh-members-list-chevron gh-list-cellwidth-chevron"></div>
                         </li>
                         <VerticalCollection @items={{this.members}} @key="id" @containerSelector=".gh-main" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
                             <GhMembersListItem @member={{member}} @data-test-member-id={{member.id}} />
