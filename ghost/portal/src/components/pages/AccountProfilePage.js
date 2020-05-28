@@ -31,17 +31,27 @@ export default class AccountProfilePage extends React.Component {
         this.context.onAction('updateMember', {email, name});
     }
 
+    renderSaveButton() {
+        const isRunning = (this.context.action === 'updateMember:running');
+        const label = isRunning ? 'Saving' : 'Save';
+        const disabled = isRunning ? true : false;
+        return (
+            <ActionButton
+                style={{button: {width: '120px'}}}
+                onClick={e => this.onProfileSave(e)}
+                disabled={disabled}
+                brandColor={this.context.brandColor}
+                label={label}
+            />
+        );
+    }
+
     renderAccountFooter() {
         return (
             <div style={{display: 'flex', padding: '0 24px', marginTop: '12px', color: this.context.brandColor, fontWeight: 'bold', fontSize: '13px', alignItems: 'center'}}>
                 <div style={{cursor: 'pointer', color: 'red'}} role='button'> Delete Account </div>
                 <div style={{display: 'flex', flexGrow: 1, justifyContent: 'flex-end'}}>
-                    <ActionButton
-                        style={{button: {width: '120px'}}}
-                        label="Save"
-                        onClick={e => this.onProfileSave(e)}
-                        brandColor={this.context.brandColor}
-                    />
+                    {this.renderSaveButton()}
                 </div>
             </div>
         );
