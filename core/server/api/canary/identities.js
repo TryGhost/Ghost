@@ -1,5 +1,5 @@
 const settings = require('../../services/settings/cache');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const jwt = require('jsonwebtoken');
 const jose = require('node-jose');
 const issuer = urlUtils.urlFor('admin', true);

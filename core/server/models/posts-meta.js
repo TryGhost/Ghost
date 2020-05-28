@@ -1,5 +1,5 @@
 const ghostBookshelf = require('./base');
-const urlUtils = require('../lib/url-utils');
+const urlUtils = require('../../shared/url-utils');
 
 const PostsMeta = ghostBookshelf.Model.extend({
     tableName: 'posts_meta',

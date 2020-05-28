@@ -14,7 +14,7 @@ const express = require('../../../shared/express');
 const _ = require('lodash');
 const url = require('url');
 const security = require('../../../server/lib/security');
-const urlUtils = require('../../../server/lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const registry = require('./registry');
 
 /**

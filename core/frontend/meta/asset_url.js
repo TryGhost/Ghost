@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const config = require('../../shared/config');
 const {blogIcon} = require('../../server/lib/image');
-const urlUtils = require('../../server/lib/url-utils');
+const urlUtils = require('../../shared/url-utils');
 
 /**
  * Serve either uploaded favicon or default

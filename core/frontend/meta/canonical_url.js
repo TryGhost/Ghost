@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const urlUtils = require('../../server/lib/url-utils');
+const urlUtils = require('../../shared/url-utils');
 const getUrl = require('./url');
 
 function getCanonicalUrl(data) {

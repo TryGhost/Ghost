@@ -1,6 +1,6 @@
 const {i18n} = require('../../../../server/lib/common');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../../server/lib/url-utils');
+const urlUtils = require('../../../../shared/url-utils');
 
 /**
  * @description Middleware, which validates and interprets the page param e.g. /page/1

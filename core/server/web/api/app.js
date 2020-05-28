@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('web:api:default:app');
 const express = require('../../../shared/express');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const errorHandler = require('../shared/middlewares/error-handler');
 
 module.exports = function setupApiApp() {

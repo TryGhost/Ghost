@@ -3,7 +3,7 @@ const config = require('../../../shared/config');
 const {events} = require('../../../server/lib/common');
 const ParentRouter = require('./ParentRouter');
 const RSSRouter = require('./RSSRouter');
-const urlUtils = require('../../../server/lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
 

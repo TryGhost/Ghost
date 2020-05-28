@@ -5,7 +5,7 @@ const localUtils = require('../utils');
 const {i18n, events} = require('../../../lib/common');
 const errors = require('@tryghost/errors');
 const models = require('../../../models');
-const urlUtils = require('../../../lib/url-utils');
+const urlUtils = require('../../../../shared/url-utils');
 const _private = {};
 const SCHEDULED_RESOURCES = ['post', 'page'];
 

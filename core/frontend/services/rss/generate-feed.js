@@ -2,7 +2,7 @@ const downsize = require('downsize');
 const Promise = require('bluebird');
 const cheerio = require('cheerio');
 const RSS = require('rss');
-const urlUtils = require('../../../server/lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const urlService = require('../url');
 let generateFeed;
 let generateItem;

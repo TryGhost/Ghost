@@ -1,4 +1,4 @@
-const urlUtils = require('../../server/lib/url-utils');
+const urlUtils = require('../../shared/url-utils');
 const getContextObject = require('./context_object.js');
 const _ = require('lodash');
 

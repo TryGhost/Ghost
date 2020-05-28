@@ -1,5 +1,5 @@
 const debug = require('ghost-ignition').debug('services:routing:static-pages-router');
-const urlUtils = require('../../../server/lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const ParentRouter = require('./ParentRouter');
 const controllers = require('./controllers');
 const {events} = require('../../../server/lib/common');

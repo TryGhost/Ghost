@@ -6,7 +6,7 @@ const path = require('path');
 const Promise = require('bluebird');
 const config = require('../../../shared/config');
 const {logging} = require('../../lib/common');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const exporter = require('../exporter');
 let writeExportFile;
 let backup;

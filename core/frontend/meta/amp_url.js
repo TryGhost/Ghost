@@ -1,4 +1,4 @@
-const urlUtils = require('../../server/lib/url-utils');
+const urlUtils = require('../../shared/url-utils');
 const getUrl = require('./url');
 const _ = require('lodash');
 

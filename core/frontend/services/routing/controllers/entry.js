@@ -2,7 +2,7 @@ const debug = require('ghost-ignition').debug('services:routing:controllers:entr
 const url = require('url');
 const config = require('../../../../shared/config');
 const urlService = require('../../../services/url');
-const urlUtils = require('../../../../server/lib/url-utils');
+const urlUtils = require('../../../../shared/url-utils');
 const helpers = require('../helpers');
 
 /**

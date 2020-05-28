@@ -1,6 +1,6 @@
 const ghostVersion = require('../../lib/ghost-version');
 const settingsCache = require('../../services/settings/cache');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const config = require('../../../shared/config');
 
 const site = {

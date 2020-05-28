@@ -4,7 +4,7 @@ const ghostVersion = require('../../lib/ghost-version');
 const crypto = require('crypto');
 const path = require('path');
 const {logging} = require('../../lib/common');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 
 const COMPLIMENTARY_PLAN = {
     name: 'Complimentary',

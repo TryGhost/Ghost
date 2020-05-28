@@ -1,4 +1,4 @@
-const urlUtils = require('../../../server/lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const {logging, i18n} = require('../../../server/lib/common');
 const errors = require('@tryghost/errors');
 const middleware = require('./lib/middleware');

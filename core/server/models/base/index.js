@@ -19,7 +19,7 @@ const {logging, events, i18n} = require('../../lib/common');
 const errors = require('@tryghost/errors');
 const security = require('../../lib/security');
 const schema = require('../../data/schema');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const validation = require('../../data/validation');
 const plugins = require('../plugins');
 let ghostBookshelf;

@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const urlUtils = require('../../../../core/server/lib/url-utils');
+const urlUtils = require('../../../../core/shared/url-utils');
 
 // Stuff we are testing
 const storageUtils = require('../../../../core/server/adapters/storage/utils');

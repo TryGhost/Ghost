@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../../../core/server/lib/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils');
 const middlewares = require('../../../../../core/frontend/services/routing/middlewares');
 
 describe('UNIT: services/routing/middlewares/page-param', function () {

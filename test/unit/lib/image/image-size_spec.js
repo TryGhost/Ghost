@@ -4,7 +4,7 @@ const rewire = require('rewire');
 const nock = require('nock');
 const path = require('path');
 const configUtils = require('../../../utils/configUtils');
-const urlUtils = require('../../../../core/server/lib/url-utils');
+const urlUtils = require('../../../../core/shared/url-utils');
 const errors = require('@tryghost/errors');
 const storage = require('../../../../core/server/adapters/storage');
 

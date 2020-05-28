@@ -7,7 +7,7 @@ const api = require('../../../../../core/server/api');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const helpers = require('../../../../../core/frontend/services/routing/helpers');
 const urlService = require('../../../../../core/frontend/services/url');
-const urlUtils = require('../../../../../core/server/lib/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils');
 const EDITOR_URL = '/editor/post/';
 
 describe('Unit - services/routing/controllers/preview', function () {

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const urlUtils = require('../../server/lib/url-utils');
+const urlUtils = require('../../shared/url-utils');
 
 function getPaginatedUrl(page, data, absolute) {
     // If we don't have enough information, return null right away

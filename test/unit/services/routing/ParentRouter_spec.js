@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/configUtils');
 const common = require('../../../../core/server/lib/common');
-const urlUtils = require('../../../../core/server/lib/url-utils');
+const urlUtils = require('../../../../core/shared/url-utils');
 const ParentRouter = require('../../../../core/frontend/services/routing/ParentRouter');
 
 describe('UNIT - services/routing/ParentRouter', function () {

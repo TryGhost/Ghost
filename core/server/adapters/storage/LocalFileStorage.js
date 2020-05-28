@@ -10,7 +10,7 @@ const config = require('../../../shared/config');
 const {logging, i18n} = require('../../lib/common');
 const errors = require('@tryghost/errors');
 const constants = require('../../lib/constants');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const StorageBase = require('ghost-storage-base');
 
 class LocalFileStore extends StorageBase {

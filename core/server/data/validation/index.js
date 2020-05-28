@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const {i18n} = require('../../lib/common');
 const errors = require('@tryghost/errors');
 const settingsCache = require('../../services/settings/cache');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 let validatePassword;
 let validateSchema;
 let validateSettings;

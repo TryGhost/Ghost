@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const nql = require('@nexes/nql');
 const debug = require('ghost-ignition').debug('services:url:generator');
-const localUtils = require('../../../server/lib/url-utils');
+const localUtils = require('../../../shared/url-utils');
 
 // @TODO: merge with filter plugin
 const EXPANSIONS = [{
