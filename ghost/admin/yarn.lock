@@ -2262,10 +2262,10 @@ babel-plugin-ember-modules-api-polyfill@^2.12.0, babel-plugin-ember-modules-api-
   dependencies:
     ember-rfc176-data "^0.3.12"
 
-babel-plugin-ember-modules-api-polyfill@^2.13.2:
-  version "2.13.2"
-  resolved "https://registry.yarnpkg.com/babel-plugin-ember-modules-api-polyfill/-/babel-plugin-ember-modules-api-polyfill-2.13.2.tgz#635c58120fe85caa842febb321ef173ce8528ffb"
-  integrity sha512-OHXf1pV3uiUNyc/agAofkZiA3MPQLmv4OpZ6Se8cGP1NbsvGaM5j5DdJ/nOl5y9us5/iDJGHFKq2yN1heOcUoQ==
+babel-plugin-ember-modules-api-polyfill@^2.13.3:
+  version "2.13.3"
+  resolved "https://registry.yarnpkg.com/babel-plugin-ember-modules-api-polyfill/-/babel-plugin-ember-modules-api-polyfill-2.13.3.tgz#f076c655e9f17cd19d1a92e62f1e9118a0e383e8"
+  integrity sha512-p108ELYtaLyPkGUoLzx7S0BR4QcWwgpJGSv68C93nvldH8o87eegwPhomNfLLYyfhbpQ23DWTTE3dX6DJGKInw==
   dependencies:
     ember-rfc176-data "^0.3.13"
 
@@ -5247,10 +5247,10 @@ ember-cli-babel-plugin-helpers@^1.0.0, ember-cli-babel-plugin-helpers@^1.1.0:
   resolved "https://registry.yarnpkg.com/ember-cli-babel-plugin-helpers/-/ember-cli-babel-plugin-helpers-1.1.0.tgz#de3baedd093163b6c2461f95964888c1676325ac"
   integrity sha512-Zr4my8Xn+CzO0gIuFNXji0eTRml5AxZUTDQz/wsNJ5AJAtyFWCY4QtKdoELNNbiCVGt1lq5yLiwTm4scGKu6xA==
 
-ember-cli-babel@7.20.2:
-  version "7.20.2"
-  resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-7.20.2.tgz#4663927d11d52bc4ed7238b5d832a9eea9ba1035"
-  integrity sha512-FFbyE7VkHyB7VGGj0bbL1RRIEo3ERVoTFRYyu0726WvB2mKtDyFG3L4xNIy1zjB/L7OJzXkQ6t+0oZG3JTxM9g==
+ember-cli-babel@7.20.3:
+  version "7.20.3"
+  resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-7.20.3.tgz#ddbe99b9fe53da35d8bf04f1ae00875370d1a672"
+  integrity sha512-94ZwQH74DA1ASGIP0UtJC6eG38K+JzkLrfthZnMdfAy++prgsg59X80InTelHvWZ7U5Qhl/YjMhHfxHV7KMf9A==
   dependencies:
     "@babel/core" "^7.9.0"
     "@babel/helper-compilation-targets" "^7.8.7"
@@ -5265,7 +5265,7 @@ ember-cli-babel@7.20.2:
     amd-name-resolver "^1.2.1"
     babel-plugin-debug-macros "^0.3.0"
     babel-plugin-ember-data-packages-polyfill "^0.1.2"
-    babel-plugin-ember-modules-api-polyfill "^2.13.2"
+    babel-plugin-ember-modules-api-polyfill "^2.13.3"
     babel-plugin-module-resolver "^3.1.1"
     broccoli-babel-transpiler "^7.4.0"
     broccoli-debug "^0.6.4"
