@@ -170,7 +170,7 @@ describe('Frontend Routing', function () {
 
                 it('should redirect to editor', function (done) {
                     request.get('/static-page-test/edit/')
-                        .expect('Location', /ghost\/editor\/\w+/)
+                        .expect('Location', /ghost\/#\/editor\/\w+/)
                         .expect('Cache-Control', testUtils.cacheRules.public)
                         .expect(302)
                         .end(doEnd(done));
