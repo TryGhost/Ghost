@@ -8,7 +8,7 @@ const controllers = require('../../../../../core/frontend/services/routing/contr
 const helpers = require('../../../../../core/frontend/services/routing/helpers');
 const urlService = require('../../../../../core/frontend/services/url');
 const urlUtils = require('../../../../../core/shared/url-utils');
-const EDITOR_URL = '/editor/post/';
+const EDITOR_URL = '/#/editor/post/';
 
 describe('Unit - services/routing/controllers/preview', function () {
     let secureStub;

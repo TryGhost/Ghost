@@ -43,7 +43,7 @@ module.exports = function previewController(req, res, next) {
                 const resourceType = post.page ? 'page' : 'post';
 
                 // CASE: last param of the url is /edit, redirect to admin
-                return urlUtils.redirectToAdmin(302, res, `/editor/${resourceType}/${post.id}`);
+                return urlUtils.redirectToAdmin(302, res, `/#/editor/${resourceType}/${post.id}`);
             } else if (req.params.options) {
                 // CASE: unknown options param detected, ignore
                 return next();
