@@ -41,7 +41,7 @@ module.exports = function entryController(req, res, next) {
                 debug('redirect. is edit url');
                 const resourceType = entry.page ? 'page' : 'post';
 
-                return urlUtils.redirectToAdmin(302, res, `/editor/${resourceType}/${entry.id}`);
+                return urlUtils.redirectToAdmin(302, res, `/#/editor/${resourceType}/${entry.id}`);
             }
 
             /**

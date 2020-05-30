@@ -6,7 +6,7 @@ const urlService = require('../../../../../core/frontend/services/url');
 const urlUtils = require('../../../../../core/shared/url-utils');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const helpers = require('../../../../../core/frontend/services/routing/helpers');
-const EDITOR_URL = `/editor/post/`;
+const EDITOR_URL = `/#/editor/post/`;
 
 describe('Unit - services/routing/controllers/entry', function () {
     let req;
