@@ -1,8 +1,8 @@
 import Controller from '@ember/controller';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import moment from 'moment';
 import {A} from '@ember/array';
 import {action} from '@ember/object';
-import {alias} from '@ember/object/computed';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
@@ -11,13 +11,14 @@ import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class MembersController extends Controller {
+    @service ellaSparse;
     @service feature;
+    @service membersStats;
     @service store;
 
     queryParams = ['label', {searchParam: 'search'}];
 
-    @alias('model') members;
-
+    @tracked members = A([]);
     @tracked searchText = '';
     @tracked searchParam = '';
     @tracked label = null;
@@ -91,6 +92,14 @@ export default class MembersController extends Controller {
     // Actions -----------------------------------------------------------------
 
     @action
+    refreshData() {
+        this.fetchMembersTask.perform();
+        this.fetchLabelsTask.perform();
+        this.membersStats.invalidate();
+        this.membersStats.fetch();
+    }
+
+    @action
     search(e) {
         this.searchTask.perform(e.target.value);
     }
@@ -161,6 +170,53 @@ export default class MembersController extends Controller {
                 this._hasLoadedLabels = true;
             });
         }
+    }
+
+    @task
+    *fetchMembersTask(params) {
+        // params is undefined when called as a "refresh" of the model
+        let {label, searchParam} = typeof params === 'undefined' ? this : params;
+
+        if (!searchParam) {
+            this.resetSearch();
+        }
+
+        // use a fixed created_at date so that subsequent pages have a consistent index
+        let startDate = new Date();
+
+        // bypass the stale data shortcut if params change
+        let forceReload = !params || label !== this._lastLabel || searchParam !== this._lastSearchParam;
+        this._lastLabel = label;
+        this._lastSearchParam = searchParam;
+
+        // unless we have a forced reload, do not re-fetch the members list unless it's more than a minute old
+        // keeps navigation between list->details->list snappy
+        if (!forceReload && this._startDate && !(this._startDate - startDate > 1 * 60 * 1000)) {
+            return this.members;
+        }
+
+        this._startDate = startDate;
+
+        this.members = yield this.ellaSparse.array((range = {}, query = {}) => {
+            const labelFilter = label ? `label:'${label}'+` : '';
+            const searchQuery = searchParam ? {search: searchParam} : {};
+
+            query = Object.assign({
+                limit: range.length,
+                page: range.start / range.length,
+                order: 'created_at desc',
+                filter: `${labelFilter}created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`
+            }, searchQuery, query);
+
+            return this.store.query('member', query).then((result) => {
+                return {
+                    data: result,
+                    total: result.meta.pagination.total
+                };
+            });
+        }, {
+            limit: 50
+        });
     }
 
     // Internal ----------------------------------------------------------------

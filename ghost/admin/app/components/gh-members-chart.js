@@ -12,15 +12,14 @@ export default Component.extend({
     // public attrs
     nightShift: false,
 
-    range: '30',
     stats: null,
     chartData: null,
     chartOptions: null,
     startDateLabel: '',
 
-    selectedRange: computed('range', function () {
+    selectedRange: computed('membersStats.days', function () {
         const availableRanges = this.availableRanges;
-        return availableRanges.findBy('days', this.range);
+        return availableRanges.findBy('days', this.membersStats.days);
     }),
 
     availableRanges: computed(function () {
@@ -56,7 +55,7 @@ export default Component.extend({
     // Actions -----------------------------------------------------------------
 
     changeDateRange: action(function (range) {
-        this.set('range', get(range, 'days'));
+        this.membersStats.days = get(range, 'days');
         this.fetchStatsTask.perform();
     }),
 
@@ -65,7 +64,7 @@ export default Component.extend({
     fetchStatsTask: task(function* () {
         this.set('stats', null);
 
-        let stats = yield this.membersStats.fetch({days: this.selectedRange.days});
+        let stats = yield this.membersStats.fetch();
 
         if (stats) {
             this.set('stats', stats);

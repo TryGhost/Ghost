@@ -4,12 +4,12 @@ import {inject as controller} from '@ember/controller';
 import {inject as service} from '@ember/service';
 
 export default class ImportController extends Controller {
-    @controller members;
     @service router;
+    @controller members;
 
     @action
-    fetchNewMembers() {
-        this.members.fetchMembersTask.perform();
+    refreshMembers() {
+        this.members.refreshData();
     }
 
     @action
