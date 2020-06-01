@@ -5,7 +5,7 @@ const config = require('../../../shared/config');
 const compress = require('compression');
 const netjet = require('netjet');
 const mw = require('./middleware');
-const escapeRegExp = require('lodash.escaperegexp');
+const escapeRegExp = require('lodash/escapeRegExp');
 const {URL} = require('url');
 const shared = require('../shared');
 
