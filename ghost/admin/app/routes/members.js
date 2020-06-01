@@ -1,10 +1,7 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import moment from 'moment';
 import {inject as service} from '@ember/service';
 
 export default class MembersRoute extends AuthenticatedRoute {
-    @service config;
-    @service ellaSparse;
     @service store;
 
     queryParams = {
@@ -25,48 +22,7 @@ export default class MembersRoute extends AuthenticatedRoute {
     }
 
     model(params) {
-        const {label, searchParam} = params;
-
-        if (!searchParam) {
-            this.controllerFor('members').resetSearch();
-        }
-
-        // use a fixed created_at date so that subsequent pages have a consistent index
-        let startDate = new Date();
-
-        // bypass the stale data shortcut if params change
-        let forceReload = label !== this._lastLabel || searchParam !== this._lastSearchParam;
-        this._lastLabel = label;
-        this._lastSearchParam = searchParam;
-
-        // unless we have a forced reload, do not re-fetch the members list unless it's more than a minute old
-        // keeps navigation between list->details->list snappy
-        if (!forceReload && this._startDate && !(this._startDate - startDate > 1 * 60 * 1000)) {
-            return this.controller.members;
-        }
-
-        this._startDate = startDate;
-
-        return this.ellaSparse.array((range = {}, query = {}) => {
-            const labelFilter = label ? `label:'${label}'+` : '';
-            const searchQuery = searchParam ? {search: searchParam} : {};
-
-            query = Object.assign({
-                limit: range.length,
-                page: range.start / range.length,
-                order: 'created_at desc',
-                filter: `${labelFilter}created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`
-            }, searchQuery, query);
-
-            return this.store.query('member', query).then((result) => {
-                return {
-                    data: result,
-                    total: result.meta.pagination.total
-                };
-            });
-        }, {
-            limit: 50
-        });
+        return this.controllerFor('members').fetchMembersTask.perform(params);
     }
 
     // trigger a background load of members plus labels for filter dropdown

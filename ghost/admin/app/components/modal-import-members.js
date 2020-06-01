@@ -1,11 +1,8 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {computed} from '@ember/object';
-import {inject as service} from '@ember/service';
 
 export default ModalComponent.extend({
-    membersStats: service(),
-
     labelText: 'Select or drag-and-drop a CSV File',
 
     response: null,
@@ -29,8 +26,7 @@ export default ModalComponent.extend({
 
         uploadSuccess(response) {
             this.set('response', response.meta.stats);
-            this.membersStats.invalidate();
-            // invoke the passed in confirm action
+            // invoke the passed in confirm action to refresh member data
             this.confirm();
         },
 

@@ -7,10 +7,11 @@ export default class MembersStatsService extends Service {
     @service ajax;
     @service ghostPaths;
 
+    @tracked days = '30';
     @tracked stats = null;
 
-    fetch({days}) {
-        let daysChanged = days !== this._days;
+    fetch() {
+        let daysChanged = this._lastFetchedDays !== this.days;
         let staleData = this._lastFetched && this._lastFetched - new Date() > 1 * 60 * 1000;
 
         // return an already in-progress promise unless params have changed
@@ -23,7 +24,7 @@ export default class MembersStatsService extends Service {
             return Promise.resolve(this.stats);
         }
 
-        return this._fetchTask.perform(...arguments);
+        return this._fetchTask.perform();
     }
 
     invalidate() {
@@ -31,8 +32,10 @@ export default class MembersStatsService extends Service {
     }
 
     @task
-    *_fetchTask({days}) {
-        this._days = days;
+    *_fetchTask() {
+        let {days} = this;
+
+        this._lastFetchedDays = days;
         this._lastFetched = new Date();
         this._forceRefresh = false;
 
