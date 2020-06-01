@@ -122,7 +122,7 @@
     "path-match": "1.2.4",
     "probe-image-size": "5.0.0",
     "rss": "1.2.2",
-    "sanitize-html": "1.24.0",
+    "sanitize-html": "1.25.0",
     "semver": "7.3.2",
     "uuid": "8.1.0",
     "validator": "6.3.0",
