@@ -422,6 +422,11 @@
                     "name": "Read identities",
                     "action_type": "read",
                     "object_type": "identity"
+                },
+                {
+                    "name": "Auth Stripe Connect for Members",
+                    "action_type": "auth",
+                    "object_type": "members_stripe_connect"
                 }
             ]
         },
