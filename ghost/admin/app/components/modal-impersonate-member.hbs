@@ -25,13 +25,24 @@
                 @name="member-signin-url"
                 @disabled={{true}}
                 @value={{readonly signinUrl}}
+                @placeholder="{{this.config.blogUrl}}/members/?token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
             />
-            <GhTaskButton
+            {{#if signinUrl}}
+                <GhTaskButton
                 @autoReset={{true}}
                 @buttonText="Copy link"
                 @task={{this.copySigninUrl}}
                 @successText="Link copied"
                 @class="gh-btn gh-btn-blue gh-btn-icon" />
+            {{else}}
+                <GhTaskButton
+                @autoReset={{true}}
+                @buttonText="Copy link"
+                @task={{this.copySigninUrl}}
+                @successText="Link copied"
+                @disabled="true"
+                @class="gh-btn gh-btn-blue gh-btn-icon" />
+            {{/if}}
         </div>
     </fieldset>
 </div>
