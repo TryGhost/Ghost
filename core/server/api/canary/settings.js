@@ -131,7 +131,7 @@ module.exports = {
                 }
             }
 
-            if (stripeConnectIntegrationToken) {
+            if (stripeConnectIntegrationToken && stripeConnectIntegrationToken.value) {
                 const getSessionProp = prop => frame.original.session[prop];
                 try {
                     const data = await membersService.stripeConnect.getStripeConnectTokenData(stripeConnectIntegrationToken.value, getSessionProp);
@@ -141,6 +141,7 @@ module.exports = {
                     });
                 } catch (err) {
                     throw new BadRequestError({
+                        err,
                         message: 'The Stripe Connect token could not be parsed.'
                     });
                 }
