@@ -15,7 +15,7 @@ function createApiInstance(config) {
     const membersApiInstance = MembersApi({
         tokenConfig: config.getTokenConfig(),
         auth: {
-            getSigninURL: config.getSigninURL,
+            getSigninURL: config.getSigninURL.bind(config),
             allowSelfSignup: config.getAllowSelfSignup(),
             secret: config.getAuthSecret()
         },
