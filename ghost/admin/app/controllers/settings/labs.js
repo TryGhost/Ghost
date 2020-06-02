@@ -171,6 +171,10 @@ export default Controller.extend({
             this.set('settings.membersSubscriptionSettings', JSON.stringify(subscriptionSettings));
         },
 
+        setStripeConnectIntegrationTokenSetting(stripeConnectIntegrationToken) {
+            this.set('settings.stripeConnectIntegrationToken', stripeConnectIntegrationToken);
+        },
+
         setBulkEmailSettings(bulkEmailSettings) {
             this.set('settings.bulkEmailSettings', bulkEmailSettings);
         }
