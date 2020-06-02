@@ -32,6 +32,7 @@ export default Model.extend(ValidationEngine, {
     }),
     defaultContentVisibility: attr('string'),
     membersSubscriptionSettings: attr('string'),
+    stripeConnectIntegrationToken: attr('string'),
     metaTitle: attr('string'),
     metaDescription: attr('string'),
     twitterTitle: attr('string'),

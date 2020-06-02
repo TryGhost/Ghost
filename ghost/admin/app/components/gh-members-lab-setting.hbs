@@ -51,6 +51,46 @@
                     </div>
                 </div>
             {{/liquid-if}}
+        {{else}}
+            <div class="flex justify-between">
+                <div>
+                    <h4 class="gh-setting-title">Connect to Stripe</h4>
+                    <p class="gh-setting-desc pa0 ma0">Connect to Stripe to create subscriptions and take payments</p>
+                </div>
+                <div>
+                    <button type="button" class="gh-btn" {{action (toggle "membersStripeOpen" this)}} data-test-toggle-membersstripe><span>{{if this.membersStripeOpen "Close" "Expand"}}</span></button>
+                </div>
+            </div>
+
+            {{#liquid-if this.membersStripeOpen}}
+            <div class="flex flex-column flex-row-l items-start justify-between mb4 mt6">
+                <div class="w-100 w-50-l">
+                    <div class="mb4">
+                        <a href="{{this.stripeConnectAuthUrl}}" class="stripe-connect" target="_blank"><span>Connect with Stripe</span></a>
+                    </div>
+                    <div class="nudge-top--3">
+                        <label class="fw6 f8 mt4">Stripe Connect authentication token</label>
+                        <GhTextInput
+                            @type="password"
+                            @input={{action "setStripeConnectIntegrationToken" "stripe_connect_integration_token"}}
+                            @class="mt1 password"
+                        />
+                    </div>
+                </div>
+                <div class="ml0 ml5-l mt6">
+                    <div class="gh-members-stripe-info">
+                        <div class="gh-members-stripe-info-header">
+                            <h4>How you get paid</h4>
+                            {{svg-jar "stripe-verified-partner-badge" class="gh-members-stripe-badge"}}
+                        </div>
+                        <p class="f8 mt2 mb0">
+                            Stripe is our exclusive direct payments partner.<br />
+                            Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank"  rel="noopener" class="gh-members-stripe-link">sign up here</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {{/liquid-if}}
         {{/if}}
     </section>
 
