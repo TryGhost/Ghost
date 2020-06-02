@@ -225,7 +225,7 @@ module.exports = {
                     return unknownProvider(url);
                 }
                 return response;
-            }).catch((err) => {
+            }).catch(() => {
                 return unknownProvider(url);
             });
         }
