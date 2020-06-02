@@ -1,9 +1,13 @@
 const nock = require('nock');
+const sinon = require('sinon');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../utils/index');
 const config = require('../../../core/shared/config/index');
 const localUtils = require('./utils');
+
+// for sinon stubs
+const dnsPromises = require('dns').promises;
 
 const ghost = testUtils.startGhost;
 
@@ -20,6 +24,10 @@ describe('Oembed API', function () {
             .then(() => {
                 return localUtils.doAuth(request);
             });
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     it('can fetch an embed', function (done) {
@@ -59,6 +67,39 @@ describe('Oembed API', function () {
     });
 
     describe('with unknown provider', function () {
+        it('fetches url and follows redirects', function (done) {
+            const redirectMock = nock('http://test.com/')
+                .get('/')
+                .reply(302, undefined, {Location: 'http://oembed.test.com'});
+
+            const pageMock = nock('http://oembed.test.com')
+                .get('/')
+                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.test.com/my-embed"></head></html>');
+
+            const oembedMock = nock('http://oembed.test.com')
+                .get('/my-embed')
+                .reply(200, {
+                    version: '1.0',
+                    type: 'link'
+                });
+
+            const url = encodeURIComponent('http://test.com/');
+            request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    redirectMock.isDone().should.be.true();
+                    pageMock.isDone().should.be.true();
+                    oembedMock.isDone().should.be.true();
+                    done();
+                });
+        });
+
         it('fetches url and follows <link rel="alternate">', function (done) {
             const pageMock = nock('http://test.com')
                 .get('/')
@@ -83,6 +124,39 @@ describe('Oembed API', function () {
                     }
                     pageMock.isDone().should.be.true();
                     oembedMock.isDone().should.be.true();
+                    done();
+                });
+        });
+
+        it('follows redirects when fetching <link rel="alternate">', function (done) {
+            const pageMock = nock('http://test.com')
+                .get('/')
+                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
+
+            const alternateRedirectMock = nock('http://test.com')
+                .get('/oembed')
+                .reply(301, undefined, {Location: 'http://test.com/oembed-final'});
+
+            const alternateMock = nock('http://test.com')
+                .get('/oembed-final')
+                .reply(200, {
+                    version: '1.0',
+                    type: 'link'
+                });
+
+            const url = encodeURIComponent('http://test.com');
+            request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    pageMock.isDone().should.be.true();
+                    alternateRedirectMock.isDone().should.be.true();
+                    alternateMock.isDone().should.be.true();
                     done();
                 });
         });
@@ -316,6 +390,116 @@ describe('Oembed API', function () {
                 });
 
             const url = encodeURIComponent('http://test.com');
+            request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    pageMock.isDone().should.be.true();
+                    oembedMock.isDone().should.be.false();
+                    done();
+                });
+        });
+
+        it('skips fetching url that resolves to private IP', function (done) {
+            sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
+                if (hostname === 'page.com') {
+                    return Promise.resolve({address: '192.168.0.1'});
+                }
+                return dnsPromises.lookup.wrappedMethod.apply(this, arguments);
+            });
+
+            const pageMock = nock('http://page.com')
+                .get('/')
+                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.com/oembed"></head></html>');
+
+            const oembedMock = nock('http://oembed.com')
+                .get('/oembed')
+                .reply(200, {
+                    version: '1.0',
+                    type: 'link'
+                });
+
+            const url = encodeURIComponent('http://page.com');
+            request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    pageMock.isDone().should.be.false();
+                    oembedMock.isDone().should.be.false();
+                    done();
+                });
+        });
+
+        it('aborts fetching if a redirect resolves to private IP', function (done) {
+            sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
+                if (hostname === 'page.com') {
+                    return Promise.resolve({address: '192.168.0.1'});
+                }
+                return dnsPromises.lookup.wrappedMethod.apply(this, arguments);
+            });
+
+            const redirectMock = nock('http://redirect.com')
+                .get('/')
+                .reply(301, undefined, {Location: 'http://page.com'});
+
+            const pageMock = nock('http://page.com')
+                .get('/')
+                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.com/oembed"></head></html>');
+
+            const oembedMock = nock('http://oembed.com')
+                .get('/oembed')
+                .reply(200, {
+                    version: '1.0',
+                    type: 'link'
+                });
+
+            const url = encodeURIComponent('http://redirect.com');
+            request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    redirectMock.isDone().should.be.true();
+                    pageMock.isDone().should.be.false();
+                    oembedMock.isDone().should.be.false();
+                    done();
+                });
+        });
+
+        it('skips fetching <link rel="alternate"> if it resolves to a private IP', function (done) {
+            sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
+                if (hostname === 'oembed.com') {
+                    return Promise.resolve({address: '192.168.0.1'});
+                }
+                return dnsPromises.lookup.wrappedMethod.apply(this, arguments);
+            });
+
+            const pageMock = nock('http://page.com')
+                .get('/')
+                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://oembed.com/oembed"></head></html>');
+
+            const oembedMock = nock('http://oembed.com')
+                .get('/oembed')
+                .reply(200, {
+                    version: '1.0',
+                    type: 'link'
+                });
+
+            const url = encodeURIComponent('http://page.com');
             request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)

@@ -2,7 +2,7 @@ const {i18n} = require('../../lib/common');
 const errors = require('@tryghost/errors');
 const {extract, hasProvider} = require('oembed-parser');
 const Promise = require('bluebird');
-const request = require('../../lib/request');
+const externalRequest = require('../../lib/request-external');
 const cheerio = require('cheerio');
 const _ = require('lodash');
 
@@ -22,11 +22,7 @@ async function fetchBookmarkData(url, html) {
 
     try {
         if (!html) {
-            const response = await request(url, {
-                headers: {
-                    'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
-                }
-            });
+            const response = await externalRequest(url);
             html = response.body;
         }
         scraperResponse = await metascraper({html, url});
@@ -97,7 +93,7 @@ function isIpOrLocalhost(url) {
         const IPV6_REGEX = /:/; // fqdns will not have colons
         const HTTP_REGEX = /^https?:/i;
 
-        let {protocol, hostname} = new URL(url);
+        const {protocol, hostname} = new URL(url);
 
         if (!HTTP_REGEX.test(protocol) || hostname === 'localhost' || IPV4_REGEX.test(hostname) || IPV6_REGEX.test(hostname)) {
             return true;
@@ -125,13 +121,10 @@ function fetchOembedData(_url) {
 
     // url not in oembed list so fetch it in case it's a redirect or has a
     // <link rel="alternate" type="application/json+oembed"> element
-    return request(url, {
+    return externalRequest(url, {
         method: 'GET',
         timeout: 2 * 1000,
-        followRedirect: true,
-        headers: {
-            'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
-        }
+        followRedirect: true
     }).then((response) => {
         // url changed after fetch, see if we were redirected to a known oembed
         if (response.url !== url) {
@@ -156,13 +149,11 @@ function fetchOembedData(_url) {
             }
 
             // fetch oembed response from embedded rel="alternate" url
-            return request(oembedUrl, {
+            return externalRequest(oembedUrl, {
                 method: 'GET',
                 json: true,
                 timeout: 2 * 1000,
-                headers: {
-                    'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
-                }
+                followRedirect: true
             }).then((response) => {
                 // validate the fetched json against the oembed spec to avoid
                 // leaking non-oembed responses
@@ -234,7 +225,7 @@ module.exports = {
                     return unknownProvider(url);
                 }
                 return response;
-            }).catch(() => {
+            }).catch((err) => {
                 return unknownProvider(url);
             });
         }
