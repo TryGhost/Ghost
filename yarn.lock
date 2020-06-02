@@ -69,14 +69,14 @@
   dependencies:
     "@hapi/hoek" "8.x.x"
 
-"@lodder/grunt-postcss@2.0.3":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@lodder/grunt-postcss/-/grunt-postcss-2.0.3.tgz#c3f7a8d45508457311245411955af569aa18b553"
-  integrity sha512-rPCesja8kJMpSuQx9jIaFM6QqE3B/CMiP0dlE7+QfRwZOolUKTqD6ESN9GI8jsqYF3da/fPNe3bo7mA2lSNBsw==
+"@lodder/grunt-postcss@2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@lodder/grunt-postcss/-/grunt-postcss-2.0.4.tgz#f77082d4ddbda1ff6a3f8978a752e9ad7ad199ce"
+  integrity sha512-WMVsePTvaSpg7gyQO97d+YjJcv6t+mrvXQL8qvReN3JqugH3yM8JoPyYxY1yl6B/xnlZJ7bX4WLtv4U1MQkQyw==
   dependencies:
     diff "^4.0.2"
     maxmin "^2.1.0"
-    postcss "^7.0.30"
+    postcss "^7.0.31"
 
 "@metascraper/helpers@^5.11.9":
   version "5.11.10"
@@ -7556,10 +7556,10 @@ postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.27:
     source-map "^0.6.1"
     supports-color "^6.1.0"
 
-postcss@^7.0.30:
-  version "7.0.30"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.30.tgz#cc9378beffe46a02cbc4506a0477d05fcea9a8e2"
-  integrity sha512-nu/0m+NtIzoubO+xdAlwZl/u5S5vi/y6BCsoL8D+8IxsD3XvBS8X4YEADNIVXKVuQvduiucnRv+vPIqj56EGMQ==
+postcss@^7.0.31:
+  version "7.0.31"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.31.tgz#332af45cb73e26c0ee2614d7c7fb02dfcc2bd6dd"
+  integrity sha512-a937VDHE1ftkjk+8/7nj/mrjtmkn69xxzJgRETXdAUU+IgOYPQNJF17haGWbeDxSyk++HA14UA98FurvPyBJOA==
   dependencies:
     chalk "^2.4.2"
     source-map "^0.6.1"
