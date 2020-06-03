@@ -184,6 +184,6 @@ export default Component.extend({
     },
 
     get stripeConnectAuthUrl() {
-        return this.ghostPaths.url.api('members/stripe-connect');
+        return this.ghostPaths.url.api('members/stripe_connect');
     }
 });
