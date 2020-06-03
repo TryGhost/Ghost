@@ -8,9 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_ORG: ghost-foundation
-      SENTRY_PROJECT: ghost
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       FORCE_COLOR: 1
     steps:
