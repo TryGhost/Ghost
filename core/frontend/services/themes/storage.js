@@ -12,6 +12,7 @@ const {i18n} = require('../../../server/lib/common');
 const logging = require('../../../shared/logging');
 const errors = require('@tryghost/errors');
 const debug = require('ghost-ignition').debug('api:themes');
+const ObjectID = require('bson-objectid');
 
 let themeStorage;
 
@@ -37,6 +38,7 @@ module.exports = {
     },
     setFromZip: (zip) => {
         const shortName = getStorage().getSanitizedFileName(zip.name.split('.zip')[0]);
+        const backupName = `${shortName}_${ObjectID()}`;
 
         // check if zip name is casper.zip
         if (zip.name === 'casper.zip') {
@@ -54,9 +56,9 @@ module.exports = {
                 return getStorage().exists(shortName);
             })
             .then((themeExists) => {
-                // CASE: delete existing theme
+                // CASE: move the existing theme to a backup folder
                 if (themeExists) {
-                    return getStorage().delete(shortName);
+                    return getStorage().rename(shortName, backupName);
                 }
             })
             .then(() => {
@@ -86,14 +88,20 @@ module.exports = {
             })
             .finally(() => {
                 // @TODO: we should probably do this as part of saving the theme
-                // CASE: remove extracted dir from gscan
-                // happens in background
+                // CASE: remove extracted dir from gscan happens in background
                 if (checkedTheme) {
                     fs.remove(checkedTheme.path)
                         .catch((err) => {
                             logging.error(new errors.GhostError({err: err}));
                         });
                 }
+
+                // CASE: remove the backup we created earlier
+                getStorage()
+                    .delete(backupName)
+                    .catch((err) => {
+                        logging.error(new errors.GhostError({err: err}));
+                    });
             });
     },
     destroy: function (themeName) {
