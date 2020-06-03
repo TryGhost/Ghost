@@ -118,20 +118,11 @@ describe('Themes API', function () {
                         tmpFolderContents.splice(index, 1);
                     }
                 });
-                tmpFolderContents.should.be.an.Array().with.lengthOf(10);
 
-                tmpFolderContents.should.eql([
-                    'broken-theme',
-                    'casper',
-                    'casper-1.4',
-                    'casper.zip',
-                    'invalid.zip',
-                    'test-theme',
-                    'test-theme-channels',
-                    'valid',
-                    'valid.zip',
-                    'warnings.zip'
-                ]);
+                // Note: at this point, the tmpFolder can legitimately still contain a valid_34324324 backup
+                // As it is deleted asynchronously
+                tmpFolderContents.should.containEql('valid');
+                tmpFolderContents.should.containEql('valid.zip');
 
                 // Check the Themes API returns the correct result
                 return ownerRequest
@@ -157,6 +148,16 @@ describe('Themes API', function () {
                 should.exist(addedTheme);
                 localUtils.API.checkResponse(addedTheme, 'theme');
                 addedTheme.active.should.be.false();
+
+                // Note: at this point, the API should not return a valid_34324324 backup folder as a theme
+                _.map(jsonResponse.themes, 'name').should.eql([
+                    'broken-theme',
+                    'casper',
+                    'casper-1.4',
+                    'test-theme',
+                    'test-theme-channels',
+                    'valid'
+                ]);
             });
     });
 
