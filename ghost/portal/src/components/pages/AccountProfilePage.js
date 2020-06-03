@@ -38,7 +38,13 @@ export default class AccountProfilePage extends React.Component {
 
     renderSaveButton() {
         const isRunning = (this.context.action === 'updateMember:running');
-        const label = isRunning ? 'Saving' : 'Save';
+        const isSaved = (this.context.action === 'updateMember:success');
+        let label = 'Save';
+        if (isRunning) {
+            label = 'Saving';
+        } else if (isSaved) {
+            label = 'Saved';
+        }
         const disabled = isRunning ? true : false;
         return (
             <ActionButton
