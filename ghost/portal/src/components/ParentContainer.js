@@ -203,10 +203,20 @@ export default class ParentContainer extends React.Component {
                     });
                 }
             }
+            setTimeout(() => {
+                this.setState({
+                    action: ''
+                });
+            }, 5000);
         } catch (e) {
             this.setState({
                 action: `${action}:failed`
             });
+            setTimeout(() => {
+                this.setState({
+                    action: ''
+                });
+            }, 5000);
         }
     }
 
