@@ -105,6 +105,7 @@ let isViewEqual = function (viewA, viewB) {
 export default class CustomViewsService extends Service {
     @service router;
     @service session;
+    @service settings;
 
     @tracked viewList = [];
     @tracked showFormModal = false;
@@ -115,22 +116,24 @@ export default class CustomViewsService extends Service {
     }
 
     // eslint-disable-next-line ghost/ember/no-observers
-    @observes('session.isAuthenticated', 'session.user.accessibility')
+    @observes('settings.sharedViews', 'session.isAuthenticated')
     async updateViewList() {
+        let {settings, session} = this;
+
         // avoid fetching user before authenticated otherwise the 403 can fire
         // during authentication and cause errors during setup/signin
-        if (!this.session.isAuthenticated) {
+        if (!session.isAuthenticated) {
             return;
         }
 
-        let user = await this.session.user;
-        let views = JSON.parse(user.get('accessibility') || '{}').views;
+        let views = JSON.parse(settings.get('sharedViews') || '{}');
         views = isArray(views) ? views : [];
 
         let viewList = [];
 
         // contributors can only see their own draft posts so it doesn't make
         // sense to show them default views which change the status/type filter
+        let user = await session.user;
         if (!user.isContributor) {
             viewList.push(...DEFAULT_VIEWS);
         }
@@ -232,10 +235,8 @@ export default class CustomViewsService extends Service {
     }
 
     async _saveViewSettings() {
-        let user = await this.session.user;
-        let userSettings = JSON.parse(user.get('accessibility')) || {};
-        userSettings.views = this.viewList.reject(view => view.isDefault).map(view => view.toJSON());
-        user.set('accessibility', JSON.stringify(userSettings));
-        return user.save();
+        let sharedViews = this.viewList.reject(view => view.isDefault).map(view => view.toJSON());
+        this.settings.set('sharedViews', JSON.stringify(sharedViews));
+        return this.settings.save();
     }
 }

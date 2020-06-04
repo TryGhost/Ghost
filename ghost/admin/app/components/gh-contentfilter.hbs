@@ -1,5 +1,5 @@
 <div class="gh-contentfilter" ...attributes>
-    {{#unless this.session.user.isContributor}}
+    {{#unless @currentUser.isContributor}}
         <div class="gh-contentfilter-menu gh-contentfilter-type {{if @selectedType.value "gh-contentfilter-selected"}}" data-test-type-select="true">
             <PowerSelect
                 @selected={{@selectedType}}
@@ -17,7 +17,7 @@
         </div>
     {{/unless}}
 
-    {{#unless this.session.user.isAuthorOrContributor}}
+    {{#unless @currentUser.isAuthorOrContributor}}
         <div class="gh-contentfilter-menu gh-contentfilter-author {{if @selectedAuthor.slug "gh-contentfilter-selected"}}" data-test-author-select="true">
             <PowerSelect
                 @selected={{@selectedAuthor}}
@@ -36,7 +36,7 @@
         </div>
     {{/unless}}
 
-    {{#unless this.session.user.isContributor}}
+    {{#unless @currentUser.isContributor}}
         <div class="gh-contentfilter-menu gh-contentfilter-tag {{if @selectedTag.slug "gh-contentfilter-selected"}}" data-test-tag-select="true">
             <PowerSelect
                 @selected={{@selectedTag}}
@@ -72,7 +72,7 @@
         </PowerSelect>
     </div>
 
-    {{#if (and (eq this.router.currentRouteName "posts") (or @selectedType.value @selectedAuthor.slug @selectedTag.slug @selectedOrder.value) (not this.customViews.activeView.isDefault))}}
+    {{#if this.showCustomViewManagement}}
         <div class="dropdown gh-contentfilter-menu gh-contentfilter-actions">
             {{#if this.customViews.activeView}}
                 <button

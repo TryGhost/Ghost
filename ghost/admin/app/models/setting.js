@@ -41,5 +41,6 @@ export default Model.extend(ValidationEngine, {
     ogTitle: attr('string'),
     ogDescription: attr('string'),
     ogImage: attr('string'),
-    bulkEmailSettings: attr('json-string')
+    bulkEmailSettings: attr('json-string'),
+    sharedViews: attr('string')
 });
