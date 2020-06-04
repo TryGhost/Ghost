@@ -1,6 +1,8 @@
 const {parse: parseUrl} = require('url');
 const createCookies = require('cookies');
 const ignition = require('ghost-ignition');
+const debug = require('ghost-ignition').debug('members-ssr');
+
 const {
     BadRequestError
 } = ignition.errors;
@@ -180,6 +182,18 @@ class MembersSSR {
     }
 
     /**
+     * @method _setMemberGeolocationFromIp
+     * @param {string} email
+     * @param {string} ip
+     *
+     * @returns {Promise<Member>} member
+     */
+    async _setMemberGeolocationFromIp(email, ip) {
+        const api = await this._getMembersApi();
+        return api.setMemberGeolocationFromIp(email, ip);
+    }
+
+    /**
      * @method exchangeTokenForSession
      * @param {Request} req
      * @param {Response} res
@@ -202,6 +216,17 @@ class MembersSSR {
 
         const token = Array.isArray(query.token) ? query.token[0] : query.token;
         const member = await this._getMemberDataFromToken(token);
+
+        // perform and store geoip lookup for members when they log in
+        if (!member.geolocation) {
+            try {
+                await this._setMemberGeolocationFromIp(member.email, req.ip);
+            } catch (err) {
+                // no-op, we don't want to stop anything working due to
+                // geolocation lookup failing
+                debug(`Geolocation lookup failed: ${err.message}`);
+            }
+        }
 
         this._setSessionCookie(req, res, member.email);
 
