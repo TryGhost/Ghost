@@ -64,9 +64,7 @@ module.exports = {
 
     add: {
         statusCode: 201,
-        headers: {
-            cacheInvalidate: true
-        },
+        headers: {},
         options: [
             'include'
         ],
