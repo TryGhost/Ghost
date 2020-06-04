@@ -141,44 +141,6 @@ fieldset[disabled] .gh-btn {
     box-shadow: none;
 }
 
-/* Green button
-/* ---------------------------------------------------------- */
-
-/* The background of the button creates 1px gradient border */
-.gh-btn-green,
-.gh-btn-green:hover {
-    border: 1px solid color-mod(var(--green) s(-5%));
-    color: #fff;
-    fill: #fff;
-    box-shadow: none;
-    transition-property: box-shadow;
-}
-
-.gh-btn-green:hover {
-    box-shadow: none;
-}
-
-/* The background of the span is the main visual element */
-.gh-btn-green span {
-    background: linear-gradient(color-mod(var(--green) l(+6%) s(-2%)), color-mod(var(--green) l(-8%) s(+5%)));
-    font-weight: 500;
-}
-
-.gh-btn-green:hover span {
-    background: linear-gradient(color-mod(var(--green) l(+9%) s(-1%)), color-mod(var(--green) l(-3%) saturation(-3%)));
-}
-
-/* When clicked or focused with keyboard */
-.gh-btn-green:active,
-.gh-btn-green:focus {
-    background: color-mod(var(--green) l(-9%) saturation(-9%));
-}
-.gh-btn-green:active span,
-.gh-btn-green:focus span {
-    background: color-mod(var(--green) l(-3%) saturation(-7%));
-    box-shadow: none;
-}
-
 
 /* Red button
 /* ---------------------------------------------------------- */
@@ -220,6 +182,44 @@ fieldset[disabled] .gh-btn {
 .gh-btn-red:active span,
 .gh-btn-red:focus span {
     background: color-mod(var(--red) l(-7%) saturation(-10%));
+    box-shadow: none;
+}
+
+/* Green button
+/* ---------------------------------------------------------- */
+
+/* The background of the button creates 1px gradient border */
+.gh-btn-green,
+.gh-btn-green:hover {
+    border: 1px solid color-mod(var(--green) s(-5%));
+    color: #fff;
+    fill: #fff;
+    box-shadow: none;
+    transition-property: box-shadow;
+}
+
+.gh-btn-green:hover {
+    box-shadow: none;
+}
+
+/* The background of the span is the main visual element */
+.gh-btn-green span {
+    background: linear-gradient(color-mod(var(--green) l(+6%) s(-2%)), color-mod(var(--green) l(-8%) s(+5%)));
+    font-weight: 500;
+}
+
+.gh-btn-green:hover span {
+    background: linear-gradient(color-mod(var(--green) l(+9%) s(-1%)), color-mod(var(--green) l(-3%) saturation(-3%)));
+}
+
+/* When clicked or focused with keyboard */
+.gh-btn-green:active,
+.gh-btn-green:focus {
+    background: color-mod(var(--green) l(-9%) saturation(-9%));
+}
+.gh-btn-green:active span,
+.gh-btn-green:focus span {
+    background: color-mod(var(--green) l(-3%) saturation(-7%));
     box-shadow: none;
 }
 
