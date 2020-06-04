@@ -96,31 +96,15 @@ module.exports = function MembersApi({
 
     async function getMemberDataFromMagicLinkToken(token) {
         const email = await magicLinkService.getUserFromToken(token);
-        const {labels = [], ip, name = '', oldEmail} = await magicLinkService.getPayloadFromToken(token);
+        const {labels = [], name = '', oldEmail} = await magicLinkService.getPayloadFromToken(token);
         if (!email) {
             return null;
         }
 
         const member = oldEmail ? await getMemberIdentityData(oldEmail) : await getMemberIdentityData(email);
-        let geolocation;
-        if (ip && (!member || !member.geolocation)) {
-            try {
-                // max request time is 500ms so shouldn't slow requests down too much
-                geolocation = JSON.stringify(await getGeolocationFromIP(ip));
-            } catch (err) {
-                // no-op, we don't want to stop anything working due to
-                // geolocation lookup failing but logs can be useful
-                common.logging.warn(err);
-            }
-        }
 
         if (member) {
-            if (geolocation || oldEmail) {
-                // user exists but doesn't have geolocation yet so update it
-                if (geolocation) {
-                    member.geolocation = geolocation;
-                }
-
+            if (oldEmail) {
                 // user exists but wants to change their email address
                 if (oldEmail) {
                     member.email = email;
@@ -131,18 +115,45 @@ module.exports = function MembersApi({
             return member;
         }
 
-        await users.create({name, email, labels, geolocation});
+        await users.create({name, email, labels});
         return getMemberIdentityData(email);
     }
+
     async function getMemberIdentityData(email){
         return users.get({email});
     }
+
     async function getMemberIdentityToken(email){
         const member = await getMemberIdentityData(email);
         if (!member) {
             return null;
         }
         return encodeIdentityToken({sub: member.email});
+    }
+
+    async function setMemberGeolocationFromIp(email, ip) {
+        if (!email || !ip) {
+            return Promise.reject(new common.errors.IncorrectUsageError({
+                message: 'setMemberGeolocationFromIp() expects email and ip arguments to be present'
+            }));
+        }
+
+        const member = await getMemberIdentityData(email);
+
+        if (!member) {
+            return Promise.reject(new common.errors.NotFoundError({
+                message: `Member with email address ${email} does not exist`
+            }));
+        }
+
+        // max request time is 500ms so shouldn't slow requests down too much
+        let geolocation = JSON.stringify(await getGeolocationFromIP(ip));
+        if (geolocation) {
+            member.geolocation = geolocation;
+            await users.update(member, {id: member.id});
+        }
+
+        return getMemberIdentityData(email);
     }
 
     const middleware = {
@@ -154,9 +165,8 @@ module.exports = function MembersApi({
     };
 
     middleware.sendMagicLink.use(body.json(), async function (req, res) {
-        const {ip, body} = req;
-        const {email, emailType, oldEmail} = body;
-        const payload = {ip};
+        const {email, emailType, oldEmail} = req.body;
+        const payload = {};
 
         if (!email) {
             res.writeHead(400);
@@ -429,6 +439,7 @@ module.exports = function MembersApi({
         getMemberDataFromMagicLinkToken,
         getMemberIdentityToken,
         getMemberIdentityData,
+        setMemberGeolocationFromIp,
         getPublicConfig,
         bus,
         sendEmailWithMagicLink,
