@@ -34,7 +34,7 @@ const ORDERS = [{
 }];
 
 export default Controller.extend({
-
+    session: service(),
     store: service(),
 
     // default values for these are set in `init` and defined in `helpers/reset-query-params`
