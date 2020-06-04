@@ -175,6 +175,9 @@
                     "max": 300
                 }
             }
+        },
+        "shared_views": {
+            "defaultValue": "{}"
         }
     },
     "theme": {
