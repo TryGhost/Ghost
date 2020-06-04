@@ -53,17 +53,16 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
         });
     },
 
-    save() {
+    async save() {
         let settings = this.content;
 
         if (!settings) {
             return false;
         }
 
-        return settings.save().then((settings) => {
-            this.set('settledIcon', get(settings, 'icon'));
-            return settings;
-        });
+        await settings.save();
+        this.set('settledIcon', settings.icon);
+        return settings;
     },
 
     rollbackAttributes() {
