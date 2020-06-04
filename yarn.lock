@@ -541,10 +541,10 @@
     node-jose "^1.1.3"
     stripe "^7.4.0"
 
-"@tryghost/members-ssr@0.7.10":
-  version "0.7.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.7.10.tgz#302f2b048e5b44ad0b7634a8b34372b38b95a86f"
-  integrity sha512-W8UVaXQveCEsCigv48gcEGHbw3ULomKhYeU9aNY0SJiXVqCfyfGuLLBxgi6vxa97SubSNw9ctX/wquKxoP1gVw==
+"@tryghost/members-ssr@0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-0.8.0.tgz#ea3337b2f607ad2c90edf6dcb3d29d0075c30407"
+  integrity sha512-B7zhwA6rkI8EurTTREnOWCXe6w4af8L6eXvIuPIdEgLnVgm/4ugKUghhufKrWoLYmKPQVNCGOy/PJwtKEFszug==
   dependencies:
     bluebird "^3.5.3"
     concat-stream "^2.0.0"
