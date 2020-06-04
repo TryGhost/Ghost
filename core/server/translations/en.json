@@ -373,7 +373,8 @@
                 "tagNotFound": "Tag not found."
             },
             "labels": {
-                "labelNotFound": "Label not found."
+                "labelNotFound": "Label not found.",
+                "labelAlreadyExists": "Label already exists"
             },
             "themes": {
                 "noPermissionToBrowseThemes": "You do not have permission to browse themes.",

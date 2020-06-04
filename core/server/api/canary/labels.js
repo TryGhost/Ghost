@@ -76,8 +76,16 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
-            return models.Label.add(frame.data.labels[0], frame.options);
+        async query(frame) {
+            try {
+                return await models.Label.add(frame.data.labels[0], frame.options);
+            } catch (error) {
+                if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
+                    throw new errors.ValidationError({message: i18n.t('errors.api.labels.labelAlreadyExists')});
+                }
+
+                throw error;
+            }
         }
     },
 
