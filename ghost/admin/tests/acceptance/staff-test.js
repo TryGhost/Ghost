@@ -522,7 +522,12 @@ describe('Acceptance: Staff', function () {
                 // Save changes
                 await click('[data-test-save-button]');
 
-                expect(find('[data-test-save-button]').textContent.trim(), 'save button text').to.equal('Saved');
+                // Since we reset save status so there's no on-screen indication
+                // that we've had a save, check the request was fired instead
+                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                let params = JSON.parse(lastRequest.requestBody);
+
+                expect(params.users[0].name).to.equal('Test User');
 
                 // CMD-S shortcut works
                 await fillIn('[data-test-slug-input]', 'Test User');
@@ -532,10 +537,10 @@ describe('Acceptance: Staff', function () {
                     ctrlKey: ctrlOrCmd === 'ctrl'
                 });
 
-                // we've already saved in this test so there's no on-screen indication
-                // that we've had another save, check the request was fired instead
-                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                let params = JSON.parse(lastRequest.requestBody);
+                // Since we reset save status so there's no on-screen indication
+                // that we've had a save, check the request was fired instead
+                [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                params = JSON.parse(lastRequest.requestBody);
 
                 expect(params.users[0].name).to.equal('Test User');
 
