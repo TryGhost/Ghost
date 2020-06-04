@@ -156,16 +156,17 @@ describe('Acceptance: Content', function () {
         });
 
         it('can navigate to custom views', async function () {
-            admin.accessibility = JSON.stringify({
-                views: [{
+            this.server.create('setting', {
+                type: 'blog',
+                key: 'shared_views',
+                value: JSON.stringify([{
                     route: 'posts',
                     name: 'My posts',
                     filter: {
                         author: admin.slug
                     }
-                }]
+                }])
             });
-            admin.save();
 
             await visit('/posts');
 
