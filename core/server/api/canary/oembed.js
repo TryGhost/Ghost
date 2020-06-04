@@ -1,9 +1,10 @@
 const common = require('../../lib/common');
 const {extract, hasProvider} = require('oembed-parser');
 const Promise = require('bluebird');
-const request = require('../../lib/request');
+const externalRequest = require('../../lib/request-external');
 const cheerio = require('cheerio');
 const _ = require('lodash');
+const {URL} = require('url');
 
 async function fetchBookmarkData(url, html) {
     const metascraper = require('metascraper')([
@@ -21,7 +22,7 @@ async function fetchBookmarkData(url, html) {
 
     try {
         if (!html) {
-            const response = await request(url, {
+            const response = await externalRequest(url, {
                 headers: {
                     'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
                 }
@@ -124,7 +125,7 @@ function fetchOembedData(_url) {
 
     // url not in oembed list so fetch it in case it's a redirect or has a
     // <link rel="alternate" type="application/json+oembed"> element
-    return request(url, {
+    return externalRequest(url, {
         method: 'GET',
         timeout: 2 * 1000,
         followRedirect: true,
@@ -155,7 +156,7 @@ function fetchOembedData(_url) {
             }
 
             // fetch oembed response from embedded rel="alternate" url
-            return request(oembedUrl, {
+            return externalRequest(oembedUrl, {
                 method: 'GET',
                 json: true,
                 timeout: 2 * 1000,

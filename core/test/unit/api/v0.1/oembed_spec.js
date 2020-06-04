@@ -1,9 +1,22 @@
 const common = require('../../../../server/lib/common');
+const sinon = require('sinon');
 const nock = require('nock');
 const OembedAPI = require('../../../../server/api/v0.1/oembed');
 const should = require('should');
 
+// for sinon
+const dns = require('dns');
+
 describe('API: oembed', function () {
+    beforeEach(function () {
+        sinon.stub(dns, 'lookup').yields(null, '123.123.123.123', 4);
+    });
+
+    afterEach(function () {
+        sinon.restore();
+        nock.cleanAll();
+    });
+
     describe('fn: read', function () {
         // https://oembed.com/providers.json only has schemes for https://reddit.com
         it('finds match for unlisted http scheme', function (done) {

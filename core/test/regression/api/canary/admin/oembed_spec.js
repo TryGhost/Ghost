@@ -1,9 +1,13 @@
 const nock = require('nock');
+const sinon = require('sinon');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../../utils');
 const config = require('../../../../../server/config');
 const localUtils = require('./utils');
+
+// for sinon
+const dns = require('dns');
 
 const ghost = testUtils.startGhost;
 
@@ -19,6 +23,15 @@ describe('Oembed API (canary)', function () {
             .then(() => {
                 return localUtils.doAuth(request);
             });
+    });
+
+    beforeEach(function () {
+        sinon.stub(dns, 'lookup').yields(null, '123.123.123.123', 4);
+    });
+
+    afterEach(function () {
+        sinon.restore();
+        nock.cleanAll();
     });
 
     it('can fetch an embed', function (done) {

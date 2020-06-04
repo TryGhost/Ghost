@@ -1,9 +1,13 @@
 const config = require('../../../../server/config/index');
+const sinon = require('sinon');
 const nock = require('nock');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../utils/index');
 const localUtils = require('./utils');
+
+// for sinon
+const dns = require('dns');
 
 const ghost = testUtils.startGhost;
 
@@ -22,6 +26,15 @@ describe('Oembed API', function () {
             .then((token) => {
                 accesstoken = token;
             });
+    });
+
+    beforeEach(function () {
+        sinon.stub(dns, 'lookup').yields(null, '123.123.123.123', 4);
+    });
+
+    afterEach(function () {
+        sinon.restore();
+        nock.cleanAll();
     });
 
     describe('success', function () {
