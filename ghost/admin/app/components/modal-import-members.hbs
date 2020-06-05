@@ -1,9 +1,9 @@
 <header class="modal-header" data-test-modal="import-members">
     <h1>
         {{#if this.response}}
-            Import result
+            Import complete
         {{else}}
-            Import
+            Import members
         {{/if}}
     </h1>
 </header>
@@ -68,7 +68,11 @@
 {{/if}}
 
 <div class="modal-footer {{if (and this.filePresent (not this.failureMessage) (not this.response)) "modal-footer-spread"}}">
-    {{#if (and this.filePresent (not this.failureMessage) (not this.response))}}
+    {{#if this.response}}
+        <button {{action "closeModal"}} disabled={{this.closeDisabled}} class="gh-btn gh-btn-blue" data-test-button="close-import-members">
+            <span>Done</span>
+        </button>
+    {{else if (and this.filePresent (not this.failureMessage))}}
         <button {{action "reset"}} class="gh-btn" data-test-button="close-import-members">
             <span>Start over</span>
         </button>
