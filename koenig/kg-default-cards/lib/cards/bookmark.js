@@ -43,7 +43,7 @@ module.exports = {
     type: 'dom',
 
     render({payload, env: {dom}}) {
-        if (!payload.metadata || !payload.metadata.url || !payload.metadata.title || !payload.metadata.description) {
+        if (!payload.metadata || !payload.metadata.url || !payload.metadata.title) {
             return dom.createTextNode('');
         }
 

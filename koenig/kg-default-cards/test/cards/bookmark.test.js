@@ -28,6 +28,22 @@ describe('Bookmark card', function () {
             .should.equal('<figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure>');
     });
 
+    it('keeps description element description is blank', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {
+                metadata: {
+                    url: 'http://example.com',
+                    title: 'Test bookmark',
+                    description: null
+                }
+            }
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.equal('<figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Test bookmark</div><div class="kg-bookmark-description"></div><div class="kg-bookmark-metadata"></div></div></a></figure>');
+    });
+
     it('skips icon when missing', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
@@ -181,22 +197,6 @@ describe('Bookmark card', function () {
                     url: 'http://example.com',
                     title: null,
                     description: 'This is just a test'
-                }
-            }
-        };
-
-        serializer.serialize(card.render(opts))
-            .should.equal('');
-    });
-
-    it('renders nothing when description is missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
-            payload: {
-                metadata: {
-                    url: 'http://example.com',
-                    title: 'Test bookmark',
-                    description: null
                 }
             }
         };
