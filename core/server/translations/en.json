@@ -351,6 +351,7 @@
             "settings": {
                 "problemFindingSetting": "Problem finding setting: {key}",
                 "accessCoreSettingFromExtReq": "Attempted to access core setting from external request",
+                "invalidEmailReceived": "Please send a valid email",
                 "activeThemeSetViaAPI": {
                     "error": "Attempted to change active_theme via settings API",
                     "help": "Please activate theme via the themes API endpoints instead"

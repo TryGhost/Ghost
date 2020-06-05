@@ -2,6 +2,7 @@ const MembersSSR = require('@tryghost/members-ssr');
 
 const MembersConfigProvider = require('./config');
 const createMembersApiInstance = require('./api');
+const createMembersSettingsInstance = require('./settings');
 const {events} = require('../../lib/common');
 const logging = require('../../../shared/logging');
 const urlUtils = require('../../../shared/url-utils');
@@ -18,6 +19,7 @@ const membersConfig = new MembersConfigProvider({
 });
 
 let membersApi;
+let membersSettings;
 
 // Bind to events to automatically keep subscription info up-to-date from settings
 events.on('settings.edited', function updateSettingFromModel(settingModel) {
@@ -48,6 +50,13 @@ const membersService = {
             });
         }
         return membersApi;
+    },
+
+    get settings() {
+        if (!membersSettings) {
+            membersSettings = createMembersSettingsInstance(membersConfig);
+        }
+        return membersSettings;
     },
 
     ssr: MembersSSR({
