@@ -139,7 +139,57 @@ describe('Members API', function () {
     it('Can import CSV with minimum one field', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/csv/`))
+            .field('labels', ['global-label-1', 'global-label-1'])
+            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-labels.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.meta);
+                should.exist(jsonResponse.meta.stats);
+
+                jsonResponse.meta.stats.imported.should.equal(2);
+                jsonResponse.meta.stats.duplicates.should.equal(0);
+                jsonResponse.meta.stats.invalid.should.equal(0);
+            })
+            .then(() => {
+                return request
+                    .get(localUtils.API.getApiQuery(`members/?search=${encodeURIComponent('member+labels_1@example.com')}`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200);
+            })
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.members);
+                should.exist(jsonResponse.members[0]);
+
+                const importedMember1 = jsonResponse.members[0];
+                should(importedMember1.email).equal('member+labels_1@example.com');
+                should(importedMember1.name).equal(null);
+                should(importedMember1.note).equal(null);
+                importedMember1.subscribed.should.equal(true);
+                importedMember1.comped.should.equal(false);
+                importedMember1.stripe.should.not.be.undefined();
+                importedMember1.stripe.subscriptions.length.should.equal(0);
+                importedMember1.labels.length.should.equal(2);
+            });
+    });
+
+    it('Can import CSV with labels and provide additional labels', function () {
+        return request
+            .post(localUtils.API.getApiQuery(`members/csv/`))
             .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-defaults.csv'))
+
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -226,8 +276,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 2 from fixtures and 3 imported in previous tests
-                jsonResponse.total.should.equal(5);
+                // 2 from fixtures and 5 imported in previous tests
+                jsonResponse.total.should.equal(7);
             });
     });
 
@@ -250,8 +300,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 2 from fixtures and 3 imported in previous tests
-                jsonResponse.total.should.equal(5);
+                // 2 from fixtures and 5 imported in previous tests
+                jsonResponse.total.should.equal(7);
             });
     });
 
@@ -274,8 +324,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 2 from fixtures and 3 imported in previous tests
-                jsonResponse.total.should.equal(5);
+                // 2 from fixtures and 5 imported in previous tests
+                jsonResponse.total.should.equal(7);
             });
     });
 

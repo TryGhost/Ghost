@@ -67,7 +67,11 @@ const sanitizeInput = (members) => {
 };
 
 function serializeMemberLabels(labels) {
-    if (labels) {
+    if (_.isString(labels)) {
+        return [{
+            name: labels.trim()
+        }];
+    } else if (labels) {
         return labels.filter((label) => {
             return !!label;
         }).map((label) => {
@@ -94,6 +98,27 @@ const listMembers = async function (options) {
         members: members,
         meta: res.meta
     };
+};
+
+const createLabels = async (labels, options) => {
+    const api = require('./index');
+
+    return await Promise.all(labels.map((label) => {
+        return api.labels.add.query({
+            data: {
+                labels: [label]
+            },
+            options: {
+                context: options.context
+            }
+        }).catch((error) => {
+            if (error.errorType === 'ValidationError') {
+                return;
+            }
+
+            throw error;
+        });
+    }));
 };
 
 const members = {
@@ -341,6 +366,11 @@ const members = {
                 lookup: /created_at/i
             }];
 
+            // NOTE: custom labels have to be created in advance otherwise there are conflicts
+            //       when processing member creation in parallel later on in import process
+            const importSetLabels = serializeMemberLabels(frame.data.labels);
+            await createLabels(importSetLabels, frame.options);
+
             return fsLib.readCSV({
                 path: filePath,
                 columnsToExtract: columnsToExtract
@@ -352,6 +382,8 @@ const members = {
                     const api = require('./index');
                     entry.labels = (entry.labels && entry.labels.split(',')) || [];
                     const entryLabels = serializeMemberLabels(entry.labels);
+                    const mergedLabels = _.unionBy(entryLabels, importSetLabels, 'name');
+
                     cleanupUndefined(entry);
 
                     let subscribed;
@@ -370,7 +402,7 @@ const members = {
                                 subscribed: subscribed,
                                 stripe_customer_id: entry.stripe_customer_id,
                                 comped: (String(entry.complimentary_plan).toLocaleLowerCase() === 'true'),
-                                labels: entryLabels,
+                                labels: mergedLabels,
                                 created_at: entry.created_at === '' ? undefined : entry.created_at
                             }]
                         },
