@@ -11,6 +11,9 @@
     "lint": "eslint . --ext .js --cache",
     "posttest": "yarn lint"
   },
+  "engines": {
+    "node": "^10.13.0 || >=12.10.0"
+  },
   "files": [
     "index.js",
     "lib"
