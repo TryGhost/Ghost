@@ -116,13 +116,11 @@ export default class MemberController extends Controller {
         let scratchProps = scratchMember.getProperties(SCRATCH_PROPS);
         member.setProperties(scratchProps);
 
-        if (!member.isNew) {
-            this.membersStats.invalidate();
-        }
-
         try {
             yield member.save();
             member.updateLabels();
+            this.members.refreshData();
+
             // replace 'member.new' route with 'member' route
             this.replaceRoute('member', member);
 
