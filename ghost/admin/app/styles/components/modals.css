@@ -145,6 +145,10 @@
     margin-top: 20px;
 }
 
+.modal-footer-spread {
+    justify-content: space-between;
+}
+
 .modal-footer button {
     margin-left: 12px;
     min-width: 100px;
