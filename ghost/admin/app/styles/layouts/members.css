@@ -394,7 +394,25 @@ textarea.gh-member-details-textarea {
 /* Import modal
 /* ---------------------------------------------------------- */
 
+.gh-members-import-uploader {
+    width: 100%;
+    min-height: 180px;
+}
+
 .gh-members-import-results {
     margin: 0;
     width: auto;
+}
+
+.gh-members-import-file {
+    min-height: 180px;
+}
+
+.gh-members-upload-failuremessage {
+    background: color-mod(var(--red) a(7%));
+    border: 1px solid var(--red);
+    border-radius: 4px;
+    padding: 8px;
+    color: var(--red);
+    margin-bottom: 20px;
 }

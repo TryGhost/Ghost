@@ -3,18 +3,14 @@
         {{#if this.response}}
             Import result
         {{else}}
-            Import {{#if this.filePresent}}<a href="#" {{action "reset"}}><span>(start over)</span></a>{{/if}}
+            Import
         {{/if}}
     </h1>
 </header>
 <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
-{{#if this.failureMessage}}
-    <div class="failed bg-red-l1 ba">{{this.failureMessage}}</div>
-{{/if}}
-
-<div class="modal-body bg-whitegrey-l2 ba b--whitegrey br3">
-    {{#if this.response}}
+{{#if this.response}}
+    <div class="modal-body bg-whitegrey-l2 ba b--whitegrey br3">
         <table class="gh-members-import-results">
             <tr>
                 <td>Imported:</td>
@@ -33,38 +29,53 @@
                 </tr>
             {{/if}}
         </table>
-    {{else}}
-        {{#if this.filePresent}}
+    </div>
+{{else}}
+    <div class="modal-body">
+        {{#if (and this.filePresent (not this.failureMessage))}}
             <GhFormGroup>
-                <label for="label-input">Labels</label>
-                <GhMemberLabelInput @member={{this.labels}} @triggerId="label-input" />
+                <div class="bg-whitegrey-l2 ba b--whitegrey br3">
+                    <div class="flex flex-column items-center justify-center gh-members-import-file">
+                        {{svg-jar "file-tabular-data" class="w9 h9 mb1 stroke-midgrey"}}
+                        <div class="description midgrey">{{this.file.name}}</div>
+                    </div>
+                </div>
+                <div class="mt4">
+                    <label for="label-input"><span class="fw6 f8 dib mb1">Labels</span></label>
+                    <GhMemberLabelInput @member={{this.labels}} @triggerId="label-input" />
+                    <p>Will be applied to all newly imported members</p>
+                </div>
             </GhFormGroup>
         {{else}}
-            <div class="upload-form">
-                <section class="gh-image-uploader {{this.dragClass}}">
+            {{#if this.failureMessage}}
+                <div class="failed flex items-center gh-members-upload-failuremessage">
+                    {{svg-jar "warning" class="w4 h4 fill-red mr1"}}
+                    {{this.failureMessage}}
+                </div>
+            {{/if}}
+            <div class="upload-form bg-whitegrey-l2 ba b--whitegrey br3">
+                <section class="gh-image-uploader gh-members-import-uploader {{this.dragClass}}">
                     <GhFileInput @multiple={{false}} @alt={{this.labelText}} @action={{action "fileSelected"}} @accept={{this.accept}}>
-                        <div class="description">{{this.labelText}}</div>
+                        <div class="flex flex-column items-center">
+                            {{svg-jar "upload" class="w9 h9 mb1 stroke-midgrey"}}
+                            <div class="description midgrey">{{this.labelText}}</div>
+                        </div>
                     </GhFileInput>
                 </section>
             </div>
         {{/if}}
-    {{/if}}
-</div>
+    </div>
+{{/if}}
 
-<div class="modal-footer">
-    {{#if this.response}}
+<div class="modal-footer {{if (and this.filePresent (not this.failureMessage) (not this.response)) "modal-footer-spread"}}">
+    {{#if (and this.filePresent (not this.failureMessage) (not this.response))}}
+        <button {{action "reset"}} class="gh-btn" data-test-button="close-import-members">
+            <span>Start over</span>
+        </button>
+        <button class="gh-btn gh-btn-green" {{action "upload"}} disabled={{this.importDisabled}}><span>Import</span></button>
+    {{else}}
         <button {{action "closeModal"}} disabled={{this.closeDisabled}} class="gh-btn" data-test-button="close-import-members">
             <span>Close</span>
         </button>
-    {{else if this.failureMessage}}
-        <button {{action "closeModal"}} disabled={{this.closeDisabled}} class="gh-btn" data-test-button="close-import-members">
-            <span>Cancel</span>
-        </button>
-    {{else}}
-        <button {{action "closeModal"}} disabled={{this.closeDisabled}} class="gh-btn" data-test-button="close-import-members">
-            <span>Cancel</span>
-        </button>
-
-        <button class="gh-btn gh-btn-green" {{action "upload"}} disabled={{this.importDisabled}}><span>Import</span></button>
     {{/if}}
 </div>
