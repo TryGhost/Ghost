@@ -209,6 +209,11 @@ const members = {
 
                 // NOTE: failed to link Stripe customer/plan/subscription
                 if (model && error.message && (error.message.indexOf('customer') || error.message.indexOf('plan') || error.message.indexOf('subscription'))) {
+                    if (error.message.indexOf('customer') && error.code === 'resource_missing') {
+                        error.context = i18n.t('errors.api.members.stripeCustomerNotFound.context');
+                        error.help = i18n.t('errors.api.members.stripeCustomerNotFound.help');
+                    }
+
                     const api = require('./index');
 
                     await api.members.destroy.query({
