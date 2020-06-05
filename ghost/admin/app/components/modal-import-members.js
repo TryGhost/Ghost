@@ -39,7 +39,7 @@ export default ModalComponent.extend({
     }),
 
     importDisabled: computed('file', function () {
-        return !this.file || !(this._validate(this.file));
+        return !this.file || !(this._validateFileType(this.file));
     }),
 
     formData: computed('file', function () {
@@ -80,18 +80,15 @@ export default ModalComponent.extend({
     },
 
     actions: {
-        fileSelected(fileList, resetInput) {
+        fileSelected(fileList) {
             let [file] = Array.from(fileList);
-            let validationResult = this._validate(file);
-
-            this.set('file', file);
+            let validationResult = this._validateFileType(file);
 
             if (validationResult !== true) {
                 this._uploadFailed(validationResult);
-
-                if (resetInput) {
-                    resetInput();
-                }
+            } else {
+                this.set('file', file);
+                this.set('failureMessage', null);
             }
         },
 
@@ -222,7 +219,7 @@ export default ModalComponent.extend({
         this.set('failureMessage', message);
     },
 
-    _validate(file) {
+    _validateFileType(file) {
         let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
         let extensions = this.extensions;
 
