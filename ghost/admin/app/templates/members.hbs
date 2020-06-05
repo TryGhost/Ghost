@@ -71,7 +71,7 @@
                                 {{svg-jar "members-placeholder" class="gh-members-placeholder"}}
                                 {{#if this.showingAll}}
                                     <h3>No members yet</h3>
-                                    <GhMembersNoMembers />
+                                    <GhMembersNoMembers @afterCreate={{this.refreshData}} />
                                 {{else}}
                                     <h3>No members match the current filter</h3>
                                 {{/if}}

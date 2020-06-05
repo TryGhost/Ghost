@@ -1,38 +1,45 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task} from 'ember-concurrency-decorators';
 
-export default Component.extend({
-    session: service(),
-    store: service(),
-    notifications: service(),
+export default class GhMembersNoMembersComponent extends Component {
+    @service session;
+    @service store;
+    @service notifications;
 
-    actions: {
-        addYourself() {
-            return this.add.perform();
-        }
-    },
+    @action
+    addYourself() {
+        return this.addTask.perform();
+    }
 
-    add: task(function* () {
+    @task({drop: true})
+    *addTask() {
+        const user = yield this.session.user;
+
         const member = this.store.createRecord('member', {
-            email: this.get('session.user.email'),
-            name: this.get('session.user.name')
+            email: user.get('email'),
+            name: user.get('name')
         });
 
         try {
-            // NOTE: has to be before member.save() is performed otherwise component is
-            //       destroyed before notification is shown
+            yield member.save();
+
+            if (this.args.afterCreate) {
+                this.args.afterCreate();
+            }
+
             this.notifications.showNotification('Member added'.htmlSafe(),
                 {
                     description: 'You\'ve successfully added yourself as a member.'
                 }
             );
 
-            return yield member.save();
+            return member;
         } catch (error) {
             if (error) {
                 this.notifications.showAPIError(error, {key: 'member.save'});
             }
         }
-    }).drop()
-});
+    }
+}
