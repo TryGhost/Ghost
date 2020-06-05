@@ -178,17 +178,17 @@ function _matchLink(editor, text) {
     let matches = text.match(/(?:^|\s)\[([^\s\]]*|[^\s\]][^\]]*[^\s\]])\]\(([^\s)]+|[^\s)][^)]*[^\s)])\)/);
     if (matches) {
         let url = matches[2];
-        let text = matches[1] || url;
-        let hasText = !!matches[1];
+        let linkText = matches[1] || url;
+        let hasLinkText = !!matches[1];
         let match = matches[0].trim();
         range = range.extend(-match.length);
 
         editor.run((postEditor) => {
-            let startPos = postEditor.deleteRange(range.head.toRange().extend(hasText ? 1 : 3));
-            let textRange = startPos.toRange().extend(text.length);
+            let startPos = postEditor.deleteRange(range.head.toRange().extend(hasLinkText ? 1 : 3));
+            let textRange = startPos.toRange().extend(linkText.length);
             let a = postEditor.builder.createMarkup('a', {href: url});
             postEditor.addMarkupToRange(textRange, a);
-            let remainingRange = textRange.tail.toRange().extend(hasText ? (matches[2] || url).length + 3 : 1);
+            let remainingRange = textRange.tail.toRange().extend(hasLinkText ? (matches[2] || url).length + 3 : 1);
             let endPos = postEditor.deleteRange(remainingRange);
             postEditor.setRange(endPos.toRange());
         });
@@ -235,12 +235,12 @@ function _matchImage(editor, text) {
     }
 }
 
-function registerDashTextExpansions(editor) {
+function registerDashTextExpansions(mobiledocEditor) {
     // --\s = en dash –
     // ---. = em dash —
     // separate to the grouped replacement functions because we're matching on
     // the trailing character which can be anything
-    editor.onTextInput({
+    mobiledocEditor.onTextInput({
         name: 'hyphens',
         match: /---?.$/,
         run(editor) {
@@ -286,14 +286,14 @@ function registerDashTextExpansions(editor) {
     });
 }
 
-function registerInlineMarkdownTextExpansions(editor) {
+function registerInlineMarkdownTextExpansions(mobiledocEditor) {
     // We don't want to run all our content rules on every text entry event,
     // instead we check to see if this text entry event could match a content
     // rule, and only then run the rules. Right now we only want to match
     // content ending with *, _, ), ~, and `. This could increase as we support
     // more markdown.
 
-    editor.onTextInput({
+    mobiledocEditor.onTextInput({
         name: 'inline_markdown',
         match: /[*_)~`^]$/,
         run(editor, matches) {
@@ -327,11 +327,11 @@ function registerInlineMarkdownTextExpansions(editor) {
     });
 }
 
-export default function (editor, koenig) {
+export default function (mobiledocEditor, koenig) {
     /* block level markdown ------------------------------------------------- */
 
-    editor.unregisterTextInputHandler('heading');
-    editor.onTextInput({
+    mobiledocEditor.unregisterTextInputHandler('heading');
+    mobiledocEditor.onTextInput({
         name: 'md_heading',
         match: /^(#{1,6}) /,
         run(editor, matches) {
@@ -359,8 +359,8 @@ export default function (editor, koenig) {
         }
     });
 
-    editor.unregisterTextInputHandler('ul');
-    editor.onTextInput({
+    mobiledocEditor.unregisterTextInputHandler('ul');
+    mobiledocEditor.onTextInput({
         name: 'md_ul',
         match: /^\* |^- /,
         run(editor, matches) {
@@ -368,8 +368,8 @@ export default function (editor, koenig) {
         }
     });
 
-    editor.unregisterTextInputHandler('ol');
-    editor.onTextInput({
+    mobiledocEditor.unregisterTextInputHandler('ol');
+    mobiledocEditor.onTextInput({
         name: 'md_ol',
         match: /^1\.? /,
         run(editor, matches) {
@@ -377,7 +377,7 @@ export default function (editor, koenig) {
         }
     });
 
-    editor.onTextInput({
+    mobiledocEditor.onTextInput({
         name: 'md_blockquote',
         match: /^> /,
         run(editor, matches) {
@@ -400,7 +400,7 @@ export default function (editor, koenig) {
         }
     });
 
-    editor.onTextInput({
+    mobiledocEditor.onTextInput({
         name: 'md_hr',
         match: /^---$/,
         run(editor) {
@@ -420,7 +420,7 @@ export default function (editor, koenig) {
         }
     });
 
-    editor.onTextInput({
+    mobiledocEditor.onTextInput({
         name: 'md_code',
         match: /^```([a-zA-Z0-9]*)(\s)$/,
         run(editor, matches) {
@@ -453,28 +453,28 @@ export default function (editor, koenig) {
 
     // must come after block expansions so that the smart hyphens expansion
     // doesn't break the divider card expansion
-    registerDashTextExpansions(editor);
-    registerInlineMarkdownTextExpansions(editor);
+    registerDashTextExpansions(mobiledocEditor);
+    registerInlineMarkdownTextExpansions(mobiledocEditor);
 }
 
 // TODO: reduce duplication
-export function registerBasicTextExpansions(editor) {
+export function registerBasicTextExpansions(mobiledocEditor) {
     // unregister mobiledoc-kit's block-level text handlers
-    editor.unregisterTextInputHandler('heading');
-    editor.unregisterTextInputHandler('ul');
-    editor.unregisterTextInputHandler('ol');
+    mobiledocEditor.unregisterTextInputHandler('heading');
+    mobiledocEditor.unregisterTextInputHandler('ul');
+    mobiledocEditor.unregisterTextInputHandler('ol');
 
-    registerDashTextExpansions(editor);
-    registerInlineMarkdownTextExpansions(editor);
+    registerDashTextExpansions(mobiledocEditor);
+    registerInlineMarkdownTextExpansions(mobiledocEditor);
 }
 
 // TODO: reduce duplication
-export function registerTextReplacementTextExpansions(editor, koenig) {
+export function registerTextReplacementTextExpansions(mobiledocEditor, koenig) {
     // unregister mobiledoc-kit's block-level text handlers
-    editor.unregisterTextInputHandler('heading');
+    mobiledocEditor.unregisterTextInputHandler('heading');
 
-    editor.unregisterTextInputHandler('ul');
-    editor.onTextInput({
+    mobiledocEditor.unregisterTextInputHandler('ul');
+    mobiledocEditor.onTextInput({
         name: 'md_ul',
         match: /^\* |^- /,
         run(editor, matches) {
@@ -482,8 +482,8 @@ export function registerTextReplacementTextExpansions(editor, koenig) {
         }
     });
 
-    editor.unregisterTextInputHandler('ol');
-    editor.onTextInput({
+    mobiledocEditor.unregisterTextInputHandler('ol');
+    mobiledocEditor.onTextInput({
         name: 'md_ol',
         match: /^1\.? /,
         run(editor, matches) {
@@ -491,7 +491,7 @@ export function registerTextReplacementTextExpansions(editor, koenig) {
         }
     });
 
-    editor.onTextInput({
+    mobiledocEditor.onTextInput({
         name: 'md_blockquote',
         match: /^> /,
         run(editor, matches) {
@@ -515,7 +515,7 @@ export function registerTextReplacementTextExpansions(editor, koenig) {
     });
 
     // as per registerInlineMarkdownTextExpansions but without ` for code and image matches
-    editor.onTextInput({
+    mobiledocEditor.onTextInput({
         name: 'inline_markdown',
         match: /[*_)~^]$/,
         run(editor, matches) {
@@ -544,7 +544,7 @@ export function registerTextReplacementTextExpansions(editor, koenig) {
         }
     });
 
-    editor.onTextInput({
+    mobiledocEditor.onTextInput({
         name: 'text_replacement',
         match: /\}$/,
         run(editor) {
