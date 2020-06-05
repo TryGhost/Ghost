@@ -367,7 +367,11 @@
             },
             "members": {
                 "memberNotFound": "Member not found.",
-                "memberAlreadyExists": "Email address is already member."
+                "memberAlreadyExists": "Email address is already member.",
+                "stripeCustomerNotFound": {
+                    "context": "The customer does not exist in currently linked Stripe account.",
+                    "help": "Connect the correct Stripe account, and re-run the import."
+                }
             },
             "tags": {
                 "tagNotFound": "Tag not found."
