@@ -53,7 +53,7 @@ describe('Integration: Component: modal-import-members-test', function () {
         await render(hbs`{{modal-import-members}}`);
 
         expect(find('h1').textContent.trim(), 'default header')
-            .to.equal('Import');
+            .to.equal('Import members');
         expect(find('.description').textContent.trim(), 'upload label')
             .to.equal('Select or drag-and-drop a CSV File');
     });
