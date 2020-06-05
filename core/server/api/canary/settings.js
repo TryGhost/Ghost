@@ -1,5 +1,6 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
+const validator = require('validator');
 const models = require('../../models');
 const routing = require('../../../frontend/services/routing');
 const {i18n} = require('../../lib/common');
@@ -77,6 +78,75 @@ module.exports = {
             return {
                 [frame.options.key]: setting
             };
+        }
+    },
+
+    validateMembersFromEmail: {
+        options: [
+            'token'
+        ],
+        permissions: false,
+        validation: {
+            options: {
+                token: {
+                    required: true
+                }
+            }
+        },
+        async query(frame) {
+            // This is something you have to do if you want to use the "framework" with access to the raw req/res
+            frame.response = async function (req, res) {
+                try {
+                    const updatedFromAddress = membersService.settings.getEmailFromToken({token: frame.options.token});
+                    if (updatedFromAddress) {
+                        let subscriptionSetting = settingsCache.get('members_subscription_settings', {resolve: false});
+                        const settingsValue = subscriptionSetting.value ? JSON.parse(subscriptionSetting.value) : {};
+                        settingsValue.fromAddress = updatedFromAddress;
+                        return models.Settings.edit({
+                            key: 'members_subscription_settings',
+                            value: JSON.stringify(settingsValue)
+                        }).then(() => {
+                            // Redirect to Ghost-Admin settings page
+                            const adminLink = membersService.settings.getAdminRedirectLink();
+                            res.redirect(adminLink);
+                        });
+                    } else {
+                        return Promise.reject(new BadRequestError({
+                            message: 'Invalid token!'
+                        }));
+                    }
+                } catch (err) {
+                    return Promise.reject(new BadRequestError({
+                        err,
+                        message: 'Invalid token!'
+                    }));
+                }
+            };
+        }
+    },
+
+    updateMembersFromEmail: {
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            const email = frame.data.from_address;
+            if (typeof email !== 'string' || !validator.isEmail(email)) {
+                throw new BadRequestError({
+                    message: i18n.t('errors.api.settings.invalidEmailReceived')
+                });
+            }
+            try {
+                // Send magic link to update fromAddress
+                await membersService.settings.sendFromAddressUpdateMagicLink({
+                    email
+                });
+            } catch (err) {
+                throw new BadRequestError({
+                    err,
+                    message: i18n.t('errors.mail.failedSendingEmail.error')
+                });
+            }
         }
     },
 

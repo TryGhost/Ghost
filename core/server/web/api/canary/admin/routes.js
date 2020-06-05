@@ -61,6 +61,8 @@ module.exports = function apiRoutes() {
     router.get('/settings', mw.authAdminApi, http(apiCanary.settings.browse));
     router.get('/settings/:key', mw.authAdminApi, http(apiCanary.settings.read));
     router.put('/settings', mw.authAdminApi, http(apiCanary.settings.edit));
+    router.get('/settings/members/email', http(apiCanary.settings.validateMembersFromEmail));
+    router.post('/settings/members/email', mw.authAdminApi, http(apiCanary.settings.updateMembersFromEmail));
 
     // ## Users
     router.get('/users', mw.authAdminApi, http(apiCanary.users.browse));

@@ -478,7 +478,7 @@
 
 "@tryghost/magic-link@^0.4.8":
   version "0.4.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-0.4.8.tgz#70cd6fa7aeb433a8bb09eefab68b35db6a8d85e8"
+  resolved "https://registry.npmjs.org/@tryghost/magic-link/-/magic-link-0.4.8.tgz#70cd6fa7aeb433a8bb09eefab68b35db6a8d85e8"
   integrity sha512-WvaXzT0v0T6Au0HRQS5wcoeEqjKT+qHZi9Lo9yCOppxra7QqSywpxrv+SZI3GOQo8yjZ1moVcqF4T5YB0UH+dQ==
   dependencies:
     bluebird "^3.5.5"
