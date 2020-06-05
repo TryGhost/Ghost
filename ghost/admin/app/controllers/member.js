@@ -67,7 +67,7 @@ export default class MemberController extends Controller {
     @action
     deleteMember() {
         return this.member.destroyRecord().then(() => {
-            this.membersStats.invalidate();
+            this.members.refreshData();
             return this.transitionToRoute('members');
         }, (error) => {
             return this.notifications.showAPIError(error, {key: 'member.delete'});
