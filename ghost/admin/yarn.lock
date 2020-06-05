@@ -13202,7 +13202,42 @@ terser@^4.1.2, terser@^4.3.9:
     source-map "~0.6.1"
     source-map-support "~0.5.12"
 
-testem@3.1.0, testem@^3.0.2:
+testem@3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.2.0.tgz#9924481f6a3b23e350fa77bb251c64d801c4c9a7"
+  integrity sha512-FkFzNRCIzCxjbNSTxIQSC2tWn1Q2MTR/GTxusSw6uZA4byEQ7wc86TKutNnoCyZ5XIaD9wo4q+dmlK0GUEqFVA==
+  dependencies:
+    backbone "^1.1.2"
+    bluebird "^3.4.6"
+    charm "^1.0.0"
+    commander "^2.6.0"
+    compression "^1.7.4"
+    consolidate "^0.15.1"
+    execa "^1.0.0"
+    express "^4.10.7"
+    fireworm "^0.7.0"
+    glob "^7.0.4"
+    http-proxy "^1.13.1"
+    js-yaml "^3.2.5"
+    lodash.assignin "^4.1.0"
+    lodash.castarray "^4.4.0"
+    lodash.clonedeep "^4.4.1"
+    lodash.find "^4.5.1"
+    lodash.uniqby "^4.7.0"
+    mkdirp "^0.5.1"
+    mustache "^3.0.0"
+    node-notifier "^5.0.1"
+    npmlog "^4.0.0"
+    printf "^0.5.1"
+    rimraf "^2.4.4"
+    socket.io "^2.1.0"
+    spawn-args "^0.2.0"
+    styled_string "0.0.1"
+    tap-parser "^7.0.0"
+    tmp "0.0.33"
+    xmldom "^0.1.19"
+
+testem@^3.0.2:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/testem/-/testem-3.1.0.tgz#d27ec0b5593706c5cb005d8829b5abd329c86c16"
   integrity sha512-wmPMqwocl9sU7kk32+fRpYFQVwL2XO6PszYF3IPIi6exw3zXb879Ulw4NQrkybdNtTS8yj9yv2lEuvYgpulbaw==
