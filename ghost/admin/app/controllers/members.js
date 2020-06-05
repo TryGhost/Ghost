@@ -172,7 +172,7 @@ export default class MembersController extends Controller {
         }
     }
 
-    @task
+    @task({restartable: true})
     *fetchMembersTask(params) {
         // params is undefined when called as a "refresh" of the model
         let {label, searchParam} = typeof params === 'undefined' ? this : params;
