@@ -38,7 +38,7 @@ async function fetchBookmarkData(url, html) {
     delete metadata.image;
     delete metadata.logo;
 
-    if (metadata.title && metadata.description) {
+    if (metadata.title) {
         return Promise.resolve({
             type: 'bookmark',
             url,
