@@ -29,6 +29,7 @@ const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
     const utils = render(ui, {wrapper: setupProvider(context), ...options});
     return {
         ...utils,
+        context,
         mockOnActionFn
     };
 };
