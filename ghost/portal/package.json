@@ -15,7 +15,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@testing-library/jest-dom": "4.2.4",
+    "@testing-library/jest-dom": "5.9.0",
     "@testing-library/react": "9.5.0",
     "@testing-library/user-event": "7.2.1",
     "prop-types": "15.7.2",
