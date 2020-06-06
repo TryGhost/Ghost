@@ -28,7 +28,7 @@
     "build": "npm run build:combined && npm run build:bundle",
     "build:combined": "node ./scripts/build-combined.js",
     "build:bundle": "webpack --config webpack.config.js",
-    "test": "react-scripts test",
+    "test": "react-scripts test --env=jsdom-fourteen",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
