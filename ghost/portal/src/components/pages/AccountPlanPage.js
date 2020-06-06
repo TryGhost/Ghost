@@ -97,7 +97,7 @@ export default class AccountPlanPage extends React.Component {
     renderActionButton() {
         const isRunning = ['updateSubscription:running', 'checkoutPlan:running'].includes(this.context.action);
         const label = isRunning ? 'Updating...' : 'Continue';
-        const disabled = isRunning ? true : false;
+        const disabled = (isRunning || !this.state.plan) ? true : false;
         return (
             <ActionButton
                 style={{button: {marginTop: '12px'}}}
