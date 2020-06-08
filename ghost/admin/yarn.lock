@@ -5861,10 +5861,10 @@ ember-compatibility-helpers@^1.1.1, ember-compatibility-helpers@^1.1.2, ember-co
     ember-cli-version-checker "^2.1.1"
     semver "^5.4.1"
 
-ember-composable-helpers@4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/ember-composable-helpers/-/ember-composable-helpers-4.1.1.tgz#e64c5737cdddd372d458ed8ea8141a03ad502e0a"
-  integrity sha512-0kARa81gIwEFAY4T8QIS9UVW58qvsmUPZi7rr4lIURyZJEDGmHgvIp2wInHJIH5zQktOrWt4wTaHXwdqjfGpqA==
+ember-composable-helpers@4.1.2:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/ember-composable-helpers/-/ember-composable-helpers-4.1.2.tgz#1ab2c65c3f053170a65c2e0dc0c37ddbb91f445c"
+  integrity sha512-jZWO0thLIybaWrCSOZj7yasYcJFanklLU69M2SeajEggVjjn4EIKYxtnSLXmZ0PNa8Tx9EzrHS1seLpVhL4A/Q==
   dependencies:
     "@babel/core" "^7.0.0"
     broccoli-funnel "2.0.1"
