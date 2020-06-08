@@ -71,8 +71,8 @@ module.exports = {
             BATCH_SIZE = 2;
         }
 
-        const blogTitle = settingsCache.get('title');
-        fromAddress = blogTitle ? `${blogTitle}<${fromAddress}>` : fromAddress;
+        const blogTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : '';
+        fromAddress = blogTitle ? `"${blogTitle}"<${fromAddress}>` : fromAddress;
 
         const chunkedRecipients = _.chunk(recipients, BATCH_SIZE);
 
