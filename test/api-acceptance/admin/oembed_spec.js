@@ -66,6 +66,89 @@ describe('Oembed API', function () {
             });
     });
 
+    describe('type: bookmark', function () {
+        it('can fetch a bookmark with ?type=bookmark', function (done) {
+            const pageMock = nock('https://example.com')
+                .get('/')
+                .reply(
+                    200,
+                    '<html><head><title>TESTING</title></head><body></body></html>',
+                    {'content-type': 'text/html'}
+                );
+
+            const url = encodeURIComponent('https://example.com');
+            request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    pageMock.isDone().should.be.true();
+                    res.body.type.should.eql('bookmark');
+                    res.body.url.should.eql('https://example.com');
+                    res.body.metadata.title.should.eql('TESTING');
+                    done();
+                });
+        });
+
+        it('falls back to bookmark without ?type=embed and no oembed metatag', function (done) {
+            const pageMock = nock('https://example.com')
+                .get('/')
+                .times(2) // 1st = oembed metatag check, 2nd = metascraper
+                .reply(
+                    200,
+                    '<html><head><title>TESTING</title></head><body></body></html>',
+                    {'content-type': 'text/html'}
+                );
+
+            const url = encodeURIComponent('https://example.com');
+            request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    pageMock.isDone().should.be.true();
+                    res.body.type.should.eql('bookmark');
+                    res.body.url.should.eql('https://example.com');
+                    res.body.metadata.title.should.eql('TESTING');
+                    done();
+                });
+        });
+
+        it('errors with useful message when title is unavailable', function (done) {
+            const pageMock = nock('https://example.com')
+                .get('/')
+                .reply(
+                    200,
+                    '<html><head><title></title></head><body></body></html>',
+                    {'content-type': 'text/html'}
+                );
+
+            const url = encodeURIComponent('https://example.com');
+            request.get(localUtils.API.getApiQuery(`oembed/?type=bookmark&url=${url}`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    pageMock.isDone().should.be.true();
+                    should.exist(res.body.errors);
+                    res.body.errors[0].context.should.match(/insufficient metadata/i);
+                    done();
+                });
+        });
+    });
+
     describe('with unknown provider', function () {
         it('fetches url and follows redirects', function (done) {
             const redirectMock = nock('http://test.com/')
