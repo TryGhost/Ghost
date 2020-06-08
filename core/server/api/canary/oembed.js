@@ -125,10 +125,10 @@ function fetchOembedData(_url) {
         method: 'GET',
         timeout: 2 * 1000,
         followRedirect: true
-    }).then((response) => {
+    }).then((pageResponse) => {
         // url changed after fetch, see if we were redirected to a known oembed
-        if (response.url !== url) {
-            ({url, provider} = findUrlWithProvider(response.url));
+        if (pageResponse.url !== url) {
+            ({url, provider} = findUrlWithProvider(pageResponse.url));
             if (provider) {
                 return knownProvider(url);
             }
@@ -137,7 +137,7 @@ function fetchOembedData(_url) {
         // check for <link rel="alternate" type="application/json+oembed"> element
         let oembedUrl;
         try {
-            oembedUrl = cheerio('link[type="application/json+oembed"]', response.body).attr('href');
+            oembedUrl = cheerio('link[type="application/json+oembed"]', pageResponse.body).attr('href');
         } catch (e) {
             return unknownProvider(url);
         }
@@ -154,10 +154,10 @@ function fetchOembedData(_url) {
                 json: true,
                 timeout: 2 * 1000,
                 followRedirect: true
-            }).then((response) => {
+            }).then((oembedResponse) => {
                 // validate the fetched json against the oembed spec to avoid
                 // leaking non-oembed responses
-                const body = response.body;
+                const body = oembedResponse.body;
                 const hasRequiredFields = body.type && body.version;
                 const hasValidType = ['photo', 'video', 'link', 'rich'].includes(body.type);
 
