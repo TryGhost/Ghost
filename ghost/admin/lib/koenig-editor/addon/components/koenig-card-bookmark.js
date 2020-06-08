@@ -93,6 +93,7 @@ export default Component.extend({
         },
 
         retry() {
+            this.set('errorMessage', null);
             this.set('hasError', false);
         },
 
@@ -152,6 +153,14 @@ export default Component.extend({
                 this.send('insertAsLink', {linkOnError: true});
                 return;
             }
+
+            if (err.payload.errors && err.payload.errors[0]) {
+                let [firstError] = err.payload.errors;
+                let errorMessage = firstError.context || firstError.message;
+                errorMessage = errorMessage.replace(url, '').trim();
+                this.set('errorMessage', errorMessage);
+            }
+
             this.set('hasError', true);
         }
     }),
