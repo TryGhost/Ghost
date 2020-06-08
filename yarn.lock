@@ -451,17 +451,7 @@
     "@tryghost/kg-markdown-html-renderer" "^2.0.0"
     "@tryghost/url-utils" "^0.6.14"
 
-"@tryghost/kg-markdown-html-renderer@1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-1.0.4.tgz#380c3b485625863a73e675495e53458fc1cc7e1e"
-  integrity sha512-I2CVbnE00ZQc4K9ptbAKTGM3FfwSiJxMeXA52QGjRGVyPICFyw4BVLe9gUFDRradDjkVty63Jl72H6KDtrQd0Q==
-  dependencies:
-    markdown-it "^10.0.0"
-    markdown-it-footnote "^3.0.2"
-    markdown-it-lazy-headers "^0.1.3"
-    markdown-it-mark "^3.0.0"
-
-"@tryghost/kg-markdown-html-renderer@^2.0.0":
+"@tryghost/kg-markdown-html-renderer@2.0.0", "@tryghost/kg-markdown-html-renderer@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-2.0.0.tgz#a54e571dff69aa25a4af4345fd290eb7f60848a9"
   integrity sha512-bIh0te/NBgb9ZP12a6CDYQR92zD7mFINNW8MJEleYQEinJT38PSRborKDtcXID4yTVCY44n2ux5FnSSFi1XChg==
@@ -5518,13 +5508,6 @@ limiter@^1.1.4:
   resolved "https://registry.yarnpkg.com/limiter/-/limiter-1.1.5.tgz#8f92a25b3b16c6131293a0cc834b4a838a2aa7c2"
   integrity sha512-FWWMIEOxz3GwUI4Ts/IvgVy6LPvoMPgjMdQ185nN6psJyBJ4yOpzqm695/h5umdLJg2vW3GR5iG11MAkR2AzJA==
 
-linkify-it@^2.0.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/linkify-it/-/linkify-it-2.2.0.tgz#e3b54697e78bf915c70a38acd78fd09e0058b1cf"
-  integrity sha512-GnAl/knGn+i1U/wjBz3akz2stz+HrHLsxMwHQGofCDfPvlf+gDKN58UtfmUquTY4/MXeE2x7k19KQmeoZi94Iw==
-  dependencies:
-    uc.micro "^1.0.1"
-
 linkify-it@^3.0.1:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/linkify-it/-/linkify-it-3.0.2.tgz#f55eeb8bc1d3ae754049e124ab3bb56d97797fb8"
@@ -5866,17 +5849,6 @@ markdown-it-mark@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/markdown-it-mark/-/markdown-it-mark-3.0.0.tgz#27c3e39ef3cc310b2dde5375082c9fa912983cda"
   integrity sha512-HqMWeKfMMOu4zBO0emmxsoMWmbf2cPKZY1wP6FsTbKmicFfp5y4L3KXAsNeO1rM6NTJVOrNlLKMPjWzriBGspw==
-
-markdown-it@^10.0.0:
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-10.0.0.tgz#abfc64f141b1722d663402044e43927f1f50a8dc"
-  integrity sha512-YWOP1j7UbDNz+TumYP1kpwnP0aEa711cJjrAQrzd0UXlbJfc5aAq0F/PZHjiioqDC1NKgvIMX+o+9Bk7yuM2dg==
-  dependencies:
-    argparse "^1.0.7"
-    entities "~2.0.0"
-    linkify-it "^2.0.0"
-    mdurl "^1.0.1"
-    uc.micro "^1.0.5"
 
 markdown-it@^11.0.0:
   version "11.0.0"
