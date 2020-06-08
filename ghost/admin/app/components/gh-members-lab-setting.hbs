@@ -219,74 +219,101 @@
     <section class="bb b--whitegrey pa5">
         <div class="flex justify-between">
             <div>
-                <h4 class="gh-setting-title">Email settings</h4>
-                <p class="gh-setting-desc pa0 ma0">Customise signup, signin and subscription emails</p>
+                <h4 class="gh-setting-title">From address</h4>
+                <p class="gh-setting-desc pa0 ma0">The email address your members receive newsletters from</p>
             </div>
             <div>
-                <button type="button" class="gh-btn" {{action (toggle "membersEmailOpen" this)}} data-test-toggle-membersemail><span>{{if this.membersEmailOpen "Close" "Expand"}}</span></button>
+                <button type="button" class="gh-btn" {{action (toggle "membersFromOpen" this)}} data-test-toggle-membersFrom><span>{{if this.membersFromOpen "Close" "Expand"}}</span></button>
             </div>
         </div>
 
-        {{#liquid-if this.membersEmailOpen}}
-        <div class="flex flex-column w-100 w-50-l flex mt8">
-            <GhFormGroup>
-                <label class="fw6 f8">From Address</label>
-                <div class="flex items-center justify-center mt1 gh-input-group">
-                    <GhTextInput
-                        @value={{readonly this.subscriptionSettings.fromAddress}}
-                        @input={{action "setSubscriptionSettings" "fromAddress"}}
-                        @class="w20"
-                    />
-                    <span class="gh-input-append"> @{{this.blogDomain}}</span>
-                </div>
-                <div class="f8 fw4 midgrey mt1">Your members will receive system emails from this address</div>
-            </GhFormGroup>
-
-            {{#unless this.hasBulkEmailConfig}}
-                <div class="flex items-center">
-                    <GhFormGroup @class="gh-labs-mailgun-region">
-                        <label class="fw6 f8">Mailgun region</label>
-                        <div class="mt1">
-                            <PowerSelect
-                                @options={{this.mailgunRegions}}
-                                @selected={{this.mailgunRegion}}
-                                @onChange={{action "setBulkEmailRegion"}}
-                                @searchEnabled={{false}}
-                                @triggerComponent="gh-power-select/trigger"
-                                as |region|
-                            >
-                                {{region.flag}} {{region.name}}
-                            </PowerSelect>
-                        </div>
-                    </GhFormGroup>
-                    <GhFormGroup>
-                        <label class="fw6 f8">Mailgun domain</label>
-                        <GhTextInput
-                            @value={{readonly this.bulkEmailSettings.domain}}
-                            @input={{action "setBulkEmailSettings" "domain"}}
-                            @class="mt1"
-                        />
-                    </GhFormGroup>
-                </div>
-                <div class="nt5 mb5">
-                    <a href="https://app.mailgun.com/app/sending/domains" target="_blank" class="mt1 fw4 f8">
-                        Find your Mailgun region and domain here &raquo;
-                    </a>
-                </div>
+        {{#liquid-if this.membersFromOpen}}
+            <div class="flex flex-column w-100 w-50-l flex mt8">
                 <GhFormGroup>
-                    <label class="fw6 f8">Mailgun API key</label>
-                    <GhTextInput
-                        @type="password"
-                        @value={{readonly this.bulkEmailSettings.apiKey}}
-                        @input={{action "setBulkEmailSettings" "apiKey"}}
-                        @class="mt1 password" @autocomplete="new-password"
-                    />
-                    <a href="https://app.mailgun.com/app/account/security/api_keys" target="_blank" class="mt1 fw4 f8">
-                        Find your Mailgun API keys here &raquo;
-                    </a>
+                    <div class="flex items-center justify-center mt1">
+                        <GhTextInput
+                            @value={{readonly this.subscriptionSettings.fromAddress}}
+                            @input={{action "setSubscriptionSettings" "fromAddress"}}
+                            @class="w20"
+                        />
+                        <GhTaskButton
+                            @buttonText="Update from address"
+                            @runningText="Sending..."
+                            @successText="Confirmation Email Sent"
+                            @task={{this.updateFromAddress}}
+                            @class="gh-btn gh-btn-icon gh-btn-textfield-group ml2"
+                            data-test-button="update-from-address"
+                        />
+                    </div>
                 </GhFormGroup>
-            {{/unless}}
-        </div>
+                {{#if this.showFromAddressConfirmation}}
+                <div class="flex items-center green-d1 nt3 lh-1">
+                    {{svg-jar "check-circle" class="w4 h4 mr1 stroke-green-d1"}} <span class="nudge-left--2">Check your inbox and click the link to confirm</span>
+                </div>
+                {{/if}}
+            </div>
         {{/liquid-if}}
     </section>
+    {{#unless this.hasBulkEmailConfig}}
+        <section class="bb b--whitegrey pa5">
+            <div class="flex justify-between">
+                <div>
+                    <h4 class="gh-setting-title">Mailgun settings</h4>
+                    <p class="gh-setting-desc pa0 ma0">Customise signup, signin and subscription emails</p>
+                </div>
+                <div>
+                    <button type="button" class="gh-btn" {{action (toggle "membersEmailOpen" this)}} data-test-toggle-membersemail>
+                        <span>{{if this.membersEmailOpen "Close" "Expand"}}</span>
+                    </button>
+                </div>
+            </div>
+
+            {{#liquid-if this.membersEmailOpen}}
+            <div class="flex flex-column w-100 w-50-l flex mt8">
+                    <div class="flex items-center">
+                        <GhFormGroup @class="gh-labs-mailgun-region">
+                            <label class="fw6 f8">Mailgun region</label>
+                            <div class="mt1">
+                                <PowerSelect
+                                    @options={{this.mailgunRegions}}
+                                    @selected={{this.mailgunRegion}}
+                                    @onChange={{action "setBulkEmailRegion"}}
+                                    @searchEnabled={{false}}
+                                    @triggerComponent="gh-power-select/trigger"
+                                    as |region|
+                                >
+                                    {{region.flag}} {{region.name}}
+                                </PowerSelect>
+                            </div>
+                        </GhFormGroup>
+                        <GhFormGroup>
+                            <label class="fw6 f8">Mailgun domain</label>
+                            <GhTextInput
+                                @value={{readonly this.bulkEmailSettings.domain}}
+                                @input={{action "setBulkEmailSettings" "domain"}}
+                                @class="mt1"
+                            />
+                        </GhFormGroup>
+                    </div>
+                    <div class="nt5 mb5">
+                        <a href="https://app.mailgun.com/app/sending/domains" target="_blank" class="mt1 fw4 f8">
+                            Find your Mailgun region and domain here &raquo;
+                        </a>
+                    </div>
+                    <GhFormGroup>
+                        <label class="fw6 f8">Mailgun API key</label>
+                        <GhTextInput
+                            @type="password"
+                            @value={{readonly this.bulkEmailSettings.apiKey}}
+                            @input={{action "setBulkEmailSettings" "apiKey"}}
+                            @class="mt1 password" @autocomplete="new-password"
+                        />
+                        <a href="https://app.mailgun.com/app/account/security/api_keys" target="_blank" class="mt1 fw4 f8">
+                            Find your Mailgun API keys here &raquo;
+                        </a>
+                    </GhFormGroup>
+            </div>
+            {{/liquid-if}}
+        </section>
+    {{/unless}}
 </div>

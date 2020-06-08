@@ -3,6 +3,7 @@ import {computed} from '@ember/object';
 import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
+import {task} from 'ember-concurrency';
 
 const US = {flag: '🇺🇸', name: 'US', baseUrl: 'https://api.mailgun.net/v3'};
 const EU = {flag: '🇪🇺', name: 'EU', baseUrl: 'https://api.eu.mailgun.net/v3'};
@@ -30,8 +31,10 @@ export default Component.extend({
     config: service(),
     mediaQueries: service(),
     ghostPaths: service(),
+    ajax: service(),
 
     currencies: null,
+    showFromAddressConfirmation: false,
 
     // passed in actions
     setMembersSubscriptionSettings() {},
@@ -43,6 +46,10 @@ export default Component.extend({
 
     selectedCurrency: computed('subscriptionSettings.stripeConfig.plans.monthly.currency', function () {
         return CURRENCIES.findBy('value', this.get('subscriptionSettings.stripeConfig.plans.monthly.currency'));
+    }),
+
+    disableUpdateFromAddressButton: computed('subscriptionSettings.fromAddress', function () {
+        return (this.originalFromAddress === this.get('subscriptionSettings.fromAddress'));
     }),
 
     mailgunRegion: computed('settings.bulkEmailSettings.baseUrl', function () {
@@ -103,6 +110,10 @@ export default Component.extend({
     },
 
     actions: {
+        toggleFromAddressConfirmation() {
+            this.toggleProperty('showFromAddressConfirmation');
+        },
+
         setDefaultContentVisibility(value) {
             this.setDefaultContentVisibility(value);
         },
@@ -182,6 +193,22 @@ export default Component.extend({
             this.setStripeConnectIntegrationTokenSetting(event.target.value);
         }
     },
+
+    updateFromAddress: task(function* () {
+        let url = this.get('ghostPaths.url').api('/settings/members/email');
+        try {
+            const response = yield this.ajax.post(url, {
+                data: {
+                    from_address: this.subscriptionSettings.fromAddress
+                }
+            });
+            this.toggleProperty('showFromAddressConfirmation');
+            return response;
+        } catch (e) {
+            // Failed to send email, retry
+            return false;
+        }
+    }).drop(),
 
     get stripeConnectAuthUrl() {
         return this.ghostPaths.url.api('members/stripe_connect');
