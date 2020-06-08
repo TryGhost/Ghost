@@ -444,7 +444,7 @@
             },
             "oembed": {
                 "noUrlProvided": "No url provided.",
-                "insufficientMetadata": "URL contains insufficient metadata for bookmark card.",
+                "insufficientMetadata": "URL contains insufficient metadata.",
                 "unknownProvider": "No provider found for supplied URL."
             },
             "userMessages": {
