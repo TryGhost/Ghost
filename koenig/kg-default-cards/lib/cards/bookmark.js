@@ -100,7 +100,7 @@ module.exports = {
         if (payload.url) {
             payload.url = payload.url && absoluteToRelative(payload.url, options.siteUrl, options);
         }
-        if (payload.metadata.url) {
+        if (payload.metadata && payload.metadata.url) {
             payload.metadata.url = payload.metadata.url && absoluteToRelative(payload.metadata.url, options.siteUrl, options);
         }
         payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
@@ -111,7 +111,7 @@ module.exports = {
         if (payload.url) {
             payload.url = payload.url && relativeToAbsolute(payload.url, options.siteUrl, options.itemUrl, options);
         }
-        if (payload.metadata.url) {
+        if (payload.metadata && payload.metadata.url) {
             payload.metadata.url = payload.metadata.url && relativeToAbsolute(payload.metadata.url, options.siteUrl, options.itemUrl, options);
         }
         payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);

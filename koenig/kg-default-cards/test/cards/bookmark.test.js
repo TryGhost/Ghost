@@ -29,6 +29,16 @@ describe('Bookmark card', function () {
             .should.equal('<figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure>');
     });
 
+    it('renders nothing when payload is empty', function () {
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {}
+        };
+        serializer.serialize(card.render(opts)).should.match('');
+    });
+
     it('uses payload.url as href rather than payload.metadata.url', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
@@ -276,5 +286,21 @@ describe('Bookmark card', function () {
 
         transformed.caption
             .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
+    });
+
+    it('absoluteToRelative handles missing payload', function () {
+        const payload = {};
+        const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+
+        should.not.exist(transformed.url);
+        should.not.exist(transformed.metadata);
+    });
+
+    it('relativeToAbsolute handles missing payload', function () {
+        const payload = {};
+        const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
+
+        should.not.exist(transformed.url);
+        should.not.exist(transformed.metadata);
     });
 });
