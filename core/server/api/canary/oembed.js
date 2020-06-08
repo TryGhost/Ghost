@@ -45,7 +45,11 @@ async function fetchBookmarkData(url, html) {
             metadata
         });
     }
-    return Promise.resolve();
+
+    return Promise.reject(new errors.ValidationError({
+        message: i18n.t('errors.api.oembed.insufficientMetadata'),
+        context: url
+    }));
 }
 
 const findUrlWithProvider = (url) => {
@@ -197,6 +201,18 @@ function fetchOembedData(_url) {
     });
 }
 
+function errorHandler(url) {
+    return function (err) {
+        // allow specific validation errors through for better error messages
+        if (errors.utils.isIgnitionError(err) && err.errorType === 'ValidationError') {
+            return Promise.reject(err);
+        }
+
+        // default to unknown provider to avoid leaking any app specifics
+        return unknownProvider(url);
+    };
+}
+
 module.exports = {
     docName: 'oembed',
 
@@ -212,7 +228,7 @@ module.exports = {
 
             if (type === 'bookmark') {
                 return fetchBookmarkData(url)
-                    .catch(() => unknownProvider(url));
+                    .catch(errorHandler(url));
             }
 
             return fetchOembedData(url).then((response) => {
@@ -225,9 +241,7 @@ module.exports = {
                     return unknownProvider(url);
                 }
                 return response;
-            }).catch(() => {
-                return unknownProvider(url);
-            });
+            }).catch(errorHandler(url));
         }
     }
 };
