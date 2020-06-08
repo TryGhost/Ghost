@@ -42,6 +42,8 @@ export default Controller.extend({
     session: service(),
     settings: service(),
 
+    queryParams: ['fromAddressUpdate'],
+    fromAddressUpdate: null,
     importErrors: null,
     importSuccessful: false,
     showDeleteAllModal: false,
@@ -250,5 +252,6 @@ export default Controller.extend({
     reset() {
         this.set('importErrors', null);
         this.set('importSuccessful', false);
+        this.set('fromAddressUpdate', null);
     }
 });

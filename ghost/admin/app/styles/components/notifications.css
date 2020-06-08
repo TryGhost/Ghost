@@ -203,7 +203,7 @@
 .gh-alert-content {
     font-size: 1.4rem;
     line-height: 1.3em;
-    font-weight: 300;
+    font-weight: 400;
     user-select: text;
 }
 
@@ -216,14 +216,14 @@
 .gh-alert-close {
     flex-shrink: 0;
     margin-left: 20px;
-    padding: 5px;
+    padding: 4px;
     font-size: 10px;
     line-height: 10px;
 }
 
 .gh-alert-close svg {
-    height: 10px;
-    width: 10px;
+    height: 12px;
+    width: 12px;
 }
 
 .gh-alert-close:hover {

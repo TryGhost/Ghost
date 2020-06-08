@@ -320,6 +320,10 @@ fieldset[disabled] .gh-btn {
     fill: color-mod(var(--midgrey) l(+15%));
 }
 
+.gh-btn:not(.gh-btn-blue):not(.gh-btn-green) svg.gh-icon-spinner rect {
+    fill: color-mod(var(--midgrey) l(-7%));
+} 
+
 .gh-btn-icon-right svg,
 svg.gh-btn-icon-right {
     margin-left: 0.5em;
@@ -372,6 +376,11 @@ svg.gh-btn-icon-right {
 .gh-btn-outline {
     background: none;
     box-shadow: none;
+}
+
+.gh-btn-textfield-group span {
+    height: 36px;
+    line-height: 36px;
 }
 
 
