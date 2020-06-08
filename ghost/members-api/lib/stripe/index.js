@@ -10,7 +10,8 @@ const CURRENCY_SYMBOLS = {
     aud: '$',
     cad: '$',
     gbp: '£',
-    eur: '€'
+    eur: '€',
+    inr: '₹'
 };
 
 module.exports = class StripePaymentProcessor {
