@@ -59,9 +59,11 @@ const GhTaskButton = Component.extend({
     }),
 
     isRunning: computed('task.last.isRunning', 'hasRun', 'showSuccess', function () {
-        let isRunning = this.get('task.last.isRunning');
+        let taskName = this.get('task.name');
+        let lastTaskName = this.get('task.last.task.name');
 
-        if (this.hasRun && this.get('task.last.value') && !this.showSuccess) {
+        let isRunning = (taskName === lastTaskName) && this.get('task.last.isRunning');
+        if (this.hasRun && (taskName === lastTaskName) && this.get('task.last.value') && !this.showSuccess) {
             isRunning = true;
         }
 
@@ -73,12 +75,15 @@ const GhTaskButton = Component.extend({
     }),
 
     isSuccess: computed('hasRun', 'isRunning', 'task.last.value', function () {
+        let taskName = this.get('task.name');
+        let lastTaskName = this.get('task.last.task.name');
+
         if (!this.hasRun || this.isRunning || !this.showSuccess) {
             return false;
         }
 
         let value = this.get('task.last.value');
-        return !isBlank(value) && value !== false;
+        return (taskName === lastTaskName) && !isBlank(value) && value !== false;
     }),
 
     isSuccessClass: computed('isSuccess', function () {
@@ -86,11 +91,14 @@ const GhTaskButton = Component.extend({
     }),
 
     isFailure: computed('hasRun', 'isRunning', 'isSuccess', 'task.last.error', function () {
+        let taskName = this.get('task.name');
+        let lastTaskName = this.get('task.last.task.name');
+
         if (!this.hasRun || this.isRunning || this.isSuccess) {
             return false;
         }
 
-        return this.get('task.last.error') !== undefined;
+        return (taskName === lastTaskName) && this.get('task.last.error') !== undefined;
     }),
 
     isFailureClass: computed('isFailure', function () {
