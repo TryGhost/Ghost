@@ -43,14 +43,14 @@ module.exports = {
     type: 'dom',
 
     render({payload, env: {dom}}) {
-        if (!payload.metadata || !payload.metadata.url || !payload.metadata.title) {
+        if (!payload.metadata || !payload.url || !payload.metadata.title) {
             return dom.createTextNode('');
         }
 
         let figure = createElement(dom, 'figure', 'kg-card kg-bookmark-card');
         let linkTag = createElement(dom, 'a', 'kg-bookmark-container', [{
             key: 'href',
-            value: payload.metadata.url
+            value: payload.url
         }]);
         let contentDiv = createElement(dom, 'div', 'kg-bookmark-content');
         let titleDiv = createElement(dom, 'div', 'kg-bookmark-title', [] , payload.metadata.title);
@@ -97,7 +97,10 @@ module.exports = {
     },
 
     absoluteToRelative(payload, options) {
-        if (payload.metadata) {
+        if (payload.url) {
+            payload.url = payload.url && absoluteToRelative(payload.url, options.siteUrl, options);
+        }
+        if (payload.metadata.url) {
             payload.metadata.url = payload.metadata.url && absoluteToRelative(payload.metadata.url, options.siteUrl, options);
         }
         payload.caption = payload.caption && htmlAbsoluteToRelative(payload.caption, options.siteUrl, options);
@@ -105,7 +108,10 @@ module.exports = {
     },
 
     relativeToAbsolute(payload, options) {
-        if (payload.metadata) {
+        if (payload.url) {
+            payload.url = payload.url && relativeToAbsolute(payload.url, options.siteUrl, options.itemUrl, options);
+        }
+        if (payload.metadata.url) {
             payload.metadata.url = payload.metadata.url && relativeToAbsolute(payload.metadata.url, options.siteUrl, options.itemUrl, options);
         }
         payload.caption = payload.caption && htmlRelativeToAbsolute(payload.caption, options.siteUrl, options.itemUrl, options);

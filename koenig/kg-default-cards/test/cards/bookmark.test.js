@@ -11,6 +11,7 @@ describe('Bookmark card', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
+                url: 'http://example.com',
                 metadata: {
                     url: 'http://example.com',
                     title: 'Title',
@@ -28,10 +29,33 @@ describe('Bookmark card', function () {
             .should.equal('<figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure>');
     });
 
-    it('keeps description element description is blank', function () {
+    it('uses payload.url as href rather than payload.metadata.url', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
+                url: 'http://example.com?utm=12345',
+                metadata: {
+                    url: 'http://example.com',
+                    title: 'Title',
+                    description: 'Description',
+                    icon: 'http://example.com/icon.png',
+                    thumbnail: 'http://exampple.com/thumbnail.png',
+                    author: 'Author',
+                    publisher: 'Publisher'
+                },
+                caption: 'Caption'
+            }
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.equal('<figure class="kg-card kg-bookmark-card kg-card-hascaption"><a class="kg-bookmark-container" href="http://example.com?utm=12345"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Title</div><div class="kg-bookmark-description">Description</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="http://example.com/icon.png"><span class="kg-bookmark-author">Author</span><span class="kg-bookmark-publisher">Publisher</span></div></div><div class="kg-bookmark-thumbnail"><img src="http://exampple.com/thumbnail.png"></div></a><figcaption>Caption</figcaption></figure>');
+    });
+
+    it('keeps description element when description is blank', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {
+                url: 'http://example.com',
                 metadata: {
                     url: 'http://example.com',
                     title: 'Test bookmark',
@@ -48,6 +72,7 @@ describe('Bookmark card', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
+                url: 'http://example.com',
                 metadata: {
                     url: 'http://example.com',
                     title: 'Title',
@@ -69,6 +94,7 @@ describe('Bookmark card', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
+                url: 'http://example.com',
                 metadata: {
                     url: 'http://example.com',
                     title: 'Title',
@@ -90,6 +116,7 @@ describe('Bookmark card', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
+                url: 'http://example.com',
                 metadata: {
                     url: 'http://example.com',
                     title: 'Title',
@@ -111,6 +138,7 @@ describe('Bookmark card', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
+                url: 'http://example.com',
                 metadata: {
                     url: 'http://example.com',
                     title: 'Title',
@@ -132,6 +160,7 @@ describe('Bookmark card', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
+                url: 'http://example.com',
                 metadata: {
                     url: 'http://example.com',
                     title: 'Title',
@@ -177,6 +206,7 @@ describe('Bookmark card', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
+                url: null,
                 metadata: {
                     url: null,
                     title: 'Test bookmark',
@@ -193,6 +223,7 @@ describe('Bookmark card', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
+                url: 'http://example.com',
                 metadata: {
                     url: 'http://example.com',
                     title: null,
@@ -207,6 +238,7 @@ describe('Bookmark card', function () {
 
     it('transforms urls absolute to relative', function () {
         let payload = {
+            url: 'http://127.0.0.1:2369/post',
             metadata: {
                 url: 'http://127.0.0.1:2369/post'
             },
@@ -214,6 +246,9 @@ describe('Bookmark card', function () {
         };
 
         const transformed = card.absoluteToRelative(payload, {siteUrl: 'http://127.0.0.1:2369/'});
+
+        transformed.url
+            .should.equal('/post');
 
         transformed.metadata.url
             .should.equal('/post');
@@ -224,6 +259,7 @@ describe('Bookmark card', function () {
 
     it('transforms urls relative to absolute', function () {
         let payload = {
+            url: '/post',
             metadata: {
                 url: '/post'
             },
@@ -231,6 +267,9 @@ describe('Bookmark card', function () {
         };
 
         const transformed = card.relativeToAbsolute(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
+
+        transformed.url
+            .should.equal('http://127.0.0.1:2369/post');
 
         transformed.metadata.url
             .should.equal('http://127.0.0.1:2369/post');
