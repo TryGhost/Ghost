@@ -235,10 +235,10 @@ describe('Members API', function () {
             });
     });
 
-    it('Can import file with duplicate stripe customer ids', function () {
+    it('Fails to import members with stripe_customer_id', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/csv/`))
-            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-with-duplicate-stripe-ids.csv'))
+            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-with-stripe-ids.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -251,7 +251,7 @@ describe('Members API', function () {
                 should.exist(jsonResponse.meta);
                 should.exist(jsonResponse.meta.stats);
 
-                jsonResponse.meta.stats.imported.should.equal(1);
+                jsonResponse.meta.stats.imported.should.equal(0);
                 jsonResponse.meta.stats.duplicates.should.equal(0);
                 jsonResponse.meta.stats.invalid.should.equal(2);
             });
@@ -277,7 +277,7 @@ describe('Members API', function () {
                 should.exist(jsonResponse.new_today);
 
                 // 2 from fixtures and 5 imported in previous tests
-                jsonResponse.total.should.equal(7);
+                jsonResponse.total.should.equal(6);
             });
     });
 
@@ -301,7 +301,7 @@ describe('Members API', function () {
                 should.exist(jsonResponse.new_today);
 
                 // 2 from fixtures and 5 imported in previous tests
-                jsonResponse.total.should.equal(7);
+                jsonResponse.total.should.equal(6);
             });
     });
 
@@ -325,7 +325,7 @@ describe('Members API', function () {
                 should.exist(jsonResponse.new_today);
 
                 // 2 from fixtures and 5 imported in previous tests
-                jsonResponse.total.should.equal(7);
+                jsonResponse.total.should.equal(6);
             });
     });
 
