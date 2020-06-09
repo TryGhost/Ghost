@@ -47,7 +47,6 @@ jobs:
       - run: grunt test-acceptance --verbose
       - run: grunt test-unit --verbose
       - run: grunt test-regression --verbose
-        if: startsWith(github.head_ref, 'renovate/') || github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'all-tests')
 
   ghost-cli:
     name: Ghost-CLI
