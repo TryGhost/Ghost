@@ -232,14 +232,15 @@
                 <GhFormGroup>
                     <div class="flex items-center justify-center mt1">
                         <GhTextInput
-                            @value={{readonly this.subscriptionSettings.fromAddress}}
-                            @input={{action "setSubscriptionSettings" "fromAddress"}}
+                            @value={{readonly this.fromAddress}}
+                            @input={{action "setFromAddress" value="target.value"}}
                             @class="w20"
                         />
                         <GhTaskButton
                             @buttonText="Update from address"
                             @runningText="Sending..."
                             @successText="Confirmation Email Sent"
+                            @disabled={{this.disableUpdateFromAddressButton}}
                             @task={{this.updateFromAddress}}
                             @class="gh-btn gh-btn-icon gh-btn-textfield-group ml2"
                             data-test-button="update-from-address"
