@@ -51,7 +51,9 @@ async function getStripeConnectTokenData(encodedData, getSessionProp) {
     return {
         public_key: data.p,
         secret_key: data.a,
-        livemode: data.l
+        livemode: data.l,
+        display_name: data.n,
+        account_id: data.i
     };
 }
 
