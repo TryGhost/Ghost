@@ -48,8 +48,18 @@ export default Component.extend({
         return CURRENCIES.findBy('value', this.get('subscriptionSettings.stripeConfig.plans.monthly.currency'));
     }),
 
-    disableUpdateFromAddressButton: computed('subscriptionSettings.fromAddress', function () {
-        return (this.originalFromAddress === this.get('subscriptionSettings.fromAddress'));
+    disableUpdateFromAddressButton: computed('fromAddress', function () {
+        const savedFromAddress = this.get('subscriptionSettings.fromAddress');
+        if (savedFromAddress.indexOf('@') < 0 && this.blogDomain) {
+            return (this.fromAddress === `${savedFromAddress}@${this.blogDomain}`);
+        }
+        return (this.fromAddress === savedFromAddress);
+    }),
+
+    blogDomain: computed('config.blogDomain', function () {
+        let blogDomain = this.config.blogDomain || '';
+        const domainExp = blogDomain.replace('https://', '').replace('http://', '').match(new RegExp('^([^/:?#]+)(?:[/:?#]|$)', 'i'));
+        return (domainExp && domainExp[1]) || '';
     }),
 
     mailgunRegion: computed('settings.bulkEmailSettings.baseUrl', function () {
@@ -60,12 +70,6 @@ export default Component.extend({
         return [US, EU].find((region) => {
             return region.baseUrl === this.settings.get('bulkEmailSettings.baseUrl');
         });
-    }),
-
-    blogDomain: computed('config.blogDomain', function () {
-        let domain = this.config.blogDomain || '';
-        const host = domain.replace('https://', '').replace('http://', '').split('/');
-        return (host && host[0]) || '';
     }),
 
     subscriptionSettings: computed('settings.membersSubscriptionSettings', function () {
@@ -133,6 +137,10 @@ export default Component.extend({
             this.setBulkEmailSettings(bulkEmailSettings);
         },
 
+        setFromAddress(fromAddress) {
+            this.setFromAddress(fromAddress);
+        },
+
         setSubscriptionSettings(key, event) {
             let subscriptionSettings = this.settings.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
             let stripeProcessor = subscriptionSettings.paymentProcessors.find((proc) => {
@@ -156,9 +164,6 @@ export default Component.extend({
             }
             if (key === 'allowSelfSignup') {
                 subscriptionSettings.allowSelfSignup = !subscriptionSettings.allowSelfSignup;
-            }
-            if (key === 'fromAddress') {
-                subscriptionSettings.fromAddress = event.target.value;
             }
 
             if (key === 'currency') {
