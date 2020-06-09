@@ -27,6 +27,9 @@ module.exports = {
     // TODO: Only expose "get"
     settingsCache: settingsCache,
 
+    // TODO: Rethink how we get config in
+    members: require('../../server/services/members'),
+
     // These 3 are kind of core and required all the time
     errors,
     i18n,
