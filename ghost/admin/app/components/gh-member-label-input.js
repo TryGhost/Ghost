@@ -34,6 +34,16 @@ export default Component.extend({
         this.set('_availableLabels', this.store.peekAll('label'));
     },
 
+    willDestroyElement() {
+        // NOTE: cleans up labels store in case they were not persisted, this avoids unsaved labels
+        //       from appearing on different input instances when unsaved
+        this.get('_availableLabels').forEach((label) => {
+            if (label.get('isNew')) {
+                this.store.deleteRecord(label);
+            }
+        });
+    },
+
     actions: {
         matchLabels(labelName, term) {
             return labelName.toLowerCase() === term.trim().toLowerCase();
