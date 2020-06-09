@@ -316,6 +316,11 @@ DataGenerator.Content = {
         {
             id: ObjectId.generate(),
             email: 'member2@test.com'
+        },
+        {
+            id: ObjectId.generate(),
+            email: 'paid@test.com',
+            name: 'Egon Spengler'
         }
     ],
 
@@ -329,6 +334,34 @@ DataGenerator.Content = {
             id: ObjectId.generate(),
             name: 'Label 2',
             slug: 'label-2'
+        }
+    ],
+
+    members_stripe_customers: [
+        {
+            id: ObjectId.generate(),
+            member_id: null, // relation added later
+            customer_id: 'cus_HR3tBmNhx4QsZY',
+            name: 'Egon Spengler',
+            email: 'paid@test.com'
+        }
+    ],
+
+    members_stripe_customers_subscriptions: [
+        {
+            id: ObjectId.generate(),
+            customer_id: 'cus_HR3tBmNhx4QsZY',
+            subscription_id: 'sub_HR3tLNgGAHsa7b',
+            plan_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb8',
+            status: 'active',
+            cancel_at_period_end: false,
+            current_period_end: '2020-07-09 19:01:20',
+            start_date: '2020-06-09 19:01:20',
+            default_payment_card_last4: '4242',
+            plan_nickname: 'Monthly',
+            plan_interval: 'month',
+            plan_amount: '1000',
+            plan_currency: 'usd'
         }
     ],
 
@@ -411,6 +444,7 @@ DataGenerator.Content.api_keys[0].integration_id = DataGenerator.Content.integra
 DataGenerator.Content.api_keys[1].integration_id = DataGenerator.Content.integrations[0].id;
 DataGenerator.Content.emails[0].post_id = DataGenerator.Content.posts[0].id;
 DataGenerator.Content.emails[1].post_id = DataGenerator.Content.posts[1].id;
+DataGenerator.Content.members_stripe_customers[0].member_id = DataGenerator.Content.members[2].id;
 
 DataGenerator.forKnex = (function () {
     function createBasic(overrides) {
@@ -875,7 +909,8 @@ DataGenerator.forKnex = (function () {
 
     const members = [
         createMember(DataGenerator.Content.members[0]),
-        createMember(DataGenerator.Content.members[1])
+        createMember(DataGenerator.Content.members[1]),
+        createMember(DataGenerator.Content.members[2])
     ];
 
     const labels = [
@@ -883,12 +918,18 @@ DataGenerator.forKnex = (function () {
     ];
 
     const members_labels = [
-        {
-            id: ObjectId.generate(),
-            member_id: DataGenerator.Content.members[0].id,
-            label_id: DataGenerator.Content.labels[0].id,
-            sort_order: 0
-        }
+        createMembersLabels(
+            DataGenerator.Content.members[0].id,
+            DataGenerator.Content.labels[0].id
+        )
+    ];
+
+    const members_stripe_customers = [
+        createBasic(DataGenerator.Content.members_stripe_customers[0])
+    ];
+
+    const stripe_customer_subscriptions = [
+        createBasic(DataGenerator.Content.members_stripe_customers_subscriptions[0])
     ];
 
     return {
@@ -909,6 +950,8 @@ DataGenerator.forKnex = (function () {
         createMember,
         createLabel,
         createMembersLabels,
+        createMembersStripeCustomer: createBasic,
+        createStripeCustomerSubscription: createBasic,
         createInvite,
         createWebhook,
         createIntegration,
@@ -927,7 +970,9 @@ DataGenerator.forKnex = (function () {
         emails,
         labels,
         members,
-        members_labels
+        members_labels,
+        members_stripe_customers,
+        stripe_customer_subscriptions
     };
 }());
 
