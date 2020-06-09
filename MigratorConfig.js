@@ -1,4 +1,4 @@
-const config = require('./core/server/config');
+const config = require('./core/shared/config');
 const ghostVersion = require('./core/server/lib/ghost-version');
 
 /**

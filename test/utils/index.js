@@ -10,13 +10,13 @@ const uuid = require('uuid');
 const KnexMigrator = require('knex-migrator');
 const ghost = require('../../core/server');
 const GhostServer = require('../../core/server/ghost-server');
-const common = require('../../core/server/lib/common');
+const {events} = require('../../core/server/lib/common');
 const fixtureUtils = require('../../core/server/data/schema/fixtures/utils');
 const db = require('../../core/server/data/db');
 const schema = require('../../core/server/data/schema').tables;
 const schemaTables = Object.keys(schema);
 const models = require('../../core/server/models');
-const urlUtils = require('../../core/server/lib/url-utils');
+const urlUtils = require('../../core/shared/url-utils');
 const urlService = require('../../core/frontend/services/url');
 const routingService = require('../../core/frontend/services/routing');
 const settingsService = require('../../core/server/services/settings');
@@ -31,7 +31,7 @@ const DataGenerator = require('./fixtures/data-generator');
 const configUtils = require('./configUtils');
 const filterData = require('./fixtures/filter-param');
 const APIUtils = require('./api');
-const config = require('../../core/server/config');
+const config = require('../../core/shared/config');
 const knexMigrator = new KnexMigrator();
 let fixtures;
 let getFixtureOps;
@@ -469,6 +469,23 @@ fixtures = {
         return Promise.map(DataGenerator.forKnex.emails, function (email) {
             return models.Email.add(email, module.exports.context.internal);
         });
+    },
+
+    insertMembersAndLabels: function insertMembersAndLabels() {
+        return Promise.map(DataGenerator.forKnex.labels, function (label) {
+            return models.Label.add(label, module.exports.context.internal);
+        }).then(function () {
+            return Promise.each(_.cloneDeep(DataGenerator.forKnex.members), function (member) {
+                let memberLabelRelations = _.filter(DataGenerator.forKnex.members_labels, {member_id: member.id});
+
+                memberLabelRelations = _.map(memberLabelRelations, function (memberLabelRelation) {
+                    return _.find(DataGenerator.forKnex.labels, {id: memberLabelRelation.label_id});
+                });
+
+                member.labels = memberLabelRelations;
+                return models.Member.add(member, module.exports.context.internal);
+            });
+        });
     }
 };
 
@@ -476,7 +493,7 @@ fixtures = {
 initData = function initData() {
     return knexMigrator.init()
         .then(function () {
-            common.events.emit('db.ready');
+            events.emit('db.ready');
 
             let timeout;
 
@@ -536,6 +553,9 @@ toDoList = {
     },
     member: function insertMember() {
         return fixtures.insertOne('Member', 'members', 'createMember');
+    },
+    members: function insertMembersAndLabels() {
+        return fixtures.insertMembersAndLabels();
     },
     posts: function insertPostsAndTags() {
         return fixtures.insertPostsAndTags();
@@ -830,7 +850,7 @@ startGhost = function startGhost(options) {
             })
             .then(function () {
                 urlService.softReset();
-                common.events.emit('db.ready');
+                events.emit('db.ready');
 
                 let timeout;
 
@@ -849,7 +869,7 @@ startGhost = function startGhost(options) {
             .then(function () {
                 web.shared.middlewares.customRedirects.reload();
 
-                common.events.emit('server.start');
+                events.emit('server.start');
 
                 /**
                  * @TODO: this is dirty, but makes routing testing a lot easier for now, because the routing test
@@ -1022,7 +1042,7 @@ module.exports = {
                 let timeout;
 
                 if (!options.dbIsReady) {
-                    common.events.emit('db.ready');
+                    events.emit('db.ready');
                 }
 
                 return new Promise(function (resolve) {
@@ -1045,7 +1065,7 @@ module.exports = {
                 const tagRouter = new routingService.TaxonomyRouter('tag', routes.taxonomies.tag);
                 const authorRouter = new routingService.TaxonomyRouter('author', routes.taxonomies.author);
 
-                common.events.emit('db.ready');
+                events.emit('db.ready');
 
                 return this.waitTillFinished();
             },

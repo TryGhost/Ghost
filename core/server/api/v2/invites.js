@@ -1,8 +1,10 @@
 const Promise = require('bluebird');
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const logging = require('../../../shared/logging');
+const errors = require('@tryghost/errors');
 const security = require('../../lib/security');
 const mailService = require('../../services/mail');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../services/settings/cache');
 const models = require('../../models');
 const api = require('./index');
@@ -51,8 +53,8 @@ module.exports = {
             return models.Invite.findOne(frame.data, frame.options)
                 .then((model) => {
                     if (!model) {
-                        return Promise.reject(new common.errors.NotFoundError({
-                            message: common.i18n.t('errors.api.invites.inviteNotFound')
+                        return Promise.reject(new errors.NotFoundError({
+                            message: i18n.t('errors.api.invites.inviteNotFound')
                         }));
                     }
 
@@ -79,8 +81,8 @@ module.exports = {
             return models.Invite.destroy(frame.options)
                 .then(() => null)
                 .catch(models.Invite.NotFoundError, () => {
-                    return Promise.reject(new common.errors.NotFoundError({
-                        message: common.i18n.t('errors.api.invites.inviteNotFound')
+                    return Promise.reject(new errors.NotFoundError({
+                        message: i18n.t('errors.api.invites.inviteNotFound')
                     }));
                 });
         }
@@ -143,7 +145,7 @@ module.exports = {
                         mail: [{
                             message: {
                                 to: invite.get('email'),
-                                subject: common.i18n.t('common.api.users.mail.invitedByName', {
+                                subject: i18n.t('common.api.users.mail.invitedByName', {
                                     invitedByName: emailData.invitedByName,
                                     blogName: emailData.blogName
                                 }),
@@ -166,12 +168,12 @@ module.exports = {
                 })
                 .catch((err) => {
                     if (err && err.errorType === 'EmailError') {
-                        const errorMessage = common.i18n.t('errors.api.invites.errorSendingEmail.error', {
+                        const errorMessage = i18n.t('errors.api.invites.errorSendingEmail.error', {
                             message: err.message
                         });
-                        const helpText = common.i18n.t('errors.api.invites.errorSendingEmail.help');
+                        const helpText = i18n.t('errors.api.invites.errorSendingEmail.help');
                         err.message = `${errorMessage} ${helpText}`;
-                        common.logging.warn(err.message);
+                        logging.warn(err.message);
                     }
 
                     return Promise.reject(err);

@@ -13,12 +13,14 @@ const moment = require('moment');
 const Promise = require('bluebird');
 const ObjectId = require('bson-objectid');
 const debug = require('ghost-ignition').debug('models:base');
-const config = require('../../config');
+const config = require('../../../shared/config');
 const db = require('../../data/db');
-const common = require('../../lib/common');
+const {events, i18n} = require('../../lib/common');
+const logging = require('../../../shared/logging');
+const errors = require('@tryghost/errors');
 const security = require('../../lib/security');
 const schema = require('../../data/schema');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const validation = require('../../data/validation');
 const plugins = require('../plugins');
 let ghostBookshelf;
@@ -36,6 +38,9 @@ ghostBookshelf.plugin(plugins.transactionEvents);
 
 // Load the Ghost filter plugin, which handles applying a 'filter' to findPage requests
 ghostBookshelf.plugin(plugins.filter);
+
+// Load the Ghost search plugin, which handles applying a search query to findPage requests
+ghostBookshelf.plugin(plugins.search);
 
 // Load the Ghost include count plugin, which allows for the inclusion of cross-table counts
 ghostBookshelf.plugin(plugins.includeCount);
@@ -125,7 +130,7 @@ const addAction = (model, event, options) => {
                     err = err[0];
                 }
 
-                common.logging.error(new common.errors.InternalServerError({
+                logging.error(new errors.InternalServerError({
                     err
                 }));
             });
@@ -181,7 +186,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             debug(model.tableName, ghostEvent);
 
             // @NOTE: Internal Ghost events. These are very granular e.g. post.published
-            common.events.emit(ghostEvent, model, opts);
+            events.emit(ghostEvent, model, opts);
         };
 
         if (!options.transacting) {
@@ -557,8 +562,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         } else if (options.context.external) {
             return ghostBookshelf.Model.externalUser;
         } else {
-            throw new common.errors.NotFoundError({
-                message: common.i18n.t('errors.models.base.index.missingContext'),
+            throw new errors.NotFoundError({
+                message: i18n.t('errors.models.base.index.missingContext'),
                 level: 'critical'
             });
         }
@@ -744,8 +749,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
                 // CASE: client sends `0000-00-00 00:00:00`
                 if (isNaN(date)) {
-                    throw new common.errors.ValidationError({
-                        message: common.i18n.t('errors.models.base.invalidDate', {key: property}),
+                    throw new errors.ValidationError({
+                        message: i18n.t('errors.models.base.invalidDate', {key: property}),
                         code: 'DATE_INVALID'
                     });
                 }
@@ -771,8 +776,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
                             // CASE: client sends `0000-00-00 00:00:00`
                             if (isNaN(date)) {
-                                throw new common.errors.ValidationError({
-                                    message: common.i18n.t('errors.models.base.invalidDate', {key: relationProperty}),
+                                throw new errors.ValidationError({
+                                    message: i18n.t('errors.models.base.invalidDate', {key: relationProperty}),
                                     code: 'DATE_INVALID'
                                 });
                             }
@@ -798,7 +803,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         filterConfig = filterConfig || {};
 
         if (Object.prototype.hasOwnProperty.call(unfilteredOptions, 'include')) {
-            throw new common.errors.IncorrectUsageError({
+            throw new errors.IncorrectUsageError({
                 message: 'The model layer expects using `withRelated`.'
             });
         }
@@ -883,6 +888,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         // Add Filter behaviour
         itemCollection.applyDefaultAndCustomFilters(options);
+
+        // Apply model-specific search behaviour
+        itemCollection.applySearchQuery(options);
 
         // Ensure only valid fields/columns are added to query
         // and append default columns to fetch
@@ -982,7 +990,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                     return object.save(data, options);
                 }
 
-                throw new common.errors.NotFoundError();
+                throw new errors.NotFoundError();
             });
     },
 

@@ -1,12 +1,13 @@
 const models = require('../../models');
-const common = require('../../lib/common');
-const urlUtils = require('../../lib/url-utils');
+const {i18n} = require('../../lib/common');
+const errors = require('@tryghost/errors');
+const urlUtils = require('../../../shared/url-utils');
 const {mega} = require('../../services/mega');
 const membersService = require('../../services/members');
 const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 const _ = require('lodash');
-const config = require('../../config');
+const config = require('../../../shared/config');
 
 module.exports = {
     docName: 'posts',
@@ -73,8 +74,8 @@ module.exports = {
             return models.Post.findOne(frame.data, frame.options)
                 .then((model) => {
                     if (!model) {
-                        throw new common.errors.NotFoundError({
-                            message: common.i18n.t('errors.api.posts.postNotFound')
+                        throw new errors.NotFoundError({
+                            message: i18n.t('errors.api.posts.postNotFound')
                         });
                     }
 
@@ -154,7 +155,7 @@ module.exports = {
                 const knexOptions = _.pick(frame.options, ['transacting', 'forUpdate']);
                 const {members} = await membersService.api.members.list(Object.assign(knexOptions, {filter: 'subscribed:true'}, {limit: 'all'}));
                 if (members.length > allowedMembersLimit) {
-                    throw new common.errors.HostLimitError({
+                    throw new errors.HostLimitError({
                         message: `Your current plan allows you to send email to up to ${allowedMembersLimit} members, but you currently have ${members.length} members`,
                         help: hostUpgradeLink,
                         errorDetails: {
@@ -233,8 +234,8 @@ module.exports = {
             return models.Post.destroy(frame.options)
                 .then(() => null)
                 .catch(models.Post.NotFoundError, () => {
-                    return Promise.reject(new common.errors.NotFoundError({
-                        message: common.i18n.t('errors.api.posts.postNotFound')
+                    return Promise.reject(new errors.NotFoundError({
+                        message: i18n.t('errors.api.posts.postNotFound')
                     }));
                 });
         }

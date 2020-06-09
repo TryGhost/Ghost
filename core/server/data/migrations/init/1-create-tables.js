@@ -1,14 +1,14 @@
 const Promise = require('bluebird');
 const commands = require('../../schema').commands;
 const schema = require('../../schema').tables;
-const common = require('../../../lib/common');
+const logging = require('../../../../shared/logging');
 const schemaTables = Object.keys(schema);
 
 module.exports.up = function createTables(options) {
     const connection = options.connection;
 
     return Promise.mapSeries(schemaTables, function createTable(table) {
-        common.logging.info('Creating table: ' + table);
+        logging.info('Creating table: ' + table);
         return commands.createTable(table, connection);
     });
 };
@@ -23,7 +23,7 @@ module.exports.up = function createTables(options) {
         // Reference between tables!
         schemaTables.reverse();
         return Promise.mapSeries(schemaTables, function dropTable(table) {
-            common.logging.info('Drop table: ' + table);
+            logging.info('Drop table: ' + table);
             return commands.deleteTable(table, connection);
         });
     };

@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const utils = require('../../../schema/fixtures/utils');
 const permissions = require('../../../../services/permissions');
-const logging = require('../../../../lib/common/logging');
+const logging = require('../../../../../shared/logging');
 
 const resources = ['email_preview'];
 const _private = {};

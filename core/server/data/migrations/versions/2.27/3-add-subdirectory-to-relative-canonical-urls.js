@@ -1,5 +1,5 @@
-const common = require('../../../../lib/common');
-const config = require('../../../../config');
+const logging = require('../../../../../shared/logging');
+const config = require('../../../../../shared/config');
 const {URL} = require('url');
 
 module.exports.config = {
@@ -25,7 +25,7 @@ module.exports.up = (options) => {
     }, options);
 
     if (url.pathname === '/') {
-        common.logging.info('Skipping posts.canonical_url subdirectory fix: no subdirectory configured');
+        logging.info('Skipping posts.canonical_url subdirectory fix: no subdirectory configured');
         return Promise.resolve();
     }
 
@@ -46,11 +46,11 @@ module.exports.up = (options) => {
                             canonical_url: canonicalUrl
                         });
                 }).then(() => {
-                    common.logging.info(`Added subdirectory prefix to canonical_url in ${posts.length} posts`);
+                    logging.info(`Added subdirectory prefix to canonical_url in ${posts.length} posts`);
                 });
             }
 
-            common.logging.info('Skipping posts.canonical_url subdirectory fix: no canonical_urls to fix');
+            logging.info('Skipping posts.canonical_url subdirectory fix: no canonical_urls to fix');
             return Promise.resolve();
         });
 };
@@ -71,7 +71,7 @@ module.exports.down = (options) => {
     }, options);
 
     if (url.pathname === '/') {
-        common.logging.info('Skipping posts.canonical_url subdirectory fix: no subdirectory configured');
+        logging.info('Skipping posts.canonical_url subdirectory fix: no subdirectory configured');
         return Promise.resolve();
     }
 
@@ -89,11 +89,11 @@ module.exports.down = (options) => {
                             canonical_url: canonicalUrl
                         });
                 }).then(() => {
-                    common.logging.info(`Removed subdirectory prefix from canonical_url in ${posts.length} posts`);
+                    logging.info(`Removed subdirectory prefix from canonical_url in ${posts.length} posts`);
                 });
             }
 
-            common.logging.info('Skipping posts.canonical_url subdirectory fix: no canonical_urls to fix');
+            logging.info('Skipping posts.canonical_url subdirectory fix: no canonical_urls to fix');
             return Promise.resolve();
         });
 };

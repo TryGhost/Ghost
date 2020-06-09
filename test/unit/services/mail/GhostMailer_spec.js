@@ -4,8 +4,8 @@ const Promise = require('bluebird');
 const mail = require('../../../../core/server/services/mail');
 const settingsCache = require('../../../../core/server/services/settings/cache');
 const configUtils = require('../../../utils/configUtils');
-const urlUtils = require('../../../../core/server/lib/url-utils');
-const common = require('../../../../core/server/lib/common');
+const urlUtils = require('../../../../core/shared/url-utils');
+const {i18n} = require('../../../../core/server/lib/common');
 let mailer;
 
 // Mock SMTP config
@@ -40,7 +40,7 @@ const mailDataIncomplete = {
 
 const sandbox = sinon.createSandbox();
 
-common.i18n.init();
+i18n.init();
 
 describe('Mail: Ghostmailer', function () {
     afterEach(function () {

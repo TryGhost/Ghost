@@ -4,9 +4,10 @@ const validator = require('validator');
 const moment = require('moment-timezone');
 const assert = require('assert');
 const Promise = require('bluebird');
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const errors = require('@tryghost/errors');
 const settingsCache = require('../../services/settings/cache');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 let validatePassword;
 let validateSchema;
 let validateSettings;
@@ -113,7 +114,7 @@ validatePassword = function validatePassword(password, email, blogTitle) {
     // password must be longer than 10 characters
     if (!validator.isLength(password, 10)) {
         validationResult.isValid = false;
-        validationResult.message = common.i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10});
+        validationResult.message = i18n.t('errors.models.user.passwordDoesNotComplyLength', {minLength: 10});
 
         return validationResult;
     }
@@ -154,7 +155,7 @@ validatePassword = function validatePassword(password, email, blogTitle) {
 
     // Generic error message for the rules where no dedicated error massage is set
     if (!validationResult.isValid && !validationResult.message) {
-        validationResult.message = common.i18n.t('errors.models.user.passwordDoesNotComplySecurity');
+        validationResult.message = i18n.t('errors.models.user.passwordDoesNotComplySecurity');
     }
 
     return validationResult;
@@ -195,11 +196,11 @@ validateSchema = function validateSchema(tableName, model, options) {
             !Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'defaultTo')
         ) {
             if (validator.empty(strVal)) {
-                message = common.i18n.t('notices.data.validation.index.valueCannotBeBlank', {
+                message = i18n.t('notices.data.validation.index.valueCannotBeBlank', {
                     tableName: tableName,
                     columnKey: columnKey
                 });
-                validationErrors.push(new common.errors.ValidationError({
+                validationErrors.push(new errors.ValidationError({
                     message: message,
                     context: tableName + '.' + columnKey
                 }));
@@ -210,11 +211,11 @@ validateSchema = function validateSchema(tableName, model, options) {
         if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'type')
             && schema[tableName][columnKey].type === 'bool') {
             if (!(validator.isBoolean(strVal) || validator.empty(strVal))) {
-                message = common.i18n.t('notices.data.validation.index.valueMustBeBoolean', {
+                message = i18n.t('notices.data.validation.index.valueMustBeBoolean', {
                     tableName: tableName,
                     columnKey: columnKey
                 });
-                validationErrors.push(new common.errors.ValidationError({
+                validationErrors.push(new errors.ValidationError({
                     message: message,
                     context: tableName + '.' + columnKey
                 }));
@@ -231,13 +232,13 @@ validateSchema = function validateSchema(tableName, model, options) {
             // check length
             if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'maxlength')) {
                 if (!validator.isLength(strVal, 0, schema[tableName][columnKey].maxlength)) {
-                    message = common.i18n.t('notices.data.validation.index.valueExceedsMaxLength',
+                    message = i18n.t('notices.data.validation.index.valueExceedsMaxLength',
                         {
                             tableName: tableName,
                             columnKey: columnKey,
                             maxlength: schema[tableName][columnKey].maxlength
                         });
-                    validationErrors.push(new common.errors.ValidationError({
+                    validationErrors.push(new errors.ValidationError({
                         message: message,
                         context: tableName + '.' + columnKey
                     }));
@@ -252,11 +253,11 @@ validateSchema = function validateSchema(tableName, model, options) {
             // check type
             if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'type')) {
                 if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(strVal)) {
-                    message = common.i18n.t('notices.data.validation.index.valueIsNotInteger', {
+                    message = i18n.t('notices.data.validation.index.valueIsNotInteger', {
                         tableName: tableName,
                         columnKey: columnKey
                     });
-                    validationErrors.push(new common.errors.ValidationError({
+                    validationErrors.push(new errors.ValidationError({
                         message: message,
                         context: tableName + '.' + columnKey
                     }));
@@ -332,20 +333,20 @@ validate = function validate(value, key, validations, tableName) {
         // equivalent of validator.isSomething(option1, option2)
         if (validator[validationName].apply(validator, validationOptions) !== goodResult) {
             // CASE: You can define specific translations for validators e.g. isLength
-            if (common.i18n.doesTranslationKeyExist('notices.data.validation.index.validationFailedTypes.' + validationName)) {
-                translation = common.i18n.t('notices.data.validation.index.validationFailedTypes.' + validationName, _.merge({
+            if (i18n.doesTranslationKeyExist('notices.data.validation.index.validationFailedTypes.' + validationName)) {
+                translation = i18n.t('notices.data.validation.index.validationFailedTypes.' + validationName, _.merge({
                     validationName: validationName,
                     key: key,
                     tableName: tableName
                 }, validationOptions[1]));
             } else {
-                translation = common.i18n.t('notices.data.validation.index.validationFailed', {
+                translation = i18n.t('notices.data.validation.index.validationFailed', {
                     validationName: validationName,
                     key: key
                 });
             }
 
-            validationErrors.push(new common.errors.ValidationError({
+            validationErrors.push(new errors.ValidationError({
                 message: translation,
                 context: `${tableName}.${key}`
             }));

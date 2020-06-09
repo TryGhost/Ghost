@@ -3,8 +3,8 @@ const supertest = require('supertest');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
-const config = require('../../../../../core/server/config');
-const common = require('../../../../../core/server/lib/common');
+const config = require('../../../../../core/shared/config');
+const {events} = require('../../../../../core/server/lib/common');
 const ghost = testUtils.startGhost;
 
 let request;
@@ -27,7 +27,7 @@ describe('Slack API', function () {
     });
 
     it('Can post slack test', function (done) {
-        const eventSpy = sinon.spy(common.events, 'emit');
+        const eventSpy = sinon.spy(events, 'emit');
         request.post(localUtils.API.getApiQuery('slack/test/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)

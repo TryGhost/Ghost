@@ -1,8 +1,9 @@
 const errors = require('@tryghost/errors');
-const {events, i18n, logging} = require('../lib/common');
+const {events, i18n} = require('../lib/common');
+const logging = require('../../shared/logging');
 const request = require('../lib/request');
-const imageLib = require('../lib/image');
-const urlUtils = require('../lib/url-utils');
+const {blogIcon} = require('../lib/image');
+const urlUtils = require('../../shared/url-utils');
 const urlService = require('../../frontend/services/url');
 const settingsCache = require('./settings/cache');
 const schema = require('../data/schema').checks;
@@ -73,7 +74,7 @@ function ping(post) {
                 // if it is a post or a test message to check webhook working.
                 text: `Notification from *${blogTitle}* :ghost:`,
                 unfurl_links: true,
-                icon_url: imageLib.blogIcon.getIconUrl(true),
+                icon_url: blogIcon.getIconUrl(true),
                 username: slackSettings.username,
                 // We don't want to send attachment if it is a test notification.
                 attachments: [
@@ -104,7 +105,7 @@ function ping(post) {
                             }
                         ],
                         footer: blogTitle,
-                        footer_icon: imageLib.blogIcon.getIconUrl(true),
+                        footer_icon: blogIcon.getIconUrl(true),
                         ts: moment().unix()
                     }
                 ]
@@ -113,7 +114,7 @@ function ping(post) {
             slackData = {
                 text: message,
                 unfurl_links: true,
-                icon_url: imageLib.blogIcon.getIconUrl(true),
+                icon_url: blogIcon.getIconUrl(true),
                 username: slackSettings.username
             };
         }

@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const toPairs = require('lodash/toPairs');
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 
 /*
 * @param from: object with a SINGLE entry { 'fromColumn': 'fromValue' }
@@ -10,7 +10,7 @@ const createColumnToColumnMap = ({from, to, tableName}) => (connection) => {
     return connection.schema.hasTable(tableName)
         .then((tableExists) => {
             if (!tableExists) {
-                common.logging.warn(
+                logging.warn(
                     `Table ${tableName} does not exist`
                 );
                 return;
@@ -24,12 +24,12 @@ const createColumnToColumnMap = ({from, to, tableName}) => (connection) => {
                 connection.schema.hasColumn(tableName, toColumn)
             ]).then(([fromColumnExists, toColumnExists]) => {
                 if (!fromColumnExists) {
-                    common.logging.warn(
+                    logging.warn(
                         `Table '${tableName}' does not have column '${fromColumn}'`
                     );
                 }
                 if (!toColumnExists) {
-                    common.logging.warn(
+                    logging.warn(
                         `Table '${tableName}' does not have column '${toColumn}'`
                     );
                 }
@@ -37,7 +37,7 @@ const createColumnToColumnMap = ({from, to, tableName}) => (connection) => {
                     return;
                 }
 
-                common.logging.info(
+                logging.info(
                     `Updating ${tableName}, setting "${toColumn}" column to "${toValue}" where "${fromColumn}" column is "${fromValue}"`
                 );
 

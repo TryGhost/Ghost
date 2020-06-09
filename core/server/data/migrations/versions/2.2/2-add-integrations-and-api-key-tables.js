@@ -1,5 +1,5 @@
 const commands = require('../../../schema').commands;
-const logging = require('../../../../lib/common/logging');
+const logging = require('../../../../../shared/logging');
 
 const tables = ['integrations', 'api_keys'];
 const _private = {};

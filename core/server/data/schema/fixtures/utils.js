@@ -3,7 +3,7 @@
 const _ = require('lodash');
 
 const Promise = require('bluebird');
-const common = require('../../../lib/common');
+const logging = require('../../../../shared/logging');
 const models = require('../../../models');
 const baseUtils = require('../../../models/base/utils');
 const sequence = require('../../../lib/promise/sequence');
@@ -161,7 +161,7 @@ addFixturesForRelation = function addFixturesForRelation(relationFixture, option
             // As soon as an **older** migration script wants to add permissions for any resource, it iterates over the
             // permissions for each role. But if the role does not exist yet, it won't find the matching db entry and breaks.
             if (!fromItem) {
-                common.logging.warn('Skip: Target database entry not found for key: ' + key);
+                logging.warn('Skip: Target database entry not found for key: ' + key);
                 return Promise.resolve();
             }
 

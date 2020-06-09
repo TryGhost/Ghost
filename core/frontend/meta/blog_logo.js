@@ -1,6 +1,6 @@
-const urlUtils = require('../../server/lib/url-utils');
+const urlUtils = require('../../shared/url-utils');
 const settingsCache = require('../../server/services/settings/cache');
-const imageLib = require('../../server/lib/image');
+const {blogIcon} = require('../../server/lib/image');
 
 function getBlogLogo() {
     const logo = {};
@@ -11,7 +11,7 @@ function getBlogLogo() {
         // CASE: no publication logo is updated. We can try to use either an uploaded publication icon
         // or use the default one to make
         // Google happy with it. See https://github.com/TryGhost/Ghost/issues/7558
-        logo.url = imageLib.blogIcon.getIconUrl(true);
+        logo.url = blogIcon.getIconUrl(true);
     }
 
     return logo;

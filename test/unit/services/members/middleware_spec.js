@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const urlUtils = require('../../../../core/server/lib/url-utils');
+const urlUtils = require('../../../../core/shared/url-utils');
 const membersService = require('../../../../core/server/services/members');
 const membersMiddleware = require('../../../../core/server/services/members/middleware');
 

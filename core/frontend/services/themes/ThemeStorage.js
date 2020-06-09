@@ -1,7 +1,7 @@
 const fs = require('fs-extra');
 const os = require('os');
 const path = require('path');
-const config = require('../../../server/config');
+const config = require('../../../shared/config');
 const security = require('../../../server/lib/security');
 const {compress} = require('@tryghost/zip');
 const LocalFileStorage = require('../../../server/adapters/storage/LocalFileStorage');
@@ -57,8 +57,26 @@ class ThemeStorage extends LocalFileStorage {
         };
     }
 
+    /**
+     * Rename a file / folder
+     *
+     *
+     * @param String fileName
+     */
+    rename(srcName, destName) {
+        let src = path.join(this.getTargetDir(), srcName);
+        let dest = path.join(this.getTargetDir(), destName);
+
+        return fs.move(src, dest);
+    }
+
+    /**
+     * Rename a file / folder
+     *
+     * @param String backupName
+     */
     delete(fileName) {
-        return fs.remove(path.join(this.storagePath, fileName));
+        return fs.remove(path.join(this.getTargetDir(), fileName));
     }
 }
 

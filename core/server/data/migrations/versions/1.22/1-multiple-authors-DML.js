@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const ObjectId = require('bson-objectid');
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const models = require('../../../../models');
 
 module.exports.config = {
@@ -20,7 +20,7 @@ module.exports.up = function handleMultipleAuthors(options) {
         .then(function (ownerUser) {
             return models.Post.findAll(_.merge({columns: postAllColumns}, localOptions))
                 .then(function (posts) {
-                    common.logging.info('Adding `posts_authors` relations');
+                    logging.info('Adding `posts_authors` relations');
 
                     return Promise.map(posts.models, function (post) {
                         let invalidAuthorId = false;
@@ -58,6 +58,6 @@ module.exports.up = function handleMultipleAuthors(options) {
 };
 
 module.exports.down = function handleMultipleAuthors(options) {
-    common.logging.info('Removing `posts_authors` relations');
+    logging.info('Removing `posts_authors` relations');
     return options.connection('posts_authors').truncate();
 };

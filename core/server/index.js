@@ -11,10 +11,11 @@ require('./overrides');
 
 const debug = require('ghost-ignition').debug('boot:init');
 const Promise = require('bluebird');
-const config = require('./config');
-const {events, i18n, logging} = require('./lib/common');
+const config = require('../shared/config');
+const {events, i18n} = require('./lib/common');
+const logging = require('../shared/logging');
 const migrator = require('./data/db/migrator');
-const urlUtils = require('./lib/url-utils');
+const urlUtils = require('./../shared/url-utils');
 let parentApp;
 
 // Frontend Components

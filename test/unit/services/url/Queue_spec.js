@@ -1,8 +1,7 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const should = require('should');
 const sinon = require('sinon');
-const common = require('../../../../core/server/lib/common');
+const logging = require('../../../../core/shared/logging');
 const Queue = require('../../../../core/frontend/services/url/Queue');
 
 describe('Unit: services/url/Queue', function () {
@@ -12,7 +11,7 @@ describe('Unit: services/url/Queue', function () {
         queue = new Queue();
 
         sinon.spy(queue, 'run');
-        sinon.stub(common.logging, 'error');
+        sinon.stub(logging, 'error');
     });
 
     afterEach(function () {
@@ -141,7 +140,7 @@ describe('Unit: services/url/Queue', function () {
                 event: 'nachos'
             });
 
-            common.logging.error.calledOnce.should.be.true();
+            logging.error.calledOnce.should.be.true();
             queue.toNotify.nachos.notified.length.should.eql(0);
         });
     });

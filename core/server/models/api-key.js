@@ -1,5 +1,6 @@
 const omit = require('lodash/omit');
-const common = require('../lib/common');
+const logging = require('../../shared/logging');
+const errors = require('@tryghost/errors');
 const _ = require('lodash');
 const crypto = require('crypto');
 const ghostBookshelf = require('./base');
@@ -53,7 +54,7 @@ const addAction = (model, event, options) => {
                     err = err[0];
                 }
 
-                common.logging.error(new common.errors.InternalServerError({
+                logging.error(new errors.InternalServerError({
                     err
                 }));
             });

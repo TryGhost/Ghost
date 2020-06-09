@@ -6,9 +6,8 @@ const uuid = require('uuid');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
-const config = require('../../../../../core/server/config');
-const models = require('../../../../../core/server/models');
-const common = require('../../../../../core/server/lib/common');
+const config = require('../../../../../core/shared/config');
+const {events} = require('../../../../../core/server/lib/common');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 
@@ -37,7 +36,7 @@ describe('DB API', function () {
     beforeEach(function () {
         eventsTriggered = {};
 
-        sinon.stub(common.events, 'emit').callsFake((eventName, eventObj) => {
+        sinon.stub(events, 'emit').callsFake((eventName, eventObj) => {
             if (!eventsTriggered[eventName]) {
                 eventsTriggered[eventName] = [];
             }

@@ -52,8 +52,10 @@ describe('{{amp_components}} helper', function () {
     it('adds scripts for youtube embeds and iframes', function () {
         const post = {
             html: `
-                    <iframe src="https://www.youtube.com/embed/zqNTltOGh5c" frameborder="0"></iframe>
-                    <iframe src="//giphy.com/embed/o0vwzuFwCGAFO" width="480" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+                    <iframe src="https://www.youtube.com/embed/zqNTltOGh5c" frameborder="0">
+                    </iframe>
+                    <iframe src="//giphy.com/embed/o0vwzuFwCGAFO" width="480" height="480" frameBorder="0" class="giphy-embed" allowFullScreen>
+                    </iframe>
                 `
         };
 

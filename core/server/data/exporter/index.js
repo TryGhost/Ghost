@@ -3,7 +3,9 @@ const Promise = require('bluebird');
 const db = require('../../data/db');
 const commands = require('../schema').commands;
 const ghostVersion = require('../../lib/ghost-version');
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const logging = require('../../../shared/logging');
+const errors = require('@tryghost/errors');
 const security = require('../../lib/security');
 const models = require('../../models');
 const EXCLUDED_TABLES = ['sessions', 'mobiledoc_revisions'];
@@ -46,7 +48,7 @@ exportFileName = function exportFileName(options) {
 
         return title + 'ghost.' + datetime + '.json';
     }).catch(function (err) {
-        common.logging.error(new common.errors.GhostError({err: err}));
+        logging.error(new errors.GhostError({err: err}));
         return 'ghost.' + datetime + '.json';
     });
 };
@@ -105,9 +107,9 @@ doExport = function doExport(options) {
 
         return exportData;
     }).catch(function (err) {
-        return Promise.reject(new common.errors.DataExportError({
+        return Promise.reject(new errors.DataExportError({
             err: err,
-            context: common.i18n.t('errors.data.export.errorExportingData')
+            context: i18n.t('errors.data.export.errorExportingData')
         }));
     });
 };

@@ -1,7 +1,9 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('services:url:urls');
-const urlUtils = require('../../../server/lib/url-utils');
-const common = require('../../../server/lib/common');
+const {events} = require('../../../server/lib/common');
+const urlUtils = require('../../../shared/url-utils');
+const logging = require('../../../shared/logging');
+const errors = require('@tryghost/errors');
 
 /**
  * This class keeps track of all urls in the system.
@@ -32,7 +34,7 @@ class Urls {
         debug('cache', url);
 
         if (this.urls[resource.data.id]) {
-            common.logging.error(new common.errors.InternalServerError({
+            logging.error(new errors.InternalServerError({
                 message: 'This should not happen.',
                 code: 'URLSERVICE_RESOURCE_DUPLICATE'
             }));
@@ -47,7 +49,7 @@ class Urls {
         };
 
         // @NOTE: Notify the whole system. Currently used for sitemaps service.
-        common.events.emit('url.added', {
+        events.emit('url.added', {
             url: {
                 relative: url,
                 absolute: urlUtils.createUrl(url, true)
@@ -113,7 +115,7 @@ class Urls {
 
         debug('removed', this.urls[id].url, this.urls[id].generatorId);
 
-        common.events.emit('url.removed', {
+        events.emit('url.removed', {
             url: this.urls[id].url,
             resource: this.urls[id].resource
         });

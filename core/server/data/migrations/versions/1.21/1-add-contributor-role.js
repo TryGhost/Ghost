@@ -2,7 +2,7 @@ const merge = require('lodash/merge');
 const utils = require('../../../schema/fixtures/utils');
 const models = require('../../../../models');
 const permissions = require('../../../../services/permissions');
-const logging = require('../../../../lib/common/logging');
+const logging = require('../../../../../shared/logging');
 const _private = {};
 
 _private.addRole = function addRole(options) {

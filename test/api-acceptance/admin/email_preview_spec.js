@@ -3,7 +3,7 @@ const supertest = require('supertest');
 const ObjectId = require('bson-objectid');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
-const config = require('../../../core/server/config');
+const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models/index');
 
 const ghost = testUtils.startGhost;
@@ -107,6 +107,101 @@ describe('Email Preview API', function () {
                         jsonResponse.email_previews[0].plaintext.should.match(/Another email card with a similar replacement, see\?/);
                     });
             });
+        });
+    });
+
+    describe('As Owner', function () {
+        it('can send test email', function () {
+            const url = localUtils.API.getApiQuery(`email_preview/posts/${testUtils.DataGenerator.Content.posts[0].id}/`);
+            return request
+                .post(url)
+                .set('Origin', config.get('url'))
+                .send({
+                    emails: ['test@ghost.org']
+                })
+                .set('Accept', 'application/json')
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+        });
+    });
+    describe('As Admin', function () {
+        before(function () {
+            testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'admin+1@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[0].name
+            }).then((user) => {
+                request.user = user;
+                return localUtils.doAuth(request);
+            });
+        });
+
+        it('can send test email', function () {
+            const url = localUtils.API.getApiQuery(`email_preview/posts/${testUtils.DataGenerator.Content.posts[0].id}/`);
+            return request
+                .post(url)
+                .set('Origin', config.get('url'))
+                .send({
+                    emails: ['test@ghost.org']
+                })
+                .set('Accept', 'application/json')
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+        });
+    });
+    describe('As Editor', function () {
+        before(function () {
+            return testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({
+                    email: 'test+editor@ghost.org'
+                }),
+                role: testUtils.DataGenerator.Content.roles[1].name
+            }).then((user) => {
+                request.user = user;
+                return localUtils.doAuth(request);
+            });
+        });
+
+        it('can send test email', function () {
+            const url = localUtils.API.getApiQuery(`email_preview/posts/${testUtils.DataGenerator.Content.posts[0].id}/`);
+            return request
+                .post(url)
+                .set('Origin', config.get('url'))
+                .send({
+                    emails: ['test@ghost.org']
+                })
+                .set('Accept', 'application/json')
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+        });
+    });
+    describe('As Author', function () {
+        before(function () {
+            return testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({
+                    email: 'test+author@ghost.org'
+                }),
+                role: testUtils.DataGenerator.Content.roles[2].name
+            }).then((user) => {
+                request.user = user;
+                return localUtils.doAuth(request);
+            });
+        });
+
+        it('cannot send test email', function () {
+            const url = localUtils.API.getApiQuery(`email_preview/posts/${testUtils.DataGenerator.Content.posts[0].id}/`);
+            return request
+                .post(url)
+                .set('Origin', config.get('url'))
+                .send({
+                    emails: ['test@ghost.org']
+                })
+                .set('Accept', 'application/json')
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(403);
         });
     });
 });

@@ -1,4 +1,4 @@
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const uuid = require('uuid');
 
 module.exports = {
@@ -10,7 +10,7 @@ module.exports = {
 
         const membersWithoutUUID = await conn.select('id').from('members').whereNull('uuid');
 
-        common.logging.info(`Adding uuid field value to ${membersWithoutUUID.length} members.`);
+        logging.info(`Adding uuid field value to ${membersWithoutUUID.length} members.`);
 
         for (const member of membersWithoutUUID) {
             await conn('members').update('uuid', uuid.v4()).where('id', member.id);

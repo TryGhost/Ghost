@@ -1,4 +1,4 @@
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 
 module.exports = {
     async up({connection}) {
@@ -7,7 +7,7 @@ module.exports = {
             .select('value');
 
         if (!result || !result[0]) {
-            common.logging.warn(`Could not find labs setting`);
+            logging.warn(`Could not find labs setting`);
             result = [{}];
         }
 
@@ -15,7 +15,7 @@ module.exports = {
 
         labs.members = !!labs.members || !!labs.subscribers;
 
-        common.logging.info(`Updating labs setting removing subscribers (was ${labs.subscribers}) settings members to ${labs.members}`);
+        logging.info(`Updating labs setting removing subscribers (was ${labs.subscribers}) settings members to ${labs.members}`);
         labs.subscribers = undefined;
 
         await connection('settings')

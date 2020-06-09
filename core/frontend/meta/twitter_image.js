@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const urlUtils = require('../../server/lib/url-utils');
+const urlUtils = require('../../shared/url-utils');
 const getContextObject = require('./context_object.js');
 const settingsCache = require('../../server/services/settings/cache');
 

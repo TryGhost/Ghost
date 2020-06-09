@@ -3,10 +3,11 @@ const url = require('url');
 const session = require('cookie-session');
 const crypto = require('crypto');
 const path = require('path');
-const config = require('../../../../server/config');
-const urlUtils = require('../../../../server/lib/url-utils');
+const config = require('../../../../shared/config');
+const urlUtils = require('../../../../shared/url-utils');
 const constants = require('../../../../server/lib/constants');
-const common = require('../../../../server/lib/common');
+const {i18n} = require('../../../../server/lib/common');
+const errors = require('@tryghost/errors');
 const settingsCache = require('../../../../server/services/settings/cache');
 // routeKeywords.private: 'private'
 const privateRoute = '/private/';
@@ -81,8 +82,8 @@ const privateBlogging = {
         privateBlogging.authenticatePrivateSession(req, res, function onSessionVerified() {
             // CASE: RSS is disabled for private blogging e.g. they create overhead
             if (req.path.match(/\/rss(\/?|\/\d+\/?)$/)) {
-                return next(new common.errors.NotFoundError({
-                    message: common.i18n.t('errors.errors.pageNotFound')
+                return next(new errors.NotFoundError({
+                    message: i18n.t('errors.errors.pageNotFound')
                 }));
             }
 
@@ -143,7 +144,7 @@ const privateBlogging = {
             return res.redirect(urlUtils.urlFor({relativeUrl: forward}));
         } else {
             res.error = {
-                message: common.i18n.t('errors.middleware.privateblogging.wrongPassword')
+                message: i18n.t('errors.middleware.privateblogging.wrongPassword')
             };
             return next();
         }

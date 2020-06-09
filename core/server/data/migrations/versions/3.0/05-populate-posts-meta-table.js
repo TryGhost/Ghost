@@ -2,7 +2,7 @@ const postsMetaSchema = require('../../../schema').tables.posts_meta;
 const ObjectId = require('bson-objectid');
 const _ = require('lodash');
 const models = require('../../../../models');
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 
 module.exports.config = {
     transaction: true
@@ -31,7 +31,7 @@ module.exports.up = (options) => {
         .fetch(localOptions)
         .then(({models: posts}) => {
             if (posts.length > 0) {
-                common.logging.info(`Adding ${posts.length} entries to posts_meta`);
+                logging.info(`Adding ${posts.length} entries to posts_meta`);
                 let postsMetaEntries = _.map(posts, (post) => {
                     let postsMetaEntry = metaAttrs.reduce(function (obj, entry) {
                         return Object.assign(obj, {
@@ -48,7 +48,7 @@ module.exports.up = (options) => {
                     return localOptions.transacting('posts_meta').insert(postsMeta);
                 });
             } else {
-                common.logging.info('Skipping populating posts_meta table: found 0 posts with metadata');
+                logging.info('Skipping populating posts_meta table: found 0 posts with metadata');
                 return Promise.resolve();
             }
         });
@@ -65,7 +65,7 @@ module.exports.down = function (options) {
         .findAll(localOptions)
         .then(({models: postsMeta}) => {
             if (postsMeta.length > 0) {
-                common.logging.info(`Adding metadata for ${postsMeta.length} posts from posts_meta table`);
+                logging.info(`Adding metadata for ${postsMeta.length} posts from posts_meta table`);
                 return Promise.map(postsMeta, (postsMeta) => {
                     let data = metaAttrs.reduce(function (obj, entry) {
                         return Object.assign(obj, {
@@ -75,7 +75,7 @@ module.exports.down = function (options) {
                     return localOptions.transacting('posts').where({id: postsMeta.get('post_id')}).update(data);
                 });
             } else {
-                common.logging.info('Skipping populating meta fields from posts_meta: found 0 entries');
+                logging.info('Skipping populating meta fields from posts_meta: found 0 entries');
                 return Promise.resolve();
             }
         });

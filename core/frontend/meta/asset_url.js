@@ -1,14 +1,14 @@
 const crypto = require('crypto');
-const config = require('../../server/config');
-const imageLib = require('../../server/lib/image');
-const urlUtils = require('../../server/lib/url-utils');
+const config = require('../../shared/config');
+const {blogIcon} = require('../../server/lib/image');
+const urlUtils = require('../../shared/url-utils');
 
 /**
  * Serve either uploaded favicon or default
  * @return {string}
  */
 function getFaviconUrl() {
-    return imageLib.blogIcon.getIconUrl();
+    return blogIcon.getIconUrl();
 }
 
 function getAssetUrl(path, hasMinFile) {

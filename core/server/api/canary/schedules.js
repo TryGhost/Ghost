@@ -1,9 +1,10 @@
 const _ = require('lodash');
 const moment = require('moment');
-const config = require('../../config');
+const config = require('../../../shared/config');
 const models = require('../../models');
-const urlUtils = require('../../lib/url-utils');
-const common = require('../../lib/common');
+const urlUtils = require('../../../shared/url-utils');
+const {i18n} = require('../../lib/common');
+const errors = require('@tryghost/errors');
 const api = require('./index');
 
 module.exports = {
@@ -53,11 +54,11 @@ module.exports = {
                         const publishedAtMoment = moment(resource.published_at);
 
                         if (publishedAtMoment.diff(moment(), 'minutes') > publishAPostBySchedulerToleranceInMinutes) {
-                            return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.job.notFound')}));
+                            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.job.notFound')}));
                         }
 
                         if (publishedAtMoment.diff(moment(), 'minutes') < publishAPostBySchedulerToleranceInMinutes * -1 && frame.data.force !== true) {
-                            return Promise.reject(new common.errors.NotFoundError({message: common.i18n.t('errors.api.job.publishInThePast')}));
+                            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.job.publishInThePast')}));
                         }
 
                         const editedResource = {};

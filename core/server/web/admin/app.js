@@ -1,9 +1,9 @@
 const debug = require('ghost-ignition').debug('web:admin:app');
 const express = require('../../../shared/express');
 const serveStatic = express.static;
-const config = require('../../config');
+const config = require('../../../shared/config');
 const constants = require('../../lib/constants');
-const urlUtils = require('../../lib/url-utils');
+const urlUtils = require('../../../shared/url-utils');
 const shared = require('../shared');
 const adminMiddleware = require('./middleware');
 

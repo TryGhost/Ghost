@@ -61,6 +61,8 @@ module.exports = function apiRoutes() {
     router.get('/settings', mw.authAdminApi, http(apiCanary.settings.browse));
     router.get('/settings/:key', mw.authAdminApi, http(apiCanary.settings.read));
     router.put('/settings', mw.authAdminApi, http(apiCanary.settings.edit));
+    router.get('/settings/members/email', http(apiCanary.settings.validateMembersFromEmail));
+    router.post('/settings/members/email', mw.authAdminApi, http(apiCanary.settings.updateMembersFromEmail));
 
     // ## Users
     router.get('/users', mw.authAdminApi, http(apiCanary.users.browse));
@@ -86,6 +88,8 @@ module.exports = function apiRoutes() {
     router.get('/members', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.browse));
     router.post('/members', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.add));
 
+    router.get('/members/stats', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.stats));
+
     router.get('/members/csv', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.exportCSV));
     router.post('/members/csv',
         shared.middlewares.labs.members,
@@ -94,6 +98,8 @@ module.exports = function apiRoutes() {
         apiMw.upload.validation({type: 'members'}),
         http(apiCanary.members.importCSV)
     );
+
+    router.get('/members/stripe_connect', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.membersStripeConnect.auth));
 
     router.get('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.read));
     router.put('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.edit));

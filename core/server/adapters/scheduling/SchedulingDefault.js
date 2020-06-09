@@ -2,7 +2,8 @@ const util = require('util');
 const moment = require('moment');
 const debug = require('ghost-ignition').debug('scheduling-default');
 const SchedulingBase = require('./SchedulingBase');
-const common = require('../../lib/common');
+const logging = require('../../../shared/logging');
+const errors = require('@tryghost/errors');
 const request = require('../../lib/request');
 
 /**
@@ -314,7 +315,7 @@ SchedulingDefault.prototype._pingUrl = function (object) {
                 this._pingUrl(object);
             }, this.retryTimeoutInMs);
 
-            common.logging.error(new common.errors.GhostError({
+            logging.error(new errors.GhostError({
                 err,
                 context: 'Retrying...',
                 level: 'normal'
@@ -323,7 +324,7 @@ SchedulingDefault.prototype._pingUrl = function (object) {
             return;
         }
 
-        common.logging.error(new common.errors.GhostError({
+        logging.error(new errors.GhostError({
             err,
             level: 'critical'
         }));

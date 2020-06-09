@@ -1,9 +1,10 @@
 const _ = require('lodash');
 const xml = require('xml');
-const config = require('../config');
+const config = require('../../shared/config');
 const urlService = require('../../frontend/services/url');
 const errors = require('@tryghost/errors');
-const {events, i18n, logging} = require('../lib/common');
+const {events, i18n} = require('../lib/common');
+const logging = require('../../shared/logging');
 const request = require('../lib/request');
 const settingsCache = require('./settings/cache');
 

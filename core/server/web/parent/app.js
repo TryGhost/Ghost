@@ -1,11 +1,11 @@
 const debug = require('ghost-ignition').debug('web:parent');
 const express = require('../../../shared/express');
 const vhost = require('@tryghost/vhost-middleware');
-const config = require('../../config');
+const config = require('../../../shared/config');
 const compress = require('compression');
 const netjet = require('netjet');
 const mw = require('./middleware');
-const escapeRegExp = require('lodash.escaperegexp');
+const escapeRegExp = require('lodash/escapeRegExp');
 const {URL} = require('url');
 const shared = require('../shared');
 

@@ -1,6 +1,6 @@
 const debug = require('ghost-ignition').debug('services:routing:collection-router');
-const common = require('../../../server/lib/common');
-const urlUtils = require('../../../server/lib/url-utils');
+const {events} = require('../../../server/lib/common');
+const urlUtils = require('../../../shared/url-utils');
 const ParentRouter = require('./ParentRouter');
 
 const controllers = require('./controllers');
@@ -90,7 +90,7 @@ class CollectionRouter extends ParentRouter {
         // REGISTER: permalinks e.g. /:slug/, /podcast/:slug
         this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
 
-        common.events.emit('router.created', this);
+        events.emit('router.created', this);
     }
 
     /**
@@ -138,7 +138,7 @@ class CollectionRouter extends ParentRouter {
          * e.g. /:year/:month/:day/:slug/ or /:day/:slug/
          */
         this._onTimezoneEditedListener = this._onTimezoneEdited.bind(this);
-        common.events.on('settings.active_timezone.edited', this._onTimezoneEditedListener);
+        events.on('settings.active_timezone.edited', this._onTimezoneEditedListener);
     }
 
     /**
@@ -197,7 +197,7 @@ class CollectionRouter extends ParentRouter {
 
     reset() {
         if (this._onTimezoneEditedListener) {
-            common.events.removeListener('settings.active_timezone.edited', this._onTimezoneEditedListener);
+            events.removeListener('settings.active_timezone.edited', this._onTimezoneEditedListener);
         }
     }
 }

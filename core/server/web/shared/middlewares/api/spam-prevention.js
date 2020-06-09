@@ -2,8 +2,9 @@ const moment = require('moment');
 const extend = require('lodash/extend');
 const pick = require('lodash/pick');
 const errors = require('@tryghost/errors');
-const config = require('../../../../config');
-const {logging,i18n} = require('../../../../lib/common');
+const config = require('../../../../../shared/config');
+const {i18n} = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const spam = config.get('spam') || {};
 
 const spamPrivateBlock = spam.private_block || {};

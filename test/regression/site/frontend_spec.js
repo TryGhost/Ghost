@@ -12,7 +12,7 @@ const _ = require('lodash');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
-const config = require('../../../core/server/config');
+const config = require('../../../core/shared/config');
 const settingsCache = require('../../../core/server/services/settings/cache');
 const origCache = _.cloneDeep(settingsCache);
 const ghost = testUtils.startGhost;
@@ -170,7 +170,7 @@ describe('Frontend Routing', function () {
 
                 it('should redirect to editor', function (done) {
                     request.get('/static-page-test/edit/')
-                        .expect('Location', /ghost\/editor\/\w+/)
+                        .expect('Location', /ghost\/#\/editor\/\w+/)
                         .expect('Cache-Control', testUtils.cacheRules.public)
                         .expect(302)
                         .end(doEnd(done));

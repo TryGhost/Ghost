@@ -1,4 +1,4 @@
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const commands = require('../../../schema').commands;
 const table = 'integrations';
 const newColumnNames = [
@@ -15,10 +15,10 @@ module.exports.up = (options) => {
         return connection.schema.hasColumn(table, newColumnName)
             .then((exists) => {
                 if (exists) {
-                    common.logging.warn(printResult('Adding', newColumnName));
+                    logging.warn(printResult('Adding', newColumnName));
                     return;
                 }
-                common.logging.info(printResult('Adding', newColumnName));
+                logging.info(printResult('Adding', newColumnName));
                 return commands.addColumn(table, newColumnName, connection);
             });
     });
@@ -30,10 +30,10 @@ module.exports.down = (options) => {
         return connection.schema.hasColumn(table, newColumnName)
             .then((exists) => {
                 if (!exists) {
-                    common.logging.warn(printResult('Dropping', newColumnName));
+                    logging.warn(printResult('Dropping', newColumnName));
                     return;
                 }
-                common.logging.info(printResult('Dropping', newColumnName));
+                logging.info(printResult('Dropping', newColumnName));
                 return commands.dropColumn(table, newColumnName, connection);
             });
     });

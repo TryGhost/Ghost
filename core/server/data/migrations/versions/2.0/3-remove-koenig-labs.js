@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const models = require('../../../../models');
 const message1 = 'Removing `koenigEditor` from labs.';
 const message2 = 'Removed `koenigEditor` from labs.';
@@ -18,25 +18,25 @@ module.exports.up = (options) => {
     return models.Settings.findOne({key: 'labs'}, localOptions)
         .then(function (settingsModel) {
             if (!settingsModel) {
-                common.logging.warn('Labs field does not exist.');
+                logging.warn('Labs field does not exist.');
                 return;
             }
 
             const labsValue = JSON.parse(settingsModel.get('value'));
             delete labsValue.koenigEditor;
 
-            common.logging.info(message1);
+            logging.info(message1);
             return models.Settings.edit({
                 key: 'labs',
                 value: JSON.stringify(labsValue)
             }, localOptions);
         })
         .then(() => {
-            common.logging.info(message2);
+            logging.info(message2);
         });
 };
 
 module.exports.down = () => {
-    common.logging.warn(message3);
+    logging.warn(message3);
     return Promise.resolve();
 };

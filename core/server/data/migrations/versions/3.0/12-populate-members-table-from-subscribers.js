@@ -1,6 +1,6 @@
 const ObjectId = require('bson-objectid');
 const _ = require('lodash');
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 
 module.exports.config = {
     transaction: true,
@@ -25,7 +25,7 @@ module.exports.up = (options) => {
     return localOptions.transacting('subscribers').select()
         .then((subscribers) => {
             if (subscribers && subscribers.length > 0) {
-                common.logging.info(`Adding ${subscribers.length} entries to members`);
+                logging.info(`Adding ${subscribers.length} entries to members`);
 
                 let members = _.map(subscribers, (subscriber) => {
                     let member = memberAttrs.reduce(function (obj, prop) {
@@ -42,7 +42,7 @@ module.exports.up = (options) => {
                     return localOptions.transacting('members').insert(member);
                 });
             } else {
-                common.logging.info('Skipping populating members table: found 0 subscribers');
+                logging.info('Skipping populating members table: found 0 subscribers');
                 return Promise.resolve();
             }
         });

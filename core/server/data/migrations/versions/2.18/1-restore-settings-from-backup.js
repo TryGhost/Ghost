@@ -1,8 +1,8 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const settingsCache = require('../../../../services/settings/cache');
-const config = require('../../../../config');
+const config = require('../../../../../shared/config');
 const moment = require('moment');
 const fs = require('fs-extra');
 const path = require('path');
@@ -25,7 +25,7 @@ module.exports.up = (options) => {
     return fs.readdir(dataPath).then(function (files) {
         return files;
     }).catch(function () {
-        common.logging.warn(`Error reading ${dataPath} whilst trying to ensure boolean settings are correct. Please double check your settings after this upgrade`);
+        logging.warn(`Error reading ${dataPath} whilst trying to ensure boolean settings are correct. Please double check your settings after this upgrade`);
         return [];
     }).then(function (files) {
         const backups = files.filter(function (filename) {
@@ -38,25 +38,25 @@ module.exports.up = (options) => {
         });
 
         if (backups.length === 0) {
-            common.logging.warn('No backup files found, skipping...');
+            logging.warn('No backup files found, skipping...');
             return;
         }
 
         const mostRecentBackup = backups[0];
 
-        common.logging.info(`Using backupfile ${path.join(dataPath, mostRecentBackup)}`);
+        logging.info(`Using backupfile ${path.join(dataPath, mostRecentBackup)}`);
 
         let backup;
         try {
             backup = require(path.join(dataPath, mostRecentBackup));
         } catch (e) {
-            common.logging.warn(`Could not read ${path.join(dataPath, mostRecentBackup)} whilst trying to ensure boolean settings are correct. Please double check your settings after this upgrade`);
+            logging.warn(`Could not read ${path.join(dataPath, mostRecentBackup)} whilst trying to ensure boolean settings are correct. Please double check your settings after this upgrade`);
             return;
         }
         const settings = backup && backup.data && backup.data.settings;
 
         if (!settings) {
-            common.logging.warn('Could not read settings from backup file, skipping...');
+            logging.warn('Could not read settings from backup file, skipping...');
             return;
         }
 
@@ -64,7 +64,7 @@ module.exports.up = (options) => {
             .transacting('migrations')
             .then((response) => {
                 if (!response) {
-                    common.logging.warn('Cannot find migrations.');
+                    logging.warn('Cannot find migrations.');
                     return;
                 }
 
@@ -73,11 +73,11 @@ module.exports.up = (options) => {
                 const isAffected = _.find(response, {currentVersion: '2.17', version: '2.17'});
 
                 if (!isAffected) {
-                    common.logging.warn('Skipping migration. Not affected.');
+                    logging.warn('Skipping migration. Not affected.');
                     return;
                 }
 
-                common.logging.warn('...is affected.');
+                logging.warn('...is affected.');
 
                 const relevantBackupSettings = settings.filter(function (entry) {
                     return ['is_private', 'force_i18n', 'amp'].includes(entry.key);
@@ -91,7 +91,7 @@ module.exports.up = (options) => {
                     .transacting('settings')
                     .then((response) => {
                         if (!response) {
-                            common.logging.warn('Cannot find settings.');
+                            logging.warn('Cannot find settings.');
                             return;
                         }
 
@@ -103,7 +103,7 @@ module.exports.up = (options) => {
                             const backupSetting = relevantBackupSettings[liveSetting.key];
 
                             if (liveSetting.value === 'false' && backupSetting.value === 'true') {
-                                common.logging.info(`Reverting setting ${liveSetting.key}`);
+                                logging.info(`Reverting setting ${liveSetting.key}`);
 
                                 return localOptions
                                     .transacting('settings')

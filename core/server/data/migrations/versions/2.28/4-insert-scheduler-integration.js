@@ -1,4 +1,4 @@
-const logging = require('../../../../lib/common/logging');
+const logging = require('../../../../../shared/logging');
 const merge = require('lodash/merge');
 const models = require('../../../../models');
 const utils = require('../../../schema/fixtures/utils');

@@ -6,10 +6,11 @@ const Promise = require('bluebird');
 const fs = require('fs-extra');
 const path = require('path');
 const _ = require('lodash');
-const config = require('./config');
-const urlUtils = require('./lib/url-utils');
+const config = require('../shared/config');
+const urlUtils = require('./../shared/url-utils');
 const errors = require('@tryghost/errors');
-const {events, i18n, logging} = require('./lib/common');
+const {events, i18n} = require('./lib/common');
+const logging = require('../shared/logging');
 const moment = require('moment');
 
 /**

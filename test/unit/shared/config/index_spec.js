@@ -2,7 +2,7 @@ const should = require('should');
 const path = require('path');
 const rewire = require('rewire');
 const _ = require('lodash');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../../utils/configUtils');
 
 describe('Config', function () {
     before(function () {
@@ -22,7 +22,7 @@ describe('Config', function () {
         beforeEach(function () {
             originalEnv = _.clone(process.env);
             originalArgv = _.clone(process.argv);
-            config = rewire('../../../core/server/config');
+            config = rewire('../../../../core/shared/config');
 
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available
@@ -38,8 +38,8 @@ describe('Config', function () {
             process.env.database__client = 'test';
 
             customConfig = config.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../utils/fixtures/config')
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
             customConfig.get('database:client').should.eql('test');
@@ -50,8 +50,8 @@ describe('Config', function () {
             process.argv[2] = '--database:client=stronger';
 
             customConfig = config.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../utils/fixtures/config')
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
             customConfig.get('database:client').should.eql('stronger');
@@ -62,8 +62,8 @@ describe('Config', function () {
             process.argv[2] = '--paths:corePath=try-to-override';
 
             customConfig = config.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../utils/fixtures/config')
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
             customConfig.get('paths:corePath').should.not.containEql('try-to-override');
@@ -71,8 +71,8 @@ describe('Config', function () {
 
         it('overrides is stronger than every other config file', function () {
             customConfig = config.loadNconf({
-                baseConfigPath: path.join(__dirname, '../../utils/fixtures/config'),
-                customConfigPath: path.join(__dirname, '../../utils/fixtures/config')
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
             customConfig.get('paths:corePath').should.not.containEql('try-to-override');
@@ -104,7 +104,7 @@ describe('Config', function () {
 
         it('should have the correct values for each key', function () {
             const pathConfig = configUtils.config.get('paths');
-            const appRoot = path.resolve(__dirname, '../../../');
+            const appRoot = path.resolve(__dirname, '../../../../');
 
             pathConfig.should.have.property('appRoot', appRoot);
         });

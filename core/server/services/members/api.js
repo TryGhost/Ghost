@@ -1,22 +1,21 @@
 const settingsCache = require('../settings/cache');
 const MembersApi = require('@tryghost/members-api');
-const {logging} = require('../../lib/common');
+const logging = require('../../../shared/logging');
 const mail = require('../mail');
 const models = require('../../models');
 const signinEmail = require('./emails/signin');
 const signupEmail = require('./emails/signup');
 const subscribeEmail = require('./emails/subscribe');
-const config = require('./config');
 
 const ghostMailer = new mail.GhostMailer();
 
 module.exports = createApiInstance;
 
-function createApiInstance() {
+function createApiInstance(config) {
     const membersApiInstance = MembersApi({
         tokenConfig: config.getTokenConfig(),
         auth: {
-            getSigninURL: config.getSigninURL,
+            getSigninURL: config.getSigninURL.bind(config),
             allowSelfSignup: config.getAllowSelfSignup(),
             secret: config.getAuthSecret()
         },
@@ -42,6 +41,8 @@ function createApiInstance() {
                     return `📫 Confirm your subscription to ${siteTitle}`;
                 case 'signup':
                     return `🙌 Complete your sign up to ${siteTitle}!`;
+                case 'updateEmail':
+                    return `📫 Confirm your email update for ${siteTitle}!`;
                 case 'signin':
                 default:
                     return `🔑 Secure sign in link for ${siteTitle}`;
@@ -86,6 +87,24 @@ function createApiInstance() {
                         Sent to ${email}
                         If you did not make this request, you can simply delete this message. You will not be signed up, and no account will be created for you.
                         `;
+                case 'updateEmail':
+                    return `
+                        Hey there,
+
+                        You're one tap away from updating your email for ${siteTitle} — please confirm this is as your new email with this link:
+
+                        ${url}
+
+                        For your security, the link will expire in 10 minutes time.
+
+                        All the best!
+                        The team at ${siteTitle}
+
+                        ---
+
+                        Sent to ${email}
+                        If you did not make this request, you can simply delete this message.
+                        `;
                 case 'signin':
                 default:
                     return `
@@ -114,6 +133,8 @@ function createApiInstance() {
                     return subscribeEmail({url, email, siteTitle});
                 case 'signup':
                     return signupEmail({url, email, siteTitle});
+                case 'updateEmail':
+                    return subscribeEmail({url, email, siteTitle});
                 case 'signin':
                 default:
                     return signinEmail({url, email, siteTitle});

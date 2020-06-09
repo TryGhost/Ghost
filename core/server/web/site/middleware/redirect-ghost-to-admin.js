@@ -1,6 +1,6 @@
 const express = require('../../../../shared/express');
-const config = require('../../../config');
-const urlUtils = require('../../../lib/url-utils');
+const config = require('../../../../shared/config');
+const urlUtils = require('../../../../shared/url-utils');
 
 const adminRedirect = (path) => {
     return function doRedirect(req, res) {

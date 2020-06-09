@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const logging = require('../../../shared/logging');
 const db = require('../db');
 const schema = require('./schema');
 const clients = require('./clients');
@@ -102,7 +103,7 @@ function getTables(transaction) {
         return clients[client].getTables(transaction);
     }
 
-    return Promise.reject(common.i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
+    return Promise.reject(i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
 }
 
 function getIndexes(table, transaction) {
@@ -112,7 +113,7 @@ function getIndexes(table, transaction) {
         return clients[client].getIndexes(table, transaction);
     }
 
-    return Promise.reject(common.i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
+    return Promise.reject(i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
 }
 
 function getColumns(table, transaction) {
@@ -122,7 +123,7 @@ function getColumns(table, transaction) {
         return clients[client].getColumns(table);
     }
 
-    return Promise.reject(common.i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
+    return Promise.reject(i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
 }
 
 function checkTables(transaction) {
@@ -133,7 +134,7 @@ function checkTables(transaction) {
     }
 }
 
-const createLog = type => msg => common.logging[type](msg);
+const createLog = type => msg => logging[type](msg);
 
 function createColumnMigration(...migrations) {
     async function runColumnMigration(conn, migration) {

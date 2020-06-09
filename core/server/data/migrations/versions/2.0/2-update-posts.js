@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const mobiledocLib = require('../../../../lib/mobiledoc');
 const message1 = 'Updating posts: apply new editor format and set comment_id field.';
 const message2 = 'Updated posts: apply new editor format and set comment_id field.';
@@ -35,7 +35,7 @@ module.exports.up = (options) => {
         migrating: true
     }, options);
 
-    common.logging.info(message1);
+    logging.info(message1);
 
     // @NOTE: raw knex query, because of https://github.com/TryGhost/Ghost/issues/9983
     return localOptions
@@ -53,7 +53,7 @@ module.exports.up = (options) => {
                         mobiledoc = mobiledocLib.blankDocument;
                     }
                 } catch (err) {
-                    common.logging.warn(`Invalid mobiledoc structure for ${post.id}. Falling back to blank structure.`);
+                    logging.warn(`Invalid mobiledoc structure for ${post.id}. Falling back to blank structure.`);
                     mobiledoc = mobiledocLib.blankDocument;
                 }
 
@@ -73,7 +73,7 @@ module.exports.up = (options) => {
                     });
             }, {concurrency: 100});
         }).then(() => {
-            common.logging.info(message2);
+            logging.info(message2);
         });
 };
 
@@ -85,7 +85,7 @@ module.exports.down = (options) => {
         migrating: true
     }, options);
 
-    common.logging.info(message3);
+    logging.info(message3);
     return localOptions
         .transacting('posts')
         .select(postAllColumns)
@@ -113,6 +113,6 @@ module.exports.down = (options) => {
             }, {concurrency: 100});
         })
         .then(() => {
-            common.logging.info(message4);
+            logging.info(message4);
         });
 };

@@ -1,6 +1,8 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('themes');
-const common = require('../../../server/lib/common');
+const {events, i18n: commonI18n} = require('../../../server/lib/common');
+const logging = require('../../../shared/logging');
+const errors = require('@tryghost/errors');
 const themeLoader = require('./loader');
 const active = require('./active');
 const activate = require('./activate');
@@ -21,7 +23,7 @@ module.exports = {
         debug('init themes', activeThemeName);
 
         // Register a listener for server-start to load all themes
-        common.events.on('server.start', function readAllThemesOnServerStart() {
+        events.on('server.start', function readAllThemesOnServerStart() {
             themeLoader.loadAllThemes();
         });
 
@@ -34,8 +36,8 @@ module.exports = {
                     .check(theme)
                     .then(function validationSuccess(checkedTheme) {
                         if (!validate.canActivate(checkedTheme)) {
-                            const checkError = new common.errors.ThemeValidationError({
-                                message: common.i18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}),
+                            const checkError = new errors.ThemeValidationError({
+                                message: commonI18n.t('errors.middleware.themehandler.invalidTheme', {theme: activeThemeName}),
                                 errorDetails: Object.assign(
                                     _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
                                         errors: checkedTheme.results.error
@@ -43,15 +45,15 @@ module.exports = {
                                 )
                             });
 
-                            common.logging.error(checkError);
+                            logging.error(checkError);
 
                             activate(theme, checkedTheme, checkError);
                         } else {
                             // CASE: inform that the theme has errors, but not fatal (theme still works)
                             if (checkedTheme.results.error.length) {
-                                common.logging.warn(new common.errors.ThemeValidationError({
+                                logging.warn(new errors.ThemeValidationError({
                                     errorType: 'ThemeWorksButHasErrors',
-                                    message: common.i18n.t('errors.middleware.themehandler.themeHasErrors', {theme: activeThemeName}),
+                                    message: commonI18n.t('errors.middleware.themehandler.themeHasErrors', {theme: activeThemeName}),
                                     errorDetails: Object.assign(
                                         _.pick(checkedTheme, ['checkedVersion', 'name', 'path', 'version']), {
                                             errors: checkedTheme.results.error
@@ -66,15 +68,15 @@ module.exports = {
                         }
                     });
             })
-            .catch(common.errors.NotFoundError, function (err) {
+            .catch(errors.NotFoundError, function (err) {
                 // CASE: active theme is missing, we don't want to exit because the admin panel will still work
-                err.message = common.i18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName});
-                common.logging.error(err);
+                err.message = commonI18n.t('errors.middleware.themehandler.missingTheme', {theme: activeThemeName});
+                logging.error(err);
             })
             .catch(function (err) {
                 // CASE: theme threw an odd error, we don't want to exit because the admin panel will still work
                 // This is the absolute catch-all, at this point, we do not know what went wrong!
-                common.logging.error(err);
+                logging.error(err);
             });
     },
     getJSON: require('./to-json'),
@@ -90,8 +92,8 @@ module.exports = {
         const loadedTheme = list.get(themeName);
 
         if (!loadedTheme) {
-            return Promise.reject(new common.errors.ValidationError({
-                message: common.i18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
+            return Promise.reject(new errors.ValidationError({
+                message: commonI18n.t('notices.data.validation.index.themeCannotBeActivated', {themeName: themeName}),
                 errorDetails: themeName
             }));
         }

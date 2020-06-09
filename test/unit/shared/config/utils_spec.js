@@ -1,5 +1,5 @@
 const should = require('should');
-const configUtils = require('../../../core/server/config/utils');
+const configUtils = require('../../../../core/shared/config/utils');
 
 describe('UNIT: Config utils', function () {
     describe('makePathsAbsolute', function () {

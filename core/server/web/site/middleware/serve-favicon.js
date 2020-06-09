@@ -1,10 +1,10 @@
 const fs = require('fs-extra');
 const path = require('path');
 const crypto = require('crypto');
-const config = require('../../../config');
-const imageLib = require('../../../lib/image');
+const config = require('../../../../shared/config');
+const {blogIcon} = require('../../../lib/image');
 const storage = require('../../../adapters/storage');
-const urlUtils = require('../../../lib/url-utils');
+const urlUtils = require('../../../../shared/url-utils');
 const settingsCache = require('../../../services/settings/cache');
 
 let content;
@@ -37,7 +37,7 @@ function serveFavicon() {
             // we are using an express route to skip /content/images and the result is a image path
             // based on config.getContentPath('images') + req.path
             // in this case we don't use path rewrite, that's why we have to make it manually
-            filePath = imageLib.blogIcon.getIconPath();
+            filePath = blogIcon.getIconPath();
 
             let originalExtension = path.extname(filePath).toLowerCase();
             const requestedExtension = path.extname(req.path).toLowerCase();
@@ -52,7 +52,7 @@ function serveFavicon() {
                 storage.getStorage()
                     .read({path: filePath})
                     .then((buf) => {
-                        iconType = imageLib.blogIcon.getIconType();
+                        iconType = blogIcon.getIconType();
                         content = buildContentResponse(iconType, buf);
 
                         res.writeHead(200, content.headers);

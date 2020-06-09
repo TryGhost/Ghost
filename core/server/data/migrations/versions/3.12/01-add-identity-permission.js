@@ -1,5 +1,5 @@
 const ObjectId = require('bson-objectid');
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 
 module.exports.config = {
     transaction: true
@@ -14,11 +14,11 @@ module.exports.up = async (options) => {
     }).first();
 
     if (existingIdentityPermission) {
-        common.logging.warn('Permission for read:identity already added');
+        logging.warn('Permission for read:identity already added');
         return;
     }
 
-    common.logging.info('Adding permission for read:identity');
+    logging.info('Adding permission for read:identity');
 
     const date = connection.raw('CURRENT_TIMESTAMP');
 
@@ -43,11 +43,11 @@ module.exports.down = async (options) => {
     }).first();
 
     if (!existingIdentityPermission) {
-        common.logging.warn('Permission for read:identity already removed');
+        logging.warn('Permission for read:identity already removed');
         return;
     }
 
-    common.logging.info('Removing permission for read:identity');
+    logging.info('Removing permission for read:identity');
 
     await connection('permissions').where({
         action_type: 'read',

@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const commands = require('../../../schema').commands;
 const table = 'posts';
 const columns = ['custom_template'];
@@ -23,11 +23,11 @@ _private.handle = function handle(options) {
                     return connection.schema.hasColumn(table, column)
                         .then(function (exists) {
                             if (exists && isAdding || !exists && !isAdding) {
-                                common.logging.warn(`${type} column ${table}.${column}`);
+                                logging.warn(`${type} column ${table}.${column}`);
                                 return Promise.resolve();
                             }
 
-                            common.logging.info(`${type} column ${table}.${column}`);
+                            logging.info(`${type} column ${table}.${column}`);
                             return operation(table, column, connection);
                         });
                 });

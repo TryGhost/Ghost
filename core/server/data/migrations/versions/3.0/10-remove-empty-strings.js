@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const schema = require('../../../schema');
 
 /*
@@ -27,7 +27,7 @@ const createReplace = (connection, from, to) => (tableName, columnName) => {
     return connection.schema.hasTable(tableName)
         .then((tableExists) => {
             if (!tableExists) {
-                common.logging.warn(
+                logging.warn(
                     `Table ${tableName} does not exist`
                 );
                 return;
@@ -35,13 +35,13 @@ const createReplace = (connection, from, to) => (tableName, columnName) => {
             return connection.schema.hasColumn(tableName, columnName)
                 .then((columnExists) => {
                     if (!columnExists) {
-                        common.logging.warn(
+                        logging.warn(
                             `Table '${tableName}' does not have column '${columnName}'`
                         );
                         return;
                     }
 
-                    common.logging.info(
+                    logging.info(
                         `Updating ${tableName}, setting '${from}' in ${columnName} to '${to}'`
                     );
 

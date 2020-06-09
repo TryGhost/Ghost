@@ -5,7 +5,7 @@ const rewire = require('rewire');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const models = require('../../../core/server/models');
-const common = require('../../../core/server/lib/common');
+const {events} = require('../../../core/server/lib/common');
 const themes = require('../../../core/frontend/services/themes');
 const UrlService = rewire('../../../core/frontend/services/url/UrlService');
 
@@ -109,12 +109,12 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            common.events.emit('router.created', router1);
-            common.events.emit('router.created', router2);
-            common.events.emit('router.created', router3);
-            common.events.emit('router.created', router4);
+            events.emit('router.created', router1);
+            events.emit('router.created', router2);
+            events.emit('router.created', router3);
+            events.emit('router.created', router4);
 
-            common.events.emit('db.ready');
+            events.emit('db.ready');
 
             let timeout;
             (function retry() {
@@ -312,13 +312,13 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            common.events.emit('router.created', router1);
-            common.events.emit('router.created', router2);
-            common.events.emit('router.created', router3);
-            common.events.emit('router.created', router4);
-            common.events.emit('router.created', router5);
+            events.emit('router.created', router1);
+            events.emit('router.created', router2);
+            events.emit('router.created', router3);
+            events.emit('router.created', router4);
+            events.emit('router.created', router5);
 
-            common.events.emit('db.ready');
+            events.emit('db.ready');
 
             let timeout;
             (function retry() {
@@ -509,13 +509,13 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            common.events.emit('router.created', router1);
-            common.events.emit('router.created', router2);
-            common.events.emit('router.created', router3);
-            common.events.emit('router.created', router4);
-            common.events.emit('router.created', router5);
+            events.emit('router.created', router1);
+            events.emit('router.created', router2);
+            events.emit('router.created', router3);
+            events.emit('router.created', router4);
+            events.emit('router.created', router5);
 
-            common.events.emit('db.ready');
+            events.emit('db.ready');
 
             let timeout;
             (function retry() {

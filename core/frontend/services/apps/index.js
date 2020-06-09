@@ -1,7 +1,9 @@
 const debug = require('ghost-ignition').debug('services:apps');
 const Promise = require('bluebird');
-const common = require('../../../server/lib/common');
-const config = require('../../../server/config');
+const {i18n} = require('../../../server/lib/common');
+const logging = require('../../../shared/logging');
+const errors = require('@tryghost/errors');
+const config = require('../../../shared/config');
 const loader = require('./loader');
 
 module.exports = {
@@ -11,10 +13,10 @@ module.exports = {
 
         return Promise.map(appsToLoad, appName => loader.activateAppByName(appName))
             .catch(function (err) {
-                common.logging.error(new common.errors.GhostError({
+                logging.error(new errors.GhostError({
                     err: err,
-                    context: common.i18n.t('errors.apps.appWillNotBeLoaded.error'),
-                    help: common.i18n.t('errors.apps.appWillNotBeLoaded.help')
+                    context: i18n.t('errors.apps.appWillNotBeLoaded.error'),
+                    help: i18n.t('errors.apps.appWillNotBeLoaded.help')
                 }));
             });
     }

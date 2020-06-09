@@ -44,6 +44,9 @@ function getMembersHelper() {
     const stripePublicToken = stripePaymentProcessor.config.public_token;
 
     let membersHelper = `<script defer src="${getAssetUrl('public/members.js', true)}"></script>`;
+    if (config.get('enableDeveloperExperiments')) {
+        membersHelper = `<script defer src="https://unpkg.com/@tryghost/members-js@latest/umd/members.min.js"></script>`;
+    }
     if (!!stripeSecretToken && stripeSecretToken !== '' && !!stripePublicToken && stripePublicToken !== '') {
         membersHelper += '<script src="https://js.stripe.com/v3/"></script>';
     }

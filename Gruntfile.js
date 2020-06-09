@@ -8,7 +8,7 @@
 
 require('./core/server/overrides');
 
-const config = require('./core/server/config');
+const config = require('./core/shared/config');
 const urlService = require('./core/frontend/services/url');
 const _ = require('lodash');
 const fs = require('fs-extra');
@@ -126,7 +126,6 @@ const configureGrunt = function (grunt) {
                 ui: 'bdd',
                 reporter: grunt.option('reporter') || 'spec',
                 timeout: '60000',
-                save: grunt.option('reporter-output'),
                 require: ['core/server/overrides'],
                 retries: '3',
                 exit: true
@@ -216,7 +215,7 @@ const configureGrunt = function (grunt) {
                         git submodule update
 
                         if ! git diff --exit-code --quiet --ignore-submodules=untracked; then
-                            echo "Working directory is not clean, do you have uncommited changes? Please commit, stash or discard changes to continue."
+                            echo "Working directory is not clean, do you have uncommitted changes? Please commit, stash or discard changes to continue."
                             exit 1
                         fi
 

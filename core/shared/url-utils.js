@@ -1,6 +1,6 @@
 const UrlUtils = require('@tryghost/url-utils');
-const config = require('../config');
-const mobiledoc = require('./mobiledoc');
+const config = require('./config');
+const mobiledoc = require('../server/lib/mobiledoc');
 
 const urlUtils = new UrlUtils({
     url: config.get('url'),

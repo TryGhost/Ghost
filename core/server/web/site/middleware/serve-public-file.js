@@ -2,8 +2,8 @@ const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
 const errors = require('@tryghost/errors');
-const config = require('../../../config');
-const urlUtils = require('../../../lib/url-utils');
+const config = require('../../../../shared/config');
+const urlUtils = require('../../../../shared/url-utils');
 const {i18n} = require('../../../lib/common');
 
 function createPublicFileMiddleware(file, type, maxAge) {

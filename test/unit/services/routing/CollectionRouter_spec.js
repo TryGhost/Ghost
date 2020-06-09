@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const express = require('../../../../core/shared/express')._express;
 const settingsCache = require('../../../../core/server/services/settings/cache');
-const common = require('../../../../core/server/lib/common');
+const {events} = require('../../../../core/server/lib/common');
 const controllers = require('../../../../core/frontend/services/routing/controllers');
 const CollectionRouter = require('../../../../core/frontend/services/routing/CollectionRouter');
 const RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}};
@@ -13,8 +13,8 @@ describe('UNIT - services/routing/CollectionRouter', function () {
     let next;
 
     beforeEach(function () {
-        sinon.stub(common.events, 'emit');
-        sinon.stub(common.events, 'on');
+        sinon.stub(events, 'emit');
+        sinon.stub(events, 'on');
 
         sinon.spy(CollectionRouter.prototype, 'mountRoute');
         sinon.spy(CollectionRouter.prototype, 'mountRouter');
@@ -43,10 +43,10 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             collectionRouter.templates.should.eql([]);
             collectionRouter.getPermalinks().getValue().should.eql('/:slug/');
 
-            common.events.emit.calledOnce.should.be.true();
-            common.events.emit.calledWith('router.created', collectionRouter).should.be.true();
+            events.emit.calledOnce.should.be.true();
+            events.emit.calledWith('router.created', collectionRouter).should.be.true();
 
-            common.events.on.calledTwice.should.be.false();
+            events.on.calledTwice.should.be.false();
 
             collectionRouter.mountRoute.callCount.should.eql(3);
             express.Router.param.callCount.should.eql(2);
@@ -92,10 +92,10 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             collectionRouter.templates.should.eql([]);
             collectionRouter.getPermalinks().getValue().should.eql('/blog/:year/:slug/');
 
-            common.events.emit.calledOnce.should.be.true();
-            common.events.emit.calledWith('router.created', collectionRouter).should.be.true();
+            events.emit.calledOnce.should.be.true();
+            events.emit.calledWith('router.created', collectionRouter).should.be.true();
 
-            common.events.on.calledTwice.should.be.false();
+            events.on.calledTwice.should.be.false();
 
             collectionRouter.mountRoute.callCount.should.eql(3);
 
@@ -190,7 +190,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
                 sinon.stub(collectionRouter, 'emit');
 
-                common.events.on.args[0][1]({
+                events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
                     _previousAttributes: {value: 'Europe/London'}
                 });
@@ -203,7 +203,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
                 sinon.stub(collectionRouter, 'emit');
 
-                common.events.on.args[0][1]({
+                events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
                     _previousAttributes: {value: 'America/Los_Angeles'}
                 });
@@ -218,7 +218,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
                 sinon.stub(collectionRouter, 'emit');
 
-                common.events.on.args[0][1]({
+                events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
                     _previousAttributes: {value: 'Europe/London'}
                 });
@@ -231,7 +231,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
 
                 sinon.stub(collectionRouter, 'emit');
 
-                common.events.on.args[0][1]({
+                events.on.args[0][1]({
                     attributes: {value: 'America/Los_Angeles'},
                     _previousAttributes: {value: 'America/Los_Angeles'}
                 });

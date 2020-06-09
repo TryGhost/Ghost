@@ -1,8 +1,8 @@
 const debug = require('ghost-ignition').debug('services:routing:controllers:entry');
 const url = require('url');
-const config = require('../../../../server/config');
+const config = require('../../../../shared/config');
 const urlService = require('../../../services/url');
-const urlUtils = require('../../../../server/lib/url-utils');
+const urlUtils = require('../../../../shared/url-utils');
 const helpers = require('../helpers');
 
 /**
@@ -41,7 +41,7 @@ module.exports = function entryController(req, res, next) {
                 debug('redirect. is edit url');
                 const resourceType = entry.page ? 'page' : 'post';
 
-                return urlUtils.redirectToAdmin(302, res, `/editor/${resourceType}/${entry.id}`);
+                return urlUtils.redirectToAdmin(302, res, `/#/editor/${resourceType}/${entry.id}`);
             }
 
             /**

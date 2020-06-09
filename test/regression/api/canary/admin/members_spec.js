@@ -4,7 +4,7 @@ const supertest = require('supertest');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
-const config = require('../../../../../core/server/config');
+const config = require('../../../../../core/shared/config');
 const labs = require('../../../../../core/server/services/labs');
 
 const ghost = testUtils.startGhost;
@@ -26,13 +26,13 @@ describe('Members API', function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {
-                return localUtils.doAuth(request, 'member');
+                return localUtils.doAuth(request, 'members');
             });
     });
 
-    it('Can browse', function () {
+    it('Can search by case-insensitive name', function () {
         return request
-            .get(localUtils.API.getApiQuery('members/'))
+            .get(localUtils.API.getApiQuery('members/?search=egg'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -43,23 +43,16 @@ describe('Members API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.members);
                 jsonResponse.members.should.have.length(1);
+                jsonResponse.members[0].email.should.equal('member1@test.com');
+                localUtils.API.checkResponse(jsonResponse, 'members');
                 localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
-
-                testUtils.API.isISO8601(jsonResponse.members[0].created_at).should.be.true();
-                jsonResponse.members[0].created_at.should.be.an.instanceof(String);
-
-                jsonResponse.meta.pagination.should.have.property('page', 1);
-                jsonResponse.meta.pagination.should.have.property('limit', 15);
-                jsonResponse.meta.pagination.should.have.property('pages', 1);
-                jsonResponse.meta.pagination.should.have.property('total', 1);
-                jsonResponse.meta.pagination.should.have.property('next', null);
-                jsonResponse.meta.pagination.should.have.property('prev', null);
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
             });
     });
 
-    it('Can read', function () {
+    it('Can search by case-insensitive email', function () {
         return request
-            .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/`))
+            .get(localUtils.API.getApiQuery('members/?search=MEMBER2'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -70,45 +63,14 @@ describe('Members API', function () {
                 should.exist(jsonResponse);
                 should.exist(jsonResponse.members);
                 jsonResponse.members.should.have.length(1);
+                jsonResponse.members[0].email.should.equal('member2@test.com');
+                localUtils.API.checkResponse(jsonResponse, 'members');
                 localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
+                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
             });
     });
 
-    it('Can add', function () {
-        const member = {
-            name: 'test',
-            email: 'memberTestAdd@test.com'
-        };
-
-        return request
-            .post(localUtils.API.getApiQuery(`members/`))
-            .send({members: [member]})
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
-                jsonResponse.members.should.have.length(1);
-
-                jsonResponse.members[0].name.should.equal(member.name);
-                jsonResponse.members[0].email.should.equal(member.email);
-            })
-            .then(() => {
-                return request
-                    .post(localUtils.API.getApiQuery(`members/`))
-                    .send({members: [member]})
-                    .set('Origin', config.get('url'))
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(422);
-            });
-    });
-
-    it('Should fail when passing incorrect email_type query parameter', function () {
+    it('Add should fail when passing incorrect email_type query parameter', function () {
         const member = {
             name: 'test',
             email: 'memberTestAdd@test.com'
@@ -121,57 +83,6 @@ describe('Members API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(422);
-    });
-
-    it('Can edit by id', function () {
-        const memberToChange = {
-            name: 'change me',
-            email: 'member2Change@test.com'
-        };
-
-        const memberChanged = {
-            name: 'changed',
-            email: 'cantChangeMe@test.com'
-        };
-
-        return request
-            .post(localUtils.API.getApiQuery(`members/`))
-            .send({members: [memberToChange]})
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
-                jsonResponse.members.should.have.length(1);
-
-                return jsonResponse.members[0];
-            })
-            .then((newMember) => {
-                return request
-                    .put(localUtils.API.getApiQuery(`members/${newMember.id}/`))
-                    .send({members: [memberChanged]})
-                    .set('Origin', config.get('url'))
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .then((res) => {
-                        should.not.exist(res.headers['x-cache-invalidate']);
-
-                        const jsonResponse = res.body;
-
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.members);
-                        jsonResponse.members.should.have.length(1);
-                        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'stripe');
-                        jsonResponse.members[0].name.should.equal(memberChanged.name);
-                        jsonResponse.members[0].email.should.equal(memberChanged.email);
-                        jsonResponse.members[0].email.should.not.equal(memberToChange.email);
-                    });
-            });
     });
 
     // NOTE: this test should be enabled and expanded once test suite fully supports Stripe mocking
@@ -225,67 +136,11 @@ describe('Members API', function () {
             });
     });
 
-    it('Can destroy', function () {
-        const member = {
-            name: 'test',
-            email: 'memberTestDestroy@test.com'
-        };
-
-        return request
-            .post(localUtils.API.getApiQuery(`members/`))
-            .send({members: [member]})
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-
-                const jsonResponse = res.body;
-
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
-
-                return jsonResponse.members[0];
-            })
-            .then((newMember) => {
-                return request
-                    .delete(localUtils.API.getApiQuery(`members/${newMember.id}`))
-                    .set('Origin', config.get('url'))
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(204)
-                    .then(() => newMember);
-            })
-            .then((newMember) => {
-                return request
-                    .get(localUtils.API.getApiQuery(`members/${newMember.id}/`))
-                    .set('Origin', config.get('url'))
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(404);
-            });
-    });
-
-    it('Can export CSV', function () {
-        return request
-            .get(localUtils.API.getApiQuery(`members/csv/`))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /text\/csv/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                res.headers['content-disposition'].should.match(/Attachment;\sfilename="members/);
-                res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at/);
-                res.text.should.match(/member1@test.com/);
-                res.text.should.match(/Mr Egg/);
-            });
-    });
-
-    it('Can import CSV', function () {
+    it('Can import CSV with minimum one field', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/csv/`))
-            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-import.csv'))
+            .field('labels', ['global-label-1', 'global-label-1'])
+            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-labels.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -301,13 +156,40 @@ describe('Members API', function () {
                 jsonResponse.meta.stats.imported.should.equal(2);
                 jsonResponse.meta.stats.duplicates.should.equal(0);
                 jsonResponse.meta.stats.invalid.should.equal(0);
+            })
+            .then(() => {
+                return request
+                    .get(localUtils.API.getApiQuery(`members/?search=${encodeURIComponent('member+labels_1@example.com')}`))
+                    .set('Origin', config.get('url'))
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(200);
+            })
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.members);
+                should.exist(jsonResponse.members[0]);
+
+                const importedMember1 = jsonResponse.members[0];
+                should(importedMember1.email).equal('member+labels_1@example.com');
+                should(importedMember1.name).equal(null);
+                should(importedMember1.note).equal(null);
+                importedMember1.subscribed.should.equal(true);
+                importedMember1.comped.should.equal(false);
+                importedMember1.stripe.should.not.be.undefined();
+                importedMember1.stripe.subscriptions.length.should.equal(0);
+                importedMember1.labels.length.should.equal(2);
             });
     });
 
-    it('Can import CSV with minimum one field', function () {
+    it('Can import CSV with labels and provide additional labels', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/csv/`))
             .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-defaults.csv'))
+
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -353,10 +235,10 @@ describe('Members API', function () {
             });
     });
 
-    it('Can import file with duplicate stripe customer ids', function () {
+    it('Fails to import members with stripe_customer_id', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/csv/`))
-            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-with-duplicate-stripe-ids.csv'))
+            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-with-stripe-ids.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -369,9 +251,90 @@ describe('Members API', function () {
                 should.exist(jsonResponse.meta);
                 should.exist(jsonResponse.meta.stats);
 
-                jsonResponse.meta.stats.imported.should.equal(1);
+                jsonResponse.meta.stats.imported.should.equal(0);
                 jsonResponse.meta.stats.duplicates.should.equal(0);
                 jsonResponse.meta.stats.invalid.should.equal(2);
             });
+    });
+
+    it('Can fetch stats with no ?days param', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/stats/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            // .expect(200) - doesn't surface underlying errors in tests
+            .then((res) => {
+                res.status.should.equal(200, JSON.stringify(res.body));
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.total);
+                should.exist(jsonResponse.total_in_range);
+                should.exist(jsonResponse.total_on_date);
+                should.exist(jsonResponse.new_today);
+
+                // 2 from fixtures and 5 imported in previous tests
+                jsonResponse.total.should.equal(6);
+            });
+    });
+
+    it('Can fetch stats with ?days=90', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/stats/?days=90'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            // .expect(200) - doesn't surface underlying errors in tests
+            .then((res) => {
+                res.status.should.equal(200, JSON.stringify(res.body));
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.total);
+                should.exist(jsonResponse.total_in_range);
+                should.exist(jsonResponse.total_on_date);
+                should.exist(jsonResponse.new_today);
+
+                // 2 from fixtures and 5 imported in previous tests
+                jsonResponse.total.should.equal(6);
+            });
+    });
+
+    it('Can fetch stats with ?days=all-time', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/stats/?days=all-time'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            // .expect(200) - doesn't surface underlying errors in tests
+            .then((res) => {
+                res.status.should.equal(200, JSON.stringify(res.body));
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.total);
+                should.exist(jsonResponse.total_in_range);
+                should.exist(jsonResponse.total_on_date);
+                should.exist(jsonResponse.new_today);
+
+                // 2 from fixtures and 5 imported in previous tests
+                jsonResponse.total.should.equal(6);
+            });
+    });
+
+    it('Errors when fetching stats with unknown days param value', function () {
+        return request
+            .get(localUtils.API.getApiQuery('members/stats/?days=nope'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422);
     });
 });

@@ -1,7 +1,8 @@
 const debug = require('ghost-ignition').debug('services:url:queue');
 const EventEmitter = require('events').EventEmitter;
 const _ = require('lodash');
-const common = require('../../../server/lib/common');
+const logging = require('../../../shared/logging');
+const errors = require('@tryghost/errors');
 
 /**
  * ### Purpose of this queue
@@ -129,7 +130,7 @@ class Queue extends EventEmitter {
             } catch (err) {
                 debug('error', err.message);
 
-                common.logging.error(new common.errors.InternalServerError({
+                logging.error(new errors.InternalServerError({
                     message: 'Something bad happened.',
                     code: 'SERVICES_URL_QUEUE',
                     err: err

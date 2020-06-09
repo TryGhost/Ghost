@@ -3,10 +3,11 @@ const express = require('../../../../shared/express');
 const url = require('url');
 const path = require('path');
 const debug = require('ghost-ignition').debug('web:shared:mw:custom-redirects');
-const config = require('../../../config');
-const urlUtils = require('../../../lib/url-utils');
+const config = require('../../../../shared/config');
+const urlUtils = require('../../../../shared/url-utils');
 const errors = require('@tryghost/errors');
-const {logging, i18n} = require('../../../lib/common');
+const {i18n} = require('../../../lib/common');
+const logging = require('../../../../shared/logging');
 const redirectsService = require('../../../../frontend/services/redirects');
 
 const _private = {};

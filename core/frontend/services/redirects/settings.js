@@ -5,8 +5,9 @@ const moment = require('moment-timezone');
 
 const validation = require('./validation');
 
-const config = require('../../../server/config');
-const common = require('../../../server/lib/common');
+const config = require('../../../shared/config');
+const {i18n} = require('../../../server/lib/common');
+const errors = require('@tryghost/errors');
 
 const readRedirectsFile = (redirectsPath) => {
     return fs.readFile(redirectsPath, 'utf-8')
@@ -14,8 +15,8 @@ const readRedirectsFile = (redirectsPath) => {
             try {
                 content = JSON.parse(content);
             } catch (err) {
-                throw new common.errors.BadRequestError({
-                    message: common.i18n.t('errors.general.jsonParse', {context: err.message})
+                throw new errors.BadRequestError({
+                    message: i18n.t('errors.general.jsonParse', {context: err.message})
                 });
             }
 
@@ -26,11 +27,11 @@ const readRedirectsFile = (redirectsPath) => {
                 return Promise.resolve([]);
             }
 
-            if (common.errors.utils.isIgnitionError(err)) {
+            if (errors.utils.isIgnitionError(err)) {
                 throw err;
             }
 
-            throw new common.errors.NotFoundError({
+            throw new errors.NotFoundError({
                 err: err
             });
         });

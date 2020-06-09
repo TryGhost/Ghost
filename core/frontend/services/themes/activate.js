@@ -1,4 +1,6 @@
-const common = require('../../../server/lib/common');
+const {events, i18n} = require('../../../server/lib/common');
+const logging = require('../../../shared/logging');
+const errors = require('@tryghost/errors');
 const active = require('./active');
 
 function activate(loadedTheme, checkedTheme, error) {
@@ -14,16 +16,16 @@ function activate(loadedTheme, checkedTheme, error) {
         active.set(loadedTheme, checkedTheme, error);
         const currentGhostAPI = active.get().engine('ghost-api');
 
-        common.events.emit('services.themes.activated');
+        events.emit('services.themes.activated');
 
         if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
-            common.events.emit('services.themes.api.changed');
+            events.emit('services.themes.api.changed');
             const siteApp = require('../../../server/web/site/app');
             siteApp.reload();
         }
     } catch (err) {
-        common.logging.error(new common.errors.InternalServerError({
-            message: common.i18n.t('errors.middleware.themehandler.activateFailed', {theme: loadedTheme.name}),
+        logging.error(new errors.InternalServerError({
+            message: i18n.t('errors.middleware.themehandler.activateFailed', {theme: loadedTheme.name}),
             err: err
         }));
     }

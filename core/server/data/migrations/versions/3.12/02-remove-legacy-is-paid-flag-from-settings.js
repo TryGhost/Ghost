@@ -1,4 +1,4 @@
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const debug = require('ghost-ignition').debug('migrations');
 
 module.exports.config = {
@@ -16,7 +16,7 @@ module.exports.up = (options) => {
         .then((subscriptionSettingsEntry) => {
             debug(subscriptionSettingsEntry);
             if (!subscriptionSettingsEntry) {
-                common.logging.warn(`Cannot find ${settingsKey} settings.`);
+                logging.warn(`Cannot find ${settingsKey} settings.`);
                 return;
             }
 
@@ -55,7 +55,7 @@ module.exports.down = (options) => {
         .then((subscriptionSettingsEntry) => {
             debug(subscriptionSettingsEntry);
             if (!subscriptionSettingsEntry) {
-                common.logging.warn(`Cannot find ${settingsKey} settings.`);
+                logging.warn(`Cannot find ${settingsKey} settings.`);
                 return;
             }
 

@@ -1,7 +1,8 @@
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const errors = require('@tryghost/errors');
 const {extract, hasProvider} = require('oembed-parser');
 const Promise = require('bluebird');
-const request = require('../../lib/request');
+const externalRequest = require('../../lib/request-external');
 const cheerio = require('cheerio');
 const _ = require('lodash');
 
@@ -30,15 +31,15 @@ const findUrlWithProvider = (url) => {
 };
 
 function unknownProvider(url) {
-    return Promise.reject(new common.errors.ValidationError({
-        message: common.i18n.t('errors.api.oembed.unknownProvider'),
+    return Promise.reject(new errors.ValidationError({
+        message: i18n.t('errors.api.oembed.unknownProvider'),
         context: url
     }));
 }
 
 function knownProvider(url) {
     return extract(url, {maxwith: 1280}).catch((err) => {
-        return Promise.reject(new common.errors.InternalServerError({
+        return Promise.reject(new errors.InternalServerError({
             message: err.message
         }));
     });
@@ -50,7 +51,7 @@ function isIpOrLocalhost(url) {
         const IPV6_REGEX = /:/; // fqdns will not have colons
         const HTTP_REGEX = /^https?:/i;
 
-        let {protocol, hostname} = new URL(url);
+        const {protocol, hostname} = new URL(url);
 
         if (!HTTP_REGEX.test(protocol) || hostname === 'localhost' || IPV4_REGEX.test(hostname) || IPV6_REGEX.test(hostname)) {
             return true;
@@ -78,17 +79,14 @@ function fetchOembedData(_url) {
 
     // url not in oembed list so fetch it in case it's a redirect or has a
     // <link rel="alternate" type="application/json+oembed"> element
-    return request(url, {
+    return externalRequest(url, {
         method: 'GET',
         timeout: 2 * 1000,
-        followRedirect: true,
-        headers: {
-            'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
-        }
-    }).then((response) => {
+        followRedirect: true
+    }).then((pageResponse) => {
         // url changed after fetch, see if we were redirected to a known oembed
-        if (response.url !== url) {
-            ({url, provider} = findUrlWithProvider(response.url));
+        if (pageResponse.url !== url) {
+            ({url, provider} = findUrlWithProvider(pageResponse.url));
             if (provider) {
                 return knownProvider(url);
             }
@@ -97,7 +95,7 @@ function fetchOembedData(_url) {
         // check for <link rel="alternate" type="application/json+oembed"> element
         let oembedUrl;
         try {
-            oembedUrl = cheerio('link[type="application/json+oembed"]', response.body).attr('href');
+            oembedUrl = cheerio('link[type="application/json+oembed"]', pageResponse.body).attr('href');
         } catch (e) {
             return unknownProvider(url);
         }
@@ -109,17 +107,15 @@ function fetchOembedData(_url) {
             }
 
             // fetch oembed response from embedded rel="alternate" url
-            return request(oembedUrl, {
+            return externalRequest(oembedUrl, {
                 method: 'GET',
                 json: true,
                 timeout: 2 * 1000,
-                headers: {
-                    'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
-                }
-            }).then((response) => {
+                followRedirect: true
+            }).then((oembedResponse) => {
                 // validate the fetched json against the oembed spec to avoid
                 // leaking non-oembed responses
-                const body = response.body;
+                const body = oembedResponse.body;
                 const hasRequiredFields = body.type && body.version;
                 const hasValidType = ['photo', 'video', 'link', 'rich'].includes(body.type);
 

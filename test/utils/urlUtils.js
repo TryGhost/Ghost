@@ -1,8 +1,8 @@
 const _ = require('lodash');
 const sinon = require('sinon');
 const UrlUtils = require('@tryghost/url-utils');
-const config = require('../../core/server/config');
-const urlUtils = require('../../core/server/lib/url-utils');
+const config = require('../../core/shared/config');
+const urlUtils = require('../../core/shared/url-utils');
 
 const defaultSandbox = sinon.createSandbox();
 

@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const settingsCache = require('../../server/services/settings/cache');
-const urlUtils = require('../../server/lib/url-utils');
-const common = require('../../server/lib/common');
+const urlUtils = require('../../shared/url-utils');
+const logging = require('../../shared/logging');
 const getUrl = require('./url');
 const getImageDimensions = require('./image-dimensions');
 const getCanonicalUrl = require('./canonical_url');
@@ -103,7 +103,7 @@ function getMetaData(data, root) {
 
         return metaData;
     }).catch(function (err) {
-        common.logging.error(err);
+        logging.error(err);
         return metaData;
     });
 }

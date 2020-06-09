@@ -2,12 +2,13 @@ const _ = require('lodash');
 const url = require('url');
 const moment = require('moment');
 const errors = require('@tryghost/errors');
-const {events, i18n, logging} = require('../../lib/common');
+const {events, i18n} = require('../../lib/common');
+const logging = require('../../../shared/logging');
 const membersService = require('../members');
 const bulkEmailService = require('../bulk-email');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
-const config = require('../../config');
+const config = require('../../../shared/config');
 
 const getEmailData = async (postModel, members = []) => {
     const {emailTmpl, replacements} = await postEmailSerializer.serialize(postModel);

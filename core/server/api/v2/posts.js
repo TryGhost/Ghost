@@ -1,6 +1,7 @@
 const models = require('../../models');
-const common = require('../../lib/common');
-const urlUtils = require('../../lib/url-utils');
+const {i18n} = require('../../lib/common');
+const errors = require('@tryghost/errors');
+const urlUtils = require('../../../shared/url-utils');
 const allowedIncludes = ['tags', 'authors', 'authors.roles'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
@@ -69,8 +70,8 @@ module.exports = {
             return models.Post.findOne(frame.data, frame.options)
                 .then((model) => {
                     if (!model) {
-                        throw new common.errors.NotFoundError({
-                            message: common.i18n.t('errors.api.posts.postNotFound')
+                        throw new errors.NotFoundError({
+                            message: i18n.t('errors.api.posts.postNotFound')
                         });
                     }
 
@@ -193,8 +194,8 @@ module.exports = {
             return models.Post.destroy(frame.options)
                 .then(() => null)
                 .catch(models.Post.NotFoundError, () => {
-                    return Promise.reject(new common.errors.NotFoundError({
-                        message: common.i18n.t('errors.api.posts.postNotFound')
+                    return Promise.reject(new errors.NotFoundError({
+                        message: i18n.t('errors.api.posts.postNotFound')
                     }));
                 });
         }

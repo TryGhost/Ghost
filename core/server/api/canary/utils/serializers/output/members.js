@@ -1,8 +1,9 @@
 const _ = require('lodash');
-const common = require('../../../../../lib/common');
+const {i18n} = require('../../../../../lib/common');
+const errors = require('@tryghost/errors');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:members');
 const mapper = require('./utils/mapper');
-const {formatCSV} = require('../../../../../lib/fs');
+const papaparse = require('papaparse');
 
 module.exports = {
     browse(data, apiConfig, frame) {
@@ -34,8 +35,8 @@ module.exports = {
         debug('read');
 
         if (!data) {
-            return Promise.reject(new common.errors.NotFoundError({
-                message: common.i18n.t('errors.api.members.memberNotFound')
+            return Promise.reject(new errors.NotFoundError({
+                message: i18n.t('errors.api.members.memberNotFound')
             }));
         }
 
@@ -47,19 +48,6 @@ module.exports = {
     exportCSV(models, apiConfig, frame) {
         debug('exportCSV');
 
-        const fields = [
-            'id',
-            'email',
-            'name',
-            'note',
-            'subscribed_to_emails',
-            'complimentary_plan',
-            'stripe_customer_id',
-            'created_at',
-            'deleted_at',
-            'labels'
-        ];
-
         const members = models.members.map((member) => {
             member = mapper.mapMember(member, frame);
             let stripeCustomerId;
@@ -69,7 +57,7 @@ module.exports = {
             }
             let labels = [];
             if (member.labels) {
-                labels = `"${member.labels.map(l => l.name).join(',')}"`;
+                labels = `${member.labels.map(l => l.name).join(',')}`;
             }
 
             return {
@@ -80,18 +68,22 @@ module.exports = {
                 subscribed_to_emails: member.subscribed,
                 complimentary_plan: member.comped,
                 stripe_customer_id: stripeCustomerId,
-                created_at: JSON.stringify(member.created_at),
-                deleted_at: JSON.stringify(member.deleted_at),
+                created_at: member.created_at,
+                deleted_at: member.deleted_at,
                 labels: labels
             };
         });
 
-        frame.response = formatCSV(members, fields);
+        frame.response = papaparse.unparse(members);
     },
 
     importCSV(data, apiConfig, frame) {
         debug('importCSV');
+        frame.response = data;
+    },
 
+    stats(data, apiConfig, frame) {
+        debug('stats');
         frame.response = data;
     }
 };

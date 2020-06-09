@@ -1,4 +1,4 @@
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const table = 'posts';
 const columnNameOld = 'amp';
 const columnNameNew = 'comment_id';
@@ -10,7 +10,7 @@ const message4 = `Rollback: Renamed column ${columnNameNew} to ${columnNameOld}`
 module.exports.up = (options) => {
     const connection = options.connection;
 
-    common.logging.info(message1);
+    logging.info(message1);
 
     return connection.schema.hasColumn(table, columnNameOld)
         .then((exists) => {
@@ -21,14 +21,14 @@ module.exports.up = (options) => {
             }
         })
         .then(() => {
-            common.logging.info(message3);
+            logging.info(message3);
         });
 };
 
 module.exports.down = (options) => {
     let connection = options.connection;
 
-    common.logging.warn(message2);
+    logging.warn(message2);
 
     return connection.schema.hasColumn(table, columnNameNew)
         .then((exists) => {
@@ -39,6 +39,6 @@ module.exports.down = (options) => {
             }
         })
         .then(() => {
-            common.logging.warn(message4);
+            logging.warn(message4);
         });
 };

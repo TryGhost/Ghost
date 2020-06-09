@@ -2,9 +2,10 @@ const Promise = require('bluebird');
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
 const localUtils = require('../utils');
-const common = require('../../../lib/common');
+const {i18n, events} = require('../../../lib/common');
+const errors = require('@tryghost/errors');
 const models = require('../../../models');
-const urlUtils = require('../../../lib/url-utils');
+const urlUtils = require('../../../../shared/url-utils');
 const _private = {};
 const SCHEDULED_RESOURCES = ['post', 'page'];
 
@@ -17,8 +18,8 @@ _private.getSchedulerIntegration = function () {
     return models.Integration.findOne({slug: 'ghost-scheduler'}, {withRelated: 'api_keys'})
         .then((integration) => {
             if (!integration) {
-                throw new common.errors.NotFoundError({
-                    message: common.i18n.t('errors.api.resource.resourceNotFound', {
+                throw new errors.NotFoundError({
+                    message: i18n.t('errors.api.resource.resourceNotFound', {
                         resource: 'Integration'
                     })
                 });
@@ -117,11 +118,11 @@ exports.init = function init(options = {}) {
     let integration = null;
 
     if (!Object.keys(options).length) {
-        return Promise.reject(new common.errors.IncorrectUsageError({message: 'post-scheduling: no config was provided'}));
+        return Promise.reject(new errors.IncorrectUsageError({message: 'post-scheduling: no config was provided'}));
     }
 
     if (!apiUrl) {
-        return Promise.reject(new common.errors.IncorrectUsageError({message: 'post-scheduling: no apiUrl was provided'}));
+        return Promise.reject(new errors.IncorrectUsageError({message: 'post-scheduling: no apiUrl was provided'}));
     }
 
     return _private.getSchedulerIntegration()
@@ -158,7 +159,7 @@ exports.init = function init(options = {}) {
         })
         .then(() => {
             SCHEDULED_RESOURCES.forEach((resource) => {
-                common.events.on(`${resource}.scheduled`, (model) => {
+                events.on(`${resource}.scheduled`, (model) => {
                     adapter.schedule(_private.normalize({model, apiUrl, integration, resourceType: resource}));
                 });
 
@@ -166,12 +167,12 @@ exports.init = function init(options = {}) {
                  * We want to first remove existing schedule by generating a matching token(+url)
                  * followed by generating a new token(+url) for the new schedule
                 */
-                common.events.on(`${resource}.rescheduled`, (model) => {
+                events.on(`${resource}.rescheduled`, (model) => {
                     adapter.unschedule(_private.normalize({model, apiUrl, integration, resourceType: resource}, 'unscheduled'));
                     adapter.schedule(_private.normalize({model, apiUrl, integration, resourceType: resource}));
                 });
 
-                common.events.on(`${resource}.unscheduled`, (model) => {
+                events.on(`${resource}.unscheduled`, (model) => {
                     adapter.unschedule(_private.normalize({model, apiUrl, integration, resourceType: resource}, 'unscheduled'));
                 });
             });

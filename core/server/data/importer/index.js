@@ -8,7 +8,9 @@ const uuid = require('uuid');
 const {extract} = require('@tryghost/zip');
 const sequence = require('../../lib/promise/sequence');
 const pipeline = require('../../lib/promise/pipeline');
-const common = require('../../lib/common');
+const {i18n} = require('../../lib/common');
+const logging = require('../../../shared/logging');
+const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
@@ -110,10 +112,10 @@ _.extend(ImportManager.prototype, {
 
         fs.remove(self.fileToDelete, function (err) {
             if (err) {
-                common.logging.error(new common.errors.GhostError({
+                logging.error(new errors.GhostError({
                     err: err,
-                    context: common.i18n.t('errors.data.importer.index.couldNotCleanUpFile.error'),
-                    help: common.i18n.t('errors.data.importer.index.couldNotCleanUpFile.context')
+                    context: i18n.t('errors.data.importer.index.couldNotCleanUpFile.error'),
+                    help: i18n.t('errors.data.importer.index.couldNotCleanUpFile.context')
                 }));
             }
 
@@ -152,7 +154,7 @@ _.extend(ImportManager.prototype, {
 
         // This is a temporary extra message for the old format roon export which doesn't work with Ghost
         if (oldRoonMatches.length > 0) {
-            throw new common.errors.UnsupportedMediaTypeError({message: common.i18n.t('errors.data.importer.index.unsupportedRoonExport')});
+            throw new errors.UnsupportedMediaTypeError({message: i18n.t('errors.data.importer.index.unsupportedRoonExport')});
         }
 
         // If this folder contains importable files or a content or images directory
@@ -161,10 +163,10 @@ _.extend(ImportManager.prototype, {
         }
 
         if (extMatchesAll.length < 1) {
-            throw new common.errors.UnsupportedMediaTypeError({message: common.i18n.t('errors.data.importer.index.noContentToImport')});
+            throw new errors.UnsupportedMediaTypeError({message: i18n.t('errors.data.importer.index.noContentToImport')});
         }
 
-        throw new common.errors.UnsupportedMediaTypeError({message: common.i18n.t('errors.data.importer.index.invalidZipStructure')});
+        throw new errors.UnsupportedMediaTypeError({message: i18n.t('errors.data.importer.index.invalidZipStructure')});
     },
     /**
      * Use the extract module to extract the given zip file to a temp directory & return the temp directory path
@@ -213,7 +215,7 @@ _.extend(ImportManager.prototype, {
             this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory}
         );
         if (extMatchesAll.length < 1 || extMatchesAll[0].split('/') < 1) {
-            throw new common.errors.ValidationError({message: common.i18n.t('errors.data.importer.index.invalidZipFileBaseDirectory')});
+            throw new errors.ValidationError({message: i18n.t('errors.data.importer.index.invalidZipFileBaseDirectory')});
         }
 
         return extMatchesAll[0].split('/')[0];
@@ -241,8 +243,8 @@ _.extend(ImportManager.prototype, {
             _.each(self.handlers, function (handler) {
                 if (Object.prototype.hasOwnProperty.call(importData, handler.type)) {
                     // This limitation is here to reduce the complexity of the importer for now
-                    return Promise.reject(new common.errors.UnsupportedMediaTypeError({
-                        message: common.i18n.t('errors.data.importer.index.zipContainsMultipleDataFormats')
+                    return Promise.reject(new errors.UnsupportedMediaTypeError({
+                        message: i18n.t('errors.data.importer.index.zipContainsMultipleDataFormats')
                     }));
                 }
 
@@ -258,8 +260,8 @@ _.extend(ImportManager.prototype, {
             });
 
             if (ops.length === 0) {
-                return Promise.reject(new common.errors.UnsupportedMediaTypeError({
-                    message: common.i18n.t('errors.data.importer.index.noContentToImport')
+                return Promise.reject(new errors.UnsupportedMediaTypeError({
+                    message: i18n.t('errors.data.importer.index.noContentToImport')
                 }));
             }
 

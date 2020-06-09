@@ -1,5 +1,6 @@
-const common = require('../../../../server/lib/common');
-const urlUtils = require('../../../../server/lib/url-utils');
+const {i18n} = require('../../../../server/lib/common');
+const errors = require('@tryghost/errors');
+const urlUtils = require('../../../../shared/url-utils');
 
 /**
  * @description Middleware, which validates and interprets the page param e.g. /page/1
@@ -19,8 +20,8 @@ module.exports = function handlePageParam(req, res, next, page) {
         // CASE: page 1 is an alias for the collection index, do a permanent 301 redirect
         return urlUtils.redirect301(res, req.originalUrl.replace(pageRegex, '/'));
     } else if (page < 1 || isNaN(page)) {
-        return next(new common.errors.NotFoundError({
-            message: common.i18n.t('errors.errors.pageNotFound')
+        return next(new errors.NotFoundError({
+            message: i18n.t('errors.errors.pageNotFound')
         }));
     } else {
         req.params.page = page;

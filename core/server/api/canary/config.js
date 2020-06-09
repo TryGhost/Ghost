@@ -1,5 +1,5 @@
 const {isPlainObject} = require('lodash');
-const config = require('../../config');
+const config = require('../../../shared/config');
 const labs = require('../../services/labs');
 const ghostVersion = require('../../lib/ghost-version');
 
@@ -18,7 +18,8 @@ module.exports = {
                 useGravatar: !config.isPrivacyDisabled('useGravatar'),
                 labs: labs.getAll(),
                 clientExtensions: config.get('clientExtensions') || {},
-                enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false
+                enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false,
+                stripeDirect: config.get('stripeDirect')
             };
             if (billingUrl) {
                 response.billingUrl = billingUrl;

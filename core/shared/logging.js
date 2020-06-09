@@ -1,4 +1,4 @@
-const config = require('../../config');
+const config = require('./config');
 const {logging} = require('ghost-ignition');
 
 module.exports = logging({

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const common = require('../../../../lib/common');
+const logging = require('../../../../../shared/logging');
 const message1 = 'Removing demo post.';
 const message2 = 'Removed demo post.';
 const message3 = 'Rollback: Bring back demo post.';
@@ -39,10 +39,10 @@ module.exports.up = (options) => {
         .where('status', 'all')
         .select().then((posts) => {
             if (!posts || posts.length === 0) {
-                common.logging.warn(message4);
+                logging.warn(message4);
                 return;
             }
-            common.logging.info(message1);
+            logging.info(message1);
             let post = posts[0];
 
             // @NOTE: raw knex query, because of https://github.com/TryGhost/Ghost/issues/9983
@@ -58,7 +58,7 @@ module.exports.up = (options) => {
                 });
         })
         .then(() => {
-            common.logging.info(message2);
+            logging.info(message2);
         });
 };
 
@@ -75,11 +75,11 @@ module.exports.down = (options) => {
         .where('status', 'all')
         .select().then((posts) => {
             if (posts && posts.length > 0) {
-                common.logging.warn(message5);
+                logging.warn(message5);
                 return;
             }
 
-            common.logging.info(message3);
+            logging.info(message3);
             return localOptions.transacting('posts').insert(demoPost);
         });
 };

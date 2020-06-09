@@ -4,7 +4,7 @@ const rewire = require('rewire');
 const fs = require('fs-extra');
 const path = require('path');
 const configUtils = require('../../../utils/configUtils');
-const common = require('../../../../core/server/lib/common');
+const errors = require('@tryghost/errors');
 const loadSettings = rewire('../../../../core/frontend/services/settings/loader');
 
 describe('UNIT > Settings Service loader:', function () {
@@ -57,7 +57,7 @@ describe('UNIT > Settings Service loader:', function () {
         });
 
         it('can handle errors from YAML parser', function (done) {
-            yamlParserStub.throws(new common.errors.GhostError({
+            yamlParserStub.throws(new errors.GhostError({
                 message: 'could not parse yaml file',
                 context: 'bad indentation of a mapping entry at line 5, column 10'
             }));
