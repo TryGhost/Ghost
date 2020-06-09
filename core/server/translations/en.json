@@ -369,6 +369,11 @@
             "members": {
                 "memberNotFound": "Member not found.",
                 "memberAlreadyExists": "Email address is already member.",
+                "stripeNotConnected": {
+                    "message": "Member not imported, Stripe account missing",
+                    "context": "Attempting to import members with Stripe data when there is no Stripe account connected",
+                    "help": "Connect the correct Stripe account, and re-run the import"
+                },
                 "stripeCustomerNotFound": {
                     "context": "The customer does not exist in currently linked Stripe account.",
                     "help": "Connect the correct Stripe account, and re-run the import."

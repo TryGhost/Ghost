@@ -114,6 +114,12 @@ class MembersConfigProvider {
         };
     }
 
+    isStripeConnected() {
+        const paymentConfig = this.getStripePaymentConfig();
+
+        return (paymentConfig && paymentConfig.publicKey && paymentConfig.secretKey);
+    }
+
     getStripePaymentConfig() {
         const subscriptionSettings = this._settingsCache.get('members_subscription_settings');
 
