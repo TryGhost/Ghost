@@ -22,6 +22,20 @@ const TYPES = [{
     value: 'featured'
 }];
 
+const VISIBILITIES = [{
+    name: 'All access',
+    value: null
+}, {
+    name: 'Public',
+    value: 'public'
+}, {
+    name: 'Members-only',
+    value: 'members'
+}, {
+    name: 'Paid members-only',
+    value: 'paid'
+}];
+
 const ORDERS = [{
     name: 'Newest',
     value: null
@@ -38,32 +52,39 @@ export default Controller.extend({
     store: service(),
 
     // default values for these are set in `init` and defined in `helpers/reset-query-params`
-    queryParams: ['type', 'author', 'tag', 'order'],
+    queryParams: ['type', 'access', 'author', 'tag', 'order'],
 
     _hasLoadedTags: false,
     _hasLoadedAuthors: false,
 
     availableTypes: null,
+    availableVisibilities: null,
     availableOrders: null,
 
     init() {
         this._super(...arguments);
         this.availableTypes = TYPES;
         this.availableOrders = ORDERS;
+        this.availableVisibilities = VISIBILITIES;
         this.setProperties(DEFAULT_QUERY_PARAMS.posts);
     },
 
     postsInfinityModel: alias('model'),
 
     showingAll: computed('type', 'author', 'tag', function () {
-        let {type, author, tag} = this.getProperties(['type', 'author', 'tag']);
+        let {type, author, tag, visibility} = this.getProperties(['type', 'visibility', 'author', 'tag']);
 
-        return !type && !author && !tag;
+        return !type && !visibility && !author && !tag;
     }),
 
     selectedType: computed('type', function () {
         let types = this.get('availableTypes');
         return types.findBy('value', this.get('type')) || {value: '!unknown'};
+    }),
+
+    selectedVisibility: computed('visibility', function () {
+        let visibilities = this.get('availableVisibilities');
+        return visibilities.findBy('value', this.get('visibility')) || {value: '!unknown'};
     }),
 
     selectedOrder: computed('order', function () {
@@ -115,6 +136,10 @@ export default Controller.extend({
     actions: {
         changeType(type) {
             this.set('type', get(type, 'value'));
+        },
+
+        changeVisibility(visibility) {
+            this.set('visibility', get(visibility, 'value'));
         },
 
         changeAuthor(author) {

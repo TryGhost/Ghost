@@ -3,12 +3,14 @@ import {helper} from '@ember/component/helper';
 export const DEFAULT_QUERY_PARAMS = {
     posts: {
         type: null,
+        visibility: null,
         author: null,
         tag: null,
         order: null
     },
     pages: {
         type: null,
+        visibility: null,
         author: null,
         tag: null,
         order: null

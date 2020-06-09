@@ -9,6 +9,8 @@ export default AuthenticatedRoute.extend({
 
     queryParams: {
         type: {refreshModel: true},
+        visibility: {refreshModel: true},
+        access: {refreshModel: true},
         author: {refreshModel: true},
         tag: {refreshModel: true},
         order: {refreshModel: true}
@@ -38,7 +40,7 @@ export default AuthenticatedRoute.extend({
     model(params) {
         return this.session.user.then((user) => {
             let queryParams = {};
-            let filterParams = {tag: params.tag};
+            let filterParams = {tag: params.tag, visibility: params.visibility};
             let paginationParams = {
                 perPageParam: 'limit',
                 totalPagesParam: 'meta.pagination.pages'
