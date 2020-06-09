@@ -204,7 +204,7 @@ export default Component.extend({
         try {
             const response = yield this.ajax.post(url, {
                 data: {
-                    from_address: this.subscriptionSettings.fromAddress
+                    from_address: this.fromAddress
                 }
             });
             this.toggleProperty('showFromAddressConfirmation');
