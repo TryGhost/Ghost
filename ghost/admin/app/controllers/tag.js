@@ -28,12 +28,17 @@ export default Controller.extend({
             this._saveTagProperty(propKey, value);
         },
 
-        toggleDeleteTagModal() {
-            this.toggleProperty('showDeleteTagModal');
+        openDeleteTagModal() {
+            this.set('showDeleteTagModal', true);
+        },
+
+        closeDeleteTagModal() {
+            this.set('showDeleteTagModal', false);
         },
 
         deleteTag() {
             return this.tag.destroyRecord().then(() => {
+                this.set('showDeleteTagModal', false);
                 return this.transitionToRoute('tags');
             }, (error) => {
                 return this.notifications.showAPIError(error, {key: 'tag.delete'});
