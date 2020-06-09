@@ -15,7 +15,7 @@ export const DEFAULT_QUERY_PARAMS = {
     },
     'members.index': {
         label: null,
-        searchParam: ''
+        search: ''
     }
 };
 
