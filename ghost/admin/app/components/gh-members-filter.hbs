@@ -1,5 +1,6 @@
 <span class="dropdown dropdown-topmenu">
-    <GhDropdownButton @dropdownName="members-label-menu"
+    <GhDropdownButton
+        @dropdownName="members-label-menu"
         @classNames="gh-btn gh-btn-white gh-btn-filter first" @title="Member Labels"
         @data-test-user-actions="true">
         <span class="nudge-bottom--1 {{if @selectedLabel.slug "blue fw6"}} gh-btn-filter-maxwidth" title="{{@selectedLabel.name}}">
