@@ -3,7 +3,7 @@ const {i18n} = require('../../../../../lib/common');
 const errors = require('@tryghost/errors');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:members');
 const mapper = require('./utils/mapper');
-const {formatCSV} = require('../../../../../lib/fs');
+const papaparse = require('papaparse');
 
 module.exports = {
     browse(data, apiConfig, frame) {
@@ -70,7 +70,7 @@ module.exports = {
             }
             let labels = [];
             if (member.labels) {
-                labels = `"${member.labels.map(l => l.name).join(',')}"`;
+                labels = `${member.labels.map(l => l.name).join(',')}`;
             }
 
             return {
@@ -81,13 +81,13 @@ module.exports = {
                 subscribed_to_emails: member.subscribed,
                 complimentary_plan: member.comped,
                 stripe_customer_id: stripeCustomerId,
-                created_at: JSON.stringify(member.created_at),
-                deleted_at: JSON.stringify(member.deleted_at),
+                created_at: member.created_at,
+                deleted_at: member.deleted_at,
                 labels: labels
             };
         });
 
-        frame.response = formatCSV(members, fields);
+        frame.response = papaparse.unparse(members);
     },
 
     importCSV(data, apiConfig, frame) {
