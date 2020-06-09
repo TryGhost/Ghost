@@ -1,6 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {click, currentURL, fillIn, find, findAll, visit} from '@ember/test-helpers';
+import {click, currentURL, fillIn, find, findAll, settled, visit} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -86,8 +86,22 @@ describe('Acceptance: Content', function () {
 
             // API request is correct
             [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter, '"editor" request status filter').to.have.string('status:[draft,scheduled,published]');
-            expect(lastRequest.queryParams.filter, '"editor" request filter param').to.have.string(`authors:${editor.slug}`);
+            expect(lastRequest.queryParams.filter, '"editor" request status filter')
+                .to.have.string('status:[draft,scheduled,published]');
+            expect(lastRequest.queryParams.filter, '"editor" request filter param')
+                .to.have.string(`authors:${editor.slug}`);
+
+            // Post status is only visible when members is enabled
+            expect(find('[data-test-visibility-select]'), 'access dropdown before members enabled').to.not.exist;
+            let featureService = this.owner.lookup('service:feature');
+            featureService.set('members', true);
+            await settled();
+            expect(find('[data-test-visibility-select]'), 'access dropdown after members enabled').to.exist;
+
+            await selectChoose('[data-test-visibility-select]', 'Paid members-only');
+            [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.queryParams.filter, '"visibility" request filter param')
+                .to.have.string('visibility:paid+status:[draft,scheduled,published]');
 
             // Displays editor post
             // TODO: implement "filter" param support and fix mirage post->author association
