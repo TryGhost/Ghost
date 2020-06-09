@@ -165,11 +165,7 @@ export default class MembersController extends Controller {
 
     @task
     *fetchLabelsTask() {
-        if (!this._hasLoadedLabels) {
-            yield this.store.query('label', {limit: 'all'}).then(() => {
-                this._hasLoadedLabels = true;
-            });
-        }
+        yield this.store.query('label', {limit: 'all'});
     }
 
     @task({restartable: true})
