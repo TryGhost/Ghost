@@ -76,13 +76,11 @@
                 {{/unless}}
 
 
-                {{#if this.feature.members}}
-                    {{#if this.showVisibilityInput}}
-                        <div class="form-group">
-                            <label for="visibility-input">Post access</label>
-                            <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
-                        </div>
-                    {{/if}}
+                {{#if (and this.feature.members this.showVisibilityInput)}}
+                    <div class="form-group">
+                        <label for="visibility-input">Post access</label>
+                        <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
+                    </div>
                 {{/if}}
 
 

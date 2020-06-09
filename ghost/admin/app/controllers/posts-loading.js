@@ -11,6 +11,8 @@ export default Controller.extend({
 
     availableTypes: readOnly('postsController.availableTypes'),
     selectedType: readOnly('postsController.selectedType'),
+    selectedVisibility: readOnly('postsController.selectedVisibility'),
+    availableVisibilities: readOnly('postsController.availableVisibilities'),
     availableTags: readOnly('postsController.availableTags'),
     selectedTag: readOnly('postsController.selectedTag'),
     availableAuthors: readOnly('postsController.availableAuthors'),

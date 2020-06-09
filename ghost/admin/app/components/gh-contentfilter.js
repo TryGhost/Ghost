@@ -4,6 +4,7 @@ import {inject as service} from '@ember/service';
 
 export default class GhContentfilterComponent extends Component {
     @service customViews;
+    @service feature;
     @service router;
 
     get showCustomViewManagement() {
@@ -11,6 +12,7 @@ export default class GhContentfilterComponent extends Component {
         let onPostsScreen = this.router.currentRouteName === 'posts';
         let isDefaultView = this.customViews?.activeView?.isDefault;
         let hasFilter = this.args.selectedType.value
+            || this.args.selectedVisibility.value
             || this.args.selectedAuthor.slug
             || this.args.selectedTag.slug
             || this.args.selectedOrder.value;
