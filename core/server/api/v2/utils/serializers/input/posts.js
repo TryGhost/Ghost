@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const mapNQLKeyValues = require('../../../../../../shared/nql-map-key-values');
+const mapNQLKeyValues = require('@nexes/nql').utils.mapKeyValues;
 const debug = require('ghost-ignition').debug('api:v2:utils:serializers:input:posts');
 const url = require('./utils/url');
 const localUtils = require('../../index');
