@@ -212,11 +212,6 @@ export default class ParentContainer extends React.Component {
             this.setState({
                 action: `${action}:failed`
             });
-            setTimeout(() => {
-                this.setState({
-                    action: ''
-                });
-            }, 5000);
         }
     }
 
