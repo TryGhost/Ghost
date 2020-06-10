@@ -84,6 +84,12 @@ const updateMemberData = async function (req, res) {
 };
 
 const getMemberSiteData = async function (req, res) {
+    const stripePaymentProcessor = settingsCache.get('members_subscription_settings').paymentProcessors.find(
+        paymentProcessor => paymentProcessor.adapter === 'stripe'
+    );
+    const stripeSecretToken = stripePaymentProcessor && stripePaymentProcessor.config.secret_token;
+    const stripePublicToken = stripePaymentProcessor && stripePaymentProcessor.config.public_token;
+    const isStripeConfigured = (!!stripeSecretToken && stripeSecretToken !== '' && !!stripePublicToken && stripePublicToken !== '');
     const response = {
         title: settingsCache.get('title'),
         description: settingsCache.get('description'),
@@ -92,7 +98,8 @@ const getMemberSiteData = async function (req, res) {
         url: urlUtils.urlFor('home', true),
         version: ghostVersion.safe,
         plans: membersService.config.getPublicPlans(),
-        allowSelfSignup: membersService.config.getAllowSelfSignup()
+        allowSelfSignup: membersService.config.getAllowSelfSignup(),
+        isStripeConfigured
     };
 
     // Brand is currently an experimental feature
