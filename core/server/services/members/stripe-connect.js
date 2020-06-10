@@ -18,7 +18,11 @@ const redirectURI = 'https://stripe.ghost.org';
  * @returns {Promise<URL>}
  */
 async function getStripeConnectOAuthUrl(setSessionProp, mode = 'live') {
-    const state = randomBytes(16).toString('hex');
+    const randomState = randomBytes(16).toString('hex');
+    const state = Buffer.from(JSON.stringify({
+        mode,
+        randomState
+    })).toString('base64');
 
     await setSessionProp(STATE_PROP, state);
 
