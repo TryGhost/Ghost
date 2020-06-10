@@ -13,7 +13,7 @@ export const site = {
         currency_symbol: '$'
     },
     allowSelfSignup: true,
-    version: '3.13'
+    isStripeConfigured: true
 };
 
 export const member = {
