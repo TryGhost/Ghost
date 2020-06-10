@@ -48,13 +48,12 @@ jobs:
       - run: grunt test-unit --verbose
       - run: grunt test-regression --verbose
 
-      #- uses: 8398a7/action-slack@v3
-      #  if: ${{ failure() }} && github.ref == 'refs/heads/master'
-      #  with:
-      #    status: ${{ job.status }}
-      #    fields: repo,message,commit,author,ref
-      #  env:
-      #    SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - uses: daniellockyer/action-slack-build@master
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   ghost-cli:
     name: Ghost-CLI
@@ -88,10 +87,9 @@ jobs:
           ghost install v2 --local -d $DIR
           ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
-      #- uses: 8398a7/action-slack@v3
-      #  if: ${{ failure() }} && github.ref == 'refs/heads/master'
-      #  with:
-      #    status: ${{ job.status }}
-      #    fields: repo,message,commit,author,ref
-      #  env:
-      #    SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - uses: daniellockyer/action-slack-build@master
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
