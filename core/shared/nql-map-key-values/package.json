@@ -8,7 +8,7 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "@nexes/nql": "0.3.0",
+    "@nexes/nql": "0.4.0",
     "lodash": "4.17.15"
   }
 }
