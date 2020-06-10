@@ -73,6 +73,7 @@ export default class ParentContainer extends React.Component {
         try {
             this.GhostApi = setupGhostApi();
             const {site, member} = await this.GhostApi.init();
+            site.isStripeConfigured = (site.isStripeConfigured === undefined) || site.isStripeConfigured;
             const stripeParam = this.getStripeUrlParam();
             const {page, showPopup = false} = this.getDefaultPage({member, stripeParam});
             this.setState({

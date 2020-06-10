@@ -66,13 +66,20 @@ class SignupPage extends React.Component {
     }
 
     renderPlans() {
-        const {plans, allowSelfSignup} = this.context.site;
-        const plansData = [
+        const {plans, allowSelfSignup, isStripeConfigured} = this.context.site;
+
+        const plansData = [];
+        const stripePlans = [
             {type: 'month', price: plans.monthly, currency: plans.currency_symbol, name: 'Monthly'},
             {type: 'year', price: plans.yearly, currency: plans.currency_symbol, name: 'Yearly'}
         ];
-        if (allowSelfSignup) {
-            plansData.unshift({type: 'free', price: 'Decide later', name: 'Free'});
+
+        if (isStripeConfigured && allowSelfSignup) {
+            plansData.push({type: 'free', price: 'Decide later', name: 'Free'});
+        }
+
+        if (isStripeConfigured) {
+            stripePlans.forEach(plan => plansData.push(plan));
         }
 
         return (
