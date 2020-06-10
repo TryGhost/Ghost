@@ -190,7 +190,6 @@ const members = {
                 const member = model.toJSON(frame.options);
 
                 if (frame.data.members[0].stripe_customer_id) {
-                    // let stripeEnabled = membersSubscriptionSettings && !!(membersSubscriptionSettings.paymentProcessors[0].config.secret_token) && !!(membersSubscriptionSettings.paymentProcessors[0].config.public_token);
                     if (!membersService.config.isStripeConnected()) {
                         throw new errors.ValidationError({
                             message: i18n.t('errors.api.members.stripeNotConnected.message'),
