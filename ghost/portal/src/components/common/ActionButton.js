@@ -1,6 +1,14 @@
 import React from 'react';
 
-const Styles = ({brandColor, disabled, style = {}}) => {
+const Styles = ({brandColor, retry, disabled, style = {}}) => {
+    let backgroundColor = (brandColor || '#3eb0ef');
+    if (retry) {
+        backgroundColor = 'red';
+    }
+
+    if (disabled) {
+        backgroundColor = 'grey';
+    }
     return {
         button: {
             display: 'inline-block',
@@ -17,7 +25,7 @@ const Styles = ({brandColor, disabled, style = {}}) => {
             cursor: 'pointer',
             transition: '.4s ease',
             color: '#fff',
-            backgroundColor: disabled ? 'grey' : (brandColor || '#3eb0ef'),
+            backgroundColor,
             boxShadow: 'none',
             userSelect: 'none',
             width: '100%',
@@ -26,8 +34,8 @@ const Styles = ({brandColor, disabled, style = {}}) => {
     };
 };
 
-function ActionButton({label, onClick, disabled, brandColor, style}) {
-    let Style = Styles({disabled, brandColor, style});
+function ActionButton({label, onClick, disabled, retry, brandColor, style}) {
+    let Style = Styles({disabled, retry, brandColor, style});
     return (
         <button onClick={e => onClick(e)} style={Style.button} disabled={disabled}>
             {label}
