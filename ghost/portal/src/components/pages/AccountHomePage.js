@@ -80,9 +80,21 @@ class FreeAccountHomePage extends React.Component {
         });
     }
 
+    renderSubscribeButton() {
+        const {isStripeConfigured} = this.context.site;
+
+        if (isStripeConfigured) {
+            return (
+                <ActionButton label="Subscribe now" onClick={() => this.openSubscribe()} brandColor={this.context.brandColor} />
+            );
+        }
+
+        return null;
+    }
+
     renderAccountDetail(e) {
         const {name, firstname, email} = this.context.member;
-        const siteTitle = this.context.site.title;
+        const {title: siteTitle} = this.context.site;
 
         return (
             <div style={{padding: '0 24px'}}>
@@ -90,7 +102,7 @@ class FreeAccountHomePage extends React.Component {
                     <span style={{fontWeight: 'bold'}}>Hey {firstname || name || email}! </span>
                     You are subscribed to free updates from <span style={{fontWeight: 'bold'}}>{siteTitle}</span>, but you don't have a paid subscription to unlock full access
                 </div>
-                <ActionButton label="Subscribe now" onClick={() => this.openSubscribe()} brandColor={this.context.brandColor} />
+                {this.renderSubscribeButton()}
             </div>
         );
     }
@@ -113,13 +125,6 @@ class PaidAccountHomePage extends React.Component {
     handleSignout(e) {
         e.preventDefault();
         this.context.onAction('signout');
-    }
-
-    openSubscribe(e) {
-        this.context.onAction('switchPage', {
-            page: 'accountPlan',
-            lastPage: 'accountHome'
-        });
     }
 
     renderAccountWelcome() {
@@ -152,10 +157,13 @@ class PaidAccountHomePage extends React.Component {
     }
 
     openUpdatePlan() {
-        this.context.onAction('switchPage', {
-            page: 'accountPlan',
-            lastPage: 'accountHome'
-        });
+        const {isStripeConfigured} = this.context.site;
+        if (isStripeConfigured) {
+            this.context.onAction('switchPage', {
+                page: 'accountPlan',
+                lastPage: 'accountHome'
+            });
+        }
     }
 
     onEditBilling() {
