@@ -24,8 +24,6 @@ const EXPANSIONS = [{
     replacement: 'primary_author.slug'
 }];
 
-const mapNQLKeyValues = require('../../../shared/nql-map-key-values');
-
 /**
  * The UrlGenerator class is responsible to generate urls based on a router's conditions.
  * It is the component which sits between routers and resources and connects them together.
@@ -49,7 +47,7 @@ class UrlGenerator {
             this.filter = this.router.getFilter();
             this.nql = nql(this.filter, {
                 expansions: EXPANSIONS,
-                transformer: mapNQLKeyValues({
+                transformer: nql.utils.mapKeyValues({
                     key: {
                         from: 'page',
                         to: 'type'
