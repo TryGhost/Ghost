@@ -35,10 +35,16 @@ class SignupPage extends React.Component {
     renderSubmitButton() {
         const {action, brandColor} = this.context;
 
-        const label = (action === 'signup:running') ? 'Sending...' : 'Continue';
+        let label = (action === 'signup:running') ? 'Sending...' : 'Continue';
+        let retry = false;
+        if (action === 'signup:failed') {
+            label = 'Retry';
+            retry = true;
+        }
         const disabled = (action === 'signup:running') ? true : false;
         return (
             <ActionButton
+                retry={retry}
                 onClick={e => this.handleSignup(e)}
                 disabled={disabled}
                 brandColor={brandColor}
