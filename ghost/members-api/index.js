@@ -237,18 +237,24 @@ module.exports = function MembersApi({
             return res.end('No permission');
         }
 
-        const sessionInfo = await stripe.createCheckoutSession(member, plan, {
-            successUrl: req.body.successUrl,
-            cancelUrl: req.body.cancelUrl,
-            customerEmail: req.body.customerEmail,
-            metadata: req.body.metadata
-        });
+        try {
+            const sessionInfo = await stripe.createCheckoutSession(member, plan, {
+                successUrl: req.body.successUrl,
+                cancelUrl: req.body.cancelUrl,
+                customerEmail: req.body.customerEmail,
+                metadata: req.body.metadata
+            });
 
-        res.writeHead(200, {
-            'Content-Type': 'application/json'
-        });
+            res.writeHead(200, {
+                'Content-Type': 'application/json'
+            });
 
-        res.end(JSON.stringify(sessionInfo));
+            res.end(JSON.stringify(sessionInfo));
+        } catch (e) {
+            const error = e.message || 'Unable to initiate checkout session';
+            res.writeHead(400);
+            return res.end(error);
+        }
     });
 
     middleware.createCheckoutSetupSession.use(ensureStripe, body.json(), async function (req, res) {
