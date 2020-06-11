@@ -124,6 +124,17 @@
     resize: none;
 }
 
+.gh-members-connect-testmodelabel {
+    display: inline-block;
+    background: #f8e5b9;
+    color: #983705;
+    font-size: 1.2rem;
+    font-weight: 500;
+    line-height: 1em;
+    border-radius: 999px;
+    padding: 4px 8px;
+}
+
 @media (max-width: 500px) {
     .gh-members-stripe-info-header {
         flex-direction: column;
