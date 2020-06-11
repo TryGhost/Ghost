@@ -1291,13 +1291,13 @@
     dom-accessibility-api "^0.4.5"
     pretty-format "^25.5.0"
 
-"@testing-library/jest-dom@5.9.0":
-  version "5.9.0"
-  resolved "https://registry.yarnpkg.com/@testing-library/jest-dom/-/jest-dom-5.9.0.tgz#86464c66cbe75e632b8adb636f539bfd0efc2c9c"
-  integrity sha512-uZ68dyILuM2VL13lGz4ehFEAgxzvLKRu8wQxyAZfejWnyMhmipJ60w4eG81NQikJHBfaYXx+Or8EaPQTDwGfPA==
+"@testing-library/jest-dom@5.10.0":
+  version "5.10.0"
+  resolved "https://registry.yarnpkg.com/@testing-library/jest-dom/-/jest-dom-5.10.0.tgz#6fc80de4760995b3b4281d2f3214e6bb95dd0754"
+  integrity sha512-t6e6Y6cu9cnTRwgNzgGtMn+bluLa/JkQ8j876g0XoZ6QKK/VBPPAIJ2PVWK4pjTD3U/BROP0o29cMwpZHcqltA==
   dependencies:
     "@babel/runtime" "^7.9.2"
-    "@types/testing-library__jest-dom" "^5.0.2"
+    "@types/testing-library__jest-dom" "^5.9.1"
     chalk "^3.0.0"
     css "^2.2.4"
     css.escape "^1.5.1"
@@ -1436,7 +1436,7 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-1.0.1.tgz#0a851d3bd96498fa25c33ab7278ed3bd65f06c3e"
   integrity sha512-l42BggppR6zLmpfU6fq9HEa2oGPEI8yrSPL3GITjfRInppYFahObbIQOQK3UGxEnyQpltZLaPe75046NOZQikw==
 
-"@types/testing-library__jest-dom@^5.0.2":
+"@types/testing-library__jest-dom@^5.9.1":
   version "5.9.1"
   resolved "https://registry.yarnpkg.com/@types/testing-library__jest-dom/-/testing-library__jest-dom-5.9.1.tgz#aba5ee062b7880f69c212ef769389f30752806e5"
   integrity sha512-yYn5EKHO3MPEMSOrcAb1dLWY+68CG29LiXKsWmmpVHqoP5+ZRiAVLyUHvPNrO2dABDdUGZvavMsaGpWNjM6N2g==
