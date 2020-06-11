@@ -120,6 +120,86 @@ describe('Image card', function () {
         });
     });
 
+    describe('srcset attribute', function () {
+        it('is included when src is relative', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2020/06/image.png'
+                },
+                options: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w1000/2020/06/image.png 1000w, /content/images/size/w1600/2020/06/image.png 1600w, /content/images/size/w2400/2020/06/image.png 2400w"></figure>');
+        });
+
+        it('is omitted when no contentImageSizes are passed as options', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/content/images/2020/06/image.png'
+                },
+                options: {}
+            };
+
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image"></figure>');
+        });
+
+        it('works correctly with subdirectories', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: '/subdir/content/images/2020/06/image.png'
+                },
+                options: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/subdir/content/images/2020/06/image.png" class="kg-image" srcset="/subdir/content/images/size/w600/2020/06/image.png 600w, /subdir/content/images/size/w1000/2020/06/image.png 1000w, /subdir/content/images/size/w1600/2020/06/image.png 1600w, /subdir/content/images/size/w2400/2020/06/image.png 2400w"></figure>');
+        });
+
+        it('is included when src is an Unsplash image', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: 'https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=2000&fit=max&ixid=eyJhcHBfaWQiOjExNzczfQ'
+                },
+                options: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            // note that '&' in URLs will be rendered as '&amp;' to maintain HTML encoding
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ" class="kg-image" srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w"></figure>');
+        });
+    });
+
     it('transforms urls absolute to relative', function () {
         let payload = {
             src: 'http://127.0.0.1:2369/content/images/2018/08/NatGeo01-9.jpg',

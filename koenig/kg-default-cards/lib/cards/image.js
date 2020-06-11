@@ -1,3 +1,4 @@
+const setSrcsetAttribute = require('../utils/set-srcset-attribute');
 const {
     absoluteToRelative,
     relativeToAbsolute,
@@ -9,19 +10,19 @@ module.exports = {
     name: 'image',
     type: 'dom',
 
-    render({payload, env: {dom}}) {
+    render({payload, env: {dom}, options = {}}) {
         if (!payload.src) {
             return dom.createTextNode('');
         }
 
-        let figure = dom.createElement('figure');
+        const figure = dom.createElement('figure');
         let figureClass = 'kg-card kg-image-card';
         if (payload.cardWidth) {
             figureClass = `${figureClass} kg-width-${payload.cardWidth}`;
         }
         figure.setAttribute('class', figureClass);
 
-        let img = dom.createElement('img');
+        const img = dom.createElement('img');
         img.setAttribute('src', payload.src);
         img.setAttribute('class', 'kg-image');
         if (payload.alt) {
@@ -31,10 +32,12 @@ module.exports = {
             img.setAttribute('title', payload.title);
         }
 
+        setSrcsetAttribute(img, options);
+
         figure.appendChild(img);
 
         if (payload.caption) {
-            let figcaption = dom.createElement('figcaption');
+            const figcaption = dom.createElement('figcaption');
             figcaption.appendChild(dom.createRawHTMLSection(payload.caption));
             figure.appendChild(figcaption);
             figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);

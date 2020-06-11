@@ -19,15 +19,16 @@ module.exports = class CardFactory {
 
             render({env, payload, options}) {
                 const {dom} = env;
-                const cleanName = name.replace(/^card-/, '');
+                const cardOptions = Object.assign({}, factoryOptions, options);
 
-                const cardOutput = card.render({env, payload, options});
+                const cardOutput = card.render({env, payload, cardOptions});
 
                 if (cardOutput.nodeType === 3 && cardOutput.nodeValue === '') {
                     return cardOutput;
                 }
 
                 if (config.commentWrapper) {
+                    const cleanName = name.replace(/^card-/, '');
                     const beginComment = dom.createComment(`kg-card-begin: ${cleanName}`);
                     const endComment = dom.createComment(`kg-card-end: ${cleanName}`);
                     const fragment = dom.createDocumentFragment();

@@ -1,3 +1,4 @@
+const setSrcsetAttribute = require('../utils/set-srcset-attribute');
 const {
     absoluteToRelative,
     relativeToAbsolute,
@@ -28,7 +29,7 @@ module.exports = {
     name: 'gallery',
     type: 'dom',
 
-    render({payload, env: {dom}}) {
+    render({payload, env: {dom}, options = {}}) {
         let isValidImage = (image) => {
             return image.fileName
                 && image.src
@@ -94,6 +95,8 @@ module.exports = {
                 if (image.title) {
                     img.setAttribute('title', image.title);
                 }
+
+                setSrcsetAttribute(img, options);
 
                 imgDiv.appendChild(img);
                 rowDiv.appendChild(imgDiv);
