@@ -75,5 +75,13 @@
                 "content": "v2/content"
             }
         }
+    },
+    "imageOptimization": {
+        "contentImageSizes": {
+            "w600": {"width": 600},
+            "w1000": {"width": 1000},
+            "w1600": {"width": 1600},
+            "w2400": {"width": 2400}
+        }
     }
 }
