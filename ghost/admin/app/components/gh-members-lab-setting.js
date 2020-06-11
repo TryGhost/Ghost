@@ -219,9 +219,13 @@ export default Component.extend({
 
     saveStripeSettings: task(function* () {
         this.set('stripeConnectError', null);
+        this.set('stripeConnectSuccess', null);
         if (this.get('settings.stripeConnectIntegrationToken')) {
             try {
-                return yield this.settings.save();
+                const response = yield this.settings.save();
+                this.set('membersStripeOpen', false);
+                this.set('stripeConnectSuccess', true);
+                return response;
             } catch (error) {
                 if (error.payload && error.payload.errors) {
                     this.set('stripeConnectError', 'Invalid secure key');
