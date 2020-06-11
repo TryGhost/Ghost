@@ -7,7 +7,6 @@ export default class MembersUtilsService extends Service {
     isStripeEnabled() {
         let membersSubscriptionSettings = this.settings.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
         let stripeEnabled = membersSubscriptionSettings && !!(membersSubscriptionSettings.paymentProcessors[0].config.secret_token) && !!(membersSubscriptionSettings.paymentProcessors[0].config.public_token);
-        debugger
         return stripeEnabled;
     }
 }
