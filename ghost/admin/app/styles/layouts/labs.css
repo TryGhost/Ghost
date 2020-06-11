@@ -38,6 +38,17 @@
     stroke: var(--blue);
 }
 
+.gh-labs-disabled .for-checkbox label,
+.gh-labs-disabled .for-checkbox .input-toggle-component,
+.gh-labs-disabled .for-switch label,
+.gh-labs-disabled .for-switch .input-toggle-component
+.gh-labs-disabled .for-radio label,
+.gh-labs-disabled .for-radio .input-toggle-component {
+    cursor: default;
+}
+
+/* Members */
+
 .gh-labs-members-radio {
     cursor: pointer;
     margin: 0 8px;
@@ -51,6 +62,9 @@
 .gh-labs-disabled .gh-setting-content, .gh-labs-disabled .gh-setting-action {
     opacity: 0.25;
 }
+
+
+/* Stripe settings */
 
 .gh-members-stripe-info-header {
     display: flex;
@@ -80,6 +94,36 @@
     color: #555ABF;
 }
 
+.gh-members-connectbutton-container {
+    max-width: 380px;
+}
+
+.gh-members-connectbutton-container .for-switch {
+    line-height: 1em;
+}
+
+.gh-members-connectbutton-container .for-switch label {
+    width: 36px !important
+}
+
+.gh-members-connectbutton-container .for-switch input:checked + .input-toggle-component {
+    background: #F1946A;
+}
+
+.gh-members-connect-testmodeon {
+    color: #F1946A;
+}
+
+.gh-members-stripe-connect-token {
+    background: var(--whitegrey-l2);
+    min-height: unset;
+    height: 73px;
+    max-width: 380px;
+    font-family: var(--font-family-mono);
+    font-size: 1.3rem;
+    resize: none;
+}
+
 @media (max-width: 500px) {
     .gh-members-stripe-info-header {
         flex-direction: column;
@@ -101,15 +145,6 @@
     .gh-members-stripe-info {
         width: 100%;
     }
-}
-
-.gh-labs-disabled .for-checkbox label,
-.gh-labs-disabled .for-checkbox .input-toggle-component,
-.gh-labs-disabled .for-switch label,
-.gh-labs-disabled .for-switch .input-toggle-component
-.gh-labs-disabled .for-radio label,
-.gh-labs-disabled .for-radio .input-toggle-component {
-    cursor: default;
 }
 
 .gh-labs-mailgun-region {

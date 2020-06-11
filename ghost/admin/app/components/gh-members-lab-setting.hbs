@@ -55,7 +55,11 @@
             <div class="flex justify-between">
                 <div>
                     <h4 class="gh-setting-title">Connect to Stripe</h4>
-                    <p class="gh-setting-desc pa0 ma0">Connect to Stripe to create subscriptions and take payments</p>
+                    {{#if this.stripeConnectIntegration}}
+                        <p class="gh-setting-desc pa0 ma0">Connected to <a href="https://dashboard.stripe.com/{{this.stripeConnectIntegration.id}}" target="_blank">{{this.stripeConnectIntegration.name}}</a></p>
+                    {{else}}
+                        <p class="gh-setting-desc pa0 ma0">Connect to Stripe to create subscriptions and take payments</p>
+                    {{/if}}
                 </div>
                 <div>
                     <button type="button" class="gh-btn" {{action (toggle "membersStripeOpen" this)}} data-test-toggle-membersstripe><span>{{if this.membersStripeOpen "Close" "Expand"}}</span></button>
@@ -63,32 +67,50 @@
             </div>
 
             {{#liquid-if this.membersStripeOpen}}
-            <div class="flex flex-column flex-row-l items-start justify-between mb4 mt6">
-                <div class="w-100 w-50-l">
-                    <div class="mb4">
-                        <a href="{{this.stripeConnectAuthUrl}}" class="stripe-connect" target="_blank"><span>Connect with Stripe</span></a>
-                    </div>
-                    <div class="nudge-top--3">
-                        <label class="fw6 f8 mt4">Stripe Connect authentication token</label>
-                        <GhTextInput
-                            @type="password"
-                            @input={{action "setStripeConnectIntegrationToken" "stripe_connect_integration_token"}}
-                            @class="mt1 password"
-                        />
-                    </div>
-                </div>
-                <div class="ml0 ml5-l mt6">
-                    <div class="gh-members-stripe-info">
-                        <div class="gh-members-stripe-info-header">
-                            <h4>How you get paid</h4>
-                            {{svg-jar "stripe-verified-partner-badge" class="gh-members-stripe-badge"}}
+            <div class="mb4 mt6">
+                <div class="flex flex-column flex-row-l items-start justify-between">
+                    <div class="w-100 w-50-l">
+                        <label class="fw6 f8">Generate secure key</label>
+                        <div class="flex items-center mb4 justify-between gh-members-connectbutton-container mt2">
+                            <a href="{{if this.stripeConnectTestMode this.testStripeConnectAuthUrl this.liveStripeConnectAuthUrl}}" class="stripe-connect light-blue" target="_blank"><span>Connect with Stripe</span></a>
+                            <div class="ml2 flex items-center flex-nowrap">
+                                <span class="mr2 f8 midgrey nowrap {{if this.stripeConnectTestMode "gh-members-connect-testmodeon"}}">{{if this.stripeConnectTestMode "Using" "Use"}} test mode</span>
+                                <div class="for-switch small">
+                                    <label class="switch" for="stripe-connect-test-mode" {{action (toggle "stripeConnectTestMode" this) bubbles="false"}}>
+                                        <input type="checkbox" class="gh-input" checked={{this.stripeConnectTestMode}} onclick={{action (toggle "stripeConnectTestMode" this)}} data-test-checkbox="stripe-connect-test-mode">
+                                        <span class="input-toggle-component mt1"></span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <p class="f8 mt2 mb0">
-                            Stripe is our exclusive direct payments partner.<br />
-                            Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank"  rel="noopener" class="gh-members-stripe-link">sign up here</a>.
-                        </p>
+                        <div class="nudge-top--3">
+                            <GhTextarea 
+                                @class="gh-members-stripe-connect-token"
+                                @placeholder="Paste your secure key here"
+                                @input={{action "setStripeConnectIntegrationToken" "stripe_connect_integration_token"}}
+                            />
+                            {{#if this.stripeConnectError}}<p class="mb0 mt2 f8 red">{{this.stripeConnectError}}</p>{{/if}}
+                        </div>
+                    </div>
+                    <div class="mt5 mt5-m mt8-l ml0 ml5-l">
+                        <div class="gh-members-stripe-info">
+                            <div class="gh-members-stripe-info-header">
+                                <h4>How you get paid</h4>
+                                {{svg-jar "stripe-verified-partner-badge" class="gh-members-stripe-badge"}}
+                            </div>
+                            <p class="f8 mt2 mb0">
+                                Stripe is our exclusive direct payments partner.<br />
+                                Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank"  rel="noopener" class="gh-members-stripe-link">sign up here</a>.
+                            </p>
+                        </div>
                     </div>
                 </div>
+                <GhTaskButton @buttonText="Save Stripe settings"
+                                @task={{this.saveStripeSettings}}
+                                @successText="Saved"
+                                @runningText="Saving"
+                                @class="gh-btn gh-btn-blue gh-btn-icon mt6"
+                            />
             </div>
             {{/liquid-if}}
         {{/if}}
