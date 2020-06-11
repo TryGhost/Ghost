@@ -16,7 +16,7 @@ export default Component.extend({
     hasMultipleSubscriptions: gt('member.stripe', 1),
 
     canShowStripeInfo: computed('member.isNew', 'settings.membersSubscriptionSettings', function () {
-        let stripeEnabled = this.membersUtils.isStripeEnabled();
+        let stripeEnabled = this.membersUtils.isStripeEnabled;
 
         if (this.member.get('isNew') || !stripeEnabled) {
             return false;
