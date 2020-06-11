@@ -16,9 +16,7 @@ jobs:
           fetch-depth: 0
           submodules: true
       - run: yarn
-
       - run: grunt release --skip-tests
-      - uses: tryghost/action-ghost-release@master
-
       - run: npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN
       - run: npm publish
+      - uses: tryghost/action-ghost-release@master
