@@ -25,29 +25,22 @@ function createSettingsInstance(config) {
             }
         },
         getSubject() {
-            const siteTitle = settingsCache.get('title');
-
-            return `📫 Confirm your email update for ${siteTitle}`;
+            return `Confirm your email address`;
         },
         getText(url, type, email) {
-            const siteTitle = settingsCache.get('title');
-
             return `
             Hey there,
 
-            You're one tap away from updating your email at ${siteTitle} — please confirm your email address with this link:
+            Please confirm your email address with this link:
 
             ${url}
 
             For your security, the link will expire in 10 minutes time.
 
-            All the best!
-            The team at ${siteTitle}
-
             ---
 
             Sent to ${email}
-            If you did not make this request, you can simply delete this message. You will not be subscribed.
+            If you did not make this request, you can simply delete this message. This email address will not be used.
             `;
         },
         getHTML(url, type, email) {
