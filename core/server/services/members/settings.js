@@ -79,7 +79,7 @@ function createSettingsInstance(config) {
 
     const getAdminRedirectLink = () => {
         const adminUrl = urlUtils.urlFor('admin', true);
-        return urlUtils.urlJoin(adminUrl, 'settings/labs/?fromAddressUpdate=success');
+        return urlUtils.urlJoin(adminUrl, '#/settings/labs/?fromAddressUpdate=success');
     };
 
     return {
