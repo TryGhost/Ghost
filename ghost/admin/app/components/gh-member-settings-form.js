@@ -5,7 +5,7 @@ import {gt} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
-    settings: service(),
+    membersUtils: service(),
     feature: service(),
     config: service(),
     mediaQueries: service(),
@@ -16,8 +16,7 @@ export default Component.extend({
     hasMultipleSubscriptions: gt('member.stripe', 1),
 
     canShowStripeInfo: computed('member.isNew', 'settings.membersSubscriptionSettings', function () {
-        let membersSubscriptionSettings = this.settings.parseSubscriptionSettings(this.get('settings.membersSubscriptionSettings'));
-        let stripeEnabled = membersSubscriptionSettings && !!(membersSubscriptionSettings.paymentProcessors[0].config.secret_token) && !!(membersSubscriptionSettings.paymentProcessors[0].config.public_token);
+        let stripeEnabled = this.membersUtils.isStripeEnabled();
 
         if (this.member.get('isNew') || !stripeEnabled) {
             return false;
