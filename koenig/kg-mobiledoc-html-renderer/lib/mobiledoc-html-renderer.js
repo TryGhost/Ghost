@@ -14,9 +14,9 @@ const walkDom = function (node, func) {
 const nodeTextContent = function (node) {
     let textContent = '';
 
-    walkDom(node, (node) => {
-        if (node.nodeType === 3) {
-            textContent += node.nodeValue;
+    walkDom(node, (currentNode) => {
+        if (currentNode.nodeType === 3) {
+            textContent += currentNode.nodeValue;
         }
     });
 

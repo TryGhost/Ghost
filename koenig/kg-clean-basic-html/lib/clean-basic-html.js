@@ -10,9 +10,9 @@ export default function cleanBasicHtml(html = '', _options = {}) {
             throw new Error('cleanBasicHtml() must be passed a `createDocument` function as an option when used in a non-browser environment');
         }
 
-        options.createDocument = function (html) {
+        options.createDocument = function (docHtml) {
             const parser = new Parser();
-            return parser.parseFromString(html, 'text/html');
+            return parser.parseFromString(docHtml, 'text/html');
         };
     }
 

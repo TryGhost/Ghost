@@ -15,12 +15,14 @@ const buildDOM = function (html) {
 };
 
 describe('parser-plugins', function () {
-    let builder, parser;
+    let builder, parser, plugins;
 
-    const plugins = createParserPlugins({
-        createDocument(html) {
-            return (new JSDOM(html)).window.document;
-        }
+    before(function () {
+        plugins = createParserPlugins({
+            createDocument(html) {
+                return (new JSDOM(html)).window.document;
+            }
+        });
     });
 
     beforeEach(function () {

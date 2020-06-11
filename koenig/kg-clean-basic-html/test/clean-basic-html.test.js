@@ -6,11 +6,15 @@ const {JSDOM} = require('jsdom');
 const cleanBasicHtml = require('../');
 
 describe('cleanBasicHtml', function () {
-    const options = {
-        createDocument(html) {
-            return (new JSDOM(html)).window.document;
-        }
-    };
+    let options = {};
+
+    before(function () {
+        options = {
+            createDocument(html) {
+                return (new JSDOM(html)).window.document;
+            }
+        };
+    });
 
     it('errors in Node.js env without a `createDocument` option', function () {
         should(function () {

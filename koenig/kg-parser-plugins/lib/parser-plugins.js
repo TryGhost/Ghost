@@ -158,8 +158,8 @@ export function createParserPlugins(_options = {}) {
 
         let html = [];
 
-        function isHtmlEndComment(node) {
-            return node && node.nodeType === 8 && node.nodeValue === 'kg-card-end: html';
+        function isHtmlEndComment(n) {
+            return n && n.nodeType === 8 && n.nodeValue === 'kg-card-end: html';
         }
 
         let nextNode = node.nextSibling;
@@ -223,8 +223,8 @@ export function createParserPlugins(_options = {}) {
     };
 
     function grafGalleryToCard(node, builder, {addSection, nodeFinished}) {
-        function isGrafGallery(node) {
-            return node.nodeType === 1 && node.tagName === 'DIV' && node.dataset && node.dataset.paragraphCount && node.querySelectorAll('img').length > 0;
+        function isGrafGallery(n) {
+            return n.nodeType === 1 && n.tagName === 'DIV' && n.dataset && n.dataset.paragraphCount && n.querySelectorAll('img').length > 0;
         }
 
         if (!isGrafGallery(node)) {
