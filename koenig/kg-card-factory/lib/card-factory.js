@@ -21,7 +21,7 @@ module.exports = class CardFactory {
                 const {dom} = env;
                 const cardOptions = Object.assign({}, factoryOptions, options);
 
-                const cardOutput = card.render({env, payload, cardOptions});
+                const cardOutput = card.render({env, payload, options: cardOptions});
 
                 if (cardOutput.nodeType === 3 && cardOutput.nodeValue === '') {
                     return cardOutput;
