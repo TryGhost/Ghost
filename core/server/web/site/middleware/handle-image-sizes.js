@@ -1,7 +1,9 @@
+const _ = require('lodash');
 const path = require('path');
 const imageTransform = require('@tryghost/image-transform');
 const storage = require('../../../adapters/storage');
 const activeTheme = require('../../../../frontend/services/themes/active');
+const config = require('../../../../shared/config');
 
 const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;
 const TRAILING_SLASH_REGEX = /\/+$/;
@@ -33,19 +35,26 @@ module.exports = function (req, res, next) {
         return redirectToOriginal();
     }
 
-    const imageSizes = activeTheme.get().config('image_sizes');
-    // CASE: no image_sizes config
+    const contentImageSizes = config.get('imageOptimization:contentImageSizes');
+    const themeImageSizes = activeTheme.get().config('image_sizes');
+    const imageSizes = _.merge({}, themeImageSizes, contentImageSizes);
+
+    // CASE: no image_sizes config (NOTE - unlikely to be reachable now we have content sizes)
     if (!imageSizes) {
         return redirectToOriginal();
     }
 
-    const imageDimensions = Object.keys(imageSizes).reduce((dimensions, size) => {
+    // build a new object with keys that match the strings used in size paths like "w640h480"
+    const imageDimensions = {};
+    Object.keys(imageSizes).forEach((size) => {
         const {width, height} = imageSizes[size];
         const dimension = (width ? 'w' + width : '') + (height ? 'h' + height : '');
-        return Object.assign({
-            [dimension]: imageSizes[size]
-        }, dimensions);
-    }, {});
+
+        // if there are duplicate size names the first encountered wins
+        if (!imageDimensions[dimension]) {
+            imageDimensions[dimension] = imageSizes[size];
+        }
+    });
 
     const imageDimensionConfig = imageDimensions[requestedDimension];
     // CASE: unknown dimension
@@ -54,7 +63,7 @@ module.exports = function (req, res, next) {
     }
 
     const storageInstance = storage.getStorage();
-    // CASE: unsupported storage adapter but theme is using custom image_sizes
+    // CASE: unsupported storage adapter
     if (typeof storageInstance.saveRaw !== 'function') {
         return redirectToOriginal();
     }

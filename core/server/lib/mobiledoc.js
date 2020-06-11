@@ -27,7 +27,8 @@ module.exports = {
             const defaultCards = require('@tryghost/kg-default-cards');
 
             cardFactory = new CardFactory({
-                siteUrl: config.get('url')
+                siteUrl: config.get('url'),
+                contentImageSizes: config.get('imageOptimization:contentImageSizes')
             });
 
             cards = defaultCards.map((card) => {
