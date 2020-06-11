@@ -1135,7 +1135,7 @@ describe('Post Model', function () {
 
                 models.Post.add(post, context).then((createdPost) => {
                     createdPost.get('mobiledoc').should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"/content/images/card.jpg"}]],"markups":[["a",["href","/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
-                    createdPost.get('html').should.equal('<p><a href="/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="/content/images/card.jpg" class="kg-image"></figure>');
+                    createdPost.get('html').should.equal('<p><a href="/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="/content/images/card.jpg" class="kg-image" srcset="/content/images/size/w600/card.jpg 600w, /content/images/size/w1000/card.jpg 1000w, /content/images/size/w1600/card.jpg 1600w, /content/images/size/w2400/card.jpg 2400w"></figure>');
                     createdPost.get('custom_excerpt').should.equal('Testing <a href="/internal">links</a> in custom excerpts');
                     createdPost.get('codeinjection_head').should.equal('<script src="/assets/head.js"></script>');
                     createdPost.get('codeinjection_foot').should.equal('<script src="/assets/foot.js"></script>');
