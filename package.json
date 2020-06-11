@@ -49,7 +49,7 @@
     "@tryghost/kg-card-factory": "2.1.1",
     "@tryghost/kg-default-atoms": "2.0.1",
     "@tryghost/kg-default-cards": "2.1.0",
-    "@tryghost/kg-markdown-html-renderer": "2.0.0",
+    "@tryghost/kg-markdown-html-renderer": "2.0.1",
     "@tryghost/kg-mobiledoc-html-renderer": "3.0.0",
     "@tryghost/magic-link": "^0.4.8",
     "@tryghost/members-api": "0.20.1",
