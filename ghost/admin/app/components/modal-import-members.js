@@ -1,5 +1,6 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import papaparse from 'papaparse';
 import {
     UnsupportedMediaTypeError,
     isRequestEntityTooLargeError,
@@ -15,17 +16,19 @@ import {inject as service} from '@ember/service';
 export default ModalComponent.extend({
     ajax: service(),
     notifications: service(),
+    memberImportValidator: service(),
 
     labelText: 'Select or drag-and-drop a CSV File',
 
     dragClass: null,
     file: null,
+    fileData: null,
     paramName: 'membersfile',
-    extensions: null,
     uploading: false,
     uploadPercentage: 0,
     response: null,
     failureMessage: null,
+    validationErrors: null,
     labels: null,
 
     // Allowed actions
@@ -38,8 +41,9 @@ export default ModalComponent.extend({
         return `${ghostPaths().apiRoot}/members/csv/`;
     }),
 
-    importDisabled: computed('file', function () {
-        return !this.file || !(this._validateFileType(this.file));
+    importDisabled: computed('file', 'validationErrors', function () {
+        const hasEmptyDataFile = this.validationErrors && this.validationErrors.filter(error => error.message.includes('File is empty')).length;
+        return !this.file || !(this._validateFileType(this.file)) || hasEmptyDataFile;
     }),
 
     formData: computed('file', function () {
@@ -73,7 +77,6 @@ export default ModalComponent.extend({
 
     init() {
         this._super(...arguments);
-        this.extensions = ['csv'];
 
         // NOTE: nested label come from specific "gh-member-label-input" parameters, would be good to refactor
         this.labels = {labels: []};
@@ -85,10 +88,28 @@ export default ModalComponent.extend({
             let validationResult = this._validateFileType(file);
 
             if (validationResult !== true) {
-                this._uploadFailed(validationResult);
+                this._validationFailed(validationResult);
             } else {
                 this.set('file', file);
                 this.set('failureMessage', null);
+
+                papaparse.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    worker: true, // NOTE: compare speed and file sizes with/without this flag
+                    complete: async (results) => {
+                        this.set('fileData', results.data);
+
+                        let result = await this.memberImportValidator.check(results.data);
+
+                        if (result !== true) {
+                            this._importValidationFailed(result);
+                        }
+                    },
+                    error: (error) => {
+                        this._validationFailed(error);
+                    }
+                });
             }
         },
 
@@ -96,7 +117,8 @@ export default ModalComponent.extend({
             this.set('failureMessage', null);
             this.set('labels', {labels: []});
             this.set('file', null);
-            this.set('failureMessage', null);
+            this.set('fileData', null);
+            this.set('validationErrors', null);
         },
 
         upload() {
@@ -170,7 +192,7 @@ export default ModalComponent.extend({
         }).then((response) => {
             this._uploadSuccess(JSON.parse(response));
         }).catch((error) => {
-            this._uploadFailed(error);
+            this._validationFailed(error);
         }).finally(() => {
             this._uploadFinished();
         });
@@ -199,7 +221,11 @@ export default ModalComponent.extend({
         this.set('uploading', false);
     },
 
-    _uploadFailed(error) {
+    _importValidationFailed(errors) {
+        this.set('validationErrors', errors);
+    },
+
+    _validationFailed(error) {
         let message;
 
         if (isVersionMismatchError(error)) {
@@ -221,9 +247,8 @@ export default ModalComponent.extend({
 
     _validateFileType(file) {
         let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
-        let extensions = this.extensions;
 
-        if (!extension || extensions.indexOf(extension.toLowerCase()) === -1) {
+        if (['csv'].indexOf(extension.toLowerCase()) === -1) {
             return new UnsupportedMediaTypeError();
         }
 
