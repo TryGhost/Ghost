@@ -86,7 +86,7 @@ export default Service.extend({
     },
 
     _checkStripeLocal(validatedSet) {
-        const isStripeConfigured = this.membersUtils.isStripeEnabled();
+        const isStripeConfigured = this.membersUtils.isStripeEnabled;
         let result = true;
 
         if (!isStripeConfigured) {
