@@ -1,4 +1,4 @@
-import {ParentContext} from '../ParentContext';
+import AppContext from '../../AppContext';
 import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import Switch from '../common/Switch';
@@ -59,7 +59,7 @@ const UserHeader = ({member}) => {
 };
 
 class FreeAccountHomePage extends React.Component {
-    static contextType = ParentContext;
+    static contextType = AppContext;
 
     handleSignout(e) {
         e.preventDefault();
@@ -120,7 +120,7 @@ class FreeAccountHomePage extends React.Component {
 }
 
 class PaidAccountHomePage extends React.Component {
-    static contextType = ParentContext;
+    static contextType = AppContext;
 
     handleSignout(e) {
         e.preventDefault();
@@ -254,7 +254,7 @@ class PaidAccountHomePage extends React.Component {
     }
 }
 export default class AccountHomePage extends React.Component {
-    static contextType = ParentContext;
+    static contextType = AppContext;
 
     render() {
         const {member} = this.context;
