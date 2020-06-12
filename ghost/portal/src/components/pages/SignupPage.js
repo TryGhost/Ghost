@@ -1,12 +1,12 @@
 import ActionButton from '../common/ActionButton';
 import InputField from '../common/InputField';
-import {ParentContext} from '../ParentContext';
+import AppContext from '../../AppContext';
 import PlansSection from '../common/PlansSection';
 
 const React = require('react');
 
 class SignupPage extends React.Component {
-    static contextType = ParentContext;
+    static contextType = AppContext;
 
     constructor(props) {
         super(props);

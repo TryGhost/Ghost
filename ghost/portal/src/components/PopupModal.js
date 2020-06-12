@@ -5,7 +5,7 @@ import AccountHomePage from './pages/AccountHomePage';
 import MagicLinkPage from './pages/MagicLinkPage';
 import LoadingPage from './pages/LoadingPage';
 import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
-import {ParentContext} from './ParentContext';
+import AppContext from '../AppContext';
 import FrameStyle from './Frame.styles';
 import AccountPlanPage from './pages/AccountPlanPage';
 import AccountProfilePage from './pages/AccountProfilePage';
@@ -42,6 +42,7 @@ const StylesWrapper = ({member}) => {
             width: '100%',
             height: '100%',
             overflow: 'auto',
+            textAlign: 'center',
             backgroundColor: 'rgba(128,128,128,0.5)'
         },
         frame: {
@@ -123,7 +124,7 @@ const Pages = {
 };
 
 export default class PopupModal extends React.Component {
-    static contextType = ParentContext;
+    static contextType = AppContext;
 
     renderCurrentPage(page) {
         const PageComponent = Pages[page];

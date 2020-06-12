@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import Frame from './Frame';
 import MemberGravatar from './common/MemberGravatar';
-import {ParentContext} from './ParentContext';
+import AppContext from '../AppContext';
 import {ReactComponent as UserIcon} from '../images/icons/user.svg';
 import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
 const React = require('react');
@@ -62,7 +62,7 @@ const Styles = ({brandColor}) => {
 };
 
 export default class TriggerButton extends React.Component {
-    static contextType = ParentContext;
+    static contextType = AppContext;
 
     onToggle() {
         this.context.onAction('togglePopup');

@@ -1,11 +1,11 @@
-import {ParentContext} from '../ParentContext';
+import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import PlansSection from '../common/PlansSection';
 
 const React = require('react');
 
 export default class AccountPlanPage extends React.Component {
-    static contextType = ParentContext;
+    static contextType = AppContext;
 
     constructor(props, context) {
         super(props, context);

@@ -1,12 +1,11 @@
 import * as Fixtures from './fixtures';
 
-function setupGhostApi() {
+function setupGhostApi({siteUrl = window.location.origin}) {
     const apiPath = 'members/api';
-    const siteUrl = window.location.origin;
 
     function endpointFor({type, resource}) {
         if (type === 'members') {
-            return `${siteUrl}/${apiPath}/${resource}/`;
+            return `${siteUrl.replace(/\/$/, '')}/${apiPath}/${resource}/`;
         }
     }
 

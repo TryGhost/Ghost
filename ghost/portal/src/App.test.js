@@ -1,13 +1,35 @@
 import React from 'react';
 import {render} from '@testing-library/react';
+import {site, member} from './utils/fixtures';
 import App from './App';
 
-test('renders App', () => {
-    const {container} = render(
-        <App />
+const setup = (overrides) => {
+    const testState = {
+        site,
+        member: member.free,
+        action: 'init:success',
+        brandColor: site.brand.primaryColor,
+        page: 'signup',
+        initStatus: 'success',
+        showPopup: true
+    };
+    const {...utils} = render(
+        <App testState={testState} />
     );
+    const triggerButtonFrame = utils.getByTitle(/membersjs-trigger/i);
+    const popupFrame = utils.getByTitle(/membersjs-popup/i);
+    return {
+        popupFrame,
+        triggerButtonFrame,
+        ...utils
+    };
+};
 
-    // dashboard component should be rendered on root route
-    const element = container.querySelector('.App');
-    expect(element).toBeInTheDocument();
+describe('App', () => {
+    test('renders popup and trigger frames', () => {
+        const {popupFrame, triggerButtonFrame} = setup();
+
+        expect(popupFrame).toBeInTheDocument();
+        expect(triggerButtonFrame).toBeInTheDocument();
+    });
 });

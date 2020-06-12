@@ -1,15 +1,15 @@
 // Common test setup util - Ref: https://testing-library.com/docs/react-testing-library/setup#custom-render
 import React from 'react';
 import {render} from '@testing-library/react';
-import {ParentContext} from '../components/ParentContext';
+import AppContext from '../AppContext';
 import {site, member} from './fixtures';
 
 const setupProvider = (context) => {
     return ({children}) => {
         return (
-            <ParentContext.Provider value={context}>
+            <AppContext.Provider value={context}>
                 {children}
-            </ParentContext.Provider>
+            </AppContext.Provider>
         );
     };
 };
