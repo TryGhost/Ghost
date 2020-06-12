@@ -36,7 +36,8 @@ export default Service.extend({
             validatedSet = data;
         }
 
-        let emailValidation = this._checkEmails(validatedSet);
+        // check can be done on whole set as it won't be too slow
+        let emailValidation = this._checkEmails(data);
         if (emailValidation !== true) {
             validationResults.push(new MemberImportError('Emails in provided data don\'t appear to be valid email addresses.'));
         }
@@ -44,12 +45,15 @@ export default Service.extend({
         const hasStripeId = this._containsRecordsWithStripeId(validatedSet);
 
         if (hasStripeId) {
-            let stripeLocalValidation = this._checkStripeLocal(validatedSet);
-            if (stripeLocalValidation !== true) {
-                validationResults.push(new MemberImportError('Stripe customer IDs exist in the data, but no stripe account is connected.'));
+            // check can be done on whole set as it won't be too slow
+            let hasDuplicateStripeIds = this._hasDuplicateStripeIds(data);
+            if (hasDuplicateStripeIds === true) {
+                validationResults.push(new MemberImportError('Some members will not be imported. Members with duplicate Stripe customer ids are not allowed.'));
             }
 
-            if (stripeLocalValidation === true && this.membersUtils.isStripeEnabled) {
+            if (!this.membersUtils.isStripeEnabled) {
+                validationResults.push(new MemberImportError('Stripe customer IDs exist in the data, but no stripe account is connected.'));
+            } else {
                 let stripeSeverValidation = await this._checkStripeServer(validatedSet);
                 if (stripeSeverValidation !== true) {
                     validationResults.push(new MemberImportError('Stripe customer IDs exist in the data, but we could not find such customer in connected Stripe account'));
@@ -85,7 +89,27 @@ export default Service.extend({
         return result;
     },
 
-    _checkStripeLocal(validatedSet) {
+    _hasDuplicateStripeIds(validatedSet) {
+        const customersMap = validatedSet.reduce((acc, member) => {
+            if (member.stripe_customer_id && member.stripe_customer_id !== 'undefined') {
+                if (acc[member.stripe_customer_id]) {
+                    acc[member.stripe_customer_id] += 1;
+                } else {
+                    acc[member.stripe_customer_id] = 1;
+                }
+            }
+
+            return acc;
+        }, {});
+
+        for (const key in customersMap) {
+            if (customersMap[key] > 1) {
+                return true;
+            }
+        }
+    },
+
+    _checkContainsStripeIDs(validatedSet) {
         let result = true;
 
         if (!this.membersUtils.isStripeEnabled) {
