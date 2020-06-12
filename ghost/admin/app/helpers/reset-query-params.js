@@ -17,6 +17,7 @@ export const DEFAULT_QUERY_PARAMS = {
     },
     'members.index': {
         label: null,
+        paid: null,
         search: ''
     }
 };

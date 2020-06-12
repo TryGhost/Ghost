@@ -34,3 +34,20 @@
         </ul>
     </GhDropdown>
 </span>
+
+<div class="gh-contentfilter-menu {{if @selectedPaidParam.value "gh-contentfilter-selected"}}" data-test-select="paidParam">
+    <PowerSelect
+        @selected={{@selectedPaidParam}}
+        @options={{@availablePaidParams}}
+        @searchEnabled={{false}}
+        @onChange={{@onPaidParamChange}}
+        @triggerComponent="gh-power-select/trigger"
+        @triggerClass="gh-contentfilter-menu-trigger"
+        @dropdownClass="gh-contentfilter-menu-dropdown"
+        @searchPlaceholder="Search authors"
+        @matchTriggerWidth={{false}}
+        as |paidParam|
+    >
+        {{#if paidParam.name}}{{paidParam.name}}{{else}}<span class="red">Unknown paid status</span>{{/if}}
+    </PowerSelect>
+</div>
