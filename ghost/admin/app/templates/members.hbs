@@ -8,6 +8,9 @@
                 @onLabelChange={{this.changeLabel}}
                 @onLabelAdd={{this.addLabel}}
                 @onLabelEdit={{this.editLabel}}
+                @selectedPaidParam={{this.selectedPaidParam}}
+                @availablePaidParams={{this.paidParams}}
+                @onPaidParamChange={{this.changePaidParam}}
             />
             <div class="relative gh-members-header-search">
                 {{svg-jar "search" class="gh-input-search-icon"}}

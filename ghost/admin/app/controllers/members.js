@@ -10,22 +10,40 @@ import {task} from 'ember-concurrency-decorators';
 import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
+const PAID_PARAMS = [{
+    name: 'All members',
+    value: null
+}, {
+    name: 'Free members',
+    value: 'false'
+}, {
+    name: 'Paid members',
+    value: 'true'
+}];
+
 export default class MembersController extends Controller {
     @service ellaSparse;
     @service feature;
     @service membersStats;
     @service store;
 
-    queryParams = ['label', {searchParam: 'search'}];
+    queryParams = [
+        'label',
+        {paidParam: 'paid'},
+        {searchParam: 'search'}
+    ];
 
     @tracked members = A([]);
     @tracked searchText = '';
     @tracked searchParam = '';
+    @tracked paidParam = null;
     @tracked label = null;
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
 
     @tracked _availableLabels = A([]);
+
+    paidParams = PAID_PARAMS;
 
     constructor() {
         super(...arguments);
@@ -59,7 +77,7 @@ export default class MembersController extends Controller {
     }
 
     get showingAll() {
-        return !this.searchParam && !this.label;
+        return !this.searchParam && !this.paidParam && !this.label;
     }
 
     get availableLabels() {
@@ -87,6 +105,10 @@ export default class MembersController extends Controller {
             label,
             labels
         };
+    }
+
+    get selectedPaidParam() {
+        return this.paidParams.findBy('value', this.paidParam) || {value: '!unknown'};
     }
 
     // Actions -----------------------------------------------------------------
@@ -155,6 +177,11 @@ export default class MembersController extends Controller {
         this.showLabelModal = !this.showLabelModal;
     }
 
+    @action
+    changePaidParam(paid) {
+        this.paidParam = paid.value;
+    }
+
     // Tasks -------------------------------------------------------------------
 
     @task({restartable: true})
@@ -171,7 +198,7 @@ export default class MembersController extends Controller {
     @task({restartable: true})
     *fetchMembersTask(params) {
         // params is undefined when called as a "refresh" of the model
-        let {label, searchParam} = typeof params === 'undefined' ? this : params;
+        let {label, paidParam, searchParam} = typeof params === 'undefined' ? this : params;
 
         if (!searchParam) {
             this.resetSearch();
@@ -181,8 +208,12 @@ export default class MembersController extends Controller {
         let startDate = new Date();
 
         // bypass the stale data shortcut if params change
-        let forceReload = !params || label !== this._lastLabel || searchParam !== this._lastSearchParam;
+        let forceReload = !params
+            || label !== this._lastLabel
+            || paidParam !== this._lastPaidParam
+            || searchParam !== this._lastSearchParam;
         this._lastLabel = label;
+        this._lastPaidParam = paidParam;
         this._lastSearchParam = searchParam;
 
         // unless we have a forced reload, do not re-fetch the members list unless it's more than a minute old
@@ -195,6 +226,7 @@ export default class MembersController extends Controller {
 
         this.members = yield this.ellaSparse.array((range = {}, query = {}) => {
             const labelFilter = label ? `label:'${label}'+` : '';
+            const paidQuery = paidParam ? {paid: paidParam} : {};
             const searchQuery = searchParam ? {search: searchParam} : {};
 
             query = Object.assign({
@@ -202,7 +234,7 @@ export default class MembersController extends Controller {
                 page: range.start / range.length,
                 order: 'created_at desc',
                 filter: `${labelFilter}created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`
-            }, searchQuery, query);
+            }, paidQuery, searchQuery, query);
 
             return this.store.query('member', query).then((result) => {
                 return {

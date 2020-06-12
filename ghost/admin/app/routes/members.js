@@ -6,7 +6,8 @@ export default class MembersRoute extends AuthenticatedRoute {
 
     queryParams = {
         label: {refreshModel: true},
-        searchParam: {refreshModel: true, replace: true}
+        searchParam: {refreshModel: true, replace: true},
+        paidParam: {refreshModel: true}
     };
 
     // redirect to posts screen if:
