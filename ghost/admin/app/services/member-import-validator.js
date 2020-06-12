@@ -100,7 +100,7 @@ export default Service.extend({
     },
 
     async _checkStripeServer(validatedSet) {
-        const url = this.ghostPaths.get('url').api('members/validate');
+        const url = this.ghostPaths.get('url').api('members/upload/validate');
 
         let response;
         try {
