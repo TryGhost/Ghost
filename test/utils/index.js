@@ -483,7 +483,16 @@ fixtures = {
                 });
 
                 member.labels = memberLabelRelations;
+
                 return models.Member.add(member, module.exports.context.internal);
+            });
+        }).then(function () {
+            return Promise.each(_.cloneDeep(DataGenerator.forKnex.members_stripe_customers), function (customer) {
+                return models.MemberStripeCustomer.add(customer, module.exports.context.internal);
+            });
+        }).then(function () {
+            return Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_customer_subscriptions), function (subscription) {
+                return models.StripeCustomerSubscription.add(subscription, module.exports.context.internal);
             });
         });
     }
