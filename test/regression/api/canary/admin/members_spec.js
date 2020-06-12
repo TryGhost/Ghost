@@ -273,8 +273,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 2 from fixtures and 5 imported in previous tests
-                jsonResponse.total.should.equal(6);
+                // 3 from fixtures and 5 imported in previous tests
+                jsonResponse.total.should.equal(7);
             });
     });
 
@@ -297,8 +297,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 2 from fixtures and 5 imported in previous tests
-                jsonResponse.total.should.equal(6);
+                // 3 from fixtures and 5 imported in previous tests
+                jsonResponse.total.should.equal(7);
             });
     });
 
@@ -321,8 +321,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.total_on_date);
                 should.exist(jsonResponse.new_today);
 
-                // 2 from fixtures and 5 imported in previous tests
-                jsonResponse.total.should.equal(6);
+                // 3 from fixtures and 5 imported in previous tests
+                jsonResponse.total.should.equal(7);
             });
     });
 

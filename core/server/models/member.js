@@ -159,6 +159,40 @@ const Member = ghostBookshelf.Model.extend({
         queryBuilder.orWhere('email', 'like', `%${query}%`);
     },
 
+    // TODO: hacky way to filter by members with an active subscription,
+    // replace with a proper way to do this via filter param.
+    // NOTE: assumes members will have a single subscription
+    customQuery: function customQuery(queryBuilder, options) {
+        if (options.paid === true) {
+            queryBuilder.innerJoin(
+                'members_stripe_customers',
+                'members.id',
+                'members_stripe_customers.member_id'
+            );
+            queryBuilder.innerJoin(
+                'members_stripe_customers_subscriptions',
+                function () {
+                    this.on(
+                        'members_stripe_customers.customer_id',
+                        'members_stripe_customers_subscriptions.customer_id'
+                    ).andOn(
+                        'members_stripe_customers_subscriptions.status',
+                        ghostBookshelf.knex.raw('?', ['active'])
+                    );
+                }
+            );
+        }
+
+        if (options.paid === false) {
+            queryBuilder.leftJoin(
+                'members_stripe_customers',
+                'members.id',
+                'members_stripe_customers.member_id'
+            );
+            queryBuilder.whereNull('members_stripe_customers.member_id');
+        }
+    },
+
     toJSON(unfilteredOptions) {
         const options = Member.filterOptions(unfilteredOptions, 'toJSON');
         const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
@@ -184,7 +218,8 @@ const Member = ghostBookshelf.Model.extend({
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
 
         if (['findPage', 'findAll'].includes(methodName)) {
-            options = options.concat(['search']);
+            // TODO: remove 'paid' once it's possible to use in a filter
+            options = options.concat(['search', 'paid']);
         }
 
         return options;
