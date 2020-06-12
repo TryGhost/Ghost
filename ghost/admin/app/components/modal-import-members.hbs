@@ -85,7 +85,9 @@
         <button {{action "reset"}} class="gh-btn" data-test-button="close-import-members">
             <span>Start over</span>
         </button>
-        <button class="gh-btn gh-btn-green" {{action "upload"}} disabled={{this.importDisabled}}><span>Import</span></button>
+        <button class="gh-btn gh-btn-green" {{action "upload"}} disabled={{this.importDisabled}}>
+            <span>Import{{#if this.fileData.length}} {{pluralize this.fileData.length 'member'}}{{/if}}</span>
+        </button>
     {{else}}
         <button {{action "closeModal"}} disabled={{this.closeDisabled}} class="gh-btn" data-test-button="close-import-members">
             <span>Close</span>
