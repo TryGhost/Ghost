@@ -53,7 +53,8 @@ class MembersConfigProvider {
             AUD: '$',
             CAD: '$',
             GBP: '£',
-            EUR: '€'
+            EUR: '€',
+            INR: '₹'
         };
         const defaultPriceData = {
             monthly: 0,
