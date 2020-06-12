@@ -266,7 +266,7 @@ describe('Members API', function () {
         };
 
         return request
-            .post(localUtils.API.getApiQuery(`members/validate`))
+            .post(localUtils.API.getApiQuery(`members/upload/validate`))
             .send({members: [member]})
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -288,7 +288,7 @@ describe('Members API', function () {
         };
 
         return request
-            .post(localUtils.API.getApiQuery(`members/validate`))
+            .post(localUtils.API.getApiQuery(`members/upload/validate`))
             .send({members: [member]})
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
