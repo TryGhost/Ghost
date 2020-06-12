@@ -153,6 +153,10 @@ module.exports = class StripePaymentProcessor {
         return customer;
     }
 
+    async getStripeCustomer(id) {
+        return await retrieve(this._stripe, 'customers', id);
+    }
+
     async createCheckoutSetupSession(member, options) {
         const customer = await this._customerForMemberCheckoutSession(member);
 
