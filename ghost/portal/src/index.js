@@ -12,6 +12,14 @@ function addRootDiv() {
     document.body.appendChild(elem);
 }
 
+function getSiteUrlFromMeta() {
+    const ghostSiteMeta = document.querySelector('meta[name="ghost:site"]');
+    if (ghostSiteMeta) {
+        return ghostSiteMeta.getAttribute('content');
+    }
+    return '';
+}
+
 function loadStripe() {
     // We don't want to load Stripe again if already loaded
     if (!window.Stripe) {
@@ -34,21 +42,22 @@ function handleTokenUrl() {
     }
 }
 
-function setup() {
+function setup({siteUrl}) {
     const allowDataAttributeHandling = true;
     loadStripe();
     addRootDiv();
     if (allowDataAttributeHandling) {
-        handleDataAttributes({siteUrl: window.location.origin});
+        handleDataAttributes({siteUrl});
     }
     handleTokenUrl();
 }
 
 function init() {
-    setup();
+    const siteUrl = getSiteUrlFromMeta() || window.location.origin;
+    setup({siteUrl});
     ReactDOM.render(
         <React.StrictMode>
-            <App />
+            <App siteUrl={siteUrl} />
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );
