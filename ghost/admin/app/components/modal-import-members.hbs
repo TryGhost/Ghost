@@ -33,6 +33,12 @@
 {{else}}
     <div class="modal-body">
         {{#if (and this.filePresent (not this.failureMessage))}}
+            {{#each validationErrors as |error|}}
+                <div class="failed flex items-center gh-members-upload-failuremessage">
+                    {{svg-jar "warning" class="w4 h4 fill-red mr1"}}
+                    {{error.message}}
+                </div>
+            {{/each}}
             <GhFormGroup>
                 <div class="bg-whitegrey-l2 ba b--whitegrey br3">
                     <div class="flex flex-column items-center justify-center gh-members-import-file">
