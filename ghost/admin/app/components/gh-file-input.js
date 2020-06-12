@@ -22,5 +22,21 @@ export default XFileInput.extend({
     */
     files(e) {
         return (e.originalEvent || e).testingFiles || e.target.files;
+    },
+
+    /**
+    * Resets the value of the input so you can select the same file
+    * multiple times.
+    *
+    * NOTE: fixes reset in Firefox which doesn't reset like other browsers
+    * when doing input.value = null;
+    *
+    * @method
+    */
+    resetInput() {
+        let input = this.element.querySelector('.x-file--input');
+        input.removeAttribute('value');
+        input.value = null;
+        input.parentNode.replaceChild(input.cloneNode(true), input);
     }
 });
