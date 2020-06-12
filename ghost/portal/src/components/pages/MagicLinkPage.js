@@ -1,9 +1,9 @@
 import ActionButton from '../common/ActionButton';
-import {ParentContext} from '../ParentContext';
+import AppContext from '../../AppContext';
 const React = require('react');
 
 export default class MagicLinkPage extends React.Component {
-    static contextType = ParentContext;
+    static contextType = AppContext;
 
     renderFormHeader() {
         return (

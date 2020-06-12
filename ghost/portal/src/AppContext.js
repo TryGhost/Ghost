@@ -1,10 +1,12 @@
 // Ref: https://reactjs.org/docs/context.html
 const React = require('react');
 
-export const ParentContext = React.createContext({
+const AppContext = React.createContext({
     site: {},
     member: {},
     action: '',
     brandColor: '',
     onAction: () => {}
 });
+
+export default AppContext;
