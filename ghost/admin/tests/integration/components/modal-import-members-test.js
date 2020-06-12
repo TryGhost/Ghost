@@ -66,7 +66,7 @@ describe('Integration: Component: modal-import-members-test', function () {
 
         expect(find('label').textContent.trim(), 'labels label')
             .to.equal('Labels');
-        expect(find('.gh-btn-green').textContent).to.equal('Import');
+        expect(find('.gh-btn-green').textContent).to.match(/Import/g);
 
         await click('.gh-btn-green');
 
