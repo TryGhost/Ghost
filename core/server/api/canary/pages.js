@@ -123,6 +123,7 @@ module.exports = {
             'include',
             'id',
             'source',
+            'force_rerender',
             // NOTE: only for internal context
             'forUpdate',
             'transacting'
