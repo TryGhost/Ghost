@@ -131,10 +131,6 @@ class MembersConfigProvider {
             return null;
         }
 
-        if (!stripePaymentProcessor.config.public_token || !stripePaymentProcessor.config.secret_token) {
-            return null;
-        }
-
         // NOTE: "Complimentary" plan has to be first in the queue so it is created even if regular plans are not configured
         stripePaymentProcessor.config.plans.unshift(COMPLIMENTARY_PLAN);
 
@@ -156,6 +152,10 @@ class MembersConfigProvider {
             stripePaymentProcessor.config.public_token,
             stripePaymentProcessor.config.secret_token
         );
+
+        if (!stripeApiKeys.publicKey || !stripeApiKeys.secretKey) {
+            return null;
+        }
 
         return {
             publicKey: stripeApiKeys.publicKey,
