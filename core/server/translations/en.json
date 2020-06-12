@@ -377,6 +377,11 @@
                 "stripeCustomerNotFound": {
                     "context": "The customer does not exist in currently linked Stripe account.",
                     "help": "Connect the correct Stripe account, and re-run the import."
+                },
+                "duplicateStripeCustomerIds": {
+                    "message": "Members not imported. Members with duplicate Stripe customer ids are not allowed.",
+                    "context": "Attempting to import members with duplicate Stripe customer ids.",
+                    "help": "Remove duplicate Stripe customer ids from the import file, and re-run the import."
                 }
             },
             "tags": {

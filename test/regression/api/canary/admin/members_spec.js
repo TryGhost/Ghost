@@ -153,9 +153,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.meta);
                 should.exist(jsonResponse.meta.stats);
 
-                jsonResponse.meta.stats.imported.should.equal(2);
-                jsonResponse.meta.stats.duplicates.should.equal(0);
-                jsonResponse.meta.stats.invalid.should.equal(0);
+                jsonResponse.meta.stats.imported.count.should.equal(2);
+                jsonResponse.meta.stats.invalid.count.should.equal(0);
             })
             .then(() => {
                 return request
@@ -202,9 +201,8 @@ describe('Members API', function () {
                 should.exist(jsonResponse.meta);
                 should.exist(jsonResponse.meta.stats);
 
-                jsonResponse.meta.stats.imported.should.equal(2);
-                jsonResponse.meta.stats.duplicates.should.equal(0);
-                jsonResponse.meta.stats.invalid.should.equal(0);
+                jsonResponse.meta.stats.imported.count.should.equal(2);
+                jsonResponse.meta.stats.invalid.count.should.equal(0);
             })
             .then(() => {
                 return request
@@ -251,8 +249,7 @@ describe('Members API', function () {
                 should.exist(jsonResponse.meta);
                 should.exist(jsonResponse.meta.stats);
 
-                jsonResponse.meta.stats.imported.should.equal(0);
-                jsonResponse.meta.stats.duplicates.should.equal(0);
+                jsonResponse.meta.stats.imported.count.should.equal(0);
                 jsonResponse.meta.stats.invalid.should.equal(2);
             });
     });

@@ -387,9 +387,14 @@ const members = {
         },
         async query(frame) {
             let filePath = frame.file.path;
-            let fulfilled = 0;
-            let invalid = 0;
-            let duplicates = 0;
+            let imported = {
+                count: 0
+            };
+            let invalid = {
+                count: 0,
+                errors: []
+            };
+            let duplicateStripeCustomerIdCount = 0;
 
             const columnsToExtract = [{
                 name: 'email',
@@ -427,7 +432,16 @@ const members = {
                 columnsToExtract: columnsToExtract
             }).then((result) => {
                 const sanitized = sanitizeInput(result);
-                invalid += result.length - sanitized.length;
+                duplicateStripeCustomerIdCount = result.length - sanitized.length;
+                invalid.count += duplicateStripeCustomerIdCount;
+
+                if (duplicateStripeCustomerIdCount) {
+                    invalid.errors.push(new errors.ValidationError({
+                        message: i18n.t('errors.api.members.duplicateStripeCustomerIds.message'),
+                        context: i18n.t('errors.api.members.duplicateStripeCustomerIds.context'),
+                        help: i18n.t('errors.api.members.duplicateStripeCustomerIds.help')
+                    }));
+                }
 
                 return Promise.map(sanitized, ((entry) => {
                     const api = require('./index');
@@ -465,30 +479,51 @@ const members = {
                 }), {concurrency: 10})
                     .each((inspection) => {
                         if (inspection.isFulfilled()) {
-                            fulfilled = fulfilled + 1;
+                            imported.count = imported.count + 1;
                         } else {
                             const error = inspection.reason();
-                            if (error instanceof errors.ValidationError && !(error.message.match(/Stripe/g))) {
-                                duplicates = duplicates + 1;
-                            } else {
-                                // NOTE: if the error happens as a result of pure API call it doesn't get logged anywhere
-                                //       for this reason we have to make sure any unexpected errors are logged here
-                                if (Array.isArray(error)) {
-                                    logging.error(error[0]);
-                                } else {
-                                    logging.error(error);
-                                }
 
-                                invalid = invalid + 1;
+                            // NOTE: if the error happens as a result of pure API call it doesn't get logged anywhere
+                            //       for this reason we have to make sure any unexpected errors are logged here
+                            if (Array.isArray(error)) {
+                                logging.error(error[0]);
+                            } else {
+                                logging.error(error);
                             }
+
+                            invalid.count = invalid.count + 1;
+
+                            invalid.errors.push(error);
                         }
                     });
             }).then(() => {
+                // NOTE: grouping by context because messages can contain unique data like "customer_id"
+                const groupedErrors = _.groupBy(invalid.errors, 'context');
+                const uniqueErrors = _.uniq(invalid.errors, 'context');
+
+                const outputErrors = uniqueErrors.map((error) => {
+                    let errorGroup = groupedErrors[error.context];
+                    let errorCount = errorGroup.length;
+
+                    if (error.message === i18n.t('errors.api.members.duplicateStripeCustomerIds.message')) {
+                        errorCount = duplicateStripeCustomerIdCount;
+                    }
+
+                    // NOTE: filtering only essential error information, so API doesn't leak more error details than it should
+                    return {
+                        message: error.message,
+                        context: error.context,
+                        help: error.help,
+                        count: errorCount
+                    };
+                });
+
+                invalid.errors = outputErrors;
+
                 return {
                     meta: {
                         stats: {
-                            imported: fulfilled,
-                            duplicates: duplicates,
+                            imported: imported,
                             invalid: invalid
                         }
                     }
