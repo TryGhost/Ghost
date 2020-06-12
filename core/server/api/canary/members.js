@@ -219,7 +219,7 @@ const members = {
                 const isStripeLinkingError = error.message && error.message.match(/customer|plan|subscription|Stripe account/g);
                 if (model && isStripeLinkingError) {
                     if (error.message.indexOf('customer') && error.code === 'resource_missing') {
-                        error.message = `Member not imported, ${error.message}`;
+                        error.message = `Member not imported. ${error.message}`;
                         error.context = i18n.t('errors.api.members.stripeCustomerNotFound.context');
                         error.help = i18n.t('errors.api.members.stripeCustomerNotFound.help');
                     }
@@ -341,6 +341,42 @@ const members = {
         async query(frame) {
             frame.options.withRelated = ['labels'];
             return listMembers(frame.options);
+        }
+    },
+
+    validateImport: {
+        permissions: {
+            method: 'add'
+        },
+        headers: {},
+        async query(frame) {
+            const importedMembers = frame.data.members;
+
+            await Promise.map(importedMembers, (async (entry) => {
+                if (entry.stripe_customer_id) {
+                    if (!membersService.config.isStripeConnected()) {
+                        throw new errors.ValidationError({
+                            message: i18n.t('errors.api.members.stripeNotConnected.message', {
+                                id: entry.stripe_customer_id
+                            }),
+                            context: i18n.t('errors.api.members.stripeNotConnected.context'),
+                            help: i18n.t('errors.api.members.stripeNotConnected.help')
+                        });
+                    }
+
+                    try {
+                        await membersService.api.members.getStripeCustomer(entry.stripe_customer_id);
+                    } catch (error) {
+                        throw new errors.ValidationError({
+                            message: `Member not imported. ${error.message}`,
+                            context: i18n.t('errors.api.members.stripeCustomerNotFound.context'),
+                            help: i18n.t('errors.api.members.stripeCustomerNotFound.help')
+                        });
+                    }
+                }
+            }));
+
+            return null;
         }
     },
 

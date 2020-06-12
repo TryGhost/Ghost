@@ -45,10 +45,10 @@ module.exports = {
         };
     },
 
-    exportCSV(models, apiConfig, frame) {
+    exportCSV(data, apiConfig, frame) {
         debug('exportCSV');
 
-        const members = models.members.map((member) => {
+        const members = data.members.map((member) => {
             member = mapper.mapMember(member, frame);
             let stripeCustomerId;
 

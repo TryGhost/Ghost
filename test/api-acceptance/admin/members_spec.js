@@ -239,6 +239,51 @@ describe('Members API', function () {
             });
     });
 
+    it('Can validate import data', function () {
+        const member = {
+            name: 'test',
+            email: 'memberTestAdd@test.com'
+        };
+
+        return request
+            .post(localUtils.API.getApiQuery(`members/validate`))
+            .send({members: [member]})
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.not.exist(jsonResponse.members);
+            });
+    });
+
+    it('Fails to validate import data when stripe_customer_id is present but Stripe is not connected', function () {
+        const member = {
+            name: 'test',
+            email: 'memberTestAdd@test.com',
+            stripe_customer_id: 'cus_XXXXX'
+        };
+
+        return request
+            .post(localUtils.API.getApiQuery(`members/validate`))
+            .send({members: [member]})
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422)
+            .then((res) => {
+                should.not.exist(res.headers['x-cache-invalidate']);
+                const jsonResponse = res.body;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.errors);
+                jsonResponse.errors[0].message.should.match(/Member not imported/i);
+                jsonResponse.errors[0].context.should.match(/no Stripe account connected/i);
+            });
+    });
+
     it('Can export CSV', function () {
         return request
             .get(localUtils.API.getApiQuery(`members/csv/`))
