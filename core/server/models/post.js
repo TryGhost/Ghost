@@ -405,8 +405,13 @@ Post = ghostBookshelf.Model.extend({
         });
 
         // CASE: mobiledoc has changed, generate html
+        // CASE: ?force_rerender=true passed via Admin API
         // CASE: html is null, but mobiledoc exists (only important for migrations & importing)
-        if (this.hasChanged('mobiledoc') || (!this.get('html') && (options.migrating || options.importing))) {
+        if (
+            this.hasChanged('mobiledoc')
+            || options.force_rerender
+            || (!this.get('html') && (options.migrating || options.importing))
+        ) {
             try {
                 this.set('html', mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(this.get('mobiledoc'))));
             } catch (err) {
@@ -781,7 +786,7 @@ Post = ghostBookshelf.Model.extend({
             findPage: ['status'],
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
-            edit: ['filter', 'send_email_when_published']
+            edit: ['filter', 'send_email_when_published', 'force_rerender']
         };
 
         // The post model additionally supports having a formats option
