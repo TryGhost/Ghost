@@ -5,7 +5,7 @@ import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
 let MembersUtilsStub = Service.extend({
-    isStripeEnabled: () => (true)
+    isStripeEnabled: true
 });
 
 describe('Integration: Service: member-import-validator', function () {
@@ -39,7 +39,7 @@ describe('Integration: Service: member-import-validator', function () {
         const result = await service.check([]);
 
         expect(result.length).to.equal(1);
-        expect(result[0].message).to.equal('No data present in selected file.');
+        expect(result[0].message).to.equal('File is empty, nothing to import. Please select a different file.');
     });
 
     it('returns validation error for data with invalid email', async function () {
@@ -56,7 +56,7 @@ describe('Integration: Service: member-import-validator', function () {
 
     it('returns validation error for data with stripe_customer_id but no connected Stripe', async function () {
         this.owner.register('service:membersUtils', Service.extend({
-            isStripeEnabled: () => (false)
+            isStripeEnabled: false
         }));
 
         let service = this.owner.lookup('service:member-import-validator');
