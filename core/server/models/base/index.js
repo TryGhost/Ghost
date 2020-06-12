@@ -36,6 +36,9 @@ ghostBookshelf.plugin('registry');
 // Add committed/rollback events.
 ghostBookshelf.plugin(plugins.transactionEvents);
 
+// Load the Ghost custom-query plugin, which applying a custom query to findPage requests
+ghostBookshelf.plugin(plugins.customQuery);
+
 // Load the Ghost filter plugin, which handles applying a 'filter' to findPage requests
 ghostBookshelf.plugin(plugins.filter);
 
@@ -885,6 +888,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         // Set this to true or pass ?debug=true as an API option to get output
         itemCollection.debug = options.debug && config.get('env') !== 'production';
+
+        // Apply model-specific query behaviour
+        itemCollection.applyCustomQuery(options);
 
         // Add Filter behaviour
         itemCollection.applyDefaultAndCustomFilters(options);

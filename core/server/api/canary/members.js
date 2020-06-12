@@ -131,7 +131,8 @@ const members = {
             'order',
             'debug',
             'page',
-            'search'
+            'search',
+            'paid'
         ],
         permissions: true,
         validation: {},

@@ -1,5 +1,6 @@
 module.exports = {
     filter: require('./filter'),
+    customQuery: require('./custom-query'),
     search: require('./search'),
     includeCount: require('./include-count'),
     pagination: require('./pagination'),
