@@ -49,7 +49,7 @@ export default Service.extend({
                 validationResults.push(new MemberImportError('Stripe customer IDs exist in the data, but no stripe account is connected.'));
             }
 
-            if (stripeLocalValidation === true) {
+            if (stripeLocalValidation === true && this.membersUtils.isStripeEnabled) {
                 let stripeSeverValidation = await this._checkStripeServer(validatedSet);
                 if (stripeSeverValidation !== true) {
                     validationResults.push(new MemberImportError('Stripe customer IDs exist in the data, but we could not find such customer in connected Stripe account'));
@@ -86,10 +86,9 @@ export default Service.extend({
     },
 
     _checkStripeLocal(validatedSet) {
-        const isStripeConfigured = this.membersUtils.isStripeEnabled;
         let result = true;
 
-        if (!isStripeConfigured) {
+        if (!this.membersUtils.isStripeEnabled) {
             validatedSet.forEach((member) => {
                 if (member.stripe_customer_id) {
                     result = false;
