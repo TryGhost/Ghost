@@ -26,7 +26,7 @@ export default ModalComponent.extend({
     paramName: 'membersfile',
     uploading: false,
     uploadPercentage: 0,
-    response: null,
+    importResponse: null,
     failureMessage: null,
     validationErrors: null,
     labels: null,
@@ -189,8 +189,8 @@ export default ModalComponent.extend({
 
                 return xhr;
             }
-        }).then((response) => {
-            this._uploadSuccess(JSON.parse(response));
+        }).then((importResponse) => {
+            this._uploadSuccess(JSON.parse(importResponse));
         }).catch((error) => {
             this._validationFailed(error);
         }).finally(() => {
@@ -211,8 +211,8 @@ export default ModalComponent.extend({
         }
     },
 
-    _uploadSuccess(response) {
-        this.set('response', response.meta.stats);
+    _uploadSuccess(importResponse) {
+        this.set('importResponse', importResponse.meta.stats);
         // invoke the passed in confirm action to refresh member data
         this.confirm();
     },
