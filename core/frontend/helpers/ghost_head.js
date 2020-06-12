@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {metaData, escapeExpression, SafeString, logging, settingsCache, config, blogIcon, labs} = require('../services/proxy');
+const {metaData, escapeExpression, SafeString, logging, settingsCache, config, blogIcon, labs, urlUtils} = require('../services/proxy');
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('ghost_head');
 
@@ -47,7 +47,9 @@ function getMembersHelper() {
 
     let membersHelper = `<script defer src="${getAssetUrl('public/members.js', true)}"></script>`;
     if (config.get('enableDeveloperExperiments')) {
-        membersHelper = `<script defer src="https://unpkg.com/@tryghost/members-js@latest/umd/members.min.js"></script>`;
+        const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
+        membersHelper = `<meta name="ghost:site" content='${siteUrl}' />`;
+        membersHelper += `<script defer src="https://unpkg.com/@tryghost/members-js@latest/umd/members.min.js"></script>`;
     }
     if ((!!stripeSecretToken && !!stripePublicToken) || !!stripeConnectIntegration.account_id) {
         membersHelper += '<script src="https://js.stripe.com/v3/"></script>';
