@@ -1,6 +1,6 @@
 <header class="modal-header" data-test-modal="import-members">
     <h1>
-        {{#if this.response}}
+        {{#if this.importResponse}}
             Import complete
         {{else}}
             Import members
@@ -9,24 +9,27 @@
 </header>
 <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
-{{#if this.response}}
+{{#if this.importResponse}}
     <div class="modal-body bg-whitegrey-l2 ba b--whitegrey br3">
         <table class="gh-members-import-results">
             <tr>
                 <td>Imported:</td>
-                <td align="left" data-test-text="import-members-imported">{{this.response.imported}}</td>
+                <td align="left" data-test-text="import-members-imported">{{this.importResponse.imported.count}}</td>
             </tr>
-            {{#if this.response.duplicates}}
-                <tr>
-                    <td>Duplicates:</td>
-                    <td align="left" data-test-text="import-members-duplicates">{{this.response.duplicates}}</td>
-                </tr>
-            {{/if}}
-            {{#if this.response.invalid}}
+            {{#if this.importResponse.invalid.count}}
                 <tr>
                     <td class="red">Invalid:</td>
-                    <td align="left" data-test-text="import-members-invalid" class="red">{{this.response.invalid}}</td>
+                    <td align="left" data-test-text="import-members-invalid" class="red">{{this.importResponse.invalid.count}}</td>
                 </tr>
+                <tr>
+                    <td colspan="2">Details:</td>
+                </tr>
+                {{#each this.importResponse.invalid.errors as |error|}}
+                    <tr>
+                        <td>{{error.message}}</td>
+                        <td>{{error.count}}</td>
+                    </tr>
+                {{/each}}
             {{/if}}
         </table>
     </div>
@@ -73,8 +76,8 @@
     </div>
 {{/if}}
 
-<div class="modal-footer {{if (and this.filePresent (not this.failureMessage) (not this.response)) "modal-footer-spread"}}">
-    {{#if this.response}}
+<div class="modal-footer {{if (and this.filePresent (not this.failureMessage) (not this.importResponse)) "modal-footer-spread"}}">
+    {{#if this.importResponse}}
         <button {{action "closeModal"}} disabled={{this.closeDisabled}} class="gh-btn gh-btn-blue" data-test-button="close-import-members">
             <span>Done</span>
         </button>
