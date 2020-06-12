@@ -109,7 +109,8 @@ export default class App extends React.Component {
         // Handler for custom buttons
         this.clickHandler = (event) => {
             const target = event.currentTarget;
-            const page = (target && target.dataset.membersTriggerButton) || this.getDefaultPage();
+            const {page: defaultPage} = this.getDefaultPage();
+            const page = (target && target.dataset.membersTriggerButton) || defaultPage;
 
             event.preventDefault();
             this.onAction('openPopup', {page});
