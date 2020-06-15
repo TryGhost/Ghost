@@ -25,9 +25,7 @@ module.exports = {
         const img = dom.createElement('img');
         img.setAttribute('src', payload.src);
         img.setAttribute('class', 'kg-image');
-        if (payload.alt) {
-            img.setAttribute('alt', payload.alt);
-        }
+        img.setAttribute('alt', payload.alt || '');
         if (payload.title) {
             img.setAttribute('title', payload.title);
         }

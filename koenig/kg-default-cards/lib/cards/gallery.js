@@ -88,10 +88,7 @@ module.exports = {
                 img.setAttribute('src', image.src);
                 img.setAttribute('width', image.width);
                 img.setAttribute('height', image.height);
-
-                if (image.alt) {
-                    img.setAttribute('alt', image.alt);
-                }
+                img.setAttribute('alt', image.alt || '');
                 if (image.title) {
                     img.setAttribute('title', image.title);
                 }
