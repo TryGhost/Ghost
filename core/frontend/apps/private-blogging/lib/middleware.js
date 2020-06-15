@@ -81,7 +81,7 @@ const privateBlogging = {
         // NOTE: Redirect to /private if the session does not exist.
         privateBlogging.authenticatePrivateSession(req, res, function onSessionVerified() {
             // CASE: RSS is disabled for private blogging e.g. they create overhead
-            if (req.path.match(/\/rss(\/?|\/\d+\/?)$/)) {
+            if (req.path.match(/\/rss\/$/)) {
                 return next(new errors.NotFoundError({
                     message: i18n.t('errors.errors.pageNotFound')
                 }));
@@ -95,14 +95,13 @@ const privateBlogging = {
         const hash = req.session.token || '';
         const salt = req.session.salt || '';
         const isVerified = verifySessionHash(salt, hash);
-        let url;
 
         if (isVerified) {
             return next();
         } else {
-            url = urlUtils.urlFor({relativeUrl: privateRoute});
-            url += '?r=' + encodeURIComponent(req.url);
-            return res.redirect(url);
+            let redirectUrl = urlUtils.urlFor({relativeUrl: privateRoute});
+            redirectUrl += '?r=' + encodeURIComponent(req.url);
+            return res.redirect(redirectUrl);
         }
     },
 
