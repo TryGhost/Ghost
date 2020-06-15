@@ -6,7 +6,6 @@ import {
 } from 'ghost-admin/components/gh-image-uploader';
 import {action, computed, set, setProperties} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
-import {htmlSafe} from '@ember/string';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -164,6 +163,12 @@ export default Component.extend({
             // create undo snapshot when image finishes uploading
             this.editor.run(() => {
                 this._updatePayloadAttr('src', image.url);
+                if (this._imageWidth && this._imageHeight) {
+                    this._updatePayloadAttr('width', this._imageWidth);
+                    this._updatePayloadAttr('height', this._imageHeight);
+                }
+                this._imageWidth = null;
+                this._imageHeight = null;
             });
         },
 
@@ -180,30 +185,37 @@ export default Component.extend({
         setPreviewSrc(files) {
             let file = files[0];
             if (file) {
-                let reader = new FileReader();
+                let url = URL.createObjectURL(file);
+                this.set('previewSrc', url);
 
-                reader.onload = (e) => {
-                    this.set('previewSrc', htmlSafe(e.target.result));
+                let imageElem = new Image();
+                imageElem.onload = () => {
+                    // store width/height for use later to avoid saving an image card with no `src`
+                    this._imageWidth = imageElem.naturalWidth;
+                    this._imageHeight = imageElem.naturalHeight;
                 };
-
-                reader.readAsDataURL(file);
+                imageElem.src = url;
             }
         },
 
         resetSrcs() {
             this.set('previewSrc', null);
+            this._imageWidth = null;
+            this._imageHeight = null;
 
             // create undo snapshot when clearing
             this.editor.run(() => {
                 this._updatePayloadAttr('src', null);
+                this._updatePayloadAttr('width', null);
+                this._updatePayloadAttr('height', null);
             });
         },
 
-        selectFromImageSelector({src, caption, alt}) {
+        selectFromImageSelector({src, width, height, caption, alt}) {
             let {payload, saveCard} = this;
             let searchTerm;
 
-            setProperties(payload, {src, caption, alt, searchTerm});
+            setProperties(payload, {src, width, height, caption, alt, searchTerm});
 
             this.send('closeImageSelector');
 
