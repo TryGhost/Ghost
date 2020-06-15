@@ -1,7 +1,6 @@
 const got = require('got');
 const dnsPromises = require('dns').promises;
 const errors = require('@tryghost/errors');
-const ghostVersion = require('./ghost-version');
 const config = require('../../shared/config');
 const validator = require('../data/validation').validator;
 
@@ -40,7 +39,7 @@ async function errorIfHostnameResolvesToPrivateIp(options) {
 // to a private IP address it will be blocked before the request is made.
 const externalRequest = got.extend({
     headers: {
-        'user-agent': 'Ghost/' + ghostVersion.original + ' (https://github.com/TryGhost/Ghost)'
+        'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
     },
     hooks: {
         init: [(options) => {
