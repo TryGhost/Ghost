@@ -98,6 +98,10 @@ module.exports = {
 
             const messageData = Object.assign({}, message, batchData);
 
+            // Rename plaintext field to text for Mailgun
+            messageData.text = messageData.plaintext;
+            delete messageData.plaintext;
+
             return new Promise((resolve) => {
                 mailgunInstance.messages().send(messageData, (error, body) => {
                     if (error) {
