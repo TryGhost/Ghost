@@ -106,7 +106,7 @@ const privateBlogging = {
     },
 
     // This is here so a call to /private/ after a session is verified will redirect to home;
-    isPrivateSessionAuth: function isPrivateSessionAuth(req, res, next) {
+    redirectPrivateToHomeIfLoggedIn: function redirectPrivateToHomeIfLoggedIn(req, res, next) {
         if (!res.isPrivateBlog) {
             return res.redirect(urlUtils.urlFor('home', true));
         }
@@ -123,7 +123,7 @@ const privateBlogging = {
         }
     },
 
-    authenticateProtection: function authenticateProtection(req, res, next) {
+    doLoginToPrivateSite: function doLoginToPrivateSite(req, res, next) {
         // if errors have been generated from the previous call
         if (res.error) {
             return next();

@@ -30,14 +30,14 @@ function _renderer(req, res) {
 privateRouter
     .route('/')
     .get(
-        middleware.isPrivateSessionAuth,
+        middleware.redirectPrivateToHomeIfLoggedIn,
         _renderer
     )
     .post(
         bodyParser.urlencoded({extended: true}),
-        middleware.isPrivateSessionAuth,
+        middleware.redirectPrivateToHomeIfLoggedIn,
         web.shared.middlewares.brute.privateBlog,
-        middleware.authenticateProtection,
+        middleware.doLoginToPrivateSite,
         _renderer
     );
 
