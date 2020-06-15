@@ -79,6 +79,8 @@ export default Component.extend(ShortcutsMixin, {
 
             let selectParams = {
                 src: photo.urls.regular.replace(/&w=1080/, '&w=2000'),
+                width: photo.width,
+                height: photo.height,
                 alt: photo.description || '',
                 caption: `Photo by <a href="${photo.user.links.html}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit">${photo.user.name}</a> / <a href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit">Unsplash</a>`
             };
