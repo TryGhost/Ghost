@@ -57,12 +57,12 @@
                     <h4 class="gh-setting-title">Connect to Stripe</h4>
                     {{#if this.stripeConnectIntegration}}
                         <p class="gh-setting-desc pa0 ma0">
-                            {{#if this.stripeConnectSuccess}} 
+                            {{#if this.stripeConnectSuccess}}
                                 {{svg-jar "check-circle" class="stroke-green w4 h4 nudge-top--3"}} <span class="green-d1">Successfully connected to {{this.stripeConnectIntegration.name}}</span>
                             {{else}}
                                 Connected to <a href="https://dashboard.stripe.com/{{this.stripeConnectIntegration.id}}" target="_blank">{{this.stripeConnectIntegration.name}}</a>
                             {{/if}}
-                            
+
                             {{#unless this.stripeConnectIntegration.livemode}}
                                 <span class="gh-members-connect-testmodelabel">Test mode</span>
                             {{/unless}}
@@ -94,7 +94,7 @@
                             </div>
                         </div>
                         <div class="nudge-top--3">
-                            <GhTextarea 
+                            <GhTextarea
                                 @class="gh-members-stripe-connect-token"
                                 @placeholder="Paste your secure key here"
                                 @input={{action "setStripeConnectIntegrationToken" "stripe_connect_integration_token"}}
@@ -116,11 +116,11 @@
                     </div>
                 </div>
 
-                <div class="gh-members-connect-savecontainer {{unless this.isStripeConnectSecureKeyEmpty "expanded"}}">
+                <div class="gh-members-connect-savecontainer {{if this.settings.stripeConnectIntegrationToken "expanded"}}">
                     <GhTaskButton @buttonText="Save Stripe settings"
                                 @task={{this.saveStripeSettings}}
                                 @successText="Saved"
-                                @disabled={{this.isStripeConnectSecureKeyEmpty}}
+                                @disabled={{is-empty this.settings.stripeConnectIntegrationToken}}
                                 @runningText="Saving"
                                 @class="gh-btn gh-btn-blue gh-btn-icon"
                             />
