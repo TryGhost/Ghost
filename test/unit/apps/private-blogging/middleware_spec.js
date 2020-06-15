@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const should = require('should');
 const sinon = require('sinon');
 const crypto = require('crypto');
 const fs = require('fs-extra');
@@ -250,40 +251,6 @@ describe('Private Blogging', function () {
                     (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
                 });
 
-                it('filterPrivateRoutes should 404 for /rss requests', function () {
-                    const salt = Date.now().toString();
-                    req.url = req.path = '/rss';
-
-                    req.session = {
-                        token: hash('rightpassword', salt),
-                        salt: salt
-                    };
-
-                    res.isPrivateBlog = true;
-                    res.redirect = sinon.spy();
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
-                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
-                });
-
-                it('filterPrivateRoutes should 404 for rss with pagination requests', function () {
-                    const salt = Date.now().toString();
-                    req.url = req.path = '/rss/1';
-
-                    req.session = {
-                        token: hash('rightpassword', salt),
-                        salt: salt
-                    };
-
-                    res.isPrivateBlog = true;
-                    res.redirect = sinon.spy();
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
-                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
-                });
-
                 it('filterPrivateRoutes should 404 for tag rss requests', function () {
                     const salt = Date.now().toString();
                     req.url = req.path = '/tag/welcome/rss/';
@@ -347,20 +314,6 @@ describe('Private Blogging', function () {
                     privateBlogging.filterPrivateRoutes(req, res, next);
                     next.called.should.be.true();
                     req.url.should.eql('/rss/');
-                });
-
-                it('filterPrivateRoutes: allow private /rss feed', function () {
-                    settingsStub.withArgs('public_hash').returns('777aaa');
-
-                    req.url = req.originalUrl = req.path = '/777aaa/rss';
-                    req.params = {};
-
-                    res.isPrivateBlog = true;
-                    res.locals = {};
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
-                    req.url.should.eql('/rss');
                 });
 
                 it('filterPrivateRoutes: allow private rss feed e.g. tags', function () {
