@@ -122,6 +122,13 @@ class SettingsImporter extends BaseImporter {
                 obj.value = JSON.stringify([{url: ''}]);
             }
 
+            // CASE: we do not import "from address" for members settings as that needs to go via validation with magic link
+            if (obj.key === 'members_subscription_settings' && obj.value) {
+                const oldMemberSettings = _.find(this.existingData, {key: 'members_subscription_settings'}) || {};
+                const oldMemberSettingsVal = oldMemberSettings.value ? JSON.parse(oldMemberSettings.value) : {};
+                obj.value = JSON.stringify(_.assign({}, JSON.parse(obj.value), {fromAddress: oldMemberSettingsVal.fromAddress}));
+            }
+
             // CASE: export files might contain "0" or "1" for booleans. Model layer needs real booleans.
             // transform "0" to false
             if (obj.value === '0' || obj.value === '1') {
