@@ -58,12 +58,12 @@ describe('Private Blogging', function () {
                 next.called.should.be.true();
             });
 
-            it('isPrivateSessionAuth should redirect if blog is not private', function () {
+            it('redirectPrivateToHomeIfLoggedIn should redirect if blog is not private', function () {
                 res = {
                     redirect: sinon.spy(),
                     isPrivateBlog: false
                 };
-                privateBlogging.isPrivateSessionAuth(req, res, next);
+                privateBlogging.redirectPrivateToHomeIfLoggedIn(req, res, next);
                 res.redirect.called.should.be.true();
             });
         });
@@ -146,9 +146,9 @@ describe('Private Blogging', function () {
                 res.end.called.should.be.true();
             });
 
-            it('authenticateProtection should call next if error', function () {
+            it('doLoginToPrivateSite should call next if error', function () {
                 res.error = 'Test Error';
-                privateBlogging.authenticateProtection(req, res, next);
+                privateBlogging.doLoginToPrivateSite(req, res, next);
                 next.called.should.be.true();
             });
 
@@ -181,7 +181,7 @@ describe('Private Blogging', function () {
                     res.redirect.called.should.be.true();
                 });
 
-                it('isPrivateSessionAuth should redirect if hash is verified', function () {
+                it('redirectPrivateToHomeIfLoggedIn should redirect if hash is verified', function () {
                     const salt = Date.now().toString();
 
                     req.session = {
@@ -190,38 +190,38 @@ describe('Private Blogging', function () {
                     };
                     res.redirect = sinon.spy();
 
-                    privateBlogging.isPrivateSessionAuth(req, res, next);
+                    privateBlogging.redirectPrivateToHomeIfLoggedIn(req, res, next);
                     res.redirect.called.should.be.true();
                 });
 
-                it('isPrivateSessionAuth should return next if hash is not verified', function () {
+                it('redirectPrivateToHomeIfLoggedIn should return next if hash is not verified', function () {
                     req.session = {
                         token: 'wrongpassword',
                         salt: Date.now().toString()
                     };
 
-                    privateBlogging.isPrivateSessionAuth(req, res, next);
+                    privateBlogging.redirectPrivateToHomeIfLoggedIn(req, res, next);
                     next.called.should.be.true();
                 });
 
-                it('authenticateProtection should return next if password is incorrect', function () {
+                it('doLoginToPrivateSite should return next if password is incorrect', function () {
                     req.body = {password: 'wrongpassword'};
 
-                    privateBlogging.authenticateProtection(req, res, next);
+                    privateBlogging.doLoginToPrivateSite(req, res, next);
                     res.error.should.not.be.empty();
                     next.called.should.be.true();
                 });
 
-                it('authenticateProtection should redirect if password is correct', function () {
+                it('doLoginToPrivateSite should redirect if password is correct', function () {
                     req.body = {password: 'rightpassword'};
                     req.session = {};
                     res.redirect = sinon.spy();
 
-                    privateBlogging.authenticateProtection(req, res, next);
+                    privateBlogging.doLoginToPrivateSite(req, res, next);
                     res.redirect.called.should.be.true();
                 });
 
-                it('authenticateProtection should redirect to "/" if r param is a full url', function () {
+                it('doLoginToPrivateSite should redirect to "/" if r param is a full url', function () {
                     req.body = {password: 'rightpassword'};
                     req.session = {};
                     req.query = {
@@ -229,7 +229,7 @@ describe('Private Blogging', function () {
                     };
                     res.redirect = sinon.spy();
 
-                    privateBlogging.authenticateProtection(req, res, next);
+                    privateBlogging.doLoginToPrivateSite(req, res, next);
                     res.redirect.called.should.be.true();
                     res.redirect.args[0][0].should.be.equal('/');
                 });
