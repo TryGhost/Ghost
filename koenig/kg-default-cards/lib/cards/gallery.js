@@ -93,7 +93,7 @@ module.exports = {
                     img.setAttribute('title', image.title);
                 }
 
-                setSrcsetAttribute(img, options);
+                setSrcsetAttribute(img, image, options);
 
                 imgDiv.appendChild(img);
                 rowDiv.appendChild(imgDiv);

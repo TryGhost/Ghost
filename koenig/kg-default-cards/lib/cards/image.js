@@ -30,7 +30,7 @@ module.exports = {
             img.setAttribute('title', payload.title);
         }
 
-        setSrcsetAttribute(img, options);
+        setSrcsetAttribute(img, payload, options);
 
         figure.appendChild(img);
 
