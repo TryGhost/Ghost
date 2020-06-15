@@ -102,6 +102,14 @@ describe('Private Blogging', function () {
                     next.called.should.be.true();
                 });
 
+                it('should redirect to /private/ for private route with extra path', function () {
+                    req.path = req.url = '/private/welcome/';
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    res.redirect.calledOnce.should.be.true();
+                    res.redirect.calledWith('/private/?r=%2Fprivate%2Fwelcome%2F').should.be.true();
+                });
+
                 it('should redirect to /private/ for sitemap', function () {
                     req.path = req.url = '/sitemap.xml';
 
@@ -152,6 +160,8 @@ describe('Private Blogging', function () {
                 });
 
                 it('should render custom robots.txt', function () {
+                    // Note this test doesn't cover the full site behaviour,
+                    // another robots.txt can be incorrectly served if middleware is out of order
                     req.url = req.path = '/robots.txt';
                     res.writeHead = sinon.spy();
                     res.end = sinon.spy();
@@ -179,6 +189,14 @@ describe('Private Blogging', function () {
                     privateBlogging.filterPrivateRoutes(req, res, next);
                     next.called.should.be.true();
                     req.url.should.eql('/tag/getting-started/rss/');
+                });
+
+                it('should redirect to /private/ for private rss with extra path', function () {
+                    req.url = req.originalUrl = req.path = '/777aaa/rss/hackme/';
+
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    res.redirect.calledOnce.should.be.true();
+                    res.redirect.calledWith('/private/?r=%2F777aaa%2Frss%2Fhackme%2F').should.be.true();
                 });
             });
 
