@@ -115,12 +115,16 @@
                         </div>
                     </div>
                 </div>
-                <GhTaskButton @buttonText="Save Stripe settings"
+
+                <div class="gh-members-connect-savecontainer {{unless this.isStripeConnectSecureKeyEmpty "expanded"}}">
+                    <GhTaskButton @buttonText="Save Stripe settings"
                                 @task={{this.saveStripeSettings}}
                                 @successText="Saved"
+                                @disabled={{this.isStripeConnectSecureKeyEmpty}}
                                 @runningText="Saving"
-                                @class="gh-btn gh-btn-blue gh-btn-icon mt6"
+                                @class="gh-btn gh-btn-blue gh-btn-icon"
                             />
+                </div>
             </div>
             {{/liquid-if}}
         {{/if}}
