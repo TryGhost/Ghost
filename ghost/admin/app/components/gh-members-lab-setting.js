@@ -128,6 +128,10 @@ export default Component.extend({
         return !!bulkEmailSettings.isConfig;
     }),
 
+    isStripeConnectSecureKeyEmpty: computed('settings.stripeConnectIntegrationToken', function () {
+        return this.get('settings.stripeConnectIntegrationToken') ? false : true;
+    }),
+
     init() {
         this._super(...arguments);
         this.set('mailgunRegions', [US, EU]);
