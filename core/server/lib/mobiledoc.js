@@ -28,7 +28,8 @@ module.exports = {
 
             cardFactory = new CardFactory({
                 siteUrl: config.get('url'),
-                contentImageSizes: config.get('imageOptimization:contentImageSizes')
+                contentImageSizes: config.get('imageOptimization:contentImageSizes'),
+                srcsets: config.get('imageOptimization:srcsets')
             });
 
             cards = defaultCards.map((card) => {
@@ -75,5 +76,12 @@ module.exports = {
                 });
             };
         }
+    },
+
+    // allow config changes to be picked up - useful in tests
+    reload() {
+        cardFactory = null;
+        cards = null;
+        mobiledocHtmlRenderer = null;
     }
 };
