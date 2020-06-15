@@ -14,6 +14,7 @@ import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export default ModalComponent.extend({
+    config: service(),
     ajax: service(),
     notifications: service(),
     memberImportValidator: service(),
@@ -93,23 +94,26 @@ export default ModalComponent.extend({
                 this.set('file', file);
                 this.set('failureMessage', null);
 
-                papaparse.parse(file, {
-                    header: true,
-                    skipEmptyLines: true,
-                    worker: true, // NOTE: compare speed and file sizes with/without this flag
-                    complete: async (results) => {
-                        this.set('fileData', results.data);
+                // TODO: remove "if" below once import validations are production ready
+                if (this.config.get('enableDeveloperExperiments')) {
+                    papaparse.parse(file, {
+                        header: true,
+                        skipEmptyLines: true,
+                        worker: true, // NOTE: compare speed and file sizes with/without this flag
+                        complete: async (results) => {
+                            this.set('fileData', results.data);
 
-                        let result = await this.memberImportValidator.check(results.data);
+                            let result = await this.memberImportValidator.check(results.data);
 
-                        if (result !== true) {
-                            this._importValidationFailed(result);
+                            if (result !== true) {
+                                this._importValidationFailed(result);
+                            }
+                        },
+                        error: (error) => {
+                            this._validationFailed(error);
                         }
-                    },
-                    error: (error) => {
-                        this._validationFailed(error);
-                    }
-                });
+                    });
+                }
             }
         },
 
