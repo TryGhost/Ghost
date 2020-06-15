@@ -21,6 +21,7 @@
                     <td class="red">Invalid:</td>
                     <td align="left" data-test-text="import-members-invalid" class="red">{{this.importResponse.invalid.count}}</td>
                 </tr>
+                {{#if this.config.enableDeveloperExperiments}}
                 <tr>
                     <td colspan="2">Details:</td>
                 </tr>
@@ -30,6 +31,7 @@
                         <td>{{error.count}}</td>
                     </tr>
                 {{/each}}
+                {{/if}}
             {{/if}}
         </table>
     </div>
