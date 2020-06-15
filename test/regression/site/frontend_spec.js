@@ -789,7 +789,7 @@ describe('Frontend Routing', function () {
             configUtils.set('url', 'http://localhost:2370/blog/');
             urlUtils.stubUrlUtilsFromConfig();
 
-            return ghost({forceStart: true})
+            return ghost({forceStart: true, subdir: true})
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
@@ -808,6 +808,15 @@ describe('Frontend Routing', function () {
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .end(function (err, res) {
                         res.headers.location.should.eql('/blog/revamped-url/');
+                        doEnd(done)(err, res);
+                    });
+            });
+            it('should work with regex "from" redirects', function (done) {
+                request.get('/blog/capture1/whatever')
+                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .end(function (err, res) {
+                        res.headers.location.should.eql('/blog/whatever');
                         doEnd(done)(err, res);
                     });
             });
