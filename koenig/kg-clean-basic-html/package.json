@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-clean-basic-html",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-clean-basic-html",
   "author": "Ghost Foundation",
   "license": "MIT",
