@@ -101,10 +101,10 @@ describe('Email Preview API', function () {
                         jsonResponse.email_previews[0].html.should.match(/This is the actual post content\.\.\./);
                         jsonResponse.email_previews[0].html.should.match(/Another email card with a similar replacement, see\?/);
 
-                        jsonResponse.email_previews[0].plaintext.should.match(/Hey there {unknown}/);
-                        jsonResponse.email_previews[0].plaintext.should.match(/Welcome to your first Ghost email!/);
-                        jsonResponse.email_previews[0].plaintext.should.match(/This is the actual post content\.\.\./);
-                        jsonResponse.email_previews[0].plaintext.should.match(/Another email card with a similar replacement, see\?/);
+                        jsonResponse.email_previews[0].text.should.match(/Hey there {unknown}/);
+                        jsonResponse.email_previews[0].text.should.match(/Welcome to your first Ghost email!/);
+                        jsonResponse.email_previews[0].text.should.match(/This is the actual post content\.\.\./);
+                        jsonResponse.email_previews[0].text.should.match(/Another email card with a similar replacement, see\?/);
                     });
             });
         });

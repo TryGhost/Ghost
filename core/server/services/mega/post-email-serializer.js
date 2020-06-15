@@ -63,7 +63,7 @@ const _parseReplacements = (emailTmpl) => {
     const ALLOWED_REPLACEMENTS = ['first_name'];
 
     const replacements = [];
-    ['html', 'plaintext'].forEach((format) => {
+    ['html', 'text'].forEach((format) => {
         emailTmpl[format] = emailTmpl[format].replace(EMAIL_REPLACEMENT_REGEX, (replacementMatch, replacementStr) => {
             const match = replacementStr.match(REPLACEMENT_STRING_REGEX);
 
@@ -134,7 +134,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false}) => {
     const emailTmpl = {
         subject: post.email_subject || post.title,
         html: juicedHtml,
-        plaintext: post.plaintext
+        text: post.plaintext
     };
 
     // Extract known replacements and clean up unknown replacement strings

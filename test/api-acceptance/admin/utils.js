@@ -112,7 +112,7 @@ const expectedProperties = {
     ,
     email: _(schema.emails)
         .keys(),
-    email_preview: ['html', 'subject', 'plaintext']
+    email_preview: ['html', 'subject', 'text']
 };
 
 _.each(expectedProperties, (value, key) => {
