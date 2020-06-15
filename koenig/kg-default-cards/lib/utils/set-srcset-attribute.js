@@ -3,7 +3,7 @@ module.exports = function setSrcsetAttribute(elem, image, options) {
         return;
     }
 
-    if (!image.width || !options.contentImageSizes) {
+    if (options.srcsets === false || !image.width || !options.contentImageSizes) {
         return;
     }
 

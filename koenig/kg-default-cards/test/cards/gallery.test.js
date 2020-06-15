@@ -246,6 +246,34 @@ describe('Gallery card', function () {
 
             serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-9.jpg" width="3200" height="1600" alt></div></div></div></figure>');
         });
+
+        it('is omitted when `srcsets: false` is passed as an options', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    images: [{
+                        row: 0,
+                        fileName: 'NatGeo01.jpg',
+                        src: '/content/images/2018/08/NatGeo01-9.jpg',
+                        width: 3200,
+                        height: 1600
+                    }]
+                },
+                options: {
+                    srcsets: false,
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-9.jpg" width="3200" height="1600" alt></div></div></div></figure>');
+        });
     });
 
     it('transforms urls absolute to relative', function () {
