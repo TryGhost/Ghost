@@ -26,6 +26,8 @@ describe('lib/mobiledoc', function () {
                     ['image', {
                         cardWidth: 'wide',
                         src: '/content/images/2018/04/NatGeo06.jpg',
+                        width: 4000,
+                        height: 2000,
                         caption: 'Birdies'
                     }],
                     ['html', {
@@ -68,7 +70,7 @@ describe('lib/mobiledoc', function () {
             };
 
             mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc)
-                .should.eql('<p>One<br>Two</p><!--kg-card-begin: markdown--><h1 id="markdowncard">Markdown card</h1>\n<p>Some markdown</p>\n<!--kg-card-end: markdown--><p>Three</p><hr><figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="/content/images/2018/04/NatGeo06.jpg" class="kg-image" alt srcset="/content/images/size/w600/2018/04/NatGeo06.jpg 600w, /content/images/size/w1000/2018/04/NatGeo06.jpg 1000w, /content/images/size/w1600/2018/04/NatGeo06.jpg 1600w, /content/images/size/w2400/2018/04/NatGeo06.jpg 2400w"><figcaption>Birdies</figcaption></figure><p>Four</p><!--kg-card-begin: html--><h2>HTML card</h2>\n<div><p>Some HTML</p></div><!--kg-card-end: html--><figure class="kg-card kg-embed-card"><h2>Embed card</h2></figure><figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/test.png" width="1000" height="500" alt srcset="/content/images/size/w600/test.png 600w, /content/images/size/w1000/test.png 1000w, /content/images/size/w1600/test.png 1600w, /content/images/size/w2400/test.png 2400w"></div></div></div></figure>');
+                .should.eql('<p>One<br>Two</p><!--kg-card-begin: markdown--><h1 id="markdowncard">Markdown card</h1>\n<p>Some markdown</p>\n<!--kg-card-end: markdown--><p>Three</p><hr><figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="/content/images/2018/04/NatGeo06.jpg" class="kg-image" alt srcset="/content/images/size/w600/2018/04/NatGeo06.jpg 600w, /content/images/size/w1000/2018/04/NatGeo06.jpg 1000w, /content/images/size/w1600/2018/04/NatGeo06.jpg 1600w, /content/images/size/w2400/2018/04/NatGeo06.jpg 2400w"><figcaption>Birdies</figcaption></figure><p>Four</p><!--kg-card-begin: html--><h2>HTML card</h2>\n<div><p>Some HTML</p></div><!--kg-card-end: html--><figure class="kg-card kg-embed-card"><h2>Embed card</h2></figure><figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/test.png" width="1000" height="500" alt srcset="/content/images/size/w600/test.png 600w, /content/images/size/w1000/test.png 1000w"></div></div></div></figure>');
         });
     });
 });
