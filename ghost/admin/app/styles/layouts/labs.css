@@ -135,6 +135,19 @@
     padding: 4px 8px;
 }
 
+.gh-members-connect-savecontainer {
+    height: 0px;
+    overflow-y: hidden;
+    transition: all 0.2s ease-in-out;
+    opacity: 0;
+    margin-top: 18px;
+}
+
+.gh-members-connect-savecontainer.expanded {
+    height: 36px;
+    opacity: 1.0;
+}
+
 @media (max-width: 500px) {
     .gh-members-stripe-info-header {
         flex-direction: column;
