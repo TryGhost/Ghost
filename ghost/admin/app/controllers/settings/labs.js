@@ -281,5 +281,8 @@ export default Controller.extend({
         this.set('importErrors', null);
         this.set('importSuccessful', false);
         this.set('fromAddressUpdate', null);
+        // stripeConnectIntegrationToken is not a persisted value so we don't want
+        // to keep it around across transitions
+        this.settings.set('stripeConnectIntegrationToken', undefined);
     }
 });
