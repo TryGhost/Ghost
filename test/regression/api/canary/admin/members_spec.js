@@ -138,7 +138,7 @@ describe('Members API', function () {
 
     it('Can import CSV with minimum one field', function () {
         return request
-            .post(localUtils.API.getApiQuery(`members/csv/`))
+            .post(localUtils.API.getApiQuery(`members/upload/`))
             .field('labels', ['global-label-1', 'global-label-1'])
             .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-labels.csv'))
             .set('Origin', config.get('url'))
@@ -186,7 +186,7 @@ describe('Members API', function () {
 
     it('Can import CSV with labels and provide additional labels', function () {
         return request
-            .post(localUtils.API.getApiQuery(`members/csv/`))
+            .post(localUtils.API.getApiQuery(`members/upload/`))
             .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-defaults.csv'))
 
             .set('Origin', config.get('url'))
@@ -235,7 +235,7 @@ describe('Members API', function () {
 
     it('Fails to import members with stripe_customer_id', function () {
         return request
-            .post(localUtils.API.getApiQuery(`members/csv/`))
+            .post(localUtils.API.getApiQuery(`members/upload/`))
             .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-with-stripe-ids.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
