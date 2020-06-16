@@ -222,6 +222,25 @@
             "defaultValue": "{}"
         }
     },
+    "membersjs": {
+        "show_signup_name": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            }
+        },
+        "show_beacon": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            }
+        },
+        "allowed_plans": {
+            "defaultValue": "[\"free\", \"monthly\", \"yearly\"]"
+        }
+    },
     "bulk_email": {
         "bulk_email_settings": {
             "defaultValue": "{\"provider\":\"mailgun\", \"apiKey\": \"\", \"domain\": \"\", \"baseUrl\": \"\"}"
