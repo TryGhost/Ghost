@@ -51,24 +51,24 @@ function _imageSizeFromBuffer(buffer) {
 
 // use probe-image-size to download enough of an image to get it's dimensions
 // returns promise which resolves dimensions
-function _probeImageSizeFromUrl(url) {
+function _probeImageSizeFromUrl(imageUrl) {
     // probe-image-size uses `request` npm module which doesn't have our `got`
     // override with custom URL validation so it needs duplicating here
-    if (_.isEmpty(url) || !validator.isURL(url)) {
+    if (_.isEmpty(imageUrl) || !validator.isURL(imageUrl)) {
         return Promise.reject(new errors.InternalServerError({
             message: 'URL empty or invalid.',
             code: 'URL_MISSING_INVALID',
-            context: url
+            context: imageUrl
         }));
     }
 
-    return probeSizeOf(url, REQUEST_OPTIONS);
+    return probeSizeOf(imageUrl, REQUEST_OPTIONS);
 }
 
 // download full image then use image-size to get it's dimensions
 // returns promise which resolves dimensions
-function _fetchImageSizeFromUrl(url) {
-    return request(url, REQUEST_OPTIONS).then((response) => {
+function _fetchImageSizeFromUrl(imageUrl) {
+    return request(imageUrl, REQUEST_OPTIONS).then((response) => {
         return _imageSizeFromBuffer(response.body);
     });
 }
