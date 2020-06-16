@@ -68,6 +68,6 @@ describe('Integration: Service: member-import-validator', function () {
         }]);
 
         expect(result.length).to.equal(1);
-        expect(result[0].message).to.equal('Stripe customer IDs exist in the data, but no stripe account is connected.');
+        expect(result[0].message).to.equal('You need to connect to Stripe first to import Stripe data.');
     });
 });
