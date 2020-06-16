@@ -32,3 +32,10 @@ jobs:
       - run: yarn test
         env:
           BROWSER: ${{ matrix.browser }}
+
+      - uses: daniellockyer/action-slack-build@master
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
