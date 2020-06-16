@@ -69,6 +69,12 @@ describe('Private Blogging', function () {
             res.redirect.called.should.be.true();
             res.redirect.calledWith('http://127.0.0.1:2369/').should.be.true();
         });
+
+        it('handle404 should still 404', function () {
+            privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
+            next.called.should.be.true();
+            (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
+        });
     });
 
     describe('Private Mode Enabled', function () {
@@ -95,6 +101,22 @@ describe('Private Blogging', function () {
         });
 
         describe('Logged Out Behaviour', function () {
+            it('authenticatePrivateSession should redirect', function () {
+                req.path = req.url = '/welcome/';
+                privateBlogging.authenticatePrivateSession(req, res, next);
+                next.called.should.be.false();
+                res.redirect.called.should.be.true();
+                res.redirect.calledWith('/private/?r=%2Fwelcome%2F').should.be.true();
+            });
+
+            it('handle404 should redirect', function () {
+                req.path = req.url = '/welcome/';
+                privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
+                next.called.should.be.false();
+                res.redirect.called.should.be.true();
+                res.redirect.calledWith('/private/?r=%2Fwelcome%2F').should.be.true();
+            });
+
             describe('Site privacy managed by filterPrivateRoutes', function () {
                 it('should call next for the /private/ route', function () {
                     req.path = req.url = '/private/';
@@ -280,6 +302,12 @@ describe('Private Blogging', function () {
             it('authenticatePrivateSession should return next', function () {
                 privateBlogging.authenticatePrivateSession(req, res, next);
                 next.called.should.be.true();
+            });
+
+            it('handle404 should still 404', function () {
+                privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
+                next.called.should.be.true();
+                (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
             });
 
             describe('Site privacy managed by filterPrivateRoutes', function () {
