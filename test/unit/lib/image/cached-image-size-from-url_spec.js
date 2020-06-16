@@ -9,6 +9,7 @@ const getCachedImageSizeFromUrl = rewire('../../../../core/server/lib/image/cach
 describe('lib/image: image size cache', function () {
     let sizeOfStub;
     let cachedImagedSize;
+    let revertGetCachedImageSizeFromUrl;
 
     beforeEach(function () {
         sizeOfStub = sinon.stub();
@@ -17,6 +18,10 @@ describe('lib/image: image size cache', function () {
     afterEach(function () {
         sinon.restore();
         getCachedImageSizeFromUrl.__set__('cache', {});
+
+        if (revertGetCachedImageSizeFromUrl) {
+            revertGetCachedImageSizeFromUrl();
+        }
     });
 
     it('should read from cache, if dimensions for image are fetched already', function (done) {
@@ -30,7 +35,7 @@ describe('lib/image: image size cache', function () {
             type: 'jpg'
         }));
 
-        getCachedImageSizeFromUrl.__set__('imageSize.getImageSizeFromUrl', sizeOfStub);
+        revertGetCachedImageSizeFromUrl = getCachedImageSizeFromUrl.__set__('imageSize.getImageSizeFromUrl', sizeOfStub);
 
         imageSizeSpy = getCachedImageSizeFromUrl.__get__('imageSize.getImageSizeFromUrl');
 
@@ -69,7 +74,7 @@ describe('lib/image: image size cache', function () {
 
         sizeOfStub.returns(new Promise.reject('error'));
 
-        getCachedImageSizeFromUrl.__set__('imageSize.getImageSizeFromUrl', sizeOfStub);
+        revertGetCachedImageSizeFromUrl = getCachedImageSizeFromUrl.__set__('imageSize.getImageSizeFromUrl', sizeOfStub);
 
         cachedImagedSizeResult = Promise.resolve(getCachedImageSizeFromUrl(url));
         cachedImagedSizeResult.then(function () {
