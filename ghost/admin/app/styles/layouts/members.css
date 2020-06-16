@@ -408,11 +408,40 @@ textarea.gh-member-details-textarea {
     min-height: 180px;
 }
 
-.gh-members-upload-failuremessage {
-    background: color-mod(var(--red) a(7%));
-    border: 1px solid var(--red);
+.gh-members-upload-errorcontainer {
+    border: 1px solid var(--whitegrey);
     border-radius: 4px;
     padding: 8px;
-    color: var(--red);
     margin-bottom: 20px;
+}
+
+.gh-members-upload-warningmessage {
+    border-left: 4px solid var(--yellow);
+}
+
+.gh-members-upload-errormessage {
+    border-left: 4px solid var(--red);
+}
+
+.gh-members-import-errorheading {
+    font-size: 1.4rem;
+    line-height: 1.55em;
+    margin-top: 2px;
+}
+
+p.gh-members-import-errordetailtext {
+    font-size: 1.3rem;
+    line-height: 1.4em;
+    color: var(--midgrey);
+}
+
+.gh-members-import-errordetailtext:first-of-type {
+    border-top: 1px solid var(--lightgrey);
+    padding-top: 8px;
+    margin-top: 8px;
+}
+
+.gh-members-import-errordetailtext:not(:last-of-type) {
+    padding-bottom: 4px;
+    margin-bottom: 6px;
 }
