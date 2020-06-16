@@ -383,6 +383,19 @@ svg.gh-btn-icon-right {
     line-height: 36px;
 }
 
+.gh-btn-text.gh-btn-warningdetails span,
+.gh-btn-text.gh-btn-errordetails span {
+    text-decoration: underline;
+}
+
+.gh-btn-text.gh-btn-warningdetails span {
+    color: color-mod(var(--yellow) l(-8%) s(+5%));
+}
+
+.gh-btn-text.gh-btn-errordetails span {
+    color: var(--red);
+}
+
 
 /*
 /* Button Variations

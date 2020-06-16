@@ -46,18 +46,18 @@ export default Service.extend({
 
         if (hasStripeId) {
             // check can be done on whole set as it won't be too slow
-            let hasDuplicateStripeIds = this._hasDuplicateStripeIds(data);
-            if (hasDuplicateStripeIds === true) {
-                validationResults.push(new MemberImportError('Some members will not be imported. Members with duplicate Stripe customer ids are not allowed.'));
-            }
-
             if (!this.membersUtils.isStripeEnabled) {
-                validationResults.push(new MemberImportError('Stripe customer IDs exist in the data, but no stripe account is connected.'));
+                validationResults.push(new MemberImportError(`You need to connect to Stripe first to import Stripe data.`));
             } else {
                 let stripeSeverValidation = await this._checkStripeServer(validatedSet);
                 if (stripeSeverValidation !== true) {
                     validationResults.push(new MemberImportError('Stripe customer IDs exist in the data, but we could not find such customer in connected Stripe account'));
                 }
+            }
+
+            let hasDuplicateStripeIds = this._hasDuplicateStripeIds(data);
+            if (hasDuplicateStripeIds === true) {
+                validationResults.push(new MemberImportError('Members with same Stripe customer IDs will not be imported.'));
             }
         }
 
