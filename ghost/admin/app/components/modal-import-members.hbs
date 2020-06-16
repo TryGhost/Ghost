@@ -38,12 +38,20 @@
 {{else}}
     <div class="modal-body">
         {{#if (and this.filePresent (not this.failureMessage))}}
-            {{#each validationErrors as |error|}}
-                <div class="failed flex items-center gh-members-upload-failuremessage">
-                    {{svg-jar "warning" class="w4 h4 fill-red mr1"}}
-                    {{error.message}}
+            {{#if validationErrors}}
+                <div class="failed flex items-start gh-members-upload-errorcontainer gh-members-upload-warningmessage">
+                    <div class="mr2">{{svg-jar "warning" class="nudge-top--2 w5 h5 fill-yellow-d1"}}</div>
+                    <div>
+                        <p class="ma0 pa0 gh-members-import-errorheading"><span class="fw6">Warning!</span> There are some problems with the CSV data. You can still import it but data loss might occur.</p>
+                        <button type="button" class="gh-btn gh-btn-text gh-btn-warningdetails regular" {{action (toggle "errorDetailsOpen" this)}}><span>Details</span></button>
+                        {{#liquid-if this.errorDetailsOpen}}
+                            {{#each validationErrors as |error|}}
+                                <p class="ma0 pa0 gh-members-import-errordetailtext">{{error.message}}</p>
+                            {{/each}}
+                        {{/liquid-if}}
+                    </div>
                 </div>
-            {{/each}}
+            {{/if}}
             <GhFormGroup>
                 <div class="bg-whitegrey-l2 ba b--whitegrey br3">
                     <div class="flex flex-column items-center justify-center gh-members-import-file">
@@ -59,9 +67,9 @@
             </GhFormGroup>
         {{else}}
             {{#if this.failureMessage}}
-                <div class="failed flex items-center gh-members-upload-failuremessage">
-                    {{svg-jar "warning" class="w4 h4 fill-red mr1"}}
-                    {{this.failureMessage}}
+                <div class="failed flex items-start gh-members-upload-errorcontainer gh-members-upload-errormessage">
+                    <div class="mr2">{{svg-jar "warning" class="nudge-top--2 w4 h4 fill-red"}}</div>
+                    <p class="ma0 pa0">{{this.failureMessage}}</p>
                 </div>
             {{/if}}
             <div class="upload-form bg-whitegrey-l2 ba b--whitegrey br3">
