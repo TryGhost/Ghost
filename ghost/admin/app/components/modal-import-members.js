@@ -39,7 +39,7 @@ export default ModalComponent.extend({
     closeDisabled: computed.reads('uploading'),
 
     uploadUrl: computed(function () {
-        return `${ghostPaths().apiRoot}/members/csv/`;
+        return `${ghostPaths().apiRoot}/members/upload/`;
     }),
 
     importDisabled: computed('file', 'validationErrors', function () {

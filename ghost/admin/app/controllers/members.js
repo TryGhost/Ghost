@@ -128,7 +128,7 @@ export default class MembersController extends Controller {
 
     @action
     exportData() {
-        let exportUrl = ghostPaths().url.api('members/csv');
+        let exportUrl = ghostPaths().url.api('members/upload');
         let downloadURL = `${exportUrl}?limit=all`;
         let iframe = document.getElementById('iframeDownload');
 
