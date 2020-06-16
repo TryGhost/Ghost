@@ -1,6 +1,9 @@
+const path = require('path');
 const should = require('should');
+const nock = require('nock');
 const configUtils = require('../../utils/configUtils');
 const mobiledocLib = require('../../../core/server/lib/mobiledoc');
+const storage = require('../../../core/server/adapters/storage');
 
 describe('lib/mobiledoc', function () {
     beforeEach(function () {
@@ -8,6 +11,7 @@ describe('lib/mobiledoc', function () {
     });
 
     afterEach(function () {
+        nock.cleanAll();
         configUtils.restore();
         // ensure config changes are reset and picked up by next test
         mobiledocLib.reload();
@@ -108,6 +112,56 @@ describe('lib/mobiledoc', function () {
 
             mobiledocLib.mobiledocHtmlRenderer.render(mobiledoc)
                 .should.eql('<figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img src="/content/images/2018/04/NatGeo06.jpg" class="kg-image" alt><figcaption>Birdies</figcaption></figure><figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="/content/images/test.png" width="1000" height="500" alt></div></div></div></figure>');
+        });
+    });
+
+    describe('populateImageSizes', function () {
+        let originalStoragePath;
+
+        beforeEach(function () {
+            originalStoragePath = storage.getStorage().storagePath;
+            storage.getStorage().storagePath = path.join(__dirname, '../../utils/fixtures/images/');
+        });
+
+        afterEach(function () {
+            storage.getStorage().storagePath = originalStoragePath;
+        });
+
+        it('works', async function () {
+            let mobiledoc = {
+                cards: [
+                    ['image', {src: '/content/images/ghost-logo.png'}],
+                    ['image', {src: 'http://example.com/external.jpg'}],
+                    ['image', {src: 'https://images.unsplash.com/favicon_too_large?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=2000&fit=max&ixid=eyJhcHBfaWQiOjExNzczfQ'}]
+                ]
+            };
+
+            const unsplashMock = nock('https://images.unsplash.com/')
+                .get('/favicon_too_large')
+                .query(true)
+                .replyWithFile(200, path.join(__dirname, '../../utils/fixtures/images/favicon_not_square.png'), {
+                    'Content-Type': 'image/png'
+                });
+
+            const transformedMobiledoc = await mobiledocLib.populateImageSizes(JSON.stringify(mobiledoc));
+            const transformed = JSON.parse(transformedMobiledoc);
+
+            unsplashMock.isDone().should.be.true();
+
+            transformed.cards.length.should.equal(3);
+
+            should.exist(transformed.cards[0][1].width);
+            transformed.cards[0][1].width.should.equal(800);
+            should.exist(transformed.cards[0][1].height);
+            transformed.cards[0][1].height.should.equal(257);
+
+            should.not.exist(transformed.cards[1][1].width);
+            should.not.exist(transformed.cards[1][1].height);
+
+            should.exist(transformed.cards[2][1].width);
+            transformed.cards[2][1].width.should.equal(100);
+            should.exist(transformed.cards[2][1].height);
+            transformed.cards[2][1].height.should.equal(80);
         });
     });
 });
