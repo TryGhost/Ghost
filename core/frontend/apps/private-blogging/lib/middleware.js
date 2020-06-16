@@ -172,7 +172,10 @@ const privateBlogging = {
         }
 
         // CASE: 404 - redirect this page back to /private/ if the user isn't verified
-        return privateBlogging.authenticatePrivateSession(req, res, next);
+        return privateBlogging.authenticatePrivateSession(req, res, function onSessionVerified() {
+            // CASE: RSS is disabled for private blogging e.g. they create overhead
+            return next(err);
+        });
     }
 };
 
