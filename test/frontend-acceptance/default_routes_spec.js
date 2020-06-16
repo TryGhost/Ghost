@@ -419,6 +419,19 @@ describe('Default Frontend routing', function () {
                 .end(doEnd(done));
         });
 
+        it('/private/?r=%2Fwelcome%2F should not redirect', function (done) {
+            request.get('/private/?r=%2Fwelcome%2F')
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('should redirect, NOT 404 for private route with extra path', function (done) {
+            request.get('/private/welcome/')
+                .expect('Location', '/private/?r=%2Fprivate%2Fwelcome%2F')
+                .expect(302)
+                .end(doEnd(done));
+        });
+
         it('should still serve private RSS feed', function (done) {
             request.get(`/${settingsCache.get('public_hash')}/rss/`)
                 .expect(200)
@@ -426,6 +439,45 @@ describe('Default Frontend routing', function () {
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .end(function (err, res) {
                     res.text.should.match(/<!\[CDATA\[Welcome to Ghost\]\]>/);
+                    doEnd(done)(err, res);
+                });
+        });
+
+        it('should still serve private tag RSS feed', function (done) {
+            request.get(`/tag/getting-started/${settingsCache.get('public_hash')}/rss/`)
+                .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .end(function (err, res) {
+                    res.text.should.match(/<!\[CDATA\[Welcome to Ghost\]\]>/);
+                    doEnd(done)(err, res);
+                });
+        });
+
+        it('should redirect, NOT 404 for private tag RSS feed with extra path', function (done) {
+            request.get(`/tag/getting-started/${settingsCache.get('public_hash')}/rss/hack/`)
+                .expect('Location', `/private/?r=%2Ftag%2Fgetting-started%2F${settingsCache.get('public_hash')}%2Frss%2Fhack%2F`)
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        // NOTE: this case is covered by extra error handling, and cannot be unit tested
+        it('should redirect, NOT 404 for unknown private RSS feed', function (done) {
+            // NOTE: the redirect will be to /hack/rss because we strip the hash from the URL before trying to serve RSS
+            // This isn't ideal, but it's better to expose this internal logic than it is a 404 page
+            request.get(`/hack/${settingsCache.get('public_hash')}/rss/`)
+                .expect('Location', '/private/?r=%2Fhack%2Frss%2F')
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        // NOTE: this test extends the unit test, checking that there is no other robots.txt middleware overriding private blogging
+        it('should serve private robots.txt', function (done) {
+            request.get('/robots.txt')
+                .expect('Cache-Control', 'public, max-age=3600000')
+                .expect(200)
+                .end(function (err, res) {
+                    res.text.should.match('User-agent: *\nDisallow: /');
                     doEnd(done)(err, res);
                 });
         });
