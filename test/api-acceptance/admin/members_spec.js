@@ -306,7 +306,7 @@ describe('Members API', function () {
 
     it('Can export CSV', function () {
         return request
-            .get(localUtils.API.getApiQuery(`members/csv/`))
+            .get(localUtils.API.getApiQuery(`members/upload/`))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /text\/csv/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -322,7 +322,7 @@ describe('Members API', function () {
 
     it('Can import CSV', function () {
         return request
-            .post(localUtils.API.getApiQuery(`members/csv/`))
+            .post(localUtils.API.getApiQuery(`members/upload/`))
             .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/valid-members-import.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
