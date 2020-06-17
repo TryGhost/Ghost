@@ -1,6 +1,9 @@
+const path = require('path');
 const errors = require('@tryghost/errors');
+const imageTransform = require('@tryghost/image-transform');
 const logging = require('../../shared/logging');
 const config = require('../../shared/config');
+const storage = require('../adapters/storage');
 
 let cardFactory;
 let cards;
@@ -76,6 +79,83 @@ module.exports = {
                 });
             };
         }
+    },
+
+    // used when force-rerendering post content to ensure that old image card
+    // payloads contain width/height values to be used when generating srcsets
+    populateImageSizes: async function (mobiledocJson) {
+        // do not require image-size until it's requested to avoid circular dependencies
+        // shared/url-utils > server/lib/mobiledoc > server/lib/image/image-size > server/adapters/storage/utils
+        const imageSize = require('./image/image-size');
+        const urlUtils = require('../../shared/url-utils');
+        const storageInstance = storage.getStorage();
+
+        async function getUnsplashSize(url) {
+            const parsedUrl = new URL(url);
+            parsedUrl.searchParams.delete('w');
+            parsedUrl.searchParams.delete('fit');
+            parsedUrl.searchParams.delete('crop');
+            parsedUrl.searchParams.delete('dpr');
+
+            return await imageSize.getImageSizeFromUrl(parsedUrl.href);
+        }
+
+        // TODO: extract conditional logic lifted from handle-image-sizes.js
+        async function getLocalSize(url) {
+            // skip local images if adapter doesn't support size transforms
+            if (typeof storageInstance.saveRaw !== 'function') {
+                return;
+            }
+
+            // local storage adapter's .exists() expects image paths without any prefixes
+            const imageUrlPrefix = urlUtils.urlJoin(urlUtils.getSubdir(), urlUtils.STATIC_IMAGE_URL_PREFIX);
+            const storagePath = url.replace(imageUrlPrefix, '');
+
+            const {dir, name, ext} = path.parse(storagePath);
+            const [imageNameMatched, imageName, imageNumber] = name.match(/^(.+?)(-\d+)?$/) || [null];
+
+            if (!imageNameMatched
+                || !imageTransform.canTransformFileExtension(ext)
+                || !(await storageInstance.exists(storagePath))
+            ) {
+                return;
+            }
+
+            // get the original/unoptimized image if it exists as that will have
+            // the maximum dimensions that srcset/handle-image-sizes can use
+            const originalImagePath = path.join(dir, `${imageName}_o${imageNumber || ''}${ext}`);
+            const imagePath = await storageInstance.exists(originalImagePath) ? originalImagePath : storagePath;
+
+            return await imageSize.getImageSizeFromStoragePath(imagePath);
+        }
+
+        const mobiledoc = JSON.parse(mobiledocJson);
+
+        const sizePromises = mobiledoc.cards.map(async (card) => {
+            const [cardName, payload] = card;
+
+            const needsFilling = cardName === 'image' && (!payload.width || !payload.height);
+            if (!needsFilling) {
+                return;
+            }
+
+            const isUnsplash = payload.src.match(/images\.unsplash\.com/);
+            try {
+                const size = isUnsplash ? await getUnsplashSize(payload.src) : await getLocalSize(payload.src);
+
+                if (size && size.width && size.height) {
+                    payload.width = size.width;
+                    payload.height = size.height;
+                }
+            } catch (e) {
+                // TODO: use debug instead?
+                logging.error(e);
+            }
+        });
+
+        await Promise.all(sizePromises);
+
+        return JSON.stringify(mobiledoc);
     },
 
     // allow config changes to be picked up - useful in tests
