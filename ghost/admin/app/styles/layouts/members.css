@@ -49,6 +49,16 @@
     table-layout: fixed;
 }
 
+.members-list .gh-list-row.header {
+    z-index: 1;
+}
+
+.members-list .gh-list-header {
+    position: sticky;
+    top: 84px;
+    z-index: 1;
+}
+
 .members-header .view-actions input.gh-members-list-searchfield {
     min-width: 220px;
     padding-left: 30px;
