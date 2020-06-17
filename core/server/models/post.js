@@ -404,6 +404,12 @@ Post = ghostBookshelf.Model.extend({
             }
         });
 
+        // If we're force re-rendering we want to make sure that all image cards
+        // have original dimensions stored in the payload for use by card renderers
+        if (options.force_rerender) {
+            this.set('mobiledoc', mobiledocLib.populateImageDimensions(this.get('mobiledoc')));
+        }
+
         // CASE: mobiledoc has changed, generate html
         // CASE: ?force_rerender=true passed via Admin API
         // CASE: html is null, but mobiledoc exists (only important for migrations & importing)
