@@ -66,7 +66,7 @@ class SignupPage extends React.Component {
     }
 
     renderPlans() {
-        const {plans, allowSelfSignup, isStripeConfigured} = this.context.site;
+        const {plans, allowSelfSignup, isStripeConfigured, allowed_plans: allowedPlans} = this.context.site;
 
         const plansData = [];
         const stripePlans = [
@@ -74,12 +74,16 @@ class SignupPage extends React.Component {
             {type: 'year', price: plans.yearly, currency: plans.currency_symbol, name: 'Yearly'}
         ];
 
-        if (isStripeConfigured && allowSelfSignup) {
+        if (allowSelfSignup && (allowedPlans === undefined || allowedPlans.includes('free'))) {
             plansData.push({type: 'free', price: 'Decide later', name: 'Free'});
         }
 
         if (isStripeConfigured) {
-            stripePlans.forEach(plan => plansData.push(plan));
+            stripePlans.forEach((plan) => {
+                if (allowedPlans === undefined || allowedPlans.includes(plan.name.toLowerCase())) {
+                    plansData.push(plan);
+                }
+            });
         }
 
         return (
@@ -127,10 +131,18 @@ class SignupPage extends React.Component {
         );
     }
 
+    renderNameField() {
+        const {site} = this.context;
+        if (site.show_signup_name === undefined || site.show_signup_name) {
+            return this.renderInputField('name');
+        }
+        return null;
+    }
+
     renderForm() {
         return (
             <div style={{display: 'flex', flexDirection: 'column', marginBottom: '12px', padding: '0 18px'}}>
-                {this.renderInputField('name')}
+                {this.renderNameField()}
                 {this.renderInputField('email')}
                 {this.renderPlans()}
                 {this.renderSubmitButton()}
