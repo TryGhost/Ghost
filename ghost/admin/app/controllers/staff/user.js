@@ -239,10 +239,10 @@ export default Controller.extend({
                 // because store.pushPayload is not working with embedded relations
                 if (response && isEmberArray(response.users)) {
                     response.users.forEach((userJSON) => {
-                        let user = this.store.peekRecord('user', userJSON.id);
+                        let updatedUser = this.store.peekRecord('user', userJSON.id);
                         let role = this.store.peekRecord('role', userJSON.roles[0].id);
 
-                        user.set('role', role);
+                        updatedUser.set('role', role);
                     });
                 }
 
