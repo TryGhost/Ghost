@@ -51,8 +51,8 @@ describe('Integration: Service: ajax', function () {
     });
 
     it('correctly parses single message response text', function (done) {
-        let error = {message: 'Test Error'};
-        stubAjaxEndpoint(server, error, 500);
+        let errorResponse = {message: 'Test Error'};
+        stubAjaxEndpoint(server, errorResponse, 500);
 
         let ajax = this.owner.lookup('service:ajax');
 
@@ -66,8 +66,8 @@ describe('Integration: Service: ajax', function () {
     });
 
     it('correctly parses single error response text', function (done) {
-        let error = {error: 'Test Error'};
-        stubAjaxEndpoint(server, error, 500);
+        let errorResponse = {error: 'Test Error'};
+        stubAjaxEndpoint(server, errorResponse, 500);
 
         let ajax = this.owner.lookup('service:ajax');
 
@@ -81,8 +81,8 @@ describe('Integration: Service: ajax', function () {
     });
 
     it('correctly parses multiple error messages', function (done) {
-        let error = {errors: ['First Error', 'Second Error']};
-        stubAjaxEndpoint(server, error, 500);
+        let errorResponse = {errors: ['First Error', 'Second Error']};
+        stubAjaxEndpoint(server, errorResponse, 500);
 
         let ajax = this.owner.lookup('service:ajax');
 
