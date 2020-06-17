@@ -89,7 +89,9 @@ const getMemberSiteData = async function (req, res) {
     );
     const stripeSecretToken = stripePaymentProcessor && stripePaymentProcessor.config.secret_token;
     const stripePublicToken = stripePaymentProcessor && stripePaymentProcessor.config.public_token;
-    const isStripeConfigured = (!!stripeSecretToken && stripeSecretToken !== '' && !!stripePublicToken && stripePublicToken !== '');
+    const stripeConnectIntegration = settingsCache.get('stripe_connect_integration');
+
+    const isStripeConfigured = (!!stripeSecretToken && !!stripePublicToken) || !!(stripeConnectIntegration && stripeConnectIntegration.account_id);
     const response = {
         title: settingsCache.get('title'),
         description: settingsCache.get('description'),
