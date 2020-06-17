@@ -237,10 +237,10 @@ export default Service.extend({
     _extractPagination(response) {
         let pagination = {};
         let linkRegex = new RegExp('<(.*)>; rel="(.*)"');
-        let {link} = response.headers.map;
+        let {link: links} = response.headers.map;
 
-        if (link) {
-            link.split(',').forEach((link) => {
+        if (links) {
+            links.split(',').forEach((link) => {
                 let [, url, rel] = linkRegex.exec(link);
 
                 pagination[rel] = url;

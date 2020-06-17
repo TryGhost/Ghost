@@ -125,14 +125,14 @@ export default Controller.extend({
         },
 
         activateTheme(theme) {
-            return theme.activate().then((theme) => {
-                if (!isEmpty(theme.get('warnings'))) {
-                    this.set('themeWarnings', theme.get('warnings'));
+            return theme.activate().then((activatedTheme) => {
+                if (!isEmpty(activatedTheme.get('warnings'))) {
+                    this.set('themeWarnings', activatedTheme.get('warnings'));
                     this.set('showThemeWarningsModal', true);
                 }
 
-                if (!isEmpty(theme.get('errors'))) {
-                    this.set('themeErrors', theme.get('errors'));
+                if (!isEmpty(activatedTheme.get('errors'))) {
+                    this.set('themeErrors', activatedTheme.get('errors'));
                     this.set('showThemeWarningsModal', true);
                 }
             }).catch((error) => {

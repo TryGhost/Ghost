@@ -132,8 +132,8 @@ export default BaseAdapter.extend({
             }
         });
 
-        embedded.forEach(([relName, modelName]) => {
-            this.getEmbeddedRelations(store, modelName).forEach((name) => {
+        embedded.forEach(([relName, embeddedModelName]) => {
+            this.getEmbeddedRelations(store, embeddedModelName).forEach((name) => {
                 ret.push(`${relName}.${name}`);
             });
         });

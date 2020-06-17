@@ -49,13 +49,13 @@ export default ModalComponent.extend({
             let webhook = yield this.confirm();
             let integration = yield webhook.get('integration');
             this.router.transitionTo('settings.integration', integration);
-        } catch (error) {
+        } catch (e) {
             // TODO: server-side validation errors should be serialized
             // properly so that errors are added to model.errors automatically
-            if (error && error.payload && error.payload.errors) {
+            if (e && e.payload && e.payload.errors) {
                 let attrs = Array.from(Webhook.attributes.keys());
 
-                error.payload.errors.forEach((error) => {
+                e.payload.errors.forEach((error) => {
                     let {message, property = ''} = error;
                     property = camelize(property);
 
@@ -71,8 +71,8 @@ export default ModalComponent.extend({
             }
 
             // bubble up to the global error handler
-            if (error) {
-                throw error;
+            if (e) {
+                throw e;
             }
         }
     })

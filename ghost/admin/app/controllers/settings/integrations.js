@@ -32,10 +32,10 @@ export default Controller.extend({
 
     // used by individual integration routes' `model` hooks
     integrationModelHook(prop, value, route, transition) {
-        let integration = this.store.peekAll('integration').findBy(prop, value);
+        let preloadedIntegration = this.store.peekAll('integration').findBy(prop, value);
 
-        if (integration) {
-            return integration;
+        if (preloadedIntegration) {
+            return preloadedIntegration;
         }
 
         return this.fetchIntegrations.perform().then((integrations) => {
