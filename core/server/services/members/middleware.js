@@ -101,7 +101,10 @@ const getMemberSiteData = async function (req, res) {
         version: ghostVersion.safe,
         plans: membersService.config.getPublicPlans(),
         allowSelfSignup: membersService.config.getAllowSelfSignup(),
-        isStripeConfigured
+        isStripeConfigured,
+        show_beacon: settingsCache.get('show_beacon'),
+        show_signup_name: settingsCache.get('show_signup_name'),
+        allowed_plans: settingsCache.get('allowed_plans')
     };
 
     // Brand is currently an experimental feature
