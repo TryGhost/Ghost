@@ -245,7 +245,8 @@ export default class App extends React.Component {
     }
 
     renderTriggerButton() {
-        if (!this.customTriggerButtons || this.customTriggerButtons.length === 0) {
+        const {site} = this.state;
+        if (site.show_beacon === undefined || site.show_beacon) {
             return (
                 <TriggerButton
                     isPopupOpen={this.state.showPopup}
