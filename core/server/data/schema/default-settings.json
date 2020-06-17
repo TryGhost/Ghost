@@ -220,24 +220,22 @@
         },
         "stripe_connect_integration": {
             "defaultValue": "{}"
-        }
-    },
-    "membersjs": {
-        "show_signup_name": {
+        },
+        "membersjs_show_signup_name": {
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
             }
         },
-        "show_beacon": {
+        "membersjs_show_beacon": {
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
             }
         },
-        "allowed_plans": {
+        "membersjs_allowed_plans": {
             "defaultValue": "[\"free\", \"monthly\", \"yearly\"]"
         }
     },
