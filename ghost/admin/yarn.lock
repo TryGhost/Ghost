@@ -5610,7 +5610,7 @@ ember-cli-typescript@^2.0.2:
     stagehand "^1.0.0"
     walk-sync "^1.0.0"
 
-ember-cli-typescript@^3.1.1, ember-cli-typescript@^3.1.2, ember-cli-typescript@^3.1.3:
+ember-cli-typescript@^3.1.1, ember-cli-typescript@^3.1.2, ember-cli-typescript@^3.1.3, ember-cli-typescript@^3.1.4:
   version "3.1.4"
   resolved "https://registry.yarnpkg.com/ember-cli-typescript/-/ember-cli-typescript-3.1.4.tgz#21d6ccd670d1f2e34c9cce68c6e32c442f46806b"
   integrity sha512-HJ73kL45OGRmIkPhBNFt31I1SGUvdZND+LCH21+qpq3pPlFpJG8GORyXpP+2ze8PbnITNLzwe5AwUrpyuRswdQ==
@@ -5785,7 +5785,17 @@ ember-composable-helpers@4.2.1:
     ember-cli-babel "^7.11.1"
     resolve "^1.10.0"
 
-ember-concurrency-decorators@1.0.0, ember-concurrency-decorators@^1.0.0:
+ember-concurrency-decorators@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ember-concurrency-decorators/-/ember-concurrency-decorators-2.0.0.tgz#119934636927ad0b4d1c751e35688d7596cf85e3"
+  integrity sha512-9gJmLwTIkOcBQIOub8k3Y1TCUPzlk/fv3gTGJc9QhcmBvBb22l6Z+TptaqSmR+06XqTITYnPfGpk+tqmrHyYug==
+  dependencies:
+    "@ember-decorators/utils" "^6.1.0"
+    ember-cli-babel "^7.19.0"
+    ember-cli-htmlbars "^4.3.1"
+    ember-cli-typescript "^3.1.4"
+
+ember-concurrency-decorators@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/ember-concurrency-decorators/-/ember-concurrency-decorators-1.0.0.tgz#b327e9e487650f0670870a8233c35bd0b5a7452b"
   integrity sha512-lvBp22RWjrrOMpVzMNx/un+9wMzAU97G2dEbqgg5t5i4n5oa8PSs4em6NDM+kVFX9hpf5rc1wBnisLbFRBIL6A==
