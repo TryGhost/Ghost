@@ -127,6 +127,7 @@
     "rss": "1.2.2",
     "sanitize-html": "1.26.0",
     "semver": "7.3.2",
+    "tough-cookie": "4.0.0",
     "uuid": "8.1.0",
     "validator": "6.3.0",
     "xml": "1.0.1"
