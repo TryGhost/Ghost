@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import ValidationState from 'ghost-admin/mixins/validation-state';
+import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import {computed} from '@ember/object';
 import {readOnly} from '@ember/object/computed';
 import {run} from '@ember/runloop';
@@ -15,6 +16,8 @@ export default Component.extend(ValidationState, {
     deleteItem() {},
     updateUrl() {},
     updateLabel() {},
+    label: boundOneWay('navItem.label'),
+    url: boundOneWay('navItem.url'),
 
     errors: readOnly('navItem.errors'),
 
