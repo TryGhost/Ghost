@@ -234,6 +234,8 @@ export default class MembersController extends Controller {
         // params is undefined when called as a "refresh" of the model
         let {label, paidParam, searchParam} = typeof params === 'undefined' ? this : params;
 
+        this.resetSelection();
+
         if (!searchParam) {
             this.resetSearch();
         }
@@ -285,5 +287,10 @@ export default class MembersController extends Controller {
 
     resetSearch() {
         this.searchText = '';
+    }
+
+    resetSelection() {
+        this.isEditing = false;
+        this.allSelected = false;
     }
 }
