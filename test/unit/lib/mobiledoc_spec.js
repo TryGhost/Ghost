@@ -127,7 +127,7 @@ describe('lib/mobiledoc', function () {
             storage.getStorage().storagePath = originalStoragePath;
         });
 
-        it.only('works', async function () {
+        it('works', async function () {
             let mobiledoc = {
                 cards: [
                     ['image', {src: '/content/images/ghost-logo.png'}],
