@@ -1,13 +1,21 @@
-<table class="bg-whitegrey-l2 ba b--whitegrey br3">
+<table class="ba b--whitegrey br3 f8 gh-members-import-table mt1">
     <thead>
-        <th><span class="f5">Header</span></th>
-        <th><span class="f5">Data</span><a href="#" {{action "prev"}} data-test-import-prev>{{svg-jar "arrow-left" class="w3 h3 ml2" }}</a> <a href="#" {{action "next"}} data-test-import-next>{{svg-jar "arrow-right" class="w3 h3 ml2" }}</a></th>
+        <th class="bb br b--whitegrey bg-whitegrey-l2"><span class="f-small midgrey ttu fw5">Header</span></th>
+        <th class="bb b--whitegrey bg-whitegrey-l2">
+            <div class="flex items-center justify-between">
+                <span class="f-small midgrey ttu fw5">Data</span>
+                <div class="flex items-center bg-white br2 ml1 nr1 gh-members-import-datanav">
+                    <a href="#" {{action "prev"}} class="pa1 flex items-center justify-center br b--whitegrey" data-test-import-prev>{{svg-jar "arrow-left" class="w3 h3 fill-middarkgrey" }}</a> 
+                    <a href="#" {{action "next"}} class="pa1 flex items-center justify-center" data-test-import-next>{{svg-jar "arrow-right" class="w3 h3 fill-middarkgrey" }}</a>
+                </div>
+            </div>
+        </th>
     </thead>
     <tbody>
         {{#each-in currentlyDisplayedData as |key value|}}
             <tr>
-                <td><span>{{key}}</span></td>
-                <td><span>{{value}}</span></td>
+                <td class="br b--whitegrey middarkgrey"><span>{{key}}</span></td>
+                <td class="br b--whitegrey middarkgrey {{unless value "bg-whitegrey-l2"}}"><span>{{value}}</span></td>
             </tr>
         {{else}}
             <tr>
