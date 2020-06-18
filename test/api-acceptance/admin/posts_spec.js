@@ -1,4 +1,6 @@
 const should = require('should');
+const nock = require('nock');
+const path = require('path');
 const supertest = require('supertest');
 const _ = require('lodash');
 const ObjectId = require('bson-objectid');
@@ -27,6 +29,10 @@ describe('Posts API', function () {
             .then(function (cookie) {
                 ownerCookie = cookie;
             });
+    });
+
+    afterEach(function () {
+        nock.cleanAll();
     });
 
     it('Can retrieve all posts', function (done) {
@@ -322,6 +328,53 @@ describe('Posts API', function () {
             })
             .then((res) => {
                 res.headers['x-cache-invalidate'].should.eql('/p/' + res.body.posts[0].uuid + '/');
+            });
+    });
+
+    it('Can update and force re-render', function () {
+        const unsplashMock = nock('https://images.unsplash.com/')
+            .get('/favicon_too_large')
+            .query(true)
+            .replyWithFile(200, path.join(__dirname, '../../utils/fixtures/images/ghost-logo.png'), {
+                'Content-Type': 'image/png'
+            });
+
+        const mobiledoc = JSON.parse(testUtils.DataGenerator.Content.posts[3].mobiledoc);
+        mobiledoc.cards.push(['image', {src: 'https://images.unsplash.com/favicon_too_large?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=2000&fit=max&ixid=eyJhcHBfaWQiOjExNzczfQ'}]);
+        mobiledoc.sections.push([10, mobiledoc.cards.length - 1]);
+
+        const post = {
+            mobiledoc: JSON.stringify(mobiledoc)
+        };
+
+        return request
+            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[3].id}/`))
+            .set('Origin', config.get('url'))
+            .expect(200)
+            .then((res) => {
+                post.updated_at = res.body.posts[0].updated_at;
+
+                return request
+                    .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[3].id + '/?force_rerender=true&formats=mobiledoc,html'))
+                    .set('Origin', config.get('url'))
+                    .send({posts: [post]})
+                    .expect('Content-Type', /json/)
+                    .expect('Cache-Control', testUtils.cacheRules.private);
+                // .expect(200);
+            })
+            .then((res) => {
+                res.headers['x-cache-invalidate'].should.eql('/p/' + res.body.posts[0].uuid + '/');
+
+                unsplashMock.isDone().should.be.true();
+
+                // mobiledoc is updated with image sizes
+                const resMobiledoc = JSON.parse(res.body.posts[0].mobiledoc);
+                const cardPayload = resMobiledoc.cards[mobiledoc.cards.length - 1][1];
+                cardPayload.width.should.eql(800);
+                cardPayload.height.should.eql(257);
+
+                // html is re-rendered to include srcset
+                res.body.posts[0].html.should.match(/srcset="https:\/\/images\.unsplash\.com\/favicon_too_large\?ixlib=rb-1\.2\.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https:\/\/images\.unsplash\.com\/favicon_too_large\?ixlib=rb-1\.2\.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=800&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 800w"/);
             });
     });
 

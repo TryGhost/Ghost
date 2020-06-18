@@ -261,7 +261,7 @@ Post = ghostBookshelf.Model.extend({
         });
     },
 
-    onSaving: function onSaving(model, attr, options) {
+    onSaving: async function onSaving(model, attr, options) {
         options = options || {};
 
         const self = this;
@@ -407,7 +407,7 @@ Post = ghostBookshelf.Model.extend({
         // If we're force re-rendering we want to make sure that all image cards
         // have original dimensions stored in the payload for use by card renderers
         if (options.force_rerender) {
-            this.set('mobiledoc', mobiledocLib.populateImageDimensions(this.get('mobiledoc')));
+            this.set('mobiledoc', await mobiledocLib.populateImageSizes(this.get('mobiledoc')));
         }
 
         // CASE: mobiledoc has changed, generate html
