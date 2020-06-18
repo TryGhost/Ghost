@@ -423,10 +423,16 @@ textarea.gh-member-details-textarea {
     border-radius: 4px;
     padding: 8px;
     margin-bottom: 20px;
+    color: var(--middarkgrey);
 }
 
 .gh-members-upload-warningmessage {
     border-left: 4px solid var(--yellow);
+}
+
+.gh-members-upload-warningmessage p a {
+    color: color-mod(var(--yellow) l(-12%));
+    text-decoration: underline;
 }
 
 .gh-members-upload-errormessage {
