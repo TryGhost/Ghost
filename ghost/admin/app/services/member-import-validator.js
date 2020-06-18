@@ -37,27 +37,17 @@ export default Service.extend({
         }
 
         // check can be done on whole set as it won't be too slow
-        let emailValidation = this._checkEmails(data);
-        if (emailValidation !== true) {
-            validationResults.push(new MemberImportError('Emails in provided data don\'t appear to be valid email addresses.'));
-        }
-
         const hasStripeId = this._containsRecordsWithStripeId(validatedSet);
 
         if (hasStripeId) {
             // check can be done on whole set as it won't be too slow
             if (!this.membersUtils.isStripeEnabled) {
-                validationResults.push(new MemberImportError(`You need to connect to Stripe first to import Stripe data.`));
+                validationResults.push(new MemberImportError(`You need to <a href="#/settings/labs">connect to Stripe</a> to import Stripe customers.`));
             } else {
                 let stripeSeverValidation = await this._checkStripeServer(validatedSet);
                 if (stripeSeverValidation !== true) {
-                    validationResults.push(new MemberImportError('Stripe customer IDs exist in the data, but we could not find such customer in connected Stripe account'));
+                    validationResults.push(new MemberImportError(`The CSV contains Stripe customers from a different Stripe account. Make sure you're connected to the correct <a href="#/settings/labs">Stripe account</a>.`));
                 }
-            }
-
-            let hasDuplicateStripeIds = this._hasDuplicateStripeIds(data);
-            if (hasDuplicateStripeIds === true) {
-                validationResults.push(new MemberImportError('Members with same Stripe customer IDs will not be imported.'));
             }
         }
 

@@ -42,13 +42,9 @@
                 <div class="failed flex items-start gh-members-upload-errorcontainer gh-members-upload-warningmessage">
                     <div class="mr2">{{svg-jar "warning" class="nudge-top--2 w5 h5 fill-yellow-d1"}}</div>
                     <div>
-                        <p class="ma0 pa0 gh-members-import-errorheading"><span class="fw6">Warning!</span> There are some problems with the CSV data. You can still import it but data loss might occur.</p>
-                        <button type="button" class="gh-btn gh-btn-text gh-btn-warningdetails regular" {{action (toggle "errorDetailsOpen" this)}}><span>Details</span></button>
-                        {{#liquid-if this.errorDetailsOpen}}
-                            {{#each validationErrors as |error|}}
-                                <p class="ma0 pa0 gh-members-import-errordetailtext">{{error.message}}</p>
-                            {{/each}}
-                        {{/liquid-if}}
+                        {{#each validationErrors as |error|}}
+                            <p class="ma0 pa0 gh-members-import-errorheading">{{{error.message}}}</p>
+                        {{/each}}
                     </div>
                 </div>
             {{/if}}
