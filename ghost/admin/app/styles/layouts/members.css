@@ -440,11 +440,6 @@ textarea.gh-member-details-textarea {
     min-height: 180px;
 }
 
-.gh-members-import-results {
-    margin: 0;
-    width: auto;
-}
-
 .gh-members-import-file {
     min-height: 180px;
 }
@@ -512,4 +507,16 @@ p.gh-members-import-errordetailtext {
 
 .gh-members-import-table tr:not(:last-of-type) td {
     border-bottom: 1px solid var(--whitegrey);
+}
+
+p.gh-members-import-errordetail {
+    font-size: 1.2rem;
+    line-height: 1.4em;
+    margin: 10px 0 0 24px;
+}
+
+p.gh-members-import-errordetail:first-of-type {
+    border-top: 1px solid var(--whitegrey);
+    padding-top: 8px;
+    margin-top: 8px;
 }

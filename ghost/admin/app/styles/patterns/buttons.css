@@ -373,6 +373,18 @@ svg.gh-btn-icon-right {
     color: var(--darkgrey);
 }
 
+.gh-btn-text.blue span {
+    color: var(--blue);
+}
+
+.gh-btn-text.red span {
+    color: var(--red);
+}
+
+.gh-btn-text.yellow span {
+    color: color-mod(var(--yellow) l(-10%));
+}
+
 .gh-btn-outline {
     background: none;
     box-shadow: none;

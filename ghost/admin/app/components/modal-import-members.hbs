@@ -10,30 +10,24 @@
 <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
 {{#if this.importResponse}}
-    <div class="modal-body bg-whitegrey-l2 ba b--whitegrey br3">
-        <table class="gh-members-import-results">
-            <tr>
-                <td>Imported:</td>
-                <td align="left" data-test-text="import-members-imported">{{this.importResponse.imported.count}}</td>
-            </tr>
-            {{#if this.importResponse.invalid.count}}
-                <tr>
-                    <td class="red">Invalid:</td>
-                    <td align="left" data-test-text="import-members-invalid" class="red">{{this.importResponse.invalid.count}}</td>
-                </tr>
-                {{#if this.config.enableDeveloperExperiments}}
-                <tr>
-                    <td colspan="2">Details:</td>
-                </tr>
-                {{#each this.importResponse.invalid.errors as |error|}}
-                    <tr>
-                        <td>{{error.message}}</td>
-                        <td>{{error.count}}</td>
-                    </tr>
-                {{/each}}
-                {{/if}}
+    <div class="modal-body bg-whitegrey-l2 ba b--whitegrey br3 pa4">
+        <div class="flex items-center">
+            {{svg-jar "check-circle" class="w4 h4 stroke-green mr2"}} 
+            <p class="ma0 pa0"><span class="fw6">{{this.importResponse.imported.count}}</span> members were added</p>
+        </div>
+        {{#if this.importResponse.invalid.count}}
+            <div class="flex items-start mt2">
+                {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}} 
+                <div>
+                    <p class="ma0 pa0"><span class="fw5">{{this.importResponse.invalid.count}}</span> members were skipped</p>
+                </div>
+            </div>
+            {{#if this.config.enableDeveloperExperiments}}
+            {{#each this.importResponse.invalid.errors as |error|}}
+                <p class="gh-members-import-errordetail">{{error.message}} <span class="fw6">{{error.count}}</span></p>
+            {{/each}}
             {{/if}}
-        </table>
+        {{/if}}
     </div>
 {{else}}
     <div class="modal-body">
@@ -52,6 +46,13 @@
                 {{#if this.config.enableDeveloperExperiments}}
                     <h4 class="fw6 f8 dib mb1">Preview</h4>
                     <GhMembersImportTable @importData={{this.fileData}}/>
+                {{else}}
+                    <div class="bg-whitegrey-l2 ba b--whitegrey br3">
+                        <div class="flex flex-column items-center justify-center gh-members-import-file">
+                            {{svg-jar "file-tabular-data" class="w9 h9 mb1 stroke-midgrey"}}
+                            <div class="description midgrey">{{this.file.name}}</div>
+                        </div>
+                    </div>
                 {{/if}}
 
                 <div class="mt4">
