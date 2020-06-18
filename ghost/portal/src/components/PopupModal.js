@@ -85,8 +85,6 @@ const StylesWrapper = ({member}) => {
         popup: {
             container: {
                 width: '100%',
-                height: '100%',
-                position: 'absolute',
                 letterSpacing: '0',
                 textRendering: 'optimizeLegibility',
                 fontSize: '1.5rem',
@@ -123,10 +121,43 @@ const Pages = {
     loading: LoadingPage
 };
 
-export default class PopupModal extends React.Component {
+class PopupContent extends React.Component {
     static contextType = AppContext;
 
-    renderCurrentPage(page) {
+    constructor(props) {
+        super(props);
+        this.state = { };
+        this.container = React.createRef();
+        this.height = null;
+    }
+
+    updateHeight(height) {
+        this.props.updateHeight && this.props.updateHeight(height);
+    }
+
+    componentDidMount() {
+        this.height = this.container.current && this.container.current.offsetHeight;
+        this.updateHeight(this.height);
+    }
+
+    componentDidUpdate() {
+        const height = this.container.current && this.container.current.offsetHeight;
+        if (height !== this.height) {
+            this.height = height;
+            this.updateHeight(this.height);
+        }
+    }
+
+    getCurrentPage() {
+        const {page} = this.context;
+        if (Object.keys(Pages).includes(page)) {
+            return page;
+        }
+        return 'signup';
+    }
+
+    renderCurrentPage() {
+        const {page} = this.context;
         const PageComponent = Pages[page];
 
         return (
@@ -143,12 +174,56 @@ export default class PopupModal extends React.Component {
         );
     }
 
+    render() {
+        const page = this.getCurrentPage();
+        const Styles = StylesWrapper({});
+        return (
+            <div style={Styles.popup.container} ref={this.container}>
+                {this.renderPopupClose()}
+                {this.renderCurrentPage(page)}
+            </div>
+        );
+    }
+}
+
+export default class PopupModal extends React.Component {
+    static contextType = AppContext;
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            height: null
+        };
+    }
+
+    renderCurrentPage(page) {
+        const PageComponent = Pages[page];
+
+        return (
+            <PageComponent />
+        );
+    }
+
+    onHeightChange(height) {
+        this.setState({height});
+    }
+
+    renderPopupClose() {
+        const Styles = StylesWrapper({});
+        return (
+            <div style={{display: 'flex', justifyContent: 'flex-end', padding: '0 20px'}}>
+                <CloseIcon style={Styles.popup.closeIcon} onClick = {() => this.context.onAction('closePopup')} />
+            </div>
+        );
+    }
+
     renderPopupContent() {
+        const page = this.getCurrentPage();
         const Styles = StylesWrapper({});
         return (
             <div style={Styles.popup.container}>
                 {this.renderPopupClose()}
-                {this.renderCurrentPage(this.context.page)}
+                {this.renderCurrentPage(page)}
             </div>
         );
     }
@@ -166,18 +241,31 @@ export default class PopupModal extends React.Component {
         );
     }
 
+    getCurrentPage() {
+        const {page} = this.context;
+        if (Object.keys(Pages).includes(page)) {
+            return page;
+        }
+        return 'signup';
+    }
+
     renderFrameContainer() {
         const {member} = this.context;
         const Styles = StylesWrapper({member});
-        const page = this.context.page;
+        const page = this.getCurrentPage();
         const frameStyle = {
             ...Styles.frame.common,
             ...Styles.frame[page]
         };
+        if (this.state.height) {
+            const updatedHeight = this.state.height;
+            frameStyle.minHeight = `${updatedHeight}px`;
+            frameStyle.maxHeight = `${updatedHeight}px`;
+        }
         return (
             <div style={Styles.modalContainer} onClick = {e => this.handlePopupClose(e)}>
                 <Frame style={frameStyle} title="membersjs-popup" head={this.renderFrameStyles()}>
-                    {this.renderPopupContent()}
+                    <PopupContent updateHeight={height => this.onHeightChange(height)}/>
                 </Frame>
             </div>
         );
