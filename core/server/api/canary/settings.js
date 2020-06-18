@@ -150,6 +150,25 @@ module.exports = {
         }
     },
 
+    disconnectStripeConnectIntegration: {
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            const hasActiveStripeSubscriptions = await membersService.api.hasActiveStripeSubscriptions();
+            if (hasActiveStripeSubscriptions) {
+                throw new BadRequestError({
+                    message: 'Cannot disconnect Stripe whilst you have active subscriptions.'
+                });
+            }
+
+            return models.Settings.edit({
+                key: 'stripe_connect_integration',
+                value: '{}'
+            }, frame.options);
+        }
+    },
+
     edit: {
         headers: {
             cacheInvalidate: true
