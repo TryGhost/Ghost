@@ -39,7 +39,6 @@ export default Component.extend({
 
     currencies: null,
     showFromAddressConfirmation: false,
-    showMembersModalSettings: false,
 
     // passed in actions
     setMembersSubscriptionSettings() {},
@@ -138,10 +137,6 @@ export default Component.extend({
     actions: {
         toggleFromAddressConfirmation() {
             this.toggleProperty('showFromAddressConfirmation');
-        },
-
-        closeMembersModalSettings() {
-            this.set('showMembersModalSettings', false);
         },
 
         setDefaultContentVisibility(value) {
