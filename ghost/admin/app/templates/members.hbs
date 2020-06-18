@@ -57,16 +57,51 @@
             {{/if}}
 
             <section class="content-list">
+                {{!-- overlaid on header to keep table column sizing --}}
+                {{#if this.isEditing}}
+                    <div class="members-list-header-overlay">
+                        <div class="flex flex-row">
+                            <div>
+                                <input type="checkbox" id="select-all-members" name="select-all-members" {{on "input" this.toggleSelectAll}}>
+                                <label for="select-all-members">{{this.selectAllLabel}}</label>
+                            </div>
+                            <button class="gh-btn" {{on "click" this.confirmDeleteMembers}} disabled={{not this.selectedCount}}>
+                                <span>Delete</span>
+                            </button>
+                        </div>
+
+                        <button class="gh-btn" {{on "click" this.toggleEditMode}}>
+                            <span>Done</span>
+                        </button>
+                    </div>
+                {{/if}}
+
                 <ol class="members-list gh-list {{unless this.members "no-posts"}}">
                     {{#if this.members}}
-                        <li class="gh-list-row header">
+                        <li class="gh-list-row header relative">
+                            {{#if this.isEditing}}
+                                {{!-- necessary because we add an extra column in the list items --}}
+                                <div class="gh-list-header gh-members-list-checkbox"></div>
+                            {{/if}}
                             <div class="gh-list-header">{{this.listHeader}}</div>
                             <div class="gh-list-header gh-members-list-geolocation gh-list-cellwidth-20 nowrap">Location</div>
                             <div class="gh-list-header gh-members-list-subscribed-at gh-list-cellwidth-20 nowrap">Created</div>
-                            <div class="gh-list-header gh-members-list-chevron gh-list-cellwidth-chevron"></div>
+                            <div class="gh-list-header gh-members-list-chevron gh-list-cellwidth-chevron">
+                                {{!-- TODO: 🍆🖌 --}}
+                                {{#if this.config.enableDeveloperExperiments}}
+                                    <button class="gh-btn" style="position: absolute; top: 2px; right: 3px" {{on "click" this.toggleEditMode}}>
+                                        <span>Edit</span>
+                                    </button>
+                                {{/if}}
+                            </div>
                         </li>
                         <VerticalCollection @items={{this.members}} @key="id" @containerSelector=".gh-main" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
-                            <GhMembersListItem @member={{member}} @data-test-member-id={{member.id}} />
+                            <GhMembersListItem
+                                @member={{member}}
+                                @isEditing={{this.isEditing}}
+                                @isSelected={{this.allSelected}}
+                                @data-test-member-id={{member.id}}
+                            />
                         </VerticalCollection>
                     {{else}}
                         <li class="no-posts-box">
