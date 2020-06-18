@@ -123,6 +123,19 @@ const createLabels = async (labels, options) => {
 
 const members = {
     docName: 'members',
+
+    hasActiveStripeSubscriptions: {
+        permissions: {
+            method: 'browse'
+        },
+        async query() {
+            const hasActiveStripeSubscriptions = await membersService.api.hasActiveStripeSubscriptions();
+            return {
+                hasActiveStripeSubscriptions
+            };
+        }
+    },
+
     browse: {
         options: [
             'limit',

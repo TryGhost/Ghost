@@ -63,6 +63,7 @@ module.exports = function apiRoutes() {
     router.put('/settings', mw.authAdminApi, http(apiCanary.settings.edit));
     router.get('/settings/members/email', http(apiCanary.settings.validateMembersFromEmail));
     router.post('/settings/members/email', mw.authAdminApi, http(apiCanary.settings.updateMembersFromEmail));
+    router.del('/settings/stripe/connect', mw.authAdminApi, http(apiCanary.settings.disconnectStripeConnectIntegration));
 
     // ## Users
     router.get('/users', mw.authAdminApi, http(apiCanary.users.browse));
@@ -99,6 +100,8 @@ module.exports = function apiRoutes() {
         apiMw.upload.validation({type: 'members'}),
         http(apiCanary.members.importCSV)
     );
+
+    router.get('/members/hasActiveStripeSubscriptions', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.hasActiveStripeSubscriptions));
 
     router.get('/members/stripe_connect', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.membersStripeConnect.auth));
 

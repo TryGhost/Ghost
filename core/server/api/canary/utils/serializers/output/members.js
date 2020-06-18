@@ -6,6 +6,9 @@ const mapper = require('./utils/mapper');
 const papaparse = require('papaparse');
 
 module.exports = {
+    hasActiveStripeSubscriptions(data, apiConfig, frame) {
+        frame.response = data;
+    },
     browse(data, apiConfig, frame) {
         debug('browse');
 
