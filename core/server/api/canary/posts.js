@@ -89,6 +89,7 @@ module.exports = {
         headers: {},
         options: [
             'include',
+            'formats',
             'source',
             'send_email_when_published'
         ],
@@ -124,6 +125,7 @@ module.exports = {
         options: [
             'include',
             'id',
+            'formats',
             'source',
             'send_email_when_published',
             'force_rerender',

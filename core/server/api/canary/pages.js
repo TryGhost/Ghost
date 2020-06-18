@@ -87,6 +87,7 @@ module.exports = {
         headers: {},
         options: [
             'include',
+            'formats',
             'source'
         ],
         validation: {
@@ -122,6 +123,7 @@ module.exports = {
         options: [
             'include',
             'id',
+            'formats',
             'source',
             'force_rerender',
             // NOTE: only for internal context
