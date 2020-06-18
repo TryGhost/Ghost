@@ -461,3 +461,24 @@ p.gh-members-import-errordetailtext {
     padding-bottom: 4px;
     margin-bottom: 6px;
 }
+
+.gh-members-import-table th {
+    padding: 3px 8px;
+}
+
+.gh-members-import-datanav {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.01), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.gh-members-import-table td {
+    padding: 6px 8px;
+}
+
+.gh-members-import-table tr td:first-of-type,
+.gh-members-import-table tr th:first-of-type {
+    max-width: 112px;
+}
+
+.gh-members-import-table tr:not(:last-of-type) td {
+    border-bottom: 1px solid var(--whitegrey);
+}
