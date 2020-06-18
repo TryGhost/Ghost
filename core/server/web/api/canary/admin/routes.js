@@ -100,6 +100,8 @@ module.exports = function apiRoutes() {
         http(apiCanary.members.importCSV)
     );
 
+    router.get('/members/hasActiveStripeSubscriptions', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.hasActiveStripeSubscriptions));
+
     router.get('/members/stripe_connect', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.membersStripeConnect.auth));
 
     router.get('/members/:id', shared.middlewares.labs.members, mw.authAdminApi, http(apiCanary.members.read));
