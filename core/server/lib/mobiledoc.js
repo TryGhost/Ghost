@@ -134,7 +134,7 @@ module.exports = {
         const sizePromises = mobiledoc.cards.map(async (card) => {
             const [cardName, payload] = card;
 
-            const needsFilling = cardName === 'image' && (!payload.width || !payload.height);
+            const needsFilling = cardName === 'image' && payload && payload.src && (!payload.width || !payload.height);
             if (!needsFilling) {
                 return;
             }

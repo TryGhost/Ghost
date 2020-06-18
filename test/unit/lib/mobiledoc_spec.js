@@ -127,12 +127,13 @@ describe('lib/mobiledoc', function () {
             storage.getStorage().storagePath = originalStoragePath;
         });
 
-        it('works', async function () {
+        it.only('works', async function () {
             let mobiledoc = {
                 cards: [
                     ['image', {src: '/content/images/ghost-logo.png'}],
                     ['image', {src: 'http://example.com/external.jpg'}],
-                    ['image', {src: 'https://images.unsplash.com/favicon_too_large?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=2000&fit=max&ixid=eyJhcHBfaWQiOjExNzczfQ'}]
+                    ['image', {src: 'https://images.unsplash.com/favicon_too_large?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=2000&fit=max&ixid=eyJhcHBfaWQiOjExNzczfQ'}],
+                    ['image', {}]
                 ]
             };
 
@@ -148,7 +149,7 @@ describe('lib/mobiledoc', function () {
 
             unsplashMock.isDone().should.be.true();
 
-            transformed.cards.length.should.equal(3);
+            transformed.cards.length.should.equal(4);
 
             should.exist(transformed.cards[0][1].width);
             transformed.cards[0][1].width.should.equal(800);
