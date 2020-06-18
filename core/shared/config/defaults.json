@@ -109,5 +109,5 @@
     "preloadHeaders": false,
     "adminFrameProtection": true,
     "sendWelcomeEmail": true,
-    "stripeDirect": true
+    "stripeDirect": false
 }
