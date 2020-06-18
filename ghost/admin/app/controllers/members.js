@@ -22,6 +22,7 @@ const PAID_PARAMS = [{
 }];
 
 export default class MembersController extends Controller {
+    @service config;
     @service ellaSparse;
     @service feature;
     @service membersStats;
@@ -34,11 +35,13 @@ export default class MembersController extends Controller {
     ];
 
     @tracked members = A([]);
+    @tracked allSelected = false;
     @tracked searchText = '';
     @tracked searchParam = '';
     @tracked paidParam = null;
     @tracked label = null;
     @tracked modalLabel = null;
+    @tracked isEditing = false;
     @tracked showLabelModal = false;
 
     @tracked _availableLabels = A([]);
@@ -111,6 +114,20 @@ export default class MembersController extends Controller {
         return this.paidParams.findBy('value', this.paidParam) || {value: '!unknown'};
     }
 
+    get selectedCount() {
+        return this.allSelected ? this.members.length : 0;
+    }
+
+    get selectAllLabel() {
+        let {members} = this;
+
+        if (this.allSelected) {
+            return `All items selected (${formatNumber(members.length)})`;
+        } else {
+            return `Select all (${formatNumber(members.length)})`;
+        }
+    }
+
     // Actions -----------------------------------------------------------------
 
     @action
@@ -119,6 +136,16 @@ export default class MembersController extends Controller {
         this.fetchLabelsTask.perform();
         this.membersStats.invalidate();
         this.membersStats.fetch();
+    }
+
+    @action
+    toggleEditMode() {
+        this.isEditing = !this.isEditing;
+    }
+
+    @action
+    toggleSelectAll() {
+        this.allSelected = !this.allSelected;
     }
 
     @action
@@ -180,6 +207,13 @@ export default class MembersController extends Controller {
     @action
     changePaidParam(paid) {
         this.paidParam = paid.value;
+    }
+
+    @action
+    confirmDeleteMembers() {
+        let {members} = this;
+        let count = `${formatNumber(members.length)} ${pluralize(members.length, 'member', {withoutCount: true})}`;
+        alert(`Once deletion is implemented, you'll see a confirmation for deleting ${count} here`);
     }
 
     // Tasks -------------------------------------------------------------------

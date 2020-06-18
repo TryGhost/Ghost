@@ -1,5 +1,10 @@
 <li class="gh-list-row gh-members-list-item {{if @member.is_loading "loading"}}" ...attributes>
     {{#if @member.is_loading}}
+        {{#if @isEditing}}
+            <div class="gh-list-data gh-members-list-checkbox">
+                <input type="checkbox" checked={{@isSelected}} disabled>
+            </div>
+        {{/if}}
         <div class="gh-list-data gh-members-list-basic gh-list-loadingcell">
             <div class="gh-list-loading-title"></div>
             <div class="gh-list-loading-detail"></div>
@@ -8,6 +13,12 @@
         <div class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20"></div>
         <div class="gh-list-data gh-members-list-chevron gh-list-cellwidth-chevron"></div>
     {{else}}
+        {{#if @isEditing}}
+            <div class="gh-list-data gh-members-list-checkbox">
+                <input type="checkbox" checked={{@isSelected}} disabled>
+            </div>
+        {{/if}}
+
         <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-basic">
             <div class="flex items-center">
                 <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
@@ -21,7 +32,7 @@
         </LinkTo>
 
         <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-geolocation gh-list-cellwidth-20 middarkgrey f8 {{if (not @member.name) "gh-members-geolocation-noname"}}">
-            {{#if @member.geolocation}}
+            {{#if (and @member.geolocation @member.geolocation.country)}}
                 {{#if (eq @member.geolocation.country_code "US")}}
                     {{@member.geolocation.region}}, US
                 {{else}}
@@ -34,14 +45,17 @@
 
         <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-members-list-subscribed-at gh-list-cellwidth-20 middarkgrey f8 {{if (not @member.name) "gh-members-subscribed-noname"}}">
             {{#if @member.createdAtUTC}}
-                {{moment-format @member.createdAtUTC "MMM DD, YYYY"}} <span class="midlightgrey">({{moment-from-now @member.createdAtUTC}})</span>
+                {{moment-format @member.createdAtUTC "MMM DD, YYYY"}}
+                <span class="midlightgrey">({{moment-from-now @member.createdAtUTC}})</span>
             {{/if}}
         </LinkTo>
 
         <LinkTo @route="member" @model={{@member}} title="Member details" class="gh-list-data gh-list-cellwidth-chevron gh-members-list-chevron">
-            <div class="flex items-center justify-end w-100 h-100">
-                <span class="nr2">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
-            </div>
+            {{#unless @isEditing}}
+                <div class="flex items-center justify-end w-100 h-100">
+                    <span class="nr2">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
+                </div>
+            {{/unless}}
         </LinkTo>
     {{/if}}
 </li>
