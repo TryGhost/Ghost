@@ -365,6 +365,7 @@ label[for="member-description"] + p {
 
 textarea.gh-member-details-textarea {
     max-width: 100%;
+    min-width: auto;
     min-height: 50px;
     height: 98px;
 }
