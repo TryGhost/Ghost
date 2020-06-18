@@ -16,10 +16,10 @@
         <GhTrimFocusInput
             @shouldFocus={{this.navItem.last}}
             @placeholder="Label"
-            @value={{readonly this.navItem.label}}
-            @input={{action (mut this.navItem.label) value="target.value"}}
+            @value={{readonly this.label}}
+            @input={{action (mut this.label) value="target.value"}}
             @keyPress={{action "clearLabelErrors"}}
-            @focus-out={{action "updateLabel" this.navItem.label}} data-test-input="label" />
+            @focus-out={{action "updateLabel" this.label}} data-test-input="label" />
         <GhErrorMessage
             @errors={{this.navItem.errors}}
             @property="label" data-test-error="label" />
@@ -34,7 +34,7 @@
         <GhNavitemUrlInput
             @baseUrl={{this.baseUrl}}
             @isNew={{this.navItem.isNew}}
-            @url={{readonly this.navItem.url}}
+            @url={{readonly this.url}}
             @update={{action "updateUrl"}}
             @clearErrors={{action "clearUrlErrors"}} data-test-input="url" />
         <GhErrorMessage
