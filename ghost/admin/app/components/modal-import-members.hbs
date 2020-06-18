@@ -53,12 +53,10 @@
                 </div>
             {{/if}}
             <GhFormGroup>
-                <div class="bg-whitegrey-l2 ba b--whitegrey br3">
-                    <div class="flex flex-column items-center justify-center gh-members-import-file">
-                        {{svg-jar "file-tabular-data" class="w9 h9 mb1 stroke-midgrey"}}
-                        <div class="description midgrey">{{this.file.name}}</div>
-                    </div>
-                </div>
+                {{#if this.config.enableDeveloperExperiments}}
+                    <GhMembersImportTable @importData={{this.fileData}}/>
+                {{/if}}
+
                 <div class="mt4">
                     <label for="label-input"><span class="fw6 f8 dib mb1">Labels</span></label>
                     <GhMemberLabelInput @member={{this.labels}} @triggerId="label-input" />

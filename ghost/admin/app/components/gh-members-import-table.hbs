@@ -1,0 +1,18 @@
+<table class="bg-whitegrey-l2 ba b--whitegrey br3">
+    <thead>
+        <th><span class="f5">Header</span></th>
+        <th><span class="f5">Data</span><a href="#" {{action "prev"}} data-test-import-prev>{{svg-jar "arrow-left" class="w3 h3 ml2" }}</a> <a href="#" {{action "next"}} data-test-import-next>{{svg-jar "arrow-right" class="w3 h3 ml2" }}</a></th>
+    </thead>
+    <tbody>
+        {{#each-in currentlyDisplayedData as |key value|}}
+            <tr>
+                <td><span>{{key}}</span></td>
+                <td><span>{{value}}</span></td>
+            </tr>
+        {{else}}
+            <tr>
+                <td><span>No data</span></td>
+            </tr>
+        {{/each-in}}
+    </tbody>
+</table>
