@@ -69,8 +69,10 @@ export default Controller.extend({
                 return;
             }
 
-            navItem.set('label', label);
-            this.set('dirtyAttributes', true);
+            if (navItem.get('label') !== label) {
+                navItem.set('label', label);
+                this.set('dirtyAttributes', true);
+            }
         },
 
         updateUrl(url, navItem) {
@@ -78,8 +80,10 @@ export default Controller.extend({
                 return;
             }
 
-            navItem.set('url', url);
-            this.set('dirtyAttributes', true);
+            if (navItem.get('url') !== url) {
+                navItem.set('url', url);
+                this.set('dirtyAttributes', true);
+            }
 
             return url;
         },
