@@ -66,7 +66,12 @@ class SignupPage extends React.Component {
     }
 
     renderPlans() {
-        const {plans, allowSelfSignup, isStripeConfigured, allowed_plans: allowedPlans} = this.context.site;
+        const {
+            plans,
+            allow_self_signup: allowSelfSignup,
+            is_stripe_configured: isStripeConfigured,
+            portal_plans: portalPlans
+        } = this.context.site;
 
         const plansData = [];
         const stripePlans = [
@@ -74,13 +79,13 @@ class SignupPage extends React.Component {
             {type: 'year', price: plans.yearly, currency: plans.currency_symbol, name: 'Yearly'}
         ];
 
-        if (allowSelfSignup && (allowedPlans === undefined || allowedPlans.includes('free'))) {
+        if (allowSelfSignup && (portalPlans === undefined || portalPlans.includes('free'))) {
             plansData.push({type: 'free', price: 'Decide later', name: 'Free'});
         }
 
         if (isStripeConfigured) {
             stripePlans.forEach((plan) => {
-                if (allowedPlans === undefined || allowedPlans.includes(plan.name.toLowerCase())) {
+                if (portalPlans === undefined || portalPlans.includes(plan.name.toLowerCase())) {
                     plansData.push(plan);
                 }
             });
@@ -132,8 +137,8 @@ class SignupPage extends React.Component {
     }
 
     renderNameField() {
-        const {site} = this.context;
-        if (site.show_signup_name === undefined || site.show_signup_name) {
+        const {portal_name: portalName} = this.context.site;
+        if (portalName === undefined || portalName) {
             return this.renderInputField('name');
         }
         return null;
