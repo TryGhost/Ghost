@@ -2,7 +2,7 @@ const {i18n} = require('../../../../../lib/common');
 const errors = require('@tryghost/errors');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:members');
 const mapper = require('./utils/mapper');
-const {unparse} = require('./utils/members-csv');
+const {unparse} = require('@tryghost/members-csv');
 
 module.exports = {
     hasActiveStripeSubscriptions(data, apiConfig, frame) {
