@@ -465,6 +465,32 @@ textarea.gh-member-details-textarea {
     border-left: 4px solid var(--red);
 }
 
+.gh-members-import-scrollarea {
+    position: relative;
+    max-height: calc(100vh - 350px - 12vw);
+    min-height: 175px;
+    overflow-y: scroll;
+    margin: 0 -32px;
+    padding: 0 32px;
+    background:
+        /* Shadow covers */
+        linear-gradient(white 30%, rgba(255,255,255,0)),
+        linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
+        
+        /* Shadows */
+        /* radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.12), rgba(0,0,0,0)) -64px 0,
+        radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.12), rgba(0,0,0,0)) -64px 100%; */
+        linear-gradient(rgba(0,0,0,0.08), rgba(0,0,0,0)),
+        linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.08)) 0 100%;
+	background-repeat: no-repeat;
+	background-color: white;
+	background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+	
+	/* Opera doesn't support this in the shorthand */
+    background-attachment: local, local, scroll, scroll;
+    margin-top: 4px;
+}
+
 .gh-members-import-errorheading {
     font-size: 1.4rem;
     line-height: 1.55em;
@@ -488,12 +514,42 @@ p.gh-members-import-errordetailtext {
     margin-bottom: 6px;
 }
 
-.gh-members-import-table th {
-    padding: 3px 8px;
+.gh-members-import-table {
+    position: relative;
+    border: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
 }
 
-.gh-members-import-datanav {
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.01), 0 1px 2px rgba(0, 0, 0, 0.05);
+.gh-members-import-table::before {
+    position: absolute;
+    display: block;
+    content: "";
+    top: 0;
+    left: -33px;
+    bottom: 0;
+    height: 100%;
+    width: 32px;
+    background: var(--white);
+}
+
+.gh-members-import-table::after {
+    position: absolute;
+    display: block;
+    content: "";
+    top: 0;
+    right: -33px;
+    bottom: 0;
+    height: 100%;
+    width: 32px;
+    background: var(--white);
+}
+
+.gh-members-import-table th {
+    padding: 3px 8px;
+    background: color-mod(var(--darkgrey) a(5%) s(+50%));
+}
+
+.gh-members-import-table td.empty-cell {
+    background: color-mod(var(--darkgrey) a(3%) s(+50%));
 }
 
 .gh-members-import-table td {
@@ -502,11 +558,16 @@ p.gh-members-import-errordetailtext {
 
 .gh-members-import-table tr td:first-of-type,
 .gh-members-import-table tr th:first-of-type {
-    max-width: 112px;
+    width: 170px;
+    border-right: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
 }
 
 .gh-members-import-table tr:not(:last-of-type) td {
-    border-bottom: 1px solid var(--whitegrey);
+    border-bottom: 1px solid color-mod(var(--darkgrey) a(7%) s(+40%));
+}
+
+.gh-members-import-datanav {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.01), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 p.gh-members-import-errordetail {
