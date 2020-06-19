@@ -501,13 +501,13 @@ const members = {
                             //       for this reason we have to make sure any unexpected errors are logged here
                             if (Array.isArray(error)) {
                                 logging.error(error[0]);
+                                invalid.errors.push(...error);
                             } else {
                                 logging.error(error);
+                                invalid.errors.push(error);
                             }
 
                             invalid.count = invalid.count + 1;
-
-                            invalid.errors.push(error);
                         }
                     });
             }).then(() => {
