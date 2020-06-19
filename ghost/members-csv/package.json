@@ -23,5 +23,8 @@
     "should": "13.2.3",
     "sinon": "9.0.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "csv-parser": "2.3.3",
+    "papaparse": "5.2.0"
+  }
 }
