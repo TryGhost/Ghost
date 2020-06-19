@@ -1,0 +1,16 @@
+<header class="modal-header">
+    <h1>Are you sure you want to delete these members?</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>
+        You're about to delete "<strong>{{pluralize this.model.memberCount "member"}}</strong>".
+        This is permanent! We warned you, k?
+    </p>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
+    <GhTaskButton @buttonText="Delete" @successText="Deleted" @task={{this.deleteMembersTask}} @class="gh-btn gh-btn-red gh-btn-icon" />
+</div>
