@@ -43,6 +43,7 @@ export default class MembersController extends Controller {
     @tracked modalLabel = null;
     @tracked isEditing = false;
     @tracked showLabelModal = false;
+    @tracked showDeleteMembersModal = false;
 
     @tracked _availableLabels = A([]);
 
@@ -210,10 +211,13 @@ export default class MembersController extends Controller {
     }
 
     @action
-    confirmDeleteMembers() {
-        let {members} = this;
-        let count = `${formatNumber(members.length)} ${pluralize(members.length, 'member', {withoutCount: true})}`;
-        alert(`Once deletion is implemented, you'll see a confirmation for deleting ${count} here`);
+    toggleDeleteMembersModal() {
+        this.showDeleteMembersModal = !this.showDeleteMembersModal;
+    }
+
+    @action
+    deleteMembers() {
+        return this.deleteMembersTask.perform();
     }
 
     // Tasks -------------------------------------------------------------------
@@ -283,6 +287,18 @@ export default class MembersController extends Controller {
         });
     }
 
+    @task({drop: true})
+    *deleteMembersTask() {
+        yield timeout(1000);
+        alert('Bulk deletion is not implemented yet, nothing has been deleted');
+
+        // reset and reload
+        this.resetSelection();
+        this.reload();
+
+        return true;
+    }
+
     // Internal ----------------------------------------------------------------
 
     resetSearch() {
@@ -292,5 +308,11 @@ export default class MembersController extends Controller {
     resetSelection() {
         this.isEditing = false;
         this.allSelected = false;
+    }
+
+    reload() {
+        this.membersStats.invalidate();
+        this.membersStats.fetch();
+        this.fetchMembersTask.perform();
     }
 }

@@ -65,7 +65,7 @@
                                 <input type="checkbox" id="select-all-members" name="select-all-members" {{on "input" this.toggleSelectAll}}>
                                 <label for="select-all-members">{{this.selectAllLabel}}</label>
                             </div>
-                            <button class="gh-btn" {{on "click" this.confirmDeleteMembers}} disabled={{not this.selectedCount}}>
+                            <button class="gh-btn" {{on "click" this.toggleDeleteMembersModal}} disabled={{not this.selectedCount}}>
                                 <span>Delete</span>
                             </button>
                         </div>
@@ -127,6 +127,16 @@
 </section>
 
 {{outlet}}
+
+{{#if this.showDeleteMembersModal}}
+    <GhFullscreenModal
+        @modal="delete-members"
+        @model={{hash memberCount=this.selectedCount}}
+        @confirm={{this.deleteMembers}}
+        @close={{this.toggleDeleteMembersModal}}
+        @modifier="action wide"
+    />
+{{/if}}
 
 {{#if this.showLabelModal}}
     <GhFullscreenModal
