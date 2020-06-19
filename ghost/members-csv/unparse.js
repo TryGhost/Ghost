@@ -30,4 +30,4 @@ const unparse = (members) => {
     return papaparse.unparse(mappedMembers);
 };
 
-module.exports.unparse = unparse;
+module.exports = unparse;
