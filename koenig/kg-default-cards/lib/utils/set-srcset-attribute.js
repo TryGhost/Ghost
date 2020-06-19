@@ -34,8 +34,11 @@ module.exports = function setSrcsetAttribute(elem, image, options) {
         const srcs = [];
 
         srcsetWidths.forEach((width) => {
-            // avoid creating srcset sizes larger than intrinsic image width
-            if (width <= image.width) {
+            if (width === image.width) {
+                // use original image path if width matches exactly (avoids 302s from size->original)
+                srcs.push(`${image.src} ${width}w`);
+            } else if (width <= image.width) {
+                // avoid creating srcset sizes larger than intrinsic image width
                 srcs.push(`${imagesPath}/size/w${width}/${filename} ${width}w`);
             }
         });

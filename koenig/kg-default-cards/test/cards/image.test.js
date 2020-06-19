@@ -278,7 +278,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt width="750" height="300" srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w750/2020/06/image.png 750w" sizes="(min-width: 720px) 720px"></figure>');
+            serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="/content/images/2020/06/image.png" class="kg-image" alt width="750" height="300" srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/2020/06/image.png 750w" sizes="(min-width: 720px) 720px"></figure>');
         });
 
         it('works correctly with subdirectories', function () {
