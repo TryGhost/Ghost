@@ -43,5 +43,8 @@ export default Model.extend(ValidationEngine, {
     ogDescription: attr('string'),
     ogImage: attr('string'),
     bulkEmailSettings: attr('json-string'),
+    portalButton: attr('boolean'),
+    portalName: attr('boolean'),
+    portalPlans: attr('json-string'),
     sharedViews: attr('string')
 });
