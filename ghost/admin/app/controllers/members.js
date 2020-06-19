@@ -22,9 +22,11 @@ const PAID_PARAMS = [{
 }];
 
 export default class MembersController extends Controller {
+    @service ajax;
     @service config;
     @service ellaSparse;
     @service feature;
+    @service ghostPaths;
     @service membersStats;
     @service store;
 
@@ -141,11 +143,18 @@ export default class MembersController extends Controller {
 
     @action
     toggleEditMode() {
-        this.isEditing = !this.isEditing;
+        if (this.isEditing) {
+            this.resetSelection();
+        } else {
+            this.isEditing = true;
+        }
     }
 
     @action
     toggleSelectAll() {
+        if (this.members.length === 0) {
+            return this.allSelected = false;
+        }
         this.allSelected = !this.allSelected;
     }
 
@@ -289,14 +298,18 @@ export default class MembersController extends Controller {
 
     @task({drop: true})
     *deleteMembersTask() {
-        yield timeout(1000);
-        alert('Bulk deletion is not implemented yet, nothing has been deleted');
+        let query = new URLSearchParams({all: true});
+        let url = `${this.ghostPaths.url.api('members')}?${query}`;
+
+        // response contains details of which members failed to be deleted
+        let response = yield this.ajax.del(url);
 
         // reset and reload
+        this.store.unloadAll('member');
         this.resetSelection();
         this.reload();
 
-        return true;
+        return response.meta.stats;
     }
 
     // Internal ----------------------------------------------------------------
