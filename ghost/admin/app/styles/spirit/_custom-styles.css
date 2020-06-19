@@ -13,6 +13,9 @@
     cursor: pointer;
 }
 
+.default-cursor {
+    cursor: default;
+}
 
 /* Buttons */
 button, .btn-base {
