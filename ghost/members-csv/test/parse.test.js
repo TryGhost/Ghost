@@ -1,6 +1,6 @@
 const should = require('should');
 const path = require('path');
-const {readCSV} = require('../parse');
+const {readCSV} = require('../lib/parse');
 const csvPath = path.join(__dirname, '/fixtures/');
 
 describe('read csv', function () {
