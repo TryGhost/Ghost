@@ -1,9 +1,9 @@
-<table class="ba b--whitegrey br3 f8 gh-members-import-table mt1">
+<table class="f8 gh-members-import-table ma0">
     <thead>
-        <th class="bb br b--whitegrey bg-whitegrey-l2"><span class="f-small midgrey ttu fw5">Header</span></th>
-        <th class="bb b--whitegrey bg-whitegrey-l2">
+        <th class="bb br b--whitegrey"><span class="f-small midgrey ttu fw5">Header</span></th>
+        <th class="bb b--whitegrey">
             <div class="flex items-center justify-between">
-                <span class="f-small midgrey ttu fw5">Data</span>
+                <span class="f-small midgrey ttu fw5 nudge-top--1">Data</span>
                 <div class="flex items-center bg-white br2 ml1 nr1 gh-members-import-datanav">
                     <a href="#" {{action "prev"}} class="pa1 flex items-center justify-center br b--whitegrey" data-test-import-prev>{{svg-jar "arrow-left" class="w3 h3 fill-middarkgrey" }}</a> 
                     <a href="#" {{action "next"}} class="pa1 flex items-center justify-center" data-test-import-next>{{svg-jar "arrow-right" class="w3 h3 fill-middarkgrey" }}</a>
@@ -14,8 +14,8 @@
     <tbody>
         {{#each-in currentlyDisplayedData as |key value|}}
             <tr>
-                <td class="br b--whitegrey middarkgrey"><span>{{key}}</span></td>
-                <td class="br b--whitegrey middarkgrey {{unless value "bg-whitegrey-l2"}}"><span>{{value}}</span></td>
+                <td class="middarkgrey"><span>{{key}}</span></td>
+                <td class="middarkgrey {{unless value "empty-cell"}}"><span>{{value}}</span></td>
             </tr>
         {{else}}
             <tr>
