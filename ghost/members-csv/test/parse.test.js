@@ -1,12 +1,11 @@
 const should = require('should');
 const path = require('path');
-const fsLib = require('../../../../../../../../core/server/api/canary/utils/serializers/input/utils/members-import-csv');
+const {readCSV} = require('../parse');
+const csvPath = path.join(__dirname, '/fixtures/');
 
-const csvPath = path.join(__dirname, '../../../../../../../utils/fixtures/csv/');
-
-describe('members-import-csv: read csv', function () {
+describe('read csv', function () {
     it('read csv: one column', function (done) {
-        fsLib.readCSV({
+        readCSV({
             path: csvPath + 'single-column-with-header.csv',
             columnsToExtract: [{name: 'email', lookup: /email/i}]
         }).then(function (result) {
@@ -19,7 +18,7 @@ describe('members-import-csv: read csv', function () {
     });
 
     it('read csv: two columns, 1 filter', function (done) {
-        fsLib.readCSV({
+        readCSV({
             path: csvPath + 'two-columns-with-header.csv',
             columnsToExtract: [{name: 'email', lookup: /email/i}]
         }).then(function (result) {
@@ -34,7 +33,7 @@ describe('members-import-csv: read csv', function () {
     });
 
     it('read csv: two columns, 2 filters', function (done) {
-        fsLib.readCSV({
+        readCSV({
             path: csvPath + 'two-columns-obscure-header.csv',
             columnsToExtract: [
                 {name: 'email', lookup: /email/i},
