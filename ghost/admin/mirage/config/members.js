@@ -1,5 +1,6 @@
 import faker from 'faker';
 import moment from 'moment';
+import {Response} from 'ember-cli-mirage';
 import {paginatedResponse} from '../utils';
 
 export function mockMembersStats(server) {
@@ -62,6 +63,28 @@ export default function mockMembers(server) {
     });
 
     server.get('/members/', paginatedResponse('members'));
+
+    server.del('/members/', function ({members}, {queryParams}) {
+        if (queryParams.all !== 'true') {
+            return new Response(422, {}, {errors: [{
+                type: 'IncorrectUsageError',
+                message: 'DELETE /members/ must be used with a filter, search, or all=true query parameter'
+            }]});
+        }
+
+        let count = members.all().length;
+        members.all().destroy();
+
+        return {
+            meta: {
+                stats: {
+                    deleted: {
+                        count
+                    }
+                }
+            }
+        };
+    });
 
     server.get('/members/:id/', function ({members}, {params}) {
         let {id} = params;
