@@ -1,9 +1,10 @@
 const should = require('should');
 const path = require('path');
-const fsLib = require('../../../../core/server/lib/fs');
-const csvPath = path.join(__dirname, '../../../utils/fixtures/csv/');
+const fsLib = require('../../../../../../../../core/server/api/canary/utils/serializers/input/utils/members-import-csv');
 
-describe('lib/fs: read csv', function () {
+const csvPath = path.join(__dirname, '../../../../../../../utils/fixtures/csv/');
+
+describe('members-import-csv: read csv', function () {
     it('read csv: one column', function (done) {
         fsLib.readCSV({
             path: csvPath + 'single-column-with-header.csv',
