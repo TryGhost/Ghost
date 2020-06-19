@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:input:members');
+const {parse} = require('./utils/members-import-csv');
 
 function defaultRelations(frame) {
     if (frame.options.withRelated) {
@@ -42,5 +43,10 @@ module.exports = {
     edit(apiConfig, frame) {
         debug('edit');
         this.add(apiConfig, frame);
+    },
+
+    async importCSV(apiConfig, frame) {
+        debug('importCSV');
+        frame.data.members = await parse(frame.file.path);
     }
 };
