@@ -9,7 +9,6 @@ const membersService = require('../../services/members');
 const settingsCache = require('../../services/settings/cache');
 const {i18n} = require('../../lib/common');
 const logging = require('../../../shared/logging');
-const fsLib = require('../../lib/fs');
 const db = require('../../data/db');
 const _ = require('lodash');
 
@@ -400,7 +399,6 @@ const members = {
             method: 'add'
         },
         async query(frame) {
-            let filePath = frame.file.path;
             let imported = {
                 count: 0
             };
@@ -410,43 +408,14 @@ const members = {
             };
             let duplicateStripeCustomerIdCount = 0;
 
-            const columnsToExtract = [{
-                name: 'email',
-                lookup: /^email/i
-            }, {
-                name: 'name',
-                lookup: /name/i
-            }, {
-                name: 'note',
-                lookup: /note/i
-            }, {
-                name: 'subscribed_to_emails',
-                lookup: /subscribed_to_emails/i
-            }, {
-                name: 'stripe_customer_id',
-                lookup: /stripe_customer_id/i
-            }, {
-                name: 'complimentary_plan',
-                lookup: /complimentary_plan/i
-            }, {
-                name: 'labels',
-                lookup: /labels/i
-            }, {
-                name: 'created_at',
-                lookup: /created_at/i
-            }];
-
             // NOTE: custom labels have to be created in advance otherwise there are conflicts
             //       when processing member creation in parallel later on in import process
             const importSetLabels = serializeMemberLabels(frame.data.labels);
             await createLabels(importSetLabels, frame.options);
 
-            return fsLib.readCSV({
-                path: filePath,
-                columnsToExtract: columnsToExtract
-            }).then((result) => {
-                const sanitized = sanitizeInput(result);
-                duplicateStripeCustomerIdCount = result.length - sanitized.length;
+            return Promise.resolve().then(() => {
+                const sanitized = sanitizeInput(frame.data.members);
+                duplicateStripeCustomerIdCount = frame.data.members.length - sanitized.length;
                 invalid.count += duplicateStripeCustomerIdCount;
 
                 if (duplicateStripeCustomerIdCount) {
