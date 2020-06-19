@@ -89,7 +89,9 @@ const getMemberSiteData = async function (req, res) {
     );
     const stripeSecretToken = stripePaymentProcessor && stripePaymentProcessor.config.secret_token;
     const stripePublicToken = stripePaymentProcessor && stripePaymentProcessor.config.public_token;
-    const isStripeConfigured = (!!stripeSecretToken && stripeSecretToken !== '' && !!stripePublicToken && stripePublicToken !== '');
+    const stripeConnectIntegration = settingsCache.get('stripe_connect_integration');
+
+    const isStripeConfigured = (!!stripeSecretToken && !!stripePublicToken) || !!(stripeConnectIntegration && stripeConnectIntegration.account_id);
     const response = {
         title: settingsCache.get('title'),
         description: settingsCache.get('description'),
@@ -98,8 +100,11 @@ const getMemberSiteData = async function (req, res) {
         url: urlUtils.urlFor('home', true),
         version: ghostVersion.safe,
         plans: membersService.config.getPublicPlans(),
-        allowSelfSignup: membersService.config.getAllowSelfSignup(),
-        isStripeConfigured
+        allow_self_signup: membersService.config.getAllowSelfSignup(),
+        is_stripe_configured: isStripeConfigured,
+        portal_button: settingsCache.get('portal_button'),
+        portal_name: settingsCache.get('portal_name'),
+        portal_plans: settingsCache.get('portal_plans')
     };
 
     // Brand is currently an experimental feature
