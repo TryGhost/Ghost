@@ -88,5 +88,5 @@ const parse = async (filePath) => {
     });
 };
 
-module.exports.parse = parse;
+module.exports = parse;
 module.exports.readCSV = readCSV;
