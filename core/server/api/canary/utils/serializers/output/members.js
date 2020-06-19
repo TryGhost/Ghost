@@ -1,9 +1,8 @@
-const _ = require('lodash');
 const {i18n} = require('../../../../../lib/common');
 const errors = require('@tryghost/errors');
 const debug = require('ghost-ignition').debug('api:canary:utils:serializers:output:members');
 const mapper = require('./utils/mapper');
-const papaparse = require('papaparse');
+const {unparse} = require('./utils/members-csv');
 
 module.exports = {
     hasActiveStripeSubscriptions(data, apiConfig, frame) {
@@ -52,32 +51,10 @@ module.exports = {
         debug('exportCSV');
 
         const members = data.members.map((member) => {
-            member = mapper.mapMember(member, frame);
-            let stripeCustomerId;
-
-            if (member.stripe) {
-                stripeCustomerId = _.get(member, 'stripe.subscriptions[0].customer.id');
-            }
-            let labels = [];
-            if (member.labels) {
-                labels = `${member.labels.map(l => l.name).join(',')}`;
-            }
-
-            return {
-                id: member.id,
-                email: member.email,
-                name: member.name,
-                note: member.note,
-                subscribed_to_emails: member.subscribed,
-                complimentary_plan: member.comped,
-                stripe_customer_id: stripeCustomerId,
-                created_at: member.created_at,
-                deleted_at: member.deleted_at,
-                labels: labels
-            };
+            return mapper.mapMember(member, frame);
         });
 
-        frame.response = papaparse.unparse(members);
+        frame.response = unparse(members);
     },
 
     importCSV(data, apiConfig, frame) {
