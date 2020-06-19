@@ -349,6 +349,33 @@ describe('Gallery card', function () {
             serializer.serialize(card.render(opts)).should.match(/standard\.jpg 2000w" sizes="\(min-width: 1200px\) 1200px"/);
         });
 
+        it('uses "standard" media query for medium single-image galleries', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    images: [{
+                        row: 0,
+                        fileName: 'standard.jpg',
+                        src: '/content/images/2018/08/standard.jpg',
+                        width: 1000,
+                        height: 1600
+                    }]
+                },
+                options: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.match(/standard\.jpg 1000w" sizes="\(min-width: 720px\) 720px"/);
+        });
+
         it('is omitted when srcsets are not available', function () {
             let opts = {
                 env: {

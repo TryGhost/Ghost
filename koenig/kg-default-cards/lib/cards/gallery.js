@@ -96,7 +96,7 @@ module.exports = {
                 setSrcsetAttribute(img, image, options);
 
                 if (img.getAttribute('srcset') && image.width >= 720) {
-                    if (rows.length === 1 && row.length === 1 && image.width > 720) {
+                    if (rows.length === 1 && row.length === 1 && image.width >= 1200) {
                         img.setAttribute('sizes', '(min-width: 1200px) 1200px');
                     } else {
                         img.setAttribute('sizes', '(min-width: 720px) 720px');
